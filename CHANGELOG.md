@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.1 — 2026-07-29
+
+### Added
+
+- 6 new chart types: bell curve (bellcurve), column range (columnrange), funnel, sunburst, treemap, waterfall.
+- FIGURES.md catalogue expanded with when-to-use guidance for new entries.
+
+---
+
 ## 1.0.0 — 2026-07-29
 
 Initial public release.

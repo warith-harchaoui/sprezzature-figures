@@ -1,8 +1,15 @@
 # sprezzature-figures
 
-84 types de graphiques de qualité publication — Vega-Lite, Vega complet, et matplotlib/SVG — utilisables comme bibliothèque Python ou en ligne de commande.
+🇫🇷 LISEZMOI.md · 🇬🇧 [README.md](README.md)
 
-Fait partie de la suite [sprezzature](https://github.com/sprezzature/sprezzature).
+[![Python ≥3.10](https://img.shields.io/badge/python-%3E%3D3.10-blue)](https://www.python.org/)
+[![Licence : BSD-3-Clause](https://img.shields.io/badge/licence-BSD--3--Clause-green)](LICENSE)
+
+[![logo](assets/logo.png)](https://harchaoui.org/warith/sprezzature/)
+
+84 types de graphiques de qualité publication — Vega-Lite, Vega complet et matplotlib/SVG — utilisables comme bibliothèque Python ou en ligne de commande.
+
+Fait partie de la suite [sprezzature](https://harchaoui.org/warith/sprezzature/).
 
 ---
 
@@ -12,7 +19,7 @@ Fait partie de la suite [sprezzature](https://github.com/sprezzature/sprezzature
 pip install sprezzature-figures
 ```
 
-Avec l'interface en ligne de commande Click (optionnelle) :
+Avec l'interface Click (optionnelle) :
 
 ```bash
 pip install "sprezzature-figures[cli]"
@@ -53,7 +60,29 @@ make-figure sankey --out flux-energie.png
 
 ## Catalogue des graphiques
 
-84 types de graphiques dans 15 catégories. Voir [FIGURES.md](FIGURES.md) pour le tableau complet avec des conseils sur le choix du bon graphique.
+84 types de graphiques dans 15 catégories. Voir [FIGURES.md](FIGURES.md) pour le tableau complet.
+
+| Catégorie | Graphiques |
+|-----------|------------|
+| Comparaison | bar3d, bullet, columnrange, dotplot, dumbbell, pareto, variwide |
+| Composition | circle-packing, mosaic, packed-bubble, parliament, pictorial, sunburst, treemap, waffle |
+| Distribution | andrews, bellcurve, boxen, jointplot, pairplot, ridgeline, rug |
+| Flux | alluvial, chord, dependency-wheel, funnel, parallel-sets, sankey, streamgraph |
+| Géospatial | binned-grid-map, dotdensity, globe3d, hexbin-map, hexmap, situation_map, spike-map, voronoi |
+| Hiérarchie | dendrogram, icicle, org-chart, radial-tree, tree |
+| KPI | gauge, liquid-gauge |
+| Météorologie | windbarb, windrose |
+| Évaluation de modèles | calibration, liftgain, prcurve |
+| Réseau | arcdiagram, edge-bundling, network, sfdp-largegraph |
+| Régression | blandaltman, ppplot, residual |
+| Signal | spectrogram |
+| Texte | wordcloud |
+| 3D | scatter3d, wireframe3d |
+| Série temporelle | bollinger, connected-scatter, difference-chart, horizon, streamplot, timeline |
+| Multivarié | convex-hull, embedding_projector, polar, radar, radial-bar, radviz, ternary, venn, upset |
+| Méta-analyse | forest |
+| Animé | gapminder |
+| Autre | rose, speaking_time |
 
 ---
 
@@ -69,7 +98,7 @@ sprezzature-figures/
 │   ├── make_bar.py        # script autonome par type de graphique
 │   └── ...                # 84 scripts make_*.py au total
 ├── assets/
-│   ├── vega-examples/     # exemples de spécifications Vega-Lite et Vega
+│   ├── vega-examples/     # spécifications Vega-Lite et Vega
 │   └── svg-examples/      # gabarits SVG
 ├── references/            # documentation des sources de référence
 └── tests/
@@ -91,14 +120,14 @@ Chaque script `make_<type>.py` est autonome : il importe ce dont il a besoin, d�
 ## Développement
 
 ```bash
-git clone https://github.com/sprezzature/sprezzature-figures.git
+git clone https://github.com/warith-harchaoui/sprezzature-figures.git
 cd sprezzature-figures
 pip install -e ".[dev,cli]"
 ruff check sprezzature_figures/
 python -m pytest tests/ -q
 ```
 
-Tests de rendu lents (nécessitent un affichage ou vl-convert) :
+Tests de rendu (nécessitent un affichage ou vl-convert) :
 
 ```bash
 python -m pytest -m slow tests/
@@ -112,4 +141,4 @@ BSD 3-Clause — voir [LICENSE](LICENSE).
 
 ## Auteur
 
-Warith Harchaoui — warith.harchaoui@gmail.com — [sprezzature.com](https://sprezzature.com)
+Warith Harchaoui — warith.harchaoui@gmail.com — [harchaoui.org/warith/sprezzature](https://harchaoui.org/warith/sprezzature/)

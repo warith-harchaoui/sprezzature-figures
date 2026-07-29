@@ -1,8 +1,15 @@
 # sprezzature-figures
 
+🇫🇷 [LISEZMOI.md](LISEZMOI.md) · 🇬🇧 README.md
+
+[![Python ≥3.10](https://img.shields.io/badge/python-%3E%3D3.10-blue)](https://www.python.org/)
+[![License: BSD-3-Clause](https://img.shields.io/badge/license-BSD--3--Clause-green)](LICENSE)
+
+[![logo](assets/logo.png)](https://harchaoui.org/warith/sprezzature/)
+
 84 publication-quality chart types — Vega-Lite, full Vega, and matplotlib/SVG — callable as a Python library or a CLI command.
 
-Part of the [sprezzature](https://github.com/sprezzature/sprezzature) suite.
+Part of the [sprezzature](https://harchaoui.org/warith/sprezzature/) suite.
 
 ---
 
@@ -116,7 +123,7 @@ Each `make_<kind>.py` script is self-contained: it imports what it needs, define
 ## Development
 
 ```bash
-git clone https://github.com/sprezzature/sprezzature-figures.git
+git clone https://github.com/warith-harchaoui/sprezzature-figures.git
 cd sprezzature-figures
 pip install -e ".[dev,cli]"
 ruff check sprezzature_figures/
@@ -131,10 +138,10 @@ python -m pytest -m slow tests/
 
 ---
 
-## Licence
+## License
 
 BSD 3-Clause — see [LICENSE](LICENSE).
 
 ## Author
 
-Warith Harchaoui — warith.harchaoui@gmail.com — [sprezzature.com](https://sprezzature.com)
+Warith Harchaoui — warith.harchaoui@gmail.com — [harchaoui.org/warith/sprezzature](https://harchaoui.org/warith/sprezzature/)
