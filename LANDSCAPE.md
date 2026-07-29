@@ -2,7 +2,7 @@
 
 ## How sprezzature-figures fits in the ecosystem
 
-`sprezzature-figures` is the data-visualisation skill of the [sprezzature](https://github.com/sprezzature/sprezzature) suite — a collection of Python packages that help build publication-quality web content.
+`sprezzature-figures` is the data-visualisation skill of the [sprezzature](https://harchaoui.org/warith/sprezzature/) suite — a collection of Python packages that help build publication-quality web content.
 
 ```
 sprezzature suite
