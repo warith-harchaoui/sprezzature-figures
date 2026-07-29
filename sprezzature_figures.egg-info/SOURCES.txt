@@ -1,0 +1,13 @@
+LICENSE
+README.md
+pyproject.toml
+sprezzature_figures/__init__.py
+sprezzature_figures/cli.py
+sprezzature_figures/make_figure.py
+sprezzature_figures.egg-info/PKG-INFO
+sprezzature_figures.egg-info/SOURCES.txt
+sprezzature_figures.egg-info/dependency_links.txt
+sprezzature_figures.egg-info/entry_points.txt
+sprezzature_figures.egg-info/requires.txt
+sprezzature_figures.egg-info/top_level.txt
+tests/test_make_figure.py
