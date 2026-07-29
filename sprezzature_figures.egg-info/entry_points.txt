@@ -1,0 +1,3 @@
+[console_scripts]
+make-figure = sprezzature_figures.make_figure:main
+sprezzature-figures = sprezzature_figures.cli:main
