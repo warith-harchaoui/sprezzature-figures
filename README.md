@@ -1,11 +1,11 @@
 # sprezzature-figures
 
-🇫🇷 [LISEZMOI.md](LISEZMOI.md) · 🇬🇧 README.md
+🇫🇷 [LISEZMOI.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/LISEZMOI.md) · 🇬🇧 README.md
 
 [![Python ≥3.10](https://img.shields.io/badge/python-%3E%3D3.10-blue)](https://www.python.org/)
-[![License: BSD-3-Clause](https://img.shields.io/badge/license-BSD--3--Clause-green)](LICENSE)
+[![License: BSD-3-Clause](https://img.shields.io/badge/license-BSD--3--Clause-green)](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/LICENSE)
 
-[![logo](assets/logo.png)](https://harchaoui.org/warith/sprezzature/)
+[![logo](https://raw.githubusercontent.com/warith-harchaoui/sprezzature-figures/main/assets/logo.png)](https://harchaoui.org/warith/sprezzature/)
 
 84 publication-quality chart types — Vega-Lite, full Vega, and matplotlib/SVG — callable as a Python library or a CLI command.
 
@@ -60,7 +60,7 @@ make-figure sankey --out energy-flow.png
 
 ## Chart catalogue
 
-84 chart types across 15 categories. See [FIGURES.md](FIGURES.md) for the full table with per-chart guidance on when to use each type.
+84 chart types across 15 categories. See [FIGURES.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/FIGURES.md) for the full table with per-chart guidance on when to use each type.
 
 Quick overview:
 
@@ -115,7 +115,7 @@ Each `make_<kind>.py` script is self-contained: it imports what it needs, define
 
 1. Create `scripts/make_<kind>.py` following the pattern of any existing script.
 2. Expose `DEMO_DATA: list[dict]` and a function `make_<kind>(data, **kwargs) -> str`.
-3. Add a row to [FIGURES.md](FIGURES.md).
+3. Add a row to [FIGURES.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/FIGURES.md).
 4. Run `make-figure <kind>` to verify the output.
 
 ---
@@ -140,7 +140,7 @@ python -m pytest -m slow tests/
 
 ## License
 
-BSD 3-Clause — see [LICENSE](LICENSE).
+BSD 3-Clause — see [LICENSE](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/LICENSE).
 
 ## Author
 
