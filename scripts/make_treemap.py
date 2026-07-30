@@ -221,7 +221,7 @@ def _build_vega_spec(
                         "baseline": {"value": "middle"},
                         "font": {"value": FONT},
                         "fontSize": {"value": 11},
-                        "fontWeight": {"value": 500},
+                        "fontWeight": {"value": "normal"},
                         "fill": {"value": BG},
                         "limit": {"signal": "datum.x1 - datum.x0 - 6"},
                     }
