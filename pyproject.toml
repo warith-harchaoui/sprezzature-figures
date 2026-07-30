@@ -70,13 +70,14 @@ make-figure = "sprezzature_figures.make_figure:main"
 
 [project.urls]
 Homepage = "https://harchaoui.org/warith/sprezzature/"
-Repository = "https://github.com/sprezzature/sprezzature-figures"
-Issues = "https://github.com/sprezzature/sprezzature-figures/issues"
-Changelog = "https://github.com/sprezzature/sprezzature-figures/blob/main/CHANGELOG.md"
+Repository = "https://github.com/warith-harchaoui/sprezzature-figures"
+Issues = "https://github.com/warith-harchaoui/sprezzature-figures/issues"
+Changelog = "https://github.com/warith-harchaoui/sprezzature-figures/blob/main/CHANGELOG.md"
 
 [tool.setuptools.packages.find]
-include = ["sprezzature_figures*"]
-exclude = ["tests*", "assets*", "scripts*"]
+where = ["."]
+include = ["sprezzature_figures*", "scripts*"]
+exclude = ["tests*", "assets*"]
 
 [tool.pytest.ini_options]
 addopts = "-m 'not slow'"
