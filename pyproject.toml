@@ -81,7 +81,12 @@ Issues = "https://github.com/warith-harchaoui/sprezzature-figures/issues"
 Changelog = "https://github.com/warith-harchaoui/sprezzature-figures/blob/main/CHANGELOG.md"
 
 [tool.setuptools]
-packages = ["sprezzature_figures", "sprezzature_figures.catalog", "sprezzature_figures_scripts"]
+packages = [
+    "sprezzature_figures",
+    "sprezzature_figures.catalog",
+    "sprezzature_figures.core",
+    "sprezzature_figures_scripts",
+]
 
 [tool.setuptools.package-dir]
 "sprezzature_figures_scripts" = "scripts"
