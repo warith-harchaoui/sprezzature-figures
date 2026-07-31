@@ -5,7 +5,8 @@ for the full spec; not itself committed). Branch: `feature/sprezzature-studio`.
 
 ## Phase
 
-Phase 2 (§3 — stabilize catalogue and dispatcher) complete: commits 1-3b of 13 landed.
+Phase 2 (§3 — stabilize catalogue and dispatcher) complete. Phase 3 (§4 —
+core domain models) commit 4 of 13 landed.
 
 ## Completed
 
@@ -53,6 +54,25 @@ Phase 2 (§3 — stabilize catalogue and dispatcher) complete: commits 1-3b of 1
     `-> str` → `-> Path` (matches every generator's actual signature).
   - "Adding a chart type" instructions now include the registration step
     (`tools/build_figures_catalog.py`) that Commit 2 introduced.
+- **Commit 4 — Core domain models** (`sprezzature_figures/core/`:
+  `dataset.py`, `figure_plan.py`, `operations.py`, `validation.py`).
+  `DatasetProfile`/`ColumnProfile` (plan §4.1), `FigurePlan`/`StyleOptions`/
+  `ColumnBinding`/`UserIntent` (reuses the same shape plan §10.1 calls
+  `IntentAnalysis`, rather than defining it twice), a discriminated
+  `Transform` union (filter/sort/aggregate/rename/top-N/group-others/
+  calculate — plan §4.3, no free-form formulas) and a discriminated
+  `FigureOperation` union (the 15 plan-editing commands from §4.2). Both
+  unions round-trip through `pydantic.TypeAdapter` JSON validation cleanly —
+  needed later for constraining LLM structured output (Commit 9/10) to only
+  these types. `validate_operation()`/`validate_plan()` reject operations
+  referencing nonexistent columns or undeclared `StyleOptions` fields, and
+  flag a plan missing a figure's required role bindings (reusing
+  `catalog.ValidationIssue`, not a second validation-issue type).
+  `sprezzature_figures/core/rendering.py`, `projects.py`, `iterations.py`
+  (also listed under plan §4) are deliberately deferred to Commits 8 and 12,
+  where they're actually used — plan's own commit table splits "models"
+  from "unified rendering" and "history", so building them now would be
+  speculative/untested code with no caller yet.
 
 ## Figures currently `stable`
 
@@ -62,7 +82,7 @@ Per the latest `--render` audit run: `columnrange`, `funnel`, `sunburst`,
 ## Tests run
 
 ```
-python3 -m pytest -q                              # 28 passed, 9 deselected
+python3 -m pytest -q                              # 42 passed, 9 deselected
 python3 -m pytest -q -m slow                       # 8 passed, 29 deselected
 python3 -m pytest -q -m packaging tests/test_packaging.py   # 1 passed (~11s, needs network)
 ruff check sprezzature_figures tools tests          # clean
@@ -94,9 +114,8 @@ ruff check sprezzature_figures tools tests          # clean
 
 ## Next
 
-Commit 4 — core domain models (`sprezzature_figures/core/`): `DatasetProfile`,
-`ColumnProfile`, `FigurePlan`, `StyleOptions`, the discriminated
-`FigureOperation` union, and `RenderResult`. This is where the plan starts
-requiring product/UX decisions (which StyleOptions/transformations to
-support, exact FigurePlan shape) rather than being a pure bug-fix — a good
-checkpoint to confirm scope before continuing into ingest/LLM/Ralph/NiceGUI.
+Commit 5 — CSV/XLSX/clipboard ingestion + profiler
+(`sprezzature_figures/studio/ingest/`), producing `DatasetProfile` from real
+files. User confirmed "keep going autonomously" through Commits 4-13, with
+another check-in after the render/LLM core is in place and before the GUI
+itself.
