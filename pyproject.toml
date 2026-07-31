@@ -30,6 +30,7 @@ dependencies = [
     "vl-convert-python>=1.6",
     "numpy>=1.24",
     "scipy>=1.11",
+    "pydantic>=2.7",
 ]
 
 [project.optional-dependencies]
@@ -75,10 +76,13 @@ Issues = "https://github.com/warith-harchaoui/sprezzature-figures/issues"
 Changelog = "https://github.com/warith-harchaoui/sprezzature-figures/blob/main/CHANGELOG.md"
 
 [tool.setuptools]
-packages = ["sprezzature_figures", "sprezzature_figures_scripts"]
+packages = ["sprezzature_figures", "sprezzature_figures.catalog", "sprezzature_figures_scripts"]
 
 [tool.setuptools.package-dir]
 "sprezzature_figures_scripts" = "scripts"
+
+[tool.setuptools.package-data]
+"sprezzature_figures.catalog" = ["figures.json"]
 
 [tool.pytest.ini_options]
 addopts = "-m 'not slow'"
