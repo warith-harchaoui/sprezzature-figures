@@ -86,6 +86,104 @@
     ]
   },
   {
+    "kind": "area",
+    "label": "Area",
+    "aliases": [],
+    "category": "Composition",
+    "description": "Stacked area chart showing how a whole made of several categories evolves over an ordered axis. Use for traffic by channel, cumulative headcount, or resource usage over time.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "vega_lite",
+    "module": "scripts/make_area.py",
+    "callable_name": "make_area",
+    "required_roles": [
+      {
+        "name": "month",
+        "label": "Ordinal/temporal axis",
+        "accepted_types": [
+          "categorical",
+          "datetime"
+        ],
+        "required": true
+      },
+      {
+        "name": "visits",
+        "label": "Value",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [
+      {
+        "name": "channel",
+        "label": "Series / grouping (stacked)",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": false
+      }
+    ],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 900,
+    "default_height": 600,
+    "options_schema": {},
+    "warnings": [
+      "Default output path falls back to a shared assets/ directory"
+    ]
+  },
+  {
+    "kind": "bar",
+    "label": "Bar",
+    "aliases": [],
+    "category": "Comparison",
+    "description": "Grouped bar chart comparing a numeric value across a handful of categories. The default chart for straightforward category comparisons (revenue by region, headcount by department).",
+    "intents": [],
+    "status": "stable",
+    "renderer": "vega_lite",
+    "module": "scripts/make_bar.py",
+    "callable_name": "make_bar",
+    "required_roles": [
+      {
+        "name": "region",
+        "label": "Category",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "value",
+        "label": "Value",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 900,
+    "default_height": 600,
+    "options_schema": {},
+    "warnings": [
+      "Default output path falls back to a shared assets/ directory"
+    ]
+  },
+  {
     "kind": "bar3d",
     "label": "Bar3D",
     "aliases": [],
@@ -257,6 +355,50 @@
     "warnings": [
       "No DEMO_DATA in make_boxen.py",
       "No callable named 'make_boxen' in make_boxen.py"
+    ]
+  },
+  {
+    "kind": "boxplot",
+    "label": "Boxplot",
+    "aliases": [],
+    "category": "Distribution",
+    "description": "Box plot summarising median, quartiles, and outliers per category via Vega-Lite's native boxplot mark. Use for salary by department, response time by service, scores by class.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "vega_lite",
+    "module": "scripts/make_boxplot.py",
+    "callable_name": "make_boxplot",
+    "required_roles": [
+      {
+        "name": "department",
+        "label": "Category",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "salary",
+        "label": "Numeric value",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 900,
+    "default_height": 600,
+    "options_schema": {},
+    "warnings": [
+      "Default output path falls back to a shared assets/ directory"
     ]
   },
   {
@@ -942,6 +1084,59 @@
     ]
   },
   {
+    "kind": "heatmap",
+    "label": "Heatmap",
+    "aliases": [],
+    "category": "Matrix / Image",
+    "description": "Row \u00d7 column matrix with cell color encoding a numeric value. Use for activity by day-of-week \u00d7 hour, correlation matrices, or cohort \u00d7 variant test results.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "vega_lite",
+    "module": "scripts/make_heatmap.py",
+    "callable_name": "make_heatmap",
+    "required_roles": [
+      {
+        "name": "day",
+        "label": "Row category",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "hour",
+        "label": "Column category",
+        "accepted_types": [
+          "categorical",
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "activity",
+        "label": "Cell value",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 900,
+    "default_height": 600,
+    "options_schema": {},
+    "warnings": [
+      "Default output path falls back to a shared assets/ directory"
+    ]
+  },
+  {
     "kind": "hexbin-map",
     "label": "Hexbin Map",
     "aliases": [
@@ -1000,6 +1195,42 @@
     "warnings": [
       "No DEMO_DATA in make_hexmap.py",
       "No callable named 'make_hexmap' in make_hexmap.py",
+      "Default output path falls back to a shared assets/ directory"
+    ]
+  },
+  {
+    "kind": "histogram",
+    "label": "Histogram",
+    "aliases": [],
+    "category": "Distribution",
+    "description": "Bins a single numeric variable and counts observations per bin. The default chart for understanding a distribution's shape, spread, and skew.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "vega_lite",
+    "module": "scripts/make_histogram.py",
+    "callable_name": "make_histogram",
+    "required_roles": [
+      {
+        "name": "score",
+        "label": "Numeric value to bin",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 900,
+    "default_height": 600,
+    "options_schema": {},
+    "warnings": [
       "Default output path falls back to a shared assets/ directory"
     ]
   },
@@ -1147,6 +1378,60 @@
     "warnings": [
       "No DEMO_DATA in make_liftgain.py",
       "No callable named 'make_liftgain' in make_liftgain.py",
+      "Default output path falls back to a shared assets/ directory"
+    ]
+  },
+  {
+    "kind": "line",
+    "label": "Line",
+    "aliases": [],
+    "category": "Time series",
+    "description": "Multi-series line chart with points, the default for showing how a numeric value evolves over an ordered axis. Use for monthly revenue by product line, daily active users, sensor readings.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "vega_lite",
+    "module": "scripts/make_line.py",
+    "callable_name": "make_line",
+    "required_roles": [
+      {
+        "name": "month",
+        "label": "Ordinal/temporal axis",
+        "accepted_types": [
+          "categorical",
+          "datetime"
+        ],
+        "required": true
+      },
+      {
+        "name": "value",
+        "label": "Value",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [
+      {
+        "name": "series",
+        "label": "Series / grouping",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": false
+      }
+    ],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 900,
+    "default_height": 600,
+    "options_schema": {},
+    "warnings": [
       "Default output path falls back to a shared assets/ directory"
     ]
   },
@@ -1834,6 +2119,67 @@
     "warnings": [
       "No DEMO_DATA in make_sankey.py",
       "No callable named 'make_sankey' in make_sankey.py",
+      "Default output path falls back to a shared assets/ directory"
+    ]
+  },
+  {
+    "kind": "scatter",
+    "label": "Scatter",
+    "aliases": [],
+    "category": "Relationship",
+    "description": "Plots two numeric variables against each other, with optional color and size encodings. The default chart for revealing correlation, clusters, or outliers.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "vega_lite",
+    "module": "scripts/make_scatter.py",
+    "callable_name": "make_scatter",
+    "required_roles": [
+      {
+        "name": "horsepower",
+        "label": "X value",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "mpg",
+        "label": "Y value",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [
+      {
+        "name": "segment",
+        "label": "Color grouping",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": false
+      },
+      {
+        "name": "weight",
+        "label": "Size",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": false
+      }
+    ],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 900,
+    "default_height": 600,
+    "options_schema": {},
+    "warnings": [
       "Default output path falls back to a shared assets/ directory"
     ]
   },
