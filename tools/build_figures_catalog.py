@@ -74,6 +74,62 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
             {"name": "kind", "label": "Bar kind (total/positive/negative)", "accepted_types": ["categorical"], "required": False},
         ],
     },
+    "bar": {
+        "required_roles": [
+            {"name": "region", "label": "Category", "accepted_types": ["categorical"], "required": True},
+            {"name": "value", "label": "Value", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "line": {
+        "required_roles": [
+            {"name": "month", "label": "Ordinal/temporal axis", "accepted_types": ["categorical", "datetime"], "required": True},
+            {"name": "value", "label": "Value", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [
+            {"name": "series", "label": "Series / grouping", "accepted_types": ["categorical"], "required": False},
+        ],
+    },
+    "area": {
+        "required_roles": [
+            {"name": "month", "label": "Ordinal/temporal axis", "accepted_types": ["categorical", "datetime"], "required": True},
+            {"name": "visits", "label": "Value", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [
+            {"name": "channel", "label": "Series / grouping (stacked)", "accepted_types": ["categorical"], "required": False},
+        ],
+    },
+    "scatter": {
+        "required_roles": [
+            {"name": "horsepower", "label": "X value", "accepted_types": ["numeric"], "required": True},
+            {"name": "mpg", "label": "Y value", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [
+            {"name": "segment", "label": "Color grouping", "accepted_types": ["categorical"], "required": False},
+            {"name": "weight", "label": "Size", "accepted_types": ["numeric"], "required": False},
+        ],
+    },
+    "histogram": {
+        "required_roles": [
+            {"name": "score", "label": "Numeric value to bin", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "boxplot": {
+        "required_roles": [
+            {"name": "department", "label": "Category", "accepted_types": ["categorical"], "required": True},
+            {"name": "salary", "label": "Numeric value", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "heatmap": {
+        "required_roles": [
+            {"name": "day", "label": "Row category", "accepted_types": ["categorical"], "required": True},
+            {"name": "hour", "label": "Column category", "accepted_types": ["categorical", "numeric"], "required": True},
+            {"name": "activity", "label": "Cell value", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
 }
 
 

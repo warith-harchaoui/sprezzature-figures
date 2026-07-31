@@ -1,18 +1,18 @@
 # Figure Catalogue
 
-83 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type).
+90 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type).
 
 Invoke via:
 
 ```python
 from sprezzature_figures import make_figure
-path = make_figure("treemap", data, out="output.png")
+path = make_figure("bar", data, out="output.png")
 ```
 
 or via CLI:
 
 ```bash
-make-figure treemap --out output.png --title "Budget breakdown"
+make-figure bar --out output.png --title "Revenue by region"
 ```
 
 Only `status="stable"` kinds are render-verified end to end today — run
@@ -26,12 +26,15 @@ for the current per-chart status.
 | `alluvial` | make_alluvial.py | Flow | Trace how categorical populations shift across multiple sequential stages (e.g., patient treatment paths, hiring funnel). Use over sankey when stages are time-ordered and each row belongs to exactly one bin per stage. |
 | `andrews` | make_andrews.py | Multivariate | Project multivariate observations as Fourier curves. Clusters of similar rows become visually coincident curves — use for detecting clusters or outliers in high-dimensional data before running PCA. |
 | `arcdiagram` | make_arcdiagram.py | Network | Show pairwise connections along a linear node axis. Ideal for sequences where crossing arcs reveal unexpected long-range dependencies (e.g., citation links, gene co-expression). |
+| `area` | make_area.py | Composition | Stacked area chart showing how a whole made of several categories evolves over an ordered axis. Use for traffic by channel, cumulative headcount, or resource usage over time. |
+| `bar` | make_bar.py | Comparison | Grouped bar chart comparing a numeric value across a handful of categories. The default chart for straightforward category comparisons (revenue by region, headcount by department). |
 | `bar3d` | make_bar3d.py | Comparison | 3-D bar chart for a 2-D categorical grid (row × column → height). Use only when a third dimension adds genuine information; prefer grouped or stacked bar for most comparisons. |
 | `bellcurve` | make_bellcurve.py | Distribution | Overlay a fitted Normal curve on a histogram. Use to test whether a sample is approximately Gaussian or to annotate mean ± σ reference lines for a report audience. |
 | `binned-grid-map` | make_binned-grid-map.py | Geospatial | Aggregate point events into equal-area hexagonal or square grid cells on a map. Use when raw point density is too high to read (e.g., taxi pickups, earthquake epicentres). |
 | `blandaltman` | make_blandaltman.py | Agreement | Plot mean of two measurements vs. their difference (Bland-Altman / Tukey mean-difference). Required for method-comparison studies in clinical or engineering contexts. |
 | `bollinger` | make_bollinger.py | Finance | Time-series price line with Bollinger Bands (rolling mean ± 2σ). Use to visualise volatility regimes and overbought/oversold signals in financial or sensor data. |
 | `boxen` | make_boxen.py | Distribution | Letter-value / "boxen" plot: extends the box plot with additional quantile boxes. Use for large samples (n > 10 000) where a standard box plot hides distributional detail. |
+| `boxplot` | make_boxplot.py | Distribution | Box plot summarising median, quartiles, and outliers per category via Vega-Lite's native boxplot mark. Use for salary by department, response time by service, scores by class. |
 | `bullet` | make_bullet.py | KPI | Bullet chart: a single bar against a reference measure and qualitative performance bands. The compact alternative to a gauge for dashboards with many KPIs. |
 | `calibration` | make_calibration.py | Model evaluation | Plot predicted probability vs. observed frequency. Use after training a classifier to check whether its scores are well-calibrated (reliable confidence estimates). |
 | `chord` | make_chord.py | Flow | Circular chord diagram for symmetric or directed flows between categories. Use when every pair of categories can exchange and the total volume matters (e.g., migration between countries). |
@@ -54,13 +57,16 @@ for the current per-chart status.
 | `gapminder_variants` | make_gapminder_variants.py | Animated bubble | Regional or subset variants of the Gapminder chart. |
 | `gauge` | make_gauge.py | KPI | Semicircular gauge dial. Use for a single KPI read at a glance; prefer bullet charts in text-heavy reports. |
 | `globe3d` | make_globe3d.py | Geospatial | Rotatable 3-D globe with choropleth or point data. Use for global data where Mercator distortion would mislead (e.g., polar phenomena). |
+| `heatmap` | make_heatmap.py | Matrix / Image | Row × column matrix with cell color encoding a numeric value. Use for activity by day-of-week × hour, correlation matrices, or cohort × variant test results. |
 | `hexbin-map` | make_hexbin-map.py | Geospatial | US (or world) map where equal-area hexagons replace geographic regions. Eliminates size-biased area distortion from choropleth maps. |
 | `hexmap` | make_hexmap.py | Geospatial | Generic hexagonal binning map. Use for local or regional point density where standard hexbin-map doesn't fit. |
+| `histogram` | make_histogram.py | Distribution | Bins a single numeric variable and counts observations per bin. The default chart for understanding a distribution's shape, spread, and skew. |
 | `horizon` | make_horizon.py | Time series | Horizon chart: fold a time series at regular intervals and overlay bands. Enables many series in compact vertical space (e.g., server metrics, sensor arrays). |
 | `icicle` | make_icicle.py | Hierarchy | Top-down rectangular treemap (icicle / flame chart). Use to show execution profiles, file-system trees, or budget breakdowns where reading order matters. |
 | `imshow-interpolated` | make_imshow-interpolated.py | Matrix / Image | Display a 2-D matrix as a heatmap with smooth interpolation. Use for spatial fields (temperature grids, image patches) rather than discrete data. |
 | `jointplot` | make_jointplot.py | Bivariate distribution | Central scatter or hexbin with marginal histograms or KDE on each axis. Use to show bivariate distribution and its univariate projections simultaneously. |
 | `liftgain` | make_liftgain.py | Model evaluation | Lift and gain curves for binary classifiers. Use to evaluate how much better than random a model performs when targeting the top N% of a population. |
+| `line` | make_line.py | Time series | Multi-series line chart with points, the default for showing how a numeric value evolves over an ordered axis. Use for monthly revenue by product line, daily active users, sensor readings. |
 | `liquid-gauge` | make_liquid-gauge.py | KPI | Animated liquid fill gauge (wave inside a circle). Use for a single percentage KPI in consumer-facing dashboards where animation adds appeal. |
 | `manhattan` | make_manhattan.py | Genomics / Statistics | Manhattan plot: −log₁₀(p-value) vs. genomic position. The standard chart for genome-wide association study (GWAS) results. |
 | `mosaic` | make_mosaic.py | Categorical | Mosaic (Marimekko) plot: tile area encodes joint frequency of two categorical variables. Use to show contingency tables and test independence visually. |
@@ -84,6 +90,7 @@ for the current per-chart status.
 | `rose` | make_rose.py | Cyclic | Polar area chart (Nightingale rose). Use to show magnitude in directional or seasonal data where the angle encodes a cyclic category. |
 | `rug` | make_rug.py | Distribution | 1-D tick marks along an axis showing individual data points. Use as a supplement to a KDE or histogram to expose sample size and individual-point positions. |
 | `sankey` | make_sankey.py | Flow | Sankey diagram: flows between nodes with width proportional to volume. Use for energy balance, budget allocation, or any source → sink flow across categories. |
+| `scatter` | make_scatter.py | Relationship | Plots two numeric variables against each other, with optional color and size encodings. The default chart for revealing correlation, clusters, or outliers. |
 | `scatter3d` | make_scatter3d.py | 3-D | Interactive 3-D scatter plot for three continuous variables. Use when a 2-D projection loses important structure (e.g., embedding manifolds). |
 | `sfdp-largegraph` | make_sfdp-largegraph.py | Network | Scalable Force-Directed Placement for large graphs (thousands of nodes). Use when standard force-directed layouts become too slow or cluttered. |
 | `situation_map` | make_situation_map.py | Geospatial | Annotated situation map with icons and labels at specific coordinates. Use for field operations, logistics, or incident mapping. |

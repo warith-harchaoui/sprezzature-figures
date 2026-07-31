@@ -5,8 +5,8 @@ for the full spec; not itself committed). Branch: `feature/sprezzature-studio`.
 
 ## Phase
 
-Phase 2 (§3 — catalogue/dispatcher) and Phase 3 (§4 — core domain models,
-§5 — ingest) complete. Commits 1-5 of 13 landed.
+Phase 2 (§3), Phase 3 (§4-§5), and the "basic figures" half of Phase 4 (§7)
+complete. Commits 1-6 of 13 landed.
 
 ## Completed
 
@@ -107,17 +107,60 @@ Phase 2 (§3 — catalogue/dispatcher) and Phase 3 (§4 — core domain models,
     branch — now checked as a matter of course for every new subpackage).
   - 33 new tests in `tests/ingest/test_ingest.py`, including regression
     tests for both bugs above.
+- **Commit 6 — Basic Vega-Lite figures** (`scripts/make_{bar,line,area,
+  scatter,histogram,boxplot,heatmap}.py`). Seven new self-contained
+  generators following the exact existing house pattern (same
+  INK/SECONDARY/BG/GRIDLINE/FONT constants, `_render.svg_example_path`/
+  `write_svg` epilogue, argparse CLI, `DEMO_DATA` + `make_<kind>(data, *,
+  out, title, ...) -> Path`) — deliberately not a new abstraction, matching
+  plan §21.2 ("don't rewrite historical scripts en masse", extended here to
+  "match their pattern for new ones too").
+  - `make_bar.py`'s `DEMO_DATA` is literally the original README example
+    data (`region`/`value`, North/South/East/West) — this is what finally
+    makes `make_figure("bar", ...)` true again instead of needing the
+    `treemap` substitution from Commit 3b.
+  - Visually spot-checked 3 of the 7 (bar, scatter, heatmap) by rendering to
+    PNG and viewing them directly before trusting the automated tests —
+    caught nothing wrong, but this is the check that would have caught it
+    (e.g. the scatter size legend's auto-rounded 0-1500 domain against
+    1100-1900 actual data range is a little loose but not misleading;
+    left as-is, not a defect).
+  - Registered in `tools/build_figures_catalog.py`'s `HAND_ROLES` (required/
+    optional roles for the recommendation engine, Commit 6 of the plan's
+    own §6) and in `FIGURES.md`'s table at the correct alphabetical
+    position, with real category/description text — not left to the
+    generation script's `"Uncategorized"`/empty-string fallback.
+  - Re-ran `tools/audit_generators.py --render` + `tools/build_figures_catalog.py`:
+    **12 of 90 figures now `stable`** (`bar`, `line`, `area`, `scatter`,
+    `histogram`, `boxplot`, `heatmap`, plus the 5 from before) — clears the
+    plan §17 MVP acceptance bar of ≥10 stable figures.
+  - README.md/LISEZMOI.md: restored the `bar` example (real now, no longer
+    needs the `treemap` stand-in), and regenerated the "quick overview"
+    category table *programmatically* from `figures.json` rather than
+    hand-editing it — this incidentally caught a pre-existing omission
+    (`imshow-interpolated`, category "Matrix / Image", was missing from the
+    table entirely) and fixed the miscounted category total (19 → 21, since
+    "Matrix / Image" and "Relationship" are genuinely new buckets). All
+    counts (90 chart types, 90 `make_*.py` scripts, 21 categories) now
+    verified against the registry rather than hand-maintained.
+  - No packaging surprises this time: `scripts/*.py` ships via the existing
+    `sprezzature_figures_scripts` package registration (plain module files
+    in an already-registered package are auto-included; unlike `catalog`/
+    `core`/`studio`, no new package-data or packages-list entry was needed).
+    Verified anyway with the `-m packaging` wheel-build test.
 
 ## Figures currently `stable`
 
-Per the latest `--render` audit run: `columnrange`, `funnel`, `sunburst`,
-`treemap`, `waterfall` (5 of 83). Target for MVP acceptance (plan §17): ≥10.
+Per the latest `--render` audit run (90 generators total):
+`bar`, `line`, `area`, `scatter`, `histogram`, `boxplot`, `heatmap`,
+`columnrange`, `funnel`, `sunburst`, `treemap`, `waterfall` (12 of 90).
+Clears the plan §17 MVP acceptance bar of ≥10 stable figures.
 
 ## Tests run
 
 ```
-python3 -m pytest -q                              # 75 passed, 9 deselected
-python3 -m pytest -q -m slow                       # 8 passed, 29 deselected (unchanged)
+python3 -m pytest -q                              # 75 passed, 16 deselected
+python3 -m pytest -q -m slow                       # 15 passed, 76 deselected
 python3 -m pytest -q -m packaging tests/test_packaging.py   # 1 passed (~11s, needs network)
 ruff check sprezzature_figures tools tests          # clean
 ```
@@ -148,8 +191,8 @@ ruff check sprezzature_figures tools tests          # clean
 
 ## Next
 
-Commit 6 — stable basic Vega-Lite figures (bar/line/area/scatter/histogram/
-boxplot/heatmap) using the same registry/render contract as the specialized
-figures. This is also where the long-invalid `make_figure("bar", ...)`
-example in the docs finally becomes literally true again instead of needing
-the `treemap` substitution from Commit 3b.
+Commit 7 — adapt initial specialized figures (treemap and funnel are already
+stable; dumbbell, difference-chart, waffle still need the `make_<kind>`
+contract; sankey needs a real rewrite to accept data instead of hardcoded
+`NODES`/`LINKS` before it can be exposed at all, per plan §7's explicit
+condition).

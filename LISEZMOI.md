@@ -7,7 +7,7 @@
 
 [![logo](assets/logo.png)](https://harchaoui.org/warith/sprezzature/)
 
-83 types de graphiques de qualité publication — Vega-Lite, Vega complet et matplotlib/SVG — utilisables comme bibliothèque Python ou en ligne de commande.
+90 types de graphiques de qualité publication — Vega-Lite, Vega complet et matplotlib/SVG — utilisables comme bibliothèque Python ou en ligne de commande.
 
 Fait partie de la suite [sprezzature](https://harchaoui.org/warith/sprezzature/).
 
@@ -35,20 +35,22 @@ pip install "sprezzature-figures[cli]"
 from sprezzature_figures import make_figure
 
 donnees = [
-    {"parent": "Marketing",    "name": "Recherche payante", "value": 42},
-    {"parent": "Marketing",    "name": "Social",            "value": 28},
-    {"parent": "Ingénierie",   "name": "Plateforme",        "value": 19},
-    {"parent": "Ingénierie",   "name": "Mobile",            "value": 11},
+    {"region": "Nord",  "value": 42},
+    {"region": "Sud",   "value": 28},
+    {"region": "Est",   "value": 19},
+    {"region": "Ouest", "value": 11},
 ]
-chemin = make_figure("treemap", donnees, out="budget.png", title="Budget par équipe")
-print(chemin)  # PosixPath('budget.png')
+chemin = make_figure("bar", donnees, out="revenu.png", title="Revenu par région")
+print(chemin)  # PosixPath('revenu.png')
 ```
 
 `make_figure()` accepte n'importe quel type enregistré, mais seuls les types
 `status="stable"` sont aujourd'hui vérifiés par rendu — voir
 [docs/studio/GENERATOR_AUDIT.md](docs/studio/GENERATOR_AUDIT.md) pour le
-statut de chacun des 83 types, et `make-figure --list --status stable` pour
-la liste de ceux qui fonctionnent dès maintenant.
+statut de chacun des 90 types, et `make-figure --list --status stable` pour
+la liste de ceux qui fonctionnent dès maintenant (12 à ce jour : `bar`,
+`line`, `area`, `scatter`, `histogram`, `boxplot`, `heatmap`, `columnrange`,
+`funnel`, `sunburst`, `treemap`, `waterfall`).
 
 ### En ligne de commande
 
@@ -57,38 +59,40 @@ la liste de ceux qui fonctionnent dès maintenant.
 make-figure --list
 
 # Générer un graphique avec ses données de démonstration intégrées
+make-figure bar --out revenu.png --title "Revenu par région"
 make-figure treemap --out budget.png --title "Décomposition du budget"
 make-figure funnel --out entonnoir.png
-make-figure waterfall --out cascade.png
 ```
 
 ---
 
 ## Catalogue des graphiques
 
-83 types de graphiques dans 19 catégories. Voir [FIGURES.md](FIGURES.md) pour le tableau complet.
+90 types de graphiques dans 21 catégories. Voir [FIGURES.md](FIGURES.md) pour le tableau complet.
 
 | Catégorie | Graphiques |
 |-----------|------------|
-| Comparaison | bar3d, bullet, columnrange, dotplot, dumbbell, pareto, variwide |
-| Composition | circle-packing, mosaic, packed-bubble, parliament, pictorial, sunburst, treemap, waffle |
-| Distribution | andrews, bellcurve, boxen, jointplot, pairplot, ridgeline, rug |
-| Flux | alluvial, chord, dependency-wheel, funnel, parallel-sets, sankey, streamgraph |
+| Comparaison | bar, bar3d, columnrange, difference-chart, dotplot, dumbbell, packed-bubble, pareto, radial-bar, variwide, waterfall |
+| Composition | area, parliament, pictorial, ternary, waffle |
+| Distribution | bellcurve, blandaltman, boxen, boxplot, histogram, mosaic, ridgeline, rug |
+| Flux | alluvial, chord, funnel, parallel-sets, sankey |
 | Géospatial | binned-grid-map, dotdensity, globe3d, hexbin-map, hexmap, situation_map, spike-map, voronoi |
-| Hiérarchie | dendrogram, icicle, org-chart, radial-tree, tree |
-| KPI | gauge, liquid-gauge |
+| Hiérarchie | circle-packing, convex-hull, dendrogram, icicle, org-chart, radial-tree, sunburst, tree, treemap |
+| KPI | bullet, gauge, liquid-gauge |
+| Matrice / Image | heatmap, imshow-interpolated |
 | Météorologie | windbarb, windrose |
-| Évaluation de modèles | calibration, liftgain, prcurve |
-| Réseau | arcdiagram, edge-bundling, network, sfdp-largegraph |
-| Régression | blandaltman, ppplot, residual |
-| Signal | spectrogram |
+| Évaluation de modèles | calibration, liftgain, manhattan, ppplot, prcurve |
+| Réseau | arcdiagram, dependency-wheel, edge-bundling, network, sfdp-largegraph |
+| Régression | residual |
+| Relation | scatter |
+| Signal | spectrogram, streamplot |
 | Texte | wordcloud |
 | 3D | scatter3d, wireframe3d |
-| Série temporelle | bollinger, connected-scatter, difference-chart, horizon, streamplot, timeline |
-| Multivarié | convex-hull, embedding_projector, polar, radar, radial-bar, radviz, ternary, venn, upset |
+| Série temporelle | bollinger, connected-scatter, horizon, line, streamgraph, timeline |
+| Multivarié | andrews, embedding_projector, jointplot, pairplot, radar, radviz, upset, venn |
 | Méta-analyse | forest |
-| Animé | gapminder |
-| Autre | rose, speaking_time |
+| Animé | gapminder, gapminder_variants |
+| Autre | polar, rose, speaking_time |
 
 ---
 
@@ -104,7 +108,7 @@ sprezzature-figures/
 ├── scripts/
 │   ├── make_treemap.py            # script autonome par type de graphique
 │   ├── make_connected-scatter.py  # les types avec tiret sont supportés
-│   └── ...                        # 83 scripts make_*.py au total
+│   └── ...                        # 90 scripts make_*.py au total
 ├── assets/
 │   ├── vega-examples/     # spécifications Vega-Lite et Vega
 │   └── svg-examples/      # gabarits SVG
@@ -112,7 +116,7 @@ sprezzature-figures/
 └── tests/
 ```
 
-Chaque script `make_<type>.py` est autonome : il importe ce dont il a besoin, définit `make_<type>(donnees, *, out=None, title="", ...) -> Path` et expose une liste `DEMO_DATA` pour la CLI et les tests. `make_figure()` résout le type via `sprezzature_figures/catalog/figures.json` plutôt que de deviner le nom de fichier — voir [docs/studio/GENERATOR_AUDIT.md](docs/studio/GENERATOR_AUDIT.md) pour savoir lesquels des 83 scripts respectent déjà ce contrat.
+Chaque script `make_<type>.py` est autonome : il importe ce dont il a besoin, définit `make_<type>(donnees, *, out=None, title="", ...) -> Path` et expose une liste `DEMO_DATA` pour la CLI et les tests. `make_figure()` résout le type via `sprezzature_figures/catalog/figures.json` plutôt que de deviner le nom de fichier — voir [docs/studio/GENERATOR_AUDIT.md](docs/studio/GENERATOR_AUDIT.md) pour savoir lesquels des 90 scripts respectent déjà ce contrat.
 
 ---
 

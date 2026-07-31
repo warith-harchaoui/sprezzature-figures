@@ -1,6 +1,6 @@
 {
   "summary": {
-    "stable": 5,
+    "stable": 12,
     "experimental": 0,
     "legacy": 78,
     "unavailable": 0
@@ -80,6 +80,54 @@
       "errors": [
         "No DEMO_DATA in make_arcdiagram.py",
         "No callable named 'make_arcdiagram' in make_arcdiagram.py",
+        "Default output path falls back to a shared assets/ directory"
+      ]
+    },
+    {
+      "kind": "area",
+      "filename": "make_area.py",
+      "hyphenated_kind": false,
+      "dispatcher_reachable_by_kind": true,
+      "importable": true,
+      "import_error": null,
+      "expected_callable": "make_area",
+      "callable_exists": true,
+      "demo_data_exists": true,
+      "demo_data_len": 48,
+      "accepts_data": true,
+      "accepts_out": true,
+      "accepts_title": true,
+      "renderer": "vega_lite",
+      "writes_hardcoded_path": true,
+      "hardcoded_dimensions": true,
+      "render_test": "passed",
+      "render_error": null,
+      "status": "stable",
+      "errors": [
+        "Default output path falls back to a shared assets/ directory"
+      ]
+    },
+    {
+      "kind": "bar",
+      "filename": "make_bar.py",
+      "hyphenated_kind": false,
+      "dispatcher_reachable_by_kind": true,
+      "importable": true,
+      "import_error": null,
+      "expected_callable": "make_bar",
+      "callable_exists": true,
+      "demo_data_exists": true,
+      "demo_data_len": 4,
+      "accepts_data": true,
+      "accepts_out": true,
+      "accepts_title": true,
+      "renderer": "vega_lite",
+      "writes_hardcoded_path": true,
+      "hardcoded_dimensions": true,
+      "render_test": "passed",
+      "render_error": null,
+      "status": "stable",
+      "errors": [
         "Default output path falls back to a shared assets/ directory"
       ]
     },
@@ -234,6 +282,30 @@
       "errors": [
         "No DEMO_DATA in make_boxen.py",
         "No callable named 'make_boxen' in make_boxen.py"
+      ]
+    },
+    {
+      "kind": "boxplot",
+      "filename": "make_boxplot.py",
+      "hyphenated_kind": false,
+      "dispatcher_reachable_by_kind": true,
+      "importable": true,
+      "import_error": null,
+      "expected_callable": "make_boxplot",
+      "callable_exists": true,
+      "demo_data_exists": true,
+      "demo_data_len": 100,
+      "accepts_data": true,
+      "accepts_out": true,
+      "accepts_title": true,
+      "renderer": "vega_lite",
+      "writes_hardcoded_path": true,
+      "hardcoded_dimensions": true,
+      "render_test": "passed",
+      "render_error": null,
+      "status": "stable",
+      "errors": [
+        "Default output path falls back to a shared assets/ directory"
       ]
     },
     {
@@ -779,6 +851,30 @@
       ]
     },
     {
+      "kind": "heatmap",
+      "filename": "make_heatmap.py",
+      "hyphenated_kind": false,
+      "dispatcher_reachable_by_kind": true,
+      "importable": true,
+      "import_error": null,
+      "expected_callable": "make_heatmap",
+      "callable_exists": true,
+      "demo_data_exists": true,
+      "demo_data_len": 168,
+      "accepts_data": true,
+      "accepts_out": true,
+      "accepts_title": true,
+      "renderer": "vega_lite",
+      "writes_hardcoded_path": true,
+      "hardcoded_dimensions": true,
+      "render_test": "passed",
+      "render_error": null,
+      "status": "stable",
+      "errors": [
+        "Default output path falls back to a shared assets/ directory"
+      ]
+    },
+    {
       "kind": "hexbin-map",
       "filename": "make_hexbin-map.py",
       "hyphenated_kind": true,
@@ -828,6 +924,30 @@
       "errors": [
         "No DEMO_DATA in make_hexmap.py",
         "No callable named 'make_hexmap' in make_hexmap.py",
+        "Default output path falls back to a shared assets/ directory"
+      ]
+    },
+    {
+      "kind": "histogram",
+      "filename": "make_histogram.py",
+      "hyphenated_kind": false,
+      "dispatcher_reachable_by_kind": true,
+      "importable": true,
+      "import_error": null,
+      "expected_callable": "make_histogram",
+      "callable_exists": true,
+      "demo_data_exists": true,
+      "demo_data_len": 300,
+      "accepts_data": true,
+      "accepts_out": true,
+      "accepts_title": true,
+      "renderer": "vega_lite",
+      "writes_hardcoded_path": true,
+      "hardcoded_dimensions": true,
+      "render_test": "passed",
+      "render_error": null,
+      "status": "stable",
+      "errors": [
         "Default output path falls back to a shared assets/ directory"
       ]
     },
@@ -957,6 +1077,30 @@
       "errors": [
         "No DEMO_DATA in make_liftgain.py",
         "No callable named 'make_liftgain' in make_liftgain.py",
+        "Default output path falls back to a shared assets/ directory"
+      ]
+    },
+    {
+      "kind": "line",
+      "filename": "make_line.py",
+      "hyphenated_kind": false,
+      "dispatcher_reachable_by_kind": true,
+      "importable": true,
+      "import_error": null,
+      "expected_callable": "make_line",
+      "callable_exists": true,
+      "demo_data_exists": true,
+      "demo_data_len": 36,
+      "accepts_data": true,
+      "accepts_out": true,
+      "accepts_title": true,
+      "renderer": "vega_lite",
+      "writes_hardcoded_path": true,
+      "hardcoded_dimensions": true,
+      "render_test": "passed",
+      "render_error": null,
+      "status": "stable",
+      "errors": [
         "Default output path falls back to a shared assets/ directory"
       ]
     },
@@ -1557,6 +1701,30 @@
       "errors": [
         "No DEMO_DATA in make_sankey.py",
         "No callable named 'make_sankey' in make_sankey.py",
+        "Default output path falls back to a shared assets/ directory"
+      ]
+    },
+    {
+      "kind": "scatter",
+      "filename": "make_scatter.py",
+      "hyphenated_kind": false,
+      "dispatcher_reachable_by_kind": true,
+      "importable": true,
+      "import_error": null,
+      "expected_callable": "make_scatter",
+      "callable_exists": true,
+      "demo_data_exists": true,
+      "demo_data_len": 45,
+      "accepts_data": true,
+      "accepts_out": true,
+      "accepts_title": true,
+      "renderer": "vega_lite",
+      "writes_hardcoded_path": true,
+      "hardcoded_dimensions": true,
+      "render_test": "passed",
+      "render_error": null,
+      "status": "stable",
+      "errors": [
         "Default output path falls back to a shared assets/ directory"
       ]
     },

@@ -4,23 +4,26 @@ Reproducible audit of every `scripts/make_*.py` generator against the
 `make_<kind>(data, *, out, title, ...) -> Path` contract the dispatcher
 expects. Regenerate with `python tools/audit_generators.py --render`.
 
-- **stable**: 5
+- **stable**: 12
 - **experimental**: 0
 - **legacy**: 78
 - **unavailable**: 0
-- **total**: 83
+- **total**: 90
 
 | kind | status | reachable | callable | demo_data | render | errors |
 |---|---|---|---|---|---|---|
 | `alluvial` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_alluvial.py; No callable named 'make_alluvial' in make_alluvial.py |
 | `andrews` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_andrews.py; No callable named 'make_andrews' in make_andrews.py |
 | `arcdiagram` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_arcdiagram.py; No callable named 'make_arcdiagram' in make_arcdiagram.py |
+| `area` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `bar` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `bar3d` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_bar3d.py; No callable named 'make_bar3d' in make_bar3d.py |
 | `bellcurve` | legacy | yes | yes | **no** | not_run | No DEMO_DATA in make_bellcurve.py; Default output path falls back to a shared assets/ directory |
 | `binned-grid-map` | legacy | **no** | **no** | **no** | not_run | No DEMO_DATA in make_binned-grid-map.py; No callable named 'make_binned_grid_map' in make_binned-grid-map.py |
 | `blandaltman` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_blandaltman.py; No callable named 'make_blandaltman' in make_blandaltman.py |
 | `bollinger` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_bollinger.py; No callable named 'make_bollinger' in make_bollinger.py |
 | `boxen` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_boxen.py; No callable named 'make_boxen' in make_boxen.py |
+| `boxplot` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `bullet` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_bullet.py; No callable named 'make_bullet' in make_bullet.py |
 | `calibration` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_calibration.py; No callable named 'make_calibration' in make_calibration.py |
 | `chord` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_chord.py; No callable named 'make_chord' in make_chord.py |
@@ -42,13 +45,16 @@ expects. Regenerate with `python tools/audit_generators.py --render`.
 | `gapminder_variants` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_gapminder_variants.py; No callable named 'make_gapminder_variants' in make_gapminder_variants.py |
 | `gauge` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_gauge.py; No callable named 'make_gauge' in make_gauge.py |
 | `globe3d` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_globe3d.py; No callable named 'make_globe3d' in make_globe3d.py |
+| `heatmap` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `hexbin-map` | legacy | **no** | **no** | **no** | not_run | No DEMO_DATA in make_hexbin-map.py; No callable named 'make_hexbin_map' in make_hexbin-map.py |
 | `hexmap` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_hexmap.py; No callable named 'make_hexmap' in make_hexmap.py |
+| `histogram` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `horizon` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_horizon.py; No callable named 'make_horizon' in make_horizon.py |
 | `icicle` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_icicle.py; No callable named 'make_icicle' in make_icicle.py |
 | `imshow-interpolated` | legacy | **no** | **no** | **no** | not_run | No DEMO_DATA in make_imshow-interpolated.py; No callable named 'make_imshow_interpolated' in make_imshow-interpolated.py |
 | `jointplot` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_jointplot.py; No callable named 'make_jointplot' in make_jointplot.py |
 | `liftgain` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_liftgain.py; No callable named 'make_liftgain' in make_liftgain.py |
+| `line` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `liquid-gauge` | legacy | **no** | **no** | **no** | not_run | No DEMO_DATA in make_liquid-gauge.py; No callable named 'make_liquid_gauge' in make_liquid-gauge.py |
 | `manhattan` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_manhattan.py; No callable named 'make_manhattan' in make_manhattan.py |
 | `mosaic` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_mosaic.py; No callable named 'make_mosaic' in make_mosaic.py |
@@ -72,6 +78,7 @@ expects. Regenerate with `python tools/audit_generators.py --render`.
 | `rose` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_rose.py; No callable named 'make_rose' in make_rose.py |
 | `rug` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_rug.py; No callable named 'make_rug' in make_rug.py |
 | `sankey` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_sankey.py; No callable named 'make_sankey' in make_sankey.py |
+| `scatter` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `scatter3d` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_scatter3d.py; No callable named 'make_scatter3d' in make_scatter3d.py |
 | `sfdp-largegraph` | legacy | **no** | **no** | **no** | not_run | No DEMO_DATA in make_sfdp-largegraph.py; No callable named 'make_sfdp_largegraph' in make_sfdp-largegraph.py |
 | `situation_map` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_situation_map.py; No callable named 'make_situation_map' in make_situation_map.py |

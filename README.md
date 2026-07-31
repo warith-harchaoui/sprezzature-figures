@@ -7,7 +7,7 @@
 
 [![logo](https://raw.githubusercontent.com/warith-harchaoui/sprezzature-figures/main/assets/logo.png)](https://harchaoui.org/warith/sprezzature/)
 
-83 publication-quality chart types — Vega-Lite, full Vega, and matplotlib/SVG — callable as a Python library or a CLI command.
+90 publication-quality chart types — Vega-Lite, full Vega, and matplotlib/SVG — callable as a Python library or a CLI command.
 
 Part of the [sprezzature](https://harchaoui.org/warith/sprezzature/) suite.
 
@@ -35,20 +35,22 @@ pip install "sprezzature-figures[cli]"
 from sprezzature_figures import make_figure
 
 data = [
-    {"parent": "Marketing",   "name": "Paid search", "value": 42},
-    {"parent": "Marketing",   "name": "Social",       "value": 28},
-    {"parent": "Engineering", "name": "Platform",     "value": 19},
-    {"parent": "Engineering", "name": "Mobile",       "value": 11},
+    {"region": "North", "value": 42},
+    {"region": "South", "value": 28},
+    {"region": "East",  "value": 19},
+    {"region": "West",  "value": 11},
 ]
-path = make_figure("treemap", data, out="budget.png", title="Budget by team")
-print(path)  # PosixPath('budget.png')
+path = make_figure("bar", data, out="revenue.png", title="Revenue by region")
+print(path)  # PosixPath('revenue.png')
 ```
 
 `make_figure()` will attempt any registered chart kind, but only
 `status="stable"` kinds are currently render-verified end to end — see
 [docs/studio/GENERATOR_AUDIT.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/docs/studio/GENERATOR_AUDIT.md)
-for the per-chart status of all 83 types, and `make-figure --list --status stable`
-for the ones that render today.
+for the per-chart status of all 90 types, and `make-figure --list --status stable`
+for the ones that render today (12 as of this writing: `bar`, `line`, `area`,
+`scatter`, `histogram`, `boxplot`, `heatmap`, `columnrange`, `funnel`,
+`sunburst`, `treemap`, `waterfall`).
 
 ### As a CLI command
 
@@ -57,40 +59,42 @@ for the ones that render today.
 make-figure --list
 
 # Render a chart using its built-in demo data
+make-figure bar --out revenue.png --title "Revenue by region"
 make-figure treemap --out budget.png --title "Budget breakdown"
 make-figure funnel --out funnel.png
-make-figure waterfall --out waterfall.png
 ```
 
 ---
 
 ## Chart catalogue
 
-83 chart types across 19 categories. See [FIGURES.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/FIGURES.md) for the full table with per-chart guidance on when to use each type.
+90 chart types across 21 categories. See [FIGURES.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/FIGURES.md) for the full table with per-chart guidance on when to use each type.
 
 Quick overview:
 
 | Category | Charts |
 |----------|--------|
-| Comparison | bar3d, bullet, columnrange, dotplot, dumbbell, pareto, variwide |
-| Composition | circle-packing, mosaic, packed-bubble, parliament, pictorial, sunburst, treemap, waffle |
-| Distribution | andrews, bellcurve, boxen, jointplot, pairplot, ridgeline, rug |
-| Flow | alluvial, chord, dependency-wheel, funnel, parallel-sets, sankey, streamgraph |
+| Comparison | bar, bar3d, columnrange, difference-chart, dotplot, dumbbell, packed-bubble, pareto, radial-bar, variwide, waterfall |
+| Composition | area, parliament, pictorial, ternary, waffle |
+| Distribution | bellcurve, blandaltman, boxen, boxplot, histogram, mosaic, ridgeline, rug |
+| Flow | alluvial, chord, funnel, parallel-sets, sankey |
 | Geospatial | binned-grid-map, dotdensity, globe3d, hexbin-map, hexmap, situation_map, spike-map, voronoi |
-| Hierarchy | dendrogram, icicle, org-chart, radial-tree, tree |
-| KPI | gauge, liquid-gauge |
+| Hierarchy | circle-packing, convex-hull, dendrogram, icicle, org-chart, radial-tree, sunburst, tree, treemap |
+| KPI | bullet, gauge, liquid-gauge |
+| Matrix / Image | heatmap, imshow-interpolated |
 | Meteorology | windbarb, windrose |
-| Model evaluation | calibration, liftgain, prcurve |
-| Network | arcdiagram, edge-bundling, network, sfdp-largegraph |
-| Regression | blandaltman, ppplot, residual |
-| Signal | spectrogram |
+| Model evaluation | calibration, liftgain, manhattan, ppplot, prcurve |
+| Network | arcdiagram, dependency-wheel, edge-bundling, network, sfdp-largegraph |
+| Regression | residual |
+| Relationship | scatter |
+| Signal | spectrogram, streamplot |
 | Text | wordcloud |
 | 3-D | scatter3d, wireframe3d |
-| Time series | bollinger, connected-scatter, difference-chart, horizon, streamplot, timeline |
-| Multivariate | convex-hull, embedding_projector, polar, radar, radial-bar, radviz, ternary, venn, upset |
+| Time series | bollinger, connected-scatter, horizon, line, streamgraph, timeline |
+| Multivariate | andrews, embedding_projector, jointplot, pairplot, radar, radviz, upset, venn |
 | Meta-analysis | forest |
-| Animated | gapminder |
-| Other | rose, speaking_time |
+| Animated | gapminder, gapminder_variants |
+| Other | polar, rose, speaking_time |
 
 ---
 
@@ -106,7 +110,7 @@ sprezzature-figures/
 ├── scripts/
 │   ├── make_treemap.py            # self-contained chart script
 │   ├── make_connected-scatter.py  # hyphenated kinds are supported
-│   └── ...                        # 83 make_*.py scripts total
+│   └── ...                        # 90 make_*.py scripts total
 ├── assets/
 │   ├── vega-examples/     # Vega-Lite and full-Vega spec examples
 │   └── svg-examples/      # SVG template examples
@@ -114,7 +118,7 @@ sprezzature-figures/
 └── tests/
 ```
 
-Each `make_<kind>.py` script is self-contained: it imports what it needs, defines `make_<kind>(data, *, out=None, title="", ...) -> Path` and exposes a `DEMO_DATA` list for CLI and test use. `make_figure()` resolves the kind through `sprezzature_figures/catalog/figures.json` rather than guessing the filename — see [docs/studio/GENERATOR_AUDIT.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/docs/studio/GENERATOR_AUDIT.md) for which of the 83 scripts currently satisfy this contract.
+Each `make_<kind>.py` script is self-contained: it imports what it needs, defines `make_<kind>(data, *, out=None, title="", ...) -> Path` and exposes a `DEMO_DATA` list for CLI and test use. `make_figure()` resolves the kind through `sprezzature_figures/catalog/figures.json` rather than guessing the filename — see [docs/studio/GENERATOR_AUDIT.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/docs/studio/GENERATOR_AUDIT.md) for which of the 90 scripts currently satisfy this contract.
 
 ---
 
