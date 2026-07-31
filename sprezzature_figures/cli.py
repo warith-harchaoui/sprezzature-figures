@@ -27,16 +27,23 @@ except ImportError:
         )
         sys.exit(1)
 else:
-    from .make_figure import list_kinds, make_figure
+    from .catalog import resolve_kind
+    from .make_figure import _demo_data_for, list_kinds, make_figure
 
     @click.group()
     def main() -> None:  # type: ignore[misc]
         """sprezzature-figures: render publication-quality data figures."""
 
     @main.command("list")
-    def list_cmd() -> None:
+    @click.option(
+        "--status",
+        default=None,
+        type=click.Choice(["stable", "experimental", "legacy", "unavailable"]),
+        help="Only show kinds with this status.",
+    )
+    def list_cmd(status: str | None) -> None:
         """Print all available chart kind names."""
-        kinds = list_kinds()
+        kinds = list_kinds(status=status)
         click.echo(f"{len(kinds)} chart types available:")
         for k in kinds:
             click.echo(f"  {k}")
@@ -47,25 +54,13 @@ else:
     @click.option("--title", default="", help="Chart title.")
     def render_cmd(kind: str, out: str | None, title: str) -> None:
         """Render KIND using its DEMO_DATA. KIND is a chart type name."""
-        import importlib.util
-        import sys as _sys
-
-        from .make_figure import _SCRIPTS_DIR
-
-        normalised = kind.lower().strip().replace("-", "_").replace(" ", "_")
-        candidate = _SCRIPTS_DIR / f"make_{normalised}.py"
-        if not candidate.exists():
+        canonical = resolve_kind(kind)
+        if canonical is None:
             click.echo(f"Error: no script for kind={kind!r}.", err=True)
             click.echo("Run `sprezzature-figures list` to see available kinds.", err=True)
             raise SystemExit(1)
 
-        mod_name = f"_sfig_cli_{normalised}"
-        spec = importlib.util.spec_from_file_location(mod_name, candidate)
-        mod = importlib.util.module_from_spec(spec)  # type: ignore[arg-type]
-        _sys.modules[mod_name] = mod
-        spec.loader.exec_module(mod)  # type: ignore[union-attr]
-
-        demo_data = getattr(mod, "DEMO_DATA", [])
+        demo_data = _demo_data_for(canonical)
         kwargs: dict = {"title": title}
         if out:
             kwargs["out"] = out

@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "sprezzature-figures"
 version = "1.0.0"
-description = "Publication-quality data figures for the sprezzature stack: 84+ chart types rendered via Vega-Lite, full Vega, or matplotlib/SVG. Includes the Ralph Eyeball Loop for autonomous visual quality feedback."
+description = "Publication-quality data figures for the sprezzature stack: 83+ chart types rendered via Vega-Lite, full Vega, or matplotlib/SVG. Includes the Ralph Eyeball Loop for autonomous visual quality feedback."
 readme = "README.md"
 requires-python = ">=3.10,<3.14"
 license = {text = "BSD-3-Clause"}
@@ -34,6 +34,10 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+# Click twin of the always-installed argparse `make-figure` CLI
+cli = [
+    "click>=8.1",
+]
 # Full dataviz stack (matplotlib, networkx, wordcloud, etc.)
 dataviz = [
     "matplotlib>=3.7",
@@ -59,6 +63,7 @@ local = ["requests>=2.31"]
 dev = [
     "pytest>=8",
     "ruff",
+    "build",
     "vl-convert-python>=1.6",
     "numpy>=1.24",
     "matplotlib>=3.7",
@@ -85,9 +90,10 @@ packages = ["sprezzature_figures", "sprezzature_figures.catalog", "sprezzature_f
 "sprezzature_figures.catalog" = ["figures.json"]
 
 [tool.pytest.ini_options]
-addopts = "-m 'not slow'"
+addopts = "-m 'not slow and not packaging'"
 markers = [
     "slow: tests that render actual figures (may take several seconds)",
+    "packaging: builds a wheel and installs it in a fresh venv (network + several seconds)",
 ]
 
 [tool.ruff]

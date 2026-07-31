@@ -7,7 +7,7 @@
 
 [![logo](https://raw.githubusercontent.com/warith-harchaoui/sprezzature-figures/main/assets/logo.png)](https://harchaoui.org/warith/sprezzature/)
 
-84 publication-quality chart types — Vega-Lite, full Vega, and matplotlib/SVG — callable as a Python library or a CLI command.
+83 publication-quality chart types — Vega-Lite, full Vega, and matplotlib/SVG — callable as a Python library or a CLI command.
 
 Part of the [sprezzature](https://harchaoui.org/warith/sprezzature/) suite.
 
@@ -35,32 +35,38 @@ pip install "sprezzature-figures[cli]"
 from sprezzature_figures import make_figure
 
 data = [
-    {"label": "North", "value": 42},
-    {"label": "South", "value": 28},
-    {"label": "East",  "value": 19},
-    {"label": "West",  "value": 11},
+    {"parent": "Marketing",   "name": "Paid search", "value": 42},
+    {"parent": "Marketing",   "name": "Social",       "value": 28},
+    {"parent": "Engineering", "name": "Platform",     "value": 19},
+    {"parent": "Engineering", "name": "Mobile",       "value": 11},
 ]
-path = make_figure("bar", data, out="revenue.png", title="Revenue by region")
-print(path)  # PosixPath('revenue.png')
+path = make_figure("treemap", data, out="budget.png", title="Budget by team")
+print(path)  # PosixPath('budget.png')
 ```
+
+`make_figure()` will attempt any registered chart kind, but only
+`status="stable"` kinds are currently render-verified end to end — see
+[docs/studio/GENERATOR_AUDIT.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/docs/studio/GENERATOR_AUDIT.md)
+for the per-chart status of all 83 types, and `make-figure --list --status stable`
+for the ones that render today.
 
 ### As a CLI command
 
 ```bash
-# List all available chart types
+# List all available chart types (add --status stable to see only render-verified ones)
 make-figure --list
 
 # Render a chart using its built-in demo data
 make-figure treemap --out budget.png --title "Budget breakdown"
-make-figure gapminder --out gapminder.html
-make-figure sankey --out energy-flow.png
+make-figure funnel --out funnel.png
+make-figure waterfall --out waterfall.png
 ```
 
 ---
 
 ## Chart catalogue
 
-84 chart types across 15 categories. See [FIGURES.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/FIGURES.md) for the full table with per-chart guidance on when to use each type.
+83 chart types across 19 categories. See [FIGURES.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/FIGURES.md) for the full table with per-chart guidance on when to use each type.
 
 Quick overview:
 
@@ -93,13 +99,14 @@ Quick overview:
 ```
 sprezzature-figures/
 ├── sprezzature_figures/
-│   ├── __init__.py        # exports make_figure
-│   ├── make_figure.py     # dispatcher + list_kinds() + argparse CLI
-│   └── cli.py             # Click entry point (optional)
+│   ├── __init__.py        # exports make_figure, list_kinds, get_figure_definition
+│   ├── make_figure.py     # registry-backed dispatcher + argparse CLI
+│   ├── cli.py             # Click entry point (optional, needs [cli] extra)
+│   └── catalog/           # figure registry: FigureDefinition + figures.json
 ├── scripts/
-│   ├── make_bar.py        # self-contained chart script
-│   ├── make_treemap.py    # ...
-│   └── ...                # 84 make_*.py scripts total
+│   ├── make_treemap.py            # self-contained chart script
+│   ├── make_connected-scatter.py  # hyphenated kinds are supported
+│   └── ...                        # 83 make_*.py scripts total
 ├── assets/
 │   ├── vega-examples/     # Vega-Lite and full-Vega spec examples
 │   └── svg-examples/      # SVG template examples
@@ -107,16 +114,17 @@ sprezzature-figures/
 └── tests/
 ```
 
-Each `make_<kind>.py` script is self-contained: it imports what it needs, defines `make_<kind>(data, **kwargs) -> str` and exposes a `DEMO_DATA` list for CLI and test use.
+Each `make_<kind>.py` script is self-contained: it imports what it needs, defines `make_<kind>(data, *, out=None, title="", ...) -> Path` and exposes a `DEMO_DATA` list for CLI and test use. `make_figure()` resolves the kind through `sprezzature_figures/catalog/figures.json` rather than guessing the filename — see [docs/studio/GENERATOR_AUDIT.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/docs/studio/GENERATOR_AUDIT.md) for which of the 83 scripts currently satisfy this contract.
 
 ---
 
 ## Adding a chart type
 
 1. Create `scripts/make_<kind>.py` following the pattern of any existing script.
-2. Expose `DEMO_DATA: list[dict]` and a function `make_<kind>(data, **kwargs) -> str`.
+2. Expose `DEMO_DATA: list[dict]` and a function `make_<kind>(data, *, out=None, title="", ...) -> Path`.
 3. Add a row to [FIGURES.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/FIGURES.md).
-4. Run `make-figure <kind>` to verify the output.
+4. Run `python tools/audit_generators.py --render` then `python tools/build_figures_catalog.py` to register it in `sprezzature_figures/catalog/figures.json` (without this, `make_figure()` only reaches it through a deprecated fallback and prints a warning).
+5. Run `make-figure <kind>` to verify the output.
 
 ---
 

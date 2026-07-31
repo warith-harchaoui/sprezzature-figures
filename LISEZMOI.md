@@ -7,7 +7,7 @@
 
 [![logo](assets/logo.png)](https://harchaoui.org/warith/sprezzature/)
 
-84 types de graphiques de qualité publication — Vega-Lite, Vega complet et matplotlib/SVG — utilisables comme bibliothèque Python ou en ligne de commande.
+83 types de graphiques de qualité publication — Vega-Lite, Vega complet et matplotlib/SVG — utilisables comme bibliothèque Python ou en ligne de commande.
 
 Fait partie de la suite [sprezzature](https://harchaoui.org/warith/sprezzature/).
 
@@ -35,32 +35,38 @@ pip install "sprezzature-figures[cli]"
 from sprezzature_figures import make_figure
 
 donnees = [
-    {"label": "Nord",  "value": 42},
-    {"label": "Sud",   "value": 28},
-    {"label": "Est",   "value": 19},
-    {"label": "Ouest", "value": 11},
+    {"parent": "Marketing",    "name": "Recherche payante", "value": 42},
+    {"parent": "Marketing",    "name": "Social",            "value": 28},
+    {"parent": "Ingénierie",   "name": "Plateforme",        "value": 19},
+    {"parent": "Ingénierie",   "name": "Mobile",            "value": 11},
 ]
-chemin = make_figure("bar", donnees, out="revenu.png", title="Revenu par région")
-print(chemin)  # PosixPath('revenu.png')
+chemin = make_figure("treemap", donnees, out="budget.png", title="Budget par équipe")
+print(chemin)  # PosixPath('budget.png')
 ```
+
+`make_figure()` accepte n'importe quel type enregistré, mais seuls les types
+`status="stable"` sont aujourd'hui vérifiés par rendu — voir
+[docs/studio/GENERATOR_AUDIT.md](docs/studio/GENERATOR_AUDIT.md) pour le
+statut de chacun des 83 types, et `make-figure --list --status stable` pour
+la liste de ceux qui fonctionnent dès maintenant.
 
 ### En ligne de commande
 
 ```bash
-# Lister tous les types de graphiques disponibles
+# Lister tous les types de graphiques disponibles (--status stable pour ceux vérifiés par rendu)
 make-figure --list
 
 # Générer un graphique avec ses données de démonstration intégrées
 make-figure treemap --out budget.png --title "Décomposition du budget"
-make-figure gapminder --out gapminder.html
-make-figure sankey --out flux-energie.png
+make-figure funnel --out entonnoir.png
+make-figure waterfall --out cascade.png
 ```
 
 ---
 
 ## Catalogue des graphiques
 
-84 types de graphiques dans 15 catégories. Voir [FIGURES.md](FIGURES.md) pour le tableau complet.
+83 types de graphiques dans 19 catégories. Voir [FIGURES.md](FIGURES.md) pour le tableau complet.
 
 | Catégorie | Graphiques |
 |-----------|------------|
@@ -91,12 +97,14 @@ make-figure sankey --out flux-energie.png
 ```
 sprezzature-figures/
 ├── sprezzature_figures/
-│   ├── __init__.py        # exporte make_figure
-│   ├── make_figure.py     # répartiteur + list_kinds() + CLI argparse
-│   └── cli.py             # point d'entrée Click (optionnel)
+│   ├── __init__.py        # exporte make_figure, list_kinds, get_figure_definition
+│   ├── make_figure.py     # répartiteur adossé au registre + CLI argparse
+│   ├── cli.py             # point d'entrée Click (optionnel, extra [cli])
+│   └── catalog/           # registre des figures : FigureDefinition + figures.json
 ├── scripts/
-│   ├── make_bar.py        # script autonome par type de graphique
-│   └── ...                # 84 scripts make_*.py au total
+│   ├── make_treemap.py            # script autonome par type de graphique
+│   ├── make_connected-scatter.py  # les types avec tiret sont supportés
+│   └── ...                        # 83 scripts make_*.py au total
 ├── assets/
 │   ├── vega-examples/     # spécifications Vega-Lite et Vega
 │   └── svg-examples/      # gabarits SVG
@@ -104,16 +112,17 @@ sprezzature-figures/
 └── tests/
 ```
 
-Chaque script `make_<type>.py` est autonome : il importe ce dont il a besoin, définit `make_<type>(donnees, **kwargs) -> str` et expose une liste `DEMO_DATA` pour la CLI et les tests.
+Chaque script `make_<type>.py` est autonome : il importe ce dont il a besoin, définit `make_<type>(donnees, *, out=None, title="", ...) -> Path` et expose une liste `DEMO_DATA` pour la CLI et les tests. `make_figure()` résout le type via `sprezzature_figures/catalog/figures.json` plutôt que de deviner le nom de fichier — voir [docs/studio/GENERATOR_AUDIT.md](docs/studio/GENERATOR_AUDIT.md) pour savoir lesquels des 83 scripts respectent déjà ce contrat.
 
 ---
 
 ## Ajouter un type de graphique
 
 1. Créer `scripts/make_<type>.py` en suivant le schéma d'un script existant.
-2. Exposer `DEMO_DATA: list[dict]` et une fonction `make_<type>(donnees, **kwargs) -> str`.
+2. Exposer `DEMO_DATA: list[dict]` et une fonction `make_<type>(donnees, *, out=None, title="", ...) -> Path`.
 3. Ajouter une ligne dans [FIGURES.md](FIGURES.md).
-4. Vérifier avec `make-figure <type>`.
+4. Lancer `python tools/audit_generators.py --render` puis `python tools/build_figures_catalog.py` pour l'enregistrer dans `sprezzature_figures/catalog/figures.json` (sans cela, `make_figure()` ne l'atteint que via un repli déprécié qui affiche un avertissement).
+5. Vérifier avec `make-figure <type>`.
 
 ---
 

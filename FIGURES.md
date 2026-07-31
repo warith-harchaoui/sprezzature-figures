@@ -1,19 +1,23 @@
 # Figure Catalogue
 
-84 chart types. Each maps to a `make_<kind>.py` script under `scripts/`.
+83 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type).
 
 Invoke via:
 
 ```python
 from sprezzature_figures import make_figure
-path = make_figure("bar", data, out="output.png")
+path = make_figure("treemap", data, out="output.png")
 ```
 
 or via CLI:
 
 ```bash
-make-figure bar --out output.png --title "Revenue by region"
+make-figure treemap --out output.png --title "Budget breakdown"
 ```
+
+Only `status="stable"` kinds are render-verified end to end today — run
+`make-figure --list --status stable` or see `docs/studio/GENERATOR_AUDIT.md`
+for the current per-chart status.
 
 ## Full Catalogue
 

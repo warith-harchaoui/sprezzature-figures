@@ -5,7 +5,7 @@ for the full spec; not itself committed). Branch: `feature/sprezzature-studio`.
 
 ## Phase
 
-Phase 2 (§3 — stabilize catalogue and dispatcher), commit 1 of 13 landed.
+Phase 2 (§3 — stabilize catalogue and dispatcher) complete: commits 1-3b of 13 landed.
 
 ## Completed
 
@@ -14,6 +14,45 @@ Phase 2 (§3 — stabilize catalogue and dispatcher), commit 1 of 13 landed.
   `tests/test_generator_audit.py`). Reproducible, exception-transparent audit
   of all 83 `scripts/make_*.py` generators against the `make_<kind>(data, *,
   out, title) -> Path` contract.
+- **Commit 2 — Catalog** (`sprezzature_figures/catalog/`:
+  `models.py`, `registry.py`, `figures.json`, `tools/build_figures_catalog.py`,
+  `tests/catalog/`). Explicit `FigureDefinition` registry generated from
+  FIGURES.md + the audit; decouples public kind name from filename/callable;
+  resolves hyphen/underscore/space alias spellings.
+- **Commit 3 — Dispatcher** (`sprezzature_figures/make_figure.py`,
+  `sprezzature_figures/__init__.py`). `make_figure()` now resolves through the
+  registry instead of guessing filenames. Adds `get_figure_definition()`,
+  `list_kinds(status=...)`, `validate_figure_input()`. Non-stable kinds warn
+  (`UserWarning`) with the registry's recorded reasons instead of failing
+  silently. Unregistered-but-on-disk scripts still work via a deprecated,
+  `DeprecationWarning`-emitting fallback (must never be used by the Studio GUI).
+- **Commit 3b — Packaging + docs** (`pyproject.toml`, `sprezzature_figures/cli.py`,
+  `README.md`, `LISEZMOI.md`, `FIGURES.md`, `tests/test_packaging.py`):
+  - Added the `[cli]` extra (`click>=8.1`) that README/LISEZMOI already
+    advertised but pyproject never declared.
+  - Fixed `sprezzature_figures/cli.py`'s Click `render` command, which
+    duplicated the *old* buggy hyphen-guessing logic to locate a script for
+    its early "unknown kind" check — it now uses `catalog.resolve_kind()`
+    like the argparse CLI, via a shared `_demo_data_for()` helper.
+  - Registered `sprezzature_figures.catalog` as a package and added
+    `figures.json` to `package-data` — it was silently missing from the
+    wheel (explicit `packages = [...]` list, no `package-data` block).
+    Verified with a new `@pytest.mark.packaging` test that builds the wheel,
+    installs it in a throwaway venv, and renders a stable figure end to end
+    (confirmed 118 files in the wheel, `figures.json` and
+    `sprezzature_figures_scripts/make_treemap.py` both present).
+  - Replaced the `make_figure("bar", ...)` / `make-figure bar` examples
+    (README, LISEZMOI, FIGURES.md) — no `make_bar.py` has ever existed — with
+    a working `treemap` example, plus a note pointing at
+    `--status stable` / GENERATOR_AUDIT.md.
+  - Fixed the `make_bar.py` reference in both architecture-tree diagrams.
+  - Corrected inflated/wrong counts found while touching these docs: "84
+    chart types" → 83 (the 84th FIGURES.md row documents the `figure`
+    dispatcher itself, not a chart); "15 categories" → 19 (actual row count
+    in the README/LISEZMOI quick-overview table); return type documented as
+    `-> str` → `-> Path` (matches every generator's actual signature).
+  - "Adding a chart type" instructions now include the registration step
+    (`tools/build_figures_catalog.py`) that Commit 2 introduced.
 
 ## Figures currently `stable`
 
@@ -23,9 +62,10 @@ Per the latest `--render` audit run: `columnrange`, `funnel`, `sunburst`,
 ## Tests run
 
 ```
-python3 -m pytest -q                          # 13 passed, 3 deselected
-python3 -m pytest -q -m slow tests/test_generator_audit.py   # 1 passed
-ruff check tools tests sprezzature_figures     # clean
+python3 -m pytest -q                              # 28 passed, 9 deselected
+python3 -m pytest -q -m slow                       # 8 passed, 29 deselected
+python3 -m pytest -q -m packaging tests/test_packaging.py   # 1 passed (~11s, needs network)
+ruff check sprezzature_figures tools tests          # clean
 ```
 
 ## Known blockers / open questions
@@ -35,20 +75,28 @@ ruff check tools tests sprezzature_figures     # clean
 - `best-engine-ai-helper` (0.4.0) is installed and exposes
   `chat(prompt, *, system, images, json_schema, model, temperature)`; the
   plan's `LLMClient` protocol (§9.1, separate `chat_text`/`chat_vision`) will
-  be adapted to wrap this single `chat()` signature rather than mirrored
-  1:1.
-- 17 generator scripts use hyphenated filenames the current dispatcher cannot
-  reach at all (`connected-scatter`, `liquid-gauge`, `org-chart`, etc.) —
-  fixed by the registry in Commit 2, not by patching the old normalisation.
+  be adapted to wrap this single `chat()` signature rather than mirrored 1:1.
+- Also available locally and worth reusing rather than reimplementing:
+  `os-helper` (cross-platform file I/O/hashing/temp-file utilities — good fit
+  for the ingest/export modules) and `wallet-helper` (content-addressed
+  memoization/caching — good fit for caching LLM calls in the Ralph loop,
+  Commit 9/10). Both installed (`pip show os-helper wallet-helper`).
 - `sankey` has no `make_sankey()` — confirmed `legacy`; per plan §7 it must
   not be exposed in the GUI until rewritten to take real data (Commit 7).
-- README/FIGURES.md `make_figure("bar", ...)` example refers to a script that
-  does not exist (`make_bar.py`) — to be fixed in Commit 3b alongside the
-  packaging corrections, once a real `bar` generator exists (Commit 6) or the
-  example is swapped to an existing stable kind.
+- The Click CLI (`sprezzature-figures render <kind>`) and argparse CLI
+  (`make-figure <kind>`) still let an `AttributeError`/`RuntimeError` from a
+  non-stable kind propagate as a raw traceback rather than a clean CLI error
+  message. Pre-existing behaviour, not a regression from this branch; worth
+  cleaning up but out of scope for the dispatcher/catalog commits.
+- `required_roles` are only populated for the 5 currently-stable figures;
+  every other registry entry has empty role lists until it's adapted
+  (Commit 7) or newly built (Commit 6).
 
 ## Next
 
-Commit 2 — explicit figure registry (`sprezzature_figures/catalog/`) with
-canonical hyphenated kind names, aliases, and decoupled module/callable
-names, so the dispatcher stops guessing filenames from kind names.
+Commit 4 — core domain models (`sprezzature_figures/core/`): `DatasetProfile`,
+`ColumnProfile`, `FigurePlan`, `StyleOptions`, the discriminated
+`FigureOperation` union, and `RenderResult`. This is where the plan starts
+requiring product/UX decisions (which StyleOptions/transformations to
+support, exact FigurePlan shape) rather than being a pure bug-fix — a good
+checkpoint to confirm scope before continuing into ingest/LLM/Ralph/NiceGUI.
