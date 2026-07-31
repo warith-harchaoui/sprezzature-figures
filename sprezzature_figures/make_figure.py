@@ -17,8 +17,14 @@ import sys
 from pathlib import Path
 from typing import Any
 
-# Scripts directory: one level up from this package, under scripts/
-_SCRIPTS_DIR = Path(__file__).resolve().parent.parent / "scripts"
+# Chart generators live one level up from this package. In the source tree
+# that directory is ``scripts/``; once installed it ships (collision-free)
+# as ``sprezzature_figures_scripts/``. Resolve whichever exists.
+_pkg_parent = Path(__file__).resolve().parent.parent
+_SCRIPTS_DIR = next(
+    (_pkg_parent / name for name in ("scripts", "sprezzature_figures_scripts") if (_pkg_parent / name).is_dir()),
+    _pkg_parent / "scripts",
+)
 
 
 def make_figure(kind: str, data: list[dict[str, Any]], **kwargs: Any) -> Path:

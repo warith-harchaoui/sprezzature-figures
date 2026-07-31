@@ -74,10 +74,11 @@ Repository = "https://github.com/warith-harchaoui/sprezzature-figures"
 Issues = "https://github.com/warith-harchaoui/sprezzature-figures/issues"
 Changelog = "https://github.com/warith-harchaoui/sprezzature-figures/blob/main/CHANGELOG.md"
 
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["sprezzature_figures*", "scripts*"]
-exclude = ["tests*", "assets*"]
+[tool.setuptools]
+packages = ["sprezzature_figures", "sprezzature_figures_scripts"]
+
+[tool.setuptools.package-dir]
+"sprezzature_figures_scripts" = "scripts"
 
 [tool.pytest.ini_options]
 addopts = "-m 'not slow'"
