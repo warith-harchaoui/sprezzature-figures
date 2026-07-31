@@ -5,8 +5,8 @@ for the full spec; not itself committed). Branch: `feature/sprezzature-studio`.
 
 ## Phase
 
-Phase 2 (§3 — stabilize catalogue and dispatcher) complete. Phase 3 (§4 —
-core domain models) commit 4 of 13 landed.
+Phase 2 (§3 — catalogue/dispatcher) and Phase 3 (§4 — core domain models,
+§5 — ingest) complete. Commits 1-5 of 13 landed.
 
 ## Completed
 
@@ -73,6 +73,40 @@ core domain models) commit 4 of 13 landed.
   where they're actually used — plan's own commit table splits "models"
   from "unified rendering" and "history", so building them now would be
   speculative/untested code with no caller yet.
+- **Commit 5 — Ingest** (`sprezzature_figures/studio/ingest/`:
+  `csv_reader.py`, `excel_reader.py`, `clipboard.py`, `profiler.py`,
+  `semantic_types.py`, `validation.py`). First module needing the new
+  `studio` extra (`nicegui`, `pandas>=2.0`, `openpyxl>=3.1`,
+  `charset-normalizer>=3`, `best-engine-ai-helper>=0.4.0`,
+  `os-helper>=1.8.0` — the last two are the sibling helper libraries flagged
+  earlier). Confirmed `from sprezzature_figures import make_figure` still
+  doesn't import pandas as a side effect (plan §15's hard requirement).
+  - CSV: `charset_normalizer` + `csv.Sniffer` for encoding/delimiter
+    detection, explicit override, 500-row preview.
+  - XLSX: sheet listing/selection, and `excel_warnings()` using raw
+    `openpyxl` (not pandas, which silently flattens this away) to detect
+    merged-cell ranges, unnamed columns, and a last-row-looks-like-a-totals-row
+    heuristic.
+  - Clipboard: tab/comma-sniffed paste parsing for Excel/Sheets copy-paste.
+  - `semantic_types.py`: numeric/categorical/text/datetime/boolean/
+    identifier/latitude/longitude/percentage/currency/url/email detection,
+    all deterministic (plan §5.5 — no LLM in this path).
+  - Fingerprinting via `os_helper.hashfile`/`hash_string` rather than
+    hand-rolled hashing.
+  - Two real bugs caught by writing tests, not by inspection: (1) bare month
+    names ("Jan", "Apr") were misclassified as `datetime` because
+    `pd.to_datetime` parses them "successfully" against an implicit
+    year/day — fixed by requiring the raw strings contain digits before
+    trusting the parse; (2) profiling a DataFrame with duplicate column
+    labels crashed (`df[col]` returns a DataFrame, not a Series, when the
+    label repeats) — fixed by indexing positionally (`df.iloc[:, i]`)
+    everywhere a column is pulled out during profiling.
+  - `sprezzature_figures.studio`/`.studio.ingest` registered in
+    `pyproject.toml`'s explicit `packages` list and confirmed present in a
+    real wheel build (third time this exact packaging gap has bitten this
+    branch — now checked as a matter of course for every new subpackage).
+  - 33 new tests in `tests/ingest/test_ingest.py`, including regression
+    tests for both bugs above.
 
 ## Figures currently `stable`
 
@@ -82,8 +116,8 @@ Per the latest `--render` audit run: `columnrange`, `funnel`, `sunburst`,
 ## Tests run
 
 ```
-python3 -m pytest -q                              # 42 passed, 9 deselected
-python3 -m pytest -q -m slow                       # 8 passed, 29 deselected
+python3 -m pytest -q                              # 75 passed, 9 deselected
+python3 -m pytest -q -m slow                       # 8 passed, 29 deselected (unchanged)
 python3 -m pytest -q -m packaging tests/test_packaging.py   # 1 passed (~11s, needs network)
 ruff check sprezzature_figures tools tests          # clean
 ```
@@ -114,8 +148,8 @@ ruff check sprezzature_figures tools tests          # clean
 
 ## Next
 
-Commit 5 — CSV/XLSX/clipboard ingestion + profiler
-(`sprezzature_figures/studio/ingest/`), producing `DatasetProfile` from real
-files. User confirmed "keep going autonomously" through Commits 4-13, with
-another check-in after the render/LLM core is in place and before the GUI
-itself.
+Commit 6 — stable basic Vega-Lite figures (bar/line/area/scatter/histogram/
+boxplot/heatmap) using the same registry/render contract as the specialized
+figures. This is also where the long-invalid `make_figure("bar", ...)`
+example in the docs finally becomes literally true again instead of needing
+the `treemap` substitution from Commit 3b.

@@ -38,6 +38,17 @@ dependencies = [
 cli = [
     "click>=8.1",
 ]
+# Sprezzature Studio: NiceGUI app, data ingest, LLM-driven chat editing,
+# and the Ralph visual-critique loop. `from sprezzature_figures import
+# make_figure` must keep working without this extra installed.
+studio = [
+    "nicegui",
+    "pandas>=2.0",
+    "openpyxl>=3.1",
+    "charset-normalizer>=3",
+    "best-engine-ai-helper>=0.4.0",
+    "os-helper>=1.8.0",
+]
 # Full dataviz stack (matplotlib, networkx, wordcloud, etc.)
 dataviz = [
     "matplotlib>=3.7",
@@ -85,6 +96,8 @@ packages = [
     "sprezzature_figures",
     "sprezzature_figures.catalog",
     "sprezzature_figures.core",
+    "sprezzature_figures.studio",
+    "sprezzature_figures.studio.ingest",
     "sprezzature_figures_scripts",
 ]
 
