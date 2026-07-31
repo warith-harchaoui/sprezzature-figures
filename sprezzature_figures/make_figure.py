@@ -61,6 +61,15 @@ def _load_module(path: Path, module_name: str) -> Any:
     return mod
 
 
+def _demo_data_for(canonical_kind: str) -> list[dict[str, Any]]:
+    """Load DEMO_DATA from the registered module for an already-resolved kind."""
+    definition = _get_figure_definition(canonical_kind)
+    script_path = _SCRIPTS_DIR / Path(definition.module).name
+    module_name = f"_sprezzature_figures_democonfig_{canonical_kind.replace('-', '_').replace(' ', '_')}"
+    mod = _load_module(script_path, module_name)
+    return getattr(mod, "DEMO_DATA", [])
+
+
 def get_figure_definition(kind: str) -> FigureDefinition:
     """The registry entry for `kind` (module, callable, status, roles, ...)."""
     return _get_figure_definition(kind)
@@ -264,12 +273,7 @@ def main() -> None:
         print("Run `make-figure --list` to see available kinds.", file=sys.stderr)
         sys.exit(1)
 
-    definition = _get_figure_definition(canonical)
-    script_path = _SCRIPTS_DIR / Path(definition.module).name
-    module_name = f"_sprezzature_figures_cli_{canonical.replace('-', '_').replace(' ', '_')}"
-    mod = _load_module(script_path, module_name)
-
-    demo_data = getattr(mod, "DEMO_DATA", [])
+    demo_data = _demo_data_for(canonical)
     kwargs: dict[str, Any] = {"title": args.title}
     if args.out:
         kwargs["out"] = args.out
