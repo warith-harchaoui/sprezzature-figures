@@ -1,8 +1,9 @@
 # Figure auditor — rule catalogue
 
-Static rules for `audit_figure.py`. Each rule is decidable from the
-input (Vega-Lite JSON, matplotlib SVG, or an HTML document with
-`<figure>` blocks). No browser, no model, no network.
+Purpose: the static rule set that `scripts/audit_figure.py` enforces on a
+figure *source* before it ships. Every rule is decidable from the input
+alone — a Vega-Lite JSON spec, a matplotlib SVG, or an HTML document with
+`<figure>` blocks — with no browser, no model, and no network.
 
 ## Rule catalogue
 

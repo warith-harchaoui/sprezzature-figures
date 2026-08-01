@@ -54,11 +54,11 @@ Four steps. The loop is the same for every surface:
    embedded.
 
 2. **Look** — the Claude Code / OpenCode agent reads the PNG back into the
-   conversation using the `Read` tool and critiques it with its own vision.
+   conversation using the `Read` tool and studies it with its own vision.
    This is the step that can't be automated: the check that crosses syntax
    and pixel simultaneously.
 
-3. **Assess** — findings go to `.private/ralph-loop/assessment-<hash>.md`
+3. **Critique** — the findings go to `.private/ralph-loop/assessment-<hash>.md`
    (gitignored, never committed). The file is extended, not overwritten,
    each iteration so the full history of how the visual evolved is
    preserved. The hash is an 8-char MD5 of the resolved source path, so the
@@ -89,8 +89,7 @@ the single authorized model for the whole `sprezzature-*` repo: the same model b
 every skill's text generation (alt text, captions, narration) and this loop's
 visual critique. There is no exception to carve out and no second model to
 justify. `test_single_llm.py` enforces that `ralph_eyeball_loop.py`, like every
-other Ollama-backed script, declares exactly `qwen3-vl:8b`. See
-[docs/LLM_CHOICE.md](../../docs/LLM_CHOICE.md) for the rationale and sources.
+other Ollama-backed script, declares exactly `qwen3-vl:8b`.
 
 To set up local mode:
 

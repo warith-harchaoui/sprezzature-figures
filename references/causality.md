@@ -32,7 +32,8 @@ flowchart LR
 
 `causal_estimate.py --dag dag.gml` accepts:
 
-- A **`.gml`** file — GraphML written by hand or by `networkx`.
+- A **`.gml`** file — Graph Modeling Language (GML), written by hand or by
+  `networkx` (`nx.write_gml`).
 - A **DoWhy string** via `--dag-string "graph[directed 1 node[id T] node[id Y] node[id X] edge[source T target Y] edge[source X target T] edge[source X target Y]]"`.
 - A **`.dot`** file — Graphviz DOT.
 

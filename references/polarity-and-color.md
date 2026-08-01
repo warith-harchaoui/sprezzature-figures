@@ -1,5 +1,8 @@
 # Polarity and color — "higher is better" made explicit
 
+> Purpose: make every quantitative axis state its polarity in words, then
+> reinforce it with a CVD-safe color — never rely on color alone.
+
 Every quantitative axis on a chart encodes a value the reader has to
 score in 3 seconds. The first thing they ask is **"is this trend good
 or bad?"**, and if the chart can't answer that without the reader
@@ -86,7 +89,7 @@ whenever:
 - the mark is one of `bar` / `line` / `point` / `rect` / `area`.
 
 In every other case the qualitative palette wins. The audit rule
-`missing-polarity` (see `references/audit-figure.md`) flags a chart
+`missing-polarity` (see [audit-figure.md](audit-figure.md)) flags a chart
 whose metric name matches a polarised pattern but whose axis title
 has no direction tag; auto-fix rewrites the title to append the tag.
 
