@@ -6,11 +6,11 @@ for the full spec; not itself committed). Branch: `feature/sprezzature-studio`.
 ## Phase
 
 Phase 2 (§3), Phase 3 (§4-§5), Phase 4 (§7), Phase 5 (§8), Phase 6 (§9),
-Phase 7 (§11), and Phase 8 (§13, NiceGUI app) complete. Commits 1-11 of
-13 landed. Also added a lightweight GitHub Actions CI workflow (lint +
-fast tests + render tests, Python 3.10/3.13) outside the plan's numbered
-commits, per user request — CI caught a real bug local dev never would
-have (see Commit 10).
+Phase 7 (§11), Phase 8 (§13), and Phase 9 (§12, history + export)
+complete. Commits 1-12 of 13 landed — one left (§19 docs). Also added a
+lightweight GitHub Actions CI workflow (lint + fast tests + render tests,
+Python 3.10/3.13) outside the plan's numbered commits, per user request —
+CI caught a real bug local dev never would have (see Commit 10).
 
 ## Completed
 
@@ -458,6 +458,71 @@ have (see Commit 10).
     pyproject.toml before committing.
   - 12 new tests: `tests/studio/{test_app_smoke,test_state_and_helpers}.py`.
 
+- **Commit 12 — Iteration history + reproducible export bundles**
+  (`sprezzature_figures/core/{iterations,history}.py`,
+  `sprezzature_figures/studio/export/{manifest,alt_text,code,images,
+  bundle}.py`; `tests/core/test_iterations_and_history.py`,
+  `tests/studio/test_export.py`).
+  - `iterations.py`: `IterationRecord` exactly per plan §12, persisted as
+    `iterations/NNNN/event.json` (the full record) + `plan.json` (the
+    resulting `FigurePlan` alone, for consumers that don't need the whole
+    record). `critique` is stored as a plain `dict`, not
+    `assistant.schemas.VisualCritique`, specifically to avoid a
+    `core -> studio` import (`core/` stays independent of the studio
+    subpackages that depend on it, not the other way around).
+  - `history.py`: `undo`/`redo`/`revert_to`/`compare`, all built on two
+    facts already on disk — the project manifest's `current_iteration`
+    pointer and each record's `parent_iteration_id` — with **no separate
+    branch-tracking structure**. Reverting to an old version and then
+    recording a new one *is* what creates a branch: the new record's
+    parent is whatever was current at the time, so an old iteration can
+    end up with two children. `redo()` picks the most recently created
+    child (highest iteration id) when more than one exists.
+  - **Real bug caught by my own test, not by inspection**: the first
+    version of `test_revert_then_new_record_creates_a_branch` called
+    `redo()` after creating a new record off an old revert point,
+    expecting it to move forward to that new record — but recording an
+    iteration already advances `current_iteration` to itself (by design,
+    same as every other write path in this branch), so `redo()` correctly
+    had nothing to redo to and returned `None`. The test's premise was
+    wrong, not the code; fixed the assertions to check `current_record()`
+    directly and to verify `undo()` from the new branch tip goes back to
+    the shared parent, not to the sibling branch.
+  - `studio/export/bundle.py`: builds the exact `.sprezzature.zip`
+    structure from plan §14 (README, manifest.json, figure-plan.json,
+    data/transformed.csv, output/figure.{svg,png}, reproduce.py,
+    accessibility/alt-text.txt) via a temp staging directory +
+    `shutil.make_archive`, writing only into the caller-supplied
+    `exports_dir` (never a shared location).
+  - `code.py`'s `reproduce.py` template uses **only**
+    `from sprezzature_figures import make_figure`, resolving the plan's
+    role bindings back onto the exported CSV's original column names —
+    verified for real: a test unzips the archive, runs `python
+    reproduce.py` as a subprocess in the extracted directory, and checks
+    it regenerates a non-trivial `output/figure.svg` — not just that the
+    template string contains the right import.
+  - `alt_text.py` is deliberately **not** LLM-generated (plan's
+    degraded-mode requirement covers export explicitly: it must work with
+    no model active). Caught and fixed a real bug while manually
+    inspecting the first generated archive: two sentences were being
+    joined with a space but no period ("...value = value Based on 2
+    rows..."), read as one run-on sentence; fixed by building the
+    headline and the dataset note as separate terminated sentences.
+    Regression-tested (`". Based on"` must appear as its own sentence
+    boundary).
+  - **Deferred, not wired up**: the NiceGUI `history_panel.py`/
+    `export_dialog.py` components (plan §13's component list) that would
+    surface undo/redo/compare/export as UI — Commit 11 already noted
+    these as out of scope; the backend they'd call is now complete and
+    tested, but no button exists yet to trigger it from the app. Left for
+    a future pass rather than rushed.
+  - Registered `sprezzature_figures.studio.export` in pyproject.toml
+    before committing.
+  - 18 new tests. Manually verified the full loop once more end to end
+    (project → 2 iterations → undo/redo/compare/revert → branch →
+    export → unzip → run reproduce.py → get a real figure) before trusting
+    the test suite alone.
+
 ## Figures currently `stable`
 
 Per the latest `--render` audit run (90 generators total):
@@ -469,8 +534,8 @@ of ≥10 stable figures.
 ## Tests run
 
 ```
-python3 -m pytest -q                              # 147 passed, 35 deselected
-python3 -m pytest -q -m slow                       # 34 passed, 148 deselected
+python3 -m pytest -q                              # 147 passed, 49 deselected
+python3 -m pytest -q -m slow                       # 48 passed, 148 deselected
 python3 -m pytest -q -m packaging tests/test_packaging.py   # 1 passed (~11s, needs network)
 ruff check sprezzature_figures tools tests          # clean
 sprezzature-studio --help                          # console entry point works
@@ -502,10 +567,10 @@ sprezzature-studio --help                          # console entry point works
 
 ## Next
 
-Commit 12 — iteration history + reproducible export bundles
-(`sprezzature_figures/core/iterations.py`, `sprezzature_figures/studio/
-export/`). This is where `core/iterations.py` (deferred from Commit 8)
-finally gets built, now that Commit 10's Ralph engine produces critiques
-to store alongside each iteration, and where undo/redo/compare and the
-`.sprezzature.zip` export bundle (data + plan + render + `reproduce.py`)
-land.
+Commit 13 — the last one: documentation + packaging polish (plan §19).
+`docs/studio/{README,ARCHITECTURE,DATA_PRIVACY,FIGURE_PLAN,RALPH_LOOP,
+GENERATOR_CONTRACT,LLM_SCHEMAS,TESTING,ROADMAP}.md`, plus updating the
+top-level README/LISEZMOI/CHANGELOG to distinguish library vs CLI vs
+Studio vs Ralph-CLI-legacy vs Ralph-Studio. No new runtime code expected;
+this is where the 12 commits of backend/UI work get explained for someone
+who wasn't in this session.

@@ -15,6 +15,14 @@ from __future__ import annotations
 
 from .dataset import ColumnProfile, DatasetProfile, DataWarning
 from .figure_plan import ColumnBinding, FigurePlan, OutputOptions, StyleOptions, UserIntent
+from .history import compare, current_record, redo, revert_to, undo
+from .iterations import (
+    IterationRecord,
+    get_iteration,
+    list_iterations,
+    load_iteration_record,
+    save_iteration_record,
+)
 from .operations import (
     Annotation,
     FigureOperation,
@@ -47,6 +55,7 @@ __all__ = [
     "DatasetProfile",
     "FigureOperation",
     "FigurePlan",
+    "IterationRecord",
     "OutputOptions",
     "ProjectManifest",
     "RenderResult",
@@ -56,13 +65,22 @@ __all__ = [
     "allocate_iteration_dir",
     "atomic_write_bytes",
     "atomic_write_text",
+    "compare",
     "create_project",
+    "current_record",
+    "get_iteration",
+    "list_iterations",
+    "load_iteration_record",
     "load_manifest",
     "projects_root",
+    "redo",
     "render_figure_to_project",
     "render_preview",
+    "revert_to",
+    "save_iteration_record",
     "save_manifest",
     "studio_home",
+    "undo",
     "validate_operation",
     "validate_plan",
     "write_iteration_json",
