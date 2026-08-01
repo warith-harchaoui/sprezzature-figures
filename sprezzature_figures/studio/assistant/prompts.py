@@ -14,11 +14,16 @@ from sprezzature_figures.core.dataset import DatasetProfile
 from sprezzature_figures.core.figure_plan import FigurePlan
 
 INTENT_SYSTEM = (
-    "You analyse what a user wants to show with their data. You receive only "
-    "a synthetic profile of the dataset (column names, types, statistics) -- "
-    "never raw rows unless explicitly told otherwise. Respond with a single "
-    "JSON object matching the given schema. Never invent a column name that "
-    "is not in the profile."
+    "You analyse what a user wants to show with their data so a visualisation "
+    "can be recommended. You receive the user's request and a synthetic profile "
+    "of the dataset (column names, types, statistics) -- never raw rows unless "
+    "told otherwise. Respond with a single JSON object matching the given "
+    "schema, filling EVERY field from the request: classify analytical_goal "
+    "from the allowed values (use 'unknown' only when the request is genuinely "
+    "unclassifiable, never merely because it is short), write a one-sentence "
+    "message_to_convey, and populate emphasis, requested_constraints, and "
+    "required_columns. Use only column names that appear in the profile; never "
+    "invent one."
 )
 
 EDIT_SYSTEM = (
@@ -47,7 +52,11 @@ def intent_prompt(request: str, profile: DatasetProfile) -> str:
     return (
         f"User request: {request!r}\n\n"
         f"Dataset: {profile.source_name}, {profile.row_count} rows, {profile.column_count} columns.\n"
-        f"Columns:\n{columns}"
+        f"Columns:\n{columns}\n\n"
+        "Decide the analytical goal behind this request, state in one sentence "
+        "the message the figure should convey, and list any values to emphasise, "
+        "constraints requested, and the columns the figure needs (using only the "
+        "column names listed above)."
     )
 
 
