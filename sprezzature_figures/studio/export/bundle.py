@@ -32,6 +32,7 @@ from typing import Any
 from sprezzature_figures.core.dataset import DatasetProfile
 from sprezzature_figures.core.figure_plan import FigurePlan
 from sprezzature_figures.core.rendering import RenderResult
+from sprezzature_figures.core.transformations import apply_transformations
 
 from .alt_text import generate_alt_text
 from .code import generate_reproduce_script
@@ -44,8 +45,9 @@ _README_TEMPLATE = """\
 Exported from Sprezzature Studio.
 
 - `figure-plan.json` -- the full FigurePlan (bindings, style, transformations).
-- `data/transformed.csv` -- the data as imported (see figure-plan.json's
-  `bindings` for which columns feed the figure).
+- `data/transformed.csv` -- the data after this project's transformations
+  (filter/sort/aggregate/...), keyed by the original column names (see
+  figure-plan.json's `bindings` for which columns feed the figure).
 - `output/` -- the rendered figure (SVG and/or PNG).
 - `reproduce.py` -- regenerates `output/figure.svg` from the data using only
   the public `sprezzature-figures` package (`pip install sprezzature-figures`).
@@ -91,7 +93,11 @@ def export_project(
             json.dumps(build_export_manifest(project_name=project_name, plan=plan, render=render), indent=2),
             encoding="utf-8",
         )
-        _write_data_csv(data, root / "data" / "transformed.csv")
+        # Write the data the figure is actually built from: the imported rows
+        # after the plan's transformations, still keyed by original column
+        # names so reproduce.py can remap them through the plan's bindings.
+        transformed, _ = apply_transformations(data, plan.transformations)
+        _write_data_csv(transformed, root / "data" / "transformed.csv")
         copy_output_images(render, root / "output")
         (root / "reproduce.py").write_text(generate_reproduce_script(plan), encoding="utf-8")
         (root / "accessibility").mkdir()

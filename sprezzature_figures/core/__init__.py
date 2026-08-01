@@ -45,6 +45,7 @@ from .rendering import (
     render_figure_to_project,
     render_preview,
 )
+from .transformations import TransformNote, apply_transformations
 from .validation import validate_operation, validate_plan
 
 __all__ = [
@@ -61,8 +62,10 @@ __all__ = [
     "RenderResult",
     "StyleOptions",
     "Transform",
+    "TransformNote",
     "UserIntent",
     "allocate_iteration_dir",
+    "apply_transformations",
     "atomic_write_bytes",
     "atomic_write_text",
     "compare",

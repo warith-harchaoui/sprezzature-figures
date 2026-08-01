@@ -8,6 +8,7 @@ Warith Harchaoui <warith.harchaoui@gmail.com>
 
 from __future__ import annotations
 
+import logging
 from typing import Any
 
 from nicegui import run, ui
@@ -15,6 +16,7 @@ from nicegui import run, ui
 from sprezzature_figures.core import allocate_iteration_dir, create_project
 from sprezzature_figures.core.figure_plan import FigurePlan
 from sprezzature_figures.core.rendering import render_figure_to_project
+from sprezzature_figures.core.transformations import apply_transformations
 from sprezzature_figures.studio.components.chat_panel import build_chat_panel
 from sprezzature_figures.studio.components.data_panel import build_data_panel
 from sprezzature_figures.studio.components.engine_status import build_engine_status
@@ -23,17 +25,25 @@ from sprezzature_figures.studio.ralph.apply import apply_operations
 from sprezzature_figures.studio.ralph.engine import RalphEngine, RalphResult
 from sprezzature_figures.studio.state import SessionState
 
+logger = logging.getLogger(__name__)
+
 
 def _resolve_data(state: SessionState, plan: FigurePlan) -> list[dict[str, Any]]:
-    """Map the plan's role bindings back onto row dicts keyed by role name
-    -- what every make_<kind> generator actually expects (see
-    tools/build_figures_catalog.py's HAND_ROLES, which names required_roles
-    to match each generator's DEMO_DATA field names exactly).
+    """Turn imported rows into what a make_<kind> generator expects: first
+    execute the plan's transformations (filter/sort/aggregate/top-N/...), then
+    map each surviving row's columns onto role names via ``plan.bindings``
+    (see tools/build_figures_catalog.py's HAND_ROLES, which names required
+    roles to match each generator's DEMO_DATA field names exactly).
 
-    Does not execute plan.transformations (see ralph.engine's documented
-    gap) -- rows are passed through as imported.
+    Transformations reference the original imported column names, so they run
+    *before* the role remap. Any transform skipped for a missing column is
+    logged (never silently dropped); the plan validator flags unknown columns
+    upstream, so notes here are a belt-and-suspenders safeguard.
     """
-    return [{role: row.get(binding.column) for role, binding in plan.bindings.items()} for row in state.data]
+    rows, notes = apply_transformations(state.data, plan.transformations)
+    for note in notes:
+        logger.warning("transform skipped for %s: %s", state.source_name or "dataset", note)
+    return [{role: row.get(binding.column) for role, binding in plan.bindings.items()} for row in rows]
 
 
 def _summarize_result(result: RalphResult) -> str:
