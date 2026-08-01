@@ -99,7 +99,13 @@ def import_script(path: Path, module_name: str) -> tuple[Any, str | None]:
     sys.modules[module_name] = mod
     try:
         spec.loader.exec_module(mod)  # type: ignore[union-attr]
-    except Exception as exc:  # noqa: BLE001 - intentionally broad, fully recorded
+    except (Exception, SystemExit) as exc:  # noqa: BLE001 - intentionally broad, fully recorded
+        # SystemExit is caught explicitly (it isn't an Exception subclass):
+        # some generators raise it as a "missing optional dependency" guard at
+        # import time (e.g. make_situation_map.py's `raise SystemExit(...)`
+        # for shapely/pyproj). Letting that propagate would kill the whole
+        # audit run instead of recording one script as unavailable.
+        # KeyboardInterrupt/GeneratorExit are deliberately NOT caught here.
         sys.modules.pop(module_name, None)
         return None, f"{type(exc).__name__}: {exc}"
     return mod, None
