@@ -21,6 +21,8 @@ Warith Harchaoui <warith.harchaoui@gmail.com>
 
 from __future__ import annotations
 
+import re
+
 # Brand + neutral tokens, copied from the reference site's Tailwind config
 # (css/app.css): iOS-blue accent, Tailwind's stock neutral/gray/red/green/
 # orange scales for the few semantic colors the Studio already uses.
@@ -75,8 +77,8 @@ _UTILITIES = """
 .gap-1 { gap: .25rem; } .gap-2 { gap: .5rem; } .gap-3 { gap: .75rem; } .gap-4 { gap: 1rem; } .gap-6 { gap: 1.5rem; }
 .overflow-y-auto { overflow-y: auto; } .overflow-hidden { overflow: hidden; }
 .p-0 { padding: 0; } .p-2 { padding: .5rem; } .p-3 { padding: .75rem; } .p-4 { padding: 1rem; } .p-5 { padding: 1.25rem; } .p-6 { padding: 1.5rem; }
-.px-2 { padding-left: .5rem; padding-right: .5rem; } .px-3 { padding-left: .75rem; padding-right: .75rem; } .px-4 { padding-left: 1rem; padding-right: 1rem; }
-.py-1 { padding-top: .25rem; padding-bottom: .25rem; } .py-2 { padding-top: .5rem; padding-bottom: .5rem; } .py-3 { padding-top: .75rem; padding-bottom: .75rem; }
+.px-2 { padding-left: .5rem; padding-right: .5rem; } .px-3 { padding-left: .75rem; padding-right: .75rem; } .px-4 { padding-left: 1rem; padding-right: 1rem; } .px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
+.py-1 { padding-top: .25rem; padding-bottom: .25rem; } .py-2 { padding-top: .5rem; padding-bottom: .5rem; } .py-3 { padding-top: .75rem; padding-bottom: .75rem; } .py-4 { padding-top: 1rem; padding-bottom: 1rem; }
 .pl-2 { padding-left: .5rem; } .pr-2 { padding-right: .5rem; }
 .mt-1 { margin-top: .25rem; } .mt-2 { margin-top: .5rem; } .mt-4 { margin-top: 1rem; }
 .mb-2 { margin-bottom: .5rem; } .mb-4 { margin-bottom: 1rem; } .mx-auto { margin-left: auto; margin-right: auto; }
@@ -116,3 +118,24 @@ _CARD = """
 
 def theme_css() -> str:
     return _TOKENS + _BASE + _COMPONENTS + _UTILITIES + _CARD
+
+
+# A class selector is a dot followed by a letter, then class-name chars
+# (Tailwind fraction classes such as ``w-1/2`` carry a literal slash). The
+# leading-letter requirement skips numeric fragments in declaration values
+# like ``.25rem`` or ``rgba(0,0,0,.05)``.
+_CLASS_SELECTOR_RE = re.compile(r"\.([A-Za-z][A-Za-z0-9_/-]*)")
+
+
+def supported_classes() -> frozenset[str]:
+    """The set of class names ``theme_css()`` actually defines.
+
+    Derived from the stylesheet itself (not a second hand-maintained list),
+    so it can never drift from what the ``<style>`` block ships. This is the
+    source of truth the coverage guard checks every component's
+    ``.classes(...)`` tokens against -- a class a component uses but that is
+    absent here would silently no-op (the exact failure that left the first
+    Studio UI unstyled), so ``tests/studio/test_theme_coverage.py`` fails
+    loudly instead.
+    """
+    return frozenset(_CLASS_SELECTOR_RE.findall(theme_css()))
