@@ -48,43 +48,56 @@ def _profile() -> DatasetProfile:
 
 
 # --------------------------------------------------------------------------
-# repair.validate_or_repair
+# repair.validate_or_repair -- the whole escalation ladder in one pass:
+# valid dict passes straight through, an unparseable payload triggers exactly
+# one repair round-trip, and a second failure raises with the raw response.
 # --------------------------------------------------------------------------
 
 
-def test_validate_or_repair_passes_through_valid_dict() -> None:
-    result = validate_or_repair({"summary": "ok"}, EditProposal, ask=lambda _p: {"summary": "unused"})
-    assert result.summary == "ok"
+def test_validate_or_repair_escalation() -> None:
+    # (1) already-valid payload never calls the repair hook.
+    passthrough = validate_or_repair({"summary": "ok"}, EditProposal, ask=lambda _p: {"summary": "unused"})
+    assert passthrough.summary == "ok"
 
-
-def test_validate_or_repair_uses_repair_response_on_first_failure() -> None:
-    calls = []
+    # (2) one bad payload -> exactly one repair call, whose result is used.
+    calls: list[str] = []
 
     def ask(repair_prompt: str):
         calls.append(repair_prompt)
         return {"summary": "fixed"}
 
-    result = validate_or_repair("not json {{{", EditProposal, ask=ask)
-    assert result.summary == "fixed"
+    repaired = validate_or_repair("not json {{{", EditProposal, ask=ask)
+    assert repaired.summary == "fixed"
     assert len(calls) == 1
 
-
-def test_validate_or_repair_raises_llm_response_error_after_second_failure() -> None:
+    # (3) the repair also failing raises LLMResponseError carrying the raw text.
     with pytest.raises(LLMResponseError) as exc_info:
         validate_or_repair("still not json", EditProposal, ask=lambda _p: "also not json")
     assert exc_info.value.raw_response == "also not json"
 
 
 # --------------------------------------------------------------------------
-# FakeLLMClient
+# FakeLLMClient contract (guards how tests stub the LLM everywhere else).
 # --------------------------------------------------------------------------
 
 
-def test_fake_client_returns_queued_model_instance_directly() -> None:
+def test_fake_client_chat_text_queue_and_recording() -> None:
     intent = UserIntent(analytical_goal="trend", confidence=0.5)
     client = FakeLLMClient([intent])
-    result = client.chat_text("x", response_model=UserIntent)
-    assert result is intent
+
+    # Queued model instance is returned as-is; once drained, the last response
+    # is repeated instead of raising.
+    first = client.chat_text("a", response_model=UserIntent, system="sys", temperature=0.3)
+    second = client.chat_text("b", response_model=UserIntent)
+    assert first is intent and second is intent
+
+    # Every call is recorded with its full argument set.
+    assert client.calls[0] == {
+        "prompt": "a",
+        "system": "sys",
+        "response_model": UserIntent,
+        "temperature": 0.3,
+    }
 
 
 def test_fake_client_raises_queued_exception() -> None:
@@ -93,24 +106,9 @@ def test_fake_client_raises_queued_exception() -> None:
         client.chat_text("x")
 
 
-def test_fake_client_repeats_last_response_when_queue_exhausted() -> None:
-    intent = UserIntent(analytical_goal="trend", confidence=0.5)
-    client = FakeLLMClient([intent])
-    first = client.chat_text("a", response_model=UserIntent)
-    second = client.chat_text("b", response_model=UserIntent)
-    assert first is intent and second is intent
-
-
-def test_fake_client_records_calls() -> None:
-    client = FakeLLMClient(["plain text response"])
-    client.chat_text("hello", system="sys", temperature=0.3)
-    assert client.calls == [{"prompt": "hello", "system": "sys", "response_model": None, "temperature": 0.3}]
-
-
 def test_fake_client_chat_vision_accepts_image_bytes() -> None:
     client = FakeLLMClient(["described"])
-    result = client.chat_vision("describe this", b"\x89PNG...", system="sys")
-    assert result == "described"
+    assert client.chat_vision("describe this", b"\x89PNG...", system="sys") == "described"
 
 
 # --------------------------------------------------------------------------
@@ -127,26 +125,35 @@ def test_analyze_intent_returns_user_intent() -> None:
 
 
 # --------------------------------------------------------------------------
-# edit.propose_edit
+# edit.propose_edit -- operation filtering against the real dataset columns.
 # --------------------------------------------------------------------------
 
 
-def test_propose_edit_returns_valid_operations_unfiltered() -> None:
-    plan = FigurePlan(figure_kind="bar", title="Old")
-    proposal = EditProposal(summary="rename", operations=[SetTitle(operation_id="op1", title="New")])
-    client = FakeLLMClient([proposal])
-    result = propose_edit(client, "rename the title", plan, dataset=_profile())
-    assert [op.operation_id for op in result.operations] == ["op1"]
-
-
-def test_propose_edit_drops_operations_referencing_unknown_columns() -> None:
+@pytest.mark.parametrize(
+    "operations, expected_ids, expected_summary",
+    [
+        # Valid ops pass through untouched.
+        ([SetTitle(operation_id="op1", title="New")], ["op1"], "rename"),
+        # Ops referencing unknown columns are dropped, valid ones kept.
+        (
+            [
+                BindColumn(operation_id="bad", role="x", columns=["nonexistent"]),
+                BindColumn(operation_id="good", role="x", columns=["region"]),
+            ],
+            ["good"],
+            "bind",
+        ),
+        # When every op is dropped, the summary still survives.
+        ([BindColumn(operation_id="bad", role="x", columns=["ghost"])], [], "attempted bind"),
+    ],
+)
+def test_propose_edit_filters_operations(operations, expected_ids, expected_summary) -> None:
     plan = FigurePlan(figure_kind="bar")
-    bad = BindColumn(operation_id="bad", role="x", columns=["nonexistent"])
-    good = BindColumn(operation_id="good", role="x", columns=["region"])
-    proposal = EditProposal(summary="bind", operations=[bad, good])
+    proposal = EditProposal(summary=expected_summary, operations=operations)
     client = FakeLLMClient([proposal])
-    result = propose_edit(client, "bind x", plan, dataset=_profile())
-    assert [op.operation_id for op in result.operations] == ["good"]
+    result = propose_edit(client, "edit it", plan, dataset=_profile())
+    assert [op.operation_id for op in result.operations] == expected_ids
+    assert result.summary == expected_summary
 
 
 def test_set_style_option_undeclared_option_cannot_be_built() -> None:
@@ -158,24 +165,16 @@ def test_set_style_option_undeclared_option_cannot_be_built() -> None:
         SetStyleOption(operation_id="bad", option="not_a_real_field", value=1)
 
 
-def test_propose_edit_preserves_summary_even_when_all_operations_dropped() -> None:
-    plan = FigurePlan(figure_kind="bar")
-    bad = BindColumn(operation_id="bad", role="x", columns=["ghost"])
-    proposal = EditProposal(summary="attempted bind", operations=[bad])
-    client = FakeLLMClient([proposal])
-    result = propose_edit(client, "bind x", plan, dataset=_profile())
-    assert result.summary == "attempted bind"
-    assert result.operations == []
-
-
 # --------------------------------------------------------------------------
 # recommend.explain_recommendations
 # --------------------------------------------------------------------------
 
 
-def test_explain_recommendations_drops_invented_kinds() -> None:
+def test_explain_recommendations_filters_invented_kinds_and_skips_empty() -> None:
     defn = get_figure_definition("bar")
     intent = UserIntent(analytical_goal="comparison", confidence=0.8)
+
+    # Hallucinated kinds are dropped, real ones survive.
     rec_set = RecommendationSet(
         recommendations=[
             FigureRecommendation(kind="bar", reason="good fit"),
@@ -183,12 +182,9 @@ def test_explain_recommendations_drops_invented_kinds() -> None:
         ]
     )
     client = FakeLLMClient([rec_set])
-    result = explain_recommendations(client, [defn], intent)
-    assert [r.kind for r in result] == ["bar"]
+    assert [r.kind for r in explain_recommendations(client, [defn], intent)] == ["bar"]
 
-
-def test_explain_recommendations_returns_empty_for_no_candidates() -> None:
-    intent = UserIntent(analytical_goal="comparison", confidence=0.8)
-    client = FakeLLMClient([RecommendationSet(recommendations=[])])
-    assert explain_recommendations(client, [], intent) == []
-    assert client.calls == []  # never even asks the model with no candidates
+    # With no candidates the model is never even asked.
+    empty_client = FakeLLMClient([RecommendationSet(recommendations=[])])
+    assert explain_recommendations(empty_client, [], intent) == []
+    assert empty_client.calls == []

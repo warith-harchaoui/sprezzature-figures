@@ -60,15 +60,27 @@ def _new_iteration() -> tuple[str, Path]:
     return project_dir.name, allocate_iteration_dir(project_dir)
 
 
+def _needs_fix(observation: str, repair: SetStyleOption) -> VisualCritique:
+    return VisualCritique(
+        verdict="needs_changes", message_alignment_score=60, readability_score=40,
+        visual_hierarchy_score=60, accessibility_score=50, data_fidelity_score=90,
+        issues=[VisualIssue(category="labeling", severity="high", observation=observation)],
+        safe_repairs=[repair],
+    )
+
+
+def _run(engine: RalphEngine, plan: FigurePlan, message: str, mode: RalphMode, **kwargs):
+    project_id, iteration_dir = _new_iteration()
+    return engine.apply_user_request(
+        plan, _data(), message,
+        mode=mode, project_id=project_id, iteration_dir=iteration_dir, dataset=_profile(), **kwargs,
+    )
+
+
 def test_manual_mode_applies_request_and_renders_without_critique() -> None:
     proposal = EditProposal(summary="rename", operations=[SetTitle(operation_id="op1", title="Revenue")])
-    engine = RalphEngine(client=FakeLLMClient([proposal]))
-    project_id, iteration_dir = _new_iteration()
-
-    result = engine.apply_user_request(
-        FigurePlan(figure_kind="bar", title="Old"), _data(), "rename",
-        mode=RalphMode.manual, project_id=project_id, iteration_dir=iteration_dir, dataset=_profile(),
-    )
+    result = _run(RalphEngine(client=FakeLLMClient([proposal])), FigurePlan(figure_kind="bar", title="Old"),
+                  "rename", RalphMode.manual)
 
     assert result.plan.title == "Revenue"
     assert result.critique is None
@@ -80,13 +92,8 @@ def test_manual_mode_applies_request_and_renders_without_critique() -> None:
 
 def test_manual_mode_holds_confirmation_required_operations() -> None:
     proposal = EditProposal(summary="switch kind", operations=[SetFigureKind(operation_id="op1", new_kind="line")])
-    engine = RalphEngine(client=FakeLLMClient([proposal]))
-    project_id, iteration_dir = _new_iteration()
-
-    result = engine.apply_user_request(
-        FigurePlan(figure_kind="bar"), _data(), "switch to a line chart",
-        mode=RalphMode.manual, project_id=project_id, iteration_dir=iteration_dir, dataset=_profile(),
-    )
+    result = _run(RalphEngine(client=FakeLLMClient([proposal])), FigurePlan(figure_kind="bar"),
+                  "switch to a line chart", RalphMode.manual)
 
     assert result.plan.figure_kind == "bar"  # not applied
     assert [op.operation_id for op in result.pending_confirmation] == ["op1"]
@@ -96,19 +103,9 @@ def test_manual_mode_holds_confirmation_required_operations() -> None:
 def test_assisted_mode_applies_one_safe_repair_pass() -> None:
     proposal = EditProposal(summary="no-op", operations=[])
     repair_op = SetStyleOption(operation_id="r1", option="font_scale", value=1.4)
-    critique = VisualCritique(
-        verdict="needs_changes", message_alignment_score=60, readability_score=40,
-        visual_hierarchy_score=60, accessibility_score=50, data_fidelity_score=90,
-        issues=[VisualIssue(category="labeling", severity="high", observation="small labels")],
-        safe_repairs=[repair_op],
-    )
-    engine = RalphEngine(client=FakeLLMClient([proposal, critique]))
-    project_id, iteration_dir = _new_iteration()
-
-    result = engine.apply_user_request(
-        FigurePlan(figure_kind="bar"), _data(), "make it nicer",
-        mode=RalphMode.assisted, project_id=project_id, iteration_dir=iteration_dir, dataset=_profile(),
-    )
+    critique = _needs_fix("small labels", repair_op)
+    result = _run(RalphEngine(client=FakeLLMClient([proposal, critique])), FigurePlan(figure_kind="bar"),
+                  "make it nicer", RalphMode.assisted)
 
     assert result.plan.style.font_scale == 1.4
     assert [op.operation_id for op in result.applied_operations] == ["r1"]
@@ -116,21 +113,19 @@ def test_assisted_mode_applies_one_safe_repair_pass() -> None:
     assert result.stopped_reason == "assisted_single_pass"
 
 
-def test_assisted_mode_survives_a_failing_visual_critique() -> None:
+@pytest.mark.parametrize("mode", [RalphMode.assisted, RalphMode.autopilot])
+def test_mode_survives_a_failing_visual_critique(mode: RalphMode) -> None:
     # A live VLM returning junk / timing out must not crash the turn: the
-    # figure still rendered, so return it with the reason noted.
+    # figure still rendered, so return it with the reason noted. Same
+    # graceful degradation whether we'd have applied one pass (assisted) or
+    # looped (autopilot).
     proposal = EditProposal(summary="no-op", operations=[])
     client = FakeLLMClient([proposal, RuntimeError("backend returned empty JSON")])
-    engine = RalphEngine(client=client)
-    project_id, iteration_dir = _new_iteration()
-
-    result = engine.apply_user_request(
-        FigurePlan(figure_kind="bar"), _data(), "make it nicer",
-        mode=RalphMode.assisted, project_id=project_id, iteration_dir=iteration_dir, dataset=_profile(),
-    )
+    result = _run(RalphEngine(client=client), FigurePlan(figure_kind="bar"), "make it nicer", mode)
 
     assert result.render.preview_path.exists()
     assert result.critique is None
+    assert result.rounds == 0
     assert result.stopped_reason == "critique_unavailable"
     assert result.notes and "inspection unavailable" in result.notes[-1].lower()
 
@@ -139,13 +134,8 @@ def test_manual_mode_survives_a_failing_interpretation() -> None:
     # If the text model can't interpret the request, the current figure still
     # renders unchanged and the failure is reported, not raised.
     client = FakeLLMClient([RuntimeError("model returned no JSON")])
-    engine = RalphEngine(client=client)
-    project_id, iteration_dir = _new_iteration()
-
-    result = engine.apply_user_request(
-        FigurePlan(figure_kind="bar", title="Original"), _data(), "do something ambiguous",
-        mode=RalphMode.manual, project_id=project_id, iteration_dir=iteration_dir, dataset=_profile(),
-    )
+    result = _run(RalphEngine(client=client), FigurePlan(figure_kind="bar", title="Original"),
+                  "do something ambiguous", RalphMode.manual)
 
     assert result.render.preview_path.exists()
     assert result.applied_operations == []
@@ -153,43 +143,16 @@ def test_manual_mode_survives_a_failing_interpretation() -> None:
     assert result.notes and "could not interpret" in result.notes[0].lower()
 
 
-def test_autopilot_mode_survives_a_failing_visual_critique() -> None:
-    proposal = EditProposal(summary="no-op", operations=[])
-    client = FakeLLMClient([proposal, RuntimeError("VLM timeout")])
-    engine = RalphEngine(client=client)
-    project_id, iteration_dir = _new_iteration()
-
-    result = engine.apply_user_request(
-        FigurePlan(figure_kind="bar"), _data(), "make it nicer",
-        mode=RalphMode.autopilot, project_id=project_id, iteration_dir=iteration_dir, dataset=_profile(),
-    )
-
-    assert result.render.preview_path.exists()
-    assert result.critique is None
-    assert result.rounds == 0
-    assert result.stopped_reason == "critique_unavailable"
-
-
 def test_autopilot_mode_loops_until_satisfied() -> None:
     proposal = EditProposal(summary="no-op", operations=[])
     repair_op = SetStyleOption(operation_id="r1", option="font_scale", value=1.4)
-    needs_fix = VisualCritique(
-        verdict="needs_changes", message_alignment_score=60, readability_score=40,
-        visual_hierarchy_score=60, accessibility_score=50, data_fidelity_score=90,
-        issues=[VisualIssue(category="labeling", severity="high", observation="small labels")],
-        safe_repairs=[repair_op],
-    )
+    needs_fix = _needs_fix("small labels", repair_op)
     satisfied = VisualCritique(
         verdict="satisfied", message_alignment_score=90, readability_score=90,
         visual_hierarchy_score=90, accessibility_score=90, data_fidelity_score=95,
     )
-    engine = RalphEngine(client=FakeLLMClient([proposal, needs_fix, satisfied]))
-    project_id, iteration_dir = _new_iteration()
-
-    result = engine.apply_user_request(
-        FigurePlan(figure_kind="bar"), _data(), "make it nicer",
-        mode=RalphMode.autopilot, project_id=project_id, iteration_dir=iteration_dir, dataset=_profile(),
-    )
+    result = _run(RalphEngine(client=FakeLLMClient([proposal, needs_fix, satisfied])),
+                  FigurePlan(figure_kind="bar"), "make it nicer", RalphMode.autopilot)
 
     assert result.critique.verdict == "satisfied"
     assert result.stopped_reason == "satisfied"
@@ -197,84 +160,46 @@ def test_autopilot_mode_loops_until_satisfied() -> None:
     assert [op.operation_id for op in result.applied_operations] == ["r1"]
 
 
-def test_autopilot_mode_stops_after_max_repairs_even_if_still_needs_changes() -> None:
-    proposal = EditProposal(summary="no-op", operations=[])
-
-    def _needs_fix(i: int) -> VisualCritique:
-        return VisualCritique(
-            verdict="needs_changes", message_alignment_score=60, readability_score=40,
-            visual_hierarchy_score=60, accessibility_score=50, data_fidelity_score=90,
-            issues=[VisualIssue(category="labeling", severity="high", observation=f"issue variant {i}")],
-            safe_repairs=[SetStyleOption(operation_id=f"r{i}", option="font_scale", value=1.0 + i * 0.1)],
-        )
-
-    # Distinct issue text each round so "repeated signature" doesn't stop it
-    # early -- this test wants to exercise the max-repairs cap specifically.
-    responses = [proposal, _needs_fix(1), _needs_fix(2), _needs_fix(3)]
-    engine = RalphEngine(client=FakeLLMClient(responses))
-    project_id, iteration_dir = _new_iteration()
-
-    result = engine.apply_user_request(
-        FigurePlan(figure_kind="bar"), _data(), "make it nicer",
-        mode=RalphMode.autopilot, project_id=project_id, iteration_dir=iteration_dir, dataset=_profile(),
-    )
-
-    assert result.stopped_reason == "max_auto_repairs_applied"
-    assert result.rounds == 2  # exactly MAX_AUTO_REPAIRS rounds applied
-
-
 def test_autopilot_mode_stops_on_repeated_issue_signature() -> None:
     proposal = EditProposal(summary="no-op", operations=[])
-    same_issue = VisualIssue(category="labeling", severity="high", observation="same issue every time")
     # The repair itself doesn't fix the reported issue -- the next critique
     # reports the identical signature, so the loop should stop early.
     unhelpful_repair = SetStyleOption(operation_id="r1", option="font_scale", value=1.1)
-    critique = VisualCritique(
-        verdict="needs_changes", message_alignment_score=60, readability_score=40,
-        visual_hierarchy_score=60, accessibility_score=50, data_fidelity_score=90,
-        issues=[same_issue], safe_repairs=[unhelpful_repair],
-    )
-    engine = RalphEngine(client=FakeLLMClient([proposal, critique, critique]))
-    project_id, iteration_dir = _new_iteration()
-
-    result = engine.apply_user_request(
-        FigurePlan(figure_kind="bar"), _data(), "make it nicer",
-        mode=RalphMode.autopilot, project_id=project_id, iteration_dir=iteration_dir, dataset=_profile(),
-    )
+    critique = _needs_fix("same issue every time", unhelpful_repair)
+    result = _run(RalphEngine(client=FakeLLMClient([proposal, critique, critique])),
+                  FigurePlan(figure_kind="bar"), "make it nicer", RalphMode.autopilot)
 
     assert result.stopped_reason == "repeated_issue_signature"
     assert result.rounds == 1
 
 
-def test_autopilot_accepts_shared_history_across_calls() -> None:
-    """A caller reusing one RalphHistory across chat turns should still see
-    the max-repairs cap enforced cumulatively, not reset per call.
-    """
+@pytest.mark.parametrize(
+    ("preloaded_rounds", "later_critiques", "expected_rounds"),
+    [
+        # Cap reached within a single call: three distinct blocking critiques,
+        # only MAX_AUTO_REPAIRS (2) repair passes are applied before stopping.
+        (0, ["variant 1", "variant 2", "variant 3"], 2),
+        # Cap enforced cumulatively across chat turns: two repair rounds are
+        # already recorded on a shared history, so this call stops at round 0.
+        (2, ["round three issue"], 0),
+    ],
+    ids=["within_one_call", "cumulative_shared_history"],
+)
+def test_autopilot_enforces_max_auto_repairs_cap(
+    preloaded_rounds: int, later_critiques: list[str], expected_rounds: int
+) -> None:
     proposal = EditProposal(summary="no-op", operations=[])
     repair_op = SetStyleOption(operation_id="r1", option="font_scale", value=1.3)
 
-    def _needs_fix(text: str) -> VisualCritique:
-        return VisualCritique(
-            verdict="needs_changes", message_alignment_score=60, readability_score=40,
-            visual_hierarchy_score=60, accessibility_score=50, data_fidelity_score=90,
-            issues=[VisualIssue(category="labeling", severity="high", observation=text)],
-            safe_repairs=[repair_op],
-        )
-
+    # Distinct issue text each round so "repeated signature" doesn't stop the
+    # loop early -- this test exercises the max-repairs cap specifically.
     history = RalphHistory()
-    # Simulate two prior repair rounds already recorded (e.g. from an
-    # earlier call), each with a distinct issue so signature-repetition
-    # isn't what stops this call -- the repair-count cap should be.
-    history.record(_needs_fix("round one issue"), [repair_op])
-    history.record(_needs_fix("round two issue"), [repair_op])
+    for i in range(preloaded_rounds):
+        history.record(_needs_fix(f"prior round {i}", repair_op), [repair_op])
 
-    this_call_critique = _needs_fix("round three issue")
-    engine = RalphEngine(client=FakeLLMClient([proposal, this_call_critique]))
-    project_id, iteration_dir = _new_iteration()
-    result = engine.apply_user_request(
-        FigurePlan(figure_kind="bar"), _data(), "tweak more",
-        mode=RalphMode.autopilot, project_id=project_id, iteration_dir=iteration_dir,
-        dataset=_profile(), history=history,
-    )
+    responses = [proposal, *[_needs_fix(text, repair_op) for text in later_critiques]]
+    result = _run(RalphEngine(client=FakeLLMClient(responses)), FigurePlan(figure_kind="bar"),
+                  "tweak more", RalphMode.autopilot, history=history)
+
     assert result.stopped_reason == "max_auto_repairs_applied"
-    assert result.rounds == 0
+    assert result.rounds == expected_rounds

@@ -47,7 +47,7 @@ def _profile() -> DatasetProfile:
     )
 
 
-def _export(tmp_path: Path) -> Path:
+def _export() -> Path:
     data = [{"region": "North", "value": 42}, {"region": "South", "value": 28}]
     plan = FigurePlan(
         figure_kind="bar",
@@ -69,10 +69,14 @@ def _export(tmp_path: Path) -> Path:
     )
 
 
-def test_export_project_writes_a_zip_with_the_expected_structure(tmp_path: Path) -> None:
-    archive = _export(tmp_path)
+def test_export_project_writes_a_self_contained_zip() -> None:
+    archive = _export()
+    # A single .zip lands in (and only in) the given exports dir.
     assert archive.exists() and archive.suffix == ".zip"
+    assert archive.parent.name == "exports"
+    assert list(archive.parent.iterdir()) == [archive]
 
+    # It carries the full reproducibility bundle.
     with zipfile.ZipFile(archive) as z:
         names = {Path(n).relative_to(Path(n).parts[0]).as_posix() for n in z.namelist() if not n.endswith("/")}
     expected = {
@@ -88,14 +92,8 @@ def test_export_project_writes_a_zip_with_the_expected_structure(tmp_path: Path)
     assert expected <= names
 
 
-def test_export_project_writes_only_into_the_given_exports_dir(tmp_path: Path) -> None:
-    archive = _export(tmp_path)
-    assert archive.parent.name == "exports"
-    assert list(archive.parent.iterdir()) == [archive]
-
-
 def test_reproduce_script_actually_regenerates_the_figure(tmp_path: Path) -> None:
-    archive = _export(tmp_path)
+    archive = _export()
     extract_dir = tmp_path / "extracted"
     with zipfile.ZipFile(archive) as z:
         z.extractall(extract_dir)
@@ -112,16 +110,17 @@ def test_reproduce_script_actually_regenerates_the_figure(tmp_path: Path) -> Non
     assert (project_root / "output" / "figure.svg").stat().st_size > 100
 
 
-def test_generate_reproduce_script_uses_only_the_public_api() -> None:
-    plan = FigurePlan(figure_kind="bar", bindings={"region": ColumnBinding(columns=["region"])})
+def test_generated_reproduce_script_and_alt_text_are_wellformed() -> None:
+    plan = FigurePlan(figure_kind="bar", title="Revenue", bindings={"region": ColumnBinding(columns=["region"])})
+
+    # reproduce.py drives only the public make_figure() API, never internals.
     script = generate_reproduce_script(plan)
     assert "from sprezzature_figures import make_figure" in script
     assert "sprezzature_figures.studio" not in script
     assert "sprezzature_figures.core" not in script
 
-
-def test_generate_alt_text_ends_each_sentence_with_a_period() -> None:
-    plan = FigurePlan(figure_kind="bar", title="Revenue", bindings={"region": ColumnBinding(columns=["region"])})
+    # alt-text sentences are properly terminated (regression: they must not run
+    # together, and the text must end with a period).
     text = generate_alt_text(plan, _profile())
-    assert ". Based on" in text  # regression: sentences must not run together
+    assert ". Based on" in text
     assert text.endswith(".")

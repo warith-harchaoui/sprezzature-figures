@@ -36,31 +36,27 @@ def _isolated_studio_home(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Pa
     return home
 
 
-def test_studio_home_respects_env_override(tmp_path: Path) -> None:
+def test_studio_home_respects_env_override() -> None:
     assert studio_home() == Path(os.environ["SPREZZATURE_STUDIO_HOME"])
 
 
-def test_atomic_write_text_creates_parents_and_content(tmp_path: Path) -> None:
-    target = tmp_path / "a" / "b" / "c.txt"
-    atomic_write_text(target, "hello")
-    assert target.read_text(encoding="utf-8") == "hello"
+def test_atomic_write_creates_parents_replaces_and_leaves_no_temp(tmp_path: Path) -> None:
+    # Creates missing parent directories and writes the content.
+    nested = tmp_path / "a" / "b" / "c.txt"
+    atomic_write_text(nested, "hello")
+    assert nested.read_text(encoding="utf-8") == "hello"
 
+    # A second write replaces the file in place...
+    atomic_write_text(nested, "second")
+    assert nested.read_text(encoding="utf-8") == "second"
 
-def test_atomic_write_bytes_leaves_no_temp_file_behind(tmp_path: Path) -> None:
+    # ...and byte writes leave no stray temp file behind (atomic rename).
     target = tmp_path / "out.bin"
     atomic_write_bytes(target, b"\x00\x01")
-    leftovers = [p for p in tmp_path.iterdir() if p.name != "out.bin"]
-    assert leftovers == []
+    assert [p for p in tmp_path.iterdir() if p.name not in {"out.bin", "a"}] == []
 
 
-def test_atomic_write_replaces_existing_file(tmp_path: Path) -> None:
-    target = tmp_path / "f.txt"
-    atomic_write_text(target, "first")
-    atomic_write_text(target, "second")
-    assert target.read_text(encoding="utf-8") == "second"
-
-
-def test_create_project_sets_up_isolated_layout() -> None:
+def test_create_project_sets_up_isolated_unique_layout() -> None:
     project_dir = create_project("My Project", source_name="revenue.csv")
     assert project_dir.parent == projects_root()
     for sub in ("source", "data", "iterations", "exports"):
@@ -70,15 +66,13 @@ def test_create_project_sets_up_isolated_layout() -> None:
     assert manifest.source_name == "revenue.csv"
     assert manifest.current_iteration == 0
 
-
-def test_create_project_ids_are_unique_even_for_same_name() -> None:
-    a = create_project("Duplicate")
-    b = create_project("Duplicate")
-    assert a != b
-    assert load_manifest(a).project_id != load_manifest(b).project_id
+    # Same name -> still a distinct project id and directory.
+    other = create_project("My Project")
+    assert other != project_dir
+    assert load_manifest(other).project_id != manifest.project_id
 
 
-def test_allocate_iteration_dir_numbers_sequentially_and_bumps_manifest() -> None:
+def test_iteration_allocation_and_manifest_persistence() -> None:
     project_dir = create_project("Iter test")
     first = allocate_iteration_dir(project_dir)
     second = allocate_iteration_dir(project_dir)
@@ -86,9 +80,7 @@ def test_allocate_iteration_dir_numbers_sequentially_and_bumps_manifest() -> Non
     assert second.name == "0002"
     assert load_manifest(project_dir).current_iteration == 2
 
-
-def test_save_manifest_round_trips() -> None:
-    project_dir = create_project("Round trip")
+    # Manifest edits round-trip through save/load.
     manifest = load_manifest(project_dir)
     manifest.current_iteration = 7
     save_manifest(project_dir, manifest)
@@ -96,46 +88,36 @@ def test_save_manifest_round_trips() -> None:
 
 
 @pytest.mark.slow
-def test_render_figure_to_project_vega_lite_kind_produces_svg_and_png() -> None:
-    project_dir = create_project("Render test")
+@pytest.mark.parametrize(
+    "kind, data, is_vega",
+    [
+        # Vega-Lite kind renders through the spec pipeline.
+        ("bar", [{"region": "North", "value": 42}, {"region": "South", "value": 28}], True),
+        # Hand-authored SVG kind (no tabular data) uses the SVG path.
+        ("waffle", None, False),
+    ],
+)
+def test_render_figure_to_project_writes_only_inside_iteration_dir(kind, data, is_vega) -> None:
+    project_dir = create_project(f"render {kind}")
     iteration_dir = allocate_iteration_dir(project_dir)
-    data = [{"region": "North", "value": 42}, {"region": "South", "value": 28}]
     result = render_figure_to_project(
-        "bar", data, project_id=project_dir.name, iteration_dir=iteration_dir, title="t"
+        kind, data, project_id=project_dir.name, iteration_dir=iteration_dir, title="t"
     )
     assert isinstance(result, RenderResult)
-    assert result.source_path.exists() and result.source_path.suffix == ".svg"
-    assert result.preview_path.exists() and result.preview_path.suffix == ".png"
-    assert result.width > 0 and result.height > 0
-    assert result.mime_type == "image/svg+xml"
+    assert result.source_path.exists()
+    assert result.preview_path.exists() and result.preview_path.stat().st_size > 0
     assert result.iteration_id == iteration_dir.name
 
-
-@pytest.mark.slow
-def test_render_figure_to_project_hand_authored_svg_kind_also_works() -> None:
-    project_dir = create_project("Waffle render test")
-    iteration_dir = allocate_iteration_dir(project_dir)
-    result = render_figure_to_project(
-        "waffle", None, project_id=project_dir.name, iteration_dir=iteration_dir
-    )
-    assert result.source_path.exists()
-    assert result.preview_path.exists()
-    assert result.preview_path.stat().st_size > 0
-
-
-@pytest.mark.slow
-def test_render_figure_to_project_writes_only_inside_iteration_dir() -> None:
-    """Nothing from a render should ever land in assets/, web/, or the
-    process cwd (plan §8's isolation requirement).
-    """
-    project_dir = create_project("Isolation test")
-    iteration_dir = allocate_iteration_dir(project_dir)
-    data = [{"region": "North", "value": 1}]
-    result = render_figure_to_project(
-        "bar", data, project_id=project_dir.name, iteration_dir=iteration_dir
-    )
+    # Isolation (plan §8): every artifact lands inside the iteration dir, never
+    # in assets/, web/, or the process cwd.
     assert iteration_dir in result.source_path.parents
     assert iteration_dir in result.preview_path.parents
+
+    if is_vega:
+        assert result.source_path.suffix == ".svg"
+        assert result.preview_path.suffix == ".png"
+        assert result.mime_type == "image/svg+xml"
+        assert result.width > 0 and result.height > 0
 
 
 def test_render_preview_rejects_unknown_renderer(tmp_path: Path) -> None:

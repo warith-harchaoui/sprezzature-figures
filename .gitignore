@@ -14,3 +14,8 @@ build/
 !assets/vega-examples/*.json
 
 .private/
+# Coverage reports
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml

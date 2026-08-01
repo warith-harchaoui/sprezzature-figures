@@ -9,6 +9,8 @@ Warith Harchaoui <warith.harchaoui@gmail.com>
 
 from __future__ import annotations
 
+import pytest
+
 from sprezzature_figures.studio.assistant.schemas import VisualCritique, VisualIssue
 from sprezzature_figures.studio.ralph.stopping import (
     has_blocking_issues,
@@ -34,31 +36,27 @@ def _critique(**overrides) -> VisualCritique:
     return VisualCritique(**defaults)
 
 
-def test_issue_signature_normalizes_whitespace_and_case() -> None:
-    a = VisualIssue(category="labeling", severity="high", observation="  Labels   Too Small  ")
-    b = VisualIssue(category="labeling", severity="high", observation="labels too small")
-    assert issue_signature(a) == issue_signature(b)
+def _issue(category: str = "contrast", severity: str = "high", observation: str = "x") -> VisualIssue:
+    return VisualIssue(category=category, severity=severity, observation=observation)
 
 
-def test_issue_signature_differs_by_category_or_severity() -> None:
-    a = VisualIssue(category="labeling", severity="high", observation="x")
-    b = VisualIssue(category="contrast", severity="high", observation="x")
-    c = VisualIssue(category="labeling", severity="low", observation="x")
-    assert issue_signature(a) != issue_signature(b)
-    assert issue_signature(a) != issue_signature(c)
-
-
-def test_has_blocking_issues_true_for_high_or_critical() -> None:
-    assert has_blocking_issues(_critique(issues=[VisualIssue(category="contrast", severity="high", observation="x")]))
-    assert has_blocking_issues(
-        _critique(issues=[VisualIssue(category="contrast", severity="critical", observation="x")])
+def test_issue_signature_normalizes_and_discriminates() -> None:
+    # Same problem, different whitespace/case -> identical signature.
+    assert issue_signature(_issue(category="labeling", observation="  Labels   Too Small  ")) == issue_signature(
+        _issue(category="labeling", observation="labels too small")
     )
+    # Category or severity changing -> distinct signature.
+    base = _issue(category="labeling", severity="high")
+    assert issue_signature(base) != issue_signature(_issue(category="contrast", severity="high"))
+    assert issue_signature(base) != issue_signature(_issue(category="labeling", severity="low"))
 
 
-def test_has_blocking_issues_false_for_low_medium_only() -> None:
-    assert not has_blocking_issues(
-        _critique(issues=[VisualIssue(category="contrast", severity="low", observation="x")])
-    )
+@pytest.mark.parametrize(
+    ("severity", "blocking"),
+    [("critical", True), ("high", True), ("medium", False), ("low", False)],
+)
+def test_has_blocking_issues_only_for_high_or_critical(severity: str, blocking: bool) -> None:
+    assert has_blocking_issues(_critique(issues=[_issue(severity=severity)])) is blocking
 
 
 def test_score_total_sums_all_five_scores() -> None:
@@ -69,65 +67,41 @@ def test_score_total_sums_all_five_scores() -> None:
     assert score_total(c) == 150
 
 
-def test_should_stop_when_satisfied() -> None:
-    c = _critique(verdict="satisfied")
-    stop, reason = should_stop(
-        critique=c, repairs_applied_so_far=0, previous_signature_set=None,
-        previous_score_total=None, remaining_safe_repairs=0,
-    )
-    assert stop and reason == "satisfied"
+# One critique per stopping scenario, with the loop state that should trigger
+# (or, for the last case, not trigger) that specific §11.5 criterion.
+_SATISFIED = _critique(verdict="satisfied")
+_LOW_ONLY = _critique(issues=[_issue(severity="low")])
+_REPEATED = _critique(issues=[_issue(observation="same issue")])
+_BLOCKING = _critique(issues=[_issue()])
 
 
-def test_should_stop_when_no_blocking_issues() -> None:
-    c = _critique(verdict="needs_changes", issues=[VisualIssue(category="contrast", severity="low", observation="x")])
-    stop, reason = should_stop(
-        critique=c, repairs_applied_so_far=0, previous_signature_set=None,
-        previous_score_total=None, remaining_safe_repairs=1,
-    )
-    assert stop and reason == "no_high_or_critical_issues"
-
-
-def test_should_stop_when_signature_repeats() -> None:
-    c = _critique(issues=[VisualIssue(category="contrast", severity="high", observation="same issue")])
-    prev_sig = signature_set(c)
-    stop, reason = should_stop(
-        critique=c, repairs_applied_so_far=0, previous_signature_set=prev_sig,
-        previous_score_total=None, remaining_safe_repairs=1,
-    )
-    assert stop and reason == "repeated_issue_signature"
-
-
-def test_should_stop_when_no_safe_repair_left() -> None:
-    c = _critique(issues=[VisualIssue(category="contrast", severity="high", observation="x")])
-    stop, reason = should_stop(
-        critique=c, repairs_applied_so_far=0, previous_signature_set=None,
-        previous_score_total=None, remaining_safe_repairs=0,
-    )
-    assert stop and reason == "no_safe_repair_available"
-
-
-def test_should_stop_when_max_auto_repairs_applied() -> None:
-    c = _critique(issues=[VisualIssue(category="contrast", severity="high", observation="x")])
-    stop, reason = should_stop(
-        critique=c, repairs_applied_so_far=2, previous_signature_set=None,
-        previous_score_total=None, remaining_safe_repairs=1,
-    )
-    assert stop and reason == "max_auto_repairs_applied"
-
-
-def test_should_stop_when_render_regressed() -> None:
-    c = _critique(issues=[VisualIssue(category="contrast", severity="high", observation="x")])
-    stop, reason = should_stop(
-        critique=c, repairs_applied_so_far=0, previous_signature_set=frozenset(),
-        previous_score_total=score_total(c) + 50, remaining_safe_repairs=1,
-    )
-    assert stop and reason == "render_regressed"
-
-
-def test_should_not_stop_when_progress_is_being_made() -> None:
-    c = _critique(issues=[VisualIssue(category="contrast", severity="high", observation="x")])
-    stop, reason = should_stop(
-        critique=c, repairs_applied_so_far=0, previous_signature_set=frozenset({"other:high:different"}),
-        previous_score_total=score_total(c) - 10, remaining_safe_repairs=1,
-    )
-    assert not stop and reason is None
+@pytest.mark.parametrize(
+    ("critique", "state", "expected"),
+    [
+        (_SATISFIED, {"remaining_safe_repairs": 0}, (True, "satisfied")),
+        (_LOW_ONLY, {"remaining_safe_repairs": 1}, (True, "no_high_or_critical_issues")),
+        (_REPEATED, {"previous_signature_set": signature_set(_REPEATED), "remaining_safe_repairs": 1},
+         (True, "repeated_issue_signature")),
+        (_BLOCKING, {"remaining_safe_repairs": 0}, (True, "no_safe_repair_available")),
+        (_BLOCKING, {"repairs_applied_so_far": 2, "remaining_safe_repairs": 1},
+         (True, "max_auto_repairs_applied")),
+        (_BLOCKING, {"previous_signature_set": frozenset(), "previous_score_total": score_total(_BLOCKING) + 50,
+                     "remaining_safe_repairs": 1}, (True, "render_regressed")),
+        (_BLOCKING, {"previous_signature_set": frozenset({"other:high:different"}),
+                     "previous_score_total": score_total(_BLOCKING) - 10, "remaining_safe_repairs": 1},
+         (False, None)),
+    ],
+    ids=[
+        "satisfied", "no_blocking_issues", "repeated_signature", "no_safe_repair",
+        "max_auto_repairs", "render_regressed", "progress_continues",
+    ],
+)
+def test_should_stop(critique: VisualCritique, state: dict, expected: tuple[bool, str | None]) -> None:
+    kwargs = {
+        "repairs_applied_so_far": 0,
+        "previous_signature_set": None,
+        "previous_score_total": None,
+        "remaining_safe_repairs": 1,
+    }
+    kwargs.update(state)
+    assert should_stop(critique=critique, **kwargs) == expected

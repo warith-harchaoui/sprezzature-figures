@@ -27,67 +27,53 @@ _VALID_STATUSES = {"stable", "experimental", "legacy", "unavailable"}
 _VALID_RENDER_STATES = {"not_run", "passed", "failed", "skipped"}
 
 
-def test_discover_scripts_finds_every_generator() -> None:
+def test_discover_and_dispatcher_reachability() -> None:
+    # Discovery finds every make_<kind> script (never make_figure itself)...
     scripts = audit.discover_scripts()
     assert len(scripts) >= 80
-    assert all(p.name.startswith("make_") for p in scripts)
-    assert all(p.stem != "make_figure" for p in scripts)
+    assert all(p.name.startswith("make_") and p.stem != "make_figure" for p in scripts)
+
+    # ...and dispatcher_reachable tells a plain name (treemap) apart from a
+    # hyphenated one whose file the underscore-guessing dispatcher can't find.
+    hyphenated = audit.SCRIPTS_DIR / "make_connected-scatter.py"
+    assert audit.derive_kind(hyphenated) == "connected-scatter"
+    assert audit.dispatcher_reachable("connected-scatter", hyphenated) is False
+    plain = audit.SCRIPTS_DIR / "make_treemap.py"
+    assert audit.dispatcher_reachable(audit.derive_kind(plain), plain) is True
 
 
-def test_dispatcher_reachable_detects_hyphen_mismatch() -> None:
-    path = audit.SCRIPTS_DIR / "make_connected-scatter.py"
-    assert path.exists(), "fixture script missing"
-    kind = audit.derive_kind(path)
-    assert kind == "connected-scatter"
-    assert audit.dispatcher_reachable(kind, path) is False
-
-
-def test_dispatcher_reachable_true_for_plain_name() -> None:
-    path = audit.SCRIPTS_DIR / "make_treemap.py"
-    kind = audit.derive_kind(path)
-    assert audit.dispatcher_reachable(kind, path) is True
-
-
-def test_static_audit_gives_every_script_an_explicit_status() -> None:
+def test_static_audit_is_wellformed_and_never_swallows_errors() -> None:
     entries = audit.run_audit(render=False, timeout=5)
     assert len(entries) == len(audit.discover_scripts())
     for entry in entries:
         assert entry["status"] in _VALID_STATUSES
         assert entry["render_test"] in _VALID_RENDER_STATES
-        # Import failures must always carry a recorded reason, never a
-        # silently-swallowed exception.
+        # An import failure always carries a recorded reason, and no error is
+        # ever a blank/non-string, so nothing is silently swallowed.
         if not entry["importable"]:
             assert entry["import_error"]
-
-
-def test_sankey_now_satisfies_the_make_contract() -> None:
-    """sankey used to expose only build_svg()/main(), no make_sankey()
-    (plan §7) -- confirms it was rewritten to take real data.
-    """
-    entries = audit.run_audit(render=False, timeout=5)
-    sankey = next(e for e in entries if e["kind"] == "sankey")
-    assert sankey["importable"] is True
-    assert sankey["callable_exists"] is True
-    assert sankey["demo_data_exists"] is True
-
-
-def test_difference_chart_currently_fails_the_make_contract() -> None:
-    """Documents a still-open gap: difference-chart exposes build_svg()/
-    main(), not make_difference_chart() -- not yet adapted (deferred, see
-    docs/studio/STATUS.md).
-    """
-    entries = audit.run_audit(render=False, timeout=5)
-    entry = next(e for e in entries if e["kind"] == "difference-chart")
-    assert entry["importable"] is True
-    assert entry["callable_exists"] is False
-    assert entry["status"] == "legacy"
-
-
-def test_import_errors_are_never_swallowed_without_a_message() -> None:
-    entries = audit.run_audit(render=False, timeout=5)
-    for entry in entries:
         for err in entry["errors"]:
             assert isinstance(err, str) and err.strip()
+
+
+@pytest.mark.parametrize(
+    "kind, callable_exists, status",
+    [
+        # sankey was rewritten to take real data + expose make_sankey (plan §7).
+        ("sankey", True, None),
+        # difference-chart still exposes only build_svg()/main(): a documented,
+        # deferred gap (see docs/studio/STATUS.md), pinned as legacy.
+        ("difference-chart", False, "legacy"),
+    ],
+)
+def test_audit_reflects_each_generator_contract(kind, callable_exists, status) -> None:
+    entry = next(e for e in audit.run_audit(render=False, timeout=5) if e["kind"] == kind)
+    assert entry["importable"] is True
+    assert entry["callable_exists"] is callable_exists
+    if kind == "sankey":
+        assert entry["demo_data_exists"] is True
+    if status is not None:
+        assert entry["status"] == status
 
 
 @pytest.mark.slow
