@@ -143,7 +143,7 @@ def test_make_figure_warns_on_non_stable_kind() -> None:
     with warnings.catch_warnings(record=True) as caught:
         warnings.simplefilter("always")
         with pytest.raises(AttributeError):
-            make_figure("sankey", [], out="/tmp/should-not-exist.svg")
+            make_figure("connected-scatter", [], out="/tmp/should-not-exist.svg")
     assert any("status='legacy'" in str(w.message) for w in caught)
 
 

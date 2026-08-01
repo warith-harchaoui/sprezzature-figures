@@ -60,13 +60,27 @@ def test_static_audit_gives_every_script_an_explicit_status() -> None:
             assert entry["import_error"]
 
 
-def test_sankey_currently_fails_the_make_contract() -> None:
-    """Documents the known gap: sankey exposes build_svg()/main(), not make_sankey()."""
+def test_sankey_now_satisfies_the_make_contract() -> None:
+    """sankey used to expose only build_svg()/main(), no make_sankey()
+    (plan §7) -- confirms it was rewritten to take real data.
+    """
     entries = audit.run_audit(render=False, timeout=5)
     sankey = next(e for e in entries if e["kind"] == "sankey")
     assert sankey["importable"] is True
-    assert sankey["callable_exists"] is False
-    assert sankey["status"] == "legacy"
+    assert sankey["callable_exists"] is True
+    assert sankey["demo_data_exists"] is True
+
+
+def test_difference_chart_currently_fails_the_make_contract() -> None:
+    """Documents a still-open gap: difference-chart exposes build_svg()/
+    main(), not make_difference_chart() -- not yet adapted (deferred, see
+    docs/studio/STATUS.md).
+    """
+    entries = audit.run_audit(render=False, timeout=5)
+    entry = next(e for e in entries if e["kind"] == "difference-chart")
+    assert entry["importable"] is True
+    assert entry["callable_exists"] is False
+    assert entry["status"] == "legacy"
 
 
 def test_import_errors_are_never_swallowed_without_a_message() -> None:

@@ -5,8 +5,8 @@ for the full spec; not itself committed). Branch: `feature/sprezzature-studio`.
 
 ## Phase
 
-Phase 2 (§3), Phase 3 (§4-§5), and the "basic figures" half of Phase 4 (§7)
-complete. Commits 1-6 of 13 landed.
+Phase 2 (§3), Phase 3 (§4-§5), and Phase 4 (§7, basic + adapted figures)
+complete. Commits 1-7 of 13 landed.
 
 ## Completed
 
@@ -149,19 +149,85 @@ complete. Commits 1-6 of 13 landed.
     `core`/`studio`, no new package-data or packages-list entry was needed).
     Verified anyway with the `-m packaging` wheel-build test.
 
+- **Commit 7 — Adapted specialized figures** (`scripts/make_waffle.py`,
+  `make_dumbbell.py`, `make_sankey.py`; `tests/test_adapted_figures.py`).
+  These are hand-authored-SVG generators (no Vega-Lite), each with a
+  hardcoded module-level dataset baked directly into `build_svg()` rather
+  than a `data` parameter — a materially different adaptation than Commit
+  6's Vega-Lite scripts.
+  - **waffle**: `DEMO_DATA` is now plain `{label, value}` rows (no
+    pre-baked colour). Colours cycle through the accessibility palette at
+    render time. Added `_allocate_squares()`, a largest-remainder
+    apportionment so arbitrary weights (not just pre-computed percentages
+    summing to 100) map onto the 100-square grid exactly.
+  - **dumbbell**: renamed the hardcoded `women`/`men`/`role` fields to
+    generic `group_a`/`group_b`/`category`, with `group_a_label`/
+    `group_b_label`/`value_prefix`/`value_suffix`/`axis_title` all now
+    parameters (defaulting to the original pay-gap text so DEMO_DATA's
+    rendered output is unchanged). Added `_nice_range()` (d3-style
+    round-number axis ticks) to replace the hardcoded `$24-$76` domain.
+    **Bug caught by testing, not inspection**: the first version of
+    `_nice_range` gave zero pixel headroom when the data extremes already
+    rounded to "nice" numbers (e.g. min=10, max=20 with step=2), so dots
+    sat flush against the plot edge and value labels overlapped the
+    category-name gutter. Fixed by padding the range 12% before
+    nice-rounding. Visually confirmed via PNG render before and after.
+    Known remaining limitation (documented, not fixed): the endpoint-label
+    "outward" placement assumes `group_b` is consistently ≥ `group_a`
+    across all rows; a row where the direction flips gets a slightly
+    cluttered label, acceptable for the common (consistent-direction)
+    case a dumbbell chart is normally used for.
+  - **sankey**: this is the fix for the original review's issue #3.
+    Replaced hardcoded `NODES`/`LINKS` (specific IDs like `"organic"`,
+    `"paid"`, a fixed 4-layer acquisition-funnel structure) with
+    `DEMO_DATA` as flow rows (`source`, `target`, `value`) and
+    `_nodes_and_links()`, which infers node identity *and* layer
+    automatically via longest-path topological layering — no caller ever
+    declares a layer by hand. `_root_dominance()` generalizes the old
+    `_dominant_channel()` (which only knew about 3 hardcoded channel IDs)
+    to walk back to whichever layer-0 root contributes the most volume,
+    for an arbitrary graph. `stage_names` defaults to the original 4 names
+    only when the inferred layer count matches; otherwise falls back to
+    generic "Stage N" labels (confirmed via a 3-stage custom-data render).
+    Dropped the original's hardcoded per-node-type color overrides
+    (certain outcome nodes forced green/teal, certain sinks forced gray)
+    since those were editorial choices specific to the demo dataset, not
+    something a generic algorithm should replicate.
+  - All three visually spot-checked via PNG render (`rsvg-convert` +
+    `Read`) with both DEMO_DATA and hand-written custom data before
+    trusting them — this is what caught the dumbbell axis-padding bug.
+  - `tests/test_adapted_figures.py`: end-to-end `make_figure()` renders
+    with arbitrary user data for all three (plan §7 explicitly requires
+    this for sankey; applied to all three here since the same "hardcoded
+    module data" bug class applied to all of them).
+  - Updated 3 existing tests that had asserted sankey was `legacy`
+    (written in Commit 1 to document the then-real gap) to assert it's now
+    `stable`; repointed the "still a real legacy gap" regression coverage
+    at `difference-chart` (deferred, not adapted this round) instead.
+  - Re-ran `audit_generators.py --render` + `build_figures_catalog.py`:
+    **15 of 90 figures now `stable`** (was 12).
+  - **Deferred**: `difference-chart` was not adapted. It's ~640 lines of
+    numpy-based Catmull-Rom curve smoothing, dual clipPath band fills, and
+    crossing detection — a different order of complexity than the other
+    three, and with 15 stable figures already well past the plan's ≥10
+    MVP bar, the time cost wasn't proportionate to finishing the full
+    named list this round. Left `legacy`, documented here and in a
+    regression test so the gap stays visible rather than silently dropped.
+
 ## Figures currently `stable`
 
 Per the latest `--render` audit run (90 generators total):
 `bar`, `line`, `area`, `scatter`, `histogram`, `boxplot`, `heatmap`,
-`columnrange`, `funnel`, `sunburst`, `treemap`, `waterfall` (12 of 90).
-Clears the plan §17 MVP acceptance bar of ≥10 stable figures.
+`columnrange`, `funnel`, `sunburst`, `treemap`, `waterfall`, `waffle`,
+`dumbbell`, `sankey` (15 of 90). Well past the plan §17 MVP acceptance bar
+of ≥10 stable figures.
 
 ## Tests run
 
 ```
-python3 -m pytest -q                              # 75 passed, 16 deselected
-python3 -m pytest -q -m slow                       # 15 passed, 76 deselected
-python3 -m pytest -q -m packaging tests/test_packaging.py   # 1 passed (~11s, needs network)
+python3 -m pytest -q                              # 76 passed, 24 deselected
+python3 -m pytest -q -m slow                       # 23 passed, 77 deselected
+python3 -m pytest -q -m packaging tests/test_packaging.py   # 1 passed (~17s, needs network)
 ruff check sprezzature_figures tools tests          # clean
 ```
 
@@ -191,8 +257,10 @@ ruff check sprezzature_figures tools tests          # clean
 
 ## Next
 
-Commit 7 — adapt initial specialized figures (treemap and funnel are already
-stable; dumbbell, difference-chart, waffle still need the `make_<kind>`
-contract; sankey needs a real rewrite to accept data instead of hardcoded
-`NODES`/`LINKS` before it can be exposed at all, per plan §7's explicit
-condition).
+Commit 8 — unified render + isolated project workspaces
+(`sprezzature_figures/core/rendering.py`, `projects.py`): `RenderResult`,
+the `~/.sprezzature-studio/projects/<id>/` layout, atomic writes, and
+Vega-Lite/SVG/matplotlib → PNG preview adapters extracted as an
+importable, testable service (not the monolithic Ralph script). This is
+the point the user flagged for a check-in ("after the render/LLM core is
+in place, before the GUI").

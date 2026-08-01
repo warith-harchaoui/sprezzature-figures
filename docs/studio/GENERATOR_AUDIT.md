@@ -4,9 +4,9 @@ Reproducible audit of every `scripts/make_*.py` generator against the
 `make_<kind>(data, *, out, title, ...) -> Path` contract the dispatcher
 expects. Regenerate with `python tools/audit_generators.py --render`.
 
-- **stable**: 12
+- **stable**: 15
 - **experimental**: 0
-- **legacy**: 78
+- **legacy**: 75
 - **unavailable**: 0
 - **total**: 90
 
@@ -36,7 +36,7 @@ expects. Regenerate with `python tools/audit_generators.py --render`.
 | `difference-chart` | legacy | **no** | **no** | **no** | not_run | No DEMO_DATA in make_difference-chart.py; No callable named 'make_difference_chart' in make_difference-chart.py |
 | `dotdensity` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_dotdensity.py; No callable named 'make_dotdensity' in make_dotdensity.py |
 | `dotplot` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_dotplot.py; No callable named 'make_dotplot' in make_dotplot.py |
-| `dumbbell` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_dumbbell.py; No callable named 'make_dumbbell' in make_dumbbell.py |
+| `dumbbell` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `edge-bundling` | legacy | **no** | **no** | **no** | not_run | No DEMO_DATA in make_edge-bundling.py; No callable named 'make_edge_bundling' in make_edge-bundling.py |
 | `embedding_projector` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_embedding_projector.py; No callable named 'make_embedding_projector' in make_embedding_projector.py |
 | `forest` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_forest.py; No callable named 'make_forest' in make_forest.py |
@@ -77,7 +77,7 @@ expects. Regenerate with `python tools/audit_generators.py --render`.
 | `ridgeline` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_ridgeline.py; No callable named 'make_ridgeline' in make_ridgeline.py |
 | `rose` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_rose.py; No callable named 'make_rose' in make_rose.py |
 | `rug` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_rug.py; No callable named 'make_rug' in make_rug.py |
-| `sankey` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_sankey.py; No callable named 'make_sankey' in make_sankey.py |
+| `sankey` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `scatter` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `scatter3d` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_scatter3d.py; No callable named 'make_scatter3d' in make_scatter3d.py |
 | `sfdp-largegraph` | legacy | **no** | **no** | **no** | not_run | No DEMO_DATA in make_sfdp-largegraph.py; No callable named 'make_sfdp_largegraph' in make_sfdp-largegraph.py |
@@ -96,7 +96,7 @@ expects. Regenerate with `python tools/audit_generators.py --render`.
 | `variwide` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_variwide.py; No callable named 'make_variwide' in make_variwide.py |
 | `venn` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_venn.py; No callable named 'make_venn' in make_venn.py |
 | `voronoi` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_voronoi.py; No callable named 'make_voronoi' in make_voronoi.py |
-| `waffle` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_waffle.py; No callable named 'make_waffle' in make_waffle.py |
+| `waffle` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `waterfall` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `windbarb` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_windbarb.py; No callable named 'make_windbarb' in make_windbarb.py |
 | `windrose` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_windrose.py; No callable named 'make_windrose' in make_windrose.py |
