@@ -34,7 +34,7 @@ Nothing here can change what the data says.
 ## What always needs your confirmation (`policy.requires_confirmation`)
 
 `SetFigureKind`, `AddFilter`, `RemoveFilter`, `AggregateRows`,
-`LimitCategories`, `CalculateColumn`, `BindColumn`, `UnbindColumn` — anything
+`LimitCategories`, `CalculateColumn`, `BindColumn`, `UnbindColumn`: anything
 that reshapes what's shown. This is checked **independent of** whatever the
 model's own `EditProposal.requires_confirmation` flag says: a model that
 forgets to flag a risky edit doesn't get to skip the check.
@@ -51,7 +51,7 @@ rule, silently hide a category, deceptively truncate an axis, present a
 correlation as causation, or report a render as correct when it failed.
 The last one is enforced structurally: `render_figure_to_project()` raises
 if no output file is produced, so a failed render never reaches the
-critique step in the first place — there's no "satisfied" verdict to give
+critique step in the first place: there's no "satisfied" verdict to give
 it by mistake.
 
 ## Stopping criteria (autopilot)
@@ -88,5 +88,5 @@ missed critique degrades to a note, not an exception.
 Exactly: the rendered PNG, the figure kind, bound roles, title/subtitle,
 canvas dimensions, a column-level statistical summary, the transformations
 applied, and the previous critique if one exists
-(`ralph.critic.critique_prompt`). Never the raw dataset — see
+(`ralph.critic.critique_prompt`). Never the raw dataset; see
 [DATA_PRIVACY.md](DATA_PRIVACY.md).

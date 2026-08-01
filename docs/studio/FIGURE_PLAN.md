@@ -2,7 +2,7 @@
 
 `sprezzature_figures.core.figure_plan.FigurePlan` is the single source of
 truth for a figure under construction. Neither the chat transcript nor the
-rendered PNG is authoritative — only this Pydantic model is. Every accepted
+rendered PNG is authoritative: only this Pydantic model is. Every accepted
 chat edit produces a new `FigurePlan` (recorded as an
 [`IterationRecord`](ARCHITECTURE.md#where-a-render-actually-lives)); Ralph
 never edits the rendered image directly.
@@ -25,7 +25,7 @@ class FigurePlan(BaseModel):
 ```
 
 `UserIntent` (in the same module) is deliberately the same type the plan's
-own spec calls `IntentAnalysis` in the LLM-schemas section — one shape, not
+own spec calls `IntentAnalysis` in the LLM-schemas section: one shape, not
 two names for the same fields.
 
 ## Bindings
@@ -71,7 +71,7 @@ a labelling concern for the style layer.
 
 Don't confuse `Transform` (a data-shaping step, lives inside
 `FigurePlan.transformations`) with `FigureOperation` (a chat-driven *edit
-to the plan itself* — `SetTitle`, `BindColumn`, `AddFilter`, ...). An
+to the plan itself*: `SetTitle`, `BindColumn`, `AddFilter`, ...). An
 `AddFilter` operation *carries* a `Transform` as its payload; applying that
 operation is what appends the transform to the plan. See
 [RALPH_LOOP.md](RALPH_LOOP.md) for the full operation list and which ones

@@ -3,7 +3,7 @@
 The model never generates or executes code. Every call site is scoped to
 one Pydantic schema in `sprezzature_figures.studio.assistant.schemas` (plus
 `core.figure_plan.UserIntent`, reused rather than duplicated), and every
-response is validated — with exactly one repair attempt — before anything
+response is validated (with exactly one repair attempt) before anything
 downstream sees it.
 
 ## The client (`assistant.client`)
@@ -16,7 +16,7 @@ class LLMClient(Protocol):
 
 `BestEngineLLMClient` is the real implementation: it wraps
 `best_engine_ai_helper.llm.chat(prompt, *, system, images, json_schema,
-temperature)` — a single function, not separate text/vision methods —
+temperature)` (a single function, not separate text/vision methods),
 which is why `chat_text`/`chat_vision` on the client both funnel into one
 private `_call()`. Model selection (which tag, which backend: Ollama,
 OpenAI-compatible, LangChain) is entirely `best-engine-ai-helper`'s job;
@@ -59,7 +59,7 @@ the raw text so the caller can show the user what actually came back.
 ### `UserIntent` (plan §10.1, `core.figure_plan.UserIntent`)
 
 What the user is trying to show, extracted from their request plus a
-`DatasetProfile` (column names/types/statistics — never raw rows unless
+`DatasetProfile` (column names/types/statistics; never raw rows unless
 explicitly configured otherwise, see [DATA_PRIVACY.md](DATA_PRIVACY.md)).
 `analytical_goal` is one of `comparison | trend | distribution |
 composition | relationship | flow | hierarchy | geography |
@@ -77,11 +77,11 @@ class EditProposal(BaseModel):
 ```
 
 `FigureOperation` is the same discriminated union from
-[FIGURE_PLAN.md](FIGURE_PLAN.md) — 15 kinds, no free-form edits. Every
+[FIGURE_PLAN.md](FIGURE_PLAN.md): 15 kinds, no free-form edits. Every
 operation is re-validated against `core.validate_operation()` after the
 model returns it (`assistant.edit.propose_edit`): anything referencing a
 nonexistent column or an undeclared style option is dropped, silently, one
-operation at a time — not the whole proposal.
+operation at a time, not the whole proposal.
 
 ### `VisualCritique` (plan §10.3)
 
@@ -100,14 +100,14 @@ class VisualCritique(BaseModel):
 ```
 
 `safe_repairs` is re-filtered by `ralph.policy.is_safe_repair()` and
-`core.validate_operation()` before anything in it is applied — the model's
+`core.validate_operation()` before anything in it is applied: the model's
 own claim that a repair is "safe" is never trusted blindly. See
 [RALPH_LOOP.md](RALPH_LOOP.md).
 
 ## `FigureRecommendation`/`RecommendationSet` (plan §6, LLM-facing half only)
 
 `assistant.recommend.explain_recommendations()` reranks/explains a
-**pre-filtered** list of already-compatible figure kinds — it never
+**pre-filtered** list of already-compatible figure kinds: it never
 introduces a kind outside the list it's handed. The deterministic
 compatibility/scoring step that would build that candidate list (plan §6's
 `studio/recommendation/` package) isn't built yet; see

@@ -98,7 +98,7 @@ my-thesis:
 
 ## See also
 
-- [polarity-and-color.md](polarity-and-color.md) — the `--polarity` tags
+- [polarity-and-color.md](polarity-and-color.md): the `--polarity` tags
   used in the recipes above.
-- [audit-figure.md](audit-figure.md) — the pre-ship rule set every preset
+- [audit-figure.md](audit-figure.md): the pre-ship rule set every preset
   is built to satisfy.

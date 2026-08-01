@@ -19,7 +19,7 @@ machine at all. Pointing `BEST_LLM_*` / `SPREZZATURE_LLM_BASE_URL` at a remote
 service is the only way data reaches a third party, and then only the fields
 below. Whichever backend is configured, only this leaves the process:
 
-- **Intent analysis**: your free-text request, plus a `DatasetProfile` —
+- **Intent analysis**: your free-text request, plus a `DatasetProfile`:
   column names, semantic types (categorical/numeric/datetime/...), null
   ratios, unique counts, min/max/mean/median, a handful of sample values
   per column. See `core.dataset.ColumnProfile` for the exact fields.
@@ -31,7 +31,7 @@ below. Whichever backend is configured, only this leaves the process:
   transformations, the previous critique if any).
 
 **Raw data rows are never sent** unless a future setting explicitly opts
-in (plan §1.4 describes such a toggle; it is not implemented — there is
+in (plan §1.4 describes such a toggle; it is not implemented: there is
 currently no code path that sends row-level data to the model at all, not
 even behind a flag).
 
@@ -39,7 +39,7 @@ even behind a flag).
 
 `.sprezzature.zip` archives (see `studio/export/`) are written only to the
 project's own `exports/` directory, never uploaded. `alt-text.txt` inside
-the archive is generated **deterministically**, with no model call — export
+the archive is generated **deterministically**, with no model call; export
 is one of the flows required to work with no LLM/VLM configured at all.
 
 ## Degraded mode
@@ -47,8 +47,8 @@ is one of the flows required to work with no LLM/VLM configured at all.
 The app starts, imports data, profiles it, and lets you manually pick a
 figure kind and bind columns whether or not an LLM/VLM is configured or
 reachable (`studio.config.engine_status()` is a non-blocking, best-effort
-snapshot — it never probes the backend at startup, so an unreachable model
+snapshot: it never probes the backend at startup, so an unreachable model
 never delays or blocks launch). Manual-mode Ralph requests (apply the
-explicit edit, render, report — no inspection) work without a model too;
+explicit edit, render, report; no inspection) work without a model too;
 only `assisted`/`autopilot` modes and the chat's structured-interpretation
 step need one.

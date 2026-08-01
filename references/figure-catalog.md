@@ -1,4 +1,4 @@
-# Figure catalog — Vega-first, SVG fallback, thematic maps
+# Figure catalog: Vega-first, SVG fallback, thematic maps
 
 This is the catalog of everything the engines can draw and how each one is
 built: everyday and statistical charts as Vega-Lite, the harder cases as
@@ -81,7 +81,7 @@ set that genuinely stays in matplotlib.
 | `table` | — | not a chart (render as HTML) |
 
 The full-Vega and offline-compute rows are all worked out with runnable,
-rendered examples in "Closing the residue — the hard cases, done" below.
+rendered examples in "Closing the residue: the hard cases, done" below.
 
 ## 1. Bar
 
@@ -203,24 +203,24 @@ Hold precomputed `lo`/`hi` instead? Use a `rule` with `y`/`y2`.
 ]}
 ```
 
-## Explainability & causality — from extracted model data
+## Explainability & causality: from extracted model data
 
 These replace `shap.plots.*` and DoWhy's graphviz output. You extract the
 numbers from the model and drive Vega yourself; the plot is just data.
 
-- **SHAP beeswarm** — melt `shap_values.values` to long rows
+- **SHAP beeswarm**: melt `shap_values.values` to long rows
   `{feature, shap, feat_val_norm}`; `circle` mark, `x`=shap, `y`=feature,
   `color`=normalised feature value, random `yOffset` as jitter. (Vega-Lite
   has no true swarm packing; jitter is the honest approximation.)
-- **SHAP / permutation importance** — `mean(|shap|)` per feature → sorted
+- **SHAP / permutation importance**: `mean(|shap|)` per feature → sorted
   horizontal bar (`"sort":"-x"`). Clean.
-- **SHAP waterfall** — one row's contributions; running sum via a `window`
+- **SHAP waterfall**: one row's contributions; running sum via a `window`
   transform, floating bars with `x`/`x2`. Workable, the most awkward.
-- **LIME weights** — `explanation.as_list()` → diverging horizontal bar,
+- **LIME weights**: `explanation.as_list()` → diverging horizontal bar,
   color by sign. Clean.
-- **Partial dependence / ICE** — faint per-sample `line` layer (`detail`
+- **Partial dependence / ICE**: faint per-sample `line` layer (`detail`
   = line id) under a bold PD average line. Clean.
-- **Causal DAG** — precompute the layout in Python (`networkx`
+- **Causal DAG**: precompute the layout in Python (`networkx`
   `graphviz_layout`/`spring_layout`), emit nodes `{id,x,y}` and edges
   `{x,y,x2,y2}`; layer `rule` (edges) + `circle` (nodes) + `text`
   (labels). Reproducible. (Auto-layout needs full Vega's `force`
@@ -239,7 +239,7 @@ inches × dpi (e.g. Nature single column = 89 mm ≈ 3.5 in → 1050 px at
 density fields need **full Vega** (`isocontour` / `kde2d` transforms),
 not Vega-Lite.
 
-## Closing the residue — the hard cases, done
+## Closing the residue: the hard cases, done
 
 These are the plots people assume need matplotlib. Each is a real Vega or
 full-Vega spec, rendered and eyeballed through the Ralph Eyeball Loop. The
@@ -273,19 +273,19 @@ idiomatic Vega-Lite; runnable specs ship in `assets/vega-examples/`.
 
 The residue is now short and specific:
 
-- **Live-interactive 3D** — rotating / zooming a 3D camera in the browser, and
+- **Live-interactive 3D**: rotating / zooming a 3D camera in the browser, and
   volume rendering. *Static* 3D surfaces / wireframes / 3D scatter are doable
   (project offline, draw full-Vega polygons, see "Closing the residue" above),
   but Vega has no camera or z-axis, so live rotation stays in plotly / three.js.
-- **Streamplot** — integrated streamlines. Only doable by integrating the
+- **Streamplot**: integrated streamlines. Only doable by integrating the
   lines offline and drawing them as `line` / `path` marks; not shipped here.
-- **Interpolated `imshow`** — matplotlib's bilinear / bicubic smoothing
+- **Interpolated `imshow`**: matplotlib's bilinear / bicubic smoothing
   between pixels, or an in-memory pixel array. Vega draws hard `rect` cells (a
   fine grid approximates but is not true interpolation); its `image` mark only
   takes an external URL.
-- **> ~50k marks** — in-browser rendering gets heavy; rasterise with
+- **> ~50k marks**: in-browser rendering gets heavy; rasterise with
   matplotlib / datashader.
-- **Broken / twin-independent secondary axes** — deliberately discouraged
+- **Broken / twin-independent secondary axes**: deliberately discouraged
   (the auditor flags dual axes).
 
 Everything else (the everyday 2D statistical and scientific plotting API of
@@ -347,7 +347,7 @@ Auto-derived from `assets/`. Render any with `python scripts/render_diagram.py a
 - `waffle.vl.json`
 - `waterfall.vl.json`
 
-**SVG escape-hatch — statistics, networks, 3D, animation, maps + the library sweep** (`assets/svg-examples/`, 91):
+**SVG escape-hatch: statistics, networks, 3D, animation, maps + the library sweep** (`assets/svg-examples/`, 91):
 
 - `alluvial.svg`
 - `andrews.svg`

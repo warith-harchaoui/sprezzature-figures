@@ -36,7 +36,7 @@ network call.
 - **Every generator's `make_<kind>()` contract**: `test_make_figure.py`'s
   `test_every_stable_kind_renders_from_registry` is parametrized off the
   registry itself, so it automatically covers new figures as they're
-  promoted to `stable` — not two hardcoded kind names.
+  promoted to `stable`, not two hardcoded kind names.
 - **The registry/dispatcher fix for hyphenated kinds**: a regression test
   asserts `make_figure("connected-scatter", ...)` actually reaches
   `make_connected-scatter.py` (raising `AttributeError` for the real
@@ -52,12 +52,12 @@ network call.
   missing-column skip-note.
 - **Export**: a test unzips a produced `.sprezzature.zip` and runs
   `python reproduce.py` as an actual subprocess in the extracted
-  directory — not just a string check that the template contains the
+  directory, not just a string check that the template contains the
   right import.
 - **The NiceGUI app**: a real subprocess-launched server, HTTP-checked for
   the expected page content (`test_app_smoke.py`). Deeper UI interaction
   (upload a file and click through via a simulated browser) was attempted
-  with `nicegui.testing.User` and abandoned — the upload-simulation API
+  with `nicegui.testing.User` and abandoned: the upload-simulation API
   assumed didn't exist in the installed nicegui version, and chasing it
   further wasn't worth it against the build plan's own caution against
   testing "every visual detail by pixel coordinates." Instead, every piece
@@ -77,9 +77,9 @@ network call.
 `.github/workflows/ci.yml` runs on 🍎 macOS, 🐧 Ubuntu, and 🪟 Windows, on
 push to `main` and on pull requests:
 
-- **`test` job** — ruff + the default suite + `-m slow`, across the 3 OSes ×
+- **`test` job**: ruff + the default suite + `-m slow`, across the 3 OSes ×
   Python 3.10 and 3.13 (6 combinations).
-- **`packaging` job** — `-m packaging` on each of the 3 OSes (Python 3.12):
+- **`packaging` job**, `-m packaging` on each of the 3 OSes (Python 3.12):
   builds the wheel, installs it clean, renders a figure, confirms the bare
   install stays studio-independent, then installs the `[studio]` extra and
   checks every studio subpackage imports and all three console scripts
@@ -88,7 +88,7 @@ push to `main` and on pull requests:
   hold on a clean machine, on every supported OS.
 
 CI caught a real bug local development never surfaced: `make_situation_map.py`
-raised `SystemExit` — not an `Exception` subclass — at module import time
+raised `SystemExit` (not an `Exception` subclass) at module import time
 for a missing dependency, which killed the whole test run in a clean
 environment where that dependency wasn't already installed globally (as it
 happened to be on the development machine). Fixed at the source (see

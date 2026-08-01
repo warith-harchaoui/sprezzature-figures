@@ -49,7 +49,7 @@ Scoped out along the way, each documented at the point it was cut (see
 
 - **`difference-chart` generator adaptation.** ~640 lines of numpy
   Catmull-Rom curve smoothing, dual clipPath band fills, and crossing
-  detection — a different order of complexity than the other
+  detection: a different order of complexity than the other
   hand-authored-SVG generators, and 15 stable figures already clears the
   build plan's ≥10 MVP bar.
 - **The deterministic figure-recommendation engine** (plan §6:
@@ -59,8 +59,8 @@ Scoped out along the way, each documented at the point it was cut (see
   already-filtered candidate list from a caller.
 - **Four of eight planned UI components**: `recommendation_cards.py` (no
   recommendation engine to back it), `property_panel.py`,
-  `history_panel.py`, `export_dialog.py` (backends complete and tested —
-  `core.history`, `studio.export` — but no button in the app calls them
+  `history_panel.py`, `export_dialog.py` (backends complete and tested:
+  `core.history`, `studio.export`, but no button in the app calls them
   yet).
 - **Separate `pages/home.py` / `pages/settings.py` routes.** Merged into
   one page to avoid session-id hand-off across NiceGUI page navigation,
@@ -71,10 +71,10 @@ Scoped out along the way, each documented at the point it was cut (see
   chasing further against the plan's own caution against exhaustive
   pixel-level UI testing. Covered instead by direct unit tests of the
   logic behind each UI action, plus a real subprocess server + HTTP smoke
-  test.
-- **Real-model (`llm`/`vision`-marked) tests.** Every test runs against
-  `FakeLLMClient`; none of this has been exercised against a live Ollama
-  or remote model from within the test suite.
+  test. The model path itself now has opt-in `llm`/`vision`-marked tests
+  that exercise the live `BestEngineLLMClient` and the full Ralph loop
+  against a real VLM (skipped when no backend is reachable, kept out of the
+  default and CI runs).
 
 ## Not attempted at all (out of the MVP's stated scope)
 

@@ -1,9 +1,9 @@
-# Figure auditor — rule catalogue
+# Figure auditor: rule catalogue
 
 Purpose: the static rule set that `scripts/audit_figure.py` enforces on a
 figure *source* before it ships. Every rule is decidable from the input
-alone — a Vega-Lite JSON spec, a matplotlib SVG, or an HTML document with
-`<figure>` blocks — with no browser, no model, and no network.
+alone (a Vega-Lite JSON spec, a matplotlib SVG, or an HTML document with
+`<figure>` blocks) with no browser, no model, and no network.
 
 ## Rule catalogue
 
@@ -24,9 +24,9 @@ alone — a Vega-Lite JSON spec, a matplotlib SVG, or an HTML document with
 
 ## Severity semantics
 
-- `error` — exit non-zero. The chart will mislead most readers.
-- `warning` — exit zero by default; exit non-zero under `--strict`.
-- `info` — exit zero always; printed for reviewer awareness.
+- `error`: exit non-zero. The chart will mislead most readers.
+- `warning`: exit zero by default; exit non-zero under `--strict`.
+- `info`: exit zero always; printed for reviewer awareness.
 
 ## Output shapes
 
@@ -58,10 +58,10 @@ audit_figure.py fig.json
 
 A small subset of rules is mechanically fixable:
 
-- **`missing-polarity`** — the fixer appends the polarity tag inferred
+- **`missing-polarity`**: the fixer appends the polarity tag inferred
   from the metric name (`response_time_ms` → `(lower is better)`).
-- **`role-img-missing`** — adds `role="img"` to the `<figure>`.
-- **`alt-missing`** — adds `alt=""` (empty) to the `<img>`, deferring
+- **`role-img-missing`**: adds `role="img"` to the `<figure>`.
+- **`alt-missing`**: adds `alt=""` (empty) to the `<img>`, deferring
   the real description to `sprezzature-vision/scripts/alt_from_ollama.py`.
 
 All other rules require a design decision and are **not** auto-fixed.

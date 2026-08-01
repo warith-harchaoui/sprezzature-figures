@@ -1,7 +1,7 @@
-# Polarity and color — "higher is better" made explicit
+# Polarity and color: "higher is better" made explicit
 
 > Purpose: make every quantitative axis state its polarity in words, then
-> reinforce it with a CVD-safe color — never rely on color alone.
+> reinforce it with a CVD-safe color; never rely on color alone.
 
 Every quantitative axis on a chart encodes a value the reader has to
 score in 3 seconds. The first thing they ask is **"is this trend good
@@ -41,9 +41,9 @@ breach overlays.
 
 | Polarity intent | Base color | Psychology (+) terms | Psychology (−) terms |
 |---|---|---|---|
-| **higher-better** — goal-directed | **Green** (`#28CD41`) | Health, Hope, Freshness, Growth, Prosperity | Boredom, Stagnation, Sickness |
-| **lower-better** — goal-directed | **Green** (same) | (same as above) | (same) |
-| **target = N** — compliance frame | **Blue** (`#007AFF`) | Trust, Loyalty, Logic, Serenity, Security | Coldness, Unfriendliness |
+| **higher-better**, goal-directed | **Green** (`#28CD41`) | Health, Hope, Freshness, Growth, Prosperity | Boredom, Stagnation, Sickness |
+| **lower-better**, goal-directed | **Green** (same) | (same as above) | (same) |
+| **target = N**, compliance frame | **Blue** (`#007AFF`) | Trust, Loyalty, Logic, Serenity, Security | Coldness, Unfriendliness |
 | **breach overlay** (SLA violation, threshold cross) | **Red** (`#FF3B30`) | Power, Passion, Energy | Danger, Warning, Anger |
 | **neutral / no polarity** | Qualitative palette (curated 8) | — | — |
 
@@ -93,7 +93,7 @@ In every other case the qualitative palette wins. The audit rule
 whose metric name matches a polarised pattern but whose axis title
 has no direction tag; auto-fix rewrites the title to append the tag.
 
-## Emotions and concepts — the wider palette
+## Emotions and concepts: the wider palette
 
 Beyond polarity, the same palette CSV projects each hex onto
 Emotion / Concepts labels. `_style.emotion_to_hex` and

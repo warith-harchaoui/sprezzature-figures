@@ -1,4 +1,4 @@
-# Model explainability — SHAP / Shapash / TimeSHAP / LIME
+# Model explainability: SHAP / Shapash / TimeSHAP / LIME
 
 > **Experimental.** This surface is wired at the command level, not yet at the
 > visual-design level: SHAP / Shapash / LIME render through matplotlib, so their
@@ -20,8 +20,8 @@ Sources: [SHAP docs](https://shap.readthedocs.io/),
 [LIME paper](https://arxiv.org/abs/1602.04938) and
 [Interpretable ML by Molnar](https://christophm.github.io/interpretable-ml-book/).
 
-For Vega-native versions of these plots — beeswarm, importance bar,
-waterfall, LIME weights, PD/ICE — driven from the extracted model numbers
+For Vega-native versions of these plots (beeswarm, importance bar,
+waterfall, LIME weights, PD/ICE) driven from the extracted model numbers
 rather than matplotlib, see [figure-catalog.md](figure-catalog.md)
 § "Explainability & causality".
 
@@ -41,19 +41,19 @@ rather than matplotlib, see [figure-catalog.md](figure-catalog.md)
 ### SHAP (default)
 
 Writes to `<out>/`:
-- `summary_bar.png` + `.svg` — global mean absolute SHAP per feature.
-- `summary_beeswarm.png` + `.svg` — global impact + direction.
-- `dependence_<feature>.png` + `.svg` — one per top-N feature.
-- `waterfall_row_<i>.png` + `.svg` — one row (largest absolute
+- `summary_bar.png` + `.svg`: global mean absolute SHAP per feature.
+- `summary_beeswarm.png` + `.svg`: global impact + direction.
+- `dependence_<feature>.png` + `.svg`: one per top-N feature.
+- `waterfall_row_<i>.png` + `.svg`: one row (largest absolute
   prediction by default; override with `--waterfall-row <i>`).
-- `shap_values.parquet` — every SHAP value for downstream analysis.
+- `shap_values.parquet`: every SHAP value for downstream analysis.
 
 ### Shapash
 
 Writes to `<out>/`:
-- `report.html` — the full Shapash HTML report (global + local +
+- `report.html`: the full Shapash HTML report (global + local +
   filters). Open in a browser; no server needed.
-- `smart_explainer.pkl` — the underlying `SmartExplainer` for further
+- `smart_explainer.pkl`: the underlying `SmartExplainer` for further
   interactive use in a notebook.
 - Everything SHAP writes (Shapash uses SHAP under the hood; the
   intermediate artefacts are kept).
@@ -61,18 +61,18 @@ Writes to `<out>/`:
 ### TimeSHAP
 
 Writes to `<out>/`:
-- `event_level.png` + `.svg` — attribution per event (time step).
-- `feature_level.png` + `.svg` — attribution per feature averaged
+- `event_level.png` + `.svg`: attribution per event (time step).
+- `feature_level.png` + `.svg`: attribution per feature averaged
   over time.
-- `cell_level.png` + `.svg` — the full `(T × features)` grid.
-- `pruning.png` + `.svg` — the pruning heuristic's convergence.
-- `timeshap_report.json` — machine-readable summary.
+- `cell_level.png` + `.svg`: the full `(T × features)` grid.
+- `pruning.png` + `.svg`: the pruning heuristic's convergence.
+- `timeshap_report.json`: machine-readable summary.
 
 ### LIME
 
 Writes to `<out>/`:
-- `lime_row_<i>.html` — one interactive explanation per row.
-- `lime_summary.parquet` — top-K contribution features per row for
+- `lime_row_<i>.html`: one interactive explanation per row.
+- `lime_summary.parquet`: top-K contribution features per row for
   downstream analysis.
 
 ## Guardrails
