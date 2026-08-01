@@ -102,6 +102,7 @@ packages = [
     "sprezzature_figures.editor",
     "sprezzature_figures.editor.ingest",
     "sprezzature_figures.editor.assistant",
+    "sprezzature_figures.editor.ralph",
     "sprezzature_figures_scripts",
 ]
 
