@@ -130,6 +130,29 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
         ],
         "optional_roles": [],
     },
+    "waffle": {
+        "required_roles": [
+            {"name": "label", "label": "Category", "accepted_types": ["categorical"], "required": True},
+            {"name": "value", "label": "Weight / share", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "dumbbell": {
+        "required_roles": [
+            {"name": "category", "label": "Category", "accepted_types": ["categorical"], "required": True},
+            {"name": "group_a", "label": "First group value", "accepted_types": ["numeric"], "required": True},
+            {"name": "group_b", "label": "Second group value", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "sankey": {
+        "required_roles": [
+            {"name": "source", "label": "Source node", "accepted_types": ["categorical"], "required": True},
+            {"name": "target", "label": "Target node", "accepted_types": ["categorical"], "required": True},
+            {"name": "value", "label": "Flow volume", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
 }
 
 

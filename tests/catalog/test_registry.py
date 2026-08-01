@@ -57,10 +57,13 @@ def test_get_figure_definition_unknown_kind_raises_with_available_list() -> None
         get_figure_definition("nonexistent_chart_xyz")
 
 
-def test_sankey_registered_as_legacy_missing_make_callable() -> None:
+def test_sankey_registered_as_stable_with_make_callable() -> None:
+    """Regression: sankey used to expose only build_svg()/main(), no
+    make_sankey() (plan §7). Now rewritten to take real data.
+    """
     d = get_figure_definition("sankey")
     assert d.callable_name == "make_sankey"
-    assert d.status == "legacy"
+    assert d.status == "stable"
 
 
 def test_list_kinds_stable_matches_registry_status() -> None:

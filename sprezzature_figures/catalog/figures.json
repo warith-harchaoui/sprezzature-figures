@@ -815,11 +815,36 @@
     "category": "Change",
     "description": "Two dots connected by a line per category (before vs. after). Use for clear before\u2013after or group-A vs. group-B comparison across many categories.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_dumbbell.py",
     "callable_name": "make_dumbbell",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "category",
+        "label": "Category",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "group_a",
+        "label": "First group value",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "group_b",
+        "label": "Second group value",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -832,8 +857,6 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_dumbbell.py",
-      "No callable named 'make_dumbbell' in make_dumbbell.py",
       "Default output path falls back to a shared assets/ directory"
     ]
   },
@@ -2100,11 +2123,36 @@
     "category": "Flow",
     "description": "Sankey diagram: flows between nodes with width proportional to volume. Use for energy balance, budget allocation, or any source \u2192 sink flow across categories.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_sankey.py",
     "callable_name": "make_sankey",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "source",
+        "label": "Source node",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "target",
+        "label": "Target node",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "value",
+        "label": "Flow volume",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -2117,8 +2165,6 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_sankey.py",
-      "No callable named 'make_sankey' in make_sankey.py",
       "Default output path falls back to a shared assets/ directory"
     ]
   },
@@ -2732,11 +2778,28 @@
     "category": "Composition",
     "description": "Square grid of unit cells coloured by category. Use as an engaging, precise alternative to a pie chart for part-of-whole comparisons (each cell = 1 % or N units).",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_waffle.py",
     "callable_name": "make_waffle",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "label",
+        "label": "Category",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "value",
+        "label": "Weight / share",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -2749,8 +2812,6 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_waffle.py",
-      "No callable named 'make_waffle' in make_waffle.py",
       "Default output path falls back to a shared assets/ directory"
     ]
   },
