@@ -112,8 +112,11 @@ def build_svg(
     Parameters
     ----------
     data : list[dict[str, Any]]
-        Rows with keys ``label`` (str), ``value`` (float), ``kind``
-        ("positive" | "negative" | "total").
+        Rows with keys ``label`` (str), ``value`` (float) and an
+        optional ``kind`` ("positive" | "negative" | "total"). When
+        ``kind`` is omitted it is inferred from the sign of ``value``
+        ("positive" if ``value >= 0`` else "negative"); "total" is
+        never inferred and must be stated explicitly.
     title : str
         Chart headline.
     subtitle : str
@@ -132,8 +135,12 @@ def build_svg(
     bars: List[Dict[str, Any]] = []
     running = 0.0
     for row in data:
-        kind = row["kind"]
         val = float(row["value"])
+        # ``kind`` is optional. When a row does not declare it, infer the
+        # bar shape from the sign of its value. We never infer "total":
+        # that is a semantic claim about the number (a running anchor at
+        # zero), so it must be stated explicitly by the caller.
+        kind = row.get("kind") or ("positive" if val >= 0 else "negative")
         if kind == "total":
             # Total bars always anchor at zero
             bars.append({"label": row["label"], "value": val,
