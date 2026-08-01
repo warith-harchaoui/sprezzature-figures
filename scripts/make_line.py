@@ -23,6 +23,7 @@ from typing import Any, Dict, List, Optional
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _render import svg_example_path, write_svg  # noqa: E402
+from _vl import categorical_domain_and_range  # noqa: E402
 
 INK = "#1D1D1F"
 SECONDARY = "#6E6E73"
@@ -59,8 +60,52 @@ def _build_vegalite_spec(
     height: int,
 ) -> Dict[str, Any]:
     months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-    series = sorted({row["series"] for row in data})
-    color_range = [SERIES_COLORS.get(s, "#007AFF") for s in series]
+    domain_range = categorical_domain_and_range(data, "series", SERIES_COLORS)
+
+    encoding: Dict[str, Any] = {
+        "x": {
+            "field": "month",
+            "type": "ordinal",
+            "sort": months,
+            "title": "Month",
+            "axis": {
+                "labelFont": FONT,
+                "titleFont": FONT,
+                "titleColor": INK,
+                "labelColor": INK,
+                "grid": False,
+            },
+        },
+        "y": {
+            "field": "value",
+            "type": "quantitative",
+            "title": "Value",
+            "axis": {
+                "labelFont": FONT_MONO,
+                "titleFont": FONT,
+                "titleColor": INK,
+                "labelColor": SECONDARY,
+                "gridColor": GRIDLINE,
+            },
+        },
+        "tooltip": [
+            {"field": "month", "type": "ordinal", "title": "Month"},
+            {"field": "value", "type": "quantitative", "title": "Value"},
+        ],
+    }
+    # "series" is an optional data role (see catalog.HAND_ROLES): only add
+    # the color encoding/legend when the data actually carries it -- a
+    # domain/legend for categories that aren't in the data would be
+    # misleading, and referencing an absent field would crash.
+    if domain_range is not None:
+        domain, color_range = domain_range
+        encoding["color"] = {
+            "field": "series",
+            "type": "nominal",
+            "scale": {"domain": domain, "range": color_range},
+            "legend": {"title": "Series", "titleFont": FONT, "labelFont": FONT, "orient": "top-left"},
+        }
+        encoding["tooltip"].insert(0, {"field": "series", "type": "nominal", "title": "Series"})
 
     return {
         "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -81,44 +126,7 @@ def _build_vegalite_spec(
         },
         "data": {"values": data},
         "mark": {"type": "line", "point": True, "strokeWidth": 2.5},
-        "encoding": {
-            "x": {
-                "field": "month",
-                "type": "ordinal",
-                "sort": months,
-                "title": "Month",
-                "axis": {
-                    "labelFont": FONT,
-                    "titleFont": FONT,
-                    "titleColor": INK,
-                    "labelColor": INK,
-                    "grid": False,
-                },
-            },
-            "y": {
-                "field": "value",
-                "type": "quantitative",
-                "title": "Value",
-                "axis": {
-                    "labelFont": FONT_MONO,
-                    "titleFont": FONT,
-                    "titleColor": INK,
-                    "labelColor": SECONDARY,
-                    "gridColor": GRIDLINE,
-                },
-            },
-            "color": {
-                "field": "series",
-                "type": "nominal",
-                "scale": {"domain": series, "range": color_range},
-                "legend": {"title": "Series", "titleFont": FONT, "labelFont": FONT, "orient": "top-left"},
-            },
-            "tooltip": [
-                {"field": "series", "type": "nominal", "title": "Series"},
-                {"field": "month", "type": "ordinal", "title": "Month"},
-                {"field": "value", "type": "quantitative", "title": "Value"},
-            ],
-        },
+        "encoding": encoding,
         "config": {"view": {"stroke": "transparent"}, "font": FONT},
     }
 
