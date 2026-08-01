@@ -5,8 +5,8 @@ for the full spec; not itself committed). Branch: `feature/sprezzature-studio`.
 
 ## Phase
 
-Phase 2 (§3), Phase 3 (§4-§5), and Phase 4 (§7, basic + adapted figures)
-complete. Commits 1-7 of 13 landed.
+Phase 2 (§3), Phase 3 (§4-§5), Phase 4 (§7), and Phase 5 (§8, unified
+render) complete. Commits 1-8 of 13 landed.
 
 ## Completed
 
@@ -214,6 +214,42 @@ complete. Commits 1-7 of 13 landed.
     named list this round. Left `legacy`, documented here and in a
     regression test so the gap stays visible rather than silently dropped.
 
+- **Commit 8 — Unified render + isolated project workspaces**
+  (`sprezzature_figures/core/rendering.py`, `projects.py`;
+  `tests/core/test_rendering_and_projects.py`).
+  - `atomic_write_bytes()`/`atomic_write_text()`: write to a sibling temp
+    file then `os.replace()`, so a crash mid-write never leaves a
+    truncated file at the destination. Used by every write in both new
+    modules.
+  - `svg_to_png_bytes()` uses `vl_convert.svg_to_png()` — already a core
+    dependency, so no new dependency needed, and it works uniformly for
+    *both* Vega-Lite-derived SVG and the hand-authored SVG from Commit 7's
+    generators (verified with `bar` and `waffle`, one Vega-Lite one not).
+  - `render_preview()` dispatches on the registry's declared `renderer`
+    field; raises a clear `ValueError` for renderer kinds with no preview
+    path yet (e.g. `html`) instead of silently producing nothing — plan
+    §21.5 ("never mask a generator error").
+  - `render_figure_to_project()` is the one place that ties
+    `catalog`/`make_figure`/atomic-write/PNG-preview together — the
+    "unified render" the plan asks for. Verified end to end manually
+    (created a project, allocated an iteration, rendered `bar` into it,
+    read the resulting PNG back with the Read tool to confirm it's a real
+    chart, not just a non-empty file) before writing the test suite.
+  - `sprezzature_figures/core/projects.py`: `~/.sprezzature-studio/
+    projects/<slug>-<8 hex>/{manifest.json, source/, data/, iterations/,
+    exports/}` layout exactly per plan §8. Root overridable via
+    `SPREZZATURE_STUDIO_HOME` (tests never touch the real home directory).
+    `allocate_iteration_dir()` zero-pads and auto-increments
+    (`0001`, `0002`, ...) and bumps the manifest atomically.
+  - No pyproject.toml changes needed this time — `rendering.py`/
+    `projects.py` live inside the already-registered `core` package.
+    Confirmed nothing regressed with `-m packaging`.
+  - Deliberately did NOT build `core/iterations.py` (IterationRecord,
+    undo/redo/compare) here even though iteration *directories* now
+    exist — that model and its history logic is Commit 12's job, once
+    there's a Ralph engine (Commit 10) actually producing critiques to
+    store alongside each iteration.
+
 ## Figures currently `stable`
 
 Per the latest `--render` audit run (90 generators total):
@@ -225,9 +261,9 @@ of ≥10 stable figures.
 ## Tests run
 
 ```
-python3 -m pytest -q                              # 76 passed, 24 deselected
-python3 -m pytest -q -m slow                       # 23 passed, 77 deselected
-python3 -m pytest -q -m packaging tests/test_packaging.py   # 1 passed (~17s, needs network)
+python3 -m pytest -q                              # 85 passed, 27 deselected
+python3 -m pytest -q -m slow                       # 26 passed, 86 deselected
+python3 -m pytest -q -m packaging tests/test_packaging.py   # 1 passed (~11s, needs network)
 ruff check sprezzature_figures tools tests          # clean
 ```
 
@@ -257,10 +293,11 @@ ruff check sprezzature_figures tools tests          # clean
 
 ## Next
 
-Commit 8 — unified render + isolated project workspaces
-(`sprezzature_figures/core/rendering.py`, `projects.py`): `RenderResult`,
-the `~/.sprezzature-studio/projects/<id>/` layout, atomic writes, and
-Vega-Lite/SVG/matplotlib → PNG preview adapters extracted as an
-importable, testable service (not the monolithic Ralph script). This is
-the point the user flagged for a check-in ("after the render/LLM core is
-in place, before the GUI").
+Commit 9 — LLM client integration (`sprezzature_figures/studio/assistant/`):
+wrap `best_engine_ai_helper.llm.chat()` behind the plan's `LLMClient`
+protocol, Pydantic schemas for structured output (reusing `core.operations
+.FigureOperation`/`core.figure_plan.UserIntent` rather than duplicating
+them), a `FakeLLMClient` for dependency-free tests, and the JSON-repair
+retry flow. After this, the render/LLM core is in place — the checkpoint
+the user asked for before continuing into the GUI (Commit 10 Ralph, Commit
+11 NiceGUI).

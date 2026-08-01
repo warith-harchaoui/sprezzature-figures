@@ -20,6 +20,23 @@ from .operations import (
     FigureOperation,
     Transform,
 )
+from .projects import (
+    ProjectManifest,
+    allocate_iteration_dir,
+    create_project,
+    load_manifest,
+    projects_root,
+    save_manifest,
+    studio_home,
+    write_iteration_json,
+)
+from .rendering import (
+    RenderResult,
+    atomic_write_bytes,
+    atomic_write_text,
+    render_figure_to_project,
+    render_preview,
+)
 from .validation import validate_operation, validate_plan
 
 __all__ = [
@@ -31,9 +48,22 @@ __all__ = [
     "FigureOperation",
     "FigurePlan",
     "OutputOptions",
+    "ProjectManifest",
+    "RenderResult",
     "StyleOptions",
     "Transform",
     "UserIntent",
+    "allocate_iteration_dir",
+    "atomic_write_bytes",
+    "atomic_write_text",
+    "create_project",
+    "load_manifest",
+    "projects_root",
+    "render_figure_to_project",
+    "render_preview",
+    "save_manifest",
+    "studio_home",
     "validate_operation",
     "validate_plan",
+    "write_iteration_json",
 ]
