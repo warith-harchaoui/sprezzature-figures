@@ -12,6 +12,7 @@ Warith Harchaoui <warith.harchaoui@gmail.com>
 from __future__ import annotations
 
 import pytest
+from pydantic import ValidationError
 
 from sprezzature_figures.catalog import get_figure_definition
 from sprezzature_figures.core import ColumnProfile, DatasetProfile, FigurePlan, UserIntent
@@ -148,13 +149,13 @@ def test_propose_edit_drops_operations_referencing_unknown_columns() -> None:
     assert [op.operation_id for op in result.operations] == ["good"]
 
 
-def test_propose_edit_drops_operations_with_undeclared_style_option() -> None:
-    plan = FigurePlan(figure_kind="bar")
-    bad = SetStyleOption(operation_id="bad", option="not_a_real_field", value=1)
-    proposal = EditProposal(summary="style", operations=[bad])
-    client = FakeLLMClient([proposal])
-    result = propose_edit(client, "change style", plan, dataset=_profile())
-    assert result.operations == []
+def test_set_style_option_undeclared_option_cannot_be_built() -> None:
+    # An undeclared style option is now impossible to construct (option is a
+    # Literal of the real StyleOptions fields), so a bad one can never reach
+    # propose_edit's drop step in the first place -- a stronger guarantee than
+    # dropping it after the fact.
+    with pytest.raises(ValidationError):
+        SetStyleOption(operation_id="bad", option="not_a_real_field", value=1)
 
 
 def test_propose_edit_preserves_summary_even_when_all_operations_dropped() -> None:

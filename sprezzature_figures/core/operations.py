@@ -154,10 +154,45 @@ class SetSubtitle(_OperationBase):
     subtitle: str | None = None
 
 
+# The style options a SetStyleOption may target. Kept in lockstep with
+# figure_plan.StyleOptions' fields (a test asserts they match) and declared as a
+# Literal so the value is a hard enum in the JSON schema the model receives --
+# without it the model invents option names like "label_size" that
+# validate_operation then rejects, so the edit silently does nothing.
+StyleOptionName = Literal[
+    "theme",
+    "accessibility_mode",
+    "width",
+    "height",
+    "font_scale",
+    "legend_position",
+    "sort_order",
+    "number_format",
+    "date_format",
+    "highlight_values",
+    "show_grid",
+    "show_labels",
+    "label_rotation",
+    "palette",
+]
+
+
 class SetStyleOption(_OperationBase):
     operation_type: Literal["set_style_option"] = "set_style_option"
-    option: str
-    value: Any = None
+    option: StyleOptionName = Field(
+        description=(
+            "Which style setting to change. font_scale = text/label SIZE (>1 "
+            "bigger, <1 smaller); legend_position = where the legend sits "
+            "(top/right/bottom/left/none); label_rotation = tilt of axis labels "
+            "in degrees; sort_order = category order; show_grid / show_labels = "
+            "on/off toggles; palette / theme = colours; width / height = canvas "
+            "size in px; number_format / date_format = value formatting."
+        )
+    )
+    value: Any = Field(
+        default=None,
+        description="The new value for that option (e.g. 1.4 for font_scale, \"bottom\" for legend_position).",
+    )
 
 
 class AddFilter(_OperationBase):

@@ -98,15 +98,27 @@ def test_validate_operation_accepts_known_bound_column() -> None:
     assert validate_operation(op, dataset=_dataset()) == []
 
 
-def test_validate_operation_flags_undeclared_style_option() -> None:
-    op = SetStyleOption(operation_id="op1", option="not_a_real_option", value=1)
-    issues = validate_operation(op, dataset=_dataset())
-    assert any("not a declared StyleOptions field" in i.message for i in issues)
+def test_set_style_option_rejects_undeclared_option_at_construction() -> None:
+    # option is a Literal of the real StyleOptions fields, so an invented name
+    # is caught the moment the operation is built -- the model can never even
+    # emit one that reaches the render path.
+    with pytest.raises(ValidationError):
+        SetStyleOption(operation_id="op1", option="not_a_real_option", value=1)
 
 
 def test_validate_operation_accepts_declared_style_option() -> None:
     op = SetStyleOption(operation_id="op1", option="width", value=1200)
     assert validate_operation(op, dataset=_dataset()) == []
+
+
+def test_style_option_names_match_style_options_fields() -> None:
+    # SetStyleOption.option's Literal must list exactly the StyleOptions fields;
+    # this catches drift if a style option is added/renamed on one side only.
+    from typing import get_args
+
+    from sprezzature_figures.core.operations import StyleOptionName
+
+    assert set(get_args(StyleOptionName)) == set(StyleOptions.model_fields)
 
 
 def test_validate_operation_ignores_operations_with_no_column_reference() -> None:
