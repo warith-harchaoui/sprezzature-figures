@@ -1,6 +1,6 @@
 # Roadmap
 
-## Built (Commits 1-12 of the original 13-commit build plan)
+## Built (the original 13-commit build plan, plus follow-up hardening)
 
 - Reproducible generator audit (`tools/audit_generators.py`) and an
   explicit figure registry (`sprezzature_figures/catalog/`) that resolves
@@ -30,6 +30,14 @@
 - Iteration history (undo/redo/revert/branch, no separate branch-tracking
   structure needed) and reproducible `.sprezzature.zip` export bundles,
   verified by actually running the exported `reproduce.py`.
+- Deterministic execution of `FigurePlan.transformations`
+  (`core.transformations`): filter / sort / aggregate / top-N / group-others /
+  calculate run over the imported rows on the render and export paths, so a
+  chat-requested filter or sort actually changes the figure.
+- Grammar-constrained structured output end to end (the response schema is
+  passed to the model, discriminated unions flattened for Ollama), model-facing
+  schemas described field by field, and a Ralph loop that degrades to
+  `RalphResult.notes` instead of crashing when a live model fails.
 - A lightweight CI workflow (not in the original plan, added on request),
   which caught one real cross-environment bug local development couldn't
   have.
@@ -44,12 +52,6 @@ Scoped out along the way, each documented at the point it was cut (see
   detection — a different order of complexity than the other
   hand-authored-SVG generators, and 15 stable figures already clears the
   build plan's ≥10 MVP bar.
-- **`FigurePlan.transformations` execution.** No engine walks
-  `transformations` and applies filter/sort/aggregate/etc. to a live
-  dataset. Not owned by any commit in the build plan; the current app
-  renders imported rows with bindings applied but no transformations run.
-  `Transform` stays a fully-specified, auditable record ready for that
-  engine.
 - **The deterministic figure-recommendation engine** (plan §6:
   `studio/recommendation/compatibility.py`, `scoring.py`). Not in the
   13-commit build plan at all. `assistant.recommend.explain_recommendations()`

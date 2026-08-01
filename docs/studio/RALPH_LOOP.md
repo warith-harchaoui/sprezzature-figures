@@ -68,7 +68,20 @@ it by mistake.
 **Simplification, documented rather than silently assumed**: an issue
 "signature" is `category:severity:normalized_message`. The build plan also
 mentions an "approximate zone," but `VisualIssue` has no bounding-box
-field yet — that needs grounded VLM output, which isn't wired up.
+field yet; that needs grounded VLM output, which isn't wired up.
+
+## When the model fails
+
+The two model-facing steps, interpreting the request and inspecting the render,
+are wrapped so a live model failing never crashes the turn. If the text model
+can't produce a valid `EditProposal` (empty or malformed JSON, a timeout, an
+unreachable backend), the current figure still renders unchanged and the reason
+is recorded in `RalphResult.notes`. If the vision model can't produce a valid
+`VisualCritique`, the figure still renders and the loop stops with reason
+`critique_unavailable`, again with an explanatory note. A figure is never
+declared satisfied on the back of a failed inspection. This is what lets Studio
+stay usable against a small or flaky local model: a dropped operation or a
+missed critique degrades to a note, not an exception.
 
 ## Context sent to the vision model
 
