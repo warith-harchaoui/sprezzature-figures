@@ -47,24 +47,24 @@ flowchart LR
 
 Four steps. The loop is the same for every surface:
 
-1. **Render** — `ralph_eyeball_loop.py` produces a PNG at the size and background
+1. **Render**: `ralph_eyeball_loop.py` produces a PNG at the size and background
    that matches the real deployment context. For a web page: the desktop and
    mobile viewports. For a Vega spec: white on a light page, transparent on
    a dark hero. For a Mermaid diagram: the background where it will be
    embedded.
 
-2. **Look** — the Claude Code / OpenCode agent reads the PNG back into the
+2. **Look**: the Claude Code / OpenCode agent reads the PNG back into the
    conversation using the `Read` tool and studies it with its own vision.
    This is the step that can't be automated: the check that crosses syntax
    and pixel simultaneously.
 
-3. **Critique** — the findings go to `.private/ralph-loop/assessment-<hash>.md`
+3. **Critique**: the findings go to `.private/ralph-loop/assessment-<hash>.md`
    (gitignored, never committed). The file is extended, not overwritten,
    each iteration so the full history of how the visual evolved is
    preserved. The hash is an 8-char MD5 of the resolved source path, so the
    same source always maps to the same file across sessions.
 
-4. **Edit** — the *source* is improved against the critique. The thing that
+4. **Edit**: the *source* is improved against the critique. The thing that
    changes is always the `.vl.json`, the `.html`, the `.mmd`: never the
    PNG. The PNG is evidence; the source is the work.
 
@@ -252,27 +252,27 @@ all surfaces; adapt the emphasis:
 
 ### All surfaces
 
-- **Layout** — overall composition; does everything have a place? Is anything
+- **Layout**: overall composition; does everything have a place? Is anything
   competing for the same region?
-- **Contrast** — can every piece of text and every mark be read against its
+- **Contrast**: can every piece of text and every mark be read against its
   background, at the intended display size?
-- **Hierarchy** — does the eye land on the most important element first? Is
+- **Hierarchy**: does the eye land on the most important element first? Is
   the visual weight in the right place?
-- **Colors** — are colors purposeful (encoding data or role) rather than
+- **Colors**: are colors purposeful (encoding data or role) rather than
   decorative? Is the palette color-vision deficiency (CVD) safe?
-- **Spacing** — are padding and margins consistent? Does the composition
+- **Spacing**: are padding and margins consistent? Does the composition
   breathe, or does it feel cramped / over-padded?
 
 ### Web pages and GUI screens (`.html`)
 
-- **First-fold content** — is the key message, heading, or call-to-action
+- **First-fold content**: is the key message, heading, or call-to-action
   (CTA) visible at the target viewport *without scrolling*? Check both
   desktop (1440 px) and mobile (500 px, see the viewport-clamp note below).
-- **Typography** — is the type scale legible? Are heading and body sizes
+- **Typography**: is the type scale legible? Are heading and body sizes
   proportional?
-- **Dark mode** — if the page supports `data-color-scheme="dark"`, render
+- **Dark mode**: if the page supports `data-color-scheme="dark"`, render
   at both appearances. Contrast must hold in both.
-- **Responsiveness** — does the layout degrade gracefully on the mobile
+- **Responsiveness**: does the layout degrade gracefully on the mobile
   viewport?
 
 > **Viewport-clamp gotcha (read before trusting a "mobile" render).** Headless
@@ -291,22 +291,22 @@ all surfaces; adapt the emphasis:
 
 ### Data figures (Vega, TikZ)
 
-- **Axis labels and tick labels** — do they overlap? Are they readable at the
+- **Axis labels and tick labels**: do they overlap? Are they readable at the
   intended print size?
-- **Legend placement** — is the legend on-canvas? Does it occlude data?
-- **Baseline** — is the y-axis baseline correct for the scale (zero for a
+- **Legend placement**: is the legend on-canvas? Does it occlude data?
+- **Baseline**: is the y-axis baseline correct for the scale (zero for a
   ratio scale; otherwise defensible)?
-- **Chartjunk** — background gradients, drop shadows, unnecessary grid lines?
-- **Polarity** — does the chart state whether "higher is better" or "lower is
+- **Chartjunk**: background gradients, drop shadows, unnecessary grid lines?
+- **Polarity**: does the chart state whether "higher is better" or "lower is
   better" when a direction exists?
 
 ### Diagrams (Mermaid, SVG)
 
-- **Node collisions** — are any labels or boxes overlapping?
-- **Edge routing** — do edges cross unnecessarily? Are arrowheads readable?
-- **Text in nodes** — legible at the rendered size? Does wrapping break the
+- **Node collisions**: are any labels or boxes overlapping?
+- **Edge routing**: do edges cross unnecessarily? Are arrowheads readable?
+- **Text in nodes**: legible at the rendered size? Does wrapping break the
   layout?
-- **Clip / crop** — is anything cut off at the canvas edge?
+- **Clip / crop**: is anything cut off at the canvas edge?
 
 ---
 
@@ -341,7 +341,7 @@ sufficient.
 
 ---
 
-## Never ASCII art — always colored Mermaid
+## Never ASCII art: always colored Mermaid
 
 **Do not draw diagrams in ASCII art.** A `+----+  --->  [ box ]` sketch in a
 code fence or a docstring is unreadable, un-styleable, and impossible to
@@ -389,17 +389,17 @@ map is `FIGURES.md`; the Vega dead ends are in `.private/vega-failures/FAILURES.
 
 ---
 
-## Palette first — every surface
+## Palette first: every surface
 
 Every render is themed from the **canonical sprezzature-colors palette**
 (`sprezzature-colors/references/palette.csv`, documented at
 <https://harchaoui.org/warith/colors/>) before you look:
 
-- **Vega** — `_style.vega_config` applies the theme on the make side; the
+- **Vega**: `_style.vega_config` applies the theme on the make side; the
   spec's own `config` overrides per-figure.
-- **TikZ** — a `\definecolor` preamble injected by `render_diagram.py`.
-- **Mermaid** — the `%%{init}%%` theme injected automatically.
-- **HTML / web** — the sprezzature-ui CSS variables carry the palette; the page
+- **TikZ**: a `\definecolor` preamble injected by `render_diagram.py`.
+- **Mermaid**: the `%%{init}%%` theme injected automatically.
+- **HTML / web**: the sprezzature-ui CSS variables carry the palette; the page
   already uses it.
 
 The palette is the *first* choice. Edit specific hues in the source when a
@@ -429,10 +429,10 @@ own CSS; `--bg` is ignored and Chrome renders what the page declares.
 The Ralph Eyeball Loop handles visual quality: what only appears once
 rendered. Two additional checks gate the output before a commit:
 
-- **Diagram sources** — `audit_figure.py` catches structural anti-patterns in
+- **Diagram sources**: `audit_figure.py` catches structural anti-patterns in
   the *source* (missing axis labels, rainbow palettes, dual axes, missing
   `role="img"`). Run it after the loop, not instead of it.
-- **Web pages** — `sprezzature-accessibility/scripts/lint_a11y.py` checks every
+- **Web pages**: `sprezzature-accessibility/scripts/lint_a11y.py` checks every
   HTML page for accessibility findings (missing `alt`, contrast, landmark
   roles). The loop's accessibility critique and the linter cover different
   failure modes; both must pass.
@@ -458,13 +458,13 @@ have to drive it and look at each state.
 The loop generalises cleanly: instead of a single render, capture a
 **storyboard** of states and look at the whole set.
 
-- **Default** — the figure as it first paints.
-- **Hover** — dispatch a `mouseover` on a mark; is the tooltip showing the right
+- **Default**: the figure as it first paints.
+- **Hover**: dispatch a `mouseover` on a mark; is the tooltip showing the right
   value? does the correct element highlight?
-- **Zoom / pan** — after a wheel or drag; do labels survive, does it stay legible?
-- **Selection / brush** — after a drag-select; is the intended subset highlighted?
-- **Keyboard focus** — after `Tab`; is the focus ring visible, the order sane?
-- **Animation frames** — advance the clock and sample a few frames; does the
+- **Zoom / pan**: after a wheel or drag; do labels survive, does it stay legible?
+- **Selection / brush**: after a drag-select; is the intended subset highlighted?
+- **Keyboard focus**: after `Tab`; is the focus ring visible, the order sane?
+- **Animation frames**: advance the clock and sample a few frames; does the
   motion read, and does it settle?
 
 Mechanically this is the same headless-Chrome instance the HTML path already
@@ -475,7 +475,7 @@ on the source. Agent mode reads the contact sheet; `--local` runs the vision
 model over each frame. (Interactive/animated capture is part of the
 interactive-SVG roadmap; the single-frame loop above is what ships today.)
 
-## Colour-blindness and grayscale — one more render
+## Colour-blindness and grayscale: one more render
 
 Colour can carry a whole dimension of a chart, and whether it survives a
 colour-blind reader is a question only the pixels can answer. So after the

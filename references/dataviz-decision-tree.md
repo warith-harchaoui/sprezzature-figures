@@ -1,4 +1,4 @@
-# Dataviz decision tree — which chart for which question
+# Dataviz decision tree: which chart for which question
 
 Pick the chart from the **question**, not from the shape of the data.
 The dispatcher in `make_figure.py --kind auto` follows the same tree
@@ -32,27 +32,27 @@ For the full catalogue of chart kinds and their `make_<kind>` scripts, see
 
 ## Anti-patterns the auditor flags
 
-- **Dual y-axis** — two independent scales overlaid on the same plot.
+- **Dual y-axis**: two independent scales overlaid on the same plot.
   Almost always misleading; the eye reads coincidence where there is
   none. Emit two small multiples instead.
-- **Truncated baseline** on a bar chart — the y-axis does not start at
+- **Truncated baseline** on a bar chart: the y-axis does not start at
   zero, so a 5 % difference looks like 50 %. Exempt for ratio scales
   (`log`, `pow`, `sqrt`).
-- **3D pie / donut** — visual perspective distorts every slice.
+- **3D pie / donut**: visual perspective distorts every slice.
   Always wrong.
-- **Rainbow palette** on a sequential encoding — the visible spectrum
+- **Rainbow palette** on a sequential encoding: the visible spectrum
   is not perceptually uniform; the reader sees banding at yellow /
   cyan and misreads magnitudes. Use `viridis`, `plasma`, `magma`, or
   `cividis` (all CVD-safe).
-- **Red + green with no other channel** — ~8 % of male viewers cannot
+- **Red + green with no other channel**: ~8 % of male viewers cannot
   distinguish. Add lightness variation, an icon, or a text label.
 - **Unlabeled polarity** on a metric axis where "higher = good" is not
   obvious (bug count, response time, cost per acquisition). Append a
   short tag: `"Response time (ms — lower is better)"`.
-- **Chartjunk** — background gradients, drop shadows on marks, custom
+- **Chartjunk**: background gradients, drop shadows on marks, custom
   fonts on every element. See Tufte's *"data-ink ratio"* argument.
 
-## `--kind auto` — when the caller doesn't specify
+## `--kind auto`: when the caller doesn't specify
 
 The dispatcher picks by column dtypes:
 

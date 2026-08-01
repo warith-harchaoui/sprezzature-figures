@@ -1,6 +1,6 @@
-# Causality — DoWhy loop, opinionated
+# Causality: DoWhy loop, opinionated
 
-> **Experimental — read the assumptions first.** `causal_estimate.py` runs the
+> **Experimental: read the assumptions first.** `causal_estimate.py` runs the
 > real DoWhy identify / estimate / refute steps, but a *passed* refutation only
 > means one specific threat was not detected; it is **not** proof the estimate
 > is valid. Every causal claim here rests on untestable assumptions: the
@@ -28,29 +28,29 @@ flowchart LR
     class M,I,E,R step;
 ```
 
-### 1. Model — supply the DAG
+### 1. Model: supply the DAG
 
 `causal_estimate.py --dag dag.gml` accepts:
 
-- A **`.gml`** file — Graph Modeling Language (GML), written by hand or by
+- A **`.gml`** file: Graph Modeling Language (GML), written by hand or by
   `networkx` (`nx.write_gml`).
 - A **DoWhy string** via `--dag-string "graph[directed 1 node[id T] node[id Y] node[id X] edge[source T target Y] edge[source X target T] edge[source X target Y]]"`.
-- A **`.dot`** file — Graphviz DOT.
+- A **`.dot`** file: Graphviz DOT.
 
 You must include the treatment, the outcome, and every confounder you
 believe closes the backdoor. Discovery (learning the DAG from data) is
 **out of scope**; use `causal-learn` or `causal-discovery-toolbox`.
 
-### 2. Identify — pick the estimand
+### 2. Identify: pick the estimand
 
 DoWhy's identification engine walks the DAG and returns which of
 these three strategies closes the estimand:
 
-- **Backdoor adjustment** — a set of confounders that blocks every
+- **Backdoor adjustment**: a set of confounders that blocks every
   non-causal path. Most common.
-- **Instrumental variable (IV)** — a variable that affects treatment
+- **Instrumental variable (IV)**: a variable that affects treatment
   but not outcome except through treatment. Rare in practice.
-- **Frontdoor adjustment** — a mediator that captures the full effect
+- **Frontdoor adjustment**: a mediator that captures the full effect
   of treatment on outcome, when direct confounding is unmeasured.
   Rarer still.
 
@@ -58,7 +58,7 @@ The script prints the identified estimand before estimating. If none
 is identifiable, the run aborts with an error listing the unclosed
 paths.
 
-### 3. Estimate — pick the backend
+### 3. Estimate: pick the backend
 
 Backend picked by treatment type and `--estimator`:
 
@@ -75,7 +75,7 @@ Backend picked by treatment type and `--estimator`:
 The estimator emits a **point estimate + 95 % CI** (bootstrap or
 analytical, whichever the backend supports).
 
-### 4. Refute — try to break the estimate
+### 4. Refute: try to break the estimate
 
 DoWhy's refuters do not prove causation; they try to *invalidate* the
 estimate. `--refute all` runs the battery:
@@ -94,7 +94,7 @@ refuter. **Interpret the deltas, not just the point estimate.**
 
 `causal_estimate.py` writes to `<out>/`:
 
-- `effect.json` — full run:
+- `effect.json`, the full run:
   ```json
   {
     "treatment": "T",
@@ -112,10 +112,10 @@ refuter. **Interpret the deltas, not just the point estimate.**
     }
   }
   ```
-- `dag.svg` — the DAG rendered via graphviz in the sprezzature-* house
+- `dag.svg`: the DAG rendered via graphviz in the sprezzature-* house
   style (Roboto, curated palette, no chartjunk).
-- `dag.png` — 2× PNG for embedding.
-- `forest_plot.svg` — point estimate + CI + refutation deltas as a
+- `dag.png`: 2× PNG for embedding.
+- `forest_plot.svg`: point estimate + CI + refutation deltas as a
   compact forest plot for the report.
 
 ## Guardrails
@@ -142,7 +142,7 @@ refuter. **Interpret the deltas, not just the point estimate.**
 | DML CI wildly wide | Overlap violated (few treated units with high-dim confounders) | Trim by propensity score (`--trim-quantile 0.05`) or reduce confounder set. |
 | Placebo refuter shows a non-zero effect | Model is picking up random noise | Reduce model complexity; try `--estimator linear` first. |
 | Random common cause refuter fails | Model is unstable to added noise | Try DR-learner (`--estimator dr`); it's more robust. |
-| Graphviz not installed | System package missing | `brew install graphviz` (macOS — [brew.sh](https://brew.sh)) / `apt install graphviz` (Linux) / `winget install graphviz` (Windows). |
+| Graphviz not installed | System package missing | `brew install graphviz` (macOS, [brew.sh](https://brew.sh)) / `apt install graphviz` (Linux) / `winget install graphviz` (Windows). |
 
 ## When NOT to use this skill
 
