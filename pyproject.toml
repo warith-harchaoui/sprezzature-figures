@@ -98,6 +98,7 @@ packages = [
     "sprezzature_figures.core",
     "sprezzature_figures.studio",
     "sprezzature_figures.studio.ingest",
+    "sprezzature_figures.studio.assistant",
     "sprezzature_figures_scripts",
 ]
 

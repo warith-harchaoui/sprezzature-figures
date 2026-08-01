@@ -5,8 +5,10 @@ for the full spec; not itself committed). Branch: `feature/sprezzature-studio`.
 
 ## Phase
 
-Phase 2 (§3), Phase 3 (§4-§5), Phase 4 (§7), and Phase 5 (§8, unified
-render) complete. Commits 1-8 of 13 landed.
+Phase 2 (§3), Phase 3 (§4-§5), Phase 4 (§7), Phase 5 (§8), and Phase 6
+(§9, LLM client) complete. Commits 1-9 of 13 landed. Also added a
+lightweight GitHub Actions CI workflow (lint + fast tests + render tests,
+Python 3.10/3.13) outside the plan's numbered commits, per user request.
 
 ## Completed
 
@@ -250,6 +252,66 @@ render) complete. Commits 1-8 of 13 landed.
     there's a Ralph engine (Commit 10) actually producing critiques to
     store alongside each iteration.
 
+- **Commit 9 — LLM client integration**
+  (`sprezzature_figures/studio/assistant/`: `client.py`, `schemas.py`,
+  `prompts.py`, `intent.py`, `edit.py`, `recommend.py`, `repair.py`,
+  `fake_client.py`; `tests/assistant/`).
+  - `LLMClient` is a `Protocol` (`chat_text`/`chat_vision`); the real
+    implementation, `BestEngineLLMClient`, wraps
+    `best_engine_ai_helper.llm.chat()` (a single function with
+    `images`/`json_schema` kwargs) rather than mirroring the plan's
+    literal separate-methods sketch 1:1 — the protocol shape from the plan
+    is kept for callers, the adaptation to the actual dependency's simpler
+    signature happens inside `BestEngineLLMClient._call()`. Documented as
+    a deliberate, least-destructive resolution (plan §21.13) back in
+    Commit 4's STATUS.md entry and confirmed here.
+  - `schemas.py` defines `EditProposal` and `VisualCritique`/`VisualIssue`/
+    `EditorialSuggestion` (plan §10.2/§10.3) and a new
+    `FigureRecommendation`/`RecommendationSet` pair for §6's LLM-facing
+    rerank/explain step. `IntentAnalysis` is **not** redefined — it's
+    `core.figure_plan.UserIntent` from Commit 4, reused as-is.
+  - `repair.py`: `validate_or_repair()` — validate, on failure send exactly
+    one "fix your JSON" follow-up, validate again, on second failure raise
+    `LLMResponseError` (carries the raw response text) rather than
+    continuing with a partial object. Both `BestEngineLLMClient` and
+    `FakeLLMClient` route through this same function, so the repair path
+    itself is exercised by fake-client tests, not just asserted to exist.
+  - `intent.py`/`edit.py`/`recommend.py`: `analyze_intent()`,
+    `propose_edit()`, `explain_recommendations()`. `propose_edit()` is the
+    one enforcing plan §10.2's "refuse any operation referencing a
+    nonexistent column or undeclared option" — every operation the model
+    returns is re-checked with `core.validate_operation()` and silently
+    dropped (not the whole proposal) if it fails; verified with a test
+    where 1 of 2 operations references a nonexistent column and only the
+    valid one survives. `explain_recommendations()` drops any
+    recommended kind that isn't in the candidate list it was actually
+    given — verified with a test where the fake model "recommends" an
+    invented kind and it's filtered out. Note: this module does NOT
+    implement the deterministic compatibility/scoring engine from plan §6
+    (`studio/recommendation/compatibility.py` etc.) — that engine isn't in
+    the plan's own 13-commit table at all; `explain_recommendations()`
+    only reranks/explains a pre-filtered candidate list a future caller
+    would supply.
+  - `fake_client.py`: `FakeLLMClient` queues responses (model instances,
+    raw strings including invalid JSON, or exceptions) and replays them in
+    order, repeating the last one when exhausted. Every test in this
+    Commit runs against it — zero network calls, zero Ollama dependency.
+  - Manually smoke-tested the full round trip before writing formal tests:
+    intent analysis, an edit proposal with real operation filtering, a
+    recommendation set with an invented kind dropped, an invalid-JSON
+    response through the full repair-then-fail path, and a raw exception
+    passthrough — all five behaved exactly as designed on the first try
+    (no bugs found here, unlike Commits 5 and 7).
+  - Registered `sprezzature_figures.studio.assistant` in pyproject.toml's
+    `packages` list (checked before committing, per the now-standing habit
+    from three earlier misses this session).
+  - 15 new tests in `tests/assistant/test_assistant.py`.
+- **Also added, outside the plan's numbered commits, per direct user
+  request**: `.github/workflows/ci.yml` — ruff + the default test run +
+  `-m slow` on Python 3.10 and 3.13, on push to `main` and on pull
+  requests. Deliberately excludes `-m packaging` (needs network, ~15-20s)
+  to keep it "légère" as asked; that stays a manual/pre-release check.
+
 ## Figures currently `stable`
 
 Per the latest `--render` audit run (90 generators total):
@@ -261,9 +323,9 @@ of ≥10 stable figures.
 ## Tests run
 
 ```
-python3 -m pytest -q                              # 85 passed, 27 deselected
-python3 -m pytest -q -m slow                       # 26 passed, 86 deselected
-python3 -m pytest -q -m packaging tests/test_packaging.py   # 1 passed (~11s, needs network)
+python3 -m pytest -q                              # 100 passed, 27 deselected
+python3 -m pytest -q -m slow                       # 26 passed, 101 deselected
+python3 -m pytest -q -m packaging tests/test_packaging.py   # 1 passed (~20s, needs network)
 ruff check sprezzature_figures tools tests          # clean
 ```
 
@@ -293,11 +355,7 @@ ruff check sprezzature_figures tools tests          # clean
 
 ## Next
 
-Commit 9 — LLM client integration (`sprezzature_figures/studio/assistant/`):
-wrap `best_engine_ai_helper.llm.chat()` behind the plan's `LLMClient`
-protocol, Pydantic schemas for structured output (reusing `core.operations
-.FigureOperation`/`core.figure_plan.UserIntent` rather than duplicating
-them), a `FakeLLMClient` for dependency-free tests, and the JSON-repair
-retry flow. After this, the render/LLM core is in place — the checkpoint
-the user asked for before continuing into the GUI (Commit 10 Ralph, Commit
-11 NiceGUI).
+The render/LLM core (Commits 8-9) is now in place — this is the checkpoint
+the user asked for before continuing into the GUI. Reporting a summary,
+then continuing autonomously into Commit 10 (Ralph engine) and Commit 11
+(NiceGUI app) per the standing "keep going" instruction.
