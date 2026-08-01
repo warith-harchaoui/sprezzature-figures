@@ -116,6 +116,60 @@ def test_assisted_mode_applies_one_safe_repair_pass() -> None:
     assert result.stopped_reason == "assisted_single_pass"
 
 
+def test_assisted_mode_survives_a_failing_visual_critique() -> None:
+    # A live VLM returning junk / timing out must not crash the turn: the
+    # figure still rendered, so return it with the reason noted.
+    proposal = EditProposal(summary="no-op", operations=[])
+    client = FakeLLMClient([proposal, RuntimeError("backend returned empty JSON")])
+    engine = RalphEngine(client=client)
+    project_id, iteration_dir = _new_iteration()
+
+    result = engine.apply_user_request(
+        FigurePlan(figure_kind="bar"), _data(), "make it nicer",
+        mode=RalphMode.assisted, project_id=project_id, iteration_dir=iteration_dir, dataset=_profile(),
+    )
+
+    assert result.render.preview_path.exists()
+    assert result.critique is None
+    assert result.stopped_reason == "critique_unavailable"
+    assert result.notes and "inspection unavailable" in result.notes[-1].lower()
+
+
+def test_manual_mode_survives_a_failing_interpretation() -> None:
+    # If the text model can't interpret the request, the current figure still
+    # renders unchanged and the failure is reported, not raised.
+    client = FakeLLMClient([RuntimeError("model returned no JSON")])
+    engine = RalphEngine(client=client)
+    project_id, iteration_dir = _new_iteration()
+
+    result = engine.apply_user_request(
+        FigurePlan(figure_kind="bar", title="Original"), _data(), "do something ambiguous",
+        mode=RalphMode.manual, project_id=project_id, iteration_dir=iteration_dir, dataset=_profile(),
+    )
+
+    assert result.render.preview_path.exists()
+    assert result.applied_operations == []
+    assert result.plan.title == "Original"
+    assert result.notes and "could not interpret" in result.notes[0].lower()
+
+
+def test_autopilot_mode_survives_a_failing_visual_critique() -> None:
+    proposal = EditProposal(summary="no-op", operations=[])
+    client = FakeLLMClient([proposal, RuntimeError("VLM timeout")])
+    engine = RalphEngine(client=client)
+    project_id, iteration_dir = _new_iteration()
+
+    result = engine.apply_user_request(
+        FigurePlan(figure_kind="bar"), _data(), "make it nicer",
+        mode=RalphMode.autopilot, project_id=project_id, iteration_dir=iteration_dir, dataset=_profile(),
+    )
+
+    assert result.render.preview_path.exists()
+    assert result.critique is None
+    assert result.rounds == 0
+    assert result.stopped_reason == "critique_unavailable"
+
+
 def test_autopilot_mode_loops_until_satisfied() -> None:
     proposal = EditProposal(summary="no-op", operations=[])
     repair_op = SetStyleOption(operation_id="r1", option="font_scale", value=1.4)

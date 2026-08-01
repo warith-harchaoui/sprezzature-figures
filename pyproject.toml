@@ -120,10 +120,12 @@ packages = [
 "sprezzature_figures_fonts" = ["*.ttf", "*.woff2", "OFL-*.txt"]
 
 [tool.pytest.ini_options]
-addopts = "-m 'not slow and not packaging'"
+addopts = "-m 'not slow and not packaging and not llm and not vision'"
 markers = [
     "slow: tests that render actual figures (may take several seconds)",
     "packaging: builds a wheel and installs it in a fresh venv (network + several seconds)",
+    "llm: hits a live text LLM through best-engine-ai-helper (skips if unreachable; never run in CI)",
+    "vision: hits a live vision model / VLM through best-engine-ai-helper (skips if unreachable; never run in CI)",
 ]
 
 [tool.ruff]
