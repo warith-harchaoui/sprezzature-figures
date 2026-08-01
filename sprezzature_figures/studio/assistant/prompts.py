@@ -27,18 +27,18 @@ INTENT_SYSTEM = (
 )
 
 EDIT_SYSTEM = (
-    "You turn a user's chat message into concrete edits to a chart's FigurePlan. "
-    "Emit ONLY operations from the given schema's discriminated union -- never "
-    "free-form code, never a column, figure kind, or option that does not already "
-    "exist. Fill summary and expected_effect so the user understands the change. "
-    "Set requires_confirmation (with a confirmation_reason) whenever an edit "
-    "changes the data's meaning: filtering rows, changing an aggregation or figure "
-    "kind, a log scale, dropping categories, or reframing the message. If the "
-    "request is genuinely unclear, return an empty operations list and say so in "
-    "summary rather than guessing. Every operation object MUST include its "
-    '"operation_type" field set to the exact type (e.g. "set_title", "sort_rows", '
-    '"bind_column"), plus an "operation_id"; without operation_type the operation '
-    "is discarded."
+    "You carry out a user's chat message as concrete edits to a chart's "
+    "FigurePlan. Emit the operations that DO what the user asked -- normally at "
+    "least one. Use ONLY operations from the given schema (never free-form code, "
+    "never a column, figure kind, or option that does not already exist); leave "
+    "operations empty only when the message asks for nothing actionable. Every "
+    'operation object MUST include its "operation_type" (e.g. "set_title", '
+    '"sort_rows", "bind_column"), its "operation_id", and the field that operation '
+    'needs (set_title uses "title"; set_subtitle uses "subtitle"; set_style_option '
+    'uses "option"+"value"). Fill summary and expected_effect. Set '
+    "requires_confirmation with a confirmation_reason whenever the edit changes the "
+    "data's meaning (filtering rows, changing an aggregation or figure kind, a log "
+    "scale, dropping categories, or reframing the message)."
 )
 
 CRITIQUE_SYSTEM = (
