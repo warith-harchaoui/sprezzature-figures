@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "sprezzature-figures"
 version = "1.0.0"
-description = "Publication-quality data figures for the sprezzature stack: 84+ chart types rendered via Vega-Lite, full Vega, or matplotlib/SVG. Includes the Ralph Eyeball Loop for autonomous visual quality feedback."
+description = "Publication-quality data figures for the sprezzature stack: 83+ chart types rendered via Vega-Lite, full Vega, or matplotlib/SVG. Includes the Ralph Eyeball Loop for autonomous visual quality feedback."
 readme = "README.md"
 requires-python = ">=3.10,<3.14"
 license = {text = "BSD-3-Clause"}
@@ -30,9 +30,25 @@ dependencies = [
     "vl-convert-python>=1.6",
     "numpy>=1.24",
     "scipy>=1.11",
+    "pydantic>=2.7",
 ]
 
 [project.optional-dependencies]
+# Click twin of the always-installed argparse `make-figure` CLI
+cli = [
+    "click>=8.1",
+]
+# Sprezzature Studio: NiceGUI app, data ingest, LLM-driven chat editing,
+# and the Ralph visual-critique loop. `from sprezzature_figures import
+# make_figure` must keep working without this extra installed.
+studio = [
+    "nicegui",
+    "pandas>=2.0",
+    "openpyxl>=3.1",
+    "charset-normalizer>=3",
+    "best-engine-ai-helper>=0.4.0",
+    "os-helper>=1.8.0",
+]
 # Full dataviz stack (matplotlib, networkx, wordcloud, etc.)
 dataviz = [
     "matplotlib>=3.7",
@@ -41,6 +57,9 @@ dataviz = [
     "pillow>=10.0",
     "scikit-learn>=1.3",
     "pandas>=2.0",
+    "pyyaml>=6",
+    "shapely>=2",
+    "pyproj>=3.6",
 ]
 # Causal inference (make_causal_estimate.py)
 causal = [
@@ -58,6 +77,7 @@ local = ["requests>=2.31"]
 dev = [
     "pytest>=8",
     "ruff",
+    "build",
     "vl-convert-python>=1.6",
     "numpy>=1.24",
     "matplotlib>=3.7",
@@ -67,6 +87,7 @@ dev = [
 [project.scripts]
 sprezzature-figures = "sprezzature_figures.cli:main"
 make-figure = "sprezzature_figures.make_figure:main"
+sprezzature-studio = "sprezzature_figures.studio.cli:main"
 
 [project.urls]
 Homepage = "https://harchaoui.org/warith/sprezzature/"
@@ -74,15 +95,32 @@ Repository = "https://github.com/warith-harchaoui/sprezzature-figures"
 Issues = "https://github.com/warith-harchaoui/sprezzature-figures/issues"
 Changelog = "https://github.com/warith-harchaoui/sprezzature-figures/blob/main/CHANGELOG.md"
 
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["sprezzature_figures*", "scripts*"]
-exclude = ["tests*", "assets*"]
+[tool.setuptools]
+packages = [
+    "sprezzature_figures",
+    "sprezzature_figures.catalog",
+    "sprezzature_figures.core",
+    "sprezzature_figures.studio",
+    "sprezzature_figures.studio.ingest",
+    "sprezzature_figures.studio.assistant",
+    "sprezzature_figures.studio.ralph",
+    "sprezzature_figures.studio.pages",
+    "sprezzature_figures.studio.components",
+    "sprezzature_figures.studio.export",
+    "sprezzature_figures_scripts",
+]
+
+[tool.setuptools.package-dir]
+"sprezzature_figures_scripts" = "scripts"
+
+[tool.setuptools.package-data]
+"sprezzature_figures.catalog" = ["figures.json"]
 
 [tool.pytest.ini_options]
-addopts = "-m 'not slow'"
+addopts = "-m 'not slow and not packaging'"
 markers = [
     "slow: tests that render actual figures (may take several seconds)",
+    "packaging: builds a wheel and installs it in a fresh venv (network + several seconds)",
 ]
 
 [tool.ruff]

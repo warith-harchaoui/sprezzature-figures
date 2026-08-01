@@ -8,10 +8,10 @@ All examples use `make_figure(kind, data, **kwargs)` from `sprezzature_figures`.
 from sprezzature_figures import make_figure
 
 data = [
-    {"label": "Q1", "value": 120},
-    {"label": "Q2", "value": 95},
-    {"label": "Q3", "value": 140},
-    {"label": "Q4", "value": 175},
+    {"region": "Q1", "value": 120},
+    {"region": "Q2", "value": 95},
+    {"region": "Q3", "value": 140},
+    {"region": "Q4", "value": 175},
 ]
 path = make_figure("bar", data, out="quarterly.png", title="Quarterly revenue")
 ```
@@ -20,10 +20,10 @@ path = make_figure("bar", data, out="quarterly.png", title="Quarterly revenue")
 
 ```python
 data = [
-    {"path": ["Engineering", "Backend"], "value": 40},
-    {"path": ["Engineering", "Frontend"], "value": 20},
-    {"path": ["Marketing", "Digital"], "value": 25},
-    {"path": ["Marketing", "Events"], "value": 15},
+    {"parent": "Engineering", "name": "Backend", "value": 40},
+    {"parent": "Engineering", "name": "Frontend", "value": 20},
+    {"parent": "Marketing", "name": "Digital", "value": 25},
+    {"parent": "Marketing", "name": "Events", "value": 15},
 ]
 path = make_figure("treemap", data, out="budget.png", title="Budget breakdown")
 ```
@@ -42,9 +42,14 @@ path = make_figure("sankey", data, out="energy.png", title="Energy flow")
 
 ## Scatter (bivariate)
 
+`scatter`'s required roles are named after its demo scenario
+(horsepower/mpg) — see `make-figure --list --status stable` and each
+kind's entry in [FIGURES.md](FIGURES.md) for the exact role names a given
+chart expects.
+
 ```python
 import random
-data = [{"x": random.gauss(0, 1), "y": random.gauss(0, 1)} for _ in range(200)]
+data = [{"horsepower": random.uniform(80, 320), "mpg": random.uniform(10, 40)} for _ in range(200)]
 path = make_figure("scatter", data, out="scatter.png")
 ```
 
@@ -79,13 +84,13 @@ print(list_kinds())
 ## CLI examples
 
 ```bash
-# List all chart types
-make-figure --list
+# List all chart types (add --status stable for the render-verified ones)
+make-figure --list --status stable
 
 # Render each chart with its DEMO_DATA
 make-figure waterfall --out waterfall.png
 make-figure funnel --out funnel.png --title "Hiring funnel"
 make-figure sunburst --out sunburst.png
-make-figure venn --out venn.png
-make-figure radar --out radar.png --title "Skills profile"
+make-figure heatmap --out heatmap.png
+make-figure dumbbell --out dumbbell.png --title "Pay gap by role"
 ```

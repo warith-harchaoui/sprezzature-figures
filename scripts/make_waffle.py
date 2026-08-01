@@ -80,41 +80,54 @@ _BG: str = "#FFFFFF"        # background
 _FOCUS: str = "#0A4DA0"     # focus-ring blue
 
 
-def _dataset(accessibility: str = "universal") -> List[Dict[str, Any]]:
-    """Return the communicative fake data for the waffle.
+#: A household-energy budget: of every 100 kilowatt-hours a typical
+#: all-electric home draws in a year, how many go to each end use. Rows are
+#: plain data (label, value) -- colour is assigned at render time from the
+#: accessibility-aware palette, not baked into the demo data.
+DEMO_DATA: List[Dict[str, Any]] = [
+    {"label": "Heating & cooling", "value": 34},
+    {"label": "Water heating", "value": 18},
+    {"label": "Appliances & plug loads", "value": 16},
+    {"label": "Electric vehicle", "value": 14},
+    {"label": "Lighting", "value": 9},
+    {"label": "Cooking", "value": 9},
+]
 
-    A household-energy budget: of every 100 kilowatt-hours a typical
-    all-electric home draws in a year, how many go to each end use.
-    The shares sum to 100 so the grid fills exactly.
 
-    Parameters
-    ----------
-    accessibility : str, optional
-        Palette accessibility level threaded to :func:`load_palette`
-        (``"universal"``, ``"high-contrast"``, ``"monochrome"``,
-        ``"deuteranopia"``, ``"protanopia"`` or ``"tritanopia"``). Defaults
-        to ``"universal"``, the colour-vision-safe standard.
-
-    Returns
-    -------
-    list of dict
-        One dict per category with ``label`` (str), ``value`` (int
-        squares / percent), and ``color`` (hex) keys, largest first.
+def _allocate_squares(values: List[float], total_squares: int = 100) -> List[int]:
+    """Largest-remainder apportionment of `values` into `total_squares`
+    integer squares that sum exactly to `total_squares`, regardless of
+    whether the raw values already sum to 100 (percentages) or are
+    arbitrary weights (counts, revenue, ...).
     """
-    palette = load_palette(accessibility)
-    # Ordered largest -> smallest so the fill sweeps the grid tidily and
-    # the legend reads top-down by size.
-    rows = [
-        ("Heating & cooling", 34, "Red"),
-        ("Water heating", 18, "Orange"),
-        ("Appliances & plug loads", 16, "Blue"),
-        ("Electric vehicle", 14, "Purple"),
-        ("Lighting", 9, "Yellow"),
-        ("Cooking", 9, "Turquoise"),
-    ]
+    grand_total = sum(values)
+    if grand_total <= 0:
+        return [0 for _ in values]
+    raw = [v / grand_total * total_squares for v in values]
+    floors = [int(r) for r in raw]
+    remainder = total_squares - sum(floors)
+    # Give the leftover squares to the largest fractional remainders.
+    order = sorted(range(len(values)), key=lambda i: raw[i] - floors[i], reverse=True)
+    for i in order[:remainder]:
+        floors[i] += 1
+    return floors
+
+
+def _with_colors(data: List[Dict[str, Any]], accessibility: str) -> List[Dict[str, Any]]:
+    """Attach a colour (cycling through the accessibility palette) and an
+    apportioned square count to each row, largest value first.
+    """
+    palette_colors = list(load_palette(accessibility).values())
+    ordered = sorted(data, key=lambda d: float(d["value"]), reverse=True)
+    squares = _allocate_squares([float(d["value"]) for d in ordered])
     return [
-        {"label": label, "value": value, "color": palette[color]}
-        for label, value, color in rows
+        {
+            "label": d["label"],
+            "value": d["value"],
+            "squares": squares[i],
+            "color": palette_colors[i % len(palette_colors)] if palette_colors else "#808080",
+        }
+        for i, d in enumerate(ordered)
     ]
 
 
@@ -127,11 +140,24 @@ def _slug(label: str) -> str:
 _xml = xml_escape
 
 
-def build_svg(mode: str = "self-contained", accessibility: str = "universal") -> str:
+def build_svg(
+    data: List[Dict[str, Any]] | None = None,
+    *,
+    title: str = "Where a home’s electricity goes, per 100 kilowatt-hours",
+    subtitle: str = "Share of annual household electricity use · one square = 1 % · illustrative",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> str:
     """Assemble the full waffle-chart SVG document as a string.
 
     Parameters
     ----------
+    data : list[dict[str, Any]] or None
+        Rows with ``label`` (str) and ``value`` (numeric weight) keys.
+        Values are apportioned across the 100-square grid by share of
+        total, so they need not already sum to 100. Defaults to DEMO_DATA.
+    title, subtitle : str
+        Chart text.
     mode : str, optional
         Interactivity mode for the fullscreen control, one of three:
         ``"self-contained"`` (default) ships a self-carrying fullscreen
@@ -150,15 +176,14 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     str
         A complete, standalone SVG document.
     """
-    data = _dataset(accessibility)
-    total = sum(int(d["value"]) for d in data)  # noqa: F841  (documents the 100 invariant)
+    data = _with_colors(data if data is not None else DEMO_DATA, accessibility)
 
     # Map each of the 100 grid cells (filled column-by-column, bottom-up
     # so the largest share grows from the floor like a stacked column) to
     # a category slug, or None for the remainder.
     cell_owner: List[str] = []
     for d in data:
-        cell_owner.extend([_slug(str(d["label"]))] * int(d["value"]))
+        cell_owner.extend([_slug(str(d["label"]))] * int(d["squares"]))
     cell_owner.extend([""] * (_COLS * _ROWS - len(cell_owner)))
 
     color_of = {_slug(str(d["label"])): str(d["color"]) for d in data}
@@ -166,15 +191,13 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     # ---- header ----
     parts: List[str] = []
     parts.append(svg_open(_WIDTH, _HEIGHT, "wf-title", "wf-desc"))
-    parts.append(
-        '<title id="wf-title">Where a home’s electricity goes, '
-        'per 100 kilowatt-hours</title>'
-    )
+    parts.append(f'<title id="wf-title">{_xml(title)}</title>')
+    leader = data[0]
     desc = (
         "Waffle chart: a 10 by 10 grid of 100 squares, one square per "
-        "percent of annual household electricity use. "
-        + "; ".join(f"{_xml(str(d['label']))} {d['value']}" for d in data)
-        + ". Heating and cooling dominate at 34 squares."
+        "percent of the total. "
+        + "; ".join(f"{_xml(str(d['label']))} {d['squares']}" for d in data)
+        + f". {_xml(str(leader['label']))} leads at {leader['squares']} squares."
     )
     parts.append(f'<desc id="wf-desc">{desc}</desc>')
 
@@ -229,12 +252,10 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     # ---- title + subtitle ----
     parts.append(
         f'<text x="{_ORIGIN_X}" y="66" font-size="30" font-weight="700" '
-        f'fill="{_INK}">Heating &amp; cooling eats a third of home power</text>'
+        f'fill="{_INK}">{_xml(title)}</text>'
     )
     parts.append(
-        f'<text x="{_ORIGIN_X}" y="102" font-size="18" fill="{_SUBTLE}">'
-        f'Share of annual household electricity use · one square = 1 % '
-        f'· illustrative</text>'
+        f'<text x="{_ORIGIN_X}" y="102" font-size="18" fill="{_SUBTLE}">{_xml(subtitle)}</text>'
     )
 
     # ---- waffle grid ----
@@ -272,8 +293,8 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         badge = number_of[s]
         parts.append(
             f'<g class="cat cat-{s}" tabindex="0" role="listitem">'
-            f'<title>{_xml(str(d["label"]))}: {d["value"]} % '
-            f'({d["value"]} squares)</title>'
+            f'<title>{_xml(str(d["label"]))}: {d["squares"]} % '
+            f'({d["squares"]} squares)</title>'
         )
         first_cell = True
         for i, owner in enumerate(cell_owner):
@@ -315,7 +336,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         parts.append(
             f'<g class="cat cat-{s} legend-row" tabindex="0" role="listitem" '
             f'transform="translate(0,{cy:.1f})">'
-            f'<title>{_xml(str(d["label"]))}: {d["value"]} %</title>'
+            f'<title>{_xml(str(d["label"]))}: {d["squares"]} %</title>'
         )
         parts.append(
             f'<rect class="cat-{s}" x="0" y="0" width="{sw}" height="{sw}" '
@@ -339,7 +360,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         )
         parts.append(
             f'<text x="{sw + 18:.0f}" y="38" font-size="16" font-weight="600" '
-            f'fill="{_SUBTLE}" dominant-baseline="middle">{d["value"]} %</text>'
+            f'fill="{_SUBTLE}" dominant-baseline="middle">{d["squares"]} %</text>'
         )
         parts.append('</g>')
     parts.append('</g>')
@@ -347,6 +368,49 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     parts.append(fullscreen_control(_WIDTH, _HEIGHT, mode))
     parts.append('</svg>')
     return "\n".join(parts)
+
+
+def make_waffle(
+    data: List[Dict[str, Any]] | None = None,
+    *,
+    out: Path | str | None = None,
+    title: str = "Where a home’s electricity goes, per 100 kilowatt-hours",
+    subtitle: str = "Share of annual household electricity use · one square = 1 % · illustrative",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render a waffle chart and write it to *out*.
+
+    Parameters
+    ----------
+    data : list[dict[str, Any]] or None
+        Rows with ``label`` (str) and ``value`` (numeric weight) keys.
+        Defaults to DEMO_DATA. Values are apportioned across the 100-square
+        grid by share of total (largest-remainder method), so they need not
+        already sum to 100.
+    out : Path, str, or None
+        Output path (.svg). Defaults to ``assets/svg-examples/waffle.svg``.
+    title, subtitle : str
+        Chart text.
+    mode : str
+        Interactivity mode for the fullscreen control.
+    accessibility : str
+        Palette accessibility level.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+
+    Examples
+    --------
+    >>> p = make_waffle()
+    >>> p.exists()
+    True
+    """
+    svg = build_svg(data, title=title, subtitle=subtitle, mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "waffle")
+    return write_svg(dest, svg)
 
 
 def main() -> None:
@@ -373,8 +437,7 @@ def main() -> None:
     )
     parser.add_argument("--out", default=None, help="Output path (defaults to the example asset).")
     args = parser.parse_args()
-    out = Path(args.out) if args.out else svg_example_path(__file__, "waffle")
-    write_svg(out, build_svg(args.mode, args.accessibility))
+    make_waffle(out=args.out, mode=args.mode, accessibility=args.accessibility)
 
 
 if __name__ == "__main__":
