@@ -6,11 +6,11 @@ for the full spec; not itself committed). Branch: `feature/sprezzature-studio`.
 ## Phase
 
 Phase 2 (§3), Phase 3 (§4-§5), Phase 4 (§7), Phase 5 (§8), Phase 6 (§9),
-and Phase 7 (§11, Ralph engine) complete. Commits 1-10 of 13 landed.
-Also added a lightweight GitHub Actions CI workflow (lint + fast tests +
-render tests, Python 3.10/3.13) outside the plan's numbered commits, per
-user request — and CI immediately caught a real bug local dev never would
-have (see Commit 10 below).
+Phase 7 (§11), and Phase 8 (§13, NiceGUI app) complete. Commits 1-11 of
+13 landed. Also added a lightweight GitHub Actions CI workflow (lint +
+fast tests + render tests, Python 3.10/3.13) outside the plan's numbered
+commits, per user request — CI caught a real bug local dev never would
+have (see Commit 10).
 
 ## Completed
 
@@ -390,6 +390,74 @@ have (see Commit 10 below).
     test_repair_and_history,test_engine}.py`, including full end-to-end
     engine tests for all three modes against real rendering.
 
+- **Commit 11 — NiceGUI studio app** (`sprezzature_figures/studio/
+  {app,cli,config,state}.py`, `pages/editor.py`, `components/
+  {data_panel,figure_canvas,chat_panel,engine_status}.py`; `tests/studio/`).
+  - `sprezzature-studio` console entry point (`--host`/`--port`/
+    `--no-browser`/`--native`), nicegui import deferred until after
+    argparse so `--help` stays fast even without a display.
+  - `state.SessionState`: one dataclass instance created fresh inside each
+    `@ui.page("/")` handler closure (plan §13.7 — never a module-level
+    global shared across browser tabs/users).
+  - **Scope cut, deliberate**: home/editor merged into a single page
+    (upload always visible in the left pane; the figure canvas shows a
+    placeholder until a figure exists) instead of two separately-routed
+    pages, to avoid needing session-id hand-off through NiceGUI's
+    `app.storage` across navigation — not needed for the MVP loop
+    (import → pick kind → bind roles → render → chat). Skipped
+    `pages/home.py`, `pages/settings.py`, and 4 of the 8 planned
+    `components/` (recommendation_cards — no recommendation engine exists;
+    property_panel/history_panel/export_dialog — Commit 12 territory).
+  - `data_panel.py`: upload → sniff → profile (reusing Commit 5's ingest
+    pipeline unchanged) → kind picker restricted to `list_kinds(status=
+    "stable")` (plan §1.5: only fully-contracted figures are GUI-eligible)
+    → **real per-role column bindings** (a `ui.select` per required/
+    optional role from the chosen kind's `FigureDefinition`, not a fake
+    positional guess) → `FigurePlan` handed to the editor.
+  - `figure_canvas.py`: `ui.image(state.render.preview_path)` — NiceGUI
+    serves a local `Path` directly; no custom route needed. Each render
+    lands in a fresh `allocate_iteration_dir()`, so the path itself changes
+    every time — no extra cache-busting needed for the browser to show the
+    new image.
+  - `chat_panel.py`: message log, a `RalphMode` selector wired straight to
+    `state.ralph_mode`, and an accept/cancel prompt for whatever
+    `RalphResult.pending_confirmation` surfaces (plan §11.3's
+    confirmation-required operations, e.g. a figure-kind change).
+  - `pages/editor.py`: `_resolve_data()` maps `FigurePlan.bindings` back to
+    role-keyed row dicts — this only works because `tools/
+    build_figures_catalog.py`'s `HAND_ROLES` (Commits 2/6/7) name every
+    stable figure's required roles to match its generator's actual
+    DEMO_DATA field names exactly, verified by construction rather than
+    by accident. LLM/render calls go through `nicegui.run.io_bound()`
+    (plan §13.6 — never block the event loop).
+  - **Two real bugs found by actually launching the server, not by
+    reading the code**: (1) a `NameError`-adjacent `UnboundLocalError` --
+    `build_chat_panel(..., on_send=handle_send, ...)` was called before
+    `handle_send` was defined later in the same function; fixed by moving
+    the UI-construction block to the end of `build_editor()`, after every
+    handler closure it references. (2) NiceGUI's `ui.run()` auto-detects
+    `PYTEST_CURRENT_TEST` in the environment (inherited by a `subprocess
+    .Popen` child by default) and silently switches into its own
+    "screen test" mode expecting `NICEGUI_SCREEN_TEST_PORT` — the smoke
+    test's subprocess hung until this env var was stripped before
+    spawning it.
+  - Attempted `nicegui.testing.User` (the official in-process ASGI
+    interaction-test harness) for a deeper "upload a file and click
+    through to a render" test; abandoned after confirming the upload-
+    simulation API I assumed (`handle_uploads`) doesn't exist in this
+    nicegui version and a real one would need deeper API spelunking than
+    the plan's own §16.5 caution ("don't test every visual detail by
+    pixel coordinates") justifies. Settled on: a real subprocess-launched
+    server + HTTP smoke test (`test_app_smoke.py`, confirms the app
+    actually starts and serves the expected page), plus direct unit tests
+    of every piece of non-NiceGUI logic (`_load_upload`, `_resolve_data`,
+    `_summarize_result`, `engine_status`, `SessionState`) — deliberately
+    not routed through the UI layer at all, since that logic doesn't need
+    a browser or websocket to verify.
+  - Registered 2 new subpackages (`studio.pages`, `studio.components`) in
+    pyproject.toml before committing.
+  - 12 new tests: `tests/studio/{test_app_smoke,test_state_and_helpers}.py`.
+
 ## Figures currently `stable`
 
 Per the latest `--render` audit run (90 generators total):
@@ -401,10 +469,11 @@ of ≥10 stable figures.
 ## Tests run
 
 ```
-python3 -m pytest -q                              # 137 passed, 34 deselected
-python3 -m pytest -q -m slow                       # 33 passed, 138 deselected
-python3 -m pytest -q -m packaging tests/test_packaging.py   # 1 passed (~15s, needs network)
+python3 -m pytest -q                              # 147 passed, 35 deselected
+python3 -m pytest -q -m slow                       # 34 passed, 148 deselected
+python3 -m pytest -q -m packaging tests/test_packaging.py   # 1 passed (~11s, needs network)
 ruff check sprezzature_figures tools tests          # clean
+sprezzature-studio --help                          # console entry point works
 ```
 
 ## Known blockers / open questions
@@ -433,9 +502,10 @@ ruff check sprezzature_figures tools tests          # clean
 
 ## Next
 
-Commit 11 — the NiceGUI studio app itself (`sprezzature_figures/studio/
-{app,cli,config,state,session}.py`, `pages/`, `components/`). This is the
-first commit needing `nicegui` actually imported (declared in the `studio`
-extra since Commit 5, unused until now) and the first with real UI/UX
-design decisions (three-pane layout, async task handling, per-session
-isolation) rather than backend logic with a clear spec to follow.
+Commit 12 — iteration history + reproducible export bundles
+(`sprezzature_figures/core/iterations.py`, `sprezzature_figures/studio/
+export/`). This is where `core/iterations.py` (deferred from Commit 8)
+finally gets built, now that Commit 10's Ralph engine produces critiques
+to store alongside each iteration, and where undo/redo/compare and the
+`.sprezzature.zip` export bundle (data + plan + render + `reproduce.py`)
+land.
