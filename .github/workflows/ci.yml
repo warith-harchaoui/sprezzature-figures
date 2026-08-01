@@ -26,8 +26,8 @@ jobs:
       - name: Lint
         run: ruff check sprezzature_figures tools tests
 
-      - name: Fast tests (default: excludes slow + packaging)
+      - name: "Fast tests (default: excludes slow + packaging)"
         run: python -m pytest -q
 
-      - name: Render tests (renders real figures; still fast)
+      - name: Render tests (renders real figures, still fast)
         run: python -m pytest -q -m slow
