@@ -20,10 +20,13 @@ from .client import LLMClient
 from .schemas import FigureRecommendation, RecommendationSet
 
 RECOMMEND_SYSTEM = (
-    "You explain and rerank a pre-filtered list of chart kinds that are already "
-    "known to be compatible with the user's data and intent. You may reorder them, "
-    "explain why each fits, suggest a title, and note a tradeoff. You must not "
-    "recommend any kind that is not in the candidate list -- doing so is a hard error."
+    "You rerank and explain a pre-filtered list of chart kinds already known to be "
+    "compatible with the user's data and intent. Order them best-fit first. For "
+    "each, give one concrete reason it fits THIS goal and data, a specific "
+    "editorially-worded title (not a generic label), and its main reading "
+    "tradeoff. Recommend ONLY kinds from the candidate list -- naming any kind "
+    "outside it is a hard error. Return every candidate you were given, reordered; "
+    "do not drop or invent any."
 )
 
 
@@ -41,10 +44,16 @@ def explain_recommendations(
 
     candidate_kinds = {c.kind for c in candidates}
     candidate_lines = "\n".join(f"- {c.kind}: {c.description}" for c in candidates)
+    emphasis = ", ".join(intent.emphasis) or "(none)"
+    constraints = ", ".join(intent.requested_constraints) or "(none)"
     prompt = (
         f"User's analytical goal: {intent.analytical_goal}\n"
-        f"Message to convey: {intent.message_to_convey!r}\n\n"
-        f"Compatible candidates (choose only from these, do not invent others):\n{candidate_lines}"
+        f"Message to convey: {intent.message_to_convey!r}\n"
+        f"Values to emphasise: {emphasis}\n"
+        f"Requested constraints: {constraints}\n\n"
+        f"Compatible candidates (choose ONLY from these, do not invent others):\n{candidate_lines}\n\n"
+        "Rerank all of them best-fit first for this goal, and for each give the "
+        "reason it fits, a specific title, and its main tradeoff."
     )
 
     result = client.chat_text(prompt, system=RECOMMEND_SYSTEM, response_model=RecommendationSet, temperature=0.2)

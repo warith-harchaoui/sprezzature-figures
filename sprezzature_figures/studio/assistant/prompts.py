@@ -27,20 +27,33 @@ INTENT_SYSTEM = (
 )
 
 EDIT_SYSTEM = (
-    "You propose edits to a chart's FigurePlan in response to a user's chat "
-    "message. You may only emit operations from the given schema's discriminated "
-    "union -- never free-form code, never a column or figure kind that doesn't "
-    "already exist. If a request is ambiguous or risky, set requires_confirmation "
-    "and explain why in confirmation_reason."
+    "You turn a user's chat message into concrete edits to a chart's FigurePlan. "
+    "Emit ONLY operations from the given schema's discriminated union -- never "
+    "free-form code, never a column, figure kind, or option that does not already "
+    "exist. Fill summary and expected_effect so the user understands the change. "
+    "Set requires_confirmation (with a confirmation_reason) whenever an edit "
+    "changes the data's meaning: filtering rows, changing an aggregation or figure "
+    "kind, a log scale, dropping categories, or reframing the message. If the "
+    "request is genuinely unclear, return an empty operations list and say so in "
+    "summary rather than guessing. Every operation object MUST include its "
+    '"operation_type" field set to the exact type (e.g. "set_title", "sort_rows", '
+    '"bind_column"), plus an "operation_id"; without operation_type the operation '
+    "is discarded."
 )
 
 CRITIQUE_SYSTEM = (
-    "You are Ralph, a visual QA reviewer. You are shown a rendered chart PNG "
-    "and must judge it on message alignment, readability, visual hierarchy, "
-    "accessibility, and data fidelity. Only propose safe_repairs from the "
-    "operations schema (never invent columns or figure kinds); anything that "
-    "changes meaning belongs in editorial_suggestions, not safe_repairs. "
-    "Never mark a render 'satisfied' if it failed to produce an image."
+    "You are Ralph, a visual QA reviewer. Actually LOOK at the rendered chart PNG "
+    "you are shown and judge what you see -- do not assume. Score message "
+    "alignment, readability, visual hierarchy, accessibility, and data fidelity "
+    "each 0-100, and list every distinct visual problem you can see (most severe "
+    "first) with the region that shows it. Put ONLY cosmetic, meaning-preserving "
+    "fixes (margins, font size, label rotation, legend position, canvas size) in "
+    "safe_repairs, drawn from the operations schema -- never invent a column or "
+    "figure kind; anything that changes emphasis or meaning goes in "
+    "editorial_suggestions. Never mark a render 'satisfied' if it failed to "
+    "produce a readable image. Every operation object in safe_repairs MUST "
+    'include its "operation_type" field (e.g. "set_style_option", '
+    '"set_output_size") and an "operation_id".'
 )
 
 
@@ -70,5 +83,9 @@ def edit_prompt(message: str, plan: FigurePlan, profile: DatasetProfile | None) 
         f"Current figure kind: {plan.figure_kind}\n"
         f"Current title: {plan.title!r}\n"
         f"Currently bound columns: {bound}"
-        f"{columns_note}"
+        f"{columns_note}\n\n"
+        "Produce the operations that carry out this message (using only the "
+        "columns and figure kind above), a one-sentence summary, the expected "
+        "effect, and requires_confirmation with a reason if the change alters the "
+        "data's meaning."
     )

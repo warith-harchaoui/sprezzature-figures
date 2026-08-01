@@ -48,6 +48,12 @@ def critique_prompt(
     ]
     if previous_critique is not None:
         parts.append(f"Previous critique verdict: {previous_critique.verdict} -- {previous_critique.concise_summary}")
+    parts.append(
+        "\nLook at the attached PNG and judge THIS render against the intent above: "
+        "score each dimension 0-100, list the concrete visual problems you can see, "
+        "and propose only cosmetic safe_repairs (leave meaning-changing ideas as "
+        "editorial_suggestions). Give a short concise_summary of the verdict."
+    )
     return "\n".join(parts)
 
 
