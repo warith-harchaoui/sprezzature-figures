@@ -23,6 +23,7 @@ from typing import Any, Dict, List, Optional
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _render import svg_example_path, write_svg  # noqa: E402
+from _vl import categorical_domain_and_range  # noqa: E402
 
 INK = "#1D1D1F"
 SECONDARY = "#6E6E73"
@@ -69,8 +70,64 @@ def _build_vegalite_spec(
     width: int,
     height: int,
 ) -> Dict[str, Any]:
-    segments = list(SEGMENT_COLORS.keys())
-    color_range = [SEGMENT_COLORS[s] for s in segments]
+    domain_range = categorical_domain_and_range(data, "segment", SEGMENT_COLORS)
+    has_weight = any("weight" in row and row["weight"] is not None for row in data)
+
+    encoding: Dict[str, Any] = {
+        "x": {
+            "field": "horsepower",
+            "type": "quantitative",
+            "title": "Horsepower",
+            "scale": {"zero": False},
+            "axis": {
+                "labelFont": FONT_MONO,
+                "titleFont": FONT,
+                "titleColor": INK,
+                "labelColor": SECONDARY,
+                "gridColor": GRIDLINE,
+            },
+        },
+        "y": {
+            "field": "mpg",
+            "type": "quantitative",
+            "title": "Fuel economy (mpg)",
+            "scale": {"zero": False},
+            "axis": {
+                "labelFont": FONT_MONO,
+                "titleFont": FONT,
+                "titleColor": INK,
+                "labelColor": SECONDARY,
+                "gridColor": GRIDLINE,
+            },
+        },
+        "tooltip": [
+            {"field": "horsepower", "type": "quantitative", "title": "Horsepower"},
+            {"field": "mpg", "type": "quantitative", "title": "MPG"},
+        ],
+    }
+    # "weight" and "segment" are both optional data roles (see
+    # catalog.HAND_ROLES): only size/color-encode by them when the data
+    # actually carries them -- otherwise every mark got an undefined size
+    # (weight) or a legend for demo categories that aren't in the data
+    # (segment).
+    if has_weight:
+        encoding["size"] = {
+            "field": "weight",
+            "type": "quantitative",
+            "title": "Weight (kg)",
+            "scale": {"range": [40, 300]},
+            "legend": {"titleFont": FONT, "labelFont": FONT},
+        }
+        encoding["tooltip"].append({"field": "weight", "type": "quantitative", "title": "Weight (kg)"})
+    if domain_range is not None:
+        domain, color_range = domain_range
+        encoding["color"] = {
+            "field": "segment",
+            "type": "nominal",
+            "scale": {"domain": domain, "range": color_range},
+            "legend": {"title": "Segment", "titleFont": FONT, "labelFont": FONT},
+        }
+        encoding["tooltip"].insert(0, {"field": "segment", "type": "nominal", "title": "Segment"})
 
     return {
         "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -91,53 +148,7 @@ def _build_vegalite_spec(
         },
         "data": {"values": data},
         "mark": {"type": "circle", "opacity": 0.75},
-        "encoding": {
-            "x": {
-                "field": "horsepower",
-                "type": "quantitative",
-                "title": "Horsepower",
-                "scale": {"zero": False},
-                "axis": {
-                    "labelFont": FONT_MONO,
-                    "titleFont": FONT,
-                    "titleColor": INK,
-                    "labelColor": SECONDARY,
-                    "gridColor": GRIDLINE,
-                },
-            },
-            "y": {
-                "field": "mpg",
-                "type": "quantitative",
-                "title": "Fuel economy (mpg)",
-                "scale": {"zero": False},
-                "axis": {
-                    "labelFont": FONT_MONO,
-                    "titleFont": FONT,
-                    "titleColor": INK,
-                    "labelColor": SECONDARY,
-                    "gridColor": GRIDLINE,
-                },
-            },
-            "size": {
-                "field": "weight",
-                "type": "quantitative",
-                "title": "Weight (kg)",
-                "scale": {"range": [40, 300]},
-                "legend": {"titleFont": FONT, "labelFont": FONT},
-            },
-            "color": {
-                "field": "segment",
-                "type": "nominal",
-                "scale": {"domain": segments, "range": color_range},
-                "legend": {"title": "Segment", "titleFont": FONT, "labelFont": FONT},
-            },
-            "tooltip": [
-                {"field": "segment", "type": "nominal", "title": "Segment"},
-                {"field": "horsepower", "type": "quantitative", "title": "Horsepower"},
-                {"field": "mpg", "type": "quantitative", "title": "MPG"},
-                {"field": "weight", "type": "quantitative", "title": "Weight (kg)"},
-            ],
-        },
+        "encoding": encoding,
         "config": {"view": {"stroke": "transparent"}, "font": FONT},
     }
 

@@ -28,6 +28,7 @@ from typing import Any, Dict, List, Optional
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _render import svg_example_path, write_svg  # noqa: E402
+from _vl import categorical_domain_and_range  # noqa: E402
 
 INK = "#1D1D1F"
 SECONDARY = "#6E6E73"
@@ -101,9 +102,62 @@ def _build_vegalite_spec(
     dict[str, Any]
         Vega-Lite v5 spec.
     """
-    cities = sorted(set(row["city"] for row in data))
-    color_domain = cities
-    color_range = [CITY_COLORS.get(c, "#808080") for c in color_domain]
+    domain_range = categorical_domain_and_range(data, "city", CITY_COLORS, fallback="#808080")
+    has_sort = any("sort" in row and row["sort"] is not None for row in data)
+
+    x_encoding: Dict[str, Any] = {
+        "field": "month",
+        "type": "ordinal",
+        "title": "Month",
+        "axis": {"labelFont": FONT, "titleFont": FONT,
+                 "titleColor": INK, "labelColor": INK,
+                 "grid": False, "labelAngle": 0},
+    }
+    # "sort" and "city" are both optional data roles (see
+    # catalog.HAND_ROLES): only sort by the "sort" field / group+color by
+    # city when the data actually carries them -- reading row["city"]
+    # unconditionally crashed when it didn't.
+    if has_sort:
+        x_encoding["sort"] = {"field": "sort", "order": "ascending"}
+
+    encoding: Dict[str, Any] = {
+        "x": x_encoding,
+        "y": {
+            "field": "low",
+            "type": "quantitative",
+            "title": "Temperature (°C)",
+            "axis": {"labelFont": FONT_MONO, "titleFont": FONT,
+                     "titleColor": INK, "labelColor": SECONDARY,
+                     "gridColor": GRIDLINE},
+        },
+        "y2": {"field": "high"},
+        "tooltip": [
+            {"field": "month", "type": "ordinal",       "title": "Month"},
+            {"field": "low",   "type": "quantitative",  "title": "Low (°C)"},
+            {"field": "high",  "type": "quantitative",  "title": "High (°C)"},
+        ],
+    }
+    if domain_range is not None:
+        color_domain, color_range = domain_range
+        encoding["xOffset"] = {
+            "field": "city",
+            "type": "nominal",
+            "sort": color_domain,
+        }
+        encoding["color"] = {
+            "field": "city",
+            "type": "nominal",
+            "sort": color_domain,
+            "scale": {"domain": color_domain, "range": color_range},
+            "legend": {
+                "title": "City",
+                "titleFont": FONT,
+                "labelFont": FONT,
+                "symbolType": "square",
+                "orient": "top-right",
+            },
+        }
+        encoding["tooltip"].insert(0, {"field": "city", "type": "nominal", "title": "City"})
 
     # One column group per month, bars side by side per city
     spec: Dict[str, Any] = {
@@ -129,50 +183,7 @@ def _build_vegalite_spec(
             "cornerRadiusEnd": 3,
             "opacity": 0.85,
         },
-        "encoding": {
-            "x": {
-                "field": "month",
-                "type": "ordinal",
-                "sort": {"field": "sort", "order": "ascending"},
-                "title": "Month",
-                "axis": {"labelFont": FONT, "titleFont": FONT,
-                         "titleColor": INK, "labelColor": INK,
-                         "grid": False, "labelAngle": 0},
-            },
-            "y": {
-                "field": "low",
-                "type": "quantitative",
-                "title": "Temperature (°C)",
-                "axis": {"labelFont": FONT_MONO, "titleFont": FONT,
-                         "titleColor": INK, "labelColor": SECONDARY,
-                         "gridColor": GRIDLINE},
-            },
-            "y2": {"field": "high"},
-            "xOffset": {
-                "field": "city",
-                "type": "nominal",
-                "sort": color_domain,
-            },
-            "color": {
-                "field": "city",
-                "type": "nominal",
-                "sort": color_domain,
-                "scale": {"domain": color_domain, "range": color_range},
-                "legend": {
-                    "title": "City",
-                    "titleFont": FONT,
-                    "labelFont": FONT,
-                    "symbolType": "square",
-                    "orient": "top-right",
-                },
-            },
-            "tooltip": [
-                {"field": "city",  "type": "nominal",      "title": "City"},
-                {"field": "month", "type": "ordinal",       "title": "Month"},
-                {"field": "low",   "type": "quantitative",  "title": "Low (°C)"},
-                {"field": "high",  "type": "quantitative",  "title": "High (°C)"},
-            ],
-        },
+        "encoding": encoding,
         "config": {
             "view": {"stroke": "transparent"},
             "font": FONT,
