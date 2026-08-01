@@ -25,7 +25,7 @@ def build_figure_canvas(state: SessionState) -> Callable[[], None]:
     the browser to pick up a fresh image.
     """
     with ui.column().classes("w-full items-center gap-2"):
-        image = ui.image().classes("max-w-full border rounded").style("min-height: 200px")
+        image = ui.image().classes("max-w-full border rounded-lg bg-neutral-50").style("min-height: 200px")
         caption = ui.label("No render yet -- import data and create a figure.").classes("text-sm text-gray-500")
 
     def refresh() -> None:

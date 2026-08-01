@@ -25,8 +25,8 @@ from __future__ import annotations
 
 import base64
 import functools
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Sequence
 
 # Font files live one level up from this package, under assets/fonts/. In
 # the source tree that's <repo>/assets/fonts; once installed it ships
@@ -85,14 +85,14 @@ def font_path(key: str, *, woff2: bool = False) -> Path:
     return FONTS_DIR / (face["woff2"] if woff2 else face["ttf"])
 
 
-@functools.lru_cache(maxsize=None)
+@functools.cache
 def _data_uri(key: str) -> str:
     path = font_path(key, woff2=True)
     encoded = base64.b64encode(path.read_bytes()).decode("ascii")
     return f"data:font/woff2;base64,{encoded}"
 
 
-@functools.lru_cache(maxsize=None)
+@functools.cache
 def embedded_font_css(keys: tuple[str, ...] = DEFAULT_SVG_FACES) -> str:
     """``@font-face`` rules embedding the given faces as base64 WOFF2 data
     URIs -- fully self-contained, no network fetch, no reliance on the

@@ -132,18 +132,36 @@ def build_editor(state: SessionState) -> None:
         state.last_pending_confirmation = []
         state.add_chat("assistant", "Cancelled the pending change(s).")
 
-    with ui.row().classes("w-full items-center justify-between"):
-        ui.label("Sprezzature Studio").classes("text-lg font-semibold")
+    with ui.row().classes("w-full items-center justify-between px-6 py-4 sz-header").style(
+        "position: sticky; top: 0; z-index: 10;"
+    ):
+        ui.label("Sprezzature Studio").classes("text-lg font-semibold text-neutral-900")
         build_engine_status()
 
-    with ui.row().classes("w-full gap-4").style("height: calc(100vh - 80px)"):
-        with ui.column().classes("w-1/4 h-full overflow-y-auto border-r pr-2"):
+    # flex-basis:0 (not a width-% class) so the three panes divide the row by
+    # grow ratio *after* the gaps are subtracted -- Quasar's own `.row` class
+    # sets `flex-wrap: wrap`, so percentage widths that sum to 100% plus gap
+    # spacing overflow and wrap the third pane onto its own line; explicit
+    # `flex-wrap: nowrap` plus ratio-based flex-basis avoids that entirely.
+    with ui.row().classes("w-full gap-4 p-6 items-start").style(
+        "height: calc(100vh - 65px); box-sizing: border-box; flex-wrap: nowrap;"
+    ):
+        with (
+            ui.column().classes("h-full overflow-y-auto gap-4").style("flex: 1 1 0%; min-width: 0;"),
+            ui.column().classes("w-full gap-3 sz-card"),
+        ):
             build_data_panel(state, on_ready=create_initial_render)
 
-        with ui.column().classes("w-1/2 h-full overflow-y-auto"):
+        with (
+            ui.column().classes("h-full overflow-y-auto").style("flex: 2 1 0%; min-width: 0;"),
+            ui.column().classes("w-full sz-card"),
+        ):
             refresh_canvas = build_figure_canvas(state)
 
-        with ui.column().classes("w-1/4 h-full overflow-y-auto border-l pl-2"):
+        with (
+            ui.column().classes("h-full overflow-y-auto gap-4").style("flex: 1 1 0%; min-width: 0;"),
+            ui.column().classes("w-full gap-3 sz-card").style("height: 100%; box-sizing: border-box;"),
+        ):
             build_chat_panel(
                 state, on_send=handle_send, on_confirm=handle_confirm, on_cancel_pending=handle_cancel
             )

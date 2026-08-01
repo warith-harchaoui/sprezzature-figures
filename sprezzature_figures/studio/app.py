@@ -12,10 +12,11 @@ from __future__ import annotations
 
 from nicegui import app, ui
 
-from ..fonts import FONTS_DIR, SANS_STACK, MONO_STACK, web_font_faces_css
+from ..fonts import FONTS_DIR, MONO_STACK, SANS_STACK, web_font_faces_css
 from .config import APP_TITLE, DEFAULT_HOST, DEFAULT_PORT
 from .pages.editor import build_editor
 from .state import SessionState
+from .theme import theme_css
 
 # House typography: the same self-hosted Roboto family bundled for the
 # figures (sprezzature_figures.fonts) -- self-hosted, not a Google Fonts CDN
@@ -40,6 +41,16 @@ def register_fonts() -> None:
     )
 
 
+def register_theme() -> None:
+    """Inject the Studio's visual language (see `theme.py`): the same
+    neutral/brand-blue palette and rounded-card look as the public
+    harchaoui.org/warith/sprezzature site, backing the Tailwind-style
+    utility classes the components already use (this NiceGUI build ships no
+    Tailwind CSS itself, so those classes were previously silent no-ops).
+    """
+    ui.add_head_html(f"<style>{theme_css()}</style>", shared=True)
+
+
 def register_pages() -> None:
     @ui.page("/")
     def index() -> None:
@@ -57,5 +68,6 @@ def run_app(
 ) -> None:
     """Start the Studio server. Blocks until interrupted."""
     register_fonts()
+    register_theme()
     register_pages()
     ui.run(host=host, port=port, title=APP_TITLE, show=show, native=native, reload=reload)

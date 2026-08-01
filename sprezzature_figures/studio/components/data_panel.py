@@ -30,16 +30,18 @@ from sprezzature_figures.studio.ingest import (
 from sprezzature_figures.studio.state import SessionState
 
 
-def _load_upload(state: SessionState, e: events.UploadEventArguments) -> str | None:
-    """Read an uploaded CSV/XLSX into state.data/state.dataset_profile.
+def _load_upload(state: SessionState, filename: str, content: bytes) -> str | None:
+    """Read an uploaded CSV/XLSX (already-read bytes -- see `handle_upload`,
+    which is the only caller that has to deal with nicegui's async
+    `UploadEventArguments.file.read()`) into state.data/state.dataset_profile.
     Returns an error message, or None on success.
     """
-    suffix = Path(e.name).suffix.lower()
+    suffix = Path(filename).suffix.lower()
     if suffix not in (".csv", ".xlsx"):
         return f"Unsupported file type {suffix!r} -- upload a .csv or .xlsx file."
 
     with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
-        tmp.write(e.content.read())
+        tmp.write(content)
         tmp_path = Path(tmp.name)
 
     try:
@@ -62,10 +64,10 @@ def _load_upload(state: SessionState, e: events.UploadEventArguments) -> str | N
             return "The file has no data rows."
 
         state.dataset_profile = profile_dataframe(
-            df, dataset_id=fingerprint[:12], fingerprint=fingerprint, source_name=e.name, sheet_name=sheet_name
+            df, dataset_id=fingerprint[:12], fingerprint=fingerprint, source_name=filename, sheet_name=sheet_name
         )
         state.data = df.to_dict("records")
-        state.source_name = e.name
+        state.source_name = filename
         return None
     finally:
         tmp_path.unlink(missing_ok=True)
@@ -88,10 +90,12 @@ def build_data_panel(state: SessionState, *, on_ready: Callable[[FigurePlan], No
         )
 
         stable_kinds = list_kinds(status="stable")
-        kind_select = ui.select(stable_kinds, label="Figure kind", value=stable_kinds[0] if stable_kinds else None)
+        kind_select = ui.select(
+            stable_kinds, label="Figure kind", value=stable_kinds[0] if stable_kinds else None
+        ).classes("w-full")
 
         role_selects: dict[str, ui.select] = {}
-        role_container = ui.column().classes("gap-1")
+        role_container = ui.column().classes("w-full gap-1")
 
         @ui.refreshable
         def render_roles() -> None:
@@ -103,7 +107,7 @@ def build_data_panel(state: SessionState, *, on_ready: Callable[[FigurePlan], No
             with role_container:
                 for role in [*definition.required_roles, *definition.optional_roles]:
                     label = f"{role.label}{'' if role.required else ' (optional)'}"
-                    role_selects[role.name] = ui.select(columns, label=label, value=None)
+                    role_selects[role.name] = ui.select(columns, label=label, value=None).classes("w-full")
 
         kind_select.on_value_change(lambda _: render_roles.refresh())
         with role_container:
@@ -134,8 +138,9 @@ def build_data_panel(state: SessionState, *, on_ready: Callable[[FigurePlan], No
 
         ui.button("Create figure", on_click=confirm).props("color=primary").classes("mt-2")
 
-    def handle_upload(e: events.UploadEventArguments) -> None:
-        error = _load_upload(state, e)
+    async def handle_upload(e: events.UploadEventArguments) -> None:
+        content = await e.file.read()
+        error = _load_upload(state, e.file.name, content)
         if error:
             status_label.text = f"Error: {error}"
             status_label.classes(replace="text-sm text-red-600")

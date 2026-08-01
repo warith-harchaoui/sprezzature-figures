@@ -44,7 +44,9 @@ def build_chat_panel(
                 align = "items-end" if msg.role == "user" else "items-start"
                 bubble_color = "bg-blue-100" if msg.role == "user" else "bg-gray-100"
                 with ui.column().classes(f"w-full {align}"):
-                    ui.label(msg.text).classes(f"{bubble_color} rounded px-3 py-2 max-w-[90%] text-sm whitespace-pre-wrap")
+                    ui.label(msg.text).classes(
+                        f"{bubble_color} rounded-lg px-3 py-2 text-sm whitespace-pre-wrap"
+                    ).style("max-width: 90%")
 
     @ui.refreshable
     def render_pending() -> None:

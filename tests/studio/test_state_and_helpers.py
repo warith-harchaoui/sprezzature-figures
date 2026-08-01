@@ -10,8 +10,6 @@ Warith Harchaoui <warith.harchaoui@gmail.com>
 
 from __future__ import annotations
 
-import io
-from dataclasses import dataclass
 from pathlib import Path
 
 from sprezzature_figures.core.dataset import ColumnProfile, DatasetProfile
@@ -50,24 +48,16 @@ def test_session_state_has_data_and_has_render_flags() -> None:
     assert state.has_data is True
 
 
-@dataclass
-class _FakeUploadEvent:
-    name: str
-    content: io.BytesIO
-
-
 def test_load_upload_rejects_unsupported_extension() -> None:
     state = SessionState()
-    event = _FakeUploadEvent(name="data.txt", content=io.BytesIO(b"hello"))
-    error = _load_upload(state, event)
+    error = _load_upload(state, "data.txt", b"hello")
     assert error is not None and ".txt" in error
 
 
 def test_load_upload_reads_valid_csv_into_state() -> None:
     state = SessionState()
     csv_bytes = b"region,value\nNorth,42\nSouth,28\n"
-    event = _FakeUploadEvent(name="revenue.csv", content=io.BytesIO(csv_bytes))
-    error = _load_upload(state, event)
+    error = _load_upload(state, "revenue.csv", csv_bytes)
     assert error is None
     assert state.dataset_profile is not None
     assert state.dataset_profile.row_count == 2
@@ -77,8 +67,7 @@ def test_load_upload_reads_valid_csv_into_state() -> None:
 
 def test_load_upload_rejects_empty_csv() -> None:
     state = SessionState()
-    event = _FakeUploadEvent(name="empty.csv", content=io.BytesIO(b"region,value\n"))
-    error = _load_upload(state, event)
+    error = _load_upload(state, "empty.csv", b"region,value\n")
     assert error is not None and "no data rows" in error
 
 
