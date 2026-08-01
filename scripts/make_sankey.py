@@ -13,8 +13,10 @@ string by hand rather than through ``vl_convert``. The layout is a
 left-to-right layered graph:
 
 * **Nodes** are stacked vertical bars, one column ("layer") per stage
-  of the journey. Each node's height is proportional to the volume that
-  passes through it.
+  of the journey, auto-assigned from the flow data by longest-path
+  topological layering (a node with no inbound flow is layer 0; every
+  other node's layer is one past its deepest predecessor). Each node's
+  height is proportional to the volume that passes through it.
 * **Links** are cubic Bézier ribbons whose vertical thickness at both
   ends equals the volume of that flow; a flow that splits keeps its
   total width conserved (widths in = widths out at every node).
@@ -22,6 +24,10 @@ left-to-right layered graph:
 House style follows ``_style.py`` / ``bar.vl.json``: Roboto type, the
 Apple-system categorical palette, ink ``#1D1D1F`` on white, rounded
 node corners, a start-anchored title plus a one-line takeaway subtitle.
+Every layer-0 ("root") node gets a distinct hue from the accessibility
+palette; every downstream node and ribbon borrows the hue of whichever
+root contributes the most volume to it, so the origin story survives
+the whole cascade.
 
 Interaction (no JavaScript): every ribbon carries a native ``<title>``
 tooltip with its exact volume, and a CSS ``:hover`` / ``:focus`` rule
@@ -43,7 +49,7 @@ from __future__ import annotations
 import argparse
 import sys
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Tuple
 from xml.sax.saxutils import escape
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -74,136 +80,128 @@ LABEL_GAP = 14           # gap between a node bar and its text label
 FONT = "Roboto, system-ui, sans-serif"
 FONT_MONO = "Roboto Mono, ui-monospace, monospace"
 
+_DEFAULT_STAGE_NAMES = ("Channel", "Engagement", "Intent", "Outcome")
+_NEUTRAL_RIBBON = "#AEAEB2"
+_NEUTRAL_NODE = "#8E8E93"
 
 # ------------------------------------------------------------------
 # The story (illustrative but plausible): a week of visitors to a SaaS
 # marketing site, from acquisition channel through the funnel to the
 # outcome. The takeaway: organic search is the biggest top-of-funnel
 # source, yet paid traffic converts to a paid plan at a higher rate.
+# Rows are flow records; nodes and their layers are inferred from them
+# (see :func:`_nodes_and_links`) rather than declared separately.
 # ------------------------------------------------------------------
-# Nodes: (id, human label, layer index 0..3).
-NODES: List[Tuple[str, str, int]] = [
-    # Layer 0 — acquisition channel
-    ("organic", "Organic search", 0),
-    ("paid", "Paid ads", 0),
-    ("referral", "Referral", 0),
-    # Layer 1 — engagement
-    ("browsed", "Browsed", 1),
-    ("bounced", "Bounced", 1),
-    # Layer 2 — intent
-    ("signup", "Signed up", 2),
-    ("left", "Left", 2),
-    # Layer 3 — outcome
-    ("paidplan", "Paid plan", 3),
-    ("freeplan", "Free plan", 3),
-    ("churned", "Churned", 3),
+DEMO_DATA: List[Dict[str, Any]] = [
+    {"source": "Organic search", "target": "Browsed", "value": 4200},
+    {"source": "Organic search", "target": "Bounced", "value": 1800},
+    {"source": "Paid ads", "target": "Browsed", "value": 2600},
+    {"source": "Paid ads", "target": "Bounced", "value": 900},
+    {"source": "Referral", "target": "Browsed", "value": 1400},
+    {"source": "Referral", "target": "Bounced", "value": 400},
+    {"source": "Browsed", "target": "Signed up", "value": 3100},
+    {"source": "Browsed", "target": "Left", "value": 5100},
+    {"source": "Signed up", "target": "Paid plan", "value": 900},
+    {"source": "Signed up", "target": "Free plan", "value": 1700},
+    {"source": "Signed up", "target": "Churned", "value": 500},
 ]
 
-# Links: (source id, target id, volume of visitors).
-LINKS: List[Tuple[str, str, int]] = [
-    # channel -> engagement
-    ("organic", "browsed", 4200),
-    ("organic", "bounced", 1800),
-    ("paid", "browsed", 2600),
-    ("paid", "bounced", 900),
-    ("referral", "browsed", 1400),
-    ("referral", "bounced", 400),
-    # engagement -> intent (only "browsed" continues)
-    ("browsed", "signup", 3100),
-    ("browsed", "left", 5100),
-    # intent -> outcome
-    ("signup", "paidplan", 900),
-    ("signup", "freeplan", 1700),
-    ("signup", "churned", 500),
-]
 
-# Color each *source-channel* flow by the channel it came from, so the
-# ribbon color tells you the origin all the way down the cascade. The
-# node itself borrows the color of its dominant inbound channel.
-PALETTE = load_palette()
-CHANNEL_COLOR: Dict[str, str] = {
-    "organic": PALETTE.get("Blue", "#007AFF"),
-    "paid": PALETTE.get("Orange", "#FF9500"),
-    "referral": PALETTE.get("Purple", "#AF52DE"),
-}
-NEUTRAL_NODE = "#C7C7CC"  # for "bounced" / "left" / "churned" sinks
-CHURN_TINT = PALETTE.get("Gray", "#8E8E93")
-
-# A ribbon carries the color of the channel that dominates its source
-# node, so the origin story survives all the way down the cascade. To
-# resolve that dominant channel we walk each node's inbound flows back to
-# a layer-0 channel node.
-_CHANNEL_IDS = set(CHANNEL_COLOR)
+def _slug(label: str) -> str:
+    """Turn a node name into a CSS-class-safe slug."""
+    return "".join(ch.lower() if ch.isalnum() else "-" for ch in label).strip("-") or "n"
 
 
-def _dominant_channel(node_id: str) -> str | None:
-    """Return the layer-0 channel that contributes the most flow into ``node_id``.
-
-    Walks inbound links recursively until it reaches channel nodes, then
-    picks the channel with the largest cumulative volume. Sink-type nodes
-    (bounced / left / churned) are treated as neutral and return ``None``.
-
-    Parameters
-    ----------
-    node_id : str
-        Node identifier from :data:`NODES`.
-
-    Returns
-    -------
-    str or None
-        The dominant channel id, or ``None`` when the node is a neutral
-        sink or has no traceable channel origin.
+def _nodes_and_links(data: List[Dict[str, Any]]) -> Tuple[List[Tuple[str, str, int]], List[Tuple[str, str, float]]]:
+    """Derive (id, label, layer) nodes and (source, target, value) links from
+    flow records, auto-layering nodes by longest path from a root (a node
+    with no inbound flow) so callers never declare layers by hand.
     """
-    if node_id in ("bounced", "left", "churned"):
-        return None
-    if node_id in _CHANNEL_IDS:
-        return node_id
-    tally: Dict[str, float] = {}
-    for s, t, vol in LINKS:
-        if t != node_id:
-            continue
-        src_channel = _dominant_channel(s)
-        if src_channel is not None:
-            tally[src_channel] = tally.get(src_channel, 0.0) + vol
-    if not tally:
-        return None
-    return max(tally, key=lambda k: tally[k])
+    links = [(str(row["source"]), str(row["target"]), float(row["value"])) for row in data]
+    node_ids = {s for s, _t, _v in links} | {t for _s, t, _v in links}
+
+    incoming: Dict[str, List[str]] = {n: [] for n in node_ids}
+    for s, t, _v in links:
+        incoming[t].append(s)
+
+    layer_of: Dict[str, int] = {}
+
+    def _layer(node: str, seen: frozenset) -> int:
+        if node in layer_of:
+            return layer_of[node]
+        if node in seen:  # defensive cycle guard; Sankeys are normally DAGs
+            return 0
+        preds = incoming.get(node, [])
+        layer_of[node] = 0 if not preds else 1 + max(_layer(p, seen | {node}) for p in preds)
+        return layer_of[node]
+
+    for n in node_ids:
+        _layer(n, frozenset())
+
+    nodes = sorted(((n, n, layer_of[n]) for n in node_ids), key=lambda row: (row[2], row[0]))
+    return nodes, links
+
+
+def _root_dominance(nodes: List[Tuple[str, str, int]], links: List[Tuple[str, str, float]]) -> Dict[str, str | None]:
+    """Map every node id to the layer-0 ("root") node that contributes the
+    most cumulative volume to it, walking inbound links back to the roots.
+    Root nodes map to themselves; a node with no traceable root (should not
+    happen in a connected DAG) maps to None.
+    """
+    roots = {n for n, _l, layer in nodes if layer == 0}
+    by_target: Dict[str, List[Tuple[str, float]]] = {}
+    for s, t, v in links:
+        by_target.setdefault(t, []).append((s, v))
+
+    dominant: Dict[str, str | None] = {}
+
+    def _resolve(node: str, seen: frozenset) -> str | None:
+        if node in dominant:
+            return dominant[node]
+        if node in roots:
+            dominant[node] = node
+            return node
+        if node in seen:
+            return None
+        tally: Dict[str, float] = {}
+        for s, v in by_target.get(node, []):
+            root = _resolve(s, seen | {node})
+            if root is not None:
+                tally[root] = tally.get(root, 0.0) + v
+        dominant[node] = max(tally, key=lambda k: tally[k]) if tally else None
+        return dominant[node]
+
+    for n, _l, _layer in nodes:
+        _resolve(n, frozenset())
+    return dominant
 
 
 # ------------------------------------------------------------------
 # Layout maths
 # ------------------------------------------------------------------
-def _node_volume(node_id: str) -> int:
+def _node_volume(node_id: str, links: List[Tuple[str, str, float]]) -> float:
     """Return the throughput of a node = max(inflow, outflow).
 
     A pure source node has no inflow, a pure sink has no outflow; using
     the max keeps a node's bar height equal to the total volume that
     actually passes through it.
-
-    Parameters
-    ----------
-    node_id : str
-        Node identifier from :data:`NODES`.
-
-    Returns
-    -------
-    int
-        Visitor volume routed through the node.
     """
-    inflow = sum(v for s, t, v in LINKS if t == node_id)
-    outflow = sum(v for s, t, v in LINKS if s == node_id)
+    inflow = sum(v for s, t, v in links if t == node_id)
+    outflow = sum(v for s, t, v in links if s == node_id)
     return max(inflow, outflow)
 
 
-def _layers() -> Dict[int, List[str]]:
+def _layers(nodes: List[Tuple[str, str, int]]) -> Dict[int, List[str]]:
     """Group node ids by their layer index, preserving declaration order."""
     layers: Dict[int, List[str]] = {}
-    for node_id, _label, layer in NODES:
+    for node_id, _label, layer in nodes:
         layers.setdefault(layer, []).append(node_id)
     return layers
 
 
-def _compute_geometry() -> Tuple[Dict[str, dict], float]:
+def _compute_geometry(
+    nodes: List[Tuple[str, str, int]], links: List[Tuple[str, str, float]]
+) -> Tuple[Dict[str, dict], float]:
     """Place every node and return (geometry, volume→pixel scale).
 
     Returns
@@ -217,7 +215,7 @@ def _compute_geometry() -> Tuple[Dict[str, dict], float]:
         Pixels per unit volume, chosen so the tallest layer fills the
         plot height minus its inter-node padding.
     """
-    layers = _layers()
+    layers = _layers(nodes)
     plot_top = MARGIN_TOP
     plot_bottom = HEIGHT - MARGIN_BOTTOM
     plot_h = plot_bottom - plot_top
@@ -227,36 +225,33 @@ def _compute_geometry() -> Tuple[Dict[str, dict], float]:
     # Vertical scale: the densest layer (most total volume) must fit.
     max_layer_vol = 0.0
     for ids in layers.values():
-        total = sum(_node_volume(n) for n in ids)
+        total = sum(_node_volume(n, links) for n in ids)
         pad_total = NODE_PAD * (len(ids) - 1)
-        # Effective volume that competes for the padded height.
         max_layer_vol = max(max_layer_vol, total / max(1e-9, (plot_h - pad_total)))
     scale = 1.0 / max_layer_vol if max_layer_vol else 1.0
 
     n_layers = len(layers)
-    # Evenly space layer x-positions across the plot width.
     xs = [
-        plot_left + i * (plot_right - plot_left - NODE_WIDTH) / (n_layers - 1)
+        plot_left + i * (plot_right - plot_left - NODE_WIDTH) / max(1, n_layers - 1)
         for i in range(n_layers)
     ]
 
     geometry: Dict[str, dict] = {}
     for layer_idx in sorted(layers):
         ids = layers[layer_idx]
-        heights = [_node_volume(n) * scale for n in ids]
+        heights = [_node_volume(n, links) * scale for n in ids]
         pad_total = NODE_PAD * (len(ids) - 1)
         stack_h = sum(heights) + pad_total
-        # Center the stack vertically in the plot.
         y = plot_top + (plot_h - stack_h) / 2.0
         for node_id, h in zip(ids, heights):
             geometry[node_id] = {
                 "x": xs[layer_idx],
                 "y": y,
                 "h": h,
-                "vol": _node_volume(node_id),
+                "vol": _node_volume(node_id, links),
                 "layer": layer_idx,
-                "out_cursor": y,  # next outbound ribbon starts here
-                "in_cursor": y,   # next inbound ribbon lands here
+                "out_cursor": y,
+                "in_cursor": y,
             }
             y += h + NODE_PAD
 
@@ -273,20 +268,6 @@ def _ribbon_path(x0: float, y0: float, x1: float, y1: float, thick: float) -> st
     lands on the target node's left edge at ``(x1, y1)``; ``y0`` / ``y1``
     are the *top* of the ribbon at each end. Control points sit at the
     horizontal midpoint for the classic Sankey S-curve.
-
-    Parameters
-    ----------
-    x0, y0 : float
-        Top-left corner of the ribbon (source side).
-    x1, y1 : float
-        Top-right corner of the ribbon (target side).
-    thick : float
-        Vertical thickness in pixels (the flow volume × scale).
-
-    Returns
-    -------
-    str
-        An SVG path ``d`` attribute value describing the closed ribbon.
     """
     xc = (x0 + x1) / 2.0
     top = (
@@ -300,100 +281,102 @@ def _ribbon_path(x0: float, y0: float, x1: float, y1: float, thick: float) -> st
     return top + " " + bottom
 
 
-def _fmt_k(v: int) -> str:
-    """Format a visitor count compactly (e.g. 4200 → '4.2k')."""
+def _fmt_k(v: float) -> str:
+    """Format a volume compactly (e.g. 4200 → '4.2k')."""
     if v >= 1000:
         return f"{v / 1000:.1f}k".replace(".0k", "k")
-    return str(v)
+    return str(int(v)) if float(v).is_integer() else f"{v:g}"
 
 
-def build_svg(mode: str = "self-contained", accessibility: str = "universal") -> str:
+def build_svg(
+    data: List[Dict[str, Any]] | None = None,
+    *,
+    title: str = "Organic search fills the funnel, but paid ads convert",
+    subtitle: str = "One week of site visitors, from channel to outcome — illustrative data",
+    desc: str | None = None,
+    stage_names: List[str] | None = None,
+    volume_unit: str = "visitors",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> str:
     """Assemble the full Sankey SVG document as a string.
 
     Parameters
     ----------
+    data : list[dict[str, Any]] or None
+        Flow rows with ``source`` (str), ``target`` (str), ``value``
+        (float) keys. Node identity and stage (layer) are inferred from
+        the graph structure. Defaults to DEMO_DATA.
+    title, subtitle : str
+        Chart text.
+    desc : str or None
+        Accessible long description. Auto-generated from the data when
+        not given.
+    stage_names : list[str] or None
+        One label per layer, shown as column headers. Defaults to the
+        illustrative scenario's stage names when the layer count matches
+        (4), otherwise generic "Stage N" labels.
+    volume_unit : str
+        Unit word appended to tooltips and node counts (e.g. "visitors",
+        "units", "€").
     mode : str, optional
-        Interactivity mode for the fullscreen control, one of three:
-        ``"self-contained"`` (default) ships a self-carrying fullscreen
-        button plus its wiring script; ``"external"`` ships no button and
-        defers fullscreen to a page-level module; ``"static"`` ships no
-        interactivity at all.
+        Interactivity mode for the fullscreen control (``"self-contained"``
+        / ``"external"`` / ``"static"``).
     accessibility : str, optional
         Palette accessibility level (``"universal"``, ``"high-contrast"``,
         ``"monochrome"``, ``"deuteranopia"``, ``"protanopia"`` or
-        ``"tritanopia"``). Defaults to ``"universal"``, the
-        colour-vision-safe standard, which reuses the module-level palette so
-        the emitted SVG stays unchanged; any other level remaps the channel
-        and outcome hues.
+        ``"tritanopia"``).
 
     Returns
     -------
     str
         A complete, standalone SVG document.
     """
-    # ``universal`` reuses the module-level constants (output byte-identical);
-    # any other level re-reads the palette at that accessibility level and
-    # rebuilds the channel / outcome colours locally.
-    if accessibility == "universal":
-        palette = PALETTE
-        channel_color = CHANNEL_COLOR
-        churn_tint = CHURN_TINT
-    else:
-        palette = load_palette(accessibility)
-        channel_color = {
-            "organic": palette.get("Blue", "#007AFF"),
-            "paid": palette.get("Orange", "#FF9500"),
-            "referral": palette.get("Purple", "#AF52DE"),
-        }
-        churn_tint = palette.get("Gray", "#8E8E93")
+    data = data if data is not None else DEMO_DATA
+    nodes, links = _nodes_and_links(data)
+    dominant = _root_dominance(nodes, links)
+    roots = [n for n, _l, layer in nodes if layer == 0]
 
-    geometry, _scale = _compute_geometry()
-    label_of = {nid: lbl for nid, lbl, _ in NODES}
-    n_layers = len(_layers())
+    palette = load_palette(accessibility)
+    palette_colors = list(palette.values())
+    root_color = {root: palette_colors[i % len(palette_colors)] for i, root in enumerate(roots)}
+
+    geometry, _scale = _compute_geometry(nodes, links)
+    label_of = {nid: lbl for nid, lbl, _ in nodes}
+    layers = _layers(nodes)
+    n_layers = len(layers)
+
+    if stage_names is None:
+        stage_names = list(_DEFAULT_STAGE_NAMES) if n_layers == len(_DEFAULT_STAGE_NAMES) else [
+            f"Stage {i + 1}" for i in range(n_layers)
+        ]
+
+    if desc is None:
+        top_root = max(roots, key=lambda r: _node_volume(r, links)) if roots else None
+        desc = (
+            f"Sankey diagram of flow across {n_layers} stages: "
+            + ", ".join(stage_names)
+            + f". Ribbon width is proportional to {volume_unit}."
+            + (f" {label_of.get(top_root, top_root)} is the largest source." if top_root else "")
+        )
 
     parts: List[str] = []
 
     # --- header: accessible role + title + description ---
-    title_txt = "Organic search fills the funnel, but paid ads convert"
-    subtitle_txt = (
-        "One week of site visitors, from channel to outcome — illustrative data"
-    )
-    desc_txt = (
-        "Sankey diagram of visitor flow across four stages: acquisition "
-        "channel, engagement, sign-up intent, and outcome. Ribbon width is "
-        "proportional to the number of visitors. Organic search is the "
-        "largest source; paid-ads visitors reach a paid plan at a higher rate."
-    )
     parts.append(svg_open(WIDTH, HEIGHT, "sankey-title", "sankey-desc", font_family=FONT))
-    parts.append(f'<title id="sankey-title">{escape(title_txt)}</title>')
-    parts.append(f'<desc id="sankey-desc">{escape(desc_txt)}</desc>')
+    parts.append(f'<title id="sankey-title">{escape(title)}</title>')
+    parts.append(f'<desc id="sankey-desc">{escape(desc)}</desc>')
 
     # OS-adaptive overrides (additive; every rule lives inside an @media block,
-    # so the default render is byte-for-byte unchanged). The channel hues (and
-    # the two positive-outcome node hues) carry ``.sk-<id>`` classes on both the
-    # ribbons and the nodes. Under prefers-contrast they deepen together to
-    # their high-contrast spacing, keeping each origin channel distinguishable
-    # (role="fill" only, so each ribbon's white separating halo is untouched).
-    # Under forced-colors (Windows High Contrast) the ~4-colour system palette
-    # cannot preserve five colour-coded origins, so each channel/outcome hue is
-    # instead handed a distinct Canvas/CanvasText PATTERN (hatch / dots / cross)
-    # via forced_color_patterns: the ribbons and nodes of a series take that
-    # pattern, so the origin story survives the cascade even when colour is
-    # stripped (neutral drop-off ribbons stay plain, as they should).
-    sk_series = {
-        ".sk-organic": channel_color["organic"],
-        ".sk-paid": channel_color["paid"],
-        ".sk-referral": channel_color["referral"],
-        ".sk-paidplan": palette.get("Green", "#34C759"),
-        ".sk-freeplan": palette.get("Teal", "#5AC8FA"),
-    }
+    # so the default render stays unchanged for accessibility="universal").
+    # Each root channel carries a ``.sk-<slug>`` class on both its ribbons and
+    # its own node, so prefers-contrast can deepen the hue and forced-colors
+    # can hand it a distinct Canvas pattern, keeping every origin distinguishable.
+    sk_series = {f".sk-{_slug(root)}": root_color[root] for root in roots}
     fcp_defs, fcp_style = forced_color_patterns(list(sk_series), prefix="sk-fcp")
-    # --- CSS: hover/focus highlight one ribbon, dim the rest ---
     parts.append(
         "<style>"
         ".link{transition:opacity .15s ease}"
-        # When the ribbon group is hovered or a ribbon is focused, fade
-        # every ribbon, then bring the hovered/focused one back to full.
         "#links:hover .link{opacity:.18}"
         "#links .link:hover,#links .link:focus{opacity:1}"
         ".link:focus{outline:none}"
@@ -410,18 +393,15 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     # --- title + subtitle (start-anchored, house style) ---
     parts.append(
         f'<text x="{MARGIN_LEFT}" y="58" font-size="34" font-weight="700" '
-        f'fill="{INK}">{escape(title_txt)}</text>'
+        f'fill="{INK}">{escape(title)}</text>'
     )
     parts.append(
         f'<text x="{MARGIN_LEFT}" y="92" font-size="20" fill="{SUBINK}">'
-        f'{escape(subtitle_txt)}</text>'
+        f'{escape(subtitle)}</text>'
     )
 
     # --- stage headers across the top of the plot ---
-    stage_names = ["Channel", "Engagement", "Intent", "Outcome"]
-    layers = _layers()
     for layer_idx in sorted(layers):
-        # Anchor the stage label above the first node of the layer.
         any_node = layers[layer_idx][0]
         gx = geometry[any_node]["x"]
         anchor = "start"
@@ -437,15 +417,12 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
 
     # --- ribbons (drawn before nodes so nodes sit on top) ---
     parts.append('<g id="links">')
-    # Draw thickest ribbons first so thin ones layer cleanly on top.
-    ordered = sorted(LINKS, key=lambda lk: -lk[2])
-    # But cursors must advance in the node's stacking order, so precompute
-    # ribbon endpoints in declaration order, then emit in thickness order.
+    ordered = sorted(links, key=lambda lk: -lk[2])
     endpoints: Dict[Tuple[str, str], Tuple[float, float, float, float, float]] = {}
-    for s, t, vol in LINKS:
+    for s, t, vol in links:
         gs = geometry[s]
         gt = geometry[t]
-        thick = gs["h"] * (vol / max(1e-9, gs["vol"]))  # share of source height
+        thick = gs["h"] * (vol / max(1e-9, gs["vol"]))
         x0 = gs["x"] + NODE_WIDTH
         y0 = gs["out_cursor"]
         x1 = gt["x"]
@@ -456,33 +433,17 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
 
     for s, t, vol in ordered:
         x0, y0, x1, y1, thick = endpoints[(s, t)]
-        # Ribbon color: a flow into a neutral drop-off (bounced / left /
-        # churned) is gray; every other flow carries the color of the
-        # channel that dominates its *source* node, so the origin story
-        # survives the whole cascade instead of turning gray after layer 0.
-        ribbon_channel: str | None = None
-        if t in ("churned", "left", "bounced"):
-            color = churn_tint
-        else:
-            channel = _dominant_channel(s)
-            color = channel_color.get(channel or "", "#AEAEB2")
-            if channel in channel_color:
-                ribbon_channel = channel
-        d = _ribbon_path(x0, y0, x1, y1, thick)
-        # Per-channel class = the prefers-contrast hook (only on ribbons that
-        # actually carry a channel hue; neutral drop-off ribbons stay grey).
-        chan_cls = f" sk-{ribbon_channel}" if ribbon_channel else ""
-        tip = (
-            f"{label_of[s]} → {label_of[t]}: {vol:,} visitors"
-        )
-        # A thin white halo separates crossing ribbons so overlapping
-        # same-direction flows never blend into a muddy blob; the fill
-        # opacity stays low enough that a node's several ribbons read as
-        # distinct layers rather than one solid slab.
+        # A ribbon carries the color of the root that dominates its *source*
+        # node, so the origin story survives the whole cascade.
+        root = dominant.get(s)
+        color = root_color.get(root, _NEUTRAL_RIBBON) if root else _NEUTRAL_RIBBON
+        chan_cls = f" sk-{_slug(root)}" if root else ""
+        vol_txt = _fmt_k(vol)
+        tip = f"{label_of[s]} → {label_of[t]}: {vol_txt} {volume_unit}"
         parts.append(
             f'<path class="link{chan_cls}" tabindex="0" role="img" '
-            f'aria-label="{escape(tip)}" d="{d}" fill="{color}" '
-            f'fill-opacity="0.55" stroke="#FFFFFF" stroke-width="1.25" '
+            f'aria-label="{escape(tip)}" d="{_ribbon_path(x0, y0, x1, y1, thick)}" '
+            f'fill="{color}" fill-opacity="0.55" stroke="#FFFFFF" stroke-width="1.25" '
             f'stroke-opacity="0.9">'
             f'<title>{escape(tip)}</title></path>'
         )
@@ -490,41 +451,31 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
 
     # --- nodes + labels ---
     parts.append('<g id="nodes">')
-    for node_id, label, layer_idx in NODES:
+    for node_id, label, layer_idx in nodes:
         g = geometry[node_id]
-        # Node color: channel nodes get their brand hue; sinks get gray;
-        # positive outcomes get green; the rest borrow a neutral ink.
-        node_cls = ""
-        if node_id in channel_color:
-            ncol = channel_color[node_id]
-            node_cls = f" sk-{node_id}"
-        elif node_id in ("bounced", "left", "churned"):
-            ncol = NEUTRAL_NODE
-        elif node_id == "paidplan":
-            ncol = palette.get("Green", "#34C759")
-            node_cls = " sk-paidplan"
-        elif node_id == "freeplan":
-            ncol = palette.get("Teal", "#5AC8FA")
-            node_cls = " sk-freeplan"
+        root = dominant.get(node_id)
+        if root == node_id:
+            ncol = root_color[node_id]
+            node_cls = f" sk-{_slug(node_id)}"
+        elif root is not None:
+            ncol = root_color[root]
+            node_cls = f" sk-{_slug(root)}"
         else:
-            ncol = "#8E8E93"
+            ncol = _NEUTRAL_NODE
+            node_cls = ""
+        vol_txt = _fmt_k(g["vol"])
         parts.append(
             f'<rect class="node{node_cls}" x="{g["x"]:.1f}" y="{g["y"]:.1f}" '
             f'width="{NODE_WIDTH}" height="{max(1.0, g["h"]):.1f}" rx="5" fill="{ncol}">'
-            f'<title>{escape(label)}: {g["vol"]:,} visitors</title></rect>'
+            f'<title>{escape(label)}: {vol_txt} {volume_unit}</title></rect>'
         )
-        # Label placement: left layers label to the right of the bar,
-        # the final layer labels to the left, so text never runs off-canvas.
         cy = g["y"] + g["h"] / 2.0
-        vol_txt = _fmt_k(g["vol"])
         if layer_idx == n_layers - 1:
             lx = g["x"] - LABEL_GAP
             anchor = "end"
         else:
             lx = g["x"] + NODE_WIDTH + LABEL_GAP
             anchor = "start"
-        # Name on the upper line, count on the lower line, so the two never
-        # collide however tall or short the node is.
         parts.append(
             f'<text x="{lx:.1f}" y="{cy:.1f}" text-anchor="{anchor}">'
             f'<tspan x="{lx:.1f}" dy="-0.35em" font-size="19" '
@@ -538,13 +489,72 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     # --- footnote: read the hover affordance ---
     parts.append(
         f'<text x="{MARGIN_LEFT}" y="{HEIGHT - 20}" font-size="15" '
-        f'fill="{SUBINK}">Ribbon width ∝ visitors · hover or focus a '
+        f'fill="{SUBINK}">Ribbon width ∝ {volume_unit} · hover or focus a '
         f'flow to trace it</text>'
     )
 
     parts.append(fullscreen_control(WIDTH, HEIGHT, mode))
     parts.append("</svg>")
     return "".join(parts)
+
+
+def make_sankey(
+    data: List[Dict[str, Any]] | None = None,
+    *,
+    out: Path | str | None = None,
+    title: str = "Organic search fills the funnel, but paid ads convert",
+    subtitle: str = "One week of site visitors, from channel to outcome — illustrative data",
+    desc: str | None = None,
+    stage_names: List[str] | None = None,
+    volume_unit: str = "visitors",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render a Sankey diagram and write it to *out*.
+
+    Parameters
+    ----------
+    data : list[dict[str, Any]] or None
+        Flow rows with ``source`` (str), ``target`` (str), ``value``
+        (float) keys. Defaults to DEMO_DATA.
+    out : Path, str, or None
+        Output path (.svg). Defaults to ``assets/svg-examples/sankey.svg``.
+    title, subtitle : str
+        Chart text.
+    desc : str or None
+        Accessible long description; auto-generated when not given.
+    stage_names : list[str] or None
+        One label per inferred layer/stage.
+    volume_unit : str
+        Unit word for tooltips and node counts.
+    mode : str
+        Interactivity mode for the fullscreen control.
+    accessibility : str
+        Palette accessibility level.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+
+    Examples
+    --------
+    >>> p = make_sankey()
+    >>> p.exists()
+    True
+    """
+    svg = build_svg(
+        data,
+        title=title,
+        subtitle=subtitle,
+        desc=desc,
+        stage_names=stage_names,
+        volume_unit=volume_unit,
+        mode=mode,
+        accessibility=accessibility,
+    )
+    dest = Path(out) if out else svg_example_path(__file__, "sankey")
+    return write_svg(dest, svg)
 
 
 def main() -> None:
@@ -571,8 +581,7 @@ def main() -> None:
     )
     parser.add_argument("--out", default=None, help="Output path (defaults to the example asset).")
     args = parser.parse_args()
-    out = Path(args.out) if args.out else svg_example_path(__file__, "sankey")
-    write_svg(out, build_svg(args.mode, args.accessibility))
+    make_sankey(out=args.out, mode=args.mode, accessibility=args.accessibility)
 
 
 if __name__ == "__main__":

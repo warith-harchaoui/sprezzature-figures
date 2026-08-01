@@ -45,6 +45,8 @@ Author
 
 from __future__ import annotations
 
+import argparse
+import math
 import sys
 from pathlib import Path
 from typing import Any, Dict, List
@@ -52,7 +54,7 @@ from typing import Any, Dict, List
 # The house-style palette and the shared XML escaper live in scripts/.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _labels import label_cell, readable_on_white  # noqa: E402
-from _render import render_cli  # noqa: E402
+from _render import svg_example_path, write_svg  # noqa: E402
 from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
@@ -61,93 +63,137 @@ from _interactive import fullscreen_control  # noqa: E402
 # ------------------------------------------------------------------
 # Communicative fake data
 # ------------------------------------------------------------------
-#: One entry per job family. ``role`` is the label; ``women`` and ``men``
-#: are the median hourly pay (in dollars) for each group. Values are
-#: illustrative but internally consistent — men out-earn women in every
-#: role here, and the gap is widest in the highest-paid roles, the
-#: pattern most real pay audits surface. The rows are *unsorted* on
-#: purpose; :func:`build_svg` sorts them by gap so the story is ordered.
-ROLES: List[Dict[str, Any]] = [
-    {"role": "Sales director",       "women": 58.20, "men": 71.40},
-    {"role": "Software engineer",    "women": 52.10, "men": 60.30},
-    {"role": "Product manager",      "women": 55.40, "men": 65.90},
-    {"role": "Data scientist",       "women": 51.80, "men": 58.20},
-    {"role": "Marketing lead",       "women": 44.60, "men": 50.10},
-    {"role": "Financial analyst",    "women": 41.30, "men": 47.80},
-    {"role": "UX designer",          "women": 43.90, "men": 47.20},
-    {"role": "Customer success",     "women": 33.70, "men": 37.10},
-    {"role": "Recruiter",            "women": 34.20, "men": 36.40},
-    {"role": "Support specialist",   "women": 28.90, "men": 30.50},
+#: One entry per job family. ``category`` is the label; ``group_a`` and
+#: ``group_b`` are the median hourly pay (in dollars) for each group (women,
+#: men, by default -- see ``make_dumbbell``'s ``group_a_label``/
+#: ``group_b_label``). Values are illustrative but internally consistent --
+#: group_b out-earns group_a in every role here, and the gap is widest in
+#: the highest-paid roles, the pattern most real pay audits surface. The
+#: rows are *unsorted* on purpose; :func:`build_svg` sorts them by gap so
+#: the story is ordered.
+DEMO_DATA: List[Dict[str, Any]] = [
+    {"category": "Sales director",     "group_a": 58.20, "group_b": 71.40},
+    {"category": "Software engineer",  "group_a": 52.10, "group_b": 60.30},
+    {"category": "Product manager",    "group_a": 55.40, "group_b": 65.90},
+    {"category": "Data scientist",     "group_a": 51.80, "group_b": 58.20},
+    {"category": "Marketing lead",     "group_a": 44.60, "group_b": 50.10},
+    {"category": "Financial analyst",  "group_a": 41.30, "group_b": 47.80},
+    {"category": "UX designer",        "group_a": 43.90, "group_b": 47.20},
+    {"category": "Customer success",   "group_a": 33.70, "group_b": 37.10},
+    {"category": "Recruiter",          "group_a": 34.20, "group_b": 36.40},
+    {"category": "Support specialist", "group_a": 28.90, "group_b": 30.50},
 ]
 
 
 def company_median(rows: List[Dict[str, Any]]) -> float:
-    """Return the pooled median hourly pay across both groups.
+    """Return the pooled median across both groups.
 
     Used only for the faint reference band, so a reader can see which
-    roles sit above or below the company-wide middle. The pooled median
-    is the mean of the two group medians for each role, averaged — an
+    categories sit above or below the overall middle. The pooled median is
+    the mean of the two group values for each row, averaged — an
     illustrative summary, not a rigorous population median.
 
     Parameters
     ----------
     rows : list of dict
-        The role records, each carrying ``women`` and ``men`` pay.
+        The category records, each carrying ``group_a`` and ``group_b``.
 
     Returns
     -------
     float
-        A single reference pay value, in dollars per hour.
+        A single reference value.
     """
-    mids = [(float(r["women"]) + float(r["men"])) / 2.0 for r in rows]
+    mids = [(float(r["group_a"]) + float(r["group_b"])) / 2.0 for r in rows]
     return sum(mids) / len(mids)
+
+
+def _nice_range(vmin: float, vmax: float, tick_count: int = 5) -> tuple[float, float, List[float]]:
+    """A d3-style "nice numbers" axis range and tick list covering
+    [vmin, vmax] with roughly `tick_count` round-number ticks.
+    """
+    span = max(vmax - vmin, 1e-9)
+    raw_step = span / max(tick_count, 1)
+    magnitude = 10 ** math.floor(math.log10(raw_step))
+    residual = raw_step / magnitude
+    step = (10 if residual > 5 else 5 if residual > 2 else 2 if residual > 1 else 1) * magnitude
+    lo = math.floor(vmin / step) * step
+    hi = math.ceil(vmax / step) * step
+    ticks: List[float] = []
+    t = lo
+    while t <= hi + step * 1e-6:
+        ticks.append(round(t, 6))
+        t += step
+    return lo, hi, ticks
 
 
 # ------------------------------------------------------------------
 # SVG assembly
 # ------------------------------------------------------------------
-def build_svg(mode: str = "self-contained", accessibility: str = "universal") -> str:
+def build_svg(
+    data: List[Dict[str, Any]] | None = None,
+    *,
+    title: str = "Men out-earn women in every role",
+    subtitle_template: str = "Median hourly pay, {a} vs {b} · the gap averages {pct}% · illustrative",
+    axis_title: str = "Median hourly pay (US dollars)",
+    group_a_label: str = "Women",
+    group_b_label: str = "Men",
+    value_prefix: str = "$",
+    value_suffix: str = "",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> str:
     """Assemble the full dumbbell-plot SVG string.
 
     Parameters
     ----------
+    data : list[dict[str, Any]] or None
+        Rows with ``category`` (str), ``group_a`` (float), ``group_b``
+        (float) keys. Defaults to DEMO_DATA.
+    title : str
+        Chart headline.
+    subtitle_template : str
+        Subtitle with ``{a}``, ``{b}``, ``{pct}`` placeholders (group
+        labels and the mean gap in percent).
+    axis_title : str
+        Value-axis caption.
+    group_a_label, group_b_label : str
+        Legend/tooltip labels for the two groups (``group_a``/``group_b``).
+    value_prefix, value_suffix : str
+        Formatting wrapped around each value label (e.g. ``"$"``/``""`` or
+        ``""``/``"%"``).
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`
-        (``"self-contained"`` / ``"external"`` / ``"static"``). Defaults to
-        ``"self-contained"``. Wired through the ``--mode`` CLI flag by
-        :func:`_render.render_cli`.
+        (``"self-contained"`` / ``"external"`` / ``"static"``).
     accessibility : str, optional
-        Palette accessibility level passed to :func:`_style.load_palette`
-        (``"universal"`` default, plus ``"high-contrast"``, ``"monochrome"``,
-        ``"deuteranopia"``, ``"protanopia"`` and ``"tritanopia"``). Wired
-        through the ``--accessibility`` CLI flag by :func:`_render.render_cli`.
+        Palette accessibility level passed to :func:`_style.load_palette`.
 
     Returns
     -------
     str
         A complete, standalone SVG document.
     """
+    data = data if data is not None else DEMO_DATA
     palette: Dict[str, str] = load_palette(accessibility)
-    # Purple for women, Teal for men: two distinct hues, neither
+    # Purple for group A, Teal for group B: two distinct hues, neither
     # red-vs-green (CVD-safe), each carrying an explicit legend label so
     # the encoding never rides on colour alone.
     women_col = palette.get("Purple", "#AF52DE")
     men_col = palette.get("Teal", "#5AC8FA")
     # The bright teal reads fine as a *filled disk* on white, but it is far too
-    # pale to use as *text* (luminance ~0.50). For the men-side value numbers we
+    # pale to use as *text* (luminance ~0.50). For the group-B value numbers we
     # darken it just enough to stay legible while keeping its teal identity, so
-    # the two value columns have matched contrast (label harmony). Women's purple
-    # is already dark enough and passes through unchanged.
+    # the two value columns have matched contrast (label harmony). Group A's
+    # purple is already dark enough and passes through unchanged.
     men_text_col = readable_on_white(men_col)
     ink = "#1D1D1F"
     secondary = "#6E6E73"
     band = "#F5F5F7"
 
-    # Sort by gap, widest on top — the ordering *is* the argument.
-    rows = sorted(ROLES, key=lambda r: float(r["men"]) - float(r["women"]), reverse=True)
+    # Sort by absolute gap, widest on top — the ordering *is* the argument.
+    rows = sorted(data, key=lambda r: abs(float(r["group_b"]) - float(r["group_a"])), reverse=True)
 
     # --- canvas geometry -----------------------------------------
-    # Poster-scale panel. Left gutter holds the role label; the plot
+    # Poster-scale panel. Left gutter holds the category label; the plot
     # panel holds the dumbbells; a right gutter is reserved so the
     # rightmost value label never clips.
     width = 1280
@@ -156,7 +202,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     m_top = 208
     m_bottom = 118
 
-    label_w = 300           # left column: role names
+    label_w = 300           # left column: category names
     plot_x = m_left + label_w
     plot_w = width - m_right - plot_x
 
@@ -166,14 +212,20 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     plot_bottom = m_top + n_rows * row_h
     height = int(plot_bottom + m_bottom)
 
-    # --- value axis (dollars per hour) ---------------------------
-    # Round headroom so the widest dumbbell and its outer value label
-    # both sit comfortably inside the panel.
-    x_min, x_max = 24.0, 76.0
-    ticks = [30, 40, 50, 60, 70]
+    # --- value axis ------------------------------------------------
+    # "Nice" round-number headroom so the widest dumbbell and its outer
+    # value label both sit comfortably inside the panel.
+    all_values = [float(r["group_a"]) for r in rows] + [float(r["group_b"]) for r in rows]
+    # Pad before "nice"-rounding so a dot/label pair never sits flush against
+    # the plot edge, even when the raw data extremes already round to nice
+    # numbers (e.g. min=10, max=20 with a step of 2 would otherwise yield
+    # zero headroom).
+    raw_span = max(all_values) - min(all_values) or max(abs(v) for v in all_values) or 1.0
+    pad = raw_span * 0.12
+    x_min, x_max, ticks = _nice_range(min(all_values) - pad, max(all_values) + pad)
 
     def sx(v: float) -> float:
-        """Map a pay value (dollars/hour) to an x pixel coordinate."""
+        """Map a data value to an x pixel coordinate."""
         return plot_x + (v - x_min) / (x_max - x_min) * plot_w
 
     ref = company_median(rows)
@@ -181,30 +233,29 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     # Dot radius, big enough to read at gallery scale.
     r = 15.0
 
-    # Aggregate for the subtitle: mean gap in percentage points.
+    # Aggregate for the subtitle: mean absolute gap in percentage points
+    # (relative to the larger of the two group values, so it stays in
+    # [0, 100] regardless of which group happens to lead a given row).
     gaps_pct = [
-        100.0 * (float(r_["men"]) - float(r_["women"])) / float(r_["men"])
+        100.0 * abs(float(r_["group_b"]) - float(r_["group_a"])) / max(abs(float(r_["group_b"])), abs(float(r_["group_a"])), 1e-9)
         for r_ in rows
     ]
     mean_gap_pct = round(sum(gaps_pct) / len(gaps_pct))
     widest = rows[0]
-    widest_gap = float(widest["men"]) - float(widest["women"])
+    widest_gap = abs(float(widest["group_b"]) - float(widest["group_a"]))
 
     parts: List[str] = []
 
     # --- SVG root + accessible description ------------------------
     parts.append(svg_open(width, height, "db-title", "db-desc"))
+    parts.append(f'<title id="db-title">{xml_escape(title)}</title>')
     parts.append(
-        '<title id="db-title">Gender pay gap by role: men out-earn women in '
-        'every job family</title>'
-    )
-    parts.append(
-        f'<desc id="db-desc">Dumbbell plot of median hourly pay for women '
-        f'(purple) and men (teal) across {n_rows} roles, sorted by the size of '
-        f'the gap. Each row joins the two medians with a segment whose length is '
-        f'the gap. Men earn more in every role; the gap averages '
-        f'{mean_gap_pct}% and is widest for {xml_escape(str(widest["role"]))} at '
-        f'${widest_gap:.0f} per hour. Illustrative data.</desc>'
+        f'<desc id="db-desc">Dumbbell plot comparing {xml_escape(group_a_label)} '
+        f'(purple) and {xml_escape(group_b_label)} (teal) across {n_rows} '
+        f'categories, sorted by the size of the gap. Each row joins the two '
+        f'values with a segment whose length is the gap. The gap averages '
+        f'{mean_gap_pct}% and is widest for {xml_escape(str(widest["category"]))} at '
+        f'{value_prefix}{widest_gap:.0f}{value_suffix}. Illustrative data.</desc>'
     )
 
     # Hover / focus highlight only — the figure is static, so there is no
@@ -238,12 +289,11 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     # --- title + subtitle (the takeaway) -------------------------
     parts.append(
         f'<text x="{m_left}" y="86" font-size="40" font-weight="700" '
-        f'fill="{ink}">Men out-earn women in every role</text>'
+        f'fill="{ink}">{xml_escape(title)}</text>'
     )
+    subtitle = subtitle_template.format(a=group_a_label, b=group_b_label, pct=mean_gap_pct)
     parts.append(
-        f'<text x="{m_left}" y="132" font-size="23" fill="{secondary}">'
-        f'Median hourly pay, women vs men · the gap averages {mean_gap_pct}% and '
-        f'widens with seniority · illustrative</text>'
+        f'<text x="{m_left}" y="132" font-size="23" fill="{secondary}">{xml_escape(subtitle)}</text>'
     )
 
     # --- legend (two states) -------------------------------------
@@ -257,7 +307,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     )
     parts.append(
         f'<text x="{leg_x + 2 * lr + 12:.1f}" y="{leg_y + 7:.1f}" font-size="22" '
-        f'fill="{ink}">Women</text>'
+        f'fill="{ink}">{xml_escape(group_a_label)}</text>'
     )
     leg_x2 = leg_x + 150
     parts.append(
@@ -266,7 +316,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     )
     parts.append(
         f'<text x="{leg_x2 + 2 * lr + 12:.1f}" y="{leg_y + 7:.1f}" font-size="22" '
-        f'fill="{ink}">Men</text>'
+        f'fill="{ink}">{xml_escape(group_b_label)}</text>'
     )
 
     # --- company-median reference band ---------------------------
@@ -291,8 +341,8 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     # the top row's gap chip.
     parts.append(
         f'<text x="{ref_x:.1f}" y="{m_top - 16:.1f}" font-size="17" '
-        f'fill="{secondary}" text-anchor="middle">Company median '
-        f'${ref:.0f}</text>'
+        f'fill="{secondary}" text-anchor="middle">Overall median '
+        f'{value_prefix}{ref:.0f}{value_suffix}</text>'
     )
 
     # --- x-axis gridlines (very light) ---------------------------
@@ -306,17 +356,18 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     # --- the dumbbells -------------------------------------------
     for i, rec in enumerate(rows):
         cy = first_row_cy + i * row_h
-        w_val = float(rec["women"])
-        m_val = float(rec["men"])
+        w_val = float(rec["group_a"])
+        m_val = float(rec["group_b"])
         xw = sx(w_val)
         xm = sx(m_val)
         gap = m_val - w_val
-        gap_pct = round(100.0 * gap / m_val)
-        role = xml_escape(str(rec["role"]))
+        gap_pct = round(100.0 * abs(gap) / max(abs(m_val), abs(w_val), 1e-9))
+        category = xml_escape(str(rec["category"]))
 
         tip = (
-            f'{role}: women ${w_val:.2f}/h vs men ${m_val:.2f}/h — '
-            f'gap ${gap:.2f} ({gap_pct}%)'
+            f'{category}: {group_a_label} {value_prefix}{w_val:.2f}{value_suffix} vs '
+            f'{group_b_label} {value_prefix}{m_val:.2f}{value_suffix} — '
+            f'gap {value_prefix}{abs(gap):.2f}{value_suffix} ({gap_pct}%)'
         )
 
         parts.append(f'<g class="row" tabindex="0" role="img" aria-label="{tip}">')
@@ -331,11 +382,11 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
             f'height="{row_h - 8:.1f}" rx="12" fill="none" pointer-events="all"/>'
         )
 
-        # Role label (left column), right-aligned to the panel edge so
+        # Category label (left column), right-aligned to the panel edge so
         # the names form a clean rule against the dumbbells.
         parts.append(
             f'<text x="{plot_x - 26:.1f}" y="{cy + 8:.1f}" font-size="23" '
-            f'fill="{ink}" text-anchor="end">{role}</text>'
+            f'fill="{ink}" text-anchor="end">{category}</text>'
         )
 
         # Connecting segment (the dumbbell bar) — drawn in its finished
@@ -364,12 +415,12 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         parts.append(
             f'<text class="mk-women" x="{xw - r - 12:.1f}" y="{cy + 7:.1f}" '
             f'font-size="20" font-family="Roboto Mono, monospace" fill="{women_col}" '
-            f'font-weight="500" text-anchor="end">${w_val:.0f}</text>'
+            f'font-weight="500" text-anchor="end">{value_prefix}{w_val:.0f}{value_suffix}</text>'
         )
         parts.append(
             f'<text class="mk-men" x="{xm + r + 12:.1f}" y="{cy + 7:.1f}" '
             f'font-size="20" font-family="Roboto Mono, monospace" fill="{men_text_col}" '
-            f'font-weight="500">${m_val:.0f}</text>'
+            f'font-weight="500">{value_prefix}{m_val:.0f}{value_suffix}</text>'
         )
 
         # Gap chip, centred over the segment and lifted just above it so it
@@ -377,14 +428,15 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         # ``label_cell`` commons as a ``ghost`` pill (white fill, coloured
         # hairline, coloured text) so every "cell around text" in the gallery
         # is the same component. The chip is tinted teal because the gap is the
-        # men-minus-women surplus — the number ties to the higher endpoint.
+        # group_b-minus-group_a surplus — the number ties to the higher endpoint.
         mid_x = (xw + xm) / 2.0
         chip_y = cy - 27
+        gap_sign = "+" if gap >= 0 else "−"
         parts.append(
             label_cell(
                 mid_x,
                 chip_y,
-                f"+${gap:.0f}",
+                f"{gap_sign}{value_prefix}{abs(gap):.0f}{value_suffix}",
                 men_text_col,
                 variant="ghost",
                 size=17.0,
@@ -410,12 +462,12 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         parts.append(
             f'<text x="{px:.1f}" y="{axis_y + 30:.1f}" font-size="19" '
             f'font-family="Roboto Mono, monospace" fill="{ink}" '
-            f'text-anchor="middle">${t}</text>'
+            f'text-anchor="middle">{value_prefix}{t:.0f}{value_suffix}</text>'
         )
     parts.append(
         f'<text x="{(sx(x_min) + sx(x_max)) / 2:.1f}" y="{axis_y + 62:.1f}" '
         f'font-size="21" fill="{ink}" text-anchor="middle">'
-        f'Median hourly pay (US dollars)</text>'
+        f'{xml_escape(axis_title)}</text>'
     )
 
     parts.append(fullscreen_control(width, height, mode))
@@ -423,9 +475,89 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     return "\n".join(parts)
 
 
+def make_dumbbell(
+    data: List[Dict[str, Any]] | None = None,
+    *,
+    out: Path | str | None = None,
+    title: str = "Men out-earn women in every role",
+    subtitle_template: str = "Median hourly pay, {a} vs {b} · the gap averages {pct}% · illustrative",
+    axis_title: str = "Median hourly pay (US dollars)",
+    group_a_label: str = "Women",
+    group_b_label: str = "Men",
+    value_prefix: str = "$",
+    value_suffix: str = "",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render a dumbbell plot and write it to *out*.
+
+    Parameters
+    ----------
+    data : list[dict[str, Any]] or None
+        Rows with ``category`` (str), ``group_a`` (float), ``group_b``
+        (float) keys. Defaults to DEMO_DATA.
+    out : Path, str, or None
+        Output path (.svg). Defaults to ``assets/svg-examples/dumbbell.svg``.
+    title : str
+        Chart headline.
+    subtitle_template : str
+        Subtitle with ``{a}``, ``{b}``, ``{pct}`` placeholders.
+    axis_title : str
+        Value-axis caption.
+    group_a_label, group_b_label : str
+        Legend/tooltip labels for the two groups.
+    value_prefix, value_suffix : str
+        Formatting wrapped around each value label.
+    mode : str
+        Interactivity mode for the fullscreen control.
+    accessibility : str
+        Palette accessibility level.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+
+    Examples
+    --------
+    >>> p = make_dumbbell()
+    >>> p.exists()
+    True
+    """
+    svg = build_svg(
+        data,
+        title=title,
+        subtitle_template=subtitle_template,
+        axis_title=axis_title,
+        group_a_label=group_a_label,
+        group_b_label=group_b_label,
+        value_prefix=value_prefix,
+        value_suffix=value_suffix,
+        mode=mode,
+        accessibility=accessibility,
+    )
+    dest = Path(out) if out else svg_example_path(__file__, "dumbbell")
+    return write_svg(dest, svg)
+
+
 def main() -> None:
     """Write the dumbbell-plot SVG to the canonical assets path (or --out)."""
-    render_cli(__file__, "dumbbell", build_svg, description="Render the dumbbell-plot SVG.")
+    parser = argparse.ArgumentParser(description="Render the dumbbell-plot SVG.")
+    parser.add_argument("--out", default=None, help="output SVG path (default: the skill's svg-examples/dumbbell.svg)")
+    parser.add_argument(
+        "--mode",
+        choices=("self-contained", "external", "static"),
+        default="self-contained",
+        help="interactivity mode of the emitted SVG (default: self-contained)",
+    )
+    parser.add_argument(
+        "--accessibility",
+        choices=("universal", "high-contrast", "monochrome", "deuteranopia", "protanopia", "tritanopia"),
+        default="universal",
+        help="palette accessibility level (default: universal, the CVD-safe standard)",
+    )
+    args = parser.parse_args()
+    make_dumbbell(out=args.out, mode=args.mode, accessibility=args.accessibility)
 
 
 if __name__ == "__main__":
