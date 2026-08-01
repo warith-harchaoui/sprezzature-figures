@@ -12,8 +12,12 @@ by this package.
 
 The model itself may be local (Ollama) or remote (an OpenAI-compatible or
 LangChain-routed API), entirely as configured through
-`best-engine-ai-helper` — this package doesn't choose or ship a backend.
-Whichever backend is configured, only this leaves the process:
+`best-engine-ai-helper`; this package doesn't choose or ship a backend. By
+default `best-engine-ai-helper` targets a **local** Ollama (text model
+`qwen3:8b`, vision model `gemma3:12b`), so out of the box nothing leaves your
+machine at all. Pointing `BEST_LLM_*` / `SPREZZATURE_LLM_BASE_URL` at a remote
+service is the only way data reaches a third party, and then only the fields
+below. Whichever backend is configured, only this leaves the process:
 
 - **Intent analysis**: your free-text request, plus a `DatasetProfile` —
   column names, semantic types (categorical/numeric/datetime/...), null

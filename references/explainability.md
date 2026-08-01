@@ -20,6 +20,11 @@ Sources: [SHAP docs](https://shap.readthedocs.io/),
 [LIME paper](https://arxiv.org/abs/1602.04938) and
 [Interpretable ML by Molnar](https://christophm.github.io/interpretable-ml-book/).
 
+For Vega-native versions of these plots — beeswarm, importance bar,
+waterfall, LIME weights, PD/ICE — driven from the extracted model numbers
+rather than matplotlib, see [figure-catalog.md](figure-catalog.md)
+§ "Explainability & causality".
+
 ## Engine selection matrix
 
 | Model shape | Data shape | Audience | Engine | Why |

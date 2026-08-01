@@ -84,9 +84,11 @@ print(path)  # PosixPath('revenue.png')
 `status="stable"` kinds are currently render-verified end to end — see
 [docs/studio/GENERATOR_AUDIT.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/docs/studio/GENERATOR_AUDIT.md)
 for the per-chart status of all 90 types, and `make-figure --list --status stable`
-for the ones that render today (12 as of this writing: `bar`, `line`, `area`,
-`scatter`, `histogram`, `boxplot`, `heatmap`, `columnrange`, `funnel`,
-`sunburst`, `treemap`, `waterfall`).
+for the ones that render today (15 as of this writing: `area`, `bar`, `boxplot`,
+`columnrange`, `dumbbell`, `funnel`, `heatmap`, `histogram`, `line`, `sankey`,
+`scatter`, `sunburst`, `treemap`, `waffle`, `waterfall`). Every stable kind
+tolerates optional roles being left unbound — it renders a sensible default
+rather than crashing.
 
 ### As a CLI command
 
@@ -186,6 +188,16 @@ This repository is two things:
   sprezzature-studio
   ```
 
+  Ralph's LLM/VLM is resolved by
+  [best-engine-ai-helper](https://github.com/warith-harchaoui/best-engine-ai-helper),
+  which talks to a local Ollama by default (text model `qwen3:8b`, vision model
+  `gemma3:12b`; override with `BEST_LLM_TEXT` / `BEST_LLM_VISION`). The app
+  **starts and stays fully usable with no model at all** — import, profiling,
+  manual chart choice, property tweaks, history, and export all work in
+  degraded mode; only the chat/critique features need a reachable model. Nothing
+  leaves your machine unless you point it at a remote backend
+  ([DATA_PRIVACY.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/docs/studio/DATA_PRIVACY.md)).
+
   Full documentation: [docs/studio/README.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/docs/studio/README.md).
 
 There is no separate "Ralph CLI" in this repository — `scripts/
@@ -207,11 +219,19 @@ ruff check sprezzature_figures/
 python -m pytest tests/ -q
 ```
 
-Slow render tests (require display or vl-convert):
+The default `pytest` run excludes four marked groups (see
+[docs/studio/TESTING.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/docs/studio/TESTING.md)):
 
 ```bash
-python -m pytest -m slow tests/
+python -m pytest -m slow        # actually render figures (seconds each)
+python -m pytest -m packaging   # build a wheel, install it in a fresh venv
+python -m pytest -m llm         # hit a live text model via best-engine-ai-helper
+python -m pytest -m vision      # hit a live vision model / VLM
 ```
+
+The `llm` / `vision` tests **skip** (never fail) when no model backend is
+reachable, so they are safe to run without Ollama up. CI runs everything
+except `llm` / `vision`.
 
 ---
 

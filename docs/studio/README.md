@@ -75,12 +75,17 @@ catalogue, the CLI), see the top-level [README.md](../../README.md) /
 
 ## Current state, in one paragraph
 
-12 of the plan's 13 commits are done. The library, catalogue, dispatcher,
-ingest pipeline, core domain models, LLM client, Ralph engine, NiceGUI app,
-and iteration history/export are all built and tested. 15 of 90 chart types
-are `status="stable"` (render-verified end to end); the rest are cataloged
-with an explicit status rather than silently assumed to work. The
-deterministic figure-recommendation engine (plan §6) and several UI panels
-(recommendation cards, history panel, export dialog) are scoped out of this
-MVP — see [ROADMAP.md](ROADMAP.md) for the full list of what's deferred and
-why.
+The library, catalogue, dispatcher, ingest pipeline, core domain models, LLM
+client, Ralph engine, NiceGUI app, and iteration history/export are all built
+and tested. 15 of 90 chart types are `status="stable"` (render-verified end to
+end); the rest are cataloged with an explicit status rather than silently
+assumed to work. The `FigurePlan`'s transformations (filter / sort / aggregate
+/ top-N / ...) are executed deterministically on the render and export paths,
+not just recorded. The Ralph loop runs against a real model end to end and
+degrades gracefully — a model that returns malformed JSON, times out, or is
+unreachable is reported in `RalphResult.notes` instead of crashing the turn.
+Structured output is enforced by JSON schema all the way to the model (see
+[LLM_SCHEMAS.md](LLM_SCHEMAS.md)). The deterministic figure-recommendation
+*compatibility* engine (plan §6) and several UI panels (recommendation cards,
+history panel, export dialog) are scoped out of this MVP — see
+[ROADMAP.md](ROADMAP.md) for the full list of what's deferred and why.

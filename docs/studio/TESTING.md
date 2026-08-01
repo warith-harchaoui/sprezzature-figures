@@ -1,25 +1,35 @@
 # Testing
 
 ```bash
-python -m pytest -q                              # default: fast tests only
-python -m pytest -q -m slow                       # + real rendering, real LLM-free Ralph rounds, real server launch
-python -m pytest -q -m packaging tests/test_packaging.py   # builds+installs the wheel, incl. [studio] extra (network, ~50s)
+python -m pytest -q                    # default: fast tests only
+python -m pytest -q -m slow            # + real rendering, LLM-free Ralph rounds, real server launch
+python -m pytest -q -m packaging       # builds + installs the wheel, incl. [studio] extra (network, ~50s)
+python -m pytest -q -m llm             # hits a live text model via best-engine-ai-helper
+python -m pytest -q -m vision          # hits a live vision model / VLM
 ruff check sprezzature_figures tools tests
 ```
+
+The suite holds about 100 test functions. It follows the project's
+test-rationalization philosophy ("test count is not a quality metric"):
+similar cases are merged with `@pytest.mark.parametrize`, and a test earns its
+place only when it catches a failure nothing else does. Coverage sits at ~81%.
 
 ## Markers
 
 | Marker | What it means | In default run? |
 |---|---|---|
 | *(none)* | pure logic, no rendering, no I/O beyond a `tmp_path` | yes |
-| `slow` | renders a real figure, launches a real subprocess server, or otherwise takes real seconds | no — `pytest -m slow` |
-| `packaging` | builds a wheel with `python -m build` and installs it in a fresh venv | no — needs network |
+| `slow` | renders a real figure, launches a real subprocess server, or otherwise takes real seconds | no (`pytest -m slow`) |
+| `packaging` | builds a wheel with `python -m build` and installs it in a fresh venv | no (needs network) |
+| `llm` | calls a live text model through `best-engine-ai-helper` | no (`pytest -m llm`) |
+| `vision` | calls a live vision model / VLM through `best-engine-ai-helper` | no (`pytest -m vision`) |
 
-No `llm`/`vision` marker exists yet because there are no tests that call a
-real model — every LLM/VLM-touching test in this suite runs against
+The `llm` / `vision` tests **skip** (never fail) when no model backend is
+reachable, so running them without Ollama up is safe. They exercise the real
+`BestEngineLLMClient` path, and the full Ralph loop with the rendered PNG
+handed to a live VLM. Everything else stubs the model with
 `assistant.fake_client.FakeLLMClient`, which needs neither Ollama nor a
-network call. If real-model tests are added later, mark them `llm`/`vision`
-per the build plan and keep them out of the default run.
+network call.
 
 ## What's genuinely exercised vs. what isn't
 
@@ -33,7 +43,13 @@ per the build plan and keep them out of the default run.
   contract gap, not a misleading "no script" `ValueError`).
 - **The Ralph engine**: full end-to-end tests for all three modes
   (manual/assisted/autopilot), including the stopping criteria, against
-  real rendering and `FakeLLMClient`.
+  real rendering and `FakeLLMClient`, plus resilience tests that script the
+  model to fail (empty JSON, timeout) and assert the loop degrades to
+  `RalphResult.notes` / `critique_unavailable` instead of crashing.
+- **Transformations**: `test_transformations.py` exercises every `Transform`
+  type applied to rows (filter / sort / aggregate / top-N / group-others /
+  calculate), the list-order semantics, the string/number tolerance, and the
+  missing-column skip-note.
 - **Export**: a test unzips a produced `.sprezzature.zip` and runs
   `python reproduce.py` as an actual subprocess in the extracted
   directory — not just a string check that the template contains the
@@ -48,11 +64,13 @@ per the build plan and keep them out of the default run.
   of non-NiceGUI logic behind the UI (`_load_upload`, `_resolve_data`,
   `_summarize_result`, `engine_status`, `SessionState` isolation) is unit
   tested directly.
-- **Not covered**: `FigurePlan.transformations` execution against a live
-  dataset (the engine itself doesn't exist yet — see
-  [ROADMAP.md](ROADMAP.md)), the deterministic figure-recommendation
-  engine (same reason), and the history/export NiceGUI panels (backend
-  tested, no UI wired up to call it yet).
+- **Not covered**: the deterministic figure-recommendation *compatibility*
+  engine (plan §6, not built yet, see [ROADMAP.md](ROADMAP.md)) and the
+  history/export NiceGUI panels (backend tested, no UI wired up to call it
+  yet). Live-model reliability on the harder chart edits (operations carrying
+  a nested transform, or an intent-to-style-option mapping) is a known limit
+  of small local models rather than a coverage gap; the engine handles a
+  failed or dropped operation gracefully.
 
 ## CI
 

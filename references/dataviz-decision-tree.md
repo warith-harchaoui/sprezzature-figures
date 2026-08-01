@@ -9,6 +9,10 @@ Sources: [Vega-Lite gallery](https://vega.github.io/vega-lite/examples/),
 McGill (1984), Tufte, and the sprezzature-ui house style in
 `sprezzature-ui/references/dataviz-chart-selection.md`.
 
+For the full catalogue of chart kinds and their `make_<kind>` scripts, see
+`FIGURES.md`; call any kind from Python with
+`from sprezzature_figures import make_figure`.
+
 ## The question → chart map
 
 | Question the chart must answer | Chart type | `--kind` flag | House-style notes |
@@ -23,8 +27,8 @@ McGill (1984), Tufte, and the sprezzature-ui house style in
 | **What's the relationship between many variables?** | Correlation heatmap | `heatmap` | Sequential `RdBu_r` when the values are correlations centred at 0. |
 | **How do two categoricals interact?** | Contingency heatmap | `heatmap-count` | Annotate cells with counts when < 100 cells. |
 | **Where on a map?** | Choropleth / bubble map | `map` | See `sprezzature-ui/references/dataviz-maps.md`; use Albers projection for US, Robinson for world. |
-| **What contributed to this prediction?** | SHAP waterfall / summary | (via `explain_model.py`) | See `references/explainability.md`. |
-| **What's the causal effect?** | DAG + forest plot of the effect | (via `causal_estimate.py`) | See `references/causality.md`. |
+| **What contributed to this prediction?** | SHAP waterfall / summary | (via `explain_model.py`) | See [explainability.md](explainability.md). |
+| **What's the causal effect?** | DAG + forest plot of the effect | (via `causal_estimate.py`) | See [causality.md](causality.md). |
 
 ## Anti-patterns the auditor flags
 

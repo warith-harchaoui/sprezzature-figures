@@ -82,12 +82,14 @@ print(chemin)  # PosixPath('revenu.png')
 ```
 
 `make_figure()` accepte n'importe quel type enregistré, mais seuls les types
-`status="stable"` sont aujourd'hui vérifiés par rendu — voir
+`status="stable"` sont aujourd'hui vérifiés par rendu de bout en bout. Voir
 [docs/studio/GENERATOR_AUDIT.md](docs/studio/GENERATOR_AUDIT.md) pour le
 statut de chacun des 90 types, et `make-figure --list --status stable` pour
-la liste de ceux qui fonctionnent dès maintenant (12 à ce jour : `bar`,
-`line`, `area`, `scatter`, `histogram`, `boxplot`, `heatmap`, `columnrange`,
-`funnel`, `sunburst`, `treemap`, `waterfall`).
+la liste de ceux qui fonctionnent dès maintenant (15 à ce jour : `area`,
+`bar`, `boxplot`, `columnrange`, `dumbbell`, `funnel`, `heatmap`,
+`histogram`, `line`, `sankey`, `scatter`, `sunburst`, `treemap`, `waffle`,
+`waterfall`). Chaque type stable tolère qu'un rôle optionnel reste non lié :
+il produit un rendu par défaut sensé au lieu de planter.
 
 ### En ligne de commande
 
@@ -172,10 +174,10 @@ Chaque script `make_<type>.py` est autonome : il importe ce dont il a besoin, d�
 Ce dépôt contient deux choses :
 
 - **La bibliothèque** (`sprezzature_figures.make_figure`, `make-figure`,
-  CLI `sprezzature-figures`) — tout ce qui précède. Aucune dépendance
+  CLI `sprezzature-figures`) : tout ce qui précède, sans dépendance
   supplémentaire au-delà de `[cli]`/`[dataviz]`.
 - **Sprezzature Studio** (`sprezzature_figures.studio`, CLI
-  `sprezzature-studio`) — une application NiceGUI locale pour importer un
+  `sprezzature-studio`) : une application NiceGUI locale pour importer un
   CSV/XLSX, choisir un type de graphique, associer les colonnes, puis
   affiner la figure en dialoguant avec **Ralph**, un copilote LLM/VLM qui
   modifie un plan structuré et regarde vraiment le rendu avant de décider
@@ -186,14 +188,26 @@ Ce dépôt contient deux choses :
   sprezzature-studio
   ```
 
+  Le modèle LLM/VLM de Ralph est fourni par
+  [best-engine-ai-helper](https://github.com/warith-harchaoui/best-engine-ai-helper),
+  qui s'adresse par défaut à un Ollama local (modèle texte `qwen3:8b`,
+  modèle vision `gemma3:12b` ; à surcharger via `BEST_LLM_TEXT` /
+  `BEST_LLM_VISION`). L'application **démarre et reste pleinement utilisable
+  sans aucun modèle** : import, profilage, choix manuel du graphique,
+  réglages, historique et export fonctionnent en mode dégradé ; seules les
+  fonctions de dialogue et de critique nécessitent un modèle joignable. Rien
+  ne quitte votre machine tant que vous ne pointez pas vers un service
+  distant (voir
+  [DATA_PRIVACY.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/docs/studio/DATA_PRIVACY.md)).
+
   Documentation complète : [docs/studio/README.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/docs/studio/README.md).
 
-Il n'existe pas de « CLI Ralph » distincte dans ce dépôt — `scripts/
-ralph_eyeball_loop.py` est un outil de QA visuelle interne, utilisé pendant
-le développement des générateurs de graphiques eux-mêmes (voir sa propre
-docstring) ; il précède et n'a aucun rapport avec le moteur Ralph du
-Studio (`sprezzature_figures.studio.ralph`), qui est une implémentation
-entièrement nouvelle, conforme au plan et testée.
+Il n'existe pas de « CLI Ralph » distincte dans ce dépôt. `scripts/ralph_eyeball_loop.py`
+est un outil de QA visuelle interne, utilisé pendant le développement des
+générateurs de graphiques eux-mêmes (voir sa propre docstring) ; il précède
+et n'a aucun rapport avec le moteur Ralph du Studio
+(`sprezzature_figures.studio.ralph`), qui est une implémentation entièrement
+nouvelle, conforme au plan et testée.
 
 ---
 

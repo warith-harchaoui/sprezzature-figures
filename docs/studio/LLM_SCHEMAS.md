@@ -23,10 +23,25 @@ OpenAI-compatible, LangChain) is entirely `best-engine-ai-helper`'s job;
 nothing in this package hardcodes a model name or talks to a backend
 directly.
 
-`FakeLLMClient` (`assistant.fake_client`) is a queue of scripted responses
-— model instances, raw strings (including deliberately invalid JSON), or
-exceptions, replayed in order — that every test in this repository uses
-instead of a real model call.
+`FakeLLMClient` (`assistant.fake_client`) is a queue of scripted responses:
+model instances, raw strings (including deliberately invalid JSON), or
+exceptions, replayed in order. Every test in this repository uses it instead
+of a real model call.
+
+## How the schema reaches the model
+
+The response model isn't only used to validate the answer: its
+`model_json_schema()` is passed to the backend as a grammar constraint, so the
+model is steered to produce the right shape in the first place (Ollama's
+structured output, the OpenAI `json_schema` response format). Each field
+carries a `description` in the Pydantic model, which the model sees, so it
+fills the field with a real value instead of a default. One transport detail
+lives in `best-engine-ai-helper`: Ollama's grammar cannot build a discriminated
+union of `$ref` branches (it then emits only an empty value), so the schema is
+flattened to a single tagged object before it is sent, and this package's
+Pydantic model re-validates the answer against the true union afterwards. The
+net effect is that `FigureOperation` lists (chart edits, safe repairs) come
+back populated rather than empty.
 
 ## Validate-then-repair (`assistant.repair`)
 

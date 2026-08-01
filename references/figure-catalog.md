@@ -5,7 +5,7 @@ built: everyday and statistical charts as Vega-Lite, the harder cases as
 full-Vega, the genuine escape-hatches as hand-authored Scalable Vector Graphics
 (SVG), and a full set of thematic maps. It stays in sync with the capability
 tracker `.private/data-viz-capabilities.csv` (gitignored) and the rendered
-gallery in `docs/FIGURES.md`; the complete list of runnable specs is at the
+gallery in `FIGURES.md`; the complete list of runnable specs is at the
 bottom under "Shipped runnable specs".
 
 **Prefer Vega-Lite.** For any chart it can express, reach for a Vega-Lite

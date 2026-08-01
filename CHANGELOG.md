@@ -4,14 +4,32 @@
 
 ### Added
 
+- **Transformations now execute.** `core.transformations.apply_transformations`
+  runs a `FigurePlan`'s filter / sort / aggregate / top-N / group-others /
+  calculate / temporal steps deterministically over the imported rows, in list
+  order, with no code evaluation. The editor's render path and the export
+  bundle both apply it, so a filter or sort requested in the chat actually
+  changes the rendered figure and the exported `transformed.csv`. A transform
+  whose column is absent is skipped with a note rather than silently emptying
+  the figure.
+- **The Ralph loop is resilient to a live model failing.** A model that
+  returns empty or malformed JSON, times out, or is unreachable no longer
+  crashes the turn: the figure still renders and the reason is reported in
+  `RalphResult.notes` (stop reason `critique_unavailable`), across manual,
+  assisted, and autopilot modes.
+- **Model-facing schemas carry field descriptions** and the intent / edit /
+  recommend / critique prompts were rewritten so a live model fills every
+  field instead of defaulting to empty. `SetStyleOption.option` is now a
+  `Literal` of the real `StyleOptions` fields, so the model can only target a
+  style setting that exists.
 - **Sprezzature Studio** (`sprezzature-studio` CLI, `[studio]` extra): a
   local NiceGUI app to import a CSV/XLSX, pick a chart type, bind columns
-  to data roles, and refine the figure by chatting with Ralph — an
+  to data roles, and refine the figure by chatting with Ralph, an
   LLM/VLM copilot that edits a structured `FigurePlan` and inspects the
   rendered PNG before deciding it's done. See
   [docs/studio/README.md](docs/studio/README.md).
-- 7 new chart types: bar, line, area, scatter, histogram, boxplot, heatmap
-  — the first `make_figure("bar", ...)` example in the README is finally
+- 7 new chart types: bar, line, area, scatter, histogram, boxplot, heatmap.
+  The first `make_figure("bar", ...)` example in the README is finally
   literally true.
 - Explicit figure registry (`sprezzature_figures/catalog/figures.json`):
   decouples a chart's public kind name from its filename/function name.
@@ -33,6 +51,17 @@
   the Studio web app self-hosts the same WOFF2 files (no Google Fonts
   CDN) via `@font-face`. Figures and the Studio UI now look identical
   regardless of what fonts are installed on the machine viewing them.
+
+### Changed
+
+- The default LLM/VLM backend ([best-engine-ai-helper]) now passes each request
+  a JSON schema for grammar-constrained structured output, and defaults to a
+  text model that honours it (`qwen3:8b`) and a vision model that does the same
+  for image prompts (`gemma3:12b`). Override with `BEST_LLM_TEXT` /
+  `BEST_LLM_VISION`. Studio's chat and visual-critique features now work out of
+  the box against a local Ollama.
+
+[best-engine-ai-helper]: https://github.com/warith-harchaoui/best-engine-ai-helper
 
 ### Fixed
 

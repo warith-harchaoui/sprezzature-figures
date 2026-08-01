@@ -46,17 +46,26 @@ resolved = [{role: row[binding.column] for role, binding in plan.bindings.items(
 
 ## Transformations
 
-`plan.transformations` is a list of `Transform` — a discriminated union
+`plan.transformations` is a list of `Transform`, a discriminated union
 (`core.operations.Transform`) covering exactly plan §4.3's supported set:
 `filter_value`, `filter_range`, `filter_temporal`, `sort`, `aggregate`,
 `rename_display`, `top_n`, `group_others`, `calculate` (difference/ratio).
 No free-form formulas.
 
-**As of Commit 12, this list is an auditable record, not yet executed.**
-The Ralph engine and the current app both render the imported rows
-directly (with bindings applied); nothing walks `transformations` and
-applies them to a live dataset. That execution engine isn't owned by any
-commit in the build plan — see [ROADMAP.md](ROADMAP.md).
+These transformations are executed, not merely recorded.
+`core.transformations.apply_transformations(rows, transforms)` runs each
+step deterministically, in list order, over `list[dict]` rows: one closed
+applier per transform type, no code evaluation. `_resolve_data()` in
+`studio/pages/editor.py` calls it on the imported rows (keyed by the
+original column names) before mapping columns onto role names, so a filter
+or sort requested in the chat actually changes the rendered figure. The
+export bundle applies the same step, so `data/transformed.csv` in a
+`.sprezzature.zip` is the data the figure is really built from. Two rules
+keep the output trustworthy: a transform whose column is absent from every
+row is skipped with a note rather than silently emptying the figure, and
+rows are never mutated in place. `rename_display` is deliberately a data
+no-op, since the render contract keys data by role and a display rename is
+a labelling concern for the style layer.
 
 ## Operations vs. transformations
 
