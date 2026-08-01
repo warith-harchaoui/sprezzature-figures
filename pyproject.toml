@@ -87,6 +87,7 @@ dev = [
 [project.scripts]
 sprezzature-figures = "sprezzature_figures.cli:main"
 make-figure = "sprezzature_figures.make_figure:main"
+sprezzature-figures = "sprezzature_figures.editor.cli:main"
 
 [project.urls]
 Homepage = "https://harchaoui.org/warith/sprezzature/"
@@ -103,6 +104,8 @@ packages = [
     "sprezzature_figures.editor.ingest",
     "sprezzature_figures.editor.assistant",
     "sprezzature_figures.editor.ralph",
+    "sprezzature_figures.editor.pages",
+    "sprezzature_figures.editor.components",
     "sprezzature_figures_scripts",
 ]
 
