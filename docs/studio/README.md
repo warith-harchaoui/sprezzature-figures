@@ -6,10 +6,41 @@ by talking to **Ralph** — an LLM/VLM copilot that edits a structured
 `FigurePlan`, re-renders, and actually looks at the result before deciding
 whether it's done.
 
+## Install & launch
+
+Requires **Python 3.10–3.13** on 🍎 macOS, 🐧 Ubuntu, or 🪟 Windows.
+
+<details open>
+<summary>🍎 macOS / 🐧 Ubuntu</summary>
+
 ```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
 pip install "sprezzature-figures[studio]"
 sprezzature-studio
 ```
+</details>
+
+<details>
+<summary>🪟 Windows (PowerShell)</summary>
+
+```powershell
+py -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+pip install "sprezzature-figures[studio]"
+sprezzature-studio
+```
+</details>
+
+`sprezzature-studio` opens a browser tab at `http://127.0.0.1:8080`. Useful
+flags: `--host` / `--port` to change the bind address, `--no-browser` to
+skip auto-opening a tab, `--native` for a desktop window instead of a
+browser tab. The `[studio]` extra pulls in NiceGUI, pandas, openpyxl, and
+`best-engine-ai-helper` (which resolves the local or remote LLM/VLM — the
+app starts and stays usable even with no model configured; see
+[DATA_PRIVACY.md](DATA_PRIVACY.md)).
 
 Everything in this directory documents the Studio specifically. For the
 figure-rendering library itself (`make_figure()`, the 90-generator

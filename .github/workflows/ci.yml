@@ -7,9 +7,14 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
     strategy:
+      fail-fast: false
       matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
         python-version: ["3.10", "3.13"]
     steps:
       - uses: actions/checkout@v4
@@ -31,3 +36,28 @@ jobs:
 
       - name: Render tests (renders real figures, still fast)
         run: python -m pytest -q -m slow
+
+  packaging:
+    name: "Packaging (wheel install, incl. [studio] extra)"
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dev tooling
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Packaging tests (build wheel, install, render, install [studio] extra)
+        run: python -m pytest -q -m packaging tests/test_packaging.py

@@ -15,14 +15,51 @@ Fait partie de la suite [sprezzature](https://harchaoui.org/warith/sprezzature/)
 
 ## Installation
 
+Nécessite **Python 3.10–3.13**. Testé sur 🍎 macOS, 🐧 Ubuntu et 🪟 Windows
+(la CI exécute toute la suite plus une vérification d'installation de la
+wheel sur les trois).
+
 ```bash
 pip install sprezzature-figures
 ```
 
-Avec l'interface Click (optionnelle) :
+Extras optionnels (combinables, ex. `"sprezzature-figures[cli,dataviz]"`) :
+
+| Extra | Ajoute |
+|-------|--------|
+| `[cli]` | l'interface Click, jumelle de la CLI `make-figure` toujours installée |
+| `[dataviz]` | matplotlib / networkx / wordcloud / shapely / pyproj / pyyaml — nécessaires aux générateurs non Vega-Lite |
+| `[studio]` | Sprezzature Studio : l'application NiceGUI + le copilote Ralph (voir plus bas) |
+
+Utilisez un environnement virtuel pour tout isoler :
+
+<details>
+<summary>🍎 macOS / 🐧 Ubuntu</summary>
 
 ```bash
-pip install "sprezzature-figures[cli]"
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+pip install "sprezzature-figures[cli,dataviz]"
+```
+</details>
+
+<details>
+<summary>🪟 Windows (PowerShell)</summary>
+
+```powershell
+py -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+pip install "sprezzature-figures[cli,dataviz]"
+```
+</details>
+
+Vérifier l'installation :
+
+```bash
+make-figure --list --status stable
+make-figure bar --out check.svg
 ```
 
 ---

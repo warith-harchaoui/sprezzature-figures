@@ -3,7 +3,7 @@
 ```bash
 python -m pytest -q                              # default: fast tests only
 python -m pytest -q -m slow                       # + real rendering, real LLM-free Ralph rounds, real server launch
-python -m pytest -q -m packaging tests/test_packaging.py   # builds+installs a wheel (network, ~11s)
+python -m pytest -q -m packaging tests/test_packaging.py   # builds+installs the wheel, incl. [studio] extra (network, ~50s)
 ruff check sprezzature_figures tools tests
 ```
 
@@ -56,10 +56,20 @@ per the build plan and keep them out of the default run.
 
 ## CI
 
-`.github/workflows/ci.yml`: ruff + the default suite + `-m slow`, on
-Python 3.10 and 3.13, on push to `main` and on pull requests. Deliberately
-excludes `-m packaging` (needs network, ~11-20s) to stay lightweight. CI
-caught a real bug local development never surfaced: `make_situation_map.py`
+`.github/workflows/ci.yml` runs on 🍎 macOS, 🐧 Ubuntu, and 🪟 Windows, on
+push to `main` and on pull requests:
+
+- **`test` job** — ruff + the default suite + `-m slow`, across the 3 OSes ×
+  Python 3.10 and 3.13 (6 combinations).
+- **`packaging` job** — `-m packaging` on each of the 3 OSes (Python 3.12):
+  builds the wheel, installs it clean, renders a figure, confirms the bare
+  install stays studio-independent, then installs the `[studio]` extra and
+  checks every studio subpackage imports and all three console scripts
+  (`make-figure`, `sprezzature-figures`, `sprezzature-studio`) resolve.
+  This is the check that the documented `pip install` procedures actually
+  hold on a clean machine, on every supported OS.
+
+CI caught a real bug local development never surfaced: `make_situation_map.py`
 raised `SystemExit` — not an `Exception` subclass — at module import time
 for a missing dependency, which killed the whole test run in a clean
 environment where that dependency wasn't already installed globally (as it
