@@ -5,10 +5,21 @@ for the full spec; not itself committed). Branch: `feature/sprezzature-studio`.
 
 ## Phase
 
-**All 13 commits of the build plan complete.** Also added a lightweight
-GitHub Actions CI workflow (lint + fast tests + render tests, Python
-3.10/3.13) outside the plan's numbered commits, per user request — CI
-caught a real bug local dev never would have (see Commit 10).
+**All 13 commits of the build plan complete.** Also added, per user
+requests outside the plan's numbered commits:
+- a GitHub Actions CI workflow, which caught a real bug local dev never
+  would have (see Commit 10);
+- **install hardening (post-plan)**: the CI matrix now runs on 🍎 macOS,
+  🐧 Ubuntu, and 🪟 Windows (3 OS × Python 3.10/3.13 for the test job, plus
+  a dedicated `packaging` job on all 3 OSes). `tests/test_packaging.py`
+  expanded from 1 to 3 tests: the bare wheel renders a figure and stays
+  studio-independent, and `pip install "<wheel>[studio]"` makes every
+  studio subpackage importable with all 3 console scripts resolving —
+  i.e. the exact documented install flow, verified on a clean machine per
+  OS. README/LISEZMOI/docs got per-OS (venv + activate, PowerShell)
+  install instructions, an extras table, and a verification command.
+  Made the two `/tmp/`-based output-path examples in docstrings/docs
+  platform-neutral.
 
 ## Completed
 
@@ -594,10 +605,13 @@ sprezzature-studio --help                          # console entry point works
 
 ## Next
 
-The build plan's 13 commits are done. Remaining, not yet done: merging
-`feature/sprezzature-studio` into `main` (currently open as draft PR #1,
-CI green on Python 3.10/3.13), and the UI wiring deferred throughout
-(history panel, export dialog, recommendation cards) and the
+The build plan's 13 commits are done, plus the post-plan install-hardening
+pass above. CI is green across all 9 jobs — 🍎 macOS, 🐧 Ubuntu, and 🪟
+Windows, Python 3.10/3.13, including the `[studio]` extra install on each
+OS (Windows for the first time on this project). PR #1 is being merged
+into `main` next, per standing instruction to end up on a single branch.
+Remaining, genuinely out of scope for this branch: the UI wiring deferred
+throughout (history panel, export dialog, recommendation cards) and the
 transformation-execution engine noted in ROADMAP.md — none of these are
 in the original 13-commit plan and would be new scope, not a continuation
 of it.
