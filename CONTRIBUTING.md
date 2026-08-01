@@ -4,8 +4,8 @@
 
 1. Create `scripts/make_<kind>.py` following the pattern of an existing script (e.g. `make_bar.py`).
 2. The script must define:
-   - `DEMO_DATA: list[dict]` — minimal self-contained example data.
-   - `make_<kind>(data: list[dict], *, out: str | None = None, title: str = "", **kwargs) -> str` — returns the output file path as a string.
+   - `DEMO_DATA: list[dict]`, minimal self-contained example data.
+   - `make_<kind>(data: list[dict], *, out: str | None = None, title: str = "", **kwargs) -> str`, returns the output file path as a string.
 3. The function must work when called with no `out` argument (write to a temporary path or the current directory).
 4. Add a row to [FIGURES.md](FIGURES.md) with the kind name, script name, category, and when-to-use guidance.
 5. Run `make-figure <kind>` to verify the output.
