@@ -132,6 +132,35 @@ Each `make_<kind>.py` script is self-contained: it imports what it needs, define
 
 ---
 
+## the editor
+
+This repository is two things:
+
+- **The library** (`sprezzature_figures.make_figure`, `make-figure`,
+  `sprezzature-figures` CLI) — everything above. No extra dependencies
+  beyond `[cli]`/`[dataviz]`.
+- **the editor** (`sprezzature_figures.editor`, `sprezzature-figures`
+  CLI) — a local NiceGUI app to import a CSV/XLSX, pick a chart type, bind
+  columns, and refine the figure by chatting with **Ralph**, an LLM/VLM
+  copilot that edits a structured plan and actually looks at the rendered
+  PNG before deciding it's done. Needs the `editor` extra:
+
+  ```bash
+  pip install "sprezzature-figures[editor]"
+  sprezzature-figures
+  ```
+
+  Full documentation: [docs/editor/README.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/docs/editor/README.md).
+
+There is no separate "Ralph CLI" in this repository — `scripts/
+ralph_eyeball_loop.py` is a standalone, repo-internal visual-QA tool used
+while developing the chart generators themselves (see its own docstring);
+it predates and is unrelated to the editor's Ralph engine
+(`sprezzature_figures.editor.ralph`), which is a from-scratch,
+plan-driven, testable implementation.
+
+---
+
 ## Development
 
 ```bash
