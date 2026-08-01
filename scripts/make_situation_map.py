@@ -48,7 +48,11 @@ from typing import Any, Iterable, Optional
 try:
     import yaml
 except ImportError as exc:  # pragma: no cover - dependency guard
-    raise SystemExit("PyYAML is required: pip install pyyaml") from exc
+    # ImportError, not SystemExit: this guard fires at module import time,
+    # not just when run as a script, so it must stay a catchable Exception
+    # subclass for callers like make_figure() or the generator audit that
+    # import this module programmatically rather than executing it.
+    raise ImportError("PyYAML is required: pip install pyyaml") from exc
 
 try:
     from pyproj import Transformer
@@ -62,7 +66,7 @@ try:
     from shapely.ops import transform as shp_transform
     from shapely.ops import unary_union
 except ImportError as exc:  # pragma: no cover - dependency guard
-    raise SystemExit(
+    raise ImportError(
         "shapely>=2 and pyproj>=3.6 are required: pip install shapely pyproj"
     ) from exc
 
