@@ -36,14 +36,48 @@ class UserIntent(BaseModel):
         "geography",
         "model_evaluation",
         "unknown",
-    ] = "unknown"
-    message_to_convey: str = ""
-    audience: str | None = None
-    emphasis: list[str] = Field(default_factory=list)
-    requested_constraints: list[str] = Field(default_factory=list)
-    required_columns: list[str] = Field(default_factory=list)
-    ambiguities: list[str] = Field(default_factory=list)
-    confidence: float = 0.0
+    ] = Field(
+        default="unknown",
+        description=(
+            "The single analytical question the figure should answer. Choose the "
+            "closest: comparison (rank/contrast categories), trend (change over "
+            "time), distribution (spread of one measure), composition (parts of a "
+            "whole), relationship (correlation between measures), flow (movement "
+            "between nodes), hierarchy (nested parts), geography (values on a map), "
+            "model_evaluation (ML metrics). Use 'unknown' ONLY when the request is "
+            "genuinely too vague to classify."
+        ),
+    )
+    message_to_convey: str = Field(
+        default="",
+        description="One plain sentence stating the takeaway the user wants the reader to leave with.",
+    )
+    audience: str | None = Field(
+        default=None,
+        description="Who will read the figure (e.g. 'executives', 'engineers'), if the request implies one; else null.",
+    )
+    emphasis: list[str] = Field(
+        default_factory=list,
+        description="Specific values, categories, or series the user wants highlighted (e.g. ['France', 'Q4']).",
+    )
+    requested_constraints: list[str] = Field(
+        default_factory=list,
+        description="Explicit constraints the user stated: date ranges, top-N, filters, format (e.g. '16:9'), etc.",
+    )
+    required_columns: list[str] = Field(
+        default_factory=list,
+        description="Dataset column names the figure must use, drawn ONLY from the provided data profile -- never invented.",
+    )
+    ambiguities: list[str] = Field(
+        default_factory=list,
+        description="Points the request leaves unclear and that a human should confirm; empty if the request is clear.",
+    )
+    confidence: float = Field(
+        default=0.0,
+        ge=0.0,
+        le=1.0,
+        description="Your confidence, 0.0-1.0, that this analysis captures the user's actual intent.",
+    )
 
 
 class ColumnBinding(BaseModel):
