@@ -108,13 +108,16 @@ packages = [
     "sprezzature_figures.studio.components",
     "sprezzature_figures.studio.export",
     "sprezzature_figures_scripts",
+    "sprezzature_figures_fonts",
 ]
 
 [tool.setuptools.package-dir]
 "sprezzature_figures_scripts" = "scripts"
+"sprezzature_figures_fonts" = "assets/fonts"
 
 [tool.setuptools.package-data]
 "sprezzature_figures.catalog" = ["figures.json"]
+"sprezzature_figures_fonts" = ["*.ttf", "*.woff2", "OFL-*.txt"]
 
 [tool.pytest.ini_options]
 addopts = "-m 'not slow and not packaging'"

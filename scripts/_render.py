@@ -82,7 +82,7 @@ def svg_example_path(script_file: str, figure_id: str) -> Path:
     )
 
 
-def write_svg(out: Path, svg: str) -> Path:
+def write_svg(out: Path, svg: str, *, embed_fonts: bool = True) -> Path:
     """Write ``svg`` to ``out`` (creating parents) and echo ``wrote <out>``.
 
     This is the identical three-line tail every generator carried: ensure the
@@ -91,6 +91,15 @@ def write_svg(out: Path, svg: str) -> Path:
     user-facing CLI message (the generators are run by hand), not diagnostic
     logging, so it stays a plain ``print``.
 
+    Also the shared choke point for font embedding: generators that hand-write
+    their SVG already carry an embedded ``@font-face`` block from
+    ``_svg.svg_open(embed_fonts=True)``, but the Vega-Lite generators (whose
+    SVG comes from ``vlc.vega_to_svg``) do not. When ``embed_fonts`` is true
+    (the default) and the string does not already carry one, this splices the
+    bundled Roboto/Roboto Mono ``@font-face`` block in right after the opening
+    ``<svg ...>`` tag, so every generator's output -- hand-written or
+    Vega-Lite -- is font-independent, not just the ones that call svg_open().
+
     Parameters
     ----------
     out : pathlib.Path
@@ -98,6 +107,10 @@ def write_svg(out: Path, svg: str) -> Path:
         :func:`svg_example_path`, or a caller-supplied ``--out`` override.
     svg : str
         The complete SVG document to write.
+    embed_fonts : bool, optional
+        Splice in the embedded font block if the document doesn't already
+        have one (default ``True``). Pass ``False`` to skip (e.g. a caller
+        writing a non-SVG file that happens to reuse this helper).
 
     Returns
     -------
@@ -109,6 +122,12 @@ def write_svg(out: Path, svg: str) -> Path:
     >>> # write_svg(Path("/tmp/venn.svg"), "<svg .../>")  # doctest: +SKIP
     >>> # prints: wrote /tmp/venn.svg
     """
+    if embed_fonts and "@font-face" not in svg and svg.lstrip().startswith("<svg"):
+        from sprezzature_figures.fonts import DEFAULT_SVG_FACES, svg_font_defs
+
+        if DEFAULT_SVG_FACES:
+            insert_at = svg.index(">") + 1
+            svg = svg[:insert_at] + svg_font_defs(DEFAULT_SVG_FACES) + svg[insert_at:]
     # ``parents=True`` mirrors the inline ``mkdir(parents=True, exist_ok=True)``
     # so a fresh checkout (no assets/ yet) still succeeds.
     out.parent.mkdir(parents=True, exist_ok=True)

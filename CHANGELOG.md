@@ -20,6 +20,19 @@
   instead of assuming all 90 work.
 - Reproducible generator audit (`tools/audit_generators.py`).
 - A lightweight GitHub Actions CI workflow.
+- **Self-hosted house typography** (`sprezzature_figures/fonts.py`):
+  Roboto, Roboto Serif and Roboto Mono are now bundled as variable
+  TTF/WOFF2 files in the repo/wheel (`assets/fonts/`, shipped as the
+  `sprezzature_figures_fonts` package) instead of being assumed present
+  on the host or fetched from a CDN. Every hand-written SVG generator and
+  every Vega-Lite generator now embeds `@font-face` (base64 WOFF2)
+  directly in its output (`write_svg()`/`svg_open()`), matplotlib
+  generators register the bundled fonts with `font_manager` (and bake
+  `svg.fonttype="path"` for portable SVG output), the Vega-Lite → PNG
+  preview pipeline points `vl_convert` at the bundled font directory, and
+  the Studio web app self-hosts the same WOFF2 files (no Google Fonts
+  CDN) via `@font-face`. Figures and the Studio UI now look identical
+  regardless of what fonts are installed on the machine viewing them.
 
 ### Fixed
 
