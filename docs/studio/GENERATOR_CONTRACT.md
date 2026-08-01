@@ -74,6 +74,6 @@ regenerating the catalogue re-applies these, so they survive a rebuild.
    `make_figure()`-ready rows with no per-kind glue code.
 4. Run `python tools/audit_generators.py --render` then
    `python tools/build_figures_catalog.py`.
-5. Confirm it: `make-figure <kind> --out /tmp/check.svg` (or `.png`), and
+5. Confirm it: `make-figure <kind> --out check.svg` (or `.png`), and
    look at the output — an audit `status="stable"` only means the file was
    non-empty, not that it looks right.

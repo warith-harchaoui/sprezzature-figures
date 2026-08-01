@@ -161,7 +161,7 @@ def make_figure(kind: str, data: list[dict[str, Any]], **kwargs: Any) -> Path:
     --------
     >>> from sprezzature_figures import make_figure
     >>> data = [{"parent": "A", "name": "A1", "value": 10}]
-    >>> path = make_figure("treemap", data, out="/tmp/treemap.svg")
+    >>> path = make_figure("treemap", data, out="treemap.svg")
     >>> path.exists()
     True
     """
