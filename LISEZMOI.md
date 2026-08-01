@@ -7,7 +7,7 @@
 
 [![logo](assets/logo.png)](https://harchaoui.org/warith/sprezzature/)
 
-90 types de graphiques de qualité publication — Vega-Lite, Vega complet et matplotlib/SVG — utilisables comme bibliothèque Python ou en ligne de commande.
+90 types de graphiques de qualité publication (Vega-Lite, Vega complet et matplotlib/SVG), utilisables comme bibliothèque Python ou en ligne de commande.
 
 Fait partie de la suite [sprezzature](https://harchaoui.org/warith/sprezzature/).
 
@@ -28,7 +28,7 @@ Extras optionnels (combinables, ex. `"sprezzature-figures[cli,dataviz]"`) :
 | Extra | Ajoute |
 |-------|--------|
 | `[cli]` | l'interface Click, jumelle de la CLI `make-figure` toujours installée |
-| `[dataviz]` | matplotlib / networkx / wordcloud / shapely / pyproj / pyyaml — nécessaires aux générateurs non Vega-Lite |
+| `[dataviz]` | matplotlib / networkx / wordcloud / shapely / pyproj / pyyaml, nécessaires aux générateurs non Vega-Lite |
 | `[studio]` | Sprezzature Studio : l'application NiceGUI + le copilote Ralph (voir plus bas) |
 
 Utilisez un environnement virtuel pour tout isoler :
@@ -155,7 +155,7 @@ sprezzature-figures/
 └── tests/
 ```
 
-Chaque script `make_<type>.py` est autonome : il importe ce dont il a besoin, définit `make_<type>(donnees, *, out=None, title="", ...) -> Path` et expose une liste `DEMO_DATA` pour la CLI et les tests. `make_figure()` résout le type via `sprezzature_figures/catalog/figures.json` plutôt que de deviner le nom de fichier — voir [docs/studio/GENERATOR_AUDIT.md](docs/studio/GENERATOR_AUDIT.md) pour savoir lesquels des 90 scripts respectent déjà ce contrat.
+Chaque script `make_<type>.py` est autonome : il importe ce dont il a besoin, définit `make_<type>(donnees, *, out=None, title="", ...) -> Path` et expose une liste `DEMO_DATA` pour la CLI et les tests. `make_figure()` résout le type via `sprezzature_figures/catalog/figures.json` plutôt que de deviner le nom de fichier ; voir [docs/studio/GENERATOR_AUDIT.md](docs/studio/GENERATOR_AUDIT.md) pour savoir lesquels des 90 scripts respectent déjà ce contrat.
 
 ---
 
@@ -231,7 +231,7 @@ python -m pytest -m slow tests/
 
 ## Licence
 
-BSD 3-Clause — voir [LICENSE](LICENSE).
+BSD 3-Clause. Voir [LICENSE](LICENSE).
 
 ## Auteur
 

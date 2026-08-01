@@ -7,7 +7,7 @@
 
 [![logo](https://raw.githubusercontent.com/warith-harchaoui/sprezzature-figures/main/assets/logo.png)](https://harchaoui.org/warith/sprezzature/)
 
-90 publication-quality chart types — Vega-Lite, full Vega, and matplotlib/SVG — callable as a Python library or a CLI command.
+90 publication-quality chart types (Vega-Lite, full Vega, and matplotlib/SVG), callable as a Python library or a CLI command.
 
 Part of the [sprezzature](https://harchaoui.org/warith/sprezzature/) suite.
 
@@ -27,7 +27,7 @@ Optional extras (combine as needed, e.g. `"sprezzature-figures[cli,dataviz]"`):
 | Extra | Adds |
 |-------|------|
 | `[cli]` | the Click twin of the always-installed `make-figure` CLI |
-| `[dataviz]` | matplotlib / networkx / wordcloud / shapely / pyproj / pyyaml — needed for the non-Vega-Lite generators |
+| `[dataviz]` | matplotlib / networkx / wordcloud / shapely / pyproj / pyyaml, needed for the non-Vega-Lite generators |
 | `[studio]` | Sprezzature Studio: the NiceGUI app + Ralph copilot (see below) |
 
 Use a virtual environment to keep things isolated:
@@ -81,13 +81,13 @@ print(path)  # PosixPath('revenue.png')
 ```
 
 `make_figure()` will attempt any registered chart kind, but only
-`status="stable"` kinds are currently render-verified end to end — see
+`status="stable"` kinds are currently render-verified end to end; see
 [docs/studio/GENERATOR_AUDIT.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/docs/studio/GENERATOR_AUDIT.md)
 for the per-chart status of all 90 types, and `make-figure --list --status stable`
 for the ones that render today (15 as of this writing: `area`, `bar`, `boxplot`,
 `columnrange`, `dumbbell`, `funnel`, `heatmap`, `histogram`, `line`, `sankey`,
 `scatter`, `sunburst`, `treemap`, `waffle`, `waterfall`). Every stable kind
-tolerates optional roles being left unbound — it renders a sensible default
+tolerates optional roles being left unbound: it renders a sensible default
 rather than crashing.
 
 ### As a CLI command
@@ -156,7 +156,7 @@ sprezzature-figures/
 └── tests/
 ```
 
-Each `make_<kind>.py` script is self-contained: it imports what it needs, defines `make_<kind>(data, *, out=None, title="", ...) -> Path` and exposes a `DEMO_DATA` list for CLI and test use. `make_figure()` resolves the kind through `sprezzature_figures/catalog/figures.json` rather than guessing the filename — see [docs/studio/GENERATOR_AUDIT.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/docs/studio/GENERATOR_AUDIT.md) for which of the 90 scripts currently satisfy this contract.
+Each `make_<kind>.py` script is self-contained: it imports what it needs, defines `make_<kind>(data, *, out=None, title="", ...) -> Path` and exposes a `DEMO_DATA` list for CLI and test use. `make_figure()` resolves the kind through `sprezzature_figures/catalog/figures.json` rather than guessing the filename; see [docs/studio/GENERATOR_AUDIT.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/docs/studio/GENERATOR_AUDIT.md) for which of the 90 scripts currently satisfy this contract.
 
 ---
 
@@ -175,10 +175,10 @@ Each `make_<kind>.py` script is self-contained: it imports what it needs, define
 This repository is two things:
 
 - **The library** (`sprezzature_figures.make_figure`, `make-figure`,
-  `sprezzature-figures` CLI) — everything above. No extra dependencies
+  `sprezzature-figures` CLI): everything above, with no extra dependencies
   beyond `[cli]`/`[dataviz]`.
 - **Sprezzature Studio** (`sprezzature_figures.studio`, `sprezzature-studio`
-  CLI) — a local NiceGUI app to import a CSV/XLSX, pick a chart type, bind
+  CLI): a local NiceGUI app to import a CSV/XLSX, pick a chart type, bind
   columns, and refine the figure by chatting with **Ralph**, an LLM/VLM
   copilot that edits a structured plan and actually looks at the rendered
   PNG before deciding it's done. Needs the `studio` extra:
@@ -192,7 +192,7 @@ This repository is two things:
   [best-engine-ai-helper](https://github.com/warith-harchaoui/best-engine-ai-helper),
   which talks to a local Ollama by default (text model `qwen3:8b`, vision model
   `gemma3:12b`; override with `BEST_LLM_TEXT` / `BEST_LLM_VISION`). The app
-  **starts and stays fully usable with no model at all** — import, profiling,
+  **starts and stays fully usable with no model at all**: import, profiling,
   manual chart choice, property tweaks, history, and export all work in
   degraded mode; only the chat/critique features need a reachable model. Nothing
   leaves your machine unless you point it at a remote backend
@@ -200,7 +200,7 @@ This repository is two things:
 
   Full documentation: [docs/studio/README.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/docs/studio/README.md).
 
-There is no separate "Ralph CLI" in this repository — `scripts/
+There is no separate "Ralph CLI" in this repository. `scripts/
 ralph_eyeball_loop.py` is a standalone, repo-internal visual-QA tool used
 while developing the chart generators themselves (see its own docstring);
 it predates and is unrelated to the Studio's Ralph engine
@@ -237,7 +237,7 @@ except `llm` / `vision`.
 
 ## License
 
-BSD 3-Clause — see [LICENSE](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/LICENSE).
+BSD 3-Clause. See [LICENSE](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/LICENSE).
 
 ## Author
 
