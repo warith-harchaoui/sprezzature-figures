@@ -5,10 +5,12 @@ for the full spec; not itself committed). Branch: `feature/sprezzature-studio`.
 
 ## Phase
 
-Phase 2 (§3), Phase 3 (§4-§5), Phase 4 (§7), Phase 5 (§8), and Phase 6
-(§9, LLM client) complete. Commits 1-9 of 13 landed. Also added a
-lightweight GitHub Actions CI workflow (lint + fast tests + render tests,
-Python 3.10/3.13) outside the plan's numbered commits, per user request.
+Phase 2 (§3), Phase 3 (§4-§5), Phase 4 (§7), Phase 5 (§8), Phase 6 (§9),
+and Phase 7 (§11, Ralph engine) complete. Commits 1-10 of 13 landed.
+Also added a lightweight GitHub Actions CI workflow (lint + fast tests +
+render tests, Python 3.10/3.13) outside the plan's numbered commits, per
+user request — and CI immediately caught a real bug local dev never would
+have (see Commit 10 below).
 
 ## Completed
 
@@ -312,6 +314,82 @@ Python 3.10/3.13) outside the plan's numbered commits, per user request.
   requests. Deliberately excludes `-m packaging` (needs network, ~15-20s)
   to keep it "légère" as asked; that stays a manual/pre-release check.
 
+- **Commit 10 — Ralph interactive engine**
+  (`sprezzature_figures/studio/ralph/`: `engine.py`, `policy.py`,
+  `apply.py`, `critic.py`, `repair.py`, `stopping.py`, `history.py`;
+  `tests/ralph/`).
+  - `policy.py`: `is_safe_repair()` (plan §11.2 — cosmetic StyleOptions
+    fields, canvas size, annotations) and `requires_confirmation()` (plan
+    §11.3 — figure-kind change, filter, aggregate, top-N/group-others,
+    calculate-column, rebind). The latter is enforced independent of the
+    model's own `EditProposal.requires_confirmation` flag — defense in
+    depth against a model that forgets to set it.
+  - `apply.py`: `apply_operation()`/`apply_operations()` — the
+    FigureOperation → FigurePlan execution the plan assigns to Ralph
+    specifically (§1.3: "Ralph modifies the plan, never the image"), not
+    to `core/`, which stays models + pure validation only. New
+    `Transform`s get an auto-assigned `transform_id` if the model didn't
+    set one, so `RemoveFilter` has something to target later.
+  - `critic.py`: `request_critique()` sends exactly the plan §11.6 context
+    (PNG, intent, figure kind, bound roles, title/subtitle, dimensions,
+    stats summary, transformations, previous critique) via
+    `client.chat_vision()`, never the raw dataset.
+  - `stopping.py`: all 6 plan §11.5 stopping criteria. `issue_signature()`
+    is documented as a **simplification**: the plan mentions "zone
+    approximative" but `VisualIssue` (Commit 9) has no bounding-box field
+    — real grounded coordinates need actual VLM output, not wired up yet
+    — so the signature is category+severity+normalized-message only. Not
+    silently dropped: called out here and in the module docstring.
+  - `repair.py` (Ralph's, distinct from `assistant.repair`'s JSON-repair):
+    `apply_safe_repairs()` re-filters a critique's `safe_repairs` through
+    both `policy.is_safe_repair()` *and* `core.validate_operation()` —
+    never trusts the model's own claim that a repair is safe.
+  - `history.py`: `RalphHistory`, in-memory round tracking (signature,
+    score, repair count) feeding the stopping criteria. Explicitly not the
+    persistent `IterationRecord` history from plan §12/Commit 12 — this is
+    Ralph's own short-term memory, scoped to however long a caller keeps
+    one instance alive (one autopilot loop, or reused across chat turns).
+  - `engine.py`: `RalphEngine.apply_user_request(plan, data, message, *,
+    mode, project_id, iteration_dir, dataset=None, history=None) ->
+    RalphResult`, implementing manual (apply + render, no inspection) /
+    assisted (apply + render + inspect + one safe-repair pass) / autopilot
+    (loop up to `MAX_AUTO_REPAIRS=2`, per the stopping criteria) exactly
+    per plan §11.1.
+  - **Documented gap, not silently assumed away**: `apply_user_request`
+    takes already-resolved `data` rows alongside the `FigurePlan` — it does
+    not execute `FigurePlan.transformations` (filter/sort/aggregate) against
+    a live dataset. That data-resolution engine isn't owned by any commit in
+    the plan's own 13-commit table; `transformations` stays the auditable
+    record, ready for that engine to consume whenever it's built.
+  - Manually smoke-tested all three modes plus the confirmation-gating path
+    (a `SetFigureKind` op correctly held pending, plan unchanged) before
+    writing the 44-test suite — all five scenarios correct first try.
+  - Registered `sprezzature_figures.studio.ralph` in pyproject.toml's
+    `packages` list before committing.
+  - **CI caught a real bug that four prior local `pytest` runs never
+    would have**: `make_situation_map.py` raises `SystemExit` (not an
+    `Exception` subclass) at *module import time* for a missing
+    shapely/pyproj/pyyaml dependency. `SystemExit` isn't caught by
+    `except Exception`, so it killed the entire CI test run instead of
+    being recorded as one script's status — invisible locally because
+    this dev environment happened to already have those packages
+    installed globally. Fixed at the root: changed the two offending
+    `raise SystemExit(...)` calls to `raise ImportError(...)` (scanned
+    every `scripts/make_*.py` for the same import-time-SystemExit pattern
+    first — no other instances), added `SystemExit` as a second defensive
+    catch in `tools/audit_generators.py`'s `import_script()`, and declared
+    `pyyaml`/`shapely`/`pyproj` in the `dataviz` extra so they're actually
+    installed by anyone using it. Also fixed a YAML syntax bug in the CI
+    workflow itself (an unquoted step name with a colon broke parsing —
+    both of the first two CI runs failed instantly before running a single
+    step because of this). Opened a **draft** PR (#1, not merged) purely
+    to exercise the `pull_request` trigger, since `push` is scoped to
+    `main` only and this work happens on a feature branch — CI is green
+    on Python 3.10 and 3.13 as of this commit.
+  - 44 new tests across `tests/ralph/{test_policy,test_apply,test_stopping,
+    test_repair_and_history,test_engine}.py`, including full end-to-end
+    engine tests for all three modes against real rendering.
+
 ## Figures currently `stable`
 
 Per the latest `--render` audit run (90 generators total):
@@ -323,9 +401,9 @@ of ≥10 stable figures.
 ## Tests run
 
 ```
-python3 -m pytest -q                              # 100 passed, 27 deselected
-python3 -m pytest -q -m slow                       # 26 passed, 101 deselected
-python3 -m pytest -q -m packaging tests/test_packaging.py   # 1 passed (~20s, needs network)
+python3 -m pytest -q                              # 137 passed, 34 deselected
+python3 -m pytest -q -m slow                       # 33 passed, 138 deselected
+python3 -m pytest -q -m packaging tests/test_packaging.py   # 1 passed (~15s, needs network)
 ruff check sprezzature_figures tools tests          # clean
 ```
 
@@ -355,7 +433,9 @@ ruff check sprezzature_figures tools tests          # clean
 
 ## Next
 
-The render/LLM core (Commits 8-9) is now in place — this is the checkpoint
-the user asked for before continuing into the GUI. Reporting a summary,
-then continuing autonomously into Commit 10 (Ralph engine) and Commit 11
-(NiceGUI app) per the standing "keep going" instruction.
+Commit 11 — the NiceGUI studio app itself (`sprezzature_figures/studio/
+{app,cli,config,state,session}.py`, `pages/`, `components/`). This is the
+first commit needing `nicegui` actually imported (declared in the `studio`
+extra since Commit 5, unused until now) and the first with real UI/UX
+design decisions (three-pane layout, async task handling, per-session
+isolation) rather than backend logic with a clear spec to follow.

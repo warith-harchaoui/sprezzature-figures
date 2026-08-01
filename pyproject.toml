@@ -102,6 +102,7 @@ packages = [
     "sprezzature_figures.studio",
     "sprezzature_figures.studio.ingest",
     "sprezzature_figures.studio.assistant",
+    "sprezzature_figures.studio.ralph",
     "sprezzature_figures_scripts",
 ]
 
