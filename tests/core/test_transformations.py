@@ -10,6 +10,8 @@ Warith Harchaoui <warith.harchaoui@gmail.com>
 
 from __future__ import annotations
 
+import pytest
+
 from sprezzature_figures.core.operations import (
     AggregateTransform,
     CalculateDerived,
@@ -33,90 +35,86 @@ def _rows() -> list[dict]:
     ]
 
 
-def test_filter_by_value_membership() -> None:
-    out, notes = apply_transformations(
-        _rows(), [FilterByValue(column="region", op="in", values=["North", "East"])]
-    )
-    assert {r["region"] for r in out} == {"North", "East"}
+@pytest.mark.parametrize(
+    "rows, transform, expected_regions",
+    [
+        # membership keeps only the listed values
+        (_rows(), FilterByValue(column="region", op="in", values=["North", "East"]), {"North", "East"}),
+        # not_in excludes the listed values
+        (_rows(), FilterByValue(column="region", op="not_in", values=["North"]), {"South", "East", "West"}),
+        # range drops out-of-bounds AND non-numeric cells (the "n/a" row vanishes)
+        (
+            _rows() + [{"region": "NaNland", "value": "n/a"}],
+            FilterByRange(column="value", minimum=20, maximum=50),
+            {"North", "South"},
+        ),
+        # temporal keeps only rows inside the window
+        (_rows(), FilterTemporal(column="date", start="2022-01-01", end="2023-12-31"), {"North", "East"}),
+    ],
+)
+def test_filters_select_expected_rows(rows, transform, expected_regions) -> None:
+    out, notes = apply_transformations(rows, [transform])
+    assert {r["region"] for r in out} == expected_regions
     assert notes == []
 
 
-def test_filter_by_value_not_in_excludes() -> None:
-    out, _ = apply_transformations(
-        _rows(), [FilterByValue(column="region", op="not_in", values=["North"])]
-    )
-    assert "North" not in {r["region"] for r in out}
-    assert len(out) == 3
-
-
 def test_filter_by_value_tolerates_string_number_drift() -> None:
+    # Regression pin: CSV cells load numbers as strings; a filter value of 3
+    # must still match the cell "3".
     rows = [{"n": "3"}, {"n": 4}, {"n": "5"}]
     out, _ = apply_transformations(rows, [FilterByValue(column="n", op="eq", values=[3])])
     assert out == [{"n": "3"}]
 
 
-def test_filter_by_range_drops_out_of_bounds_and_non_numeric() -> None:
-    rows = _rows() + [{"region": "NaNland", "value": "n/a"}]
-    out, _ = apply_transformations(rows, [FilterByRange(column="value", minimum=20, maximum=50)])
-    assert sorted(r["value"] for r in out) == [28, 42]
+@pytest.mark.parametrize(
+    "rows, column, ascending, expected",
+    [
+        # plain descending sort by number
+        (_rows(), "value", False, [91, 42, 28, 15]),
+        # edge case: numbers first (ascending), then non-numeric text, then None last
+        ([{"v": 3}, {"v": None}, {"v": "x"}, {"v": 1}], "v", True, [1, 3, "x", None]),
+    ],
+)
+def test_sort_orders_numbers_and_tolerates_mixed(rows, column, ascending, expected) -> None:
+    out, _ = apply_transformations(rows, [SortTransform(column=column, ascending=ascending)])
+    assert [r[column] for r in out] == expected
 
 
-def test_filter_temporal_keeps_window() -> None:
-    out, _ = apply_transformations(
-        _rows(), [FilterTemporal(column="date", start="2022-01-01", end="2023-12-31")]
-    )
-    assert {r["region"] for r in out} == {"North", "East"}
-
-
-def test_sort_descending_by_number() -> None:
-    out, _ = apply_transformations(_rows(), [SortTransform(column="value", ascending=False)])
-    assert [r["value"] for r in out] == [91, 42, 28, 15]
-
-
-def test_sort_handles_none_and_mixed_without_raising() -> None:
-    rows = [{"v": 3}, {"v": None}, {"v": "x"}, {"v": 1}]
-    out, _ = apply_transformations(rows, [SortTransform(column="v", ascending=True)])
-    # numbers first (ascending), then non-numeric text, then None last.
-    assert [r["v"] for r in out] == [1, 3, "x", None]
-
-
-def test_aggregate_sum_groups_and_names_output() -> None:
-    rows = [
-        {"cat": "a", "amt": 10},
-        {"cat": "b", "amt": 5},
-        {"cat": "a", "amt": 7},
-    ]
+@pytest.mark.parametrize(
+    "agg, output_column, expected",
+    [
+        # sum, with an explicit output column name and two groups
+        ("sum", "total", [{"cat": "a", "total": 17}, {"cat": "b", "total": 5}]),
+        # remaining aggregations reuse the value column name by default
+        ("mean", None, [{"cat": "a", "amt": 8.5}, {"cat": "b", "amt": 5.0}]),
+        ("median", None, [{"cat": "a", "amt": 8.5}, {"cat": "b", "amt": 5.0}]),
+        ("min", None, [{"cat": "a", "amt": 7.0}, {"cat": "b", "amt": 5.0}]),
+        ("max", None, [{"cat": "a", "amt": 10.0}, {"cat": "b", "amt": 5.0}]),
+        # count names its own output column
+        ("count", None, [{"cat": "a", "count": 2}, {"cat": "b", "count": 1}]),
+    ],
+)
+def test_aggregate_groups_and_computes(agg, output_column, expected) -> None:
+    rows = [{"cat": "a", "amt": 10}, {"cat": "b", "amt": 5}, {"cat": "a", "amt": 7}]
     out, _ = apply_transformations(
         rows,
-        [AggregateTransform(group_by=["cat"], value_column="amt", agg="sum", output_column="total")],
+        [AggregateTransform(group_by=["cat"], value_column="amt", agg=agg, output_column=output_column)],
     )
-    assert out == [{"cat": "a", "total": 17}, {"cat": "b", "total": 5}]
+    assert out == expected
 
 
-def test_aggregate_mean_median_count() -> None:
-    rows = [{"g": "x", "v": 2}, {"g": "x", "v": 4}, {"g": "x", "v": 6}]
-    mean, _ = apply_transformations(rows, [AggregateTransform(group_by=["g"], value_column="v", agg="mean")])
-    assert mean == [{"g": "x", "v": 4.0}]
-    median, _ = apply_transformations(rows, [AggregateTransform(group_by=["g"], value_column="v", agg="median")])
-    assert median == [{"g": "x", "v": 4}]
-    count, _ = apply_transformations(rows, [AggregateTransform(group_by=["g"], value_column="v", agg="count")])
-    assert count == [{"g": "x", "count": 3}]
-
-
-def test_top_n_by_value_keeps_original_order() -> None:
-    out, _ = apply_transformations(_rows(), [TopN(column="region", n=2, by="value")])
-    # East(91) and North(42) are the top 2, returned in their original order.
-    assert [r["region"] for r in out] == ["North", "East"]
-
-
-def test_top_n_without_by_takes_first_n() -> None:
-    out, _ = apply_transformations(_rows(), [TopN(column="region", n=2)])
-    assert [r["region"] for r in out] == ["North", "South"]
-
-
-def test_group_others_relabels_non_kept() -> None:
-    out, _ = apply_transformations(_rows(), [GroupOthers(column="region", keep=["North"], other_label="Rest")])
-    assert [r["region"] for r in out] == ["North", "Rest", "Rest", "Rest"]
+@pytest.mark.parametrize(
+    "by, expected",
+    [
+        # by="value": East(91) and North(42) are the top 2, returned in original order
+        ("value", ["North", "East"]),
+        # no ranking column: take the first n in place
+        (None, ["North", "South"]),
+    ],
+)
+def test_top_n_selection(by, expected) -> None:
+    out, _ = apply_transformations(_rows(), [TopN(column="region", n=2, by=by)])
+    assert [r["region"] for r in out] == expected
 
 
 def test_calculate_difference_and_ratio() -> None:
@@ -128,42 +126,34 @@ def test_calculate_difference_and_ratio() -> None:
     assert ratio[1]["r"] is None  # divide-by-zero -> None, never raises
 
 
-def test_rename_display_is_a_data_noop() -> None:
-    rows = _rows()
-    out, notes = apply_transformations(rows, [RenameDisplay(column="region", display_name="Zone")])
-    assert out == rows  # display renaming is a labelling concern, not a data change
-    assert notes == []
-
-
-def test_transforms_apply_in_order() -> None:
-    # Filter to top values, then sort ascending: order-dependent result.
-    out, _ = apply_transformations(
-        _rows(),
-        [
-            FilterByRange(column="value", minimum=20),
-            SortTransform(column="value", ascending=True),
-        ],
-    )
-    assert [r["value"] for r in out] == [28, 42, 91]
-
-
-def test_missing_column_is_skipped_not_silently_emptying() -> None:
-    rows = _rows()
-    out, notes = apply_transformations(rows, [FilterByValue(column="nope", op="eq", values=["x"])])
-    assert out == rows  # a filter on an absent column can't empty the figure
-    assert len(notes) == 1
-    assert "nope" in notes[0]
-
-
-def test_rows_are_not_mutated_in_place() -> None:
+def test_executor_contract_invariants() -> None:
     rows = _rows()
     snapshot = [dict(r) for r in rows]
-    apply_transformations(rows, [GroupOthers(column="region", keep=[], other_label="X")])
-    assert rows == snapshot
 
-
-def test_empty_transform_list_is_identity() -> None:
-    rows = _rows()
+    # empty transform list is the identity
     out, notes = apply_transformations(rows, [])
     assert out == rows
     assert notes == []
+
+    # RenameDisplay is a data no-op (labelling, not a data change)
+    out, notes = apply_transformations(rows, [RenameDisplay(column="region", display_name="Zone")])
+    assert out == rows
+    assert notes == []
+
+    # transforms apply in list order: filter, then the order-dependent sort
+    out, _ = apply_transformations(
+        rows,
+        [FilterByRange(column="value", minimum=20), SortTransform(column="value", ascending=True)],
+    )
+    assert [r["value"] for r in out] == [28, 42, 91]
+
+    # a filter on an absent column is skipped (can't empty the figure) and noted
+    out, notes = apply_transformations(rows, [FilterByValue(column="nope", op="eq", values=["x"])])
+    assert out == rows
+    assert len(notes) == 1
+    assert "nope" in notes[0]
+
+    # GroupOthers relabels non-kept values -- without mutating the input rows
+    out, _ = apply_transformations(rows, [GroupOthers(column="region", keep=["North"], other_label="Rest")])
+    assert [r["region"] for r in out] == ["North", "Rest", "Rest", "Rest"]
+    assert rows == snapshot  # every step returns fresh dicts; inputs untouched

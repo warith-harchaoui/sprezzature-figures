@@ -9,6 +9,8 @@ Warith Harchaoui <warith.harchaoui@gmail.com>
 
 from __future__ import annotations
 
+from typing import get_args
+
 import pytest
 from pydantic import TypeAdapter, ValidationError
 
@@ -30,6 +32,7 @@ from sprezzature_figures.core.operations import (
     FilterByValue,
     SetStyleOption,
     SetTitle,
+    StyleOptionName,
 )
 
 
@@ -48,11 +51,22 @@ def _dataset() -> DatasetProfile:
     )
 
 
-def test_figure_plan_defaults_are_valid() -> None:
-    plan = FigurePlan(figure_kind="treemap")
-    assert plan.version == 1
-    assert plan.style == StyleOptions()
-    assert plan.bound_columns() == set()
+def test_figure_plan_model_basics() -> None:
+    empty = FigurePlan(figure_kind="treemap")
+    assert empty.version == 1
+    assert empty.style == StyleOptions()
+    assert empty.bound_columns() == set()
+
+    # bound_columns() aggregates the columns across every role binding
+    bound = FigurePlan(
+        figure_kind="treemap",
+        bindings={
+            "parent": ColumnBinding(columns=["a"]),
+            "name": ColumnBinding(columns=["b"]),
+            "value": ColumnBinding(columns=["c"]),
+        },
+    )
+    assert bound.bound_columns() == {"a", "b", "c"}
 
 
 def test_column_binding_requires_at_least_one_column() -> None:
@@ -60,98 +74,75 @@ def test_column_binding_requires_at_least_one_column() -> None:
         ColumnBinding(columns=[])
 
 
-def test_bound_columns_aggregates_across_roles() -> None:
-    plan = FigurePlan(
-        figure_kind="treemap",
-        bindings={
-            "parent": ColumnBinding(columns=["a"]),
-            "name": ColumnBinding(columns=["b"]),
-            "value": ColumnBinding(columns=["c"]),
-        },
-    )
-    assert plan.bound_columns() == {"a", "b", "c"}
-
-
-def test_figure_operation_discriminated_union_round_trips_through_json() -> None:
+def test_figure_operation_discriminated_union() -> None:
     adapter = TypeAdapter(FigureOperation)
+
+    # round-trips through JSON, preserving the concrete operation + nested transform
     op = AddFilter(operation_id="op1", transform=FilterByValue(column="city", values=["Paris"]))
     restored = adapter.validate_python(op.model_dump())
     assert isinstance(restored, AddFilter)
     assert restored.transform == op.transform
 
-
-def test_figure_operation_union_rejects_unknown_operation_type() -> None:
-    adapter = TypeAdapter(FigureOperation)
+    # and rejects an operation_type outside the union
     with pytest.raises(ValidationError):
         adapter.validate_python({"operation_id": "x", "operation_type": "delete_everything"})
 
 
-def test_validate_operation_flags_unknown_bound_column() -> None:
-    op = BindColumn(operation_id="op1", role="x", columns=["nope"])
-    issues = validate_operation(op, dataset=_dataset())
-    assert len(issues) == 1
-    assert issues[0].severity == "error"
-
-
-def test_validate_operation_accepts_known_bound_column() -> None:
-    op = BindColumn(operation_id="op1", role="x", columns=["city"])
-    assert validate_operation(op, dataset=_dataset()) == []
-
-
-def test_set_style_option_rejects_undeclared_option_at_construction() -> None:
-    # option is a Literal of the real StyleOptions fields, so an invented name
-    # is caught the moment the operation is built -- the model can never even
-    # emit one that reaches the render path.
+def test_set_style_option_literal_tracks_style_fields() -> None:
+    # SetStyleOption.option's Literal must list exactly the StyleOptions fields;
+    # this catches drift if a style option is added/renamed on one side only,
+    # and means an invented name is rejected the moment the operation is built.
+    assert set(get_args(StyleOptionName)) == set(StyleOptions.model_fields)
     with pytest.raises(ValidationError):
         SetStyleOption(operation_id="op1", option="not_a_real_option", value=1)
 
 
-def test_validate_operation_accepts_declared_style_option() -> None:
-    op = SetStyleOption(operation_id="op1", option="width", value=1200)
-    assert validate_operation(op, dataset=_dataset()) == []
-
-
-def test_style_option_names_match_style_options_fields() -> None:
-    # SetStyleOption.option's Literal must list exactly the StyleOptions fields;
-    # this catches drift if a style option is added/renamed on one side only.
-    from typing import get_args
-
-    from sprezzature_figures.core.operations import StyleOptionName
-
-    assert set(get_args(StyleOptionName)) == set(StyleOptions.model_fields)
-
-
-def test_validate_operation_ignores_operations_with_no_column_reference() -> None:
-    op = SetTitle(operation_id="op1", title="New title")
-    assert validate_operation(op, dataset=_dataset()) == []
-
-
-def test_validate_operation_flags_filter_transform_unknown_column() -> None:
-    op = AddFilter(operation_id="op1", transform=FilterByRange(column="ghost", minimum=0, maximum=10))
+@pytest.mark.parametrize(
+    "op, expected_substr",
+    [
+        # unknown bound column -> flagged
+        (BindColumn(operation_id="op1", role="x", columns=["nope"]), "nope"),
+        # known bound column -> clean
+        (BindColumn(operation_id="op1", role="x", columns=["city"]), None),
+        # declared style option name -> clean
+        (SetStyleOption(operation_id="op1", option="width", value=1200), None),
+        # operation with no column reference at all -> clean
+        (SetTitle(operation_id="op1", title="New title"), None),
+        # a filter transform reaching for a missing column -> flagged
+        (AddFilter(operation_id="op1", transform=FilterByRange(column="ghost", minimum=0, maximum=10)), "ghost"),
+    ],
+)
+def test_validate_operation(op, expected_substr) -> None:
     issues = validate_operation(op, dataset=_dataset())
-    assert issues and "ghost" in issues[0].message
+    if expected_substr is None:
+        assert issues == []
+    else:
+        assert issues
+        assert expected_substr in issues[0].message
+        assert all(i.severity == "error" for i in issues)
 
 
-def test_validate_plan_flags_missing_required_roles() -> None:
+@pytest.mark.parametrize(
+    "bindings, expected_missing",
+    [
+        # nothing bound -> every required role is reported missing
+        ({}, {"parent", "name", "value"}),
+        # all required roles bound -> no issues
+        (
+            {
+                "parent": ColumnBinding(columns=["a"]),
+                "name": ColumnBinding(columns=["b"]),
+                "value": ColumnBinding(columns=["c"]),
+            },
+            set(),
+        ),
+    ],
+)
+def test_validate_plan_required_roles(bindings, expected_missing) -> None:
     definition = get_figure_definition("treemap")
-    plan = FigurePlan(figure_kind="treemap")
+    plan = FigurePlan(figure_kind="treemap", bindings=bindings)
     issues = validate_plan(plan, definition=definition)
-    missing_fields = {i.field for i in issues}
-    assert missing_fields == {"parent", "name", "value"}
-
-
-def test_validate_plan_passes_with_all_required_roles_bound() -> None:
-    definition = get_figure_definition("treemap")
-    plan = FigurePlan(
-        figure_kind="treemap",
-        bindings={
-            "parent": ColumnBinding(columns=["a"]),
-            "name": ColumnBinding(columns=["b"]),
-            "value": ColumnBinding(columns=["c"]),
-        },
-    )
-    issues = validate_plan(plan, definition=definition)
-    assert issues == []
+    assert {i.field for i in issues} == expected_missing
 
 
 def test_validate_plan_flags_bound_column_missing_from_dataset() -> None:

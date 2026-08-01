@@ -29,36 +29,25 @@ from sprezzature_figures.make_figure import (
 )
 
 
-def test_list_kinds_returns_nonempty_list() -> None:
-    """list_kinds must return at least 80 chart types."""
+def test_list_kinds_catalogue() -> None:
+    """list_kinds returns a sorted, non-empty list of >=80 kinds that
+    includes the well-known chart types."""
     kinds = list_kinds()
     assert isinstance(kinds, list)
     assert len(kinds) >= 80
-
-
-def test_list_kinds_contains_common_charts() -> None:
-    """Spot-check that well-known chart types are present."""
-    kinds = set(list_kinds())
+    assert kinds == sorted(kinds)
     for expected in ("treemap", "sankey", "venn", "wordcloud", "funnel"):
         assert expected in kinds, f"Expected kind {expected!r} missing from list_kinds()"
 
 
-def test_list_kinds_is_sorted() -> None:
-    """list_kinds must return kinds in alphabetical order."""
-    kinds = list_kinds()
-    assert kinds == sorted(kinds)
-
-
-def test_make_figure_unknown_kind_raises() -> None:
-    """make_figure must raise ValueError for an unrecognised kind."""
-    with pytest.raises(ValueError, match="No script for kind"):
+def test_make_figure_unknown_kind_raises_with_available_list() -> None:
+    """An unrecognised kind raises ValueError naming the failure and the
+    count of available kinds."""
+    with pytest.raises(ValueError) as exc:
         make_figure("nonexistent_chart_xyz_abc", [])
-
-
-def test_make_figure_unknown_kind_lists_available() -> None:
-    """The ValueError message must include a count of available kinds."""
-    with pytest.raises(ValueError, match=r"Available \(\d+\)"):
-        make_figure("nonexistent_chart_xyz_abc", [])
+    message = str(exc.value)
+    assert "No script for kind" in message
+    assert "Available (" in message
 
 
 def _load_demo_data(kind: str) -> list:
@@ -80,35 +69,22 @@ def _load_demo_data(kind: str) -> list:
     return getattr(mod, "DEMO_DATA", [])
 
 
-def test_demo_data_exists_for_treemap() -> None:
-    """make_treemap.py must expose non-empty DEMO_DATA."""
-    data = _load_demo_data("treemap")
-    assert len(data) >= 1, "make_treemap.DEMO_DATA is empty"
-
-
-def test_demo_data_exists_for_funnel() -> None:
-    """make_funnel.py must expose non-empty DEMO_DATA."""
-    data = _load_demo_data("funnel")
-    assert len(data) >= 1, "make_funnel.DEMO_DATA is empty"
+@pytest.mark.parametrize("kind", ["treemap", "funnel"])
+def test_demo_data_exists(kind: str) -> None:
+    """Each shipped generator script must expose non-empty DEMO_DATA."""
+    data = _load_demo_data(kind)
+    assert len(data) >= 1, f"make_{kind}.DEMO_DATA is empty"
 
 
 @pytest.mark.slow
-def test_make_figure_treemap_renders(tmp_path: Path) -> None:
-    """make_figure('treemap', ...) must produce a file on disk."""
-    data = _load_demo_data("treemap")
-    out = tmp_path / "treemap.png"
-    result = make_figure("treemap", data, out=str(out))
+@pytest.mark.parametrize("kind", ["treemap", "funnel"])
+def test_stable_kind_renders_to_png(kind: str, tmp_path: Path) -> None:
+    """make_figure(..., out='*.png') produces a non-empty file on disk."""
+    data = _load_demo_data(kind)
+    out = tmp_path / f"{kind}.png"
+    result = make_figure(kind, data, out=str(out))
     assert Path(result).exists(), f"Output file not created: {result}"
     assert Path(result).stat().st_size > 0
-
-
-@pytest.mark.slow
-def test_make_figure_funnel_renders(tmp_path: Path) -> None:
-    """make_figure('funnel', ...) must produce a file on disk."""
-    data = _load_demo_data("funnel")
-    out = tmp_path / "funnel.png"
-    result = make_figure("funnel", data, out=str(out))
-    assert Path(result).exists()
 
 
 @pytest.mark.slow
@@ -127,40 +103,41 @@ def test_every_stable_kind_renders_from_registry(kind: str, tmp_path: Path) -> N
     assert Path(result).exists() and Path(result).stat().st_size > 0
 
 
-def test_make_figure_reaches_hyphenated_scripts_now() -> None:
-    """Regression test for the hyphen/underscore dispatcher bug: make_figure()
-    must locate scripts/make_connected-scatter.py for kind='connected-scatter'
-    (previously it looked for a nonexistent make_connected_scatter.py and
-    raised a misleading "no script" ValueError). It still fails today because
-    the script itself has no make_connected_scatter() yet -- but the failure
-    must be AttributeError (contract gap), not ValueError (file not found).
+def test_make_figure_hyphenated_legacy_kind_warns_and_raises() -> None:
+    """Regression for the hyphen/underscore dispatcher bug plus the non-stable
+    warning contract, on a single realistic call.
+
+    make_figure() must locate scripts/make_connected-scatter.py for
+    kind='connected-scatter' (previously it looked for a nonexistent
+    make_connected_scatter.py and raised a misleading "no script" ValueError).
+    It still fails today because the script has no make_connected_scatter()
+    yet -- but the failure must be AttributeError (contract gap), not
+    ValueError (file not found), and a status='legacy' UserWarning must fire
+    before the failure.
     """
-    with pytest.raises(AttributeError, match="make_connected_scatter"):
-        make_figure("connected-scatter", [], out="/tmp/should-not-exist.svg")
-
-
-def test_make_figure_warns_on_non_stable_kind() -> None:
     with warnings.catch_warnings(record=True) as caught:
         warnings.simplefilter("always")
-        with pytest.raises(AttributeError):
+        with pytest.raises(AttributeError, match="make_connected_scatter"):
             make_figure("connected-scatter", [], out="/tmp/should-not-exist.svg")
     assert any("status='legacy'" in str(w.message) for w in caught)
 
 
 def test_get_figure_definition_exposed_from_make_figure() -> None:
+    """make_figure re-exports the registry lookup."""
     d = get_figure_definition("treemap")
     assert d.kind == "treemap"
     assert d.status == "stable"
 
 
-def test_validate_figure_input_flags_missing_required_role() -> None:
-    issues = validate_figure_input("treemap", [{"parent": "A", "name": "A1"}])  # missing 'value'
+def test_missing_required_role_is_flagged_and_raised() -> None:
+    """validate_figure_input reports a missing required role as an error, and
+    make_figure refuses to render (ValueError) rather than calling a generator
+    with invalid data."""
+    rows = [{"parent": "A", "name": "A1"}]  # missing 'value'
+    issues = validate_figure_input("treemap", rows)
     assert any(i.field == "value" and i.severity == "error" for i in issues)
-
-
-def test_make_figure_raises_on_missing_required_role() -> None:
     with pytest.raises(ValueError, match="value"):
-        make_figure("treemap", [{"parent": "A", "name": "A1"}], out="/tmp/should-not-exist.svg")
+        make_figure("treemap", rows, out="/tmp/should-not-exist.svg")
 
 
 def test_make_figure_falls_back_to_deprecated_path_for_unregistered_script(tmp_path: Path) -> None:

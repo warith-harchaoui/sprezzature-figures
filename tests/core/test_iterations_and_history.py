@@ -64,7 +64,8 @@ def _record(project_dir: Path, *, title: str, parent: str | None) -> IterationRe
     return record
 
 
-def test_save_and_load_iteration_record_round_trips() -> None:
+def test_iteration_record_round_trips() -> None:
+    # A saved record reloads with its plan, parentage, and a render on disk.
     project_dir = create_project("round trip")
     r1 = _record(project_dir, title="v1", parent=None)
     loaded = load_iteration_record(project_dir / "iterations" / r1.iteration_id)
@@ -73,51 +74,32 @@ def test_save_and_load_iteration_record_round_trips() -> None:
     assert loaded.render_result.source_path.exists()
 
 
-def test_list_iterations_returns_oldest_first() -> None:
-    project_dir = create_project("list test")
+def test_history_navigation_workflow() -> None:
+    # One linear v1 -> v2 history exercised through the whole navigation API:
+    # fresh state, listing order, undo/redo, their end-of-line None returns,
+    # and compare.
+    project_dir = create_project("navigation")
+    assert current_record(project_dir) is None  # nothing recorded yet
+
     r1 = _record(project_dir, title="v1", parent=None)
     r2 = _record(project_dir, title="v2", parent=r1.iteration_id)
-    records = list_iterations(project_dir)
-    assert [r.iteration_id for r in records] == [r1.iteration_id, r2.iteration_id]
 
-
-def test_current_record_none_for_fresh_project() -> None:
-    project_dir = create_project("fresh")
-    assert current_record(project_dir) is None
-
-
-def test_undo_moves_to_parent() -> None:
-    project_dir = create_project("undo test")
-    r1 = _record(project_dir, title="v1", parent=None)
-    _record(project_dir, title="v2", parent=r1.iteration_id)
-
+    # list_iterations is oldest-first; current is the latest record.
+    assert [r.iteration_id for r in list_iterations(project_dir)] == [r1.iteration_id, r2.iteration_id]
     assert current_record(project_dir).plan_after.title == "v2"
-    result = undo(project_dir)
-    assert result.plan_after.title == "v1"
-    assert current_record(project_dir).plan_after.title == "v1"
 
-
-def test_undo_at_root_returns_none() -> None:
-    project_dir = create_project("undo at root")
-    _record(project_dir, title="v1", parent=None)
-    undo(project_dir)
+    # undo walks to the parent; a second undo past the root returns None.
+    assert undo(project_dir).plan_after.title == "v1"
+    assert current_record(project_dir).iteration_id == r1.iteration_id
     assert undo(project_dir) is None
 
-
-def test_redo_moves_to_most_recent_child() -> None:
-    project_dir = create_project("redo test")
-    r1 = _record(project_dir, title="v1", parent=None)
-    r2 = _record(project_dir, title="v2", parent=r1.iteration_id)
-    undo(project_dir)
-    assert current_record(project_dir).iteration_id == r1.iteration_id
-    result = redo(project_dir)
-    assert result.iteration_id == r2.iteration_id
-
-
-def test_redo_with_no_children_returns_none() -> None:
-    project_dir = create_project("redo none")
-    _record(project_dir, title="v1", parent=None)
+    # redo returns to the most-recent child; redo with none left returns None.
+    assert redo(project_dir).iteration_id == r2.iteration_id
     assert redo(project_dir) is None
+
+    # compare returns both records, in the order asked.
+    a, b = compare(project_dir, r1.iteration_id, r2.iteration_id)
+    assert (a.plan_after.title, b.plan_after.title) == ("v1", "v2")
 
 
 def test_revert_then_new_record_creates_a_branch() -> None:
@@ -130,23 +112,11 @@ def test_revert_then_new_record_creates_a_branch() -> None:
 
     r3 = _record(project_dir, title="v3-branch", parent=r1.iteration_id)
 
-    # r1 now has two children: r2 and r3 -- a branch point.
+    # r1 now has two children: r2 and r3, a branch point.
     children_of_r1 = [r for r in list_iterations(project_dir) if r.parent_iteration_id == r1.iteration_id]
     assert {r.iteration_id for r in children_of_r1} == {r2.iteration_id, r3.iteration_id}
 
-    # _record() advances current to the newly created iteration (r3), not r2.
+    # _record() advances current to the newly created iteration (r3), not r2,
+    # and undo from r3 goes to the shared parent r1, independent of r2's branch.
     assert current_record(project_dir).iteration_id == r3.iteration_id
-
-    # undo from r3 goes back to their shared parent r1, not to r2 -- r3's
-    # branch is independent of r2's.
-    result = undo(project_dir)
-    assert result.iteration_id == r1.iteration_id
-
-
-def test_compare_returns_both_records() -> None:
-    project_dir = create_project("compare test")
-    r1 = _record(project_dir, title="v1", parent=None)
-    r2 = _record(project_dir, title="v2", parent=r1.iteration_id)
-    a, b = compare(project_dir, r1.iteration_id, r2.iteration_id)
-    assert a.plan_after.title == "v1"
-    assert b.plan_after.title == "v2"
+    assert undo(project_dir).iteration_id == r1.iteration_id
