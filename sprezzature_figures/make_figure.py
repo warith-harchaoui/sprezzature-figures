@@ -28,6 +28,7 @@ from .catalog import FigureDefinition, ValidationIssue
 from .catalog import get_figure_definition as _get_figure_definition
 from .catalog import list_kinds as _list_kinds
 from .catalog import resolve_kind as _resolve_kind
+from .fonts import register_all as _register_fonts
 
 # Chart generators live one level up from this package. In the source tree
 # that directory is ``scripts/``; once installed it ships (collision-free)
@@ -165,6 +166,7 @@ def make_figure(kind: str, data: list[dict[str, Any]], **kwargs: Any) -> Path:
     >>> path.exists()
     True
     """
+    _register_fonts()
     canonical = _resolve_kind(kind)
     if canonical is None:
         legacy_path = _legacy_filename_guess(kind)

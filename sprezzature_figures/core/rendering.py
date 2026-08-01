@@ -72,6 +72,9 @@ def svg_to_png_bytes(svg_text: str, *, scale: float = 2.0) -> bytes:
     """
     import vl_convert as vlc
 
+    from ..fonts import register_vl_convert
+
+    register_vl_convert()
     return vlc.svg_to_png(svg_text, scale=scale)
 
 

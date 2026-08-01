@@ -63,6 +63,14 @@ from __future__ import annotations
 import math
 from typing import Callable, Sequence, Tuple
 
+try:
+    from sprezzature_figures.fonts import DEFAULT_SVG_FACES, svg_font_defs
+except ImportError:  # pragma: no cover - fonts.py is stdlib-only, always importable
+    DEFAULT_SVG_FACES = ()
+
+    def svg_font_defs(keys: Tuple[str, ...] = ()) -> str:  # type: ignore[misc]
+        return ""
+
 
 def xml_escape(text: str) -> str:
     """Escape the three XML metacharacters for safe inclusion in an SVG.
@@ -232,6 +240,7 @@ def svg_open(
     desc_id: str,
     *,
     font_family: str = "Roboto, system-ui, sans-serif",
+    embed_fonts: bool = True,
 ) -> str:
     """Return the responsive, accessible ``<svg>`` opening tag the figures share.
 
@@ -267,26 +276,39 @@ def svg_open(
         CSS font stack for the whole document. Defaults to the house stack
         ``"Roboto, system-ui, sans-serif"``; pass a different string for the
         (few) generators that inject their own.
+    embed_fonts : bool, optional
+        When true (the default), the returned string also carries a
+        ``<defs><style>@font-face…</style></defs>`` block embedding the
+        bundled Roboto + Roboto Mono WOFF2 faces as base64 data URIs (see
+        ``sprezzature_figures.fonts``), so the SVG renders the house
+        typography correctly wherever it is opened -- no dependency on the
+        viewer having Roboto installed. Pass ``False`` for a lighter,
+        font-independent tag (e.g. tests, or a caller that already emits
+        its own ``<defs>``).
 
     Returns
     -------
     str
-        The single ``<svg ...>`` opening tag, byte-identical to the inline form.
+        The ``<svg ...>`` opening tag, optionally followed by an embedded
+        ``<defs>`` font block.
 
     Examples
     --------
-    >>> svg_open(800, 600, "vn-title", "vn-desc")
+    >>> svg_open(800, 600, "vn-title", "vn-desc", embed_fonts=False)
     '<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600" font-family="Roboto, system-ui, sans-serif" role="img" aria-labelledby="vn-title vn-desc">'
     """
     # One f-string so the emitted bytes match the generators' multi-fragment
     # concatenation exactly; the viewBox mirrors width/height so the graphic
     # scales to its container without distortion.
-    return (
+    tag = (
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" '
         f'height="{height}" viewBox="0 0 {width} {height}" '
         f'font-family="{font_family}" role="img" '
         f'aria-labelledby="{title_id} {desc_id}">'
     )
+    if embed_fonts and DEFAULT_SVG_FACES:
+        tag += svg_font_defs(DEFAULT_SVG_FACES)
+    return tag
 
 
 def hex_to_rgb(hexv: str) -> Tuple[int, int, int]:
