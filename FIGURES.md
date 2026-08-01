@@ -15,7 +15,7 @@ or via CLI:
 make-figure bar --out output.png --title "Revenue by region"
 ```
 
-Only `status="stable"` kinds are render-verified end to end today — run
+Only `status="stable"` kinds are render-verified end to end today; run
 `make-figure --list --status stable` or see `docs/studio/GENERATOR_AUDIT.md`
 for the current per-chart status.
 
@@ -24,7 +24,7 @@ for the current per-chart status.
 | Kind | Script | Category | When to use |
 |------|--------|----------|-------------|
 | `alluvial` | make_alluvial.py | Flow | Trace how categorical populations shift across multiple sequential stages (e.g., patient treatment paths, hiring funnel). Use over sankey when stages are time-ordered and each row belongs to exactly one bin per stage. |
-| `andrews` | make_andrews.py | Multivariate | Project multivariate observations as Fourier curves. Clusters of similar rows become visually coincident curves — use for detecting clusters or outliers in high-dimensional data before running PCA. |
+| `andrews` | make_andrews.py | Multivariate | Project multivariate observations as Fourier curves. Clusters of similar rows become visually coincident curves; use for detecting clusters or outliers in high-dimensional data before running PCA. |
 | `arcdiagram` | make_arcdiagram.py | Network | Show pairwise connections along a linear node axis. Ideal for sequences where crossing arcs reveal unexpected long-range dependencies (e.g., citation links, gene co-expression). |
 | `area` | make_area.py | Composition | Stacked area chart showing how a whole made of several categories evolves over an ordered axis. Use for traffic by channel, cumulative headcount, or resource usage over time. |
 | `bar` | make_bar.py | Comparison | Grouped bar chart comparing a numeric value across a handful of categories. The default chart for straightforward category comparisons (revenue by region, headcount by department). |
@@ -50,7 +50,7 @@ for the current per-chart status.
 | `dumbbell` | make_dumbbell.py | Change | Two dots connected by a line per category (before vs. after). Use for clear before–after or group-A vs. group-B comparison across many categories. |
 | `edge-bundling` | make_edge-bundling.py | Network | Hierarchical edge-bundling groups edges along their shared ancestry, reducing visual clutter in large graphs. Use for software dependency or call-graph visualisation. |
 | `embedding_projector` | make_embedding_projector.py | Dimensionality reduction | 2-D or 3-D scatter of high-dimensional embeddings coloured by label. Use to inspect whether a learned embedding separates classes or clusters semantically. |
-| `figure` | make_figure.py | — | Internal dispatcher — do not invoke directly. |
+| `figure` | make_figure.py | — | Internal dispatcher; do not invoke directly. |
 | `forest` | make_forest.py | Meta-analysis | Forest plot: effect size with confidence interval per study, plus a pooled diamond. Standard in systematic reviews and meta-analyses. |
 | `funnel` | make_funnel.py | Pipeline | Horizontal bars narrowing to show drop-off across sequential stages (conversion funnel, hiring, clinical trial enrolment). Percentage labels on each stage. |
 | `gapminder` | make_gapminder.py | Animated bubble | Animated scatter: x = income, y = life expectancy, size = population, colour = region. Use to show development trends across countries over decades. |

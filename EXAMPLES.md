@@ -43,7 +43,7 @@ path = make_figure("sankey", data, out="energy.png", title="Energy flow")
 ## Scatter (bivariate)
 
 `scatter`'s required roles are named after its demo scenario
-(horsepower/mpg) — see `make-figure --list --status stable` and each
+(horsepower/mpg); see `make-figure --list --status stable` and each
 kind's entry in [FIGURES.md](FIGURES.md) for the exact role names a given
 chart expects.
 

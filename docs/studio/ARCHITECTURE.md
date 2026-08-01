@@ -25,7 +25,7 @@ sprezzature_figures/
     └── components/                 #   data_panel, figure_canvas, chat_panel, engine_status
 ```
 
-`core/` never imports from `studio/*` — it's the layer that could, in
+`core/` never imports from `studio/*`; it's the layer that could, in
 principle, be reused by something other than this specific NiceGUI app.
 `studio/*` depends on `core/` and on each other in one direction: `ingest`
 → `assistant`/`ralph` → `pages`/`components`. `ralph/` depends on
@@ -70,7 +70,7 @@ sequenceDiagram
 
 ## Where a render actually lives
 
-Every render is isolated per project, per iteration — never a shared
+Every render is isolated per project, per iteration, never a shared
 `assets/` directory (plan §8):
 
 ```
@@ -95,7 +95,7 @@ never leaves a truncated file behind.
 ## Known architectural gap
 
 `RalphEngine.apply_user_request()` takes already-resolved data rows
-alongside the `FigurePlan` — it does not execute
+alongside the `FigurePlan`; it does not execute
 `FigurePlan.transformations` (filter/sort/aggregate) against a live
 dataset. That data-transformation engine isn't owned by any commit in the
 build plan; `transformations` stays the auditable record of what *should*
