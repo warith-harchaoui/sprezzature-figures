@@ -130,6 +130,36 @@ Chaque script `make_<type>.py` est autonome : il importe ce dont il a besoin, d�
 
 ---
 
+## Sprezzature Studio
+
+Ce dépôt contient deux choses :
+
+- **La bibliothèque** (`sprezzature_figures.make_figure`, `make-figure`,
+  CLI `sprezzature-figures`) — tout ce qui précède. Aucune dépendance
+  supplémentaire au-delà de `[cli]`/`[dataviz]`.
+- **Sprezzature Studio** (`sprezzature_figures.studio`, CLI
+  `sprezzature-studio`) — une application NiceGUI locale pour importer un
+  CSV/XLSX, choisir un type de graphique, associer les colonnes, puis
+  affiner la figure en dialoguant avec **Ralph**, un copilote LLM/VLM qui
+  modifie un plan structuré et regarde vraiment le rendu avant de décider
+  que c'est terminé. Nécessite l'extra `studio` :
+
+  ```bash
+  pip install "sprezzature-figures[studio]"
+  sprezzature-studio
+  ```
+
+  Documentation complète : [docs/studio/README.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/docs/studio/README.md).
+
+Il n'existe pas de « CLI Ralph » distincte dans ce dépôt — `scripts/
+ralph_eyeball_loop.py` est un outil de QA visuelle interne, utilisé pendant
+le développement des générateurs de graphiques eux-mêmes (voir sa propre
+docstring) ; il précède et n'a aucun rapport avec le moteur Ralph du
+Studio (`sprezzature_figures.studio.ralph`), qui est une implémentation
+entièrement nouvelle, conforme au plan et testée.
+
+---
+
 ## Développement
 
 ```bash

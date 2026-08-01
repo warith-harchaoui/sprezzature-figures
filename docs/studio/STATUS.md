@@ -5,12 +5,10 @@ for the full spec; not itself committed). Branch: `feature/sprezzature-studio`.
 
 ## Phase
 
-Phase 2 (§3), Phase 3 (§4-§5), Phase 4 (§7), Phase 5 (§8), Phase 6 (§9),
-Phase 7 (§11), Phase 8 (§13), and Phase 9 (§12, history + export)
-complete. Commits 1-12 of 13 landed — one left (§19 docs). Also added a
-lightweight GitHub Actions CI workflow (lint + fast tests + render tests,
-Python 3.10/3.13) outside the plan's numbered commits, per user request —
-CI caught a real bug local dev never would have (see Commit 10).
+**All 13 commits of the build plan complete.** Also added a lightweight
+GitHub Actions CI workflow (lint + fast tests + render tests, Python
+3.10/3.13) outside the plan's numbered commits, per user request — CI
+caught a real bug local dev never would have (see Commit 10).
 
 ## Completed
 
@@ -523,6 +521,35 @@ CI caught a real bug local dev never would have (see Commit 10).
     export → unzip → run reproduce.py → get a real figure) before trusting
     the test suite alone.
 
+- **Commit 13 — Documentation** (`docs/studio/{README,ARCHITECTURE,
+  FIGURE_PLAN,RALPH_LOOP,GENERATOR_CONTRACT,LLM_SCHEMAS,DATA_PRIVACY,
+  TESTING,ROADMAP}.md`; updates to `README.md`, `LISEZMOI.md`,
+  `CHANGELOG.md`, `EXAMPLES.md`).
+  - Wrote from what was actually built this session, cross-checked against
+    STATUS.md's per-commit log rather than re-deriving from the plan —
+    every deferred/scoped-out item mentioned in ROADMAP.md is one that was
+    actually cut and documented in real time, not a generic disclaimer.
+  - README/LISEZMOI: a new "Sprezzature Studio" section distinguishing
+    library vs. Studio, and clarifying `scripts/ralph_eyeball_loop.py`
+    (a repo-internal dev-time visual-QA tool, unrelated) from
+    `sprezzature_figures.studio.ralph` (the Studio's chat-driven engine)
+    — verified the distinction by actually reading
+    `ralph_eyeball_loop.py`'s docstring before asserting it in the docs,
+    rather than assuming.
+  - **Found and fixed real bugs while writing this, not before**:
+    `EXAMPLES.md`'s bar-chart example used `{"label", "value"}` but
+    `make_bar`'s actual required role is `region`; its treemap example
+    used a `{"path": [...]}` hierarchical-list shape that treemap has
+    never accepted (it wants flat `parent`/`name`/`value` rows); its
+    scatter example used generic `{"x", "y"}` when `scatter`'s roles are
+    named `horsepower`/`mpg` after its demo scenario; and its CLI section
+    listed `venn`/`radar`, both still `legacy`, which would fail if run.
+    Fixed all four and **ran every corrected example for real** (not just
+    read them) before committing — same standard applied to every other
+    fix this session.
+  - CHANGELOG.md: one `## Unreleased` entry summarizing the branch as a
+    whole for someone reading the changelog, not the 12 commit messages.
+
 ## Figures currently `stable`
 
 Per the latest `--render` audit run (90 generators total):
@@ -567,10 +594,10 @@ sprezzature-studio --help                          # console entry point works
 
 ## Next
 
-Commit 13 — the last one: documentation + packaging polish (plan §19).
-`docs/studio/{README,ARCHITECTURE,DATA_PRIVACY,FIGURE_PLAN,RALPH_LOOP,
-GENERATOR_CONTRACT,LLM_SCHEMAS,TESTING,ROADMAP}.md`, plus updating the
-top-level README/LISEZMOI/CHANGELOG to distinguish library vs CLI vs
-Studio vs Ralph-CLI-legacy vs Ralph-Studio. No new runtime code expected;
-this is where the 12 commits of backend/UI work get explained for someone
-who wasn't in this session.
+The build plan's 13 commits are done. Remaining, not yet done: merging
+`feature/sprezzature-studio` into `main` (currently open as draft PR #1,
+CI green on Python 3.10/3.13), and the UI wiring deferred throughout
+(history panel, export dialog, recommendation cards) and the
+transformation-execution engine noted in ROADMAP.md — none of these are
+in the original 13-commit plan and would be new scope, not a continuation
+of it.
