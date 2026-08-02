@@ -38,7 +38,15 @@ EDIT_SYSTEM = (
     'uses "option"+"value"). Fill summary and expected_effect. Set '
     "requires_confirmation with a confirmation_reason whenever the edit changes the "
     "data's meaning (filtering rows, changing an aggregation or figure kind, a log "
-    "scale, dropping categories, or reframing the message)."
+    "scale, dropping categories, or reframing the message).\n"
+    "Operations that carry a nested `transform` object MUST fill it fully, using "
+    "a real column name from the data: sort_rows -> transform "
+    '{"kind":"sort","column":<col>,"ascending":<bool>}; add_filter -> a filter '
+    'transform with its "kind" and "column" (plus "values" or "minimum"/"maximum"); '
+    'aggregate_rows -> {"kind":"aggregate","group_by":[<col>],"value_column":<col>,'
+    '"agg":"sum"|"mean"|...}; limit_categories -> {"kind":"top_n","column":<col>,'
+    '"n":<int>} or {"kind":"group_others","column":<col>,"keep":[...]}. Never leave '
+    "the transform's column blank."
 )
 
 CRITIQUE_SYSTEM = (
