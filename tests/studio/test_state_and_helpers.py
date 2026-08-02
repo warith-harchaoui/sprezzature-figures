@@ -14,12 +14,16 @@ from pathlib import Path
 
 from sprezzature_figures.core.dataset import ColumnProfile, DatasetProfile
 from sprezzature_figures.core.figure_plan import ColumnBinding, FigurePlan
-from sprezzature_figures.core.operations import SetFigureKind
+from sprezzature_figures.core.operations import FilterByValue, SetFigureKind
 from sprezzature_figures.core.rendering import RenderResult
 from sprezzature_figures.studio.assistant.schemas import VisualCritique
 from sprezzature_figures.studio.components.data_panel import _load_upload
 from sprezzature_figures.studio.config import engine_status
-from sprezzature_figures.studio.pages.editor import _resolve_data, _summarize_result
+from sprezzature_figures.studio.pages.editor import (
+    _resolve_data,
+    _resolve_data_and_notes,
+    _summarize_result,
+)
 from sprezzature_figures.studio.ralph.engine import RalphResult
 from sprezzature_figures.studio.state import SessionState
 
@@ -76,6 +80,20 @@ def test_resolve_data_maps_role_bindings_to_column_names() -> None:
     assert resolved == [{"region": "Paris", "value": 10}, {"region": "Lyon", "value": 20}]
 
 
+def test_resolve_data_and_notes_reports_a_skipped_transform() -> None:
+    state = SessionState()
+    state.data = [{"city": "Paris", "amount": 10}, {"city": "Lyon", "amount": 20}]
+    plan = FigurePlan(
+        figure_kind="bar",
+        bindings={"region": ColumnBinding(columns=["city"]), "value": ColumnBinding(columns=["amount"])},
+        transformations=[FilterByValue(column="ghost", op="eq", values=["x"])],
+    )
+    resolved, notes = _resolve_data_and_notes(state, plan)
+    # The filter on a missing column is skipped (data preserved) and surfaced.
+    assert len(resolved) == 2
+    assert notes and "ghost" in notes[0]
+
+
 def _render_result(tmp_path: Path) -> RenderResult:
     svg = tmp_path / "render.svg"
     png = tmp_path / "preview.png"
@@ -109,3 +127,10 @@ def test_summarize_result_reflects_what_happened(tmp_path: Path) -> None:
     # Nothing happened -> the default message.
     nothing = RalphResult(plan=plan, render=_render_result(tmp_path))
     assert _summarize_result(nothing) == "No changes applied."
+
+    # A model-failure note is surfaced, never swallowed.
+    noted = RalphResult(
+        plan=plan, render=_render_result(tmp_path),
+        stopped_reason="critique_unavailable", notes=["Visual inspection unavailable (timeout)."],
+    )
+    assert "Visual inspection unavailable" in _summarize_result(noted)

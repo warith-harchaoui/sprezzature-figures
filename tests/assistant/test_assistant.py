@@ -156,6 +156,20 @@ def test_propose_edit_filters_operations(operations, expected_ids, expected_summ
     assert result.summary == expected_summary
 
 
+def test_propose_edit_deduplicates_identical_operations() -> None:
+    # A local model sometimes emits the same edit twice; only one survives.
+    plan = FigurePlan(figure_kind="bar")
+    proposal = EditProposal(
+        summary="retitle",
+        operations=[
+            SetTitle(operation_id="a", title="Revenue"),
+            SetTitle(operation_id="b", title="Revenue"),  # same content, different id
+        ],
+    )
+    result = propose_edit(FakeLLMClient([proposal]), "retitle", plan, dataset=_profile())
+    assert [op.title for op in result.operations] == ["Revenue"]
+
+
 def test_set_style_option_undeclared_option_cannot_be_built() -> None:
     # An undeclared style option is now impossible to construct (option is a
     # Literal of the real StyleOptions fields), so a bad one can never reach

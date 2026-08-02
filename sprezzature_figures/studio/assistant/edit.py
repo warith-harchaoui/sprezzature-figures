@@ -13,11 +13,27 @@ from __future__ import annotations
 
 from sprezzature_figures.core.dataset import DatasetProfile
 from sprezzature_figures.core.figure_plan import FigurePlan
+from sprezzature_figures.core.operations import FigureOperation
 from sprezzature_figures.core.validation import validate_operation
 
 from .client import LLMClient
 from .prompts import EDIT_SYSTEM, edit_prompt
 from .schemas import EditProposal
+
+
+def _dedup_operations(operations: list[FigureOperation]) -> list[FigureOperation]:
+    """Drop operations that are identical apart from their id/reason metadata,
+    keeping the first. A local model sometimes emits the same edit twice (two
+    `set_style_option`s for one request); applying both is at best redundant
+    and, for a non-idempotent op, wrong."""
+    seen: set[str] = set()
+    unique: list[FigureOperation] = []
+    for op in operations:
+        key = op.model_dump_json(exclude={"operation_id", "reason"})
+        if key not in seen:
+            seen.add(key)
+            unique.append(op)
+    return unique
 
 
 def propose_edit(
@@ -42,4 +58,4 @@ def propose_edit(
     assert isinstance(result, EditProposal)
 
     valid_operations = [op for op in result.operations if not validate_operation(op, dataset=dataset)]
-    return result.model_copy(update={"operations": valid_operations})
+    return result.model_copy(update={"operations": _dedup_operations(valid_operations)})

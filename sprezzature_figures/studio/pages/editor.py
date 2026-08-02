@@ -28,22 +28,27 @@ from sprezzature_figures.studio.state import SessionState
 logger = logging.getLogger(__name__)
 
 
-def _resolve_data(state: SessionState, plan: FigurePlan) -> list[dict[str, Any]]:
-    """Turn imported rows into what a make_<kind> generator expects: first
-    execute the plan's transformations (filter/sort/aggregate/top-N/...), then
-    map each surviving row's columns onto role names via ``plan.bindings``
-    (see tools/build_figures_catalog.py's HAND_ROLES, which names required
-    roles to match each generator's DEMO_DATA field names exactly).
+def _resolve_data_and_notes(state: SessionState, plan: FigurePlan) -> tuple[list[dict[str, Any]], list[str]]:
+    """Turn imported rows into what a make_<kind> generator expects, and report
+    any transform that was skipped.
 
-    Transformations reference the original imported column names, so they run
-    *before* the role remap. Any transform skipped for a missing column is
-    logged (never silently dropped); the plan validator flags unknown columns
-    upstream, so notes here are a belt-and-suspenders safeguard.
+    First execute the plan's transformations (filter/sort/aggregate/top-N/...),
+    then map each surviving row's columns onto role names via ``plan.bindings``
+    (see tools/build_figures_catalog.py's HAND_ROLES, which names required roles
+    to match each generator's DEMO_DATA field names exactly). Transformations
+    reference the original imported column names, so they run *before* the role
+    remap. A transform skipped for a missing column comes back as a note so the
+    caller can show it, instead of it only reaching the log.
     """
     rows, notes = apply_transformations(state.data, plan.transformations)
-    for note in notes:
-        logger.warning("transform skipped for %s: %s", state.source_name or "dataset", note)
-    return [{role: row.get(binding.column) for role, binding in plan.bindings.items()} for row in rows]
+    resolved = [{role: row.get(binding.column) for role, binding in plan.bindings.items()} for row in rows]
+    return resolved, [str(note) for note in notes]
+
+
+def _resolve_data(state: SessionState, plan: FigurePlan) -> list[dict[str, Any]]:
+    """Role-mapped rows only (drops the transform notes). See
+    :func:`_resolve_data_and_notes`."""
+    return _resolve_data_and_notes(state, plan)[0]
 
 
 def _summarize_result(result: RalphResult) -> str:
@@ -54,7 +59,12 @@ def _summarize_result(result: RalphResult) -> str:
         parts.append(result.critique.concise_summary or f"Critique: {result.critique.verdict}.")
     if result.pending_confirmation:
         parts.append(f"{len(result.pending_confirmation)} change(s) need your confirmation (see below).")
-    return " ".join(parts) or "No changes applied."
+    summary = " ".join(parts) or "No changes applied."
+    # RalphResult.notes carries best-effort warnings (a model that couldn't be
+    # reached, a critique that didn't come back): surface them, never swallow.
+    if result.notes:
+        summary += " " + " ".join(result.notes)
+    return summary
 
 
 def build_editor(state: SessionState) -> None:
@@ -67,7 +77,10 @@ def build_editor(state: SessionState) -> None:
         if state.project_dir is None:
             state.project_dir = create_project(state.source_name or "untitled", source_name=state.source_name)
         iteration_dir = allocate_iteration_dir(state.project_dir)
-        resolved = _resolve_data(state, plan)
+        resolved, notes = _resolve_data_and_notes(state, plan)
+        for note in notes:
+            logger.warning(note)
+            ui.notify(note, type="warning")
         try:
             result = render_figure_to_project(
                 plan.figure_kind,
@@ -90,7 +103,10 @@ def build_editor(state: SessionState) -> None:
             ui.notify("Create a figure first.", type="warning")
             return None
         iteration_dir = allocate_iteration_dir(state.project_dir)
-        resolved = _resolve_data(state, state.plan)
+        resolved, notes = _resolve_data_and_notes(state, state.plan)
+        for note in notes:
+            logger.warning(note)
+            ui.notify(note, type="warning")
         engine = RalphEngine(client=state.llm_client)
         try:
             result = await run.io_bound(
@@ -120,7 +136,10 @@ def build_editor(state: SessionState) -> None:
             return
         state.plan = apply_operations(state.plan, state.last_pending_confirmation)
         iteration_dir = allocate_iteration_dir(state.project_dir)
-        resolved = _resolve_data(state, state.plan)
+        resolved, notes = _resolve_data_and_notes(state, state.plan)
+        for note in notes:
+            logger.warning(note)
+            ui.notify(note, type="warning")
         try:
             result = await run.io_bound(
                 render_figure_to_project,
