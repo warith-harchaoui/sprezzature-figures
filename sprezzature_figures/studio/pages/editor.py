@@ -9,6 +9,7 @@ Warith Harchaoui <warith.harchaoui@gmail.com>
 from __future__ import annotations
 
 import logging
+import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -23,6 +24,7 @@ from sprezzature_figures.core import (
 )
 from sprezzature_figures.core.figure_plan import FigurePlan
 from sprezzature_figures.core.iterations import IterationRecord, save_iteration_record
+from sprezzature_figures.core.operations import SetStyleOption
 from sprezzature_figures.core.projects import load_manifest
 from sprezzature_figures.core.rendering import RenderResult, render_figure_to_project
 from sprezzature_figures.core.transformations import apply_transformations
@@ -31,6 +33,7 @@ from sprezzature_figures.studio.components.data_panel import build_data_panel
 from sprezzature_figures.studio.components.engine_status import build_engine_status
 from sprezzature_figures.studio.components.figure_canvas import build_figure_canvas
 from sprezzature_figures.studio.components.history_panel import build_history_panel
+from sprezzature_figures.studio.components.property_panel import build_property_panel
 from sprezzature_figures.studio.export import export_project
 from sprezzature_figures.studio.ralph.apply import apply_operations
 from sprezzature_figures.studio.ralph.engine import RalphEngine, RalphResult
@@ -119,6 +122,7 @@ def build_editor(state: SessionState) -> None:
     # safe.
     refresh_canvas = None
     refresh_history = None
+    refresh_properties = None
 
     def create_initial_render(plan: FigurePlan) -> None:
         if state.project_dir is None:
@@ -149,6 +153,7 @@ def build_editor(state: SessionState) -> None:
         state.last_pending_confirmation = []
         refresh_canvas()
         refresh_history()
+        refresh_properties()
         ui.notify("Figure created.", type="positive")
 
     async def handle_send(message: str) -> RalphResult | None:
@@ -189,6 +194,7 @@ def build_editor(state: SessionState) -> None:
         state.last_pending_confirmation = result.pending_confirmation
         refresh_canvas()
         refresh_history()
+        refresh_properties()
         state.add_chat("assistant", summary)
         return result
 
@@ -224,6 +230,7 @@ def build_editor(state: SessionState) -> None:
         state.last_pending_confirmation = []
         refresh_canvas()
         refresh_history()
+        refresh_properties()
         state.add_chat("assistant", "Applied the confirmed change(s).")
 
     def handle_cancel() -> None:
@@ -241,6 +248,7 @@ def build_editor(state: SessionState) -> None:
         state.render = record.render_result
         refresh_canvas()
         refresh_history()
+        refresh_properties()
         ui.notify("Reverted to the previous version.", type="positive")
 
     def handle_redo() -> None:
@@ -254,6 +262,7 @@ def build_editor(state: SessionState) -> None:
         state.render = record.render_result
         refresh_canvas()
         refresh_history()
+        refresh_properties()
         ui.notify("Restored the next version.", type="positive")
 
     async def handle_export() -> None:
@@ -276,6 +285,43 @@ def build_editor(state: SessionState) -> None:
             return
         ui.notify(f"Exported to {archive}", type="positive")
 
+    async def handle_style_change(option: str, value: Any) -> None:
+        """Apply one style change from the property panel as a SetStyleOption,
+        then re-render and record it like any other edit."""
+        if state.plan is None or state.project_dir is None:
+            return
+        plan_before = state.plan
+        op = SetStyleOption(operation_id=uuid.uuid4().hex[:8], option=option, value=value)
+        new_plan = apply_operations(state.plan, [op])
+        parent = _parent_iteration_id(state.project_dir)
+        iteration_dir = allocate_iteration_dir(state.project_dir)
+        resolved, notes = _resolve_data_and_notes(state, new_plan)
+        for note in notes:
+            logger.warning(note)
+            ui.notify(note, type="warning")
+        try:
+            result = await run.io_bound(
+                render_figure_to_project,
+                new_plan.figure_kind,
+                resolved,
+                project_id=state.project_dir.name,
+                iteration_dir=iteration_dir,
+                title=new_plan.title or new_plan.figure_kind,
+            )
+        except Exception as exc:  # noqa: BLE001 - surfaced to the user, not raised
+            ui.notify(f"Render failed: {exc}", type="negative")
+            return
+        _record_iteration(
+            state.project_dir, result, parent_id=parent,
+            plan_before=plan_before, plan_after=new_plan, user_message=None,
+            summary=f"Set {option} to {value}.",
+        )
+        state.plan = new_plan
+        state.render = result
+        refresh_canvas()
+        refresh_history()
+        refresh_properties()
+
     with ui.row().classes("w-full items-center justify-between px-6 py-4 sz-header").style(
         "position: sticky; top: 0; z-index: 10;"
     ):
@@ -290,11 +336,11 @@ def build_editor(state: SessionState) -> None:
     with ui.row().classes("w-full gap-4 p-6 items-start").style(
         "height: calc(100vh - 65px); box-sizing: border-box; flex-wrap: nowrap;"
     ):
-        with (
-            ui.column().classes("h-full overflow-y-auto gap-4").style("flex: 1 1 0%; min-width: 0;"),
-            ui.column().classes("w-full gap-3 sz-card"),
-        ):
-            build_data_panel(state, on_ready=create_initial_render)
+        with ui.column().classes("h-full overflow-y-auto gap-4").style("flex: 1 1 0%; min-width: 0;"):
+            with ui.column().classes("w-full gap-3 sz-card"):
+                build_data_panel(state, on_ready=create_initial_render)
+            with ui.column().classes("w-full gap-3 sz-card"):
+                refresh_properties = build_property_panel(state, on_change=handle_style_change)
 
         with (
             ui.column().classes("h-full overflow-y-auto gap-3").style("flex: 2 1 0%; min-width: 0;"),
