@@ -56,6 +56,17 @@ def test_column_fits_role_maps_fine_types_onto_coarse_role_types() -> None:
     assert not column_fits_role(ColumnProfile(name="c", physical_dtype="object", semantic_type="categorical"), numeric_role)
 
 
+def test_scoring_penalises_too_many_categories() -> None:
+    # A category-limited figure (bar: max_recommended_categories=25) scores
+    # lower when the categorical column has far more distinct values than it can
+    # legibly show, so a tidy dataset ranks it above a sprawling one.
+    tidy = _profile([_cat("region", unique=8), _num("revenue")])
+    sprawling = _profile([_cat("region", unique=800), _num("revenue")])
+    bar_tidy = dict((d.kind, s) for d, s in rank(tidy))["bar"]
+    bar_sprawling = dict((d.kind, s) for d, s in rank(sprawling))["bar"]
+    assert bar_sprawling < bar_tidy
+
+
 def test_rank_and_recommend_are_deterministic_and_bounded() -> None:
     profile = _profile([_cat("region"), _num("revenue")])
     ranked = rank(profile)

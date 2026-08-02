@@ -181,6 +181,31 @@ def default_aliases(kind: str) -> list[str]:
     return sorted(aliases)
 
 
+# Readability limits per stable figure, so the deterministic recommender
+# (studio.recommendation.scoring) can tell, e.g., a bar chart of 8 categories
+# from one of 800. Values are judgement calls from common dataviz guidance, not
+# hard rules: `min_rows` is a hard floor (excludes the figure), the
+# `max_recommended_*` are soft (they only lower the score). Kinds absent here
+# keep the None defaults.
+HAND_LIMITS: dict[str, dict[str, int]] = {
+    "bar": {"max_recommended_categories": 25},
+    "columnrange": {"max_recommended_categories": 25},
+    "dumbbell": {"max_recommended_categories": 20},
+    "waterfall": {"max_recommended_categories": 15},
+    "funnel": {"max_recommended_categories": 10},
+    "waffle": {"max_recommended_categories": 8},
+    "treemap": {"max_recommended_categories": 50},
+    "sunburst": {"max_recommended_categories": 50},
+    "heatmap": {"max_recommended_categories": 30},
+    "sankey": {"max_recommended_categories": 20},
+    "scatter": {"min_rows": 3, "max_recommended_rows": 5000},
+    "line": {"min_rows": 2, "max_recommended_rows": 2000},
+    "area": {"min_rows": 2, "max_recommended_rows": 2000},
+    "histogram": {"min_rows": 10},
+    "boxplot": {"min_rows": 5, "max_recommended_categories": 20},
+}
+
+
 def build_entry(kind: str, md_row: dict[str, str] | None, audit_entry: dict[str, Any]) -> dict[str, Any]:
     entry: dict[str, Any] = {
         "kind": kind,
@@ -208,6 +233,7 @@ def build_entry(kind: str, md_row: dict[str, str] | None, audit_entry: dict[str,
     if hand:
         entry["required_roles"] = hand["required_roles"]
         entry["optional_roles"] = hand["optional_roles"]
+    entry.update(HAND_LIMITS.get(kind, {}))
     return entry
 
 
