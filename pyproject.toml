@@ -107,6 +107,7 @@ packages = [
     "sprezzature_figures.studio.pages",
     "sprezzature_figures.studio.components",
     "sprezzature_figures.studio.export",
+    "sprezzature_figures.studio.recommendation",
     "sprezzature_figures_scripts",
     "sprezzature_figures_fonts",
 ]

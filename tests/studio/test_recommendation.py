@@ -9,8 +9,8 @@ Warith Harchaoui <warith.harchaoui@gmail.com>
 
 from __future__ import annotations
 
-from sprezzature_figures.core.dataset import ColumnProfile, DatasetProfile
 from sprezzature_figures.catalog import get_figure_definition
+from sprezzature_figures.core.dataset import ColumnProfile, DatasetProfile
 from sprezzature_figures.studio.recommendation import (
     assign_columns,
     compatible_definitions,
@@ -64,8 +64,8 @@ def test_scoring_penalises_too_many_categories() -> None:
     # legibly show, so a tidy dataset ranks it above a sprawling one.
     tidy = _profile([_cat("region", unique=8), _num("revenue")])
     sprawling = _profile([_cat("region", unique=800), _num("revenue")])
-    bar_tidy = dict((d.kind, s) for d, s in rank(tidy))["bar"]
-    bar_sprawling = dict((d.kind, s) for d, s in rank(sprawling))["bar"]
+    bar_tidy = {d.kind: s for d, s in rank(tidy)}["bar"]
+    bar_sprawling = {d.kind: s for d, s in rank(sprawling)}["bar"]
     assert bar_sprawling < bar_tidy
 
 
