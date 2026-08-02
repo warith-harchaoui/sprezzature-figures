@@ -9,23 +9,68 @@ Warith Harchaoui <warith.harchaoui@gmail.com>
 from __future__ import annotations
 
 import logging
+from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any
 
 from nicegui import run, ui
 
-from sprezzature_figures.core import allocate_iteration_dir, create_project
+from sprezzature_figures.core import (
+    allocate_iteration_dir,
+    create_project,
+    redo,
+    undo,
+)
 from sprezzature_figures.core.figure_plan import FigurePlan
-from sprezzature_figures.core.rendering import render_figure_to_project
+from sprezzature_figures.core.iterations import IterationRecord, save_iteration_record
+from sprezzature_figures.core.projects import load_manifest
+from sprezzature_figures.core.rendering import RenderResult, render_figure_to_project
 from sprezzature_figures.core.transformations import apply_transformations
 from sprezzature_figures.studio.components.chat_panel import build_chat_panel
 from sprezzature_figures.studio.components.data_panel import build_data_panel
 from sprezzature_figures.studio.components.engine_status import build_engine_status
 from sprezzature_figures.studio.components.figure_canvas import build_figure_canvas
+from sprezzature_figures.studio.components.history_panel import build_history_panel
+from sprezzature_figures.studio.export import export_project
 from sprezzature_figures.studio.ralph.apply import apply_operations
 from sprezzature_figures.studio.ralph.engine import RalphEngine, RalphResult
 from sprezzature_figures.studio.state import SessionState
 
 logger = logging.getLogger(__name__)
+
+
+def _parent_iteration_id(project_dir: Path) -> str | None:
+    """The current iteration id (zero-padded) before a new one is allocated;
+    becomes the new record's parent so undo can walk back to it."""
+    current = load_manifest(project_dir).current_iteration
+    return f"{current:04d}" if current else None
+
+
+def _record_iteration(
+    project_dir: Path,
+    render: RenderResult,
+    *,
+    parent_id: str | None,
+    plan_before: FigurePlan,
+    plan_after: FigurePlan,
+    user_message: str | None,
+    summary: str,
+) -> None:
+    """Persist an immutable IterationRecord for the render that just happened,
+    so undo/redo/compare and the export bundle have a history to work with.
+    ``allocate_iteration_dir`` already bumped the manifest's current pointer to
+    ``render.iteration_id``; here we only write the record."""
+    record = IterationRecord(
+        iteration_id=render.iteration_id,
+        parent_iteration_id=parent_id,
+        timestamp=datetime.now(timezone.utc).isoformat(),
+        user_message=user_message,
+        assistant_summary=summary,
+        plan_before=plan_before,
+        plan_after=plan_after,
+        render_result=render,
+    )
+    save_iteration_record(project_dir / "iterations" / render.iteration_id, record)
 
 
 def _resolve_data_and_notes(state: SessionState, plan: FigurePlan) -> tuple[list[dict[str, Any]], list[str]]:
@@ -68,14 +113,17 @@ def _summarize_result(result: RalphResult) -> str:
 
 
 def build_editor(state: SessionState) -> None:
-    # `refresh_canvas` is assigned below, once the canvas panel is built;
-    # every handler here only *calls* it, and isn't invoked itself until
-    # after that assignment has happened, so the forward reference is safe.
+    # `refresh_canvas` / `refresh_history` are assigned below, once their panels
+    # are built; every handler here only *calls* them, and isn't invoked itself
+    # until after those assignments have happened, so the forward reference is
+    # safe.
     refresh_canvas = None
+    refresh_history = None
 
     def create_initial_render(plan: FigurePlan) -> None:
         if state.project_dir is None:
             state.project_dir = create_project(state.source_name or "untitled", source_name=state.source_name)
+        parent = _parent_iteration_id(state.project_dir)
         iteration_dir = allocate_iteration_dir(state.project_dir)
         resolved, notes = _resolve_data_and_notes(state, plan)
         for note in notes:
@@ -92,16 +140,23 @@ def build_editor(state: SessionState) -> None:
         except Exception as exc:  # noqa: BLE001 - surfaced to the user, not raised
             ui.notify(f"Render failed: {exc}", type="negative")
             return
+        _record_iteration(
+            state.project_dir, result, parent_id=parent,
+            plan_before=plan, plan_after=plan, user_message=None, summary="Figure created.",
+        )
         state.plan = plan
         state.render = result
         state.last_pending_confirmation = []
         refresh_canvas()
+        refresh_history()
         ui.notify("Figure created.", type="positive")
 
     async def handle_send(message: str) -> RalphResult | None:
         if state.plan is None or state.project_dir is None:
             ui.notify("Create a figure first.", type="warning")
             return None
+        plan_before = state.plan
+        parent = _parent_iteration_id(state.project_dir)
         iteration_dir = allocate_iteration_dir(state.project_dir)
         resolved, notes = _resolve_data_and_notes(state, state.plan)
         for note in notes:
@@ -124,17 +179,25 @@ def build_editor(state: SessionState) -> None:
             state.add_chat("assistant", f"Something went wrong: {exc}")
             return None
 
+        summary = _summarize_result(result)
+        _record_iteration(
+            state.project_dir, result.render, parent_id=parent,
+            plan_before=plan_before, plan_after=result.plan, user_message=message, summary=summary,
+        )
         state.plan = result.plan
         state.render = result.render
         state.last_pending_confirmation = result.pending_confirmation
         refresh_canvas()
-        state.add_chat("assistant", _summarize_result(result))
+        refresh_history()
+        state.add_chat("assistant", summary)
         return result
 
     async def handle_confirm() -> None:
         if not state.last_pending_confirmation or state.plan is None or state.project_dir is None:
             return
+        plan_before = state.plan
         state.plan = apply_operations(state.plan, state.last_pending_confirmation)
+        parent = _parent_iteration_id(state.project_dir)
         iteration_dir = allocate_iteration_dir(state.project_dir)
         resolved, notes = _resolve_data_and_notes(state, state.plan)
         for note in notes:
@@ -152,14 +215,66 @@ def build_editor(state: SessionState) -> None:
         except Exception as exc:  # noqa: BLE001 - surfaced in chat, not raised
             state.add_chat("assistant", f"Confirmed changes but re-render failed: {exc}")
             return
+        _record_iteration(
+            state.project_dir, result, parent_id=parent,
+            plan_before=plan_before, plan_after=state.plan, user_message=None,
+            summary="Applied the confirmed change(s).",
+        )
         state.render = result
         state.last_pending_confirmation = []
         refresh_canvas()
+        refresh_history()
         state.add_chat("assistant", "Applied the confirmed change(s).")
 
     def handle_cancel() -> None:
         state.last_pending_confirmation = []
         state.add_chat("assistant", "Cancelled the pending change(s).")
+
+    def handle_undo() -> None:
+        if state.project_dir is None:
+            return
+        record = undo(state.project_dir)
+        if record is None:
+            ui.notify("Nothing to undo.", type="info")
+            return
+        state.plan = record.plan_after
+        state.render = record.render_result
+        refresh_canvas()
+        refresh_history()
+        ui.notify("Reverted to the previous version.", type="positive")
+
+    def handle_redo() -> None:
+        if state.project_dir is None:
+            return
+        record = redo(state.project_dir)
+        if record is None:
+            ui.notify("Nothing to redo.", type="info")
+            return
+        state.plan = record.plan_after
+        state.render = record.render_result
+        refresh_canvas()
+        refresh_history()
+        ui.notify("Restored the next version.", type="positive")
+
+    async def handle_export() -> None:
+        if state.plan is None or state.render is None or state.project_dir is None:
+            ui.notify("Create a figure first.", type="warning")
+            return
+        try:
+            archive = await run.io_bound(
+                lambda: export_project(
+                    project_name=state.source_name or state.project_dir.name,
+                    plan=state.plan,
+                    data=state.data,
+                    render=state.render,
+                    exports_dir=state.project_dir / "exports",
+                    dataset=state.dataset_profile,
+                )
+            )
+        except Exception as exc:  # noqa: BLE001 - surfaced to the user, not raised
+            ui.notify(f"Export failed: {exc}", type="negative")
+            return
+        ui.notify(f"Exported to {archive}", type="positive")
 
     with ui.row().classes("w-full items-center justify-between px-6 py-4 sz-header").style(
         "position: sticky; top: 0; z-index: 10;"
@@ -182,10 +297,13 @@ def build_editor(state: SessionState) -> None:
             build_data_panel(state, on_ready=create_initial_render)
 
         with (
-            ui.column().classes("h-full overflow-y-auto").style("flex: 2 1 0%; min-width: 0;"),
-            ui.column().classes("w-full sz-card"),
+            ui.column().classes("h-full overflow-y-auto gap-3").style("flex: 2 1 0%; min-width: 0;"),
+            ui.column().classes("w-full gap-3 sz-card"),
         ):
             refresh_canvas = build_figure_canvas(state)
+            refresh_history = build_history_panel(
+                state, on_undo=handle_undo, on_redo=handle_redo, on_export=handle_export
+            )
 
         with (
             ui.column().classes("h-full overflow-y-auto gap-4").style("flex: 1 1 0%; min-width: 0;"),

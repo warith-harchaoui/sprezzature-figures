@@ -12,6 +12,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from sprezzature_figures.core.dataset import ColumnProfile, DatasetProfile
 from sprezzature_figures.core.figure_plan import ColumnBinding, FigurePlan
 from sprezzature_figures.core.operations import FilterByValue, SetFigureKind
@@ -78,6 +80,46 @@ def test_resolve_data_maps_role_bindings_to_column_names() -> None:
     )
     resolved = _resolve_data(state, plan)
     assert resolved == [{"region": "Paris", "value": 10}, {"region": "Lyon", "value": 20}]
+
+
+@pytest.mark.slow
+def test_editor_records_iterations_so_undo_and_export_work(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # The editor's render sites record an IterationRecord (previously nothing
+    # did), which is what gives the undo/redo/export toolbar a history to act
+    # on. Exercise that recording helper end to end.
+    monkeypatch.setenv("SPREZZATURE_STUDIO_HOME", str(tmp_path / "home"))
+    from sprezzature_figures.core import (
+        allocate_iteration_dir,
+        create_project,
+        current_record,
+        render_figure_to_project,
+        undo,
+    )
+    from sprezzature_figures.studio.pages.editor import _parent_iteration_id, _record_iteration
+
+    data = [{"region": "North", "value": 42}, {"region": "South", "value": 28}]
+    project_dir = create_project("itest", source_name="itest")
+
+    def render_and_record(title: str) -> None:
+        parent = _parent_iteration_id(project_dir)
+        iteration_dir = allocate_iteration_dir(project_dir)
+        plan = FigurePlan(figure_kind="bar", title=title)
+        render = render_figure_to_project(
+            "bar", data, project_id=project_dir.name, iteration_dir=iteration_dir, title=title
+        )
+        _record_iteration(
+            project_dir, render, parent_id=parent, plan_before=plan, plan_after=plan,
+            user_message=None, summary=title,
+        )
+
+    render_and_record("v1")
+    render_and_record("v2")
+    assert current_record(project_dir).plan_after.title == "v2"
+    restored = undo(project_dir)
+    assert restored.plan_after.title == "v1"
+    assert restored.render_result.preview_path.exists()
 
 
 def test_resolve_data_and_notes_reports_a_skipped_transform() -> None:
