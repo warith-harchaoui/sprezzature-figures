@@ -17,6 +17,7 @@ from nicegui import events, ui
 
 from sprezzature_figures.catalog import get_figure_definition, list_kinds
 from sprezzature_figures.core.figure_plan import ColumnBinding, FigurePlan
+from sprezzature_figures.studio.components.recommendation_cards import build_recommendation_cards
 from sprezzature_figures.studio.ingest import (
     csv_fingerprint,
     excel_fingerprint,
@@ -88,6 +89,11 @@ def build_data_panel(state: SessionState, *, on_ready: Callable[[FigurePlan], No
         ui.label(f"{state.source_name}: {state.dataset_profile.row_count} rows, {len(columns)} columns").classes(
             "text-sm font-medium"
         )
+
+        # Deterministic recommendations first (one-click, auto-bound), with the
+        # manual kind/role controls below for full control.
+        build_recommendation_cards(state, on_select=on_ready)
+        ui.label("Or choose manually").classes("text-xs text-gray-500 mt-2")
 
         stable_kinds = list_kinds(status="stable")
         kind_select = ui.select(

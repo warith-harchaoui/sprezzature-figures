@@ -40,11 +40,11 @@ def column_fits_role(column: ColumnProfile, role: RoleDefinition) -> bool:
     )
 
 
-def _has_distinct_assignment(role_candidates: list[list[int]]) -> bool:
-    """True if each role can be given a *distinct* column (a bipartite matching
-    of roles to columns), via augmenting paths. This is what stops a scatter
-    (two numeric roles) from looking satisfiable on a dataset with only one
-    numeric column."""
+def _match_roles_to_columns(role_candidates: list[list[int]]) -> dict[int, int] | None:
+    """Assign each role a *distinct* column (a bipartite matching of roles to
+    columns) via augmenting paths, or None if no full assignment exists. This
+    is what stops a scatter (two numeric roles) from looking satisfiable on a
+    dataset with only one numeric column. Returns column index -> role index."""
     matched: dict[int, int] = {}  # column index -> role index
 
     def assign(role: int, seen: set[int]) -> bool:
@@ -57,7 +57,22 @@ def _has_distinct_assignment(role_candidates: list[list[int]]) -> bool:
                 return True
         return False
 
-    return all(assign(role, set()) for role in range(len(role_candidates)))
+    for role in range(len(role_candidates)):
+        if not assign(role, set()):
+            return None
+    return matched
+
+
+def _required_role_candidates(
+    definition: FigureDefinition, profile: DatasetProfile
+) -> list[list[int]] | None:
+    """Column indices that fit each required role, or None if any required role
+    has no candidate at all (so the figure can't apply)."""
+    candidates = [
+        [i for i, col in enumerate(profile.columns) if column_fits_role(col, role)]
+        for role in definition.required_roles
+    ]
+    return None if any(not cols for cols in candidates) else candidates
 
 
 def can_fill_required_roles(definition: FigureDefinition, profile: DatasetProfile) -> bool:
@@ -65,13 +80,24 @@ def can_fill_required_roles(definition: FigureDefinition, profile: DatasetProfil
     can cover every required role with a distinct column each."""
     if definition.min_rows is not None and profile.row_count < definition.min_rows:
         return False
-    candidates = [
-        [i for i, col in enumerate(profile.columns) if column_fits_role(col, role)]
-        for role in definition.required_roles
-    ]
-    if any(not cols for cols in candidates):
-        return False
-    return _has_distinct_assignment(candidates)
+    candidates = _required_role_candidates(definition, profile)
+    return candidates is not None and _match_roles_to_columns(candidates) is not None
+
+
+def assign_columns(definition: FigureDefinition, profile: DatasetProfile) -> dict[str, str] | None:
+    """A concrete `{required_role_name: column_name}` binding using distinct
+    columns, or None if the figure can't be filled. This is what lets a
+    "recommended figure" be built with one click, no manual role binding."""
+    candidates = _required_role_candidates(definition, profile)
+    if candidates is None:
+        return None
+    matched = _match_roles_to_columns(candidates)
+    if matched is None:
+        return None
+    return {
+        definition.required_roles[role_i].name: profile.columns[col_i].name
+        for col_i, role_i in matched.items()
+    }
 
 
 def compatible_definitions(

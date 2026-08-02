@@ -10,7 +10,9 @@ Warith Harchaoui <warith.harchaoui@gmail.com>
 from __future__ import annotations
 
 from sprezzature_figures.core.dataset import ColumnProfile, DatasetProfile
+from sprezzature_figures.catalog import get_figure_definition
 from sprezzature_figures.studio.recommendation import (
+    assign_columns,
     compatible_definitions,
     rank,
     recommend_figures,
@@ -65,6 +67,18 @@ def test_scoring_penalises_too_many_categories() -> None:
     bar_tidy = dict((d.kind, s) for d, s in rank(tidy))["bar"]
     bar_sprawling = dict((d.kind, s) for d, s in rank(sprawling))["bar"]
     assert bar_sprawling < bar_tidy
+
+
+def test_assign_columns_gives_a_distinct_binding_per_required_role() -> None:
+    # scatter's two numeric roles get two different columns (what one-click
+    # "Use" on a recommendation card needs to build a plan without manual
+    # binding); an incompatible dataset returns None.
+    scatter = get_figure_definition("scatter")
+    binding = assign_columns(scatter, _profile([_num("hp"), _num("mpg")]))
+    assert binding is not None
+    assert len(binding) == len(scatter.required_roles)
+    assert len(set(binding.values())) == len(binding)  # distinct columns
+    assert assign_columns(scatter, _profile([_cat("region"), _num("only_one")])) is None
 
 
 def test_rank_and_recommend_are_deterministic_and_bounded() -> None:

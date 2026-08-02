@@ -23,7 +23,12 @@ from __future__ import annotations
 from sprezzature_figures.catalog.models import FigureDefinition
 from sprezzature_figures.core.dataset import DatasetProfile
 
-from .compatibility import can_fill_required_roles, column_fits_role, compatible_definitions
+from .compatibility import (
+    assign_columns,
+    can_fill_required_roles,
+    column_fits_role,
+    compatible_definitions,
+)
 from .scoring import rank, score
 
 
@@ -37,6 +42,7 @@ def recommend_figures(
 
 
 __all__ = [
+    "assign_columns",
     "can_fill_required_roles",
     "column_fits_role",
     "compatible_definitions",
