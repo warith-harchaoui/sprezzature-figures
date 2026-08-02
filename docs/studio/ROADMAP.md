@@ -52,16 +52,16 @@ Scoped out along the way, each documented at the point it was cut (see
   detection: a different order of complexity than the other
   hand-authored-SVG generators, and 15 stable figures already clears the
   build plan's ≥10 MVP bar.
-- **The deterministic figure-recommendation engine** (plan §6:
-  `studio/recommendation/compatibility.py`, `scoring.py`). Not in the
-  13-commit build plan at all. `assistant.recommend.explain_recommendations()`
-  builds the LLM-facing rerank/explain half only, expecting an
-  already-filtered candidate list from a caller.
-- **Four of eight planned UI components**: `recommendation_cards.py` (no
-  recommendation engine to back it), `property_panel.py`,
-  `history_panel.py`, `export_dialog.py` (backends complete and tested:
-  `core.history`, `studio.export`, but no button in the app calls them
-  yet).
+- **The recommendation *scoring* signal is thin.** The deterministic engine
+  now exists (`studio/recommendation/`: the hard-constraint compatibility
+  filter and a scoring/rank), and `explain_recommendations()` is the LLM
+  rerank layer on top. The filter is reliable, but the score barely separates
+  the survivors because most catalog definitions don't set
+  `max_recommended_categories` / `max_recommended_rows`. Enriching that catalog
+  metadata is the deferred work that would make the ranking meaningful.
+- **The `recommendation_cards` UI**: the engine above has no panel surfacing
+  it yet (the other three planned panels, `property_panel`, `history_panel`,
+  `export_dialog`, are now wired into the editor).
 - **Separate `pages/home.py` / `pages/settings.py` routes.** Merged into
   one page to avoid session-id hand-off across NiceGUI page navigation,
   which the MVP's single import→edit loop doesn't need.
