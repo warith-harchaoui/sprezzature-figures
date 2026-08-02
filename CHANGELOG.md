@@ -22,6 +22,15 @@
   field instead of defaulting to empty. `SetStyleOption.option` is now a
   `Literal` of the real `StyleOptions` fields, so the model can only target a
   style setting that exists.
+- **Deterministic figure recommendation** (`studio.recommendation`): a
+  hard-constraint compatibility filter and a readability score, surfaced as
+  one-click auto-bound recommendation cards in the data panel. Stable figures
+  gained readability limits (max categories / rows) so the ranking is
+  meaningful.
+- **Editor side panels**: iteration history is now recorded, an undo / redo /
+  "Export .zip" toolbar and a style property panel were added, and edit chat
+  operations are de-duplicated. Transform and model-failure notes are shown to
+  the user instead of only logged.
 - **Sprezzature Studio** (`sprezzature-studio` CLI, `[studio]` extra): a
   local NiceGUI app to import a CSV/XLSX, pick a chart type, bind columns
   to data roles, and refine the figure by chatting with Ralph, an

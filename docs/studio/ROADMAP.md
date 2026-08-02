@@ -38,6 +38,15 @@
   passed to the model, discriminated unions flattened for Ollama), model-facing
   schemas described field by field, and a Ralph loop that degrades to
   `RalphResult.notes` instead of crashing when a live model fails.
+- Deterministic figure recommendation (`studio/recommendation/`): a
+  hard-constraint compatibility filter (each required role gets a distinct
+  fitting column, via a bipartite matching) plus a readability score, surfaced
+  as one-click auto-bound cards in the data panel. The LLM rerank
+  (`explain_recommendations`) sits on top and can only reorder what the filter
+  passed.
+- The editor's remaining panels: iteration recording wired in, with an
+  undo/redo/export toolbar and a style property panel (so all four planned
+  side panels now have buttons).
 - A lightweight CI workflow (not in the original plan, added on request),
   which caught one real cross-environment bug local development couldn't
   have.
@@ -52,16 +61,12 @@ Scoped out along the way, each documented at the point it was cut (see
   detection: a different order of complexity than the other
   hand-authored-SVG generators, and 15 stable figures already clears the
   build plan's ≥10 MVP bar.
-- **The recommendation *scoring* signal is thin.** The deterministic engine
-  now exists (`studio/recommendation/`: the hard-constraint compatibility
-  filter and a scoring/rank), and `explain_recommendations()` is the LLM
-  rerank layer on top. The filter is reliable, but the score barely separates
-  the survivors because most catalog definitions don't set
-  `max_recommended_categories` / `max_recommended_rows`. Enriching that catalog
-  metadata is the deferred work that would make the ranking meaningful.
-- **The `recommendation_cards` UI**: the engine above has no panel surfacing
-  it yet (the other three planned panels, `property_panel`, `history_panel`,
-  `export_dialog`, are now wired into the editor).
+- **Richer recommendation scoring.** The engine (`studio/recommendation/`) and
+  its cards are built and wired, and stable figures now carry readability
+  limits so the score separates a tidy dataset from a sprawling one. The signal
+  is still coarse though: only `max_recommended_categories` / `_rows` / `min_rows`
+  feed it, and only for stable kinds. Intent-aware scoring (matching the user's
+  stated goal to a figure's `intents`) and per-figure tuning are the next step.
 - **Separate `pages/home.py` / `pages/settings.py` routes.** Merged into
   one page to avoid session-id hand-off across NiceGUI page navigation,
   which the MVP's single import→edit loop doesn't need.
