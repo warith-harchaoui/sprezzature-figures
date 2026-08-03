@@ -24,6 +24,12 @@
   numeric coercion otherwise, so it works on a bare install. `make_figure.py`
   also gained a `__main__` guard, so `python -m sprezzature_figures.make_figure`
   works.
+- **`--map role=column` for the render CLIs.** When a data file's headers
+  don't match the figure's role names, bind them without editing the file, e.g.
+  `make-figure bar --data gdp.csv --map region=Country --map value=GDP`
+  (repeatable). Backed by `data_source.parse_mapping` / `apply_mapping`. The
+  render CLIs also now report a clean error (with a `--map` hint) instead of a
+  traceback when the data doesn't fit the chosen figure.
 - **The Studio data panel accepts JSON too.** File import now takes
   `.csv` / `.tsv` / `.xlsx` / `.json` / `.jsonl`, routing JSON through the same
   `data_source.load_records` the CLI uses, so both surfaces accept identical

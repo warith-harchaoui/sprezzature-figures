@@ -103,6 +103,9 @@ make-figure funnel --out funnel.png
 
 # Render your own data instead of the demo rows (.csv, .tsv, .json, .jsonl)
 make-figure treemap --data budget.csv --out budget.png --title "Budget breakdown"
+
+# When your columns don't match the figure's role names, bind them with --map
+make-figure bar --data gdp.csv --map region=Country --map value=GDP --out gdp.png
 ```
 
 The output format follows the `--out` extension: `.svg` (default, fully
@@ -110,9 +113,10 @@ self-contained with embedded fonts), `.png`, `.pdf`, `.jpg`, or `.html`.
 
 The `--data` file is read into one row dict per record: CSV/TSV cells are
 type-coerced (numbers stay numbers), and JSON accepts either a bare array of
-objects or an object wrapping a `"data"` array. Column names must match the
+objects or an object wrapping a `"data"` array. Column names should match the
 roles the chart expects (`make-figure --list --status stable`, then see
-[FIGURES.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/FIGURES.md)).
+[FIGURES.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/FIGURES.md));
+when they don't, `--map role=column` binds them without touching the file.
 
 Not sure which chart fits your file? Ask for a recommendation (needs the
 `[cli]` and `[studio]` extras). This runs the same deterministic

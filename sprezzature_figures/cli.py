@@ -63,7 +63,17 @@ else:
         type=click.Path(exists=True, dir_okay=False),
         help="Render your own data file (.csv/.tsv/.json/.jsonl) instead of the demo data.",
     )
-    def render_cmd(kind: str, out: str | None, title: str, data_path: str | None) -> None:
+    @click.option(
+        "--map",
+        "mappings",
+        multiple=True,
+        metavar="ROLE=COLUMN",
+        help="Bind a figure role to a data column when they differ, e.g. --map value=GDP "
+        "(repeatable). Only used with --data.",
+    )
+    def render_cmd(
+        kind: str, out: str | None, title: str, data_path: str | None, mappings: tuple[str, ...]
+    ) -> None:
         """Render KIND from a --data file, or its DEMO_DATA. KIND is a chart type name."""
         canonical = resolve_kind(kind)
         if canonical is None:
@@ -72,21 +82,31 @@ else:
             raise SystemExit(1)
 
         if data_path:
-            from .data_source import load_records
+            from .data_source import apply_mapping, load_records, parse_mapping
 
             try:
                 data = load_records(data_path)
+                data = apply_mapping(data, parse_mapping(list(mappings)))
             except (FileNotFoundError, ValueError) as exc:
                 click.echo(f"Error reading --data: {exc}", err=True)
                 raise SystemExit(1) from exc
         else:
+            if mappings:
+                click.echo("--map only applies with --data.", err=True)
+                raise SystemExit(1)
             data = _demo_data_for(canonical)
 
         kwargs: dict = {"title": title}
         if out:
             kwargs["out"] = out
 
-        result = make_figure(kind, data, **kwargs)
+        try:
+            result = make_figure(kind, data, **kwargs)
+        except (ValueError, AttributeError, FileNotFoundError, RuntimeError) as exc:
+            click.echo(f"Error rendering {kind!r}: {exc}", err=True)
+            if data_path:
+                click.echo("If your columns don't match the figure's roles, bind them with --map role=column.", err=True)
+            raise SystemExit(1) from exc
         click.echo(result)
 
     @main.command("recommend")

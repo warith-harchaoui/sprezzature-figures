@@ -104,6 +104,9 @@ make-figure funnel --out entonnoir.png
 
 # Générer à partir de vos propres données (.csv, .tsv, .json, .jsonl)
 make-figure treemap --data budget.csv --out budget.png --title "Décomposition du budget"
+
+# Si les colonnes ne correspondent pas aux rôles, associez-les avec --map
+make-figure bar --data pib.csv --map region=Pays --map value=PIB --out pib.png
 ```
 
 Le format de sortie suit l'extension de `--out` : `.svg` (par défaut,

@@ -98,6 +98,9 @@ make-figure dumbbell --out dumbbell.png --title "Pay gap by role"
 make-figure treemap --data budget.csv --out budget.png
 make-figure bar --data sales.json --out sales.svg --title "Sales by region"
 
+# Bind columns to roles when the headers differ (repeatable)
+make-figure bar --data gdp.csv --map region=Country --map value=GDP --out gdp.png
+
 # Ask which chart types fit your file, then render the best one
 # (needs the [cli] + [studio] extras; no model involved)
 sprezzature-figures recommend --data sales.csv

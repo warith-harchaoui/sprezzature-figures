@@ -14,7 +14,7 @@ from pathlib import Path
 
 import pytest
 
-from sprezzature_figures.data_source import load_records
+from sprezzature_figures.data_source import apply_mapping, load_records, parse_mapping
 
 
 def _write(tmp_path: Path, name: str, text: str) -> Path:
@@ -84,6 +84,26 @@ def test_load_records_missing_file(tmp_path: Path) -> None:
         load_records(tmp_path / "nope.csv")
 
 
+def test_parse_mapping_valid_and_invalid() -> None:
+    assert parse_mapping(["value=GDP", "region=Country"]) == {"value": "GDP", "region": "Country"}
+    for bad in ["novalue", "role=", "=col", ""]:
+        with pytest.raises(ValueError, match="role=column"):
+            parse_mapping([bad])
+
+
+def test_apply_mapping_aliases_columns_and_keeps_originals() -> None:
+    rows = [{"Region": "N", "GDP": 42}, {"Region": "S", "GDP": 28}]
+    out = apply_mapping(rows, {"region": "Region", "value": "GDP"})
+    assert out[0] == {"Region": "N", "GDP": 42, "region": "N", "value": 42}
+
+
+def test_apply_mapping_empty_is_identity_and_missing_column_raises() -> None:
+    rows = [{"a": 1}]
+    assert apply_mapping(rows, {}) is rows
+    with pytest.raises(ValueError, match="not in data: Nope"):
+        apply_mapping(rows, {"value": "Nope"})
+
+
 @pytest.mark.slow
 def test_make_figure_cli_renders_from_data_file(tmp_path: Path) -> None:
     """End to end: `make-figure treemap --data d.csv --out x.svg` renders the
@@ -100,3 +120,25 @@ def test_make_figure_cli_renders_from_data_file(tmp_path: Path) -> None:
     )
     assert proc.returncode == 0, proc.stderr
     assert out.exists() and out.stat().st_size > 0
+
+
+@pytest.mark.slow
+def test_make_figure_cli_map_binds_mismatched_columns(tmp_path: Path) -> None:
+    """`--map role=column` lets a file whose headers differ from the figure's
+    roles render, instead of failing role validation."""
+    import subprocess
+    import sys
+
+    data = _write(tmp_path, "d.csv", "Region,GDP\nNorth,42\nSouth,28\n")
+    out = tmp_path / "x.png"
+    proc = subprocess.run(
+        [
+            sys.executable, "-m", "sprezzature_figures.make_figure", "bar",
+            "--data", str(data), "--map", "region=Region", "--map", "value=GDP",
+            "--out", str(out),
+        ],
+        capture_output=True,
+        text=True,
+    )
+    assert proc.returncode == 0, proc.stderr
+    assert out.exists() and out.read_bytes()[:4] == b"\x89PNG"
