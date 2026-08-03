@@ -129,6 +129,36 @@ def test_out_extension_controls_output_format(ext: str, magic: bytes, tmp_path: 
     assert head.lower().startswith(magic.lower()), f"{ext}: got {head!r}"
 
 
+# Hero-SVG generators that were unreachable through the dispatcher until they
+# grew a standard ``make_<kind>`` callable (and the loader learned to put
+# scripts/ on sys.path for their sibling imports). Rendering some of them relies
+# on vendored basemaps under assets/geo, so this doubles as a check those data
+# files are present.
+_REPAIRED_KINDS = [
+    "speaking_time",
+    "situation_map",
+    "binned-grid-map",
+    "hexmap",
+    "hexbin-map",
+    "spike-map",
+    "dotdensity",
+]
+
+
+@pytest.mark.slow
+@pytest.mark.parametrize("kind", _REPAIRED_KINDS)
+def test_repaired_hero_kind_dispatches_and_renders(kind: str, tmp_path: Path) -> None:
+    """Each repaired hero generator now renders through make_figure (it built
+    its own demo from a bare call), where it used to raise 'no callable'."""
+    out = tmp_path / f"{kind}.svg"
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")  # these are still catalogued 'legacy'
+        result = make_figure(kind, [], out=str(out))
+    body = Path(result).read_bytes()
+    assert body[:200].lstrip().startswith(b"<svg") or b"<svg" in body[:200]
+    assert len(body) > 1000
+
+
 def _png_dimensions(png: bytes) -> tuple[int, int]:
     """Width and height from a PNG's IHDR chunk (bytes 16-24, big-endian)."""
     import struct
