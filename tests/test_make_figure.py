@@ -53,10 +53,21 @@ def test_make_figure_unknown_kind_raises_with_available_list() -> None:
 def _load_demo_data(kind: str) -> list:
     """Load DEMO_DATA from a make_<kind>.py script without calling make_figure."""
     scripts_dir = Path(__file__).resolve().parent.parent / "scripts"
+    # Hyphenated kinds keep the hyphen in the filename (make_hexbin-map.py,
+    # make_interruption-matrix.py); a few older ones use the underscore form.
+    # Try the verbatim name first, then the normalised fallback.
     normalised = kind.replace("-", "_")
-    candidate = scripts_dir / f"make_{normalised}.py"
-    if not candidate.exists():
+    candidate = next(
+        (scripts_dir / f"make_{stem}.py" for stem in (kind, normalised)
+         if (scripts_dir / f"make_{stem}.py").exists()),
+        None,
+    )
+    if candidate is None:
         return []
+    # Sibling helpers (_render, _style, ...) import by bare name, so the scripts
+    # dir must be importable when we exec the module standalone.
+    if str(scripts_dir) not in sys.path:
+        sys.path.insert(0, str(scripts_dir))
     spec = importlib.util.spec_from_file_location(f"_test_load_{normalised}", candidate)
     if spec is None or spec.loader is None:
         return []

@@ -32,6 +32,16 @@
 
 ### Added
 
+- **New figure: `interruption-matrix` ("Qui coupe qui ?").** A directed
+  "who cuts whom" heatmap for conversation analysis — rows are speakers being
+  cut off, columns the interrupters, each cell the interruption count tinted by
+  the interrupter, with row/column totals and a one-line bilan. It carries a
+  crosshair hover (self-contained mode): pointing at a cell lights that
+  interrupter's whole column and that interrupted's whole row and dims the rest,
+  so "everyone X cut" and "everyone who cut X" light up together. Full house
+  treatment — accessibility levels, dark mode, forced-colors fallback, native
+  tooltips, `role="img"` + a computed `<desc>`. Companion to `speaking_time`;
+  92 chart types now. Roles: `interrupter`, `interrupted`, `count`.
 - **Intent-aware recommendation ranking.** `sprezzature-figures recommend`
   gained `--intent GOAL` (comparison, trend, distribution, composition,
   relationship, flow, hierarchy, geography, model_evaluation). Without it the

@@ -1,6 +1,6 @@
 # Figure Catalogue
 
-91 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type).
+92 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type).
 
 Invoke via:
 
@@ -65,6 +65,7 @@ for the current per-chart status.
 | `horizon` | make_horizon.py | Time series | Horizon chart: fold a time series at regular intervals and overlay bands. Enables many series in compact vertical space (e.g., server metrics, sensor arrays). |
 | `icicle` | make_icicle.py | Hierarchy | Top-down rectangular treemap (icicle / flame chart). Use to show execution profiles, file-system trees, or budget breakdowns where reading order matters. |
 | `imshow-interpolated` | make_imshow-interpolated.py | Matrix / Image | Display a 2-D matrix as a heatmap with smooth interpolation. Use for spatial fields (temperature grids, image patches) rather than discrete data. |
+| `interruption-matrix` | make_interruption-matrix.py | Communication | Directed "who cuts whom" heatmap: rows are speakers being cut off, columns the interrupters, each cell the number of interruptions, tinted by the interrupter. Row/column totals and a crosshair hover make conversational dominance readable at a glance -- who interrupts most (dark column), who gets cut most (dark row). |
 | `jointplot` | make_jointplot.py | Bivariate distribution | Central scatter or hexbin with marginal histograms or KDE on each axis. Use to show bivariate distribution and its univariate projections simultaneously. |
 | `liftgain` | make_liftgain.py | Model evaluation | Lift and gain curves for binary classifiers. Use to evaluate how much better than random a model performs when targeting the top N% of a population. |
 | `line` | make_line.py | Time series | Multi-series line chart with points, the default for showing how a numeric value evolves over an ordered axis. Use for monthly revenue by product line, daily active users, sensor readings. |
