@@ -244,7 +244,11 @@ def main() -> None:
         nargs="?",
         help="Chart type, e.g. treemap, funnel, waterfall. Use --list to see all.",
     )
-    parser.add_argument("--out", default=None, help="Output file path.")
+    parser.add_argument(
+        "--out",
+        default=None,
+        help="Output file path. The extension picks the format: .svg, .png, .pdf, .jpg, or .html.",
+    )
     parser.add_argument("--title", default="", help="Chart title.")
     parser.add_argument(
         "--data",

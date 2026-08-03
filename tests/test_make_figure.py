@@ -103,6 +103,32 @@ def test_every_stable_kind_renders_from_registry(kind: str, tmp_path: Path) -> N
     assert Path(result).exists() and Path(result).stat().st_size > 0
 
 
+@pytest.mark.slow
+@pytest.mark.parametrize(
+    ("ext", "magic"),
+    [
+        (".svg", b"<svg"),
+        (".png", b"\x89PNG"),
+        (".pdf", b"%PDF"),
+        (".jpg", b"\xff\xd8\xff"),
+        (".html", b"<!doctype html"),
+    ],
+)
+def test_out_extension_controls_output_format(ext: str, magic: bytes, tmp_path: Path) -> None:
+    """`--out chart.png` must yield a real PNG, not SVG bytes in a .png file.
+
+    Regression for the SVG-first generators writing their SVG string verbatim
+    regardless of the requested extension. write_svg now converts to the
+    destination format (png/pdf/jpg via vl_convert, html wrapper), leaving
+    .svg byte-identical.
+    """
+    data = _load_demo_data("treemap")
+    out = tmp_path / f"treemap{ext}"
+    result = make_figure("treemap", data, out=str(out))
+    head = Path(result).read_bytes()[:16].lstrip()
+    assert head.lower().startswith(magic.lower()), f"{ext}: got {head!r}"
+
+
 def test_make_figure_hyphenated_legacy_kind_warns_and_raises() -> None:
     """Regression for the hyphen/underscore dispatcher bug plus the non-stable
     warning contract, on a single realistic call.
