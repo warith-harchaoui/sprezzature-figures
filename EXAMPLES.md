@@ -111,6 +111,11 @@ make-figure bar --data gdp.csv --map region=Country --map value=GDP --out gdp.pn
 # (needs the [cli] + [studio] extras; no model involved)
 sprezzature-figures recommend --data sales.csv
 sprezzature-figures recommend --data sales.csv --render best.png
+
+# State your analytical goal so the ranking picks the figure for that intent
+# (comparison, trend, distribution, composition, relationship, flow,
+#  hierarchy, geography, model_evaluation) instead of readability alone
+sprezzature-figures recommend --data sales.csv --intent comparison
 ```
 
 `budget.csv` above is just a table whose columns match the chart's roles, e.g.

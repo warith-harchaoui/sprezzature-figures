@@ -15,6 +15,16 @@
 
 ### Added
 
+- **Intent-aware recommendation ranking.** `sprezzature-figures recommend`
+  gained `--intent GOAL` (comparison, trend, distribution, composition,
+  relationship, flow, hierarchy, geography, model_evaluation). Without it the
+  readability score leaves many kinds tied at 1.00; with it, figures whose
+  category serves the stated goal are ranked first (top band [0.6, 1.0], others
+  [0.0, 0.4]), with readability breaking ties within each band. The engine
+  (`studio.recommendation.score` / `rank`) now takes an optional `goal`, derived
+  from each figure's populated `category` (the `intents` catalog field is empty
+  across all kinds), so the signal covers all 91 figures with no hand
+  annotation. `goal=None` is unchanged, byte-for-byte, from before.
 - **`--scale N` for hi-DPI raster output.** Both render CLIs (`make-figure`
   and `sprezzature-figures render`) take `--scale N` to upsample `.png` /
   `.jpg` / `.pdf` output N times, e.g. `--out chart.png --scale 3` for a

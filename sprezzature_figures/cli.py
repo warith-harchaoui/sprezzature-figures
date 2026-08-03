@@ -139,16 +139,30 @@ else:
     )
     @click.option("--limit", default=5, show_default=True, help="How many recommendations to show.")
     @click.option(
+        "--intent",
+        "goal",
+        default=None,
+        type=click.Choice(
+            [
+                "comparison", "trend", "distribution", "composition", "relationship",
+                "flow", "hierarchy", "geography", "model_evaluation",
+            ]
+        ),
+        help="Your analytical goal. Ranks figures that serve it first, instead of "
+        "readability alone -- decisive when many kinds otherwise tie.",
+    )
+    @click.option(
         "--render",
         "render_out",
         default=None,
         help="Also render the top recommendation to this output path.",
     )
-    def recommend_cmd(data_path: str, limit: int, render_out: str | None) -> None:
+    def recommend_cmd(data_path: str, limit: int, goal: str | None, render_out: str | None) -> None:
         """Rank the chart types your DATA file can fill, best first.
 
         Runs the same deterministic compatibility filter + readability score the
         Studio GUI shows as recommendation cards, headless. No model involved.
+        Add --intent to rank by your analytical goal (comparison, trend, ...).
         """
         from pathlib import Path
 
@@ -178,7 +192,7 @@ else:
         profile = profile_dataframe(
             pd.DataFrame(records), dataset_id=name, fingerprint="cli", source_name=name
         )
-        ranked = rank(profile)
+        ranked = rank(profile, goal=goal)
         if not ranked:
             click.echo(
                 f"No stable chart type can be filled from {name} "

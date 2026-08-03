@@ -133,7 +133,14 @@ Studio, sans aucun modèle :
 ```bash
 sprezzature-figures recommend --data budget.csv
 sprezzature-figures recommend --data budget.csv --render best.png
+sprezzature-figures recommend --data budget.csv --intent hierarchy
 ```
+
+Ajoutez `--intent BUT` (`comparison`, `trend`, `distribution`, `composition`,
+`relationship`, `flow`, `hierarchy`, `geography`, `model_evaluation`) pour
+classer d'abord les figures qui servent ce but analytique. Sans cette option,
+de nombreux types se retrouvent à égalité en tête, car la seule lisibilité les
+départage rarement ; c'est le but qui rend le classement décisif.
 
 ---
 

@@ -16,6 +16,7 @@ from sprezzature_figures.studio.recommendation import (
     compatible_definitions,
     rank,
     recommend_figures,
+    score,
 )
 from sprezzature_figures.studio.recommendation.compatibility import column_fits_role
 
@@ -91,3 +92,43 @@ def test_rank_and_recommend_are_deterministic_and_bounded() -> None:
     assert len(top) <= 3
     compatible = {d.kind for d in compatible_definitions(profile)}
     assert all(d.kind in compatible for d in top)  # never recommends the incompatible
+
+
+# A profile compatible with both a Comparison figure (bar: cat+num) and a
+# Relationship figure (scatter: num+num), so a goal can reorder them.
+def _mixed_profile() -> DatasetProfile:
+    return _profile([_cat("region", unique=5), _num("a"), _num("b")])
+
+
+def test_score_intent_promotes_matching_category_over_mismatch() -> None:
+    # bar's category is "Comparison": the goal "comparison" puts it in the top
+    # band, and any other goal it does not serve drops it to the low band.
+    bar = get_figure_definition("bar")
+    profile = _mixed_profile()
+    matched = score(bar, profile, goal="comparison")
+    mismatched = score(bar, profile, goal="relationship")
+    assert matched >= 0.6 > mismatched
+    # No goal is the readability-only score, unchanged and >= the mismatch.
+    assert score(bar, profile) >= mismatched
+
+
+def test_rank_with_goal_orders_the_matching_figure_first() -> None:
+    profile = _mixed_profile()
+
+    def position(ranked: list, kind: str) -> int:
+        return next(i for i, (d, _s) in enumerate(ranked) if d.kind == kind)
+
+    for_comparison = rank(profile, goal="comparison")
+    for_relationship = rank(profile, goal="relationship")
+    # bar (Comparison) beats scatter (Relationship) under the comparison goal,
+    # and the ordering flips under the relationship goal.
+    assert position(for_comparison, "bar") < position(for_comparison, "scatter")
+    assert position(for_relationship, "scatter") < position(for_relationship, "bar")
+
+
+def test_goal_scores_stay_bounded_and_unknown_goal_is_readability_only() -> None:
+    profile = _mixed_profile()
+    with_goal = rank(profile, goal="distribution")
+    assert all(0.0 <= s <= 1.0 for _d, s in with_goal)
+    # An unrecognised goal must not do worse than the intent-blind ranking.
+    assert rank(profile, goal="unknown") == rank(profile)

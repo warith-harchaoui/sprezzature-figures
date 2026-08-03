@@ -20,6 +20,7 @@ pytest.importorskip("sprezzature_figures.studio.recommendation")
 
 from click.testing import CliRunner  # noqa: E402
 
+from sprezzature_figures.catalog import get_figure_definition  # noqa: E402
 from sprezzature_figures.cli import main  # noqa: E402
 
 
@@ -42,6 +43,36 @@ def test_recommend_lists_ranked_kinds(tmp_path: Path) -> None:
 def test_recommend_missing_file_errors(tmp_path: Path) -> None:
     result = CliRunner().invoke(main, ["recommend", "--data", str(tmp_path / "nope.csv")])
     assert result.exit_code != 0
+
+
+def test_recommend_intent_reorders_ranking(tmp_path: Path) -> None:
+    """`--intent hierarchy` ranks a hierarchy figure above what readability
+    alone (no intent) would put first, for a parent/name/value dataset."""
+    data = _write_csv(tmp_path)
+    plain = CliRunner().invoke(main, ["recommend", "--data", str(data), "--limit", "8"])
+    hier = CliRunner().invoke(
+        main, ["recommend", "--data", str(data), "--limit", "8", "--intent", "hierarchy"]
+    )
+    assert plain.exit_code == 0 and hier.exit_code == 0, hier.output
+
+    def first_kind(output: str) -> str:
+        # The first "  <kind>  score=..." line after the header.
+        for line in output.splitlines():
+            stripped = line.strip()
+            if stripped and "score=" in stripped:
+                return stripped.split()[0]
+        return ""
+
+    top_hier = first_kind(hier.output)
+    assert get_figure_definition(top_hier).category.lower().find("hierarchy") >= 0
+
+
+def test_recommend_intent_rejects_unknown_goal(tmp_path: Path) -> None:
+    result = CliRunner().invoke(
+        main, ["recommend", "--data", str(_write_csv(tmp_path)), "--intent", "nonsense"]
+    )
+    assert result.exit_code != 0
+    assert "nonsense" in result.output or "Invalid value" in result.output
 
 
 @pytest.mark.slow
