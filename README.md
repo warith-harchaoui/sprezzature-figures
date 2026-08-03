@@ -200,7 +200,7 @@ This repository is two things:
   `sprezzature-figures` CLI): everything above, with no extra dependencies
   beyond `[cli]`/`[dataviz]`.
 - **the editor** (`sprezzature_figures.editor`, `sprezzature-figures`
-  CLI): a local NiceGUI app to import a CSV/XLSX, pick a chart type, bind
+  CLI): a local NiceGUI app to import a CSV/TSV/XLSX/JSON file, pick a chart type, bind
   columns, and refine the figure by chatting with **Ralph**, an LLM/VLM
   copilot that edits a structured plan and actually looks at the rendered
   PNG before deciding it's done. Needs the `editor` extra:

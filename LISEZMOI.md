@@ -200,7 +200,7 @@ Ce dépôt contient deux choses :
   supplémentaire au-delà de `[cli]`/`[dataviz]`.
 - **the editor** (`sprezzature_figures.editor`, CLI
   `sprezzature-figures`) : une application NiceGUI locale pour importer un
-  CSV/XLSX, choisir un type de graphique, associer les colonnes, puis
+  CSV/TSV/XLSX/JSON, choisir un type de graphique, associer les colonnes, puis
   affiner la figure en dialoguant avec **Ralph**, un copilote LLM/VLM qui
   modifie un plan structuré et regarde vraiment le rendu avant de décider
   que c'est terminé. Nécessite l'extra `editor` :
