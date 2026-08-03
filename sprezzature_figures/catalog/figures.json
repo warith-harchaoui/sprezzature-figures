@@ -1106,34 +1106,6 @@
     ]
   },
   {
-    "kind": "globe3d",
-    "label": "Globe3D",
-    "aliases": [],
-    "category": "Geospatial",
-    "description": "Rotatable 3-D globe with choropleth or point data. Use for global data where Mercator distortion would mislead (e.g., polar phenomena).",
-    "intents": [],
-    "status": "legacy",
-    "renderer": "svg",
-    "module": "scripts/make_globe3d.py",
-    "callable_name": "make_globe3d",
-    "required_roles": [],
-    "optional_roles": [],
-    "supported_outputs": [
-      "svg",
-      "png"
-    ],
-    "min_rows": null,
-    "max_recommended_rows": null,
-    "max_recommended_categories": null,
-    "default_width": 900,
-    "default_height": 600,
-    "options_schema": {},
-    "warnings": [
-      "No DEMO_DATA in make_globe3d.py",
-      "No callable named 'make_globe3d' in make_globe3d.py"
-    ]
-  },
-  {
     "kind": "heatmap",
     "label": "Heatmap",
     "aliases": [],
