@@ -131,10 +131,54 @@ def write_svg(out: Path, svg: str, *, embed_fonts: bool = True) -> Path:
     # ``parents=True`` mirrors the inline ``mkdir(parents=True, exist_ok=True)``
     # so a fresh checkout (no assets/ yet) still succeeds.
     out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(svg, encoding="utf-8")
+    _write_in_format(out, svg)
     # User-facing confirmation, byte-identical to the generators' own line.
     print(f"wrote {out}")
     return out
+
+
+def _write_in_format(out: Path, svg: str) -> None:
+    """Write ``svg`` to ``out`` honouring the destination extension.
+
+    The generators all build an SVG string; a user who asks for ``--out
+    chart.png`` expects a PNG, not SVG bytes in a ``.png`` file. This converts
+    the (font-embedded, self-contained) SVG to the requested raster/vector
+    format via ``vl_convert``. ``.svg`` stays a plain UTF-8 write, byte-for-byte
+    what every generator produced before, so nothing about the SVG path changes.
+    Unknown extensions fall back to writing the SVG text rather than guessing.
+    """
+    suffix = out.suffix.lower()
+    if suffix in ("", ".svg", ".txt"):
+        out.write_text(svg, encoding="utf-8")
+    elif suffix in (".html", ".htm"):
+        out.write_text(_svg_to_html(svg), encoding="utf-8")
+    elif suffix in (".png", ".pdf", ".jpg", ".jpeg"):
+        import vl_convert as vlc
+
+        converter = {
+            ".png": vlc.svg_to_png,
+            ".pdf": vlc.svg_to_pdf,
+            ".jpg": vlc.svg_to_jpeg,
+            ".jpeg": vlc.svg_to_jpeg,
+        }[suffix]
+        out.write_bytes(converter(svg))
+    else:
+        # Unknown extension (e.g. .json): the generator only has an SVG string,
+        # so write that rather than silently producing a mislabelled binary.
+        out.write_text(svg, encoding="utf-8")
+
+
+def _svg_to_html(svg: str) -> str:
+    """Wrap a standalone SVG in a minimal, responsive HTML document."""
+    return (
+        "<!doctype html>\n<html lang=\"en\">\n<head>\n"
+        '<meta charset="utf-8">\n'
+        '<meta name="viewport" content="width=device-width, initial-scale=1">\n'
+        "<style>html,body{margin:0;height:100%}"
+        "body{display:grid;place-items:center;background:#fff}"
+        "svg{max-width:100%;height:auto}</style>\n"
+        "</head>\n<body>\n" + svg + "\n</body>\n</html>\n"
+    )
 
 
 def render_cli(

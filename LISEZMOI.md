@@ -106,6 +106,9 @@ make-figure funnel --out entonnoir.png
 make-figure treemap --data budget.csv --out budget.png --title "Décomposition du budget"
 ```
 
+Le format de sortie suit l'extension de `--out` : `.svg` (par défaut,
+autonome avec polices embarquées), `.png`, `.pdf`, `.jpg` ou `.html`.
+
 Le fichier `--data` est lu en une ligne (un dictionnaire) par enregistrement :
 les cellules CSV/TSV sont typées automatiquement (les nombres restent des
 nombres) et le JSON accepte soit un tableau d'objets, soit un objet

@@ -50,7 +50,11 @@ else:
 
     @main.command("render")
     @click.argument("kind")
-    @click.option("--out", default=None, help="Output file path.")
+    @click.option(
+        "--out",
+        default=None,
+        help="Output file path. The extension picks the format: .svg, .png, .pdf, .jpg, or .html.",
+    )
     @click.option("--title", default="", help="Chart title.")
     @click.option(
         "--data",

@@ -105,6 +105,9 @@ make-figure funnel --out funnel.png
 make-figure treemap --data budget.csv --out budget.png --title "Budget breakdown"
 ```
 
+The output format follows the `--out` extension: `.svg` (default, fully
+self-contained with embedded fonts), `.png`, `.pdf`, `.jpg`, or `.html`.
+
 The `--data` file is read into one row dict per record: CSV/TSV cells are
 type-coerced (numbers stay numbers), and JSON accepts either a bare array of
 objects or an object wrapping a `"data"` array. Column names must match the

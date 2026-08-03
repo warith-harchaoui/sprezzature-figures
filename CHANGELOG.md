@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+### Fixed
+
+- **`--out` now honours the file extension.** The SVG-first generators used to
+  write their SVG string verbatim into whatever path you named, so `--out
+  chart.png` produced SVG bytes in a `.png` file. `write_svg` (the shared tail
+  every generator calls) now converts the font-embedded SVG to the requested
+  format: `.png`, `.pdf`, `.jpg` via `vl_convert`, `.html` wrapped in a minimal
+  responsive document, and `.svg` written byte-for-byte as before. Applies to
+  the library and both CLIs. (The Studio was already correct here: it always
+  renders vega figures to `.svg` and rasterizes a separate PNG preview.)
+
 ### Added
 
 - **Render your own data from the CLI.** `make-figure <kind> --data file`
