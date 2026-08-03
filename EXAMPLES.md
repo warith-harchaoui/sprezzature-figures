@@ -98,6 +98,12 @@ make-figure dumbbell --out dumbbell.png --title "Pay gap by role"
 make-figure treemap --data budget.csv --out budget.png
 make-figure bar --data sales.json --out sales.svg --title "Sales by region"
 
+# Pipe data in from stdin with --data - (JSON, JSONL, or CSV, sniffed from content)
+curl -s https://example.com/sales.json | make-figure bar --data - --out sales.png
+
+# Upsample raster/PDF output for hi-DPI with --scale (ignored for .svg/.html)
+make-figure treemap --data budget.csv --out budget@3x.png --scale 3
+
 # Bind columns to roles when the headers differ (repeatable)
 make-figure bar --data gdp.csv --map region=Country --map value=GDP --out gdp.png
 

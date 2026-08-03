@@ -129,6 +129,40 @@ def test_out_extension_controls_output_format(ext: str, magic: bytes, tmp_path: 
     assert head.lower().startswith(magic.lower()), f"{ext}: got {head!r}"
 
 
+def _png_dimensions(png: bytes) -> tuple[int, int]:
+    """Width and height from a PNG's IHDR chunk (bytes 16-24, big-endian)."""
+    import struct
+
+    return struct.unpack(">II", png[16:24])
+
+
+@pytest.mark.slow
+def test_scale_env_upsamples_raster(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """SPREZZATURE_RENDER_SCALE (set by the render CLIs' --scale) multiplies the
+    raster's pixel dimensions; the default remains 1x."""
+    data = _load_demo_data("treemap")
+
+    base = Path(make_figure("treemap", data, out=str(tmp_path / "base.png"))).read_bytes()
+    bw, bh = _png_dimensions(base)
+
+    monkeypatch.setenv("SPREZZATURE_RENDER_SCALE", "3")
+    scaled = Path(make_figure("treemap", data, out=str(tmp_path / "scaled.png"))).read_bytes()
+    sw, sh = _png_dimensions(scaled)
+
+    assert (sw, sh) == (bw * 3, bh * 3)
+
+
+@pytest.mark.slow
+def test_scale_env_ignored_for_svg(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A vector .svg output is byte-identical whatever the scale; scaling only
+    touches the raster/PDF converters."""
+    data = _load_demo_data("treemap")
+    plain = Path(make_figure("treemap", data, out=str(tmp_path / "a.svg"))).read_bytes()
+    monkeypatch.setenv("SPREZZATURE_RENDER_SCALE", "4")
+    scaled = Path(make_figure("treemap", data, out=str(tmp_path / "b.svg"))).read_bytes()
+    assert plain == scaled
+
+
 def test_make_figure_hyphenated_legacy_kind_warns_and_raises() -> None:
     """Regression for the hyphen/underscore dispatcher bug plus the non-stable
     warning contract, on a single realistic call.
