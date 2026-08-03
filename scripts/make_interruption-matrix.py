@@ -80,15 +80,32 @@ def _text_w(text: str, size: float) -> float:
     return sum(0.60 if c.isupper() else 0.53 for c in text) * size
 
 
+#: Speaker hues, as ``(palette name, hex fallback)`` pairs. The names are the
+#: ones present in BOTH the full sprezzature-colors palette and the bundled
+#: ``_style`` fallback (the latter is what runs when sprezzature-colors is not
+#: co-installed, e.g. in CI), and the hex fallback keeps ``.get`` crash-proof
+#: even if a name is ever dropped — so the wheel never KeyErrors on any palette.
+_WHEEL: List[Tuple[str, str]] = [
+    ("Blue", "#007AFF"),
+    ("Purple", "#AF52DE"),
+    ("Orange", "#FF9500"),
+    ("Green", "#34C759"),
+    ("Red", "#FF3B30"),
+    ("Yellow", "#FFCC00"),
+    ("Brown", "#A2845E"),
+]
+
+
 def _person_colors(order: List[str], accessibility: str = "universal") -> Dict[str, str]:
     """Map each speaker to a stable hue from the house palette.
 
     Colours are assigned in a fixed, well-separated order so the same speaker
-    keeps the same colour across renders (and across the companion
-    ``speaking_time`` figure), and cycle if there are more speakers than hues.
+    keeps the same colour across renders (and shares the first hues with the
+    companion ``speaking_time`` figure), and cycle if there are more speakers
+    than hues.
     """
     pal = load_palette(accessibility)
-    wheel = [pal[k] for k in ("Blue", "Purple", "Orange", "Green", "Turquoise", "Pink", "Red", "Brown", "Yellow")]
+    wheel = [pal.get(name, hexv) for name, hexv in _WHEEL]
     return {name: wheel[i % len(wheel)] for i, name in enumerate(order)}
 
 

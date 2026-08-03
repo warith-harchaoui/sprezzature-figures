@@ -170,6 +170,26 @@ def test_repaired_hero_kind_dispatches_and_renders(kind: str, tmp_path: Path) ->
     assert len(body) > 1000
 
 
+@pytest.mark.slow
+def test_renders_on_fallback_palette_when_colors_absent(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Figures must render on the bundled fallback palette, not only the full
+    sprezzature-colors CSV. CI has no sprezzature-colors, so the fallback (whose
+    colour names differ — Teal/Mint, no Turquoise/Pink) is what actually runs;
+    a generator that indexes palette names the fallback lacks passes locally and
+    dies in CI. Force the fallback here so that gap is caught locally.
+    """
+    scripts_dir = Path(__file__).resolve().parent.parent / "scripts"
+    if str(scripts_dir) not in sys.path:
+        sys.path.insert(0, str(scripts_dir))
+    import _style
+
+    monkeypatch.setattr(_style, "_sibling_palette_csv", lambda: None)
+    data = _load_demo_data("interruption-matrix")
+    out = tmp_path / "im.svg"
+    result = make_figure("interruption-matrix", data, out=str(out))
+    assert Path(result).exists() and Path(result).stat().st_size > 0
+
+
 def _png_dimensions(png: bytes) -> tuple[int, int]:
     """Width and height from a PNG's IHDR chunk (bytes 16-24, big-endian)."""
     import struct
