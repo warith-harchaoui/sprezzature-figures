@@ -1,0 +1,1161 @@
+meta:
+  reference: sprezzature-figures
+  rotation_deg: 141.174
+  explained_variance_ratio:
+  - 0.291
+  - 0.2094
+  cumulative_variance: 0.5004
+  n_approaches: 37
+  attributes:
+  - Free or open source
+  - Chart type breadth
+  - Publication quality
+  - Ease of use
+  - Programmability
+  - Interactive
+  - AI natural language copilot
+  - Vision QA on render
+  - Local and offline (no account)
+  - Reproducibility
+  - Export to SVG PNG PDF
+  - Customization and theming
+  - Data source flexibility
+  - Maturity and community
+  - Geospatial and maps
+  - Dashboards and BI
+  - Accessibility features
+  - Animated
+  - Large-dataset performance
+  - Web embeddability
+  - Statistical and analytical depth
+  - Responsive
+  lower_is_better: []
+axes:
+  axis_1:
+    name: User-friendly ↔ Versatile
+    pole_left: User-friendly
+    pole_right: Versatile
+    loadings:
+      Free or open source: 0.2432
+      Chart type breadth: 0.3028
+      Publication quality: 0.3461
+      Ease of use: -0.3003
+      Programmability: 0.2489
+      Interactive: -0.0311
+      AI natural language copilot: -0.2187
+      Vision QA on render: 0.0778
+      Local and offline (no account): 0.2906
+      Reproducibility: 0.332
+      Export to SVG PNG PDF: 0.2955
+      Customization and theming: 0.3166
+      Data source flexibility: -0.114
+      Maturity and community: 0.0119
+      Geospatial and maps: 0.1486
+      Dashboards and BI: -0.1609
+      Accessibility features: 0.2279
+      Animated: 0.1305
+      Large-dataset performance: 0.0101
+      Web embeddability: 0.099
+      Statistical and analytical depth: -0.011
+      Responsive: 0.0109
+  axis_2:
+    name: Dynamic ↔ Robust
+    pole_bottom: Dynamic
+    pole_top: Robust
+    loadings:
+      Free or open source: 0.0437
+      Chart type breadth: -0.081
+      Publication quality: 0.1083
+      Ease of use: 0.0994
+      Programmability: -0.05
+      Interactive: -0.3865
+      AI natural language copilot: 0.1162
+      Vision QA on render: 0.1986
+      Local and offline (no account): -0.0609
+      Reproducibility: 0.016
+      Export to SVG PNG PDF: 0.1616
+      Customization and theming: -0.0695
+      Data source flexibility: -0.3304
+      Maturity and community: -0.1325
+      Geospatial and maps: -0.2515
+      Dashboards and BI: -0.3776
+      Accessibility features: 0.0722
+      Animated: -0.2533
+      Large-dataset performance: -0.2827
+      Web embeddability: -0.318
+      Statistical and analytical depth: 0.1056
+      Responsive: -0.3689
+approaches:
+- name: sprezzature-figures
+  coordinates:
+    axis_1: 4.1191
+    axis_2: 3.8092
+  role: best
+  color: '#FF3B30'
+  attributes:
+    Free or open source: 5.0
+    Chart type breadth: 5.0
+    Publication quality: 5.0
+    Ease of use: 4.0
+    Programmability: 4.0
+    Interactive: 3.0
+    AI natural language copilot: 4.0
+    Vision QA on render: 5.0
+    Local and offline (no account): 5.0
+    Reproducibility: 5.0
+    Export to SVG PNG PDF: 5.0
+    Customization and theming: 4.0
+    Data source flexibility: 3.0
+    Maturity and community: 1.0
+    Geospatial and maps: 4.0
+    Dashboards and BI: 1.0
+    Accessibility features: 5.0
+    Animated: 2.0
+    Large-dataset performance: 3.0
+    Web embeddability: 3.0
+    Statistical and analytical depth: 4.0
+    Responsive: 3.0
+- name: Matplotlib
+  coordinates:
+    axis_1: 3.8587
+    axis_2: 1.292
+  role: competitor
+  color: '#8DBAFF'
+  attributes:
+    Free or open source: 5.0
+    Chart type breadth: 5.0
+    Publication quality: 5.0
+    Ease of use: 2.0
+    Programmability: 5.0
+    Interactive: 2.0
+    AI natural language copilot: 1.0
+    Vision QA on render: 1.0
+    Local and offline (no account): 5.0
+    Reproducibility: 4.0
+    Export to SVG PNG PDF: 5.0
+    Customization and theming: 5.0
+    Data source flexibility: 3.0
+    Maturity and community: 5.0
+    Geospatial and maps: 3.0
+    Dashboards and BI: 2.0
+    Accessibility features: 3.0
+    Animated: 3.0
+    Large-dataset performance: 4.0
+    Web embeddability: 3.0
+    Statistical and analytical depth: 3.0
+    Responsive: 2.0
+- name: Seaborn
+  coordinates:
+    axis_1: 1.6907
+    axis_2: 3.3215
+  role: competitor
+  color: '#9B99F0'
+  attributes:
+    Free or open source: 5.0
+    Chart type breadth: 3.0
+    Publication quality: 5.0
+    Ease of use: 2.0
+    Programmability: 4.0
+    Interactive: 1.0
+    AI natural language copilot: 1.0
+    Vision QA on render: 1.0
+    Local and offline (no account): 5.0
+    Reproducibility: 4.0
+    Export to SVG PNG PDF: 4.0
+    Customization and theming: 4.0
+    Data source flexibility: 3.0
+    Maturity and community: 5.0
+    Geospatial and maps: 1.0
+    Dashboards and BI: 1.0
+    Accessibility features: 3.0
+    Animated: 1.0
+    Large-dataset performance: 3.0
+    Web embeddability: 3.0
+    Statistical and analytical depth: 5.0
+    Responsive: 2.0
+- name: Plotly / Dash
+  coordinates:
+    axis_1: 2.2071
+    axis_2: -3.6305
+  role: competitor
+  color: '#3FD6C7'
+  attributes:
+    Free or open source: 4.0
+    Chart type breadth: 5.0
+    Publication quality: 4.0
+    Ease of use: 3.0
+    Programmability: 5.0
+    Interactive: 5.0
+    AI natural language copilot: 1.0
+    Vision QA on render: 1.0
+    Local and offline (no account): 4.0
+    Reproducibility: 4.0
+    Export to SVG PNG PDF: 4.0
+    Customization and theming: 5.0
+    Data source flexibility: 5.0
+    Maturity and community: 5.0
+    Geospatial and maps: 4.0
+    Dashboards and BI: 5.0
+    Accessibility features: 3.0
+    Animated: 4.0
+    Large-dataset performance: 4.0
+    Web embeddability: 5.0
+    Statistical and analytical depth: 4.0
+    Responsive: 5.0
+- name: Bokeh
+  coordinates:
+    axis_1: 0.7928
+    axis_2: -2.8501
+  role: competitor
+  color: '#229F73'
+  attributes:
+    Free or open source: 5.0
+    Chart type breadth: 4.0
+    Publication quality: 3.0
+    Ease of use: 2.0
+    Programmability: 4.0
+    Interactive: 5.0
+    AI natural language copilot: 1.0
+    Vision QA on render: 1.0
+    Local and offline (no account): 5.0
+    Reproducibility: 4.0
+    Export to SVG PNG PDF: 3.0
+    Customization and theming: 4.0
+    Data source flexibility: 4.0
+    Maturity and community: 4.0
+    Geospatial and maps: 3.0
+    Dashboards and BI: 4.0
+    Accessibility features: 2.0
+    Animated: 4.0
+    Large-dataset performance: 5.0
+    Web embeddability: 5.0
+    Statistical and analytical depth: 3.0
+    Responsive: 4.0
+- name: Altair
+  coordinates:
+    axis_1: 2.0248
+    axis_2: 0.3651
+  role: competitor
+  color: '#5699DF'
+  attributes:
+    Free or open source: 5.0
+    Chart type breadth: 4.0
+    Publication quality: 4.0
+    Ease of use: 3.0
+    Programmability: 4.0
+    Interactive: 4.0
+    AI natural language copilot: 1.0
+    Vision QA on render: 1.0
+    Local and offline (no account): 5.0
+    Reproducibility: 5.0
+    Export to SVG PNG PDF: 4.0
+    Customization and theming: 4.0
+    Data source flexibility: 3.0
+    Maturity and community: 4.0
+    Geospatial and maps: 3.0
+    Dashboards and BI: 2.0
+    Accessibility features: 3.0
+    Animated: 2.0
+    Large-dataset performance: 2.0
+    Web embeddability: 4.0
+    Statistical and analytical depth: 3.0
+    Responsive: 4.0
+- name: ggplot
+  coordinates:
+    axis_1: 2.9613
+    axis_2: 3.1756
+  role: competitor
+  color: '#8195E8'
+  attributes:
+    Free or open source: 5.0
+    Chart type breadth: 4.0
+    Publication quality: 5.0
+    Ease of use: 2.0
+    Programmability: 4.0
+    Interactive: 1.0
+    AI natural language copilot: 1.0
+    Vision QA on render: 1.0
+    Local and offline (no account): 5.0
+    Reproducibility: 5.0
+    Export to SVG PNG PDF: 4.0
+    Customization and theming: 5.0
+    Data source flexibility: 3.0
+    Maturity and community: 4.0
+    Geospatial and maps: 2.0
+    Dashboards and BI: 1.0
+    Accessibility features: 3.0
+    Animated: 2.0
+    Large-dataset performance: 3.0
+    Web embeddability: 2.0
+    Statistical and analytical depth: 5.0
+    Responsive: 2.0
+- name: HoloViews
+  coordinates:
+    axis_1: 0.8125
+    axis_2: -2.5995
+  role: competitor
+  color: '#46CEAF'
+  attributes:
+    Free or open source: 5.0
+    Chart type breadth: 4.0
+    Publication quality: 3.0
+    Ease of use: 2.0
+    Programmability: 4.0
+    Interactive: 5.0
+    AI natural language copilot: 1.0
+    Vision QA on render: 1.0
+    Local and offline (no account): 5.0
+    Reproducibility: 4.0
+    Export to SVG PNG PDF: 3.0
+    Customization and theming: 4.0
+    Data source flexibility: 4.0
+    Maturity and community: 3.0
+    Geospatial and maps: 4.0
+    Dashboards and BI: 4.0
+    Accessibility features: 2.0
+    Animated: 4.0
+    Large-dataset performance: 5.0
+    Web embeddability: 4.0
+    Statistical and analytical depth: 3.0
+    Responsive: 4.0
+- name: PyGWalker
+  coordinates:
+    axis_1: -1.8246
+    axis_2: -0.4524
+  role: competitor
+  color: '#F8918E'
+  attributes:
+    Free or open source: 5.0
+    Chart type breadth: 3.0
+    Publication quality: 3.0
+    Ease of use: 4.0
+    Programmability: 3.0
+    Interactive: 5.0
+    AI natural language copilot: 2.0
+    Vision QA on render: 1.0
+    Local and offline (no account): 5.0
+    Reproducibility: 3.0
+    Export to SVG PNG PDF: 3.0
+    Customization and theming: 3.0
+    Data source flexibility: 4.0
+    Maturity and community: 3.0
+    Geospatial and maps: 2.0
+    Dashboards and BI: 4.0
+    Accessibility features: 2.0
+    Animated: 2.0
+    Large-dataset performance: 3.0
+    Web embeddability: 3.0
+    Statistical and analytical depth: 3.0
+    Responsive: 4.0
+- name: Streamlit
+  coordinates:
+    axis_1: -1.985
+    axis_2: -1.5422
+  role: competitor
+  color: '#E3AB51'
+  attributes:
+    Free or open source: 4.0
+    Chart type breadth: 3.0
+    Publication quality: 3.0
+    Ease of use: 3.0
+    Programmability: 4.0
+    Interactive: 4.0
+    AI natural language copilot: 2.0
+    Vision QA on render: 1.0
+    Local and offline (no account): 4.0
+    Reproducibility: 3.0
+    Export to SVG PNG PDF: 2.0
+    Customization and theming: 3.0
+    Data source flexibility: 5.0
+    Maturity and community: 4.0
+    Geospatial and maps: 3.0
+    Dashboards and BI: 4.0
+    Accessibility features: 2.0
+    Animated: 2.0
+    Large-dataset performance: 3.0
+    Web embeddability: 4.0
+    Statistical and analytical depth: 3.0
+    Responsive: 4.0
+- name: Gradio
+  coordinates:
+    axis_1: -1.8122
+    axis_2: -0.9124
+  role: competitor
+  color: '#D57460'
+  attributes:
+    Free or open source: 5.0
+    Chart type breadth: 3.0
+    Publication quality: 3.0
+    Ease of use: 3.0
+    Programmability: 4.0
+    Interactive: 4.0
+    AI natural language copilot: 2.0
+    Vision QA on render: 1.0
+    Local and offline (no account): 4.0
+    Reproducibility: 3.0
+    Export to SVG PNG PDF: 2.0
+    Customization and theming: 3.0
+    Data source flexibility: 4.0
+    Maturity and community: 4.0
+    Geospatial and maps: 2.0
+    Dashboards and BI: 4.0
+    Accessibility features: 2.0
+    Animated: 2.0
+    Large-dataset performance: 3.0
+    Web embeddability: 4.0
+    Statistical and analytical depth: 3.0
+    Responsive: 4.0
+- name: Taipy
+  coordinates:
+    axis_1: -1.9333
+    axis_2: -1.2566
+  role: competitor
+  color: '#CC724B'
+  attributes:
+    Free or open source: 5.0
+    Chart type breadth: 3.0
+    Publication quality: 3.0
+    Ease of use: 3.0
+    Programmability: 4.0
+    Interactive: 4.0
+    AI natural language copilot: 2.0
+    Vision QA on render: 1.0
+    Local and offline (no account): 4.0
+    Reproducibility: 3.0
+    Export to SVG PNG PDF: 2.0
+    Customization and theming: 3.0
+    Data source flexibility: 4.0
+    Maturity and community: 3.0
+    Geospatial and maps: 2.0
+    Dashboards and BI: 5.0
+    Accessibility features: 2.0
+    Animated: 2.0
+    Large-dataset performance: 4.0
+    Web embeddability: 4.0
+    Statistical and analytical depth: 3.0
+    Responsive: 4.0
+- name: D3.js
+  coordinates:
+    axis_1: 4.1191
+    axis_2: -3.1832
+  role: right
+  color: '#007AFF'
+  attributes:
+    Free or open source: 5.0
+    Chart type breadth: 5.0
+    Publication quality: 5.0
+    Ease of use: 1.0
+    Programmability: 5.0
+    Interactive: 5.0
+    AI natural language copilot: 1.0
+    Vision QA on render: 1.0
+    Local and offline (no account): 5.0
+    Reproducibility: 4.0
+    Export to SVG PNG PDF: 4.0
+    Customization and theming: 5.0
+    Data source flexibility: 4.0
+    Maturity and community: 5.0
+    Geospatial and maps: 5.0
+    Dashboards and BI: 3.0
+    Accessibility features: 3.0
+    Animated: 5.0
+    Large-dataset performance: 3.0
+    Web embeddability: 5.0
+    Statistical and analytical depth: 2.0
+    Responsive: 5.0
+- name: Chart.js
+  coordinates:
+    axis_1: 0.0059
+    axis_2: -1.0504
+  role: competitor
+  color: '#62BD80'
+  attributes:
+    Free or open source: 5.0
+    Chart type breadth: 3.0
+    Publication quality: 3.0
+    Ease of use: 2.0
+    Programmability: 4.0
+    Interactive: 4.0
+    AI natural language copilot: 1.0
+    Vision QA on render: 1.0
+    Local and offline (no account): 5.0
+    Reproducibility: 4.0
+    Export to SVG PNG PDF: 3.0
+    Customization and theming: 3.0
+    Data source flexibility: 3.0
+    Maturity and community: 4.0
+    Geospatial and maps: 2.0
+    Dashboards and BI: 3.0
+    Accessibility features: 2.0
+    Animated: 3.0
+    Large-dataset performance: 2.0
+    Web embeddability: 5.0
+    Statistical and analytical depth: 2.0
+    Responsive: 5.0
+- name: ECharts
+  coordinates:
+    axis_1: 3.1189
+    axis_2: -3.8092
+  role: competitor
+  color: '#00B2C4'
+  attributes:
+    Free or open source: 5.0
+    Chart type breadth: 5.0
+    Publication quality: 4.0
+    Ease of use: 2.0
+    Programmability: 4.0
+    Interactive: 5.0
+    AI natural language copilot: 1.0
+    Vision QA on render: 1.0
+    Local and offline (no account): 5.0
+    Reproducibility: 4.0
+    Export to SVG PNG PDF: 4.0
+    Customization and theming: 5.0
+    Data source flexibility: 4.0
+    Maturity and community: 5.0
+    Geospatial and maps: 5.0
+    Dashboards and BI: 4.0
+    Accessibility features: 3.0
+    Animated: 5.0
+    Large-dataset performance: 5.0
+    Web embeddability: 5.0
+    Statistical and analytical depth: 3.0
+    Responsive: 5.0
+- name: Highcharts
+  coordinates:
+    axis_1: 2.1676
+    axis_2: -3.0181
+  role: competitor
+  color: '#2FD0D3'
+  attributes:
+    Free or open source: 2.0
+    Chart type breadth: 5.0
+    Publication quality: 4.0
+    Ease of use: 3.0
+    Programmability: 4.0
+    Interactive: 5.0
+    AI natural language copilot: 1.0
+    Vision QA on render: 1.0
+    Local and offline (no account): 4.0
+    Reproducibility: 4.0
+    Export to SVG PNG PDF: 4.0
+    Customization and theming: 5.0
+    Data source flexibility: 4.0
+    Maturity and community: 5.0
+    Geospatial and maps: 4.0
+    Dashboards and BI: 4.0
+    Accessibility features: 4.0
+    Animated: 4.0
+    Large-dataset performance: 4.0
+    Web embeddability: 5.0
+    Statistical and analytical depth: 3.0
+    Responsive: 5.0
+- name: Vega
+  coordinates:
+    axis_1: 1.9785
+    axis_2: -0.3727
+  role: competitor
+  color: '#0093C2'
+  attributes:
+    Free or open source: 5.0
+    Chart type breadth: 4.0
+    Publication quality: 4.0
+    Ease of use: 3.0
+    Programmability: 4.0
+    Interactive: 4.0
+    AI natural language copilot: 2.0
+    Vision QA on render: 1.0
+    Local and offline (no account): 5.0
+    Reproducibility: 5.0
+    Export to SVG PNG PDF: 4.0
+    Customization and theming: 4.0
+    Data source flexibility: 3.0
+    Maturity and community: 4.0
+    Geospatial and maps: 4.0
+    Dashboards and BI: 3.0
+    Accessibility features: 3.0
+    Animated: 2.0
+    Large-dataset performance: 2.0
+    Web embeddability: 5.0
+    Statistical and analytical depth: 3.0
+    Responsive: 4.0
+- name: Observable Plot
+  coordinates:
+    axis_1: 1.1932
+    axis_2: -1.3152
+  role: competitor
+  color: '#4FD7FA'
+  attributes:
+    Free or open source: 5.0
+    Chart type breadth: 4.0
+    Publication quality: 4.0
+    Ease of use: 3.0
+    Programmability: 4.0
+    Interactive: 4.0
+    AI natural language copilot: 1.0
+    Vision QA on render: 1.0
+    Local and offline (no account): 4.0
+    Reproducibility: 4.0
+    Export to SVG PNG PDF: 3.0
+    Customization and theming: 4.0
+    Data source flexibility: 4.0
+    Maturity and community: 3.0
+    Geospatial and maps: 4.0
+    Dashboards and BI: 3.0
+    Accessibility features: 3.0
+    Animated: 3.0
+    Large-dataset performance: 3.0
+    Web embeddability: 5.0
+    Statistical and analytical depth: 3.0
+    Responsive: 4.0
+- name: vis.js
+  coordinates:
+    axis_1: 0.0075
+    axis_2: -1.4024
+  role: competitor
+  color: '#68AA61'
+  attributes:
+    Free or open source: 5.0
+    Chart type breadth: 3.0
+    Publication quality: 3.0
+    Ease of use: 3.0
+    Programmability: 4.0
+    Interactive: 5.0
+    AI natural language copilot: 1.0
+    Vision QA on render: 1.0
+    Local and offline (no account): 5.0
+    Reproducibility: 4.0
+    Export to SVG PNG PDF: 2.0
+    Customization and theming: 4.0
+    Data source flexibility: 3.0
+    Maturity and community: 4.0
+    Geospatial and maps: 2.0
+    Dashboards and BI: 2.0
+    Accessibility features: 2.0
+    Animated: 4.0
+    Large-dataset performance: 3.0
+    Web embeddability: 5.0
+    Statistical and analytical depth: 2.0
+    Responsive: 4.0
+- name: Datawrapper
+  coordinates:
+    axis_1: 0.7288
+    axis_2: 0.0873
+  role: competitor
+  color: '#6BC8FF'
+  attributes:
+    Free or open source: 5.0
+    Chart type breadth: 3.0
+    Publication quality: 5.0
+    Ease of use: 5.0
+    Programmability: 2.0
+    Interactive: 4.0
+    AI natural language copilot: 1.0
+    Vision QA on render: 1.0
+    Local and offline (no account): 2.0
+    Reproducibility: 3.0
+    Export to SVG PNG PDF: 4.0
+    Customization and theming: 4.0
+    Data source flexibility: 3.0
+    Maturity and community: 4.0
+    Geospatial and maps: 4.0
+    Dashboards and BI: 2.0
+    Accessibility features: 5.0
+    Animated: 2.0
+    Large-dataset performance: 2.0
+    Web embeddability: 5.0
+    Statistical and analytical depth: 2.0
+    Responsive: 5.0
+- name: Flourish
+  coordinates:
+    axis_1: -0.82
+    axis_2: -1.8747
+  role: competitor
+  color: '#92BE68'
+  attributes:
+    Free or open source: 3.0
+    Chart type breadth: 4.0
+    Publication quality: 4.0
+    Ease of use: 5.0
+    Programmability: 2.0
+    Interactive: 5.0
+    AI natural language copilot: 1.0
+    Vision QA on render: 1.0
+    Local and offline (no account): 2.0
+    Reproducibility: 2.0
+    Export to SVG PNG PDF: 3.0
+    Customization and theming: 4.0
+    Data source flexibility: 3.0
+    Maturity and community: 4.0
+    Geospatial and maps: 4.0
+    Dashboards and BI: 3.0
+    Accessibility features: 3.0
+    Animated: 5.0
+    Large-dataset performance: 2.0
+    Web embeddability: 5.0
+    Statistical and analytical depth: 2.0
+    Responsive: 5.0
+- name: RAWGraphs
+  coordinates:
+    axis_1: -0.9946
+    axis_2: 3.1035
+  role: competitor
+  color: '#B5A0F7'
+  attributes:
+    Free or open source: 5.0
+    Chart type breadth: 5.0
+    Publication quality: 4.0
+    Ease of use: 5.0
+    Programmability: 1.0
+    Interactive: 2.0
+    AI natural language copilot: 1.0
+    Vision QA on render: 1.0
+    Local and offline (no account): 3.0
+    Reproducibility: 2.0
+    Export to SVG PNG PDF: 4.0
+    Customization and theming: 3.0
+    Data source flexibility: 2.0
+    Maturity and community: 3.0
+    Geospatial and maps: 2.0
+    Dashboards and BI: 1.0
+    Accessibility features: 2.0
+    Animated: 1.0
+    Large-dataset performance: 2.0
+    Web embeddability: 3.0
+    Statistical and analytical depth: 2.0
+    Responsive: 3.0
+- name: Infogram
+  coordinates:
+    axis_1: -3.3917
+    axis_2: -0.1022
+  role: competitor
+  color: '#F08A99'
+  attributes:
+    Free or open source: 2.0
+    Chart type breadth: 3.0
+    Publication quality: 3.0
+    Ease of use: 5.0
+    Programmability: 1.0
+    Interactive: 4.0
+    AI natural language copilot: 1.0
+    Vision QA on render: 1.0
+    Local and offline (no account): 1.0
+    Reproducibility: 2.0
+    Export to SVG PNG PDF: 3.0
+    Customization and theming: 3.0
+    Data source flexibility: 3.0
+    Maturity and community: 3.0
+    Geospatial and maps: 3.0
+    Dashboards and BI: 3.0
+    Accessibility features: 2.0
+    Animated: 3.0
+    Large-dataset performance: 2.0
+    Web embeddability: 4.0
+    Statistical and analytical depth: 1.0
+    Responsive: 4.0
+- name: Vizzu
+  coordinates:
+    axis_1: -0.694
+    axis_2: -0.0204
+  role: competitor
+  color: '#CC6D8C'
+  attributes:
+    Free or open source: 5.0
+    Chart type breadth: 3.0
+    Publication quality: 3.0
+    Ease of use: 3.0
+    Programmability: 4.0
+    Interactive: 4.0
+    AI natural language copilot: 1.0
+    Vision QA on render: 1.0
+    Local and offline (no account): 4.0
+    Reproducibility: 3.0
+    Export to SVG PNG PDF: 3.0
+    Customization and theming: 3.0
+    Data source flexibility: 3.0
+    Maturity and community: 3.0
+    Geospatial and maps: 1.0
+    Dashboards and BI: 2.0
+    Accessibility features: 2.0
+    Animated: 5.0
+    Large-dataset performance: 2.0
+    Web embeddability: 4.0
+    Statistical and analytical depth: 2.0
+    Responsive: 4.0
+- name: Tableau
+  coordinates:
+    axis_1: -1.3417
+    axis_2: -2.6578
+  role: competitor
+  color: '#99AE4E'
+  attributes:
+    Free or open source: 1.0
+    Chart type breadth: 4.0
+    Publication quality: 4.0
+    Ease of use: 4.0
+    Programmability: 2.0
+    Interactive: 5.0
+    AI natural language copilot: 3.0
+    Vision QA on render: 1.0
+    Local and offline (no account): 3.0
+    Reproducibility: 2.0
+    Export to SVG PNG PDF: 4.0
+    Customization and theming: 4.0
+    Data source flexibility: 5.0
+    Maturity and community: 5.0
+    Geospatial and maps: 5.0
+    Dashboards and BI: 5.0
+    Accessibility features: 3.0
+    Animated: 3.0
+    Large-dataset performance: 5.0
+    Web embeddability: 4.0
+    Statistical and analytical depth: 4.0
+    Responsive: 4.0
+- name: Power BI
+  coordinates:
+    axis_1: -2.3154
+    axis_2: -2.7054
+  role: competitor
+  color: '#C29B35'
+  attributes:
+    Free or open source: 2.0
+    Chart type breadth: 4.0
+    Publication quality: 3.0
+    Ease of use: 4.0
+    Programmability: 2.0
+    Interactive: 5.0
+    AI natural language copilot: 3.0
+    Vision QA on render: 1.0
+    Local and offline (no account): 2.0
+    Reproducibility: 2.0
+    Export to SVG PNG PDF: 3.0
+    Customization and theming: 4.0
+    Data source flexibility: 5.0
+    Maturity and community: 5.0
+    Geospatial and maps: 4.0
+    Dashboards and BI: 5.0
+    Accessibility features: 3.0
+    Animated: 3.0
+    Large-dataset performance: 5.0
+    Web embeddability: 4.0
+    Statistical and analytical depth: 4.0
+    Responsive: 4.0
+- name: Looker
+  coordinates:
+    axis_1: -2.4151
+    axis_2: -1.6022
+  role: competitor
+  color: '#D48248'
+  attributes:
+    Free or open source: 3.0
+    Chart type breadth: 3.0
+    Publication quality: 3.0
+    Ease of use: 5.0
+    Programmability: 3.0
+    Interactive: 4.0
+    AI natural language copilot: 3.0
+    Vision QA on render: 1.0
+    Local and offline (no account): 2.0
+    Reproducibility: 3.0
+    Export to SVG PNG PDF: 3.0
+    Customization and theming: 4.0
+    Data source flexibility: 5.0
+    Maturity and community: 4.0
+    Geospatial and maps: 3.0
+    Dashboards and BI: 5.0
+    Accessibility features: 3.0
+    Animated: 2.0
+    Large-dataset performance: 5.0
+    Web embeddability: 4.0
+    Statistical and analytical depth: 4.0
+    Responsive: 4.0
+- name: Apache Superset
+  coordinates:
+    axis_1: -1.1023
+    axis_2: -1.8416
+  role: competitor
+  color: '#D7C35C'
+  attributes:
+    Free or open source: 5.0
+    Chart type breadth: 4.0
+    Publication quality: 3.0
+    Ease of use: 4.0
+    Programmability: 3.0
+    Interactive: 4.0
+    AI natural language copilot: 1.0
+    Vision QA on render: 1.0
+    Local and offline (no account): 4.0
+    Reproducibility: 3.0
+    Export to SVG PNG PDF: 3.0
+    Customization and theming: 4.0
+    Data source flexibility: 5.0
+    Maturity and community: 4.0
+    Geospatial and maps: 3.0
+    Dashboards and BI: 5.0
+    Accessibility features: 2.0
+    Animated: 2.0
+    Large-dataset performance: 5.0
+    Web embeddability: 3.0
+    Statistical and analytical depth: 3.0
+    Responsive: 4.0
+- name: Metabase
+  coordinates:
+    axis_1: -2.4094
+    axis_2: -1.611
+  role: competitor
+  color: '#DE974B'
+  attributes:
+    Free or open source: 4.0
+    Chart type breadth: 3.0
+    Publication quality: 3.0
+    Ease of use: 5.0
+    Programmability: 3.0
+    Interactive: 4.0
+    AI natural language copilot: 2.0
+    Vision QA on render: 1.0
+    Local and offline (no account): 4.0
+    Reproducibility: 3.0
+    Export to SVG PNG PDF: 3.0
+    Customization and theming: 3.0
+    Data source flexibility: 5.0
+    Maturity and community: 4.0
+    Geospatial and maps: 3.0
+    Dashboards and BI: 5.0
+    Accessibility features: 2.0
+    Animated: 2.0
+    Large-dataset performance: 4.0
+    Web embeddability: 4.0
+    Statistical and analytical depth: 3.0
+    Responsive: 4.0
+- name: Grafana
+  coordinates:
+    axis_1: -1.5664
+    axis_2: -2.768
+  role: competitor
+  color: '#A5A53D'
+  attributes:
+    Free or open source: 4.0
+    Chart type breadth: 3.0
+    Publication quality: 3.0
+    Ease of use: 4.0
+    Programmability: 3.0
+    Interactive: 4.0
+    AI natural language copilot: 2.0
+    Vision QA on render: 1.0
+    Local and offline (no account): 4.0
+    Reproducibility: 3.0
+    Export to SVG PNG PDF: 3.0
+    Customization and theming: 4.0
+    Data source flexibility: 5.0
+    Maturity and community: 5.0
+    Geospatial and maps: 3.0
+    Dashboards and BI: 5.0
+    Accessibility features: 2.0
+    Animated: 3.0
+    Large-dataset performance: 5.0
+    Web embeddability: 4.0
+    Statistical and analytical depth: 3.0
+    Responsive: 5.0
+- name: Julius AI
+  coordinates:
+    axis_1: -3.7925
+    axis_2: 1.7556
+  role: competitor
+  color: '#E588B7'
+  attributes:
+    Free or open source: 2.0
+    Chart type breadth: 3.0
+    Publication quality: 3.0
+    Ease of use: 5.0
+    Programmability: 3.0
+    Interactive: 4.0
+    AI natural language copilot: 5.0
+    Vision QA on render: 2.0
+    Local and offline (no account): 1.0
+    Reproducibility: 3.0
+    Export to SVG PNG PDF: 3.0
+    Customization and theming: 3.0
+    Data source flexibility: 4.0
+    Maturity and community: 3.0
+    Geospatial and maps: 2.0
+    Dashboards and BI: 3.0
+    Accessibility features: 2.0
+    Animated: 2.0
+    Large-dataset performance: 3.0
+    Web embeddability: 2.0
+    Statistical and analytical depth: 5.0
+    Responsive: 3.0
+- name: ChatGPT
+  coordinates:
+    axis_1: -3.6959
+    axis_2: 3.8092
+  role: top
+  color: '#AF52DE'
+  attributes:
+    Free or open source: 2.0
+    Chart type breadth: 3.0
+    Publication quality: 2.0
+    Ease of use: 5.0
+    Programmability: 4.0
+    Interactive: 2.0
+    AI natural language copilot: 5.0
+    Vision QA on render: 2.0
+    Local and offline (no account): 1.0
+    Reproducibility: 3.0
+    Export to SVG PNG PDF: 3.0
+    Customization and theming: 3.0
+    Data source flexibility: 3.0
+    Maturity and community: 4.0
+    Geospatial and maps: 2.0
+    Dashboards and BI: 1.0
+    Accessibility features: 2.0
+    Animated: 1.0
+    Large-dataset performance: 2.0
+    Web embeddability: 2.0
+    Statistical and analytical depth: 5.0
+    Responsive: 2.0
+- name: Claude
+  coordinates:
+    axis_1: -3.1925
+    axis_2: 2.4201
+  role: competitor
+  color: '#BA75B9'
+  attributes:
+    Free or open source: 2.0
+    Chart type breadth: 3.0
+    Publication quality: 3.0
+    Ease of use: 5.0
+    Programmability: 4.0
+    Interactive: 3.0
+    AI natural language copilot: 5.0
+    Vision QA on render: 2.0
+    Local and offline (no account): 1.0
+    Reproducibility: 3.0
+    Export to SVG PNG PDF: 3.0
+    Customization and theming: 3.0
+    Data source flexibility: 3.0
+    Maturity and community: 4.0
+    Geospatial and maps: 2.0
+    Dashboards and BI: 2.0
+    Accessibility features: 2.0
+    Animated: 2.0
+    Large-dataset performance: 2.0
+    Web embeddability: 3.0
+    Statistical and analytical depth: 5.0
+    Responsive: 3.0
+- name: ThoughtSpot
+  coordinates:
+    axis_1: -4.1191
+    axis_2: -1.3611
+  role: worst
+  color: '#A52A2A'
+  attributes:
+    Free or open source: 1.0
+    Chart type breadth: 3.0
+    Publication quality: 3.0
+    Ease of use: 5.0
+    Programmability: 2.0
+    Interactive: 4.0
+    AI natural language copilot: 5.0
+    Vision QA on render: 1.0
+    Local and offline (no account): 2.0
+    Reproducibility: 2.0
+    Export to SVG PNG PDF: 3.0
+    Customization and theming: 3.0
+    Data source flexibility: 5.0
+    Maturity and community: 4.0
+    Geospatial and maps: 3.0
+    Dashboards and BI: 5.0
+    Accessibility features: 3.0
+    Animated: 2.0
+    Large-dataset performance: 5.0
+    Web embeddability: 4.0
+    Statistical and analytical depth: 4.0
+    Responsive: 4.0
+- name: Excel
+  coordinates:
+    axis_1: -2.0414
+    axis_2: 2.3059
+  role: competitor
+  color: '#AA72BE'
+  attributes:
+    Free or open source: 3.0
+    Chart type breadth: 3.0
+    Publication quality: 3.0
+    Ease of use: 5.0
+    Programmability: 2.0
+    Interactive: 2.0
+    AI natural language copilot: 2.0
+    Vision QA on render: 1.0
+    Local and offline (no account): 5.0
+    Reproducibility: 2.0
+    Export to SVG PNG PDF: 3.0
+    Customization and theming: 4.0
+    Data source flexibility: 3.0
+    Maturity and community: 5.0
+    Geospatial and maps: 2.0
+    Dashboards and BI: 3.0
+    Accessibility features: 3.0
+    Animated: 2.0
+    Large-dataset performance: 2.0
+    Web embeddability: 2.0
+    Statistical and analytical depth: 4.0
+    Responsive: 2.0
+- name: Google Sheets
+  coordinates:
+    axis_1: -3.7916
+    axis_2: 2.1021
+  role: competitor
+  color: '#F5A0DC'
+  attributes:
+    Free or open source: 5.0
+    Chart type breadth: 2.0
+    Publication quality: 2.0
+    Ease of use: 5.0
+    Programmability: 2.0
+    Interactive: 2.0
+    AI natural language copilot: 2.0
+    Vision QA on render: 1.0
+    Local and offline (no account): 2.0
+    Reproducibility: 2.0
+    Export to SVG PNG PDF: 3.0
+    Customization and theming: 3.0
+    Data source flexibility: 3.0
+    Maturity and community: 5.0
+    Geospatial and maps: 2.0
+    Dashboards and BI: 3.0
+    Accessibility features: 2.0
+    Animated: 1.0
+    Large-dataset performance: 1.0
+    Web embeddability: 3.0
+    Statistical and analytical depth: 3.0
+    Responsive: 3.0
+- name: Canva
+  coordinates:
+    axis_1: -2.6492
+    axis_2: 3.7074
+  role: competitor
+  color: '#9C75C6'
+  attributes:
+    Free or open source: 3.0
+    Chart type breadth: 2.0
+    Publication quality: 4.0
+    Ease of use: 5.0
+    Programmability: 1.0
+    Interactive: 2.0
+    AI natural language copilot: 3.0
+    Vision QA on render: 1.0
+    Local and offline (no account): 1.0
+    Reproducibility: 1.0
+    Export to SVG PNG PDF: 4.0
+    Customization and theming: 4.0
+    Data source flexibility: 2.0
+    Maturity and community: 4.0
+    Geospatial and maps: 1.0
+    Dashboards and BI: 1.0
+    Accessibility features: 3.0
+    Animated: 3.0
+    Large-dataset performance: 1.0
+    Web embeddability: 3.0
+    Statistical and analytical depth: 1.0
+    Responsive: 2.0

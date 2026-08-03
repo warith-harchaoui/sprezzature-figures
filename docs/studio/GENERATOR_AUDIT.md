@@ -6,9 +6,9 @@ expects. Regenerate with `python tools/audit_generators.py --render`.
 
 - **stable**: 15
 - **experimental**: 0
-- **legacy**: 75
+- **legacy**: 76
 - **unavailable**: 0
-- **total**: 90
+- **total**: 91
 
 | kind | status | reachable | callable | demo_data | render | errors |
 |---|---|---|---|---|---|---|
@@ -31,6 +31,7 @@ expects. Regenerate with `python tools/audit_generators.py --render`.
 | `columnrange` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `connected-scatter` | legacy | **no** | **no** | **no** | not_run | No DEMO_DATA in make_connected-scatter.py; No callable named 'make_connected_scatter' in make_connected-scatter.py |
 | `convex-hull` | legacy | **no** | **no** | **no** | not_run | No DEMO_DATA in make_convex-hull.py; No callable named 'make_convex_hull' in make_convex-hull.py |
+| `cycle` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_cycle.py; No callable named 'make_cycle' in make_cycle.py |
 | `dendrogram` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_dendrogram.py; No callable named 'make_dendrogram' in make_dendrogram.py |
 | `dependency-wheel` | legacy | **no** | **no** | **no** | not_run | No DEMO_DATA in make_dependency-wheel.py; No callable named 'make_dependency_wheel' in make_dependency-wheel.py |
 | `difference-chart` | legacy | **no** | **no** | **no** | not_run | No DEMO_DATA in make_difference-chart.py; No callable named 'make_difference_chart' in make_difference-chart.py |

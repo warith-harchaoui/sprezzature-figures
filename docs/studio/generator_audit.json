@@ -2,7 +2,7 @@
   "summary": {
     "stable": 15,
     "experimental": 0,
-    "legacy": 75,
+    "legacy": 76,
     "unavailable": 0
   },
   "generators": [
@@ -488,6 +488,32 @@
         "No DEMO_DATA in make_convex-hull.py",
         "No callable named 'make_convex_hull' in make_convex-hull.py",
         "make_figure('convex-hull') cannot resolve to make_convex-hull.py: hyphen/underscore normalisation looks for a different filename",
+        "Default output path falls back to a shared assets/ directory"
+      ]
+    },
+    {
+      "kind": "cycle",
+      "filename": "make_cycle.py",
+      "hyphenated_kind": false,
+      "dispatcher_reachable_by_kind": true,
+      "importable": true,
+      "import_error": null,
+      "expected_callable": "make_cycle",
+      "callable_exists": false,
+      "demo_data_exists": false,
+      "demo_data_len": 0,
+      "accepts_data": false,
+      "accepts_out": false,
+      "accepts_title": false,
+      "renderer": "svg",
+      "writes_hardcoded_path": true,
+      "hardcoded_dimensions": false,
+      "render_test": "not_run",
+      "render_error": null,
+      "status": "legacy",
+      "errors": [
+        "No DEMO_DATA in make_cycle.py",
+        "No callable named 'make_cycle' in make_cycle.py",
         "Default output path falls back to a shared assets/ directory"
       ]
     },

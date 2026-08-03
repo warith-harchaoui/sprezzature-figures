@@ -657,6 +657,35 @@
     ]
   },
   {
+    "kind": "cycle",
+    "label": "Cycle",
+    "aliases": [],
+    "category": "Cyclic",
+    "description": "Directed ring of proportional arcs for a process that returns to its start (a crop rotation, the seasons, a product lifecycle, a sprint). Each arc's length is that phase's share of one full turn, wrapped by a flow arrow. Use over a pie when order and recurrence matter.",
+    "intents": [],
+    "status": "legacy",
+    "renderer": "svg",
+    "module": "scripts/make_cycle.py",
+    "callable_name": "make_cycle",
+    "required_roles": [],
+    "optional_roles": [],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 900,
+    "default_height": 600,
+    "options_schema": {},
+    "warnings": [
+      "No DEMO_DATA in make_cycle.py",
+      "No callable named 'make_cycle' in make_cycle.py",
+      "Default output path falls back to a shared assets/ directory"
+    ]
+  },
+  {
     "kind": "dendrogram",
     "label": "Dendrogram",
     "aliases": [],
