@@ -134,7 +134,14 @@ model involved:
 ```bash
 sprezzature-figures recommend --data budget.csv
 sprezzature-figures recommend --data budget.csv --render best.png  # + render the top pick
+sprezzature-figures recommend --data budget.csv --intent hierarchy  # rank for a goal
 ```
+
+Add `--intent GOAL` (`comparison`, `trend`, `distribution`, `composition`,
+`relationship`, `flow`, `hierarchy`, `geography`, `model_evaluation`) to rank
+the figures that serve that goal first. Without it, many kinds tie at the top
+because readability alone rarely separates them; the goal is what makes the
+ranking decisive.
 
 ---
 
