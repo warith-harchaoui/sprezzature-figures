@@ -15,6 +15,18 @@
 
 ### Added
 
+- **`--scale N` for hi-DPI raster output.** Both render CLIs (`make-figure`
+  and `sprezzature-figures render`) take `--scale N` to upsample `.png` /
+  `.jpg` / `.pdf` output N times, e.g. `--out chart.png --scale 3` for a
+  crisp 3x raster. It threads through to the single rasterisation choke point
+  (`scripts/_render.py`) via the `SPREZZATURE_RENDER_SCALE` env var, so no
+  generator signature changed; the default (1x) leaves output byte-identical,
+  and `.svg` / `.html` are unaffected.
+- **`--data -` reads from standard input.** `make-figure <kind> --data -`,
+  `sprezzature-figures render --data -`, and `recommend --data -` read piped
+  JSON / JSONL / CSV (the shape is sniffed from the content, since stdin has no
+  filename), so data can flow straight from a pipe without a temp file:
+  `curl -s … | make-figure bar --data -`.
 - **Render your own data from the CLI.** `make-figure <kind> --data file`
   (and the Click twin `sprezzature-figures render --data file`) now reads a
   local `.csv` / `.tsv` / `.json` / `.jsonl` file into the row shape every

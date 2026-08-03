@@ -107,16 +107,23 @@ make-figure treemap --data budget.csv --out budget.png --title "Décomposition d
 
 # Si les colonnes ne correspondent pas aux rôles, associez-les avec --map
 make-figure bar --data pib.csv --map region=Pays --map value=PIB --out pib.png
+
+# Lire les données depuis l'entrée standard avec --data - et suréchantillonner avec --scale
+cat ventes.jsonl | make-figure bar --data - --out ventes@2x.png --scale 2
 ```
 
 Le format de sortie suit l'extension de `--out` : `.svg` (par défaut,
-autonome avec polices embarquées), `.png`, `.pdf`, `.jpg` ou `.html`.
+autonome avec polices embarquées), `.png`, `.pdf`, `.jpg` ou `.html`. Pour les
+sorties raster et PDF, `--scale N` suréchantillonne N fois pour les écrans
+haute densité (`--out chart.png --scale 3`) ; l'option est sans effet sur les
+formats vectoriels `.svg`/`.html`.
 
 Le fichier `--data` est lu en une ligne (un dictionnaire) par enregistrement :
 les cellules CSV/TSV sont typées automatiquement (les nombres restent des
 nombres) et le JSON accepte soit un tableau d'objets, soit un objet
-enveloppant un tableau `"data"`. Les noms de colonnes doivent correspondre aux
-rôles attendus par le graphique.
+enveloppant un tableau `"data"`. Passez `--data -` pour lire les mêmes formats
+depuis l'entrée standard (le format est détecté d'après le contenu). Les noms
+de colonnes doivent correspondre aux rôles attendus par le graphique.
 
 Vous ne savez pas quel graphique convient à votre fichier ? Demandez une
 recommandation (nécessite les extras `[cli]` et `[studio]`). C'est le même

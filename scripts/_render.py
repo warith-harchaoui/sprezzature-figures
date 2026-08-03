@@ -38,8 +38,29 @@ from __future__ import annotations
 
 import argparse
 import inspect
+import os
 from pathlib import Path
 from typing import Callable
+
+
+def _render_scale() -> float:
+    """Read the raster/PDF scale factor from ``SPREZZATURE_RENDER_SCALE``.
+
+    Threading a ``--scale`` argument through every ``make_<id>.py`` generator
+    would mean editing ~90 hand-authored signatures; instead the render CLIs
+    set this one environment variable just before they call the generator, and
+    the single rasterisation choke point below reads it. Absent or unparseable,
+    the scale is ``1.0`` (native pixel size), so the default output is unchanged.
+    A non-positive value is ignored the same way — ``vl_convert`` would reject it.
+    """
+    raw = os.environ.get("SPREZZATURE_RENDER_SCALE")
+    if not raw:
+        return 1.0
+    try:
+        scale = float(raw)
+    except ValueError:
+        return 1.0
+    return scale if scale > 0 else 1.0
 
 
 def svg_example_path(script_file: str, figure_id: str) -> Path:
@@ -161,7 +182,10 @@ def _write_in_format(out: Path, svg: str) -> None:
             ".jpg": vlc.svg_to_jpeg,
             ".jpeg": vlc.svg_to_jpeg,
         }[suffix]
-        out.write_bytes(converter(svg))
+        # ``scale`` upsamples the raster (and enlarges the PDF page) for hi-DPI
+        # output; all three vl_convert converters accept it. At the default 1.0
+        # the bytes are identical to the un-scaled call.
+        out.write_bytes(converter(svg, scale=_render_scale()))
     else:
         # Unknown extension (e.g. .json): the generator only has an SVG string,
         # so write that rather than silently producing a mislabelled binary.

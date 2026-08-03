@@ -14,7 +14,12 @@ from pathlib import Path
 
 import pytest
 
-from sprezzature_figures.data_source import apply_mapping, load_records, parse_mapping
+from sprezzature_figures.data_source import (
+    apply_mapping,
+    load_records,
+    load_stdin_records,
+    parse_mapping,
+)
 
 
 def _write(tmp_path: Path, name: str, text: str) -> Path:
@@ -82,6 +87,46 @@ def test_load_records_rejects_bad_input(tmp_path: Path, name: str, text: str, ma
 def test_load_records_missing_file(tmp_path: Path) -> None:
     with pytest.raises(FileNotFoundError):
         load_records(tmp_path / "nope.csv")
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        '[{"name": "A", "value": 1}, {"name": "B", "value": 2}]',
+        '{"data": [{"name": "A", "value": 1}, {"name": "B", "value": 2}]}',
+        '{"name": "A", "value": 1}\n{"name": "B", "value": 2}\n',
+        "name,value\nA,1\nB,2\n",
+        "name\tvalue\nA\t1\nB\t2\n",
+    ],
+)
+def test_load_stdin_sniffs_json_jsonl_and_delimited(
+    text: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """`--data -` reads stdin and detects the shape from content: JSON array,
+    'data'-wrapped object, JSONL, and CSV/TSV all reach the same row dicts."""
+    import io
+
+    monkeypatch.setattr("sys.stdin", io.StringIO(text))
+    assert load_stdin_records() == [{"name": "A", "value": 1}, {"name": "B", "value": 2}]
+
+
+@pytest.mark.parametrize(
+    ("text", "match"),
+    [
+        ("", "no data"),
+        ("   \n  ", "no data"),
+        ("[1, 2, 3]", "object/mapping"),
+        ("{}", "expected a JSON array"),
+    ],
+)
+def test_load_stdin_rejects_bad_input(
+    text: str, match: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import io
+
+    monkeypatch.setattr("sys.stdin", io.StringIO(text))
+    with pytest.raises(ValueError, match=match):
+        load_stdin_records()
 
 
 def test_parse_mapping_valid_and_invalid() -> None:

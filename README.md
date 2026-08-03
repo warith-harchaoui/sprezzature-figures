@@ -106,14 +106,22 @@ make-figure treemap --data budget.csv --out budget.png --title "Budget breakdown
 
 # When your columns don't match the figure's role names, bind them with --map
 make-figure bar --data gdp.csv --map region=Country --map value=GDP --out gdp.png
+
+# Pipe data in with --data - and upsample the raster with --scale
+cat sales.jsonl | make-figure bar --data - --out sales@2x.png --scale 2
 ```
 
 The output format follows the `--out` extension: `.svg` (default, fully
-self-contained with embedded fonts), `.png`, `.pdf`, `.jpg`, or `.html`.
+self-contained with embedded fonts), `.png`, `.pdf`, `.jpg`, or `.html`. For
+raster and PDF output, `--scale N` upsamples N times for hi-DPI displays
+(`--out chart.png --scale 3`); it is ignored for the vector `.svg`/`.html`
+forms.
 
 The `--data` file is read into one row dict per record: CSV/TSV cells are
 type-coerced (numbers stay numbers), and JSON accepts either a bare array of
-objects or an object wrapping a `"data"` array. Column names should match the
+objects or an object wrapping a `"data"` array. Pass `--data -` to read the
+same formats from standard input (the shape is sniffed from the content).
+Column names should match the
 roles the chart expects (`make-figure --list --status stable`, then see
 [FIGURES.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/FIGURES.md));
 when they don't, `--map role=column` binds them without touching the file.

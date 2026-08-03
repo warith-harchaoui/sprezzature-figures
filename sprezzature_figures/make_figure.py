@@ -251,9 +251,18 @@ def main() -> None:
     )
     parser.add_argument("--title", default="", help="Chart title.")
     parser.add_argument(
+        "--scale",
+        type=float,
+        default=None,
+        metavar="N",
+        help="Upsample raster/PDF output N times for hi-DPI (e.g. --out chart.png --scale 3). "
+        "Ignored for .svg/.html. Default: 1.",
+    )
+    parser.add_argument(
         "--data",
         default=None,
-        help="Render your own data file (.csv/.tsv/.json/.jsonl) instead of the built-in demo data.",
+        help="Render your own data file (.csv/.tsv/.json/.jsonl) instead of the built-in demo data. "
+        "Use '-' to read from stdin.",
     )
     parser.add_argument(
         "--map",
@@ -293,10 +302,10 @@ def main() -> None:
         sys.exit(1)
 
     if args.data:
-        from .data_source import apply_mapping, load_records, parse_mapping
+        from .data_source import apply_mapping, load_records, load_stdin_records, parse_mapping
 
         try:
-            data = load_records(args.data)
+            data = load_stdin_records() if args.data == "-" else load_records(args.data)
             data = apply_mapping(data, parse_mapping(args.map))
         except (FileNotFoundError, ValueError) as exc:
             print(f"Error reading --data: {exc}", file=sys.stderr)
@@ -306,6 +315,11 @@ def main() -> None:
             print("--map only applies with --data.", file=sys.stderr)
             sys.exit(1)
         data = _demo_data_for(canonical)
+
+    if args.scale is not None:
+        import os
+
+        os.environ["SPREZZATURE_RENDER_SCALE"] = repr(args.scale)
 
     kwargs: dict[str, Any] = {"title": args.title}
     if args.out:

@@ -17,7 +17,9 @@ Warith Harchaoui <warith.harchaoui@gmail.com>
 from __future__ import annotations
 
 import csv
+import io
 import json
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -120,18 +122,7 @@ def load_records(path: str | Path) -> list[dict[str, Any]]:
     suffix = path.suffix.lower()
 
     if suffix == ".json":
-        payload = json.loads(path.read_text(encoding="utf-8"))
-        if isinstance(payload, dict):
-            for key in ("data", "rows", "records", "values"):
-                if isinstance(payload.get(key), list):
-                    payload = payload[key]
-                    break
-        if not isinstance(payload, list):
-            raise ValueError(
-                f"{path.name}: expected a JSON array of row objects (or an object with a "
-                "'data'/'rows' array), got a top-level " + type(payload).__name__
-            )
-        records = payload
+        records = _unwrap_json_array(json.loads(path.read_text(encoding="utf-8")), path.name)
     elif suffix in (".jsonl", ".ndjson"):
         records = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
     elif suffix in (".csv", ".tsv", ".txt"):
@@ -143,11 +134,84 @@ def load_records(path: str | Path) -> list[dict[str, Any]]:
             f"unsupported data format {suffix!r} for {path.name}; use .csv, .tsv, .json, or .jsonl"
         )
 
+    return _validate_records(records, path.name)
+
+
+def _unwrap_json_array(payload: Any, source: str) -> list[Any]:
+    """Return the row array from a parsed JSON payload.
+
+    Accepts either a bare array of objects or a single object that wraps the
+    rows under a ``data``/``rows``/``records``/``values`` key -- the two shapes
+    real-world JSON exports come in. Anything else is a usage error.
+    """
+    if isinstance(payload, dict):
+        for key in ("data", "rows", "records", "values"):
+            if isinstance(payload.get(key), list):
+                return payload[key]
+    if not isinstance(payload, list):
+        raise ValueError(
+            f"{source}: expected a JSON array of row objects (or an object with a "
+            "'data'/'rows' array), got a top-level " + type(payload).__name__
+        )
+    return payload
+
+
+def _validate_records(records: list[Any], source: str) -> list[dict[str, Any]]:
+    """Guard the invariant every caller relies on: a non-empty list of dicts."""
     if not all(isinstance(row, dict) for row in records):
-        raise ValueError(f"{path.name}: every row must be an object/mapping, not a bare value")
+        raise ValueError(f"{source}: every row must be an object/mapping, not a bare value")
     if not records:
-        raise ValueError(f"{path.name}: no data rows found")
+        raise ValueError(f"{source}: no data rows found")
     return records
+
+
+def load_stdin_records() -> list[dict[str, Any]]:
+    """Read row records piped to standard input, sniffing the format from content.
+
+    Backs the ``--data -`` form of the render/recommend CLIs, so data can be
+    piped straight in (``curl ... | make-figure bar --data -``) with no temp
+    file. Standard input has no filename to key the format off, so the shape is
+    detected from the bytes: a leading ``[`` or ``{`` is parsed as JSON; failing
+    that, if every non-blank line is its own JSON object it is JSONL; otherwise
+    it is delimited text (delimiter sniffed, cells coerced) exactly like a CSV.
+
+    Raises
+    ------
+    ValueError
+        If standard input is empty or parses to something other than rows.
+    """
+    text = sys.stdin.read()
+    stripped = text.strip()
+    if not stripped:
+        raise ValueError("stdin: no data received (did you pipe a file in?)")
+
+    # JSONL first: several compact objects, one per line, each starting with '{'.
+    # This has to be checked before the single-JSON branch, since a JSONL stream
+    # also starts with '{' but is not one parseable JSON document. A pretty-
+    # printed array/object fails the all-lines-start-with-'{' test and falls
+    # through to the single-JSON branch below.
+    lines = [line for line in stripped.splitlines() if line.strip()]
+    if len(lines) > 1 and all(line.lstrip().startswith("{") for line in lines):
+        try:
+            records = [json.loads(line) for line in lines]
+        except json.JSONDecodeError:
+            pass  # not JSONL after all; fall through to single-JSON / delimited
+        else:
+            return _validate_records(records, "stdin")
+
+    if stripped[0] in "[{":
+        return _validate_records(_unwrap_json_array(json.loads(stripped), "stdin"), "stdin")
+
+    try:
+        delimiter = csv.Sniffer().sniff(text[:65_536], delimiters=",;\t|").delimiter
+    except csv.Error:
+        delimiter = ","
+    reader = csv.DictReader(io.StringIO(text), delimiter=delimiter)
+    records = [
+        {k: _coerce_scalar(v) if isinstance(v, str) else v for k, v in row.items()}
+        for row in reader
+    ]
+    return _validate_records(records, "stdin")
 
 
 def parse_mapping(pairs: list[str]) -> dict[str, str]:

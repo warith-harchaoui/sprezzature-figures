@@ -57,11 +57,20 @@ else:
     )
     @click.option("--title", default="", help="Chart title.")
     @click.option(
+        "--scale",
+        default=None,
+        type=float,
+        metavar="N",
+        help="Upsample raster/PDF output N times for hi-DPI (e.g. --out chart.png --scale 3). "
+        "Ignored for .svg/.html.",
+    )
+    @click.option(
         "--data",
         "data_path",
         default=None,
-        type=click.Path(exists=True, dir_okay=False),
-        help="Render your own data file (.csv/.tsv/.json/.jsonl) instead of the demo data.",
+        type=click.Path(exists=True, dir_okay=False, allow_dash=True),
+        help="Render your own data file (.csv/.tsv/.json/.jsonl) instead of the demo data. "
+        "Use '-' to read from stdin.",
     )
     @click.option(
         "--map",
@@ -72,7 +81,12 @@ else:
         "(repeatable). Only used with --data.",
     )
     def render_cmd(
-        kind: str, out: str | None, title: str, data_path: str | None, mappings: tuple[str, ...]
+        kind: str,
+        out: str | None,
+        title: str,
+        scale: float | None,
+        data_path: str | None,
+        mappings: tuple[str, ...],
     ) -> None:
         """Render KIND from a --data file, or its DEMO_DATA. KIND is a chart type name."""
         canonical = resolve_kind(kind)
@@ -82,10 +96,10 @@ else:
             raise SystemExit(1)
 
         if data_path:
-            from .data_source import apply_mapping, load_records, parse_mapping
+            from .data_source import apply_mapping, load_records, load_stdin_records, parse_mapping
 
             try:
-                data = load_records(data_path)
+                data = load_stdin_records() if data_path == "-" else load_records(data_path)
                 data = apply_mapping(data, parse_mapping(list(mappings)))
             except (FileNotFoundError, ValueError) as exc:
                 click.echo(f"Error reading --data: {exc}", err=True)
@@ -95,6 +109,11 @@ else:
                 click.echo("--map only applies with --data.", err=True)
                 raise SystemExit(1)
             data = _demo_data_for(canonical)
+
+        if scale is not None:
+            import os
+
+            os.environ["SPREZZATURE_RENDER_SCALE"] = repr(scale)
 
         kwargs: dict = {"title": title}
         if out:
@@ -114,8 +133,9 @@ else:
         "--data",
         "data_path",
         required=True,
-        type=click.Path(exists=True, dir_okay=False),
-        help="Data file (.csv/.tsv/.json/.jsonl) to recommend chart types for.",
+        type=click.Path(exists=True, dir_okay=False, allow_dash=True),
+        help="Data file (.csv/.tsv/.json/.jsonl) to recommend chart types for. "
+        "Use '-' to read from stdin.",
     )
     @click.option("--limit", default=5, show_default=True, help="How many recommendations to show.")
     @click.option(
@@ -130,13 +150,17 @@ else:
         Runs the same deterministic compatibility filter + readability score the
         Studio GUI shows as recommendation cards, headless. No model involved.
         """
-        from .data_source import load_records
+        from pathlib import Path
+
+        from .data_source import load_records, load_stdin_records
 
         try:
-            records = load_records(data_path)
+            records = load_stdin_records() if data_path == "-" else load_records(data_path)
         except (FileNotFoundError, ValueError) as exc:
             click.echo(f"Error reading --data: {exc}", err=True)
             raise SystemExit(1) from exc
+
+        name = "stdin" if data_path == "-" else Path(data_path).name
 
         try:
             import pandas as pd
@@ -151,9 +175,6 @@ else:
             )
             raise SystemExit(1) from exc
 
-        from pathlib import Path
-
-        name = Path(data_path).name
         profile = profile_dataframe(
             pd.DataFrame(records), dataset_id=name, fingerprint="cli", source_name=name
         )
