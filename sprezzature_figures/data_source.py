@@ -148,3 +148,40 @@ def load_records(path: str | Path) -> list[dict[str, Any]]:
     if not records:
         raise ValueError(f"{path.name}: no data rows found")
     return records
+
+
+def parse_mapping(pairs: list[str]) -> dict[str, str]:
+    """Parse ``--map role=column`` CLI strings into a ``{role: column}`` dict.
+
+    Raises ``ValueError`` on a token missing the ``=`` or with an empty side.
+    """
+    mapping: dict[str, str] = {}
+    for pair in pairs:
+        role, sep, column = pair.partition("=")
+        role, column = role.strip(), column.strip()
+        if not sep or not role or not column:
+            raise ValueError(f"--map expects role=column, got {pair!r}")
+        mapping[role] = column
+    return mapping
+
+
+def apply_mapping(records: list[dict[str, Any]], mapping: dict[str, str]) -> list[dict[str, Any]]:
+    """Alias source columns to the role names a figure expects.
+
+    For each ``{role: column}`` entry, add a ``role``-named key to every row
+    carrying that column's value, keeping the originals. This lets a file whose
+    headers don't match a figure's role names still render, without editing the
+    file. Returns ``records`` unchanged when ``mapping`` is empty.
+
+    Raises
+    ------
+    ValueError
+        If a mapped source column is absent from the data.
+    """
+    if not mapping:
+        return records
+    columns = set(records[0]) if records else set()
+    missing = sorted({col for col in mapping.values() if col not in columns})
+    if missing:
+        raise ValueError(f"--map source column(s) not in data: {', '.join(missing)}")
+    return [{**row, **{role: row.get(col) for role, col in mapping.items()}} for row in records]

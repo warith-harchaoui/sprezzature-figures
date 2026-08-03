@@ -256,6 +256,14 @@ def main() -> None:
         help="Render your own data file (.csv/.tsv/.json/.jsonl) instead of the built-in demo data.",
     )
     parser.add_argument(
+        "--map",
+        action="append",
+        default=[],
+        metavar="ROLE=COLUMN",
+        help="Bind a figure role to a data column when they differ, e.g. --map value=GDP "
+        "(repeatable). Only used with --data.",
+    )
+    parser.add_argument(
         "--list", action="store_true", help="Print all available chart kinds and exit."
     )
     parser.add_argument(
@@ -285,21 +293,31 @@ def main() -> None:
         sys.exit(1)
 
     if args.data:
-        from .data_source import load_records
+        from .data_source import apply_mapping, load_records, parse_mapping
 
         try:
             data = load_records(args.data)
+            data = apply_mapping(data, parse_mapping(args.map))
         except (FileNotFoundError, ValueError) as exc:
             print(f"Error reading --data: {exc}", file=sys.stderr)
             sys.exit(1)
     else:
+        if args.map:
+            print("--map only applies with --data.", file=sys.stderr)
+            sys.exit(1)
         data = _demo_data_for(canonical)
 
     kwargs: dict[str, Any] = {"title": args.title}
     if args.out:
         kwargs["out"] = args.out
 
-    result = make_figure(args.kind, data, **kwargs)
+    try:
+        result = make_figure(args.kind, data, **kwargs)
+    except (ValueError, AttributeError, FileNotFoundError, RuntimeError) as exc:
+        print(f"Error rendering {args.kind!r}: {exc}", file=sys.stderr)
+        if args.data:
+            print("If your columns don't match the figure's roles, bind them with --map role=column.", file=sys.stderr)
+        sys.exit(1)
     print(result)
 
 
