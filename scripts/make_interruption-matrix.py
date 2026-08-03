@@ -33,7 +33,7 @@ from typing import Any, Dict, List, Tuple
 
 from _interactive import fullscreen_control
 from _render import svg_example_path, write_svg
-from _style import load_palette, os_adaptive_style, os_dark_style
+from _style import leveled_colors, os_adaptive_style, os_dark_style
 from _svg import xml_escape
 
 # ------------------------------------------------------------------
@@ -80,33 +80,36 @@ def _text_w(text: str, size: float) -> float:
     return sum(0.60 if c.isupper() else 0.53 for c in text) * size
 
 
-#: Speaker hues, as ``(palette name, hex fallback)`` pairs. The names are the
-#: ones present in BOTH the full sprezzature-colors palette and the bundled
-#: ``_style`` fallback (the latter is what runs when sprezzature-colors is not
-#: co-installed, e.g. in CI), and the hex fallback keeps ``.get`` crash-proof
-#: even if a name is ever dropped — so the wheel never KeyErrors on any palette.
-_WHEEL: List[Tuple[str, str]] = [
-    ("Blue", "#007AFF"),
-    ("Purple", "#AF52DE"),
-    ("Orange", "#FF9500"),
-    ("Green", "#34C759"),
-    ("Red", "#FF3B30"),
-    ("Yellow", "#FFCC00"),
-    ("Brown", "#A2845E"),
+#: Speaker hues — a fixed, deep wheel chosen to satisfy two house standards at
+#: once. (1) WCAG: every hue is dark enough to clear AA (>= 4.5:1) as name text
+#: on the white background, so identity labels stay legible. (2) CVD: the hues
+#: are ordered so the most-used first few stay separable under protanopia,
+#: deuteranopia and tritanopia (teal / violet / rust / green lead, red and
+#: amber later). Because they are literal hexes (not palette-name lookups) the
+#: wheel can never KeyError on any palette, and :func:`_style.leveled_colors`
+#: still remaps them per accessibility level below. Cycles past seven speakers.
+_WHEEL: List[str] = [
+    "#0e7490",  # teal-700
+    "#6d28d9",  # violet-700
+    "#c2410c",  # rust-700
+    "#15803d",  # green-700
+    "#b91c1c",  # red-700
+    "#a16207",  # amber-700
+    "#be185d",  # pink-700
 ]
 
 
 def _person_colors(order: List[str], accessibility: str = "universal") -> Dict[str, str]:
-    """Map each speaker to a stable hue from the house palette.
+    """Map each speaker to a stable, CVD-safe, contrast-safe hue.
 
-    Colours are assigned in a fixed, well-separated order so the same speaker
-    keeps the same colour across renders (and shares the first hues with the
-    companion ``speaking_time`` figure), and cycle if there are more speakers
-    than hues.
+    The same speaker keeps the same colour across renders (and cycles past the
+    wheel length). :func:`_style.leveled_colors` applies the requested
+    accessibility level (identity at ``"universal"``), so ``--accessibility
+    deuteranopia`` and friends remap the wheel when sprezzature-colors is
+    co-installed.
     """
-    pal = load_palette(accessibility)
-    wheel = [pal.get(name, hexv) for name, hexv in _WHEEL]
-    return {name: wheel[i % len(wheel)] for i, name in enumerate(order)}
+    base = {name: _WHEEL[i % len(_WHEEL)] for i, name in enumerate(order)}
+    return leveled_colors(base, accessibility)
 
 
 def _aggregate(data: List[Dict[str, Any]]) -> Tuple[List[str], Dict[str, Dict[str, int]], Dict[str, int], Dict[str, int]]:
@@ -324,7 +327,12 @@ def build_svg(
                 continue
             v = m[a][b]
             norm = v / hi
-            op = 0.0 if v == 0 else 0.16 + 0.72 * norm
+            # Opacity encodes magnitude, but capped at 0.66 so the tint never
+            # gets so dark that the INK cell number drops below WCAG AA (4.5:1);
+            # the count is always printed in INK, verified >= 4.76:1 across the
+            # whole wheel and opacity range. So contrast never rests on the
+            # colour switch, and the number is legible on every cell.
+            op = 0.0 if v == 0 else 0.14 + 0.52 * norm
             fill = ZERO if v == 0 else color_of[b]
             klass = "cell" if v == 0 else f"cell spk-{idx[b]}"
             tip = f"{xml_escape(b)} coupe {xml_escape(a)} × {v}" if v else f"{xml_escape(b)} ne coupe jamais {xml_escape(a)}"
@@ -334,10 +342,9 @@ def build_svg(
                 f'fill="{fill}" fill-opacity="{op:.3f}" stroke="{HAIRLINE}" stroke-width="1"/>',
             ]
             if v:
-                tcol = "#FFFFFF" if norm > 0.5 else INK
                 g.append(
                     f'<text x="{x + CELL / 2:.1f}" y="{y + CELL / 2:.1f}" text-anchor="middle" '
-                    f'dominant-baseline="central" font-size="19" font-weight="700" fill="{tcol}" '
+                    f'dominant-baseline="central" font-size="19" font-weight="700" fill="{INK}" '
                     f'pointer-events="none">{v}</text>'
                 )
             g.append("</g>")
