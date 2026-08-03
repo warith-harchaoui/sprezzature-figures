@@ -101,7 +101,16 @@ make-figure --list
 make-figure bar --out revenu.png --title "Revenu par région"
 make-figure treemap --out budget.png --title "Décomposition du budget"
 make-figure funnel --out entonnoir.png
+
+# Générer à partir de vos propres données (.csv, .tsv, .json, .jsonl)
+make-figure treemap --data budget.csv --out budget.png --title "Décomposition du budget"
 ```
+
+Le fichier `--data` est lu en une ligne (un dictionnaire) par enregistrement :
+les cellules CSV/TSV sont typées automatiquement (les nombres restent des
+nombres) et le JSON accepte soit un tableau d'objets, soit un objet
+enveloppant un tableau `"data"`. Les noms de colonnes doivent correspondre aux
+rôles attendus par le graphique.
 
 ---
 
