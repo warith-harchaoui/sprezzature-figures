@@ -13,6 +13,13 @@
   numeric coercion otherwise, so it works on a bare install. `make_figure.py`
   also gained a `__main__` guard, so `python -m sprezzature_figures.make_figure`
   works.
+- **Headless chart recommendation from the CLI.** `sprezzature-figures
+  recommend --data file` ranks the chart types your data can fill, best first,
+  showing each figure's score and its `role=column` binding. It reuses the same
+  deterministic `studio.recommendation` filter + readability score the Studio
+  GUI shows as cards, with no model involved. `--render out` also renders the
+  top pick, applying its role binding automatically. Needs the `[cli]` +
+  `[studio]` extras (falls back to a clear install hint otherwise).
 - **Transformations now execute.** `core.transformations.apply_transformations`
   runs a `FigurePlan`'s filter / sort / aggregate / top-N / group-others /
   calculate / temporal steps deterministically over the imported rows, in list

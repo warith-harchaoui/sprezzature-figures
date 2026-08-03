@@ -112,6 +112,16 @@ nombres) et le JSON accepte soit un tableau d'objets, soit un objet
 enveloppant un tableau `"data"`. Les noms de colonnes doivent correspondre aux
 rôles attendus par le graphique.
 
+Vous ne savez pas quel graphique convient à votre fichier ? Demandez une
+recommandation (nécessite les extras `[cli]` et `[studio]`). C'est le même
+classement déterministe (compatibilité et lisibilité) que les cartes de la GUI
+Studio, sans aucun modèle :
+
+```bash
+sprezzature-figures recommend --data budget.csv
+sprezzature-figures recommend --data budget.csv --render best.png
+```
+
 ---
 
 ## Catalogue des graphiques

@@ -84,3 +84,76 @@ else:
 
         result = make_figure(kind, data, **kwargs)
         click.echo(result)
+
+    @main.command("recommend")
+    @click.option(
+        "--data",
+        "data_path",
+        required=True,
+        type=click.Path(exists=True, dir_okay=False),
+        help="Data file (.csv/.tsv/.json/.jsonl) to recommend chart types for.",
+    )
+    @click.option("--limit", default=5, show_default=True, help="How many recommendations to show.")
+    @click.option(
+        "--render",
+        "render_out",
+        default=None,
+        help="Also render the top recommendation to this output path.",
+    )
+    def recommend_cmd(data_path: str, limit: int, render_out: str | None) -> None:
+        """Rank the chart types your DATA file can fill, best first.
+
+        Runs the same deterministic compatibility filter + readability score the
+        Studio GUI shows as recommendation cards, headless. No model involved.
+        """
+        from .data_source import load_records
+
+        try:
+            records = load_records(data_path)
+        except (FileNotFoundError, ValueError) as exc:
+            click.echo(f"Error reading --data: {exc}", err=True)
+            raise SystemExit(1) from exc
+
+        try:
+            import pandas as pd
+
+            from .studio.ingest.profiler import profile_dataframe
+            from .studio.recommendation import assign_columns, rank
+        except ImportError as exc:
+            click.echo(
+                "recommend needs the profiling stack. Install with: "
+                "pip install 'sprezzature-figures[studio]' (or [dataviz]).",
+                err=True,
+            )
+            raise SystemExit(1) from exc
+
+        from pathlib import Path
+
+        name = Path(data_path).name
+        profile = profile_dataframe(
+            pd.DataFrame(records), dataset_id=name, fingerprint="cli", source_name=name
+        )
+        ranked = rank(profile)
+        if not ranked:
+            click.echo(
+                f"No stable chart type can be filled from {name} "
+                f"({profile.column_count} columns, {profile.row_count} rows). "
+                "See `sprezzature-figures list --status stable`.",
+                err=True,
+            )
+            raise SystemExit(1)
+
+        click.echo(f"Top {min(limit, len(ranked))} chart types for {name} (best first):")
+        for definition, figure_score in ranked[:limit]:
+            binding = assign_columns(definition, profile) or {}
+            roles = ", ".join(f"{role}={col}" for role, col in binding.items())
+            click.echo(f"  {definition.kind:<20} score={figure_score:.2f}  {roles}")
+
+        if render_out:
+            top = ranked[0][0]
+            top_binding = assign_columns(top, profile) or {}
+            # Alias each bound column to the role name the generator expects,
+            # keeping the originals so figures that read extra columns still work.
+            bound = [{**row, **{role: row[col] for role, col in top_binding.items()}} for row in records]
+            result = make_figure(top.kind, bound, out=render_out)
+            click.echo(f"rendered top recommendation ({top.kind}) -> {result}")

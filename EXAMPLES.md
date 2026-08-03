@@ -97,6 +97,11 @@ make-figure dumbbell --out dumbbell.png --title "Pay gap by role"
 # Render your own file instead of the demo data (.csv, .tsv, .json, .jsonl)
 make-figure treemap --data budget.csv --out budget.png
 make-figure bar --data sales.json --out sales.svg --title "Sales by region"
+
+# Ask which chart types fit your file, then render the best one
+# (needs the [cli] + [studio] extras; no model involved)
+sprezzature-figures recommend --data sales.csv
+sprezzature-figures recommend --data sales.csv --render best.png
 ```
 
 `budget.csv` above is just a table whose columns match the chart's roles, e.g.

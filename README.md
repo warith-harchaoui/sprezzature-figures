@@ -111,6 +111,16 @@ objects or an object wrapping a `"data"` array. Column names must match the
 roles the chart expects (`make-figure --list --status stable`, then see
 [FIGURES.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/FIGURES.md)).
 
+Not sure which chart fits your file? Ask for a recommendation (needs the
+`[cli]` and `[studio]` extras). This runs the same deterministic
+compatibility + readability ranking the Studio GUI shows as cards, with no
+model involved:
+
+```bash
+sprezzature-figures recommend --data budget.csv
+sprezzature-figures recommend --data budget.csv --render best.png  # + render the top pick
+```
+
 ---
 
 ## Chart catalogue
