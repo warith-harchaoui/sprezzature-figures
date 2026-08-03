@@ -72,12 +72,6 @@ class UserIntent(BaseModel):
         default_factory=list,
         description="Points the request leaves unclear and that a human should confirm; empty if the request is clear.",
     )
-    confidence: float = Field(
-        default=0.0,
-        ge=0.0,
-        le=1.0,
-        description="Your confidence, 0.0-1.0, that this analysis captures the user's actual intent.",
-    )
 
 
 class ColumnBinding(BaseModel):

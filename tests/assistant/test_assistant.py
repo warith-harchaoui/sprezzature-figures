@@ -82,7 +82,7 @@ def test_validate_or_repair_escalation() -> None:
 
 
 def test_fake_client_chat_text_queue_and_recording() -> None:
-    intent = UserIntent(analytical_goal="trend", confidence=0.5)
+    intent = UserIntent(analytical_goal="trend")
     client = FakeLLMClient([intent])
 
     # Queued model instance is returned as-is; once drained, the last response
@@ -117,11 +117,11 @@ def test_fake_client_chat_vision_accepts_image_bytes() -> None:
 
 
 def test_analyze_intent_returns_user_intent() -> None:
-    intent = UserIntent(analytical_goal="comparison", message_to_convey="revenue by region", confidence=0.9)
+    intent = UserIntent(analytical_goal="comparison", message_to_convey="revenue by region")
     client = FakeLLMClient([intent])
     result = analyze_intent(client, "show revenue by region", _profile())
     assert result.analytical_goal == "comparison"
-    assert result.confidence == 0.9
+    assert result.message_to_convey == "revenue by region"
 
 
 # --------------------------------------------------------------------------
@@ -186,7 +186,7 @@ def test_set_style_option_undeclared_option_cannot_be_built() -> None:
 
 def test_explain_recommendations_filters_invented_kinds_and_skips_empty() -> None:
     defn = get_figure_definition("bar")
-    intent = UserIntent(analytical_goal="comparison", confidence=0.8)
+    intent = UserIntent(analytical_goal="comparison")
 
     # Hallucinated kinds are dropped, real ones survive.
     rec_set = RecommendationSet(
