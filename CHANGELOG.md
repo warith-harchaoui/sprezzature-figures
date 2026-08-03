@@ -4,6 +4,15 @@
 
 ### Added
 
+- **Render your own data from the CLI.** `make-figure <kind> --data file`
+  (and the Click twin `sprezzature-figures render --data file`) now reads a
+  local `.csv` / `.tsv` / `.json` / `.jsonl` file into the row shape every
+  generator expects, instead of only the built-in demo data. The loader
+  (`sprezzature_figures.data_source.load_records`) stays dependency-light: it
+  uses pandas when installed and falls back to the stdlib `csv` reader with
+  numeric coercion otherwise, so it works on a bare install. `make_figure.py`
+  also gained a `__main__` guard, so `python -m sprezzature_figures.make_figure`
+  works.
 - **Transformations now execute.** `core.transformations.apply_transformations`
   runs a `FigurePlan`'s filter / sort / aggregate / top-N / group-others /
   calculate / temporal steps deterministically over the imported rows, in list

@@ -247,6 +247,11 @@ def main() -> None:
     parser.add_argument("--out", default=None, help="Output file path.")
     parser.add_argument("--title", default="", help="Chart title.")
     parser.add_argument(
+        "--data",
+        default=None,
+        help="Render your own data file (.csv/.tsv/.json/.jsonl) instead of the built-in demo data.",
+    )
+    parser.add_argument(
         "--list", action="store_true", help="Print all available chart kinds and exit."
     )
     parser.add_argument(
@@ -275,10 +280,24 @@ def main() -> None:
         print("Run `make-figure --list` to see available kinds.", file=sys.stderr)
         sys.exit(1)
 
-    demo_data = _demo_data_for(canonical)
+    if args.data:
+        from .data_source import load_records
+
+        try:
+            data = load_records(args.data)
+        except (FileNotFoundError, ValueError) as exc:
+            print(f"Error reading --data: {exc}", file=sys.stderr)
+            sys.exit(1)
+    else:
+        data = _demo_data_for(canonical)
+
     kwargs: dict[str, Any] = {"title": args.title}
     if args.out:
         kwargs["out"] = args.out
 
-    result = make_figure(args.kind, demo_data, **kwargs)
+    result = make_figure(args.kind, data, **kwargs)
     print(result)
+
+
+if __name__ == "__main__":
+    main()

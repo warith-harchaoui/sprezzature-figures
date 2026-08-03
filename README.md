@@ -100,7 +100,16 @@ make-figure --list
 make-figure bar --out revenue.png --title "Revenue by region"
 make-figure treemap --out budget.png --title "Budget breakdown"
 make-figure funnel --out funnel.png
+
+# Render your own data instead of the demo rows (.csv, .tsv, .json, .jsonl)
+make-figure treemap --data budget.csv --out budget.png --title "Budget breakdown"
 ```
+
+The `--data` file is read into one row dict per record: CSV/TSV cells are
+type-coerced (numbers stay numbers), and JSON accepts either a bare array of
+objects or an object wrapping a `"data"` array. Column names must match the
+roles the chart expects (`make-figure --list --status stable`, then see
+[FIGURES.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/FIGURES.md)).
 
 ---
 

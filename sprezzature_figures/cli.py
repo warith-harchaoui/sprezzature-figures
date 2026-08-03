@@ -52,18 +52,35 @@ else:
     @click.argument("kind")
     @click.option("--out", default=None, help="Output file path.")
     @click.option("--title", default="", help="Chart title.")
-    def render_cmd(kind: str, out: str | None, title: str) -> None:
-        """Render KIND using its DEMO_DATA. KIND is a chart type name."""
+    @click.option(
+        "--data",
+        "data_path",
+        default=None,
+        type=click.Path(exists=True, dir_okay=False),
+        help="Render your own data file (.csv/.tsv/.json/.jsonl) instead of the demo data.",
+    )
+    def render_cmd(kind: str, out: str | None, title: str, data_path: str | None) -> None:
+        """Render KIND from a --data file, or its DEMO_DATA. KIND is a chart type name."""
         canonical = resolve_kind(kind)
         if canonical is None:
             click.echo(f"Error: no script for kind={kind!r}.", err=True)
             click.echo("Run `sprezzature-figures list` to see available kinds.", err=True)
             raise SystemExit(1)
 
-        demo_data = _demo_data_for(canonical)
+        if data_path:
+            from .data_source import load_records
+
+            try:
+                data = load_records(data_path)
+            except (FileNotFoundError, ValueError) as exc:
+                click.echo(f"Error reading --data: {exc}", err=True)
+                raise SystemExit(1) from exc
+        else:
+            data = _demo_data_for(canonical)
+
         kwargs: dict = {"title": title}
         if out:
             kwargs["out"] = out
 
-        result = make_figure(kind, demo_data, **kwargs)
+        result = make_figure(kind, data, **kwargs)
         click.echo(result)
