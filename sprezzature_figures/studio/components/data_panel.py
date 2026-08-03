@@ -38,8 +38,8 @@ def _load_upload(state: SessionState, filename: str, content: bytes) -> str | No
     Returns an error message, or None on success.
     """
     suffix = Path(filename).suffix.lower()
-    if suffix not in (".csv", ".xlsx"):
-        return f"Unsupported file type {suffix!r} -- upload a .csv or .xlsx file."
+    if suffix not in (".csv", ".tsv", ".xlsx", ".json", ".jsonl", ".ndjson"):
+        return f"Unsupported file type {suffix!r} -- upload a .csv, .tsv, .xlsx, .json, or .jsonl file."
 
     with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
         tmp.write(content)
@@ -50,9 +50,22 @@ def _load_upload(state: SessionState, filename: str, content: bytes) -> str | No
         if size_issues:
             return size_issues[0].message
 
-        if suffix == ".csv":
+        if suffix in (".csv", ".tsv"):
             options = sniff_csv(tmp_path)
             df = read_csv(tmp_path, options)
+            fingerprint = csv_fingerprint(tmp_path)
+            sheet_name = None
+        elif suffix in (".json", ".jsonl", ".ndjson"):
+            # Reuse the CLI's dependency-light loader so the GUI and
+            # `make-figure --data` accept exactly the same JSON shapes.
+            import pandas as pd
+
+            from sprezzature_figures.data_source import load_records
+
+            try:
+                df = pd.DataFrame(load_records(tmp_path))
+            except ValueError as exc:
+                return str(exc)
             fingerprint = csv_fingerprint(tmp_path)
             sheet_name = None
         else:
@@ -156,7 +169,7 @@ def build_data_panel(state: SessionState, *, on_ready: Callable[[FigurePlan], No
         status_label.classes(replace="text-sm text-green-600")
         binding_form.refresh()
 
-    ui.upload(on_upload=handle_upload, auto_upload=True, label="Import CSV or XLSX").props(
-        'accept=".csv,.xlsx"'
+    ui.upload(on_upload=handle_upload, auto_upload=True, label="Import CSV, XLSX, or JSON").props(
+        'accept=".csv,.tsv,.xlsx,.json,.jsonl"'
     ).classes("w-full")
     binding_form()

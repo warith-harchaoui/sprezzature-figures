@@ -71,6 +71,20 @@ def test_load_upload_reads_valid_csv_and_rejects_bad_input() -> None:
     assert empty is not None and "no data rows" in empty
 
 
+def test_load_upload_accepts_json_and_jsonl() -> None:
+    """The data panel accepts the same JSON shapes as `make-figure --data`,
+    routed through the shared data_source.load_records."""
+    state = SessionState()
+    err = _load_upload(state, "revenue.json", b'[{"region": "North", "value": 42}]')
+    assert err is None
+    assert state.data == [{"region": "North", "value": 42}]
+
+    state2 = SessionState()
+    err2 = _load_upload(state2, "revenue.jsonl", b'{"region": "N", "value": 1}\n{"region": "S", "value": 2}\n')
+    assert err2 is None
+    assert state2.dataset_profile is not None and state2.dataset_profile.row_count == 2
+
+
 def test_resolve_data_maps_role_bindings_to_column_names() -> None:
     state = SessionState()
     state.data = [{"city": "Paris", "amount": 10}, {"city": "Lyon", "amount": 20}]

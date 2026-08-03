@@ -24,6 +24,10 @@
   numeric coercion otherwise, so it works on a bare install. `make_figure.py`
   also gained a `__main__` guard, so `python -m sprezzature_figures.make_figure`
   works.
+- **The Studio data panel accepts JSON too.** File import now takes
+  `.csv` / `.tsv` / `.xlsx` / `.json` / `.jsonl`, routing JSON through the same
+  `data_source.load_records` the CLI uses, so both surfaces accept identical
+  shapes.
 - **Headless chart recommendation from the CLI.** `sprezzature-figures
   recommend --data file` ranks the chart types your data can fill, best first,
   showing each figure's score and its `role=column` binding. It reuses the same

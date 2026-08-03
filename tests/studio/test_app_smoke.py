@@ -67,7 +67,7 @@ def test_studio_server_launches_and_serves_index_page() -> None:
             raise AssertionError(f"server never became reachable: {last_error}\n--- subprocess output ---\n{out}")
         assert status == 200
         assert "Sprezzature Studio" in html
-        assert "Import CSV or XLSX" in html
+        assert "Import CSV, XLSX, or JSON" in html
         assert "No render yet" in html
     finally:
         proc.terminate()
