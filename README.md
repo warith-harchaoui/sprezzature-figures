@@ -7,7 +7,7 @@
 
 [![logo](https://raw.githubusercontent.com/warith-harchaoui/sprezzature-figures/main/assets/logo.png)](https://harchaoui.org/warith/sprezzature/)
 
-90 publication-quality chart types (Vega-Lite, full Vega, and matplotlib/SVG), callable as a Python library or a CLI command.
+91 publication-quality chart types (Vega-Lite, full Vega, and matplotlib/SVG), callable as a Python library or a CLI command.
 
 Part of the [sprezzature](https://harchaoui.org/warith/sprezzature/) suite.
 
@@ -83,7 +83,7 @@ print(path)  # PosixPath('revenue.png')
 `make_figure()` will attempt any registered chart kind, but only
 `status="stable"` kinds are currently render-verified end to end; see
 [docs/studio/GENERATOR_AUDIT.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/docs/studio/GENERATOR_AUDIT.md)
-for the per-chart status of all 90 types, and `make-figure --list --status stable`
+for the per-chart status of all 91 types, and `make-figure --list --status stable`
 for the ones that render today (15 as of this writing: `area`, `bar`, `boxplot`,
 `columnrange`, `dumbbell`, `funnel`, `heatmap`, `histogram`, `line`, `sankey`,
 `scatter`, `sunburst`, `treemap`, `waffle`, `waterfall`). Every stable kind
@@ -147,7 +147,7 @@ ranking decisive.
 
 ## Chart catalogue
 
-90 chart types across 21 categories. See [FIGURES.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/FIGURES.md) for the full table with per-chart guidance on when to use each type.
+91 chart types across 21 categories. See [FIGURES.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/FIGURES.md) for the full table with per-chart guidance on when to use each type.
 
 Quick overview:
 
@@ -157,7 +157,7 @@ Quick overview:
 | Composition | area, parliament, pictorial, ternary, waffle |
 | Distribution | bellcurve, blandaltman, boxen, boxplot, histogram, mosaic, ridgeline, rug |
 | Flow | alluvial, chord, funnel, parallel-sets, sankey |
-| Geospatial | binned-grid-map, dotdensity, globe3d, hexbin-map, hexmap, situation_map, spike-map, voronoi |
+| Geospatial | binned-grid-map, dotdensity, hexbin-map, hexmap, situation_map, spike-map, voronoi |
 | Hierarchy | circle-packing, convex-hull, dendrogram, icicle, org-chart, radial-tree, sunburst, tree, treemap |
 | KPI | bullet, gauge, liquid-gauge |
 | Matrix / Image | heatmap, imshow-interpolated |

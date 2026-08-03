@@ -6,9 +6,9 @@ expects. Regenerate with `python tools/audit_generators.py --render`.
 
 - **stable**: 16
 - **experimental**: 0
-- **legacy**: 76
+- **legacy**: 75
 - **unavailable**: 0
-- **total**: 92
+- **total**: 91
 
 | kind | status | reachable | callable | demo_data | render | errors |
 |---|---|---|---|---|---|---|
@@ -45,7 +45,6 @@ expects. Regenerate with `python tools/audit_generators.py --render`.
 | `gapminder` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_gapminder.py; No callable named 'make_gapminder' in make_gapminder.py |
 | `gapminder_variants` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_gapminder_variants.py; No callable named 'make_gapminder_variants' in make_gapminder_variants.py |
 | `gauge` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_gauge.py; No callable named 'make_gauge' in make_gauge.py |
-| `globe3d` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_globe3d.py; No callable named 'make_globe3d' in make_globe3d.py |
 | `heatmap` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `hexbin-map` | legacy | **no** | yes | **no** | not_run | No DEMO_DATA in make_hexbin-map.py; make_figure('hexbin-map') cannot resolve to make_hexbin-map.py: hyphen/underscore normalisation looks for a different filename |
 | `hexmap` | legacy | yes | yes | **no** | not_run | No DEMO_DATA in make_hexmap.py; Default output path falls back to a shared assets/ directory |

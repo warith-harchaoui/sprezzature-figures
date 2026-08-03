@@ -2,7 +2,7 @@
   "summary": {
     "stable": 16,
     "experimental": 0,
-    "legacy": 76,
+    "legacy": 75,
     "unavailable": 0
   },
   "generators": [
@@ -845,31 +845,6 @@
       "errors": [
         "No DEMO_DATA in make_gauge.py",
         "No callable named 'make_gauge' in make_gauge.py"
-      ]
-    },
-    {
-      "kind": "globe3d",
-      "filename": "make_globe3d.py",
-      "hyphenated_kind": false,
-      "dispatcher_reachable_by_kind": true,
-      "importable": true,
-      "import_error": null,
-      "expected_callable": "make_globe3d",
-      "callable_exists": false,
-      "demo_data_exists": false,
-      "demo_data_len": 0,
-      "accepts_data": false,
-      "accepts_out": false,
-      "accepts_title": false,
-      "renderer": "svg",
-      "writes_hardcoded_path": false,
-      "hardcoded_dimensions": false,
-      "render_test": "not_run",
-      "render_error": null,
-      "status": "legacy",
-      "errors": [
-        "No DEMO_DATA in make_globe3d.py",
-        "No callable named 'make_globe3d' in make_globe3d.py"
       ]
     },
     {

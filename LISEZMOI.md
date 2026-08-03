@@ -7,7 +7,7 @@
 
 [![logo](assets/logo.png)](https://harchaoui.org/warith/sprezzature/)
 
-90 types de graphiques de qualité publication (Vega-Lite, Vega complet et matplotlib/SVG), utilisables comme bibliothèque Python ou en ligne de commande.
+91 types de graphiques de qualité publication (Vega-Lite, Vega complet et matplotlib/SVG), utilisables comme bibliothèque Python ou en ligne de commande.
 
 Fait partie de la suite [sprezzature](https://harchaoui.org/warith/sprezzature/).
 
@@ -84,7 +84,7 @@ print(chemin)  # PosixPath('revenu.png')
 `make_figure()` accepte n'importe quel type enregistré, mais seuls les types
 `status="stable"` sont aujourd'hui vérifiés par rendu de bout en bout. Voir
 [docs/studio/GENERATOR_AUDIT.md](docs/studio/GENERATOR_AUDIT.md) pour le
-statut de chacun des 90 types, et `make-figure --list --status stable` pour
+statut de chacun des 91 types, et `make-figure --list --status stable` pour
 la liste de ceux qui fonctionnent dès maintenant (15 à ce jour : `area`,
 `bar`, `boxplot`, `columnrange`, `dumbbell`, `funnel`, `heatmap`,
 `histogram`, `line`, `sankey`, `scatter`, `sunburst`, `treemap`, `waffle`,
@@ -146,7 +146,7 @@ départage rarement ; c'est le but qui rend le classement décisif.
 
 ## Catalogue des graphiques
 
-90 types de graphiques dans 21 catégories. Voir [FIGURES.md](FIGURES.md) pour le tableau complet.
+91 types de graphiques dans 21 catégories. Voir [FIGURES.md](FIGURES.md) pour le tableau complet.
 
 | Catégorie | Graphiques |
 |-----------|------------|
@@ -154,7 +154,7 @@ départage rarement ; c'est le but qui rend le classement décisif.
 | Composition | area, parliament, pictorial, ternary, waffle |
 | Distribution | bellcurve, blandaltman, boxen, boxplot, histogram, mosaic, ridgeline, rug |
 | Flux | alluvial, chord, funnel, parallel-sets, sankey |
-| Géospatial | binned-grid-map, dotdensity, globe3d, hexbin-map, hexmap, situation_map, spike-map, voronoi |
+| Géospatial | binned-grid-map, dotdensity, hexbin-map, hexmap, situation_map, spike-map, voronoi |
 | Hiérarchie | circle-packing, convex-hull, dendrogram, icicle, org-chart, radial-tree, sunburst, tree, treemap |
 | KPI | bullet, gauge, liquid-gauge |
 | Matrice / Image | heatmap, imshow-interpolated |
@@ -186,7 +186,7 @@ sprezzature-figures/
 ├── scripts/
 │   ├── make_treemap.py            # script autonome par type de graphique
 │   ├── make_connected-scatter.py  # les types avec tiret sont supportés
-│   └── ...                        # 90 scripts make_*.py au total
+│   └── ...                        # 91 scripts make_*.py au total
 ├── assets/
 │   ├── vega-examples/     # spécifications Vega-Lite et Vega
 │   └── svg-examples/      # gabarits SVG
