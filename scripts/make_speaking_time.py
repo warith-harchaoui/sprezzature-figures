@@ -26,6 +26,7 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 from _interactive import fullscreen_control
+from _render import svg_example_path, write_svg
 from _style import load_palette, os_adaptive_style, os_dark_style
 from _svg import point_on_circle, xml_escape
 
@@ -249,6 +250,26 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     parts.append(fullscreen_control(W, H, mode))
     parts.append("</svg>")
     return "".join(parts)
+
+
+def make_speaking_time(
+    data: "Any | None" = None,
+    *,
+    out: "Path | str | None" = None,
+    title: str = "",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the speaking-time donut and write it to ``out``.
+
+    The standard ``make_<kind>`` entry the figure registry dispatches to, so
+    ``make-figure speaking_time`` and the Studio behave like every other figure.
+    The demo speaks for itself (the segments are baked into the hand-authored
+    SVG), so ``data`` and ``title`` are accepted for signature parity and unused.
+    """
+    svg = build_svg(mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "speaking_time")
+    return write_svg(dest, svg)
 
 
 def main() -> None:

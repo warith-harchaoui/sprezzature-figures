@@ -13,6 +13,23 @@
   the library and both CLIs. (The Studio was already correct here: it always
   renders vega figures to `.svg` and rasterizes a separate PNG preview.)
 
+### Fixed
+
+- **Seven hero-SVG generators are reachable through the dispatcher again.**
+  `speaking_time`, `situation_map`, `binned-grid-map`, `hexmap`, `hexbin-map`,
+  `spike-map`, and `dotdensity` failed under `make-figure <kind>` / the Studio:
+  some crashed importing their sibling helpers (`_interactive`, `_render`, ...),
+  the rest had no `make_<kind>` callable for the registry to dispatch to.
+  `make_figure._load_module` now guarantees the generator's directory is on
+  `sys.path` before import (so a generator loads the same whether it runs first
+  or tenth), and each of the seven grew the standard
+  `make_<kind>(data=None, *, out=None, ...)` entry that builds its bundled demo.
+  The three map generators that render onto a basemap now find their vendored
+  Natural Earth data (`assets/geo/countries-50m.json`, `countries-110m.json`,
+  `fr/departements-simplifiee.geojson`), which had been referenced but not
+  committed. `gapminder` / `gapminder_variants` remain blocked on a separate
+  missing dataset and are unchanged.
+
 ### Added
 
 - **Intent-aware recommendation ranking.** `sprezzature-figures recommend`

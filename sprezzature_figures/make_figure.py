@@ -52,6 +52,15 @@ def _legacy_filename_guess(kind: str) -> Path:
 
 
 def _load_module(path: Path, module_name: str) -> Any:
+    # Generators import their sibling helpers by bare name (``from _render
+    # import ...``, ``from _interactive import ...``). Most self-insert their
+    # own directory onto sys.path first, but a handful of legacy ones forgot to,
+    # so they only imported when another generator had already put scripts/ on
+    # the path. Guarantee it here, at the one place every generator is loaded,
+    # so a generator renders the same whether it runs first or tenth.
+    scripts_dir = str(path.resolve().parent)
+    if scripts_dir not in sys.path:
+        sys.path.insert(0, scripts_dir)
     spec = importlib.util.spec_from_file_location(module_name, path)
     if spec is None or spec.loader is None:
         raise ImportError(f"Cannot load script: {path}")

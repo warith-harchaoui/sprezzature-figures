@@ -734,6 +734,26 @@ def _size_legend(spike_color: str, px_per_m: float) -> List[str]:
     return out
 
 
+def make_spike_map(
+    data: "object | None" = None,
+    *,
+    out: "Path | str | None" = None,
+    title: str = "",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the spike map and write it to ``out``.
+
+    The standard ``make_<kind>`` entry the figure registry dispatches to, so
+    ``make-figure spike-map`` and the Studio work like every other figure. The
+    demo geography and values are baked into the hand-authored SVG, so ``data``
+    and ``title`` are accepted for dispatcher parity and unused.
+    """
+    svg = build_svg(mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "spike-map")
+    return write_svg(dest, svg)
+
+
 def main() -> None:
     """Write the spike-map SVG to the skill's ``svg-examples`` folder."""
     parser = argparse.ArgumentParser(description="Render the spike-map SVG.")

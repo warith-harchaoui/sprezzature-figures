@@ -48,7 +48,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import load_palette, os_dark_style  # noqa: E402
 from _svg import hex_to_rgb as _hex_to_rgb, svg_open  # noqa: E402
 from _svg import xml_escape  # noqa: E402
-from _render import render_cli  # noqa: E402
+from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 
 # ------------------------------------------------------------------
@@ -709,6 +709,26 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     parts.append(fullscreen_control(_WIDTH, _HEIGHT, mode))
     parts.append('</svg>')
     return "\n".join(parts)
+
+
+def make_binned_grid_map(
+    data: "object | None" = None,
+    *,
+    out: "Path | str | None" = None,
+    title: str = "",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the binned-grid map and write it to ``out``.
+
+    The standard ``make_<kind>`` entry the figure registry dispatches to, so
+    ``make-figure binned-grid-map`` and the Studio work like every other figure.
+    The demo geography and values are baked into the hand-authored SVG, so
+    ``data`` and ``title`` are accepted for dispatcher parity and unused.
+    """
+    svg = build_svg(mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "binned-grid-map")
+    return write_svg(dest, svg)
 
 
 def main() -> None:

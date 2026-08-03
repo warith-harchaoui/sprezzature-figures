@@ -40,7 +40,7 @@ Author
 """
 
 from __future__ import annotations
-from _render import write_svg  # noqa: E402
+from _render import svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 
 import argparse
@@ -474,6 +474,33 @@ def build_svg(
 
     parts.append("</svg>")
     return "".join(parts)
+
+
+def make_imshow_interpolated(
+    data: "Dict[str, np.ndarray] | None" = None,
+    *,
+    out: "Path | str | None" = None,
+    title: str = "",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the interpolated-heatmap figure and write it to ``out``.
+
+    The standard ``make_<kind>`` entry the figure registry dispatches to, so
+    ``make-figure imshow-interpolated`` and the Studio work like every other
+    figure. ``data`` is an optional pre-built survey grid (the ``{name: array}``
+    shape :func:`_survey_grid` returns); when omitted the built-in synthetic
+    survey is used, so the figure renders with no external data. ``title`` is
+    accepted for signature parity with the other generators and is unused (the
+    headline is baked into the hand-authored SVG).
+    """
+    # The grid is a ``{field: 2-D array}`` mapping; the dispatcher hands every
+    # generator its (here empty) list-shaped DEMO_DATA, so fall back to the
+    # built-in synthetic survey unless a real grid dict was passed in.
+    grid = data if isinstance(data, dict) and data else _survey_grid()
+    svg = build_svg(grid, mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "imshow-interpolated")
+    return write_svg(dest, svg)
 
 
 # --------------------------------------------------------------------------- #

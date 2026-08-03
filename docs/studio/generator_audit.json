@@ -189,12 +189,12 @@
       "importable": true,
       "import_error": null,
       "expected_callable": "make_binned_grid_map",
-      "callable_exists": false,
+      "callable_exists": true,
       "demo_data_exists": false,
       "demo_data_len": 0,
-      "accepts_data": false,
-      "accepts_out": false,
-      "accepts_title": false,
+      "accepts_data": true,
+      "accepts_out": true,
+      "accepts_title": true,
       "renderer": "svg",
       "writes_hardcoded_path": true,
       "hardcoded_dimensions": false,
@@ -203,7 +203,6 @@
       "status": "legacy",
       "errors": [
         "No DEMO_DATA in make_binned-grid-map.py",
-        "No callable named 'make_binned_grid_map' in make_binned-grid-map.py",
         "make_figure('binned-grid-map') cannot resolve to make_binned-grid-map.py: hyphen/underscore normalisation looks for a different filename",
         "Default output path falls back to a shared assets/ directory"
       ]
@@ -604,12 +603,12 @@
       "importable": true,
       "import_error": null,
       "expected_callable": "make_dotdensity",
-      "callable_exists": false,
+      "callable_exists": true,
       "demo_data_exists": false,
       "demo_data_len": 0,
-      "accepts_data": false,
-      "accepts_out": false,
-      "accepts_title": false,
+      "accepts_data": true,
+      "accepts_out": true,
+      "accepts_title": true,
       "renderer": "svg",
       "writes_hardcoded_path": true,
       "hardcoded_dimensions": false,
@@ -618,7 +617,6 @@
       "status": "legacy",
       "errors": [
         "No DEMO_DATA in make_dotdensity.py",
-        "No callable named 'make_dotdensity' in make_dotdensity.py",
         "Default output path falls back to a shared assets/ directory"
       ]
     },
@@ -906,12 +904,12 @@
       "importable": true,
       "import_error": null,
       "expected_callable": "make_hexbin_map",
-      "callable_exists": false,
+      "callable_exists": true,
       "demo_data_exists": false,
       "demo_data_len": 0,
-      "accepts_data": false,
-      "accepts_out": false,
-      "accepts_title": false,
+      "accepts_data": true,
+      "accepts_out": true,
+      "accepts_title": true,
       "renderer": "svg",
       "writes_hardcoded_path": true,
       "hardcoded_dimensions": false,
@@ -920,7 +918,6 @@
       "status": "legacy",
       "errors": [
         "No DEMO_DATA in make_hexbin-map.py",
-        "No callable named 'make_hexbin_map' in make_hexbin-map.py",
         "make_figure('hexbin-map') cannot resolve to make_hexbin-map.py: hyphen/underscore normalisation looks for a different filename",
         "Default output path falls back to a shared assets/ directory"
       ]
@@ -933,12 +930,12 @@
       "importable": true,
       "import_error": null,
       "expected_callable": "make_hexmap",
-      "callable_exists": false,
+      "callable_exists": true,
       "demo_data_exists": false,
       "demo_data_len": 0,
-      "accepts_data": false,
-      "accepts_out": false,
-      "accepts_title": false,
+      "accepts_data": true,
+      "accepts_out": true,
+      "accepts_title": true,
       "renderer": "svg",
       "writes_hardcoded_path": true,
       "hardcoded_dimensions": false,
@@ -947,7 +944,6 @@
       "status": "legacy",
       "errors": [
         "No DEMO_DATA in make_hexmap.py",
-        "No callable named 'make_hexmap' in make_hexmap.py",
         "Default output path falls back to a shared assets/ directory"
       ]
     },
@@ -1034,12 +1030,12 @@
       "importable": true,
       "import_error": null,
       "expected_callable": "make_imshow_interpolated",
-      "callable_exists": false,
+      "callable_exists": true,
       "demo_data_exists": false,
       "demo_data_len": 0,
-      "accepts_data": false,
-      "accepts_out": false,
-      "accepts_title": false,
+      "accepts_data": true,
+      "accepts_out": true,
+      "accepts_title": true,
       "renderer": "svg",
       "writes_hardcoded_path": false,
       "hardcoded_dimensions": false,
@@ -1048,7 +1044,6 @@
       "status": "legacy",
       "errors": [
         "No DEMO_DATA in make_imshow-interpolated.py",
-        "No callable named 'make_imshow_interpolated' in make_imshow-interpolated.py",
         "make_figure('imshow-interpolated') cannot resolve to make_imshow-interpolated.py: hyphen/underscore normalisation looks for a different filename"
       ]
     },
@@ -1810,12 +1805,12 @@
       "importable": true,
       "import_error": null,
       "expected_callable": "make_situation_map",
-      "callable_exists": false,
+      "callable_exists": true,
       "demo_data_exists": false,
       "demo_data_len": 0,
-      "accepts_data": false,
-      "accepts_out": false,
-      "accepts_title": false,
+      "accepts_data": true,
+      "accepts_out": true,
+      "accepts_title": true,
       "renderer": "svg",
       "writes_hardcoded_path": false,
       "hardcoded_dimensions": false,
@@ -1823,8 +1818,7 @@
       "render_error": null,
       "status": "legacy",
       "errors": [
-        "No DEMO_DATA in make_situation_map.py",
-        "No callable named 'make_situation_map' in make_situation_map.py"
+        "No DEMO_DATA in make_situation_map.py"
       ]
     },
     {
@@ -1835,12 +1829,12 @@
       "importable": true,
       "import_error": null,
       "expected_callable": "make_speaking_time",
-      "callable_exists": false,
+      "callable_exists": true,
       "demo_data_exists": false,
       "demo_data_len": 0,
-      "accepts_data": false,
-      "accepts_out": false,
-      "accepts_title": false,
+      "accepts_data": true,
+      "accepts_out": true,
+      "accepts_title": true,
       "renderer": "svg",
       "writes_hardcoded_path": false,
       "hardcoded_dimensions": false,
@@ -1848,8 +1842,7 @@
       "render_error": null,
       "status": "legacy",
       "errors": [
-        "No DEMO_DATA in make_speaking_time.py",
-        "No callable named 'make_speaking_time' in make_speaking_time.py"
+        "No DEMO_DATA in make_speaking_time.py"
       ]
     },
     {
@@ -1885,12 +1878,12 @@
       "importable": true,
       "import_error": null,
       "expected_callable": "make_spike_map",
-      "callable_exists": false,
+      "callable_exists": true,
       "demo_data_exists": false,
       "demo_data_len": 0,
-      "accepts_data": false,
-      "accepts_out": false,
-      "accepts_title": false,
+      "accepts_data": true,
+      "accepts_out": true,
+      "accepts_title": true,
       "renderer": "svg",
       "writes_hardcoded_path": true,
       "hardcoded_dimensions": false,
@@ -1899,7 +1892,6 @@
       "status": "legacy",
       "errors": [
         "No DEMO_DATA in make_spike-map.py",
-        "No callable named 'make_spike_map' in make_spike-map.py",
         "make_figure('spike-map') cannot resolve to make_spike-map.py: hyphen/underscore normalisation looks for a different filename",
         "Default output path falls back to a shared assets/ directory"
       ]

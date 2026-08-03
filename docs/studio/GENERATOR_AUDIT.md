@@ -19,7 +19,7 @@ expects. Regenerate with `python tools/audit_generators.py --render`.
 | `bar` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `bar3d` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_bar3d.py; No callable named 'make_bar3d' in make_bar3d.py |
 | `bellcurve` | legacy | yes | yes | **no** | not_run | No DEMO_DATA in make_bellcurve.py; Default output path falls back to a shared assets/ directory |
-| `binned-grid-map` | legacy | **no** | **no** | **no** | not_run | No DEMO_DATA in make_binned-grid-map.py; No callable named 'make_binned_grid_map' in make_binned-grid-map.py |
+| `binned-grid-map` | legacy | **no** | yes | **no** | not_run | No DEMO_DATA in make_binned-grid-map.py; make_figure('binned-grid-map') cannot resolve to make_binned-grid-map.py: hyphen/underscore normalisation looks for a different filename |
 | `blandaltman` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_blandaltman.py; No callable named 'make_blandaltman' in make_blandaltman.py |
 | `bollinger` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_bollinger.py; No callable named 'make_bollinger' in make_bollinger.py |
 | `boxen` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_boxen.py; No callable named 'make_boxen' in make_boxen.py |
@@ -35,7 +35,7 @@ expects. Regenerate with `python tools/audit_generators.py --render`.
 | `dendrogram` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_dendrogram.py; No callable named 'make_dendrogram' in make_dendrogram.py |
 | `dependency-wheel` | legacy | **no** | **no** | **no** | not_run | No DEMO_DATA in make_dependency-wheel.py; No callable named 'make_dependency_wheel' in make_dependency-wheel.py |
 | `difference-chart` | legacy | **no** | **no** | **no** | not_run | No DEMO_DATA in make_difference-chart.py; No callable named 'make_difference_chart' in make_difference-chart.py |
-| `dotdensity` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_dotdensity.py; No callable named 'make_dotdensity' in make_dotdensity.py |
+| `dotdensity` | legacy | yes | yes | **no** | not_run | No DEMO_DATA in make_dotdensity.py; Default output path falls back to a shared assets/ directory |
 | `dotplot` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_dotplot.py; No callable named 'make_dotplot' in make_dotplot.py |
 | `dumbbell` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `edge-bundling` | legacy | **no** | **no** | **no** | not_run | No DEMO_DATA in make_edge-bundling.py; No callable named 'make_edge_bundling' in make_edge-bundling.py |
@@ -47,12 +47,12 @@ expects. Regenerate with `python tools/audit_generators.py --render`.
 | `gauge` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_gauge.py; No callable named 'make_gauge' in make_gauge.py |
 | `globe3d` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_globe3d.py; No callable named 'make_globe3d' in make_globe3d.py |
 | `heatmap` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
-| `hexbin-map` | legacy | **no** | **no** | **no** | not_run | No DEMO_DATA in make_hexbin-map.py; No callable named 'make_hexbin_map' in make_hexbin-map.py |
-| `hexmap` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_hexmap.py; No callable named 'make_hexmap' in make_hexmap.py |
+| `hexbin-map` | legacy | **no** | yes | **no** | not_run | No DEMO_DATA in make_hexbin-map.py; make_figure('hexbin-map') cannot resolve to make_hexbin-map.py: hyphen/underscore normalisation looks for a different filename |
+| `hexmap` | legacy | yes | yes | **no** | not_run | No DEMO_DATA in make_hexmap.py; Default output path falls back to a shared assets/ directory |
 | `histogram` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `horizon` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_horizon.py; No callable named 'make_horizon' in make_horizon.py |
 | `icicle` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_icicle.py; No callable named 'make_icicle' in make_icicle.py |
-| `imshow-interpolated` | legacy | **no** | **no** | **no** | not_run | No DEMO_DATA in make_imshow-interpolated.py; No callable named 'make_imshow_interpolated' in make_imshow-interpolated.py |
+| `imshow-interpolated` | legacy | **no** | yes | **no** | not_run | No DEMO_DATA in make_imshow-interpolated.py; make_figure('imshow-interpolated') cannot resolve to make_imshow-interpolated.py: hyphen/underscore normalisation looks for a different filename |
 | `jointplot` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_jointplot.py; No callable named 'make_jointplot' in make_jointplot.py |
 | `liftgain` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_liftgain.py; No callable named 'make_liftgain' in make_liftgain.py |
 | `line` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
@@ -82,10 +82,10 @@ expects. Regenerate with `python tools/audit_generators.py --render`.
 | `scatter` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `scatter3d` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_scatter3d.py; No callable named 'make_scatter3d' in make_scatter3d.py |
 | `sfdp-largegraph` | legacy | **no** | **no** | **no** | not_run | No DEMO_DATA in make_sfdp-largegraph.py; No callable named 'make_sfdp_largegraph' in make_sfdp-largegraph.py |
-| `situation_map` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_situation_map.py; No callable named 'make_situation_map' in make_situation_map.py |
-| `speaking_time` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_speaking_time.py; No callable named 'make_speaking_time' in make_speaking_time.py |
+| `situation_map` | legacy | yes | yes | **no** | not_run | No DEMO_DATA in make_situation_map.py |
+| `speaking_time` | legacy | yes | yes | **no** | not_run | No DEMO_DATA in make_speaking_time.py |
 | `spectrogram` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_spectrogram.py; No callable named 'make_spectrogram' in make_spectrogram.py |
-| `spike-map` | legacy | **no** | **no** | **no** | not_run | No DEMO_DATA in make_spike-map.py; No callable named 'make_spike_map' in make_spike-map.py |
+| `spike-map` | legacy | **no** | yes | **no** | not_run | No DEMO_DATA in make_spike-map.py; make_figure('spike-map') cannot resolve to make_spike-map.py: hyphen/underscore normalisation looks for a different filename |
 | `streamgraph` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_streamgraph.py; No callable named 'make_streamgraph' in make_streamgraph.py |
 | `streamplot` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_streamplot.py; No callable named 'make_streamplot' in make_streamplot.py |
 | `sunburst` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |

@@ -45,6 +45,8 @@ import math
 from pathlib import Path
 from typing import Any, Iterable, Optional
 
+from _render import svg_example_path, write_svg
+
 try:
     import yaml
 except ImportError as exc:  # pragma: no cover - dependency guard
@@ -1177,6 +1179,48 @@ def _legend_layer(cfg: dict[str, Any], vp: dict[str, Any]) -> str:
 # --------------------------------------------------------------------------- #
 # CLI                                                                          #
 # --------------------------------------------------------------------------- #
+
+
+# A neutral, self-contained demo config so the figure registry can render this
+# generator like every other one. It shows Western Europe as a clean reference
+# situation map -- coastline, international frontiers, country labels, sea
+# bathymetry, dual-unit scale bar, north arrow -- straight from the vendored
+# Natural Earth basemap, with no thematic overlay invented. Pass a real
+# ``config`` dict (or use the ``--config`` CLI) for an actual analysis map.
+_DEMO_CONFIG: dict[str, Any] = {
+    "title": "Situation map — Western Europe (demo)",
+    "region": {"bbox": [-11.0, 35.0, 30.0, 60.0]},
+    "canvas_width": 1000,
+    "projection": "auto",
+}
+
+
+def make_situation_map(
+    data: "Any | None" = None,
+    *,
+    out: "Path | str | None" = None,
+    title: str = "",
+    config: "dict[str, Any] | None" = None,
+) -> Path:
+    """Render a situation map and write it to ``out``.
+
+    The standard ``make_<kind>`` entry the figure registry dispatches to, so
+    ``make-figure situation_map`` and the Studio work like every other figure.
+    With no ``config`` it renders the bundled Western-Europe demo (a neutral
+    reference basemap, no invented thematic layers); pass a config dict -- the
+    same schema the ``--config`` YAML uses -- to build a real analysis map.
+    ``data`` is accepted for dispatcher parity and unused (this generator is
+    config-driven, not row-driven).
+    """
+    cfg = dict(config) if config else dict(_DEMO_CONFIG)
+    # `build_map` resolves any relative feature files against this; the demo has
+    # none, but the key must exist.
+    cfg.setdefault("_config_dir", str(Path(__file__).resolve().parent.parent / "assets"))
+    if title:
+        cfg["title"] = title
+    svg = build_map(cfg)
+    dest = Path(out) if out else svg_example_path(__file__, "situation_map")
+    return write_svg(dest, svg)
 
 
 def build_parser() -> argparse.ArgumentParser:
