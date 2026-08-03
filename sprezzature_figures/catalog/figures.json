@@ -1371,6 +1371,61 @@
     ]
   },
   {
+    "kind": "interruption-matrix",
+    "label": "Interruption Matrix",
+    "aliases": [
+      "interruption matrix",
+      "interruption_matrix"
+    ],
+    "category": "Communication",
+    "description": "Directed \"who cuts whom\" heatmap: rows are speakers being cut off, columns the interrupters, each cell the number of interruptions, tinted by the interrupter. Row/column totals and a crosshair hover make conversational dominance readable at a glance -- who interrupts most (dark column), who gets cut most (dark row).",
+    "intents": [],
+    "status": "stable",
+    "renderer": "svg",
+    "module": "scripts/make_interruption-matrix.py",
+    "callable_name": "make_interruption_matrix",
+    "required_roles": [
+      {
+        "name": "interrupter",
+        "label": "Interrupter (cuts in)",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "interrupted",
+        "label": "Interrupted (gets cut off)",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "count",
+        "label": "Number of interruptions",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 900,
+    "default_height": 600,
+    "options_schema": {},
+    "warnings": [
+      "make_figure('interruption-matrix') cannot resolve to make_interruption-matrix.py: hyphen/underscore normalisation looks for a different filename"
+    ]
+  },
+  {
     "kind": "jointplot",
     "label": "Jointplot",
     "aliases": [],

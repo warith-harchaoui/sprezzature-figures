@@ -153,6 +153,14 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
         ],
         "optional_roles": [],
     },
+    "interruption-matrix": {
+        "required_roles": [
+            {"name": "interrupter", "label": "Interrupter (cuts in)", "accepted_types": ["categorical"], "required": True},
+            {"name": "interrupted", "label": "Interrupted (gets cut off)", "accepted_types": ["categorical"], "required": True},
+            {"name": "count", "label": "Number of interruptions", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
 }
 
 
