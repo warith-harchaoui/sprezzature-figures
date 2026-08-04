@@ -810,8 +810,8 @@
     "kind": "dotplot",
     "label": "Dotplot",
     "aliases": [],
-    "category": "Comparison",
-    "description": "Categorical axis with dots for each value (Cleveland dot plot). Cleaner than a bar chart for a ranked list; preferred when the baseline is not zero.",
+    "category": "Distribution",
+    "description": "Wilkinson dot plot: one dot per observation, binned and stacked so the sample size stays countable while the silhouette shows the distribution's shape. Use for small-to-medium samples where a histogram's bars would hide individual points.",
     "intents": [],
     "status": "legacy",
     "renderer": "svg",
@@ -917,6 +917,35 @@
       "No DEMO_DATA in make_edge-bundling.py",
       "No callable named 'make_edge_bundling' in make_edge-bundling.py",
       "make_figure('edge-bundling') cannot resolve to make_edge-bundling.py: hyphen/underscore normalisation looks for a different filename",
+      "Default output path falls back to a shared assets/ directory"
+    ]
+  },
+  {
+    "kind": "elbow",
+    "label": "Elbow",
+    "aliases": [],
+    "category": "Model selection",
+    "description": "Detect the elbow (knee) of a diminishing-returns curve with the Kneedle method: pick k for k-means, the number of PCA components, or `eps` for DBSCAN. An inset draws the normalised difference curve whose peak locates the elbow.",
+    "intents": [],
+    "status": "legacy",
+    "renderer": "svg",
+    "module": "scripts/make_elbow.py",
+    "callable_name": "make_elbow",
+    "required_roles": [],
+    "optional_roles": [],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 900,
+    "default_height": 600,
+    "options_schema": {},
+    "warnings": [
+      "No DEMO_DATA in make_elbow.py",
+      "No callable named 'make_elbow' in make_elbow.py",
       "Default output path falls back to a shared assets/ directory"
     ]
   },

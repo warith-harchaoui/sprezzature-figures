@@ -29,6 +29,8 @@ Author
 
 from __future__ import annotations
 
+import math
+import random
 import sys
 from pathlib import Path
 from typing import Dict, List, Tuple
@@ -44,20 +46,42 @@ from _svg import svg_open  # noqa: E402
 # ------------------------------------------------------------------
 # Communicative fake data
 # ------------------------------------------------------------------
-#: First-response times (in hours) for a week of inbound support
+def _response_hours(n: int = 68, seed: int = 11) -> List[float]:
+    """Return a right-skewed sample of first-response times, in hours.
+
+    A dot plot only earns its keep when the sample is large enough to
+    build a silhouette: a mound of fast replies with a thin tail of
+    stragglers. The values are drawn from a log-normal (the canonical
+    shape for waiting times — most tickets clear quickly, a few drag on)
+    with a fixed seed, so the figure is illustrative yet fully
+    deterministic and byte-stable across renders.
+
+    Parameters
+    ----------
+    n : int, optional
+        Number of tickets to sample.
+    seed : int, optional
+        Seed for the deterministic generator.
+
+    Returns
+    -------
+    list of float
+        ``n`` response times in hours, sorted ascending, rounded to 0.1 h
+        and clamped to a plausible ``[0.3, 8.6]`` support window.
+    """
+    rng = random.Random(seed)
+    vals = [
+        round(min(max(math.exp(rng.gauss(math.log(2.0), 0.52)), 0.3), 8.6), 1)
+        for _ in range(n)
+    ]
+    return sorted(vals)
+
+
+#: First-response times (in hours) for a fortnight of inbound support
 #: tickets at a small SaaS help desk. Most tickets are answered within
 #: the first few hours; a handful drag into a long tail — the story the
 #: dot plot makes obvious at a glance. Values are illustrative.
-RESPONSE_HOURS: List[float] = [
-    0.5, 0.7, 0.8, 1.1, 1.2, 1.3, 1.4, 1.6,   # answered almost immediately
-    2.1, 2.2, 2.4, 2.6, 2.7, 2.9,             # within the morning
-    3.1, 3.3, 3.4, 3.6, 3.8,                  # same-day
-    4.2, 4.5, 4.7, 4.9,                       # slower
-    5.3, 5.6, 5.8,                            # half a shift
-    6.4, 6.9,                                 # the long tail begins
-    7.7,
-    9.2,                                      # a straggler nobody picked up
-]
+RESPONSE_HOURS: List[float] = _response_hours()
 
 
 # ------------------------------------------------------------------
@@ -145,9 +169,9 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     plot_w = width - m_left - m_right
 
     # --- value axis ----------------------------------------------
-    x_min, x_max = 0.0, 10.0
-    bin_width = 0.5
-    ticks = [0, 2, 4, 6, 8, 10]
+    x_min, x_max = 0.0, 9.0
+    bin_width = 0.4
+    ticks = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 
     def sx(v: float) -> float:
         """Map a data value to an x pixel coordinate."""
@@ -155,8 +179,8 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
 
     # Dot radius and vertical pitch. Pitch is a hair larger than the
     # diameter so stacked dots read as separate observations.
-    r = 13.0
-    pitch = 2 * r + 3.0
+    r = 11.0
+    pitch = 2 * r + 2.5
 
     bins = wilkinson_bins(RESPONSE_HOURS, bin_width)
 
