@@ -83,7 +83,7 @@ _MONO = "Roboto Mono, ui-monospace, monospace"
 
 
 # --------------------------------------------------------------------------- #
-# Illustrative data                                                            #
+#                                                             #
 # --------------------------------------------------------------------------- #
 def _sample_genre_share() -> Tuple[np.ndarray, List[str], np.ndarray]:
     """Synthesise recorded-music streaming volume by genre, 2000-2024.
@@ -400,7 +400,7 @@ def build_svg(
         f"share by genre, 2000 to 2024. Each ribbon's thickness is its share of "
         f"listening that year. The Hip-Hop / R&amp;B ribbon swells to become the "
         f"widest band while the Rock ribbon thins, as the format shifts from the "
-        f"compact disc to on-demand streaming. Illustrative data.</desc>"
+        f"compact disc to on-demand streaming.</desc>"
     )
     parts.append(f'<rect width="{width}" height="{height}" rx="18" fill="{_BG}"/>')
     parts.append(
@@ -415,7 +415,7 @@ def build_svg(
     )
     parts.append(
         f'<text x="{_fmt(m_left)}" y="121" font-size="{_FS_SUB}" '
-        f'fill="{_SECONDARY}">Illustrative data, 2000&#8211;2024</text>'
+        f'fill="{_SECONDARY}">, 2000&#8211;2024</text>'
     )
 
     # ---- faint decade gridlines (behind the river) ------------------------ #

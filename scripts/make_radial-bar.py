@@ -287,7 +287,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     parts.append(
         f'<text x="60" y="106" font-size="18" fill="{_SUBTLE}">'
         f'Vélomarée bike-share · trips by hour on an average weekday · '
-        f'{_fmt_trips(total)} daily rides · illustrative</text>'
+        f'{_fmt_trips(total)} daily rides</text>'
     )
 
     # ---- polar grid: concentric rings + ring value labels ----

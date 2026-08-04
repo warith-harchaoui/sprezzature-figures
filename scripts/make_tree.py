@@ -81,7 +81,7 @@ LINK_COLOR = "#C7C7CC"   # default (dimmed) link color
 
 
 # ------------------------------------------------------------------
-# The story (illustrative but plausible): a machine-learning course
+# The story: a machine-learning course
 # syllabus laid out as a taxonomy. Root → four families → topics. The
 # takeaway the subtitle states: the tree is *deliberately* lopsided —
 # supervised learning carries the most sub-topics because that is where

@@ -68,7 +68,7 @@ FONT_MONO = "Roboto Mono, ui-monospace, monospace"
 
 
 # ------------------------------------------------------------------
-# The story (illustrative but plausible): the service-to-service call
+# The story: the service-to-service call
 # graph of an online-store backend. A node is a microservice; an edge
 # means "the first service makes synchronous calls to the second". The
 # node's colour marks its team and its size marks how many other
@@ -396,7 +396,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
 
     title_txt = "Auth is a hidden single point of failure"
     subtitle_txt = (
-        "Service-to-service calls in an online-store backend — illustrative data"
+        "Service-to-service calls in an online-store backend"
     )
     desc_txt = (
         "Force-directed node-link diagram of a microservice call graph. Each "

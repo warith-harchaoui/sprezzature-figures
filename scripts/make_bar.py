@@ -122,7 +122,7 @@ def make_bar(
     *,
     out: Optional[Path | str] = None,
     title: str = "Revenue by Region",
-    subtitle: str = "Illustrative quarterly figures",
+    subtitle: str = "Quarterly figures",
     width: int = 700,
     height: int = 420,
 ) -> Path:
@@ -168,7 +168,7 @@ if __name__ == "__main__":
     p = argparse.ArgumentParser(description="Generate a grouped bar chart.")
     p.add_argument("--out", default=None)
     p.add_argument("--title", default="Revenue by Region")
-    p.add_argument("--subtitle", default="Illustrative quarterly figures")
+    p.add_argument("--subtitle", default="Quarterly figures")
     p.add_argument("--width", type=int, default=700)
     p.add_argument("--height", type=int, default=420)
     args = p.parse_args()

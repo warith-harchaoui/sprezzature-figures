@@ -85,7 +85,7 @@ _NEUTRAL_RIBBON = "#AEAEB2"
 _NEUTRAL_NODE = "#8E8E93"
 
 # ------------------------------------------------------------------
-# The story (illustrative but plausible): a week of visitors to a SaaS
+# The story: a week of visitors to a SaaS
 # marketing site, from acquisition channel through the funnel to the
 # outcome. The takeaway: organic search is the biggest top-of-funnel
 # source, yet paid traffic converts to a paid plan at a higher rate.
@@ -292,7 +292,7 @@ def build_svg(
     data: List[Dict[str, Any]] | None = None,
     *,
     title: str = "Organic search fills the funnel, but paid ads convert",
-    subtitle: str = "One week of site visitors, from channel to outcome — illustrative data",
+    subtitle: str = "One week of site visitors, from channel to outcome",
     desc: str | None = None,
     stage_names: List[str] | None = None,
     volume_unit: str = "visitors",
@@ -503,7 +503,7 @@ def make_sankey(
     *,
     out: Path | str | None = None,
     title: str = "Organic search fills the funnel, but paid ads convert",
-    subtitle: str = "One week of site visitors, from channel to outcome — illustrative data",
+    subtitle: str = "One week of site visitors, from channel to outcome",
     desc: str | None = None,
     stage_names: List[str] | None = None,
     volume_unit: str = "visitors",

@@ -286,7 +286,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     parts.append(
         f'<text x="{left_pad:.0f}" y="82" font-size="17" fill="{_SUBTLE}">'
         f'Monthly-active users (thousands) by exact combination of contact '
-        f'channels · illustrative</text>'
+        f'channels</text>'
     )
 
     # ---- shaded alternating matrix rows (subtle zebra for readability) ----

@@ -407,7 +407,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     parts.append(
         f'<text x="{_MAP_X0}" y="106" font-size="20" fill="{_SUBTLE}">'
         f'Morning trips (7-10 AM) per hexagonal bin across the metro '
-        f'service area · one hex ≈ 400 m · illustrative</text>'
+        f'service area · one hex ≈ 400 m</text>'
     )
 
     # ---- water / extent backdrop (the coastline outline as "land base") ----

@@ -389,7 +389,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         f'prevalence; the vertical gap above it is the signal each model has '
         f'learned. Faint iso-F1 contours arc through the plot, and each '
         f'model is marked at its shipped maximum-F1 operating point. '
-        f'Illustrative data.</desc>'
+        f'</desc>'
     )
 
     # OS-adaptive overrides are appended (additive; every rule lives inside an
@@ -439,7 +439,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     parts.append(
         f'<text x="{m_left}" y="148" font-size="25" fill="{secondary}">'
         f'Precision vs recall as the threshold varies — AP '
-        f'{strong_ap:.2f} vs {weak_ap:.2f} · illustrative</text>'
+        f'{strong_ap:.2f} vs {weak_ap:.2f}</text>'
     )
 
     # --- gridlines (very light) ----------------------------------

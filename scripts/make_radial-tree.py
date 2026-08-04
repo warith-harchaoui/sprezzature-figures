@@ -102,7 +102,7 @@ LABEL_GAP = 16.0
 
 
 # ------------------------------------------------------------------
-# The story (illustrative but plausible): a data-platform team maps its
+# The story: a data-platform team maps its
 # public API surface as a capability taxonomy. Root → four product
 # pillars → the endpoints and features under each. The takeaway the
 # subtitle states: the tree is *deliberately* lopsided — the Ingestion
@@ -400,7 +400,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     title_txt = "The Data Platform API, from the core outward"
     subtitle_txt = (
         "Four product pillars branch from one core; Ingestion carries the widest "
-        "surface. Illustrative capability map."
+        "surface."
     )
     desc_txt = (
         "Radial tree of a data-platform public API laid out from the centre "

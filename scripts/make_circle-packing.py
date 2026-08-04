@@ -97,7 +97,7 @@ PACK_R = 470.0  # target radius of the outermost enclosing circle
 
 
 # ------------------------------------------------------------------
-# The story (illustrative but plausible): the source tree of a Python
+# The story: the source tree of a Python
 # web service. Each entry is (path, lines_of_code) for a leaf module;
 # directory nodes are inferred from the path. Line counts are the leaf
 # weights that drive circle area.
@@ -794,7 +794,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     title_txt = "Where the code lives: two packages carry the weight"
     subtitle_txt = (
         "Every circle is a module sized by lines of code; services/ alone is 43% "
-        "of the tree and its payments.py runs to 2,410 lines. Illustrative repo map."
+        "of the tree and its payments.py runs to 2,410 lines."
     )
     desc_txt = (
         "Hierarchical circle-packing diagram of a Python web-service source tree. "

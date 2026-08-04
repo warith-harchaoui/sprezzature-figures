@@ -178,7 +178,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         f'<text x="60" y="66" font-size="30" font-weight="700" fill="{INK}">'
         f"Qui a parlé, et combien de temps</text>",
         f'<text x="60" y="98" font-size="18" fill="{SECONDARY}">'
-        f"Temps de parole par intervenant · table ronde de 40 min · données illustratives</text>",
+        f"Temps de parole par intervenant · table ronde de 40 min</text>",
     ]
 
     # OS-adaptive overrides (additive, all inside @media so the default render

@@ -62,7 +62,7 @@ _MEDIAN: float = 68.0
 _TITLE: str = "The reservoir sits at 63 %, just below its seasonal normal"
 _SUBTITLE: str = (
     "Serre-Ponçon lake · usable capacity on 1 July · "
-    "10-year median 68 % · illustrative reading"
+    "10-year median 68 %"
 )
 #: What the vessel measures, named under the readout so the number means
 #: something without a legend.

@@ -514,7 +514,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     # ---- footnote / method note ----
     parts.append(
         f'<text x="{_PLOT_X}" y="{_HEIGHT - 22:.1f}" font-size="14" '
-        f'fill="{_SUBTLE}">Illustrative data · one point per genetic '
+        f'fill="{_SUBTLE}">one point per genetic '
         f'variant · alternating tints separate chromosomes · hover a '
         f'labelled peak for its position and p-value</text>'
     )

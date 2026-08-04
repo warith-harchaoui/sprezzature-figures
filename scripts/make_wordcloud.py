@@ -504,7 +504,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         f'<text x="56" y="98" font-size="18" fill="{_SUBTLE}">'
         f'{total_reviews:,} reviews of the Aurora Grind One · words sized '
         f'by how often they appear, tagged by theme with a sign and a '
-        f'colour · illustrative</text>'
+        f'colour</text>'
     )
     # Hairline under the title band.
     parts.append(

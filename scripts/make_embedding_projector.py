@@ -93,7 +93,7 @@ _SEED = 20260726
 
 
 # --------------------------------------------------------------------------- #
-# Illustrative data — six everyday semantic families of real words            #
+#  — six everyday semantic families of real words            #
 # --------------------------------------------------------------------------- #
 # Each family maps to one Apple-system palette key. The words are genuine
 # vocabulary a reader recognises, never "Category A/B/C", so the neighbour
@@ -735,7 +735,7 @@ def build_svg(
     title_txt = "Words that mean similar things land nearby"
     subtitle_txt = (
         "An embedding of 200 words projected to 2D · point at a word to "
-        "light up its 6 nearest neighbours · illustrative data"
+        "light up its 6 nearest neighbours"
     )
     desc_txt = (
         "Interactive embedding projector. Two hundred everyday English "

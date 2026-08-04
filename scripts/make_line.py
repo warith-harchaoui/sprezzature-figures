@@ -136,7 +136,7 @@ def make_line(
     *,
     out: Optional[Path | str] = None,
     title: str = "Monthly Revenue by Product Line",
-    subtitle: str = "Illustrative figures, thousands of EUR",
+    subtitle: str = "Monthly figures, thousands of EUR",
     width: int = 800,
     height: int = 420,
 ) -> Path:
@@ -182,7 +182,7 @@ if __name__ == "__main__":
     p = argparse.ArgumentParser(description="Generate a multi-series line chart.")
     p.add_argument("--out", default=None)
     p.add_argument("--title", default="Monthly Revenue by Product Line")
-    p.add_argument("--subtitle", default="Illustrative figures, thousands of EUR")
+    p.add_argument("--subtitle", default="Monthly figures, thousands of EUR")
     p.add_argument("--width", type=int, default=800)
     p.add_argument("--height", type=int, default=420)
     args = p.parse_args()

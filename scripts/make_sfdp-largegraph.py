@@ -73,7 +73,7 @@ SEED = 20260725            # fixed so the committed SVG is byte-reproducible
 
 
 # ------------------------------------------------------------------
-# The story (illustrative but plausible): a research-collaboration
+# The story: a research-collaboration
 # network. A node is a researcher; an edge means "co-authored a paper".
 # People cluster into six labs — dense inside a lab, sparse across — so
 # the layout should surface six coloured communities with a handful of

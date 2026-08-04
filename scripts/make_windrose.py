@@ -349,7 +349,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     parts.append(
         f'<text x="48" y="94" font-size="17" fill="{_SUBTLE}">'
         f'Cap Gris-Nez · frequency of wind by direction and speed · '
-        f'8,760 hourly readings · illustrative</text>'
+        f'8,760 hourly readings</text>'
     )
 
     # ---- polar grid: concentric rings + radial labels ----

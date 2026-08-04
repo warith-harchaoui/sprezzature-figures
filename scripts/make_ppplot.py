@@ -289,7 +289,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         'under-states the probability (blue); in the upper-right they sit '
         'below it, where the Normal over-states the probability (orange). '
         'That S-shaped departure is the classic sign that a symmetric Normal '
-        'is the wrong shape for skewed data. Illustrative data.</desc>'
+        'is the wrong shape for skewed data.</desc>'
     )
 
     # Static figure; hover / focus enlargement only, no motion to guard.
@@ -327,7 +327,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     parts.append(
         f'<text x="{m_left}" y="148" font-size="25" fill="{secondary}">'
         f'Empirical vs fitted-Normal CDF — the arc off the 45° line '
-        f'flags the skew · illustrative</text>'
+        f'flags the skew</text>'
     )
 
     # --- gridlines (very light) ----------------------------------

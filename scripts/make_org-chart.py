@@ -89,7 +89,7 @@ CONNECTOR = "#C7C7CC"    # neutral connector (unused branch colour fallback)
 
 
 # ------------------------------------------------------------------
-# The company (illustrative but plausible): a ~230-person software
+# The company: a ~230-person software
 # company. A chief executive sits over four vice-presidents — Product &
 # Engineering, Revenue, Operations, and People — and each VP owns two
 # to three teams. The takeaway the subtitle states: Product &
@@ -619,7 +619,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     title_txt = "One division carries nearly half the company"
     subtitle_txt = (
         f"Product & Engineering is {eng_pct}% of headcount, the classic shape "
-        f"of a product-led software company. Illustrative org of {total} people."
+        f"of a product-led software company."
     )
     desc_txt = (
         "Top-down organization chart of a software company of about "

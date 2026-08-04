@@ -90,7 +90,7 @@ FONT_MONO = "Roboto Mono, ui-monospace, monospace"
 
 
 # ------------------------------------------------------------------
-# The story (illustrative but plausible): a fresh general election for a
+# The story: a fresh general election for a
 # 289-seat national assembly. Five parties won seats; none cleared the
 # 145-seat majority alone. The largest bloc, the Social Democrats, fell
 # nine short — the takeaway is a hung parliament that forces a coalition.
@@ -422,7 +422,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     )
     subtitle_txt = (
         f"General election result — {TOTAL_SEATS} seats, "
-        f"{MAJORITY} needed to govern alone (illustrative data)"
+        f"{MAJORITY} needed to govern alone"
     )
     desc_txt = (
         f"Hemicycle chart of a {TOTAL_SEATS}-seat national assembly after a "

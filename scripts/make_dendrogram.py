@@ -83,7 +83,7 @@ FONT_MONO = "Roboto Mono, ui-monospace, monospace"
 
 
 # ------------------------------------------------------------------
-# The story (illustrative but plausible): a grocery retailer clusters
+# The story: a grocery retailer clusters
 # its private-label product lines by how similarly households buy them
 # over a quarter (correlation-based distance on the basket matrix).
 # Agglomerative clustering with average linkage produces the merges
@@ -341,7 +341,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     # --- header: accessible role + title + description ---
     title_txt = "Three natural shelves emerge from how households shop"
     subtitle_txt = (
-        "Private-label lines clustered by co-purchase similarity · illustrative data"
+        "Private-label lines clustered by co-purchase similarity"
     )
     desc_txt = (
         "Rectangular dendrogram from average-linkage hierarchical clustering of "

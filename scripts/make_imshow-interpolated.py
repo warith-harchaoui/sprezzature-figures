@@ -289,7 +289,7 @@ def build_svg(
     title = "Soil moisture pools in the field's low hollow"
     subtitle = (
         "Bilinearly interpolated survey grid (imshow) · deeper blue = wetter soil "
-        "· illustrative data"
+        ""
     )
     parts.append(
         f'<svg role="img" aria-label="{title}" '

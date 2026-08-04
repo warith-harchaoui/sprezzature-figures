@@ -715,7 +715,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     parts.append(
         f'<text x="{_PLOT_X0:.0f}" y="100" font-size="18" fill="{_SUBTLE}">'
         f'Surface winds over the coast · streamlines follow the flow, '
-        f'darker means faster · illustrative field</text>'
+        f'darker means faster</text>'
     )
 
     # ---- axis frame + ticks ----

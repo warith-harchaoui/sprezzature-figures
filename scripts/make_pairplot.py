@@ -61,7 +61,7 @@ from _svg import svg_open, xml_escape  # noqa: E402
 
 
 # ------------------------------------------------------------------
-# Illustrative data — a fleet of EV battery cells, three chemistries.
+#  — a fleet of EV battery cells, three chemistries.
 # Each chemistry occupies a distinct region of the four-variable space,
 # which is the whole point of the figure: the clusters separate.
 # ------------------------------------------------------------------
@@ -393,7 +393,7 @@ def build_svg(mode: str = "self-contained") -> str:
         'pair the three chemistries form three separated clusters: silicon-anode '
         'is high-density and fast-charging but short-lived, LFP is the durable '
         'long-cycle-life workhorse, and NMC-811 sits between them, so one cell '
-        'measurement is enough to identify the family. Illustrative data.</desc>'
+        'measurement is enough to identify the family.</desc>'
     )
 
     # OS-adaptive overrides only (this figure has no motion / interactivity, so
@@ -440,7 +440,7 @@ def build_svg(mode: str = "self-contained") -> str:
     parts.append(
         f'<text x="{m_left}" y="134" font-size="20" fill="{SECONDARY}">'
         f'pair, so one cell measurement tells the families apart. The diagonal '
-        f'shows each distribution. Illustrative.</text>'
+        f'shows each distribution.</text>'
     )
 
     # --- legend (hue + shape fused, one swatch per chemistry) --------

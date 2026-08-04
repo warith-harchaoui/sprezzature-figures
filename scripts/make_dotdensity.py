@@ -672,7 +672,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     parts.append(
         f'<text x="{_MAP_X}" y="{_HEIGHT - 20}" font-size="14" '
         f'fill="{_SUBTLE}">Dots randomly placed within each department, '
-        f'not at real addresses · illustrative figures · '
+        f'not at real addresses'
         f'equal-area projection</text>'
     )
 

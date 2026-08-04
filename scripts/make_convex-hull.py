@@ -98,8 +98,7 @@ HULL_FILL_OPACITY = 0.14  # translucent wash so hulls never fight the points
 HULL_STROKE_OPACITY = 0.9
 
 # ------------------------------------------------------------------
-# The story (illustrative but plausible, in the shape of a customer
-# clustering): three segments a model separated in the spend/engagement
+# The story: three segments a model separated in the spend/engagement
 # plane. Occasional users spend little and log in a day or two a week;
 # regulars sit in the productive middle; power users spend the most and
 # are on the product nearly every day. Colour marks the segment so the eye
@@ -397,7 +396,7 @@ def build_svg(seed: int = 11, mode: str = "self-contained", accessibility: str =
     title_txt = "Three customer segments carve out distinct territory"
     subtitle_txt = (
         "Monthly spend vs. weekly active days, one dot per customer, "
-        "hull per model-assigned segment — illustrative data"
+        "hull per model-assigned segment"
     )
     desc_txt = (
         "Scatter plot of customers positioned by monthly spend (horizontal) "

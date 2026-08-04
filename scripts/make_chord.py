@@ -79,7 +79,7 @@ FONT_MONO = "Roboto Mono, ui-monospace, monospace"
 
 
 # ------------------------------------------------------------------
-# The story (illustrative but plausible): one sprint of cross-team code
+# The story: one sprint of cross-team code
 # reviews at an engineering org. Cell (i, j) = pull requests authored by
 # team i that team j reviewed. The diagonal (self-review within a team)
 # is dropped — a chord diagram is about the *exchanges between* groups.
@@ -402,7 +402,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
 
     title_txt = "Platform reviews everyone's code and is rarely reviewed back"
     subtitle_txt = (
-        "Cross-team pull-request reviews over one sprint (illustrative data)"
+        "Cross-team pull-request reviews over one sprint"
     )
     desc_txt = (
         "Chord diagram of code reviews exchanged between five engineering "

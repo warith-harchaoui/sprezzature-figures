@@ -75,7 +75,7 @@ _N_BANDS = 3            # bands per direction (the horizon-chart sweet spot)
 
 
 # --------------------------------------------------------------------------- #
-# Illustrative data                                                            #
+#                                                             #
 # --------------------------------------------------------------------------- #
 def _sample_fleet_cpu(seed: int = 11) -> Dict[str, np.ndarray]:
     """Synthesise a day of hourly CPU load for a small database fleet.
@@ -450,7 +450,7 @@ def build_svg(
     )
     parts.append(
         f'<text x="{fmt_compact(m_left - 210 + 42)}" y="117" font-size="17" '
-        f'fill="{_SECONDARY}">Illustrative data</text>'
+        f'fill="{_SECONDARY}"></text>'
     )
 
     # ---- vertical hour gridlines (light, behind rows) --------------------- #

@@ -28,7 +28,7 @@ our control and can carry the house interactivity (per-mark tooltips, a
 fullscreen button) that a rasterised Vega spec cannot. It matches the
 sprezzature-* house style: Roboto, the Apple-ish palette, rounded corners, ink
 ``#1D1D1F``, secondary ``#6E6E73``, white background, bright white
-keylines (never dark rings). Illustrative data.
+keylines (never dark rings).
 
 The final artifact is always an SVG written to
 ``sprezzature-figures/assets/svg-examples/calibration.svg``.
@@ -269,7 +269,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         f'it under-states churn (underconfident, labelled in blue on the '
         f'left). Each point is sized by how many predictions fell in the bin, '
         f'and a histogram below shows where the model spends its predictions. '
-        f'Illustrative data.</desc>'
+        f'</desc>'
     )
 
     # OS-adaptive overrides (additive; the default render is byte-for-byte
@@ -328,7 +328,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     )
     parts.append(
         f'<text x="{m_left}" y="194" font-size="22" fill="{secondary}">'
-        f'Expected Calibration Error {ece:.0%} · illustrative data</text>'
+        f'Expected Calibration Error {ece:.0%}</text>'
     )
 
     # --- tolerance ribbon (faint grey band around the diagonal) --

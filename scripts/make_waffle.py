@@ -144,7 +144,7 @@ def build_svg(
     data: List[Dict[str, Any]] | None = None,
     *,
     title: str = "Where a home’s electricity goes, per 100 kilowatt-hours",
-    subtitle: str = "Share of annual household electricity use · one square = 1 % · illustrative",
+    subtitle: str = "Share of annual household electricity use · one square = 1 %",
     mode: str = "self-contained",
     accessibility: str = "universal",
 ) -> str:
@@ -375,7 +375,7 @@ def make_waffle(
     *,
     out: Path | str | None = None,
     title: str = "Where a home’s electricity goes, per 100 kilowatt-hours",
-    subtitle: str = "Share of annual household electricity use · one square = 1 % · illustrative",
+    subtitle: str = "Share of annual household electricity use · one square = 1 %",
     mode: str = "self-contained",
     accessibility: str = "universal",
 ) -> Path:

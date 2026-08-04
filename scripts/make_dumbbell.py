@@ -133,7 +133,7 @@ def build_svg(
     data: List[Dict[str, Any]] | None = None,
     *,
     title: str = "Men out-earn women in every role",
-    subtitle_template: str = "Median hourly pay, {a} vs {b} · the gap averages {pct}% · illustrative",
+    subtitle_template: str = "Median hourly pay, {a} vs {b} · the gap averages {pct}%",
     axis_title: str = "Median hourly pay (US dollars)",
     group_a_label: str = "Women",
     group_b_label: str = "Men",
@@ -255,7 +255,7 @@ def build_svg(
         f'categories, sorted by the size of the gap. Each row joins the two '
         f'values with a segment whose length is the gap. The gap averages '
         f'{mean_gap_pct}% and is widest for {xml_escape(str(widest["category"]))} at '
-        f'{value_prefix}{widest_gap:.0f}{value_suffix}. Illustrative data.</desc>'
+        f'{value_prefix}{widest_gap:.0f}{value_suffix}.</desc>'
     )
 
     # Hover / focus highlight only — the figure is static, so there is no
@@ -480,7 +480,7 @@ def make_dumbbell(
     *,
     out: Path | str | None = None,
     title: str = "Men out-earn women in every role",
-    subtitle_template: str = "Median hourly pay, {a} vs {b} · the gap averages {pct}% · illustrative",
+    subtitle_template: str = "Median hourly pay, {a} vs {b} · the gap averages {pct}%",
     axis_title: str = "Median hourly pay (US dollars)",
     group_a_label: str = "Women",
     group_b_label: str = "Men",

@@ -94,7 +94,7 @@ FONT_MONO = "Roboto Mono, ui-monospace, monospace"
 
 
 # ------------------------------------------------------------------
-# The story (illustrative but plausible): the internal module-dependency
+# The story: the internal module-dependency
 # graph of a mid-size web application, with modules grouped by the
 # subsystem they belong to. An edge u -> v means "module u imports /
 # calls module v". The takeaway: almost every subsystem reaches into the
@@ -426,7 +426,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
 
     title_txt = "Every subsystem reaches into Auth, and Billing burrows into Data"
     subtitle_txt = (
-        "Module dependencies in a web app, bundled by subsystem (illustrative data)"
+        "Module dependencies in a web app, bundled by subsystem"
     )
     desc_txt = (
         "Hierarchical edge-bundling diagram of the module-dependency graph of a "
