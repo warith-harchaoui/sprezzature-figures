@@ -60,6 +60,7 @@ _COMPONENTS = """
 .q-field--outlined .q-field__control:before { border-color: #E5E5E5 !important; }
 .q-uploader { width: 100%; border: 1px solid #E5E5E5; border-radius: var(--sz-radius-lg); box-shadow: none; }
 .q-uploader__header { background: var(--sz-blue) !important; border-radius: var(--sz-radius-lg) var(--sz-radius-lg) 0 0; }
+.q-uploader__subtitle { display: none !important; }
 """
 
 # A focused Tailwind-compatible subset: exactly the tokens the Studio

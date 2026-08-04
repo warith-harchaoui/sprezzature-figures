@@ -29,7 +29,7 @@ from .compatibility import (
     column_fits_role,
     compatible_definitions,
 )
-from .scoring import rank, score
+from .scoring import infer_goal, rank, score
 
 
 def recommend_figures(
@@ -46,6 +46,7 @@ __all__ = [
     "can_fill_required_roles",
     "column_fits_role",
     "compatible_definitions",
+    "infer_goal",
     "rank",
     "recommend_figures",
     "score",

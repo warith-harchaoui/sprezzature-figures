@@ -39,7 +39,7 @@ def _load_upload(state: SessionState, filename: str, content: bytes) -> str | No
     """
     suffix = Path(filename).suffix.lower()
     if suffix not in (".csv", ".tsv", ".xlsx", ".json", ".jsonl", ".ndjson"):
-        return f"Unsupported file type {suffix!r} -- upload a .csv, .tsv, .xlsx, .json, or .jsonl file."
+        return f"Unsupported file type {suffix!r}. Upload a .csv, .tsv, .xlsx, .json, or .jsonl file."
 
     with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
         tmp.write(content)
@@ -164,12 +164,19 @@ def build_data_panel(state: SessionState, *, on_ready: Callable[[FigurePlan], No
             status_label.text = f"Error: {error}"
             status_label.classes(replace="text-sm text-red-600")
             ui.notify(error, type="negative")
+            uploader.reset()
             return
-        status_label.text = "Data loaded."
+        status_label.text = f"Loaded {e.file.name}."
         status_label.classes(replace="text-sm text-green-600")
         binding_form.refresh()
+        # Clear the uploader's file row (and its raw "98.0B / 100.00%" progress
+        # line) once the data is in state: the row count below is the durable
+        # confirmation, and a fresh dropzone keeps re-importing one click away.
+        uploader.reset()
 
-    ui.upload(on_upload=handle_upload, auto_upload=True, label="Import CSV, XLSX, or JSON").props(
-        'accept=".csv,.tsv,.xlsx,.json,.jsonl"'
-    ).classes("w-full")
+    uploader = (
+        ui.upload(on_upload=handle_upload, auto_upload=True, label="Import CSV, XLSX, or JSON")
+        .props('accept=".csv,.tsv,.xlsx,.json,.jsonl"')
+        .classes("w-full")
+    )
     binding_form()

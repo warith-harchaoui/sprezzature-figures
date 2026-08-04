@@ -14,6 +14,7 @@ from sprezzature_figures.core.dataset import ColumnProfile, DatasetProfile
 from sprezzature_figures.studio.recommendation import (
     assign_columns,
     compatible_definitions,
+    infer_goal,
     rank,
     recommend_figures,
     score,
@@ -34,6 +35,10 @@ def _num(name: str) -> ColumnProfile:
 
 def _cat(name: str, unique: int = 4) -> ColumnProfile:
     return ColumnProfile(name=name, physical_dtype="object", semantic_type="categorical", unique_count=unique)
+
+
+def _dt(name: str) -> ColumnProfile:
+    return ColumnProfile(name=name, physical_dtype="datetime64[ns]", semantic_type="datetime")
 
 
 def test_hard_constraint_needs_a_distinct_column_per_required_role() -> None:
@@ -132,3 +137,28 @@ def test_goal_scores_stay_bounded_and_unknown_goal_is_readability_only() -> None
     assert all(0.0 <= s <= 1.0 for _d, s in with_goal)
     # An unrecognised goal must not do worse than the intent-blind ranking.
     assert rank(profile, goal="unknown") == rank(profile)
+
+
+def test_infer_goal_reads_the_analytical_goal_off_the_column_shape() -> None:
+    # A category plus a measure is the plain comparison (bar) case.
+    assert infer_goal(_profile([_cat("region"), _num("value")])) == "comparison"
+    # A datetime plus a measure reads as a trend, even with a category present.
+    assert infer_goal(_profile([_dt("day"), _num("sales")])) == "trend"
+    assert infer_goal(_profile([_dt("day"), _cat("channel"), _num("sales")])) == "trend"
+    # Two measures and no category is a relationship (scatter) shape.
+    assert infer_goal(_profile([_num("hp"), _num("mpg")])) == "relationship"
+    # Nothing to measure: no clear goal, so scoring stays readability-only.
+    assert infer_goal(_profile([_cat("a"), _cat("b")])) is None
+
+
+def test_inferred_goal_floats_the_shape_appropriate_figure_to_the_top() -> None:
+    # This is what the GUI does post-import: infer the goal, then rank. A plain
+    # category+measure set must lead with bar (not a stacked area that merely
+    # also fits), and a datetime+measure set must lead with line.
+    categorical = _profile([_cat("region"), _num("value")])
+    top_categorical = rank(categorical, goal=infer_goal(categorical))[0][0].kind
+    assert top_categorical == "bar"
+
+    timeseries = _profile([_dt("day"), _num("sales")])
+    top_timeseries = rank(timeseries, goal=infer_goal(timeseries))[0][0].kind
+    assert top_timeseries == "line"

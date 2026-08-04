@@ -56,7 +56,8 @@ def build_property_panel(
         labels = ui.switch("Value labels", on_change=emit("show_labels"))
 
     def refresh() -> None:
-        style = state.plan.style if state.plan is not None else StyleOptions()
+        has_figure = state.plan is not None
+        style = state.plan.style if has_figure else StyleOptions()
         suppress["active"] = True
         try:
             # Snap the font scale to the nearest preset so the select has a value.
@@ -64,6 +65,11 @@ def build_property_panel(
             legend.value = style.legend_position
             grid.value = style.show_grid
             labels.value = style.show_labels
+            # Grey the controls out until there is a figure to restyle: editing
+            # them before then is a silent no-op (the editor's handler bails when
+            # there is no plan), which reads as a broken control.
+            for control in (font, legend, grid, labels):
+                control.set_enabled(has_figure)
         finally:
             suppress["active"] = False
 

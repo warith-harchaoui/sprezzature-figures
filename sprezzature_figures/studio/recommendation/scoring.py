@@ -88,6 +88,37 @@ def _intent_matches(definition: FigureDefinition, goal: str) -> bool:
     return any(keyword in category for keyword in _GOAL_CATEGORY_KEYWORDS.get(goal, ()))
 
 
+# Coarse role types (see compatibility._ROLE_TYPE_ACCEPTS) grouped by the shape
+# question each answers, used to read an analytical goal off a dataset's column
+# mix when the user hasn't stated one.
+_NUMERIC_TYPES = frozenset({"numeric", "percentage", "currency"})
+_CATEGORICAL_TYPES = frozenset({"categorical", "boolean", "text", "identifier"})
+
+
+def infer_goal(profile: DatasetProfile) -> str | None:
+    """Read a likely `analytical_goal` off the dataset's column shape, for when
+    the user hasn't stated one (the GUI's post-import recommendations).
+
+    Conservative on purpose: it only names a goal when the column mix points
+    clearly at one, so a wrong guess never buries a well-fitting figure. A
+    datetime plus a measure reads as a *trend*; two-plus measures with no
+    category as a *relationship*; a category plus a measure as a *comparison*
+    (the plain bar-chart case). Anything else returns None, so scoring falls
+    back to the readability-only order.
+    """
+    types = [col.semantic_type for col in profile.columns]
+    numeric_count = sum(1 for t in types if t in _NUMERIC_TYPES)
+    has_datetime = any(t == "datetime" for t in types)
+    has_categorical = any(t in _CATEGORICAL_TYPES for t in types)
+    if has_datetime and numeric_count >= 1:
+        return "trend"
+    if numeric_count >= 2 and not has_categorical:
+        return "relationship"
+    if has_categorical and numeric_count >= 1:
+        return "comparison"
+    return None
+
+
 def score(definition: FigureDefinition, profile: DatasetProfile, *, goal: str | None = None) -> float:
     """A 0..1 suitability score for showing *this* dataset as this figure.
 

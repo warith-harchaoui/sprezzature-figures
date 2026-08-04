@@ -17,7 +17,7 @@ from collections.abc import Callable
 from nicegui import ui
 
 from sprezzature_figures.core.figure_plan import ColumnBinding, FigurePlan
-from sprezzature_figures.studio.recommendation import assign_columns, rank
+from sprezzature_figures.studio.recommendation import assign_columns, infer_goal, rank
 from sprezzature_figures.studio.state import SessionState
 
 
@@ -31,7 +31,11 @@ def build_recommendation_cards(
     `on_select` receives a ready-to-render FigurePlan when a card is used."""
     if state.dataset_profile is None:
         return
-    ranked = rank(state.dataset_profile)[:limit]
+    # Read a likely analytical goal off the column shape so the top card suits
+    # the data (a category+measure set leads with a bar, not a stacked area),
+    # instead of the readability-only tie that falls back to registry order.
+    goal = infer_goal(state.dataset_profile)
+    ranked = rank(state.dataset_profile, goal=goal)[:limit]
     if not ranked:
         return
 
@@ -47,11 +51,15 @@ def build_recommendation_cards(
         bindings = assign_columns(definition, state.dataset_profile)
         if bindings is None:  # scored but not fillable (shouldn't happen post-rank)
             continue
+        # Show each binding as its human role label ("Category"), not the
+        # generator's internal role name ("region"), so the line reads as data
+        # mapping rather than as an implementation detail.
+        role_labels = {r.name: r.label for r in (*definition.required_roles, *definition.optional_roles)}
         with ui.column().classes("w-full gap-1 rounded-lg border p-3"):
             ui.label(definition.label).classes("text-sm font-medium text-neutral-900")
             if definition.description:
                 ui.label(definition.description).classes("text-xs text-gray-500")
-            using = ", ".join(f"{role}={col}" for role, col in bindings.items())
+            using = ", ".join(f"{role_labels.get(role, role)} → {col}" for role, col in bindings.items())
             ui.label(f"Uses {using}").classes("text-xs text-gray-500")
             ui.button(
                 "Use", on_click=lambda k=definition.kind, b=bindings: use(k, b)

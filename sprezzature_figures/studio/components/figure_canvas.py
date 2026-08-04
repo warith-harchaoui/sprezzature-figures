@@ -26,15 +26,16 @@ def build_figure_canvas(state: SessionState) -> Callable[[], None]:
     """
     with ui.column().classes("w-full items-center gap-2"):
         image = ui.image().classes("max-w-full border rounded-lg bg-neutral-50").style("min-height: 200px")
-        caption = ui.label("No render yet -- import data and create a figure.").classes("text-sm text-gray-500")
+        caption = ui.label("No render yet. Import data and create a figure.").classes("text-sm text-gray-500")
 
     def refresh() -> None:
         if state.render is None:
             image.set_source("")
-            caption.text = "No render yet -- import data and create a figure."
+            caption.text = "No render yet. Import data and create a figure."
             return
         image.set_source(state.render.preview_path)
-        caption.text = f"{state.render.figure_kind} · {state.render.width}x{state.render.height}"
+        kind = state.render.figure_kind.replace("-", " ").replace("_", " ").title()
+        caption.text = f"{kind} · {state.render.width} × {state.render.height} px"
 
     refresh()
     return refresh

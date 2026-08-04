@@ -56,7 +56,7 @@ def build_chat_panel(
         with pending_container:
             ui.label(
                 f"Ralph wants to apply {len(state.last_pending_confirmation)} operation(s) "
-                "that change what the data shows -- confirm to proceed:"
+                "that change what the data shows. Confirm to proceed:"
             ).classes("text-sm text-orange-700")
             for op in state.last_pending_confirmation:
                 ui.label(f"- {op.operation_type}: {getattr(op, 'reason', '') or 'no reason given'}").classes(
@@ -77,6 +77,16 @@ def build_chat_panel(
 
     message_input = ui.input(placeholder="Ask Ralph to change something...").classes("w-full")
 
+    # A "Ralph is working..." row shown only while a request is in flight, so the
+    # gap between sending and the model answering (a local model can take many
+    # seconds) reads as progress rather than a frozen panel.
+    with ui.row().classes("w-full items-center gap-2") as thinking:
+        ui.spinner(size="sm")
+        ui.label("Ralph is working...").classes("text-sm text-gray-500")
+    thinking.visible = False
+
+    send_button = ui.button("Send").props("color=primary")
+
     async def send() -> None:
         text = message_input.value.strip()
         if not text:
@@ -84,12 +94,22 @@ def build_chat_panel(
         message_input.value = ""
         state.add_chat("user", text)
         render_log.refresh()
-        await on_send(text)
+        # Lock the controls and show the spinner while Ralph runs, then always
+        # restore them, even if the request raised on the way through.
+        thinking.visible = True
+        send_button.disable()
+        message_input.disable()
+        try:
+            await on_send(text)
+        finally:
+            thinking.visible = False
+            send_button.enable()
+            message_input.enable()
         render_log.refresh()
         render_pending.refresh()
 
+    send_button.on_click(send)
     message_input.on("keydown.enter", lambda _: send())
-    ui.button("Send", on_click=send).props("color=primary")
 
     render_log()
     render_pending()
