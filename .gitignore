@@ -19,3 +19,5 @@ build/
 .coverage.*
 htmlcov/
 coverage.xml
+
+.DS_Store
