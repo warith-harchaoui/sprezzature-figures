@@ -889,8 +889,8 @@ def polarity_tag(polarity: Optional[str], lang: str = "en") -> str:
     if not polarity:
         return ""
     translations = {
-        "higher-better": {"en": " (higher is better)", "fr": " (plus haut = mieux)", "de": " (höher ist besser)", "es": " (más alto es mejor)"},
-        "lower-better":  {"en": " (lower is better)",  "fr": " (plus bas = mieux)",  "de": " (niedriger ist besser)", "es": " (más bajo es mejor)"},
+        "higher-better": {"en": " (higher is better)", "fr": " (plus c’est haut, mieux c’est)", "de": " (höher ist besser)", "es": " (más alto es mejor)"},
+        "lower-better":  {"en": " (lower is better)",  "fr": " (plus c’est bas, mieux c’est)",  "de": " (niedriger ist besser)", "es": " (más bajo es mejor)"},
     }
     if polarity.startswith("target="):
         n = polarity.split("=", 1)[1]
