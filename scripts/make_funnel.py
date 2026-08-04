@@ -37,6 +37,10 @@ WIDTH = 900
 HEIGHT = 600
 MARGIN_H = 60     # left and right margin
 MARGIN_V = 120    # top and bottom margin
+# Horizontal room reserved on each side for the outside stage labels (name on
+# the left, count on the right). The widest trapezoid stops short of the canvas
+# edge by this much so its labels never spill past the viewBox.
+LABEL_GUTTER = 160
 
 INK = "#1D1D1F"
 SECONDARY = "#6E6E73"
@@ -96,8 +100,9 @@ def build_svg(
     max_count = max(counts)
     n = len(data)
 
-    plot_w = WIDTH - 2 * MARGIN_H
     plot_h = HEIGHT - 2 * MARGIN_V
+    # Widest half-width the funnel may reach, leaving a gutter for outside labels.
+    half_max = WIDTH / 2.0 - LABEL_GUTTER
     # Each stage occupies an equal vertical slice
     slice_h = plot_h / n
 
@@ -133,10 +138,10 @@ def build_svg(
         color = STAGE_COLORS[i % len(STAGE_COLORS)]
 
         # Half-width of the top and bottom edges of this trapezoid
-        half_top = (count / max_count) * (plot_w / 2.0)
+        half_top = (count / max_count) * half_max
         if i + 1 < n:
             next_count = float(data[i + 1]["count"])
-            half_bot = (next_count / max_count) * (plot_w / 2.0)
+            half_bot = (next_count / max_count) * half_max
         else:
             # Last stage: taper to a flat bottom (30px half-width)
             half_bot = 30.0

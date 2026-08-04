@@ -1,6 +1,6 @@
 # Figure Catalogue
 
-91 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type).
+92 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type).
 
 Invoke via:
 
@@ -47,9 +47,10 @@ for the current per-chart status.
 | `dependency-wheel` | make_dependency-wheel.py | Network | Circular chord variant emphasising directed dependencies between software modules, packages, or systems. Highlights which components are most depended-upon. |
 | `difference-chart` | make_difference-chart.py | Comparison | Two area or line series with the gap between them shaded. Use to emphasise the magnitude and sign of the difference between two time series. |
 | `dotdensity` | make_dotdensity.py | Geospatial | Each dot represents a fixed count of a quantity on a map. Use to show spatial distribution and relative magnitude without imposing arbitrary choropleth boundaries. |
-| `dotplot` | make_dotplot.py | Comparison | Categorical axis with dots for each value (Cleveland dot plot). Cleaner than a bar chart for a ranked list; preferred when the baseline is not zero. |
+| `dotplot` | make_dotplot.py | Distribution | Wilkinson dot plot: one dot per observation, binned and stacked so the sample size stays countable while the silhouette shows the distribution's shape. Use for small-to-medium samples where a histogram's bars would hide individual points. |
 | `dumbbell` | make_dumbbell.py | Change | Two dots connected by a line per category (before vs. after). Use for clear before–after or group-A vs. group-B comparison across many categories. |
 | `edge-bundling` | make_edge-bundling.py | Network | Hierarchical edge-bundling groups edges along their shared ancestry, reducing visual clutter in large graphs. Use for software dependency or call-graph visualisation. |
+| `elbow` | make_elbow.py | Model selection | Detect the elbow (knee) of a diminishing-returns curve with the Kneedle method: pick k for k-means, the number of PCA components, or `eps` for DBSCAN. An inset draws the normalised difference curve whose peak locates the elbow. |
 | `embedding_projector` | make_embedding_projector.py | Dimensionality reduction | 2-D or 3-D scatter of high-dimensional embeddings coloured by label. Use to inspect whether a learned embedding separates classes or clusters semantically. |
 | `figure` | make_figure.py | — | Internal dispatcher; do not invoke directly. |
 | `forest` | make_forest.py | Meta-analysis | Forest plot: effect size with confidence interval per study, plus a pooled diamond. Standard in systematic reviews and meta-analyses. |

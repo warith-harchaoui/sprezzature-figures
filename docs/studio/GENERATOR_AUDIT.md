@@ -6,9 +6,9 @@ expects. Regenerate with `python tools/audit_generators.py --render`.
 
 - **stable**: 16
 - **experimental**: 0
-- **legacy**: 75
+- **legacy**: 76
 - **unavailable**: 0
-- **total**: 91
+- **total**: 92
 
 | kind | status | reachable | callable | demo_data | render | errors |
 |---|---|---|---|---|---|---|
@@ -39,6 +39,7 @@ expects. Regenerate with `python tools/audit_generators.py --render`.
 | `dotplot` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_dotplot.py; No callable named 'make_dotplot' in make_dotplot.py |
 | `dumbbell` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `edge-bundling` | legacy | **no** | **no** | **no** | not_run | No DEMO_DATA in make_edge-bundling.py; No callable named 'make_edge_bundling' in make_edge-bundling.py |
+| `elbow` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_elbow.py; No callable named 'make_elbow' in make_elbow.py |
 | `embedding_projector` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_embedding_projector.py; No callable named 'make_embedding_projector' in make_embedding_projector.py |
 | `forest` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_forest.py; No callable named 'make_forest' in make_forest.py |
 | `funnel` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |

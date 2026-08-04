@@ -144,6 +144,54 @@ MAJORITY = TOTAL_SEATS // 2 + 1          # seats needed to govern alone
 
 
 # ------------------------------------------------------------------
+# Deterministic member roster
+# ------------------------------------------------------------------
+# Every seat names a fictional member so hovering a dot answers "who holds
+# this seat", not just "which party". The names are drawn from two fixed
+# pools by a mixed-radix index, so the roster is fully deterministic (the
+# SVG is byte-stable across renders) and adjacent seats differ in both the
+# given name and the surname.
+_FIRST_NAMES: List[str] = [
+    "Emma", "Louis", "Chloé", "Hugo", "Léa", "Nathan", "Camille", "Adam",
+    "Manon", "Lucas", "Sofia", "Gabriel", "Alice", "Raphaël", "Jade", "Arthur",
+    "Léna", "Paul", "Anna", "Jules", "Inès", "Théo", "Zoé", "Noah",
+]
+_SURNAMES: List[str] = [
+    "Martin", "Bernard", "Dubois", "Thomas", "Robert", "Richard", "Petit",
+    "Durand", "Leroy", "Moreau", "Simon", "Laurent", "Lefebvre", "Michel",
+    "Garcia", "David", "Bertrand", "Roux", "Vincent", "Fournier", "Morel",
+    "Girard", "André", "Mercier", "Blanc", "Guérin", "Boyer", "Garnier",
+    "Chevalier", "François",
+]
+
+
+def _member_name(seat_index: int) -> str:
+    """Return a stable fictional member name for a seat in sweep order.
+
+    The given name cycles through :data:`_FIRST_NAMES`; the surname is
+    offset by the given-name column so consecutive seats never repeat a
+    name. With the pool sizes chosen (24 x 30), every seat below 720 maps
+    to a distinct ``(given, surname)`` pair, which comfortably covers the
+    chamber.
+
+    Parameters
+    ----------
+    seat_index : int
+        Zero-based seat position in seating order.
+
+    Returns
+    -------
+    str
+        ``"Given Surname"``.
+    """
+    n_first = len(_FIRST_NAMES)
+    n_last = len(_SURNAMES)
+    fi = seat_index % n_first
+    si = (seat_index // n_first + fi * 5) % n_last
+    return f"{_FIRST_NAMES[fi]} {_SURNAMES[si]}"
+
+
+# ------------------------------------------------------------------
 # Geometry helpers
 # ------------------------------------------------------------------
 def _polar(radius: float, deg: float) -> Tuple[float, float]:
@@ -467,10 +515,12 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
 
     # --- seat lattice ---
     parts.append('<g id="floor">')
-    for (x, y), pid in zip(positions, assignment):
+    for i, ((x, y), pid) in enumerate(zip(positions, assignment)):
         name, lab, seats, hue = parties[pid]
         cls = f"{pid}-{lab.lower()}"
-        tip = f"{name} ({lab}) — {seats} seats"
+        # Tooltip names the member holding the seat, then their party, so a
+        # hover answers "who is this?" — the party block still lifts via CSS.
+        tip = f"{_member_name(i)} — {name}"
         parts.append(_seat_disk(x, y, hue, cls, tip))
     parts.append("</g>")
 
@@ -586,7 +636,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         f'<text x="52" y="{HEIGHT - 34}" font-size="15" fill="{SUBINK}">'
         f'One dot = one seat · dashed line marks the {MAJORITY}-seat majority · '
         f'{escape(lead_name)} need {short} more seats or a coalition partner · '
-        f'hover a seat to lift its party'
+        f'hover a seat for its member; the party block lifts with it'
         f'</text>'
     )
 
