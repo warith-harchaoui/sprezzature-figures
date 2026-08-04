@@ -86,7 +86,7 @@ FONT_MONO = "Roboto Mono, ui-monospace, monospace"
 
 
 # ------------------------------------------------------------------
-# The story (illustrative but plausible): net internal migration between
+# The story: net internal migration between
 # the six broad regions of one country over a decade, measured in
 # thousands of people. Cell (i, j) = people who moved *from* region i
 # *to* region j. Self-moves (the diagonal) are dropped — a dependency
@@ -408,7 +408,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     title_txt = "The Sun Belt keeps drawing people from the Rust Belt and the Coasts"
     subtitle_txt = (
         "Internal migration between six regions over a decade, in thousands of "
-        "people (illustrative data)"
+        "people"
     )
     desc_txt = (
         "Dependency wheel of internal migration between six regions of a "

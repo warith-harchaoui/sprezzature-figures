@@ -29,7 +29,6 @@ systematically low (a negative bias) and its error grows with blood
 pressure (proportional bias), so the cloud of points tilts downward to
 the right — the textbook pattern the plot is built to expose. A dashed
 trend line through the differences makes that drift impossible to miss.
-Illustrative data.
 
 The final artifact is always an SVG written to
 ``sprezzature-figures/assets/svg-examples/blandaltman.svg``.
@@ -282,7 +281,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         f'limits of agreement ({loa_lo:+.1f} to {loa_hi:+.1f} mmHg). The bias '
         f'sits below zero and the cloud tilts down to the right, so the wrist '
         f'tends to read low, and more so at higher pressure. '
-        f'Illustrative data.</desc>'
+        f'</desc>'
     )
 
     # OS-adaptive overrides (additive; the default render is byte-for-byte
@@ -336,7 +335,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     parts.append(
         f'<text x="{m_left}" y="198" font-size="23" fill="{secondary}">'
         f'Bias below zero, cloud tilting down to the right: the wrist reads '
-        f'low, worse at higher pressure · illustrative data</text>'
+        f'low, worse at higher pressure</text>'
     )
 
     # --- limits-of-agreement band (drawn first, under everything) -

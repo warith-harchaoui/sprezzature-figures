@@ -252,7 +252,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     cross_count = int(crossing["cum_count"]) if crossing else 0
     parts.append(
         f'<desc id="pa-desc">Pareto chart of one week of customer-support '
-        f'tickets ({total:,} total, illustrative). Bars show each reason’s '
+        f'tickets ({total:,} total). Bars show each reason’s '
         f'share of tickets, sorted tallest-first against the left percentage '
         f'axis; the {n_vital} tallest are tinted blue as the “vital few” '
         f'and the remaining {n - n_vital} fade to grey as the “trivial '
@@ -261,7 +261,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         f'line marks the 80/20 threshold: the cumulative curve first clears '
         f'it at reason {n_vital}, so {n_vital} reasons account for '
         f'{cross_cum} % of tickets ({cross_count:,} of {total:,}). '
-        f'Illustrative figures.</desc>'
+        f'</desc>'
     )
 
     # Static figure: hover / focus emphasis only, no motion to guard.
@@ -315,7 +315,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     )
     parts.append(
         f'<text x="{m_left}" y="156" font-size="20" fill="{secondary}">'
-        f'One week of support tickets ({total:,} total) · illustrative '
+        f'One week of support tickets ({total:,} total)'
         f'data</text>'
     )
 

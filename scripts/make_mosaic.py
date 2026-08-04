@@ -77,7 +77,7 @@ COMPOSITION: Dict[str, Dict[str, float]] = {
 }
 
 TITLE = "On phones, wallets have overtaken cards"
-SUBTITLE = "Share of online-store checkouts by device and payment method - illustrative quarter"
+SUBTITLE = "Share of online-store checkouts by device and payment method"
 
 
 # --------------------------------------------------------------------------- #

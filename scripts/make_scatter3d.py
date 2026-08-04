@@ -141,7 +141,7 @@ _DEFAULT_AZIM = -40.0
 
 
 # --------------------------------------------------------------------------- #
-# Illustrative data                                                            #
+#                                                             #
 # --------------------------------------------------------------------------- #
 def _sample_clusters(
     n_per: int = 26, seed: int = 7
@@ -1117,7 +1117,7 @@ def build_svg(
     title = "Three grape cultivars fall into three chemistry clouds"
     subtitle = (
         "Drag to rotate, scroll or pinch to zoom, double-click to reset, "
-        "hover a point for its readings · illustrative data"
+        "hover a point for its readings"
     )
     # width/height 100% + viewBox + preserveAspectRatio make the figure
     # responsive: it fills its container and the JS reads the live client

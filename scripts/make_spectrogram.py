@@ -311,7 +311,7 @@ def build_svg(
     title = "A rising tone climbs the frequency axis over three seconds"
     subtitle = (
         "Short-time Fourier transform of a synthesised clip — brighter = louder "
-        "· Illustrative data"
+        ""
     )
     parts.append(
         f'<svg role="img" aria-label="{title}" '

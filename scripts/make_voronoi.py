@@ -83,8 +83,7 @@ Point = Tuple[float, float]
 Poly = List[Point]
 
 # ------------------------------------------------------------------
-# The story (illustrative but plausible, in the shape of a real
-# open-data pharmacy layer): thirty pharmacies across one city, each
+# The story: thirty pharmacies across one city, each
 # belonging to one of four chains plus the independents. The takeaway is
 # that one chain (Greenleaf) has quietly captured the largest share of
 # the city's *area* — not just the most shops — because its stores sit
@@ -506,7 +505,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     title_txt = "Greenleaf owns the map, not just the most shops"
     subtitle_txt = (
         "Nearest-pharmacy catchment areas across the city, coloured by "
-        "chain (illustrative open-data layer)"
+        "chain"
     )
     lead_share = share["Greenleaf"]
     desc_txt = (

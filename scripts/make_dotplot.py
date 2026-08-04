@@ -245,7 +245,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     parts.append(
         f'<text x="{m_left}" y="96" font-size="20" fill="{secondary}">'
         f'{pct_within}% of {n} support tickets clear the 4-hour target; a '
-        f'thin red tail drags on · illustrative</text>'
+        f'thin red tail drags on</text>'
     )
 
     # --- target line + label -------------------------------------

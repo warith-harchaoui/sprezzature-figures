@@ -280,7 +280,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     parts.append(
         f'<text x="52" y="102" font-size="19" fill="{_SUBTLE}">'
         f'Skills held by 1,000 surveyed data professionals · counts are '
-        f'people per region · illustrative</text>'
+        f'people per region</text>'
     )
 
     # ---- the three circles ----

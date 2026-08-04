@@ -854,7 +854,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     parts.append(
         f'<text x="{_MAP_X + 6:.1f}" y="{_HEIGHT - 20}" font-size="14" '
         f'fill="{_SUBTLE}">One hexagon ≈ 250,000 km² · colour = earthquake '
-        f'count per hexagon · illustrative catalogue seeded on real '
+        f'count per hexagon'
         f'subduction arcs · Equal Earth (equal-area) projection</text>'
     )
 

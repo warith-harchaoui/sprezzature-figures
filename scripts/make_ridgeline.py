@@ -64,7 +64,7 @@ _MONO = "Roboto Mono, ui-monospace, monospace"
 
 
 # --------------------------------------------------------------------------- #
-# Illustrative data                                                            #
+#                                                             #
 # --------------------------------------------------------------------------- #
 def _sample_monthly_highs(seed: int = 7) -> Dict[str, np.ndarray]:
     """Synthesise a year of daily-high temperatures, one sample per month.
@@ -301,7 +301,7 @@ def build_svg(
     title = "The whole distribution marches with the seasons, not just the mean"
     subtitle = (
         "Daily-high temperature by month, one colour-coded lane each — "
-        "Illustrative data"
+        ""
     )
     parts.append(
         f'<svg role="img" aria-label="{title}" '

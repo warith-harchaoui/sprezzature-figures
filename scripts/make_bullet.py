@@ -276,7 +276,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     parts.append(
         f'<text x="{m_left}" y="104" font-size="20" fill="{secondary}">'
         f'Revenue, activation and churn beat plan; trial signups and API '
-        f'latency still trail the goal &#183; illustrative</text>'
+        f'latency still trail the goal</text>'
     )
 
     # --- shared legend (its own line under the subtitle) ---------

@@ -510,7 +510,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         'downtown core of Riverbend</title>'
     )
     desc = (
-        f"Square-binned density map of Riverbend (an illustrative city). The "
+        f"Square-binned density map of Riverbend. The "
         f"city is tiled with a regular grid of {n_cells} square cells, each "
         f"400 metres on a side, shaded by the number of reported night-time "
         f"incidents that fell inside it, from {total:,} incidents in all. The "
@@ -563,7 +563,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     parts.append(
         f'<text x="{_MAP_X0}" y="106" font-size="20" fill="{_SUBTLE}">'
         f'Night-time incidents (10 PM-4 AM) per 400 m grid cell across '
-        f'Riverbend · illustrative</text>'
+        f'Riverbend</text>'
     )
 
     # ---- land base + city boundary ----

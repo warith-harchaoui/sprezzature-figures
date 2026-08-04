@@ -449,7 +449,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         f'about {gdp_rise}% while emissions per person fell about '
         f'{co2_drop}%, from {co2_first:.1f} to {co2_last:.1f} tonnes. The '
         f'left-turning hook shows growth and carbon decoupling. '
-        f'Illustrative figures.</desc>'
+        f'</desc>'
     )
 
     # Static figure: hover / focus enlargement only, no motion to guard.
@@ -496,7 +496,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         f'<text x="{m_left}" y="140" font-size="24" fill="{secondary}">'
         f'United Kingdom, {rows[0]["year"]}–{rows[-1]["year"]}: output '
         f'per person up ~{gdp_rise}% while carbon per person fell ~{co2_drop}% '
-        f'· illustrative</text>'
+        f'</text>'
     )
 
     # --- legend: what the two emphasised markers mean ------------

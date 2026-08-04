@@ -31,7 +31,6 @@ The scenario is a **house-price regression**: an analyst predicts sale price
 from floor area with a straight-line least-squares fit, but the true
 relationship curves (price accelerates for larger homes) and the spread
 widens with size — the textbook mis-specification a residual plot exposes.
-Illustrative data.
 
 The figure is **static** — the diagnostic is a single still. Each residual
 point carries a native ``<title>`` tooltip and a :hover / :focus enlargement;
@@ -263,7 +262,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         'curvature and the fanning show the linear model mis-specifies both '
         'the mean and the variance. Points above zero (model under-predicts) '
         'are blue; points below zero (model over-predicts) are orange. '
-        'Illustrative data.</desc>'
+        '</desc>'
     )
 
     # Static figure: hover / focus enlargement only, no motion to guard.
@@ -305,7 +304,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     )
     parts.append(
         f'<text x="{m_left}" y="128" font-size="19" fill="{secondary}">'
-        f'Illustrative data</text>'
+        f'</text>'
     )
 
     # --- gridlines (very light) ----------------------------------

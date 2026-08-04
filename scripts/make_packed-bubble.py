@@ -74,8 +74,7 @@ PACK_CX = WIDTH * 0.50
 PACK_CY = 590.0
 
 # ------------------------------------------------------------------
-# The story (illustrative but plausible, in the shape of a large
-# developer survey): the share of professional developers who report
+# The story: the share of professional developers who report
 # working with each language. The takeaway is that a handful of web and
 # scripting languages dominate the working world, while the systems and
 # data families are smaller but coherent clusters. Colour marks the
@@ -391,7 +390,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     title_txt = "JavaScript and Python still anchor the working web"
     subtitle_txt = (
         "Share of professional developers using each language, by family "
-        "· illustrative survey data"
+        ""
     )
     desc_txt = (
         "Packed-bubble chart of programming languages. Each bubble is a "

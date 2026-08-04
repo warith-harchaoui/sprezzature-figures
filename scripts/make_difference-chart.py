@@ -88,7 +88,7 @@ _PLAN_LINE = "#8E8E93"    # neutral grey — the reference / target series
 
 
 # --------------------------------------------------------------------------- #
-# Illustrative data                                                            #
+#                                                             #
 # --------------------------------------------------------------------------- #
 def _sample_revenue(seed: int = 7) -> Dict[str, np.ndarray]:
     """Synthesise a fiscal year of actual vs planned monthly recurring revenue.
@@ -337,7 +337,7 @@ def build_svg(
         f"revenue, a grey line is the board plan. The band between them is "
         f"shaded blue where actual runs above plan (a surplus, strongest in "
         f"spring) and red where it runs below (a shortfall through the summer). "
-        f"Illustrative data.</desc>"
+        f"</desc>"
     )
     parts.append(f'<rect width="{width}" height="{height}" rx="18" fill="{_BG}"/>')
     parts.append(
@@ -350,7 +350,7 @@ def build_svg(
     )
     parts.append(
         f'<text x="{m_left}" y="130" font-size="16" '
-        f'fill="{_SECONDARY}">Illustrative data &#183; thousands of dollars '
+        f'fill="{_SECONDARY}">thousands of dollars '
         f'per month</text>'
     )
 

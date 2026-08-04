@@ -90,7 +90,7 @@ _BREAKOUT_HUE = "#34C759"  # Apple Green — price pushes through the upper band
 
 
 # --------------------------------------------------------------------------- #
-# Illustrative data                                                            #
+#                                                             #
 # --------------------------------------------------------------------------- #
 def _sample_prices(seed: int = 11) -> Dict[str, np.ndarray]:
     """Synthesise one trading year of a mid-cap stock's daily close.
@@ -385,7 +385,7 @@ def build_svg(
         f"below it. Through the summer the band pinches to its narrowest of the "
         f"year — a volatility squeeze, marked in amber — after which the close "
         f"pushes through the upper band and trends up along it — a breakout, "
-        f"marked in green. Illustrative data.</desc>"
+        f"marked in green.</desc>"
     )
     parts.append(f'<rect width="{width}" height="{height}" rx="18" fill="{_BG}"/>')
     parts.append(
@@ -398,7 +398,7 @@ def build_svg(
     )
     parts.append(
         f'<text x="{m_left}" y="128" font-size="15" '
-        f'fill="{_SECONDARY}">Illustrative data &#183; one trading year &#183; '
+        f'fill="{_SECONDARY}">one trading year &#183; '
         f'daily closing price in US dollars</text>'
     )
 

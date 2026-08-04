@@ -83,8 +83,7 @@ STUDIES: List[Dict[str, Any]] = [
 ]
 
 #: The random-effects pooled summary (DerSimonian-Laird style), quoted
-#: with its own 95% CI. Illustrative but consistent with the studies
-#: above: a modest but clearly-positive overall effect.
+#: with its own 95% CI.
 POOLED: Dict[str, Any] = {
     "label": "Pooled (random effects)",
     "or_": 1.44,
@@ -98,7 +97,7 @@ POOLED: Dict[str, Any] = {
 # Geometry helpers
 # ------------------------------------------------------------------
 def study_weight(n: int, ci_width_log: float) -> float:
-    """Return an (illustrative) inverse-variance weight for a study.
+    """Return an inverse-variance weight for a study.
 
     A real forest plot sizes each box by the study's inverse-variance
     weight. We approximate that here from the sample size and the width
@@ -273,7 +272,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     parts.append(
         f'<text x="{m_left}" y="58" font-size="12.5" fill="{secondary}">'
         f'Pooled odds ratio {or_p:.2f} (95% CI {lo_p:.2f}–{hi_p:.2f}) across '
-        f'{n} randomised trials · {POOLED["het"]} · illustrative data</text>'
+        f'{n} randomised trials · {POOLED["het"]}</text>'
     )
 
     # --- column headers ------------------------------------------

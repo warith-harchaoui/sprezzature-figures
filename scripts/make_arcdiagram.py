@@ -80,7 +80,7 @@ FONT_MONO = "Roboto Mono, ui-monospace, monospace"
 
 
 # ------------------------------------------------------------------
-# The story (illustrative but plausible): a lab's co-authorship network.
+# The story: a lab's co-authorship network.
 # Two research groups — Vision and Language — barely overlap. Node order
 # is chosen so each group clusters (short, dense arcs) and the one
 # cross-group researcher, Nadia, sits in the middle. Her two arcs are the

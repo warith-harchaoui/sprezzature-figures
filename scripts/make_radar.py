@@ -91,7 +91,7 @@ _SERIES_COLORS: Dict[str, str] = {
 
 
 # --------------------------------------------------------------------------- #
-# Illustrative data                                                            #
+#                                                             #
 # --------------------------------------------------------------------------- #
 def _sample_scores() -> Dict[str, object]:
     """Return the illustrative radar dataset: 3 databases × 6 criteria.
@@ -225,7 +225,7 @@ def build_svg(
     title = "No database wins on every sprezzature"
     subtitle = (
         "Three managed cloud databases scored 0–100 across six buyer criteria "
-        "· illustrative data"
+        ""
     )
     aria = (
         "Radar chart comparing three managed cloud databases — Aurora, Cloud "

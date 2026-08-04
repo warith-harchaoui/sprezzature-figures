@@ -46,7 +46,7 @@ UNIT: str = "%"
 VMIN, VMAX = 0.0, 100.0
 
 TITLE = "Web-server CPU load is running hot at the traffic peak"
-SUBTITLE = "app-07 · 12:40 UTC · 1-minute average · illustrative reading"
+SUBTITLE = "app-07 · 12:40 UTC · 1-minute average"
 
 # Coloured performance zones, low → high. Each is (upper-bound, colour-key,
 # label). Bounds are cumulative and end at VMAX.

@@ -530,7 +530,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     caption = (
         f'  <text x="60" y="118" font-size="15" fill="{SUBTLE}" '
         f'font-family="Roboto Mono, monospace">RadViz spring layout · '
-        f"{n_total} kernels · {n_feat} anchors · illustrative</text>"
+        f"{n_total} kernels · {n_feat} anchors</text>"
     )
 
     body = "\n".join(

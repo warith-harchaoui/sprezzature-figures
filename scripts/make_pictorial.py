@@ -361,7 +361,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     parts.append(
         f'<text x="{_FIELD_X - 244:.0f}" y="116" font-size="19" '
         f'fill="{_SUBTLE}">Cyclists per 100 commuters on a typical '
-        f'weekday · one figure = {int(_UNIT)} people · illustrative</text>'
+        f'weekday · one figure = {int(_UNIT)} people</text>'
     )
 
     # ---- icon rows, one per city ----

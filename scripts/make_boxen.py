@@ -591,7 +591,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     caption = (
         f'  <text x="{PLOT_LEFT}" y="99" font-size="14" fill="{SUBTLE}" '
         f'font-family="Roboto Mono, monospace">Letter-value plot · '
-        f"{n_each:,} requests per tier · illustrative</text>"
+        f"{n_each:,} requests per tier</text>"
     )
 
     body = "\n".join(

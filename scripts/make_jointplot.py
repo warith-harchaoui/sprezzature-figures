@@ -23,7 +23,7 @@ shows sleep is roughly symmetric, the right marginal shows reaction time has
 a long slow tail. Each marginal carries its own hue (sleep = Apple Green,
 reaction time = Apple Purple) so the two distributions never blur together;
 the scatter stays Blue and the fitted trend Orange, so the panel reads in
-four clearly-separated house colours. Illustrative data.
+four clearly-separated house colours.
 
 The figure is **static** — a joint plot shows the whole joint-and-marginal
 story in one still. Each scatter point carries a native ``<title>`` tooltip
@@ -312,7 +312,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     )
     parts.append(
         f'<text x="{m_left}" y="134" font-size="19" fill="{secondary}">'
-        f'Illustrative data</text>'
+        f'</text>'
     )
 
     # --- top marginal: histogram of hours slept ------------------

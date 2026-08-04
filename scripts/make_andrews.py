@@ -92,7 +92,7 @@ _FEATURES: List[str] = [
 
 
 # --------------------------------------------------------------------------- #
-# Illustrative data                                                            #
+#                                                             #
 # --------------------------------------------------------------------------- #
 def _sample_penguins(seed: int = 11, per_class: int = 26) -> Tuple[np.ndarray, List[str]]:
     """Synthesise a small penguin body-measurement table, one block per species.
@@ -120,7 +120,7 @@ def _sample_penguins(seed: int = 11, per_class: int = 26) -> Tuple[np.ndarray, L
     rng = np.random.default_rng(seed)
 
     # Per-species mean vectors over (bill length mm, bill depth mm,
-    # flipper length mm, body mass g) — illustrative but true to the contrasts.
+    # flipper length mm, body mass g).
     means: Dict[str, np.ndarray] = {
         "Adélie":    np.array([38.8, 18.3, 190.0, 3700.0]),
         "Chinstrap": np.array([48.8, 18.4, 195.8, 3733.0]),
@@ -289,7 +289,7 @@ def build_svg(
     title = "Three penguin species trace three Fourier signatures"
     subtitle = (
         "Each curve turns one bird's four body measurements into an "
-        "Andrews series; bold lines are the species medians. Illustrative data."
+        "Andrews series; bold lines are the species medians."
     )
     parts.append(
         f'<svg role="img" aria-label="{title}" '

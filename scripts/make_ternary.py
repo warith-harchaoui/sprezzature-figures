@@ -366,7 +366,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     parts.append(
         f'<text x="56" y="94" font-size="18" fill="{_SUBTLE}">'
         f'Topsoil samples by grain-size mix · sand + silt + clay = 100 % '
-        f'· illustrative</text>'
+        f'</text>'
     )
 
     # ---- triangle fill + inner grid ----

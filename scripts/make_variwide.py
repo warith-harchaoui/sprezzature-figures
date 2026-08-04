@@ -174,7 +174,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         'population, so the area is total GDP. The United States, a tall narrow '
         'column, and China, a short wide one, enclose similar area — 27.4 and '
         '17.8 trillion US dollars — reached two different ways. India is the '
-        'widest but shortest column. Illustrative figures, World Bank and IMF '
+        'widest but shortest column. , World Bank and IMF '
         '2023 estimates.</desc>'
     )
 

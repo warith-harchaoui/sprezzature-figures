@@ -72,7 +72,7 @@ _MONO = "Roboto Mono, ui-monospace, monospace"
 
 
 # --------------------------------------------------------------------------- #
-# Illustrative data                                                            #
+#                                                             #
 # --------------------------------------------------------------------------- #
 def _sample_hourly_trips(seed: int = 11) -> np.ndarray:
     """Synthesise an average-weekday, hour-by-hour bike-share departure count.
@@ -211,7 +211,7 @@ def build_svg(
     # ---- header / accessibility ------------------------------------------- #
     title = "The city breathes twice a day"
     subtitle = (
-        "Bike-share departures by hour of an average weekday — Illustrative data"
+        "Bike-share departures by hour of an average weekday"
     )
     aria = (
         "Polar clock plot of bike-share departures by hour of day, running "

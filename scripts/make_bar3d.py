@@ -79,7 +79,7 @@ _HIGH = "#0A4DA0"       # deep blue  — tallest bars
 
 
 # --------------------------------------------------------------------------- #
-# Illustrative data                                                            #
+#                                                             #
 # --------------------------------------------------------------------------- #
 def _sample_grid() -> Dict[str, Any]:
     """Return the illustrative rows x cols x heights table for the 3D bars.
@@ -396,7 +396,7 @@ def build_svg(
 
     # ---- header ----------------------------------------------------------- #
     title = "The Data team's cloud bill is running away from everyone else"
-    subtitle = "Quarterly infrastructure spend by team (thousands of USD) — Illustrative data"
+    subtitle = "Quarterly infrastructure spend by team (thousands of USD)"
     parts.append(
         f'<svg role="img" aria-label="{title}" '
         f'xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" '

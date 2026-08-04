@@ -271,7 +271,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     )
     parts.append(
         f'<desc id="lg-desc">Cumulative-gain chart for a churn-prevention '
-        f'campaign (illustrative). The horizontal axis is the share of '
+        f'campaign. The horizontal axis is the share of '
         f'customers contacted, working down a list ranked by the model’s '
         f'predicted churn risk; the vertical axis is the share of all '
         f'churners reached. Three curves: a dashed grey diagonal is the '
@@ -282,7 +282,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         f'between the model and the diagonal is the value the model adds. '
         f'A marker shows the operating point: contacting the riskiest '
         f'{round(op["pop"] * 100)} % reaches {op_pct} % of churners, '
-        f'{op["lift"]}× better than random. Illustrative figures.</desc>'
+        f'{op["lift"]}× better than random.</desc>'
     )
 
     # Static figure: hover / focus emphasis only, no motion to guard.
@@ -335,7 +335,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     )
     parts.append(
         f'<text x="{m_left}" y="156" font-size="20" fill="{secondary}">'
-        f'Illustrative data</text>'
+        f'</text>'
     )
 
     # --- gridlines (very light, on the shared 0..1 grid) ---------

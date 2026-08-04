@@ -37,7 +37,7 @@ from _style import leveled_colors, os_adaptive_style, os_dark_style
 from _svg import xml_escape
 
 # ------------------------------------------------------------------
-# Illustrative data — the "No Priors" episode with Andrej Karpathy
+#  — the "No Priors" episode with Andrej Karpathy
 # (host duo Sarah Guo + Elad Gil). One row per directed pair: the
 # interrupter cut the interrupted `count` times. The union of names
 # is the speaker set; the matrix is built from these pairs.

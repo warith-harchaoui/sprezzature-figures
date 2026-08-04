@@ -138,7 +138,7 @@ def make_area(
     *,
     out: Optional[Path | str] = None,
     title: str = "Website Traffic by Channel",
-    subtitle: str = "Illustrative monthly visits, thousands",
+    subtitle: str = "Monthly visits, thousands",
     width: int = 800,
     height: int = 420,
 ) -> Path:
@@ -184,7 +184,7 @@ if __name__ == "__main__":
     p = argparse.ArgumentParser(description="Generate a stacked area chart.")
     p.add_argument("--out", default=None)
     p.add_argument("--title", default="Website Traffic by Channel")
-    p.add_argument("--subtitle", default="Illustrative monthly visits, thousands")
+    p.add_argument("--subtitle", default="Monthly visits, thousands")
     p.add_argument("--width", type=int, default=800)
     p.add_argument("--height", type=int, default=420)
     args = p.parse_args()
