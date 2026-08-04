@@ -27,7 +27,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _render import svg_example_path, write_svg  # noqa: E402
+from _render import svg_example_path, titled_svg, write_svg  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Output paths
@@ -317,7 +317,7 @@ def make_treemap(
     spec_json = json.dumps(spec, ensure_ascii=False)
 
     import vl_convert as vlc  # type: ignore
-    svg_str = vlc.vega_to_svg(spec_json)
+    svg_str = titled_svg(vlc.vega_to_svg(spec_json), title, desc=subtitle)
 
     dest = Path(out) if out else svg_example_path(__file__, "treemap")
     return write_svg(dest, svg_str)
