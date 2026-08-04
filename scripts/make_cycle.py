@@ -382,17 +382,18 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
             f'd="{path}" fill="{color}" stroke="{_BG}" stroke-width="2" '
             f'stroke-linejoin="round"><title>{tip}</title></path>'
         )
-        # In-arc month count, centred on the band, only where the arc is wide
-        # enough to hold it without crowding (>= ~1.5 months of sweep).
-        if months >= 1.5:
-            mid = (a0 + a1) / 2.0
-            mx, my = _polar(_CX, _CY, r_mid, mid)
-            parts.append(
-                f'<text x="{mx:.1f}" y="{my:.1f}" font-size="21" '
-                f'font-weight="700" font-family="Roboto Mono, monospace" '
-                f'fill="#FFFFFF" text-anchor="middle" dominant-baseline="central" '
-                f'style="pointer-events:none">{months:.0f}</text>'
-            )
+        # In-arc month count, centred on the band. Shown on every phase,
+        # including the one-month arcs: the count is the figure's whole point,
+        # so a narrow arc gets a slightly smaller glyph rather than none.
+        mid = (a0 + a1) / 2.0
+        mx, my = _polar(_CX, _CY, r_mid, mid)
+        count_size = 21 if months >= 1.5 else 17
+        parts.append(
+            f'<text x="{mx:.1f}" y="{my:.1f}" font-size="{count_size}" '
+            f'font-weight="700" font-family="Roboto Mono, monospace" '
+            f'fill="#FFFFFF" text-anchor="middle" dominant-baseline="central" '
+            f'style="pointer-events:none">{months:.0f}</text>'
+        )
         parts.append('</g>')
     parts.append('</g>')
 
@@ -501,23 +502,23 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     )
     parts.append(
         f'<text x="{nx:.1f}" y="{ny + 23:.1f}" font-size="15" '
-        f'fill="{_SUBTLE}">Tillering alone fills {float(peak["months"]):.0f} of the '
-        f'12 months &#8212; {share_peak:.0f}% of the</text>'
+        f'fill="{_SUBTLE}">Tillering alone fills {float(peak["months"]):.0f} of the 12 months,</text>'
     )
     parts.append(
         f'<text x="{nx:.1f}" y="{ny + 42:.1f}" font-size="15" '
-        f'fill="{_SUBTLE}">year &#8212; before the crop races through spring</text>'
+        f'fill="{_SUBTLE}">{share_peak:.0f}% of the year, before spring races in.</text>'
     )
 
     # ---- how-to-read note, top-right ----
     note_x = 852.0
     note_y = 150.0
+    # Wrapped by hand: no line may end on a dangling function word ("of the",
+    # "of", "the", ...) -- a hard house rule, EN and FR alike.
     read_lines = [
         "How to read it",
         "The ring is one full year; follow it",
         "clockwise from the top. Each arc’s",
-        "length is that stage’s share of the",
-        "year. Hover a stage to isolate it.",
+        "length is its share of the whole year.",
     ]
     parts.append(
         f'<text x="{note_x:.0f}" y="{note_y:.0f}" font-size="16" '
@@ -528,12 +529,6 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
             f'<text x="{note_x:.0f}" y="{note_y + 8 + j * 22:.0f}" '
             f'font-size="15" fill="{_SUBTLE}">{line}</text>'
         )
-    # A quiet credit to the plates this cycle form follows.
-    parts.append(
-        f'<text x="{note_x:.0f}" y="{note_y + 8 + len(read_lines) * 22 + 8:.0f}" '
-        f'font-size="13" fill="{_SUBTLE}">Form after the M&#233;mo visuel '
-        f'd&#8217;agronomie (Dunod, 2024)</text>'
-    )
 
     parts.append(fullscreen_control(_WIDTH, _HEIGHT, mode))
     parts.append('</svg>')
