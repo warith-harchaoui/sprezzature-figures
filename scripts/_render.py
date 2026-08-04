@@ -158,6 +158,56 @@ def write_svg(out: Path, svg: str, *, embed_fonts: bool = True) -> Path:
     return out
 
 
+def titled_svg(svg: str, title: str, desc: str = "") -> str:
+    """Give a Vega-rendered SVG an accessible name via ``<title>``/``<desc>``.
+
+    ``vl_convert`` renders a spec's title as visible text marks but emits no
+    SVG ``<title>`` element, so the document has no accessible name and no
+    native hover tooltip. This splices a ``<title>`` (and optional ``<desc>``)
+    in as the first children of the root ``<svg>`` and wires ``role="img"`` +
+    ``aria-labelledby`` so screen readers announce the figure and browsers show
+    the title on hover — the same treatment the hand-authored generators get
+    from :func:`_svg.svg_open`.
+
+    Parameters
+    ----------
+    svg : str
+        A complete SVG document whose root is ``<svg ...>`` (e.g. the return of
+        ``vlc.vega_to_svg`` / ``vlc.vegalite_to_svg``).
+    title : str
+        The accessible name (the figure's headline). Shown as the hover tooltip.
+    desc : str, optional
+        A longer description (the subtitle), announced after the title.
+
+    Returns
+    -------
+    str
+        The SVG with the accessibility nodes injected. Returned unchanged if the
+        root tag cannot be located or a ``<title>`` is already present.
+    """
+    import re
+    from xml.sax.saxutils import escape
+
+    if "<title" in svg[:600]:
+        return svg
+    m = re.match(r"\s*<svg\b[^>]*>", svg)
+    if not m:
+        return svg
+    tag = m.group(0)
+    tid, did = "fig-title", "fig-desc"
+    add = ""
+    if "role=" not in tag:
+        add += ' role="img"'
+    if "aria-labelledby" not in tag and "aria-label" not in tag:
+        add += f' aria-labelledby="{tid}{" " + did if desc else ""}"'
+    if add:
+        tag = tag[:-1] + add + ">"
+    nodes = f'<title id="{tid}">{escape(title)}</title>'
+    if desc:
+        nodes += f'<desc id="{did}">{escape(desc)}</desc>'
+    return tag + nodes + svg[m.end():]
+
+
 def _write_in_format(out: Path, svg: str) -> None:
     """Write ``svg`` to ``out`` honouring the destination extension.
 
