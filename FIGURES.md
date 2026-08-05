@@ -1,6 +1,6 @@
 # Figure Catalogue
 
-92 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type).
+95 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type).
 
 Invoke via:
 
@@ -40,6 +40,7 @@ for the current per-chart status.
 | `chord` | make_chord.py | Flow | Circular chord diagram for symmetric or directed flows between categories. Use when every pair of categories can exchange and the total volume matters (e.g., migration between countries). |
 | `circle-packing` | make_circle-packing.py | Hierarchy | Represent a hierarchy as nested circles whose area encodes a numeric value. Use for a single level of nesting where the visual impact of size differences matters more than precise reading. |
 | `columnrange` | make_columnrange.py | Range | Vertical bars spanning from a low to a high value per category. Use for temperature ranges, salary bands, confidence intervals, or any per-group min–max. |
+| `confusion-matrix` | make_confusion-matrix.py | Model evaluation | Confusion matrix: actual class (rows) vs predicted class (columns), both axes labelled with the class names, cells shaded by count with a strong correct diagonal. Use to see exactly which classes a classifier confuses. |
 | `connected-scatter` | make_connected-scatter.py | Bivariate time series | Scatter plot where consecutive time points are connected by lines. Use to reveal the joint trajectory of two variables over time (e.g., GDP vs. life expectancy). |
 | `convex-hull` | make_convex-hull.py | Clustering | Scatter plot with convex-hull polygons drawn around labelled clusters. Use to visually delimit group boundaries after clustering or classification. |
 | `cycle` | make_cycle.py | Cyclic | Directed ring of proportional arcs for a process that returns to its start (a crop rotation, the seasons, a product lifecycle, a sprint). Each arc's length is that phase's share of one full turn, wrapped by a flow arrow. Use over a pie when order and recurrence matter. |
@@ -77,6 +78,7 @@ for the current per-chart status.
 | `packed-bubble` | make_packed-bubble.py | Comparison | Circles packed together, sized by value. Use as a visually engaging alternative to a pie chart when comparing parts of a whole across many categories. |
 | `pairplot` | make_pairplot.py | Multivariate | Matrix of scatter plots (or KDE on the diagonal) for every pair of numeric variables. Standard EDA chart for tabular datasets up to ~10 columns. |
 | `parallel-sets` | make_parallel-sets.py | Categorical flow | Parallel sets / parallel coordinates for categorical variables. Use to show co-occurrence and flow across multiple categorical dimensions simultaneously. |
+| `parcoords` | make_parcoords.py | Relationship | Parallel coordinates: one vertical axis per numeric metric (with units), each record a polyline crossing them all. Use to see how a few groups separate across several measures at once. |
 | `pareto` | make_pareto.py | Quality / Ranking | Bar chart sorted descending with a cumulative-percentage line. Use to identify the "vital few" factors that account for the majority of an effect (80/20 rule). |
 | `parliament` | make_parliament.py | Political / Composition | Semicircular seat chart for legislative bodies. Use to show seat distribution in elections or any grouped proportional allocation. |
 | `pictorial` | make_pictorial.py | Infographic | Bar or unit chart where bars are replaced by repeating icons. Use for general audiences where engagement matters more than precision. |
@@ -102,6 +104,7 @@ for the current per-chart status.
 | `streamgraph` | make_streamgraph.py | Time series / Composition | Stacked area chart with a central baseline, flowing like a stream. Use for showing how categorical composition evolves over time when the baseline is less important than the flow. |
 | `streamplot` | make_streamplot.py | Vector field | Stream lines showing a 2-D vector field (wind, fluid flow, electromagnetic). Use to visualise flow direction and speed across a continuous domain. |
 | `sunburst` | make_sunburst.py | Hierarchy | Radial treemap: nested rings for hierarchical data. Use when two or three levels of hierarchy need to be read simultaneously (e.g., budget by department → team → line item). |
+| `surface3d` | make_surface3d.py | 3-D surface | Static isometric 3-D surface for z = f(x, y): depth-sorted mesh quads shaded by height with a height legend. Hand-authored SVG (no matplotlib). |
 | `ternary` | make_ternary.py | Compositional | Ternary (triangular) plot for three components that sum to a constant. Use in chemistry, geology, or any three-part compositional analysis. |
 | `timeline` | make_timeline.py | Temporal | Gantt-style horizontal timeline of events or phases. Use for project schedules, historical chronologies, or clinical trial phases. |
 | `tree` | make_tree.py | Hierarchy | Top-down or left-right tree diagram for strict hierarchies. Simpler than a dendrogram when the tree structure itself (not distances) is the message. |
