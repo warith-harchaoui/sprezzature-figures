@@ -257,22 +257,8 @@ def build_svg(
         f'stroke="{INK}" stroke-width="1.5" opacity="0.35"/>'
     )
 
-    # Connector lines between bars (dashed, from top/bottom of one bar to base of next)
-    for i, bar in enumerate(bars[:-1]):
-        # End of current bar
-        if bar["kind"] == "total":
-            connector_y = data_to_px(bar["raw"])
-        elif bar["raw"] >= 0:
-            connector_y = data_to_px(bar["base"] + bar["value"])
-        else:
-            connector_y = data_to_px(bar["base"])
-        x_right = MARGIN_LEFT + i * slot_w + bar_w
-        x_next = MARGIN_LEFT + (i + 1) * slot_w
-        lines.append(
-            f'<line x1="{x_right:.1f}" y1="{connector_y:.1f}" '
-            f'x2="{x_next:.1f}" y2="{connector_y:.1f}" '
-            f'stroke="{SECONDARY}" stroke-width="1" stroke-dasharray="4 3"/>'
-        )
+    # (No connector lines between bars: the dashed step connectors read as
+    # chartjunk, so the bars stand on their own.)
 
     # Bars
     for i, bar in enumerate(bars):
