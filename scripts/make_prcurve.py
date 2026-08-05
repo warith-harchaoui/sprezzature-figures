@@ -91,7 +91,7 @@ def _sigmoid(z: np.ndarray) -> np.ndarray:
 def _pr_from_scores(
     y_true: np.ndarray,
     scores: np.ndarray,
-) -> Tuple[np.ndarray, np.ndarray, float]:
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray, float]:
     """Compute the precision-recall curve and average precision from scores.
 
     Implements the standard scikit-learn ``precision_recall_curve`` +
@@ -120,12 +120,17 @@ def _pr_from_scores(
         ``(recall=0, precision=1)`` anchor scikit-learn uses.
     precision : numpy.ndarray
         Precision at each operating point, aligned with ``recall``.
+    thresholds : numpy.ndarray
+        The score threshold that produced each operating point, aligned with
+        ``recall`` / ``precision``. The prepended anchor carries ``+inf``
+        (nothing scores that high, so nothing is predicted positive).
     average_precision : float
         Area under the PR curve (the AP summary statistic).
     """
     # Sort by descending score; sweep the threshold downward.
     order = np.argsort(-scores, kind="mergesort")
     y_sorted = y_true[order]
+    scores_sorted = scores[order]
 
     total_positives = float(y_sorted.sum())
     # Cumulative true / false positives as we admit each next-highest score.
@@ -136,11 +141,14 @@ def _pr_from_scores(
     recall = true_positives / max(total_positives, 1e-12)
 
     # Collapse tied scores onto their last index so each distinct threshold
-    # contributes a single operating point (scikit-learn semantics).
-    distinct = np.where(np.diff(scores[order]))[0]
+    # contributes a single operating point (scikit-learn semantics). The
+    # threshold at that operating point is the score itself: everything
+    # scoring at or above it is predicted positive.
+    distinct = np.where(np.diff(scores_sorted))[0]
     keep = np.r_[distinct, len(y_sorted) - 1]
     precision = precision[keep]
     recall = recall[keep]
+    thresholds = scores_sorted[keep]
 
     # Average precision: sum of precision * (delta recall). The recall array
     # starts from the first admitted score, so the first increment is measured
@@ -149,15 +157,18 @@ def _pr_from_scores(
     average_precision = float(np.sum((recall - recall_prev) * precision))
 
     # Prepend the canonical (recall=0, precision=1) anchor so the curve starts
-    # cleanly on the left axis.
+    # cleanly on the left axis; its threshold is +inf (above every score, so
+    # nothing is ever flagged positive).
     recall = np.r_[0.0, recall]
     precision = np.r_[1.0, precision]
-    return recall, precision, average_precision
+    thresholds = np.r_[np.inf, thresholds]
+    return recall, precision, thresholds, average_precision
 
 
 def _thin(
     recall: np.ndarray,
     precision: np.ndarray,
+    thresholds: np.ndarray,
     model: str,
     max_points: int = 120,
 ) -> List[Dict[str, Any]]:
@@ -170,7 +181,7 @@ def _thin(
 
     Parameters
     ----------
-    recall, precision : numpy.ndarray
+    recall, precision, thresholds : numpy.ndarray
         The curve from :func:`_pr_from_scores`.
     model : str
         Label carried on every record.
@@ -180,7 +191,10 @@ def _thin(
     Returns
     -------
     list of dict
-        ``{"recall": float, "precision": float, "model": str}`` records.
+        ``{"recall": float, "precision": float, "threshold": float | None,
+        "model": str}`` records — ``threshold`` is ``None`` for the
+        ``(recall=0, precision=1)`` anchor (its threshold is ``+inf``:
+        nothing scores that high).
     """
     n = len(recall)
     if n <= max_points:
@@ -191,6 +205,9 @@ def _thin(
         {
             "recall": round(float(recall[i]), 4),
             "precision": round(float(precision[i]), 4),
+            "threshold": (
+                None if not np.isfinite(thresholds[i]) else round(float(thresholds[i]), 4)
+            ),
             "model": model,
         }
         for i in idx
@@ -256,8 +273,8 @@ def make_data(
         ("Gradient-boosted", strong),
         ("Logistic baseline", weak),
     ):
-        recall, precision, average_precision = _pr_from_scores(y_true, scores)
-        curves.extend(_thin(recall, precision, label))
+        recall, precision, thresholds, average_precision = _pr_from_scores(y_true, scores)
+        curves.extend(_thin(recall, precision, thresholds, label))
         ap[label] = round(average_precision, 3)
 
         # Highlight one operating point per model: the threshold that
@@ -269,6 +286,7 @@ def make_data(
             {
                 "recall": round(float(recall[best]), 4),
                 "precision": round(float(precision[best]), 4),
+                "threshold": round(float(thresholds[best]), 4),
                 "model": label,
                 "f1": round(float(f1[best]), 3),
             }
@@ -358,14 +376,17 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         """Map precision in ``[0, 1]`` to a y pixel coordinate (y-down)."""
         return plot_y + (1.0 - v) * plot_h
 
-    # Group the thinned curve records back into per-model point lists, in the
-    # (recall-ascending) order make_data produced them.
-    per_model: Dict[str, List[Tuple[float, float]]] = {
+    # Group the thinned curve records back into per-model point lists (recall,
+    # precision, threshold), in the (recall-ascending) order make_data
+    # produced them. ``threshold`` is ``None`` at the (0, 1) anchor.
+    per_model: Dict[str, List[Tuple[float, float, Any]]] = {
         "Gradient-boosted": [],
         "Logistic baseline": [],
     }
     for rec in bundle["curves"]:
-        per_model[rec["model"]].append((float(rec["recall"]), float(rec["precision"])))
+        per_model[rec["model"]].append(
+            (float(rec["recall"]), float(rec["precision"]), rec["threshold"])
+        )
 
     parts: List[str] = []
 
@@ -423,6 +444,10 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         ".op:hover .halo,.op:focus .halo{opacity:1}"
         ".op:focus{outline:none}"
         ".curve{cursor:pointer}"
+        ".sw{cursor:pointer}"
+        ".sw .halo{opacity:0;transition:opacity .12s ease}"
+        ".sw:hover .halo,.sw:focus .halo{opacity:1}"
+        ".sw:focus{outline:none}"
         + "\n" + contrast_block + "\n"
         + os_dark_style() + "\n"
         "</style>"
@@ -563,9 +588,15 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         """Return the SVG ``d`` for a polyline through mapped ``pts``."""
         return "M " + " L ".join(f"{x:.1f} {y:.1f}" for x, y in pts)
 
+    def _threshold_words(threshold: Any) -> str:
+        """Render a threshold value (or the ``None`` anchor) for a tooltip."""
+        if threshold is None:
+            return "threshold above every score (nothing flagged)"
+        return f"threshold {float(threshold):.2f}"
+
     for label in ("Logistic baseline", "Gradient-boosted"):
         st = style[label]
-        pts = [(sx(r), sy(p)) for r, p in per_model[label]]
+        pts = [(sx(r), sy(p)) for r, p, _thr in per_model[label]]
         d_curve = _curve_path(pts)
         tip = f"{label}: average precision {ap[label]:.2f}"
         parts.append(
@@ -588,6 +619,38 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         )
         parts.append("</g>")
 
+        # ---- threshold-sweep hover marks along the curve ---------
+        # Real per-mark tooltips at a sparse subsample of thinned operating
+        # points: the precision/recall pair *and* the score threshold that
+        # produced it, so a reader can hover along the sweep and see how the
+        # trade-off moves as the decision threshold relaxes. Sparse (~16 per
+        # model, skipping the very first/last already-marked ends) so the
+        # curve itself stays the star and the hover targets don't read as a
+        # second, cluttered scatter layer.
+        series = per_model[label]
+        n_series = len(series)
+        if n_series > 2:
+            step = max(1, (n_series - 2) // 16)
+            hover_idx = list(range(1, n_series - 1, step))
+            for i in hover_idx:
+                r, p, thr = series[i]
+                hx, hy = sx(r), sy(p)
+                htip = (
+                    f"{label} — recall {r:.0%}, precision {p:.0%} at "
+                    f"{_threshold_words(thr)}"
+                )
+                parts.append(
+                    f'<g class="sw" tabindex="0" role="img" '
+                    f'aria-label="{xml_escape(htip)}">'
+                    f'<title>{xml_escape(htip)}</title>'
+                    f'<circle class="halo" cx="{hx:.1f}" cy="{hy:.1f}" r="12" '
+                    f'fill="{st["col"]}" fill-opacity="0.14"/>'
+                    f'<circle class="pr-mark-{st["slug"]}" cx="{hx:.1f}" '
+                    f'cy="{hy:.1f}" r="3.4" fill="{st["col"]}" '
+                    f'fill-opacity="0.85" stroke="#FFFFFF" stroke-width="1.2"/>'
+                    f'</g>'
+                )
+
     # --- shipped (max-F1) operating-point markers ----------------
     for rec in bundle["points"]:
         label = rec["model"]
@@ -596,7 +659,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         tip = (
             f'{label} — shipped (max-F1) operating point: recall '
             f'{rec["recall"]:.0%}, precision {rec["precision"]:.0%}, '
-            f'F1 {rec["f1"]:.2f}'
+            f'F1 {rec["f1"]:.2f}, {_threshold_words(rec["threshold"])}'
         )
         parts.append(
             f'<g class="op" tabindex="0" role="img" '
@@ -608,7 +671,10 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
             f'fill="{ink}" fill-opacity="0.08"/>'
         )
         # A distinct glyph per model: circle for the strong model, square for
-        # the baseline — so the shipped points differ by shape, not hue alone.
+        # the baseline — so the shipped points differ by shape, not hue
+        # alone. Marker shapes that carry the colour-blind-safe split keep
+        # their sharp corners (corners.md §5): the square stays a square, no
+        # rx, so the shape itself — not a softened lozenge — is the signal.
         if st["marker"] == "circle":
             parts.append(
                 f'<circle class="pr-mark-{st["slug"]}" cx="{cx:.1f}" cy="{cy:.1f}" r="13" '
@@ -618,7 +684,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
             s = 22.0
             parts.append(
                 f'<rect class="pr-mark-{st["slug"]}" x="{cx - s / 2:.1f}" y="{cy - s / 2:.1f}" '
-                f'width="{s:.1f}" height="{s:.1f}" rx="3" '
+                f'width="{s:.1f}" height="{s:.1f}" '
                 f'fill="{st["col"]}" stroke="#FFFFFF" stroke-width="3"/>'
             )
         parts.append("</g>")
@@ -641,7 +707,9 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
             f'y2="{ry:.1f}" stroke="{st["col"]}" stroke-width="6"'
             f'{dash_attr} stroke-linecap="round"/>'
         )
-        # End glyph matching the operating-point marker shape.
+        # End glyph matching the operating-point marker shape. The square
+        # keeps sharp corners (no rx) — same colour-blind-safe shape rule as
+        # the operating-point marker it echoes.
         gx = key_x + 58
         if st["marker"] == "circle":
             parts.append(
@@ -652,7 +720,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
             s = 16.0
             parts.append(
                 f'<rect class="pr-mark-{st["slug"]}" x="{gx - s / 2:.1f}" y="{ry - s / 2:.1f}" '
-                f'width="{s:.1f}" height="{s:.1f}" rx="2.5" '
+                f'width="{s:.1f}" height="{s:.1f}" '
                 f'fill="{st["col"]}" stroke="#FFFFFF" stroke-width="2.5"/>'
             )
         parts.append(

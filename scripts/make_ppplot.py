@@ -449,9 +449,12 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         cx, cy = sx(theo), sy(emp)
         side_above = emp >= theo
         col = above if side_above else below
+        deviation = emp - theo
+        dev_word = "above" if deviation >= 0 else "below"
         tip = (
             f'Session {d["minutes"]:.1f} min: theoretical P {theo:.2f}, '
-            f'empirical P {emp:.2f}'
+            f'empirical P {emp:.2f} — {abs(deviation):.2f} {dev_word} '
+            f'the diagonal'
         )
         parts.append(
             f'<g class="pt" tabindex="0" role="img" '

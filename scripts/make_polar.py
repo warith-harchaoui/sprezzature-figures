@@ -40,7 +40,7 @@ Author
 
 from __future__ import annotations
 from _render import write_svg  # noqa: E402
-from _style import leveled_colors, os_adaptive_style, os_dark_style  # noqa: E402
+from _style import CORNERS, leveled_colors, os_adaptive_style, os_dark_style  # noqa: E402
 from _svg import fmt_compact, svg_open  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 
@@ -231,6 +231,10 @@ def build_svg(
     # alone so the interior stays readable.
     parts.append(
         "<style>\n"
+        ".pt{cursor:pointer}"
+        ".pt .halo{opacity:0;transition:opacity .15s ease}"
+        ".pt:hover .halo,.pt:focus .halo{opacity:1}"
+        ".pt:focus{outline:none}\n"
         + os_adaptive_style({".po-accent": accent}, role="both")
         + "\n"
         # Additive OS dark mode: dark paper + light ink (default ink_map); the
@@ -240,7 +244,12 @@ def build_svg(
         + os_dark_style(extra='[stroke="#E5E5EA"]{stroke:#333338;}')
         + "\n</style>"
     )
-    parts.append(f'<rect width="{width}" height="{height}" rx="22" fill="{_BG}"/>')
+    # Figure frame: corner-lg (12px) per the Sprezzature Corner Policy —
+    # chrome is fixed, not size-scaled (references/corners.md §5).
+    parts.append(
+        f'<rect width="{width}" height="{height}" rx="{CORNERS["lg"]:.0f}" '
+        f'fill="{_BG}"/>'
+    )
     parts.append(
         f'<text x="64" y="76" font-size="36" font-weight="700" fill="{_INK}">'
         f"{title}</text>"
@@ -302,15 +311,27 @@ def build_svg(
     # ---- data dots with native hover tooltips ----------------------------- #
     # Fully drawn, no motion: each hour is a filled dot with a thin white keyline
     # so overlapping dots near the centre stay separable (no colour-on-colour).
+    # Every mark carries a real per-hour tooltip: the category (hour), its
+    # magnitude (departures) and angle (bearing clockwise from midnight), plus
+    # its share of the day's total — not a generic hover.
+    day_total = float(counts.sum())
     for hour in range(n):
         value = float(counts[hour])
-        px, py = _polar_to_xy(cx, cy, r_px(value), theta(hour))
-        tip = f"{hour:02d}:00 — {value:.0f} departures"
+        ang = theta(hour)
+        px, py = _polar_to_xy(cx, cy, r_px(value), ang)
+        share = (value / day_total * 100.0) if day_total > 0 else 0.0
+        tip = (
+            f"{hour:02d}:00 — {value:.0f} departures ({share:.1f}% of the "
+            f"day's total), {ang:.0f}° clockwise from midnight"
+        )
         # Emphasise the two peak hours with a larger, filled dot.
         is_peak = hour in (int(np.argmax(counts[6:11]) + 6), int(np.argmax(counts)))
         radius = 8.5 if is_peak else 5.0
         parts.append(
-            f'<g class="pt"><title>{tip}</title>'
+            f'<g class="pt" tabindex="0" role="img" aria-label="{tip}">'
+            f'<title>{tip}</title>'
+            f'<circle class="halo" cx="{fmt_compact(px)}" cy="{fmt_compact(py)}" '
+            f'r="{radius + 9:.1f}" fill="{accent}" fill-opacity="0.16"/>'
             f'<circle class="po-accent" cx="{fmt_compact(px)}" cy="{fmt_compact(py)}" '
             f'r="{radius}" fill="{accent}" stroke="#FFFFFF" stroke-width="2"/></g>'
         )
