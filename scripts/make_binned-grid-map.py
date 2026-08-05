@@ -690,11 +690,11 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     )
     parts.append(
         f'<text x="0" y="{stat_y + 34:.1f}" font-size="17.5" fill="{_SUBTLE}">'
-        f'of incidents fall in the</text>'
+        f'of incidents fall</text>'
     )
     parts.append(
         f'<text x="0" y="{stat_y + 56:.1f}" font-size="17.5" fill="{_SUBTLE}">'
-        f'busiest 10% of cells</text>'
+        f'in the busiest 10% of cells</text>'
     )
     parts.append('</g>')
 

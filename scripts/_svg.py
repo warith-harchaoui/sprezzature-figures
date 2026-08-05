@@ -61,6 +61,38 @@ Author
 from __future__ import annotations
 
 import math
+import textwrap
+from typing import List as _List
+
+# Function words that must never be left stranded at the end of a wrapped line
+# (house rule: no line-end orphans, EN or FR). See references/corners.md's sibling
+# typography note and the no-line-end-orphans memory.
+_ORPHAN_WORDS = frozenset(
+    "of the a an to and or for in on by with from is as than per vs "
+    "le la les des du de un une et a au aux dans sur pour par".split()
+)
+
+
+def wrap_no_orphan(text: str, width: int) -> _List[str]:
+    """Word-wrap ``text`` to ``width`` characters per line, then push any line
+    that ends on a dangling function word (or an elided ``l'``) down to the next
+    line, so no wrapped line ever ends on ``of the`` / ``the`` / ``l'`` ...
+    """
+    lines = textwrap.wrap(text, width=width) or [""]
+    changed = True
+    while changed:
+        changed = False
+        for i in range(len(lines) - 1):
+            words = lines[i].split()
+            if not words:
+                continue
+            last = words[-1].lower().rstrip(".,;:")
+            if last in _ORPHAN_WORDS or words[-1].endswith(("l'", "l’")):
+                moved = words.pop()
+                lines[i] = " ".join(words)
+                lines[i + 1] = f"{moved} {lines[i + 1]}"
+                changed = True
+    return [ln for ln in lines if ln] or [""]
 from typing import Callable, Sequence, Tuple
 
 try:

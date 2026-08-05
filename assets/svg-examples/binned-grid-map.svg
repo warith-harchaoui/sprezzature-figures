@@ -336,8 +336,8 @@
 <rect class="legend-swatch" x="0" y="302.0" width="36.0" height="34.0" fill="#ECEEF1"/>
 <text x="50.0" y="324.4" font-size="17" fill="#6E6E73">no incidents</text>
 <text x="0" y="420.0" font-size="54" font-weight="700" fill="#FF3B30">38%</text>
-<text x="0" y="454.0" font-size="17.5" fill="#6E6E73">of incidents fall in the</text>
-<text x="0" y="476.0" font-size="17.5" fill="#6E6E73">busiest 10% of cells</text>
+<text x="0" y="454.0" font-size="17.5" fill="#6E6E73">of incidents fall</text>
+<text x="0" y="476.0" font-size="17.5" fill="#6E6E73">in the busiest 10% of cells</text>
 </g>
 <g role="img" aria-label="North is up"><circle cx="831.4" cy="246.7" r="32.0" fill="#FFFFFF" fill-opacity="0.72" stroke="#B9C2CE" stroke-width="1.4"/><path d="M831.4,270.7 L838.6,246.7 L824.2,246.7 Z" fill="#FFFFFF" stroke="#6E6E73" stroke-width="1.2" stroke-linejoin="round"/><path d="M831.4,222.7 L838.6,246.7 L824.2,246.7 Z" fill="#1D1D1F" stroke-linejoin="round"/><text x="831.4" y="210.7" text-anchor="middle" font-size="17" font-weight="700" fill="#1D1D1F">N</text></g>
 <g role="img" aria-label="Scale bar: 0 to 2 kilometres"><rect x="615.9" y="795.2" width="200.7" height="54" rx="9" fill="#FFFFFF" fill-opacity="0.78"/><rect x="627.9" y="821.2" width="35.3" height="8.0" fill="#1D1D1F" stroke="#1D1D1F" stroke-width="1"/><rect x="663.3" y="821.2" width="35.3" height="8.0" fill="#FFFFFF" stroke="#1D1D1F" stroke-width="1"/><rect x="698.6" y="821.2" width="35.3" height="8.0" fill="#1D1D1F" stroke="#1D1D1F" stroke-width="1"/><rect x="733.9" y="821.2" width="35.3" height="8.0" fill="#FFFFFF" stroke="#1D1D1F" stroke-width="1"/><rect x="769.3" y="821.2" width="35.3" height="8.0" fill="#1D1D1F" stroke="#1D1D1F" stroke-width="1"/><text x="627.9" y="815.2" text-anchor="middle" font-size="14" fill="#1D1D1F" font-family="Roboto Mono, monospace">0</text><text x="804.6" y="815.2" text-anchor="middle" font-size="14" fill="#1D1D1F" font-family="Roboto Mono, monospace">2 km</text><text x="716.3" y="844.2" text-anchor="middle" font-size="12.5" fill="#6E6E73">each cell = 400 m</text></g>
