@@ -2,7 +2,7 @@
   "summary": {
     "stable": 16,
     "experimental": 0,
-    "legacy": 76,
+    "legacy": 79,
     "unavailable": 0
   },
   "generators": [
@@ -434,6 +434,32 @@
       "status": "stable",
       "errors": [
         "Default output path falls back to a shared assets/ directory"
+      ]
+    },
+    {
+      "kind": "confusion-matrix",
+      "filename": "make_confusion-matrix.py",
+      "hyphenated_kind": true,
+      "dispatcher_reachable_by_kind": false,
+      "importable": true,
+      "import_error": null,
+      "expected_callable": "make_confusion_matrix",
+      "callable_exists": false,
+      "demo_data_exists": false,
+      "demo_data_len": 0,
+      "accepts_data": false,
+      "accepts_out": false,
+      "accepts_title": false,
+      "renderer": "svg",
+      "writes_hardcoded_path": false,
+      "hardcoded_dimensions": false,
+      "render_test": "not_run",
+      "render_error": null,
+      "status": "legacy",
+      "errors": [
+        "No DEMO_DATA in make_confusion-matrix.py",
+        "No callable named 'make_confusion_matrix' in make_confusion-matrix.py",
+        "make_figure('confusion-matrix') cannot resolve to make_confusion-matrix.py: hyphen/underscore normalisation looks for a different filename"
       ]
     },
     {
@@ -887,7 +913,7 @@
       "accepts_data": true,
       "accepts_out": true,
       "accepts_title": true,
-      "renderer": "vega_lite",
+      "renderer": "svg",
       "writes_hardcoded_path": true,
       "hardcoded_dimensions": true,
       "render_test": "passed",
@@ -962,7 +988,7 @@
       "accepts_data": true,
       "accepts_out": true,
       "accepts_title": true,
-      "renderer": "vega_lite",
+      "renderer": "svg",
       "writes_hardcoded_path": true,
       "hardcoded_dimensions": true,
       "render_test": "passed",
@@ -1358,6 +1384,31 @@
         "No callable named 'make_parallel_sets' in make_parallel-sets.py",
         "make_figure('parallel-sets') cannot resolve to make_parallel-sets.py: hyphen/underscore normalisation looks for a different filename",
         "Default output path falls back to a shared assets/ directory"
+      ]
+    },
+    {
+      "kind": "parcoords",
+      "filename": "make_parcoords.py",
+      "hyphenated_kind": false,
+      "dispatcher_reachable_by_kind": true,
+      "importable": true,
+      "import_error": null,
+      "expected_callable": "make_parcoords",
+      "callable_exists": false,
+      "demo_data_exists": false,
+      "demo_data_len": 0,
+      "accepts_data": false,
+      "accepts_out": false,
+      "accepts_title": false,
+      "renderer": "svg",
+      "writes_hardcoded_path": false,
+      "hardcoded_dimensions": false,
+      "render_test": "not_run",
+      "render_error": null,
+      "status": "legacy",
+      "errors": [
+        "No DEMO_DATA in make_parcoords.py",
+        "No callable named 'make_parcoords' in make_parcoords.py"
       ]
     },
     {
@@ -1994,6 +2045,31 @@
       "status": "stable",
       "errors": [
         "Default output path falls back to a shared assets/ directory"
+      ]
+    },
+    {
+      "kind": "surface3d",
+      "filename": "make_surface3d.py",
+      "hyphenated_kind": false,
+      "dispatcher_reachable_by_kind": true,
+      "importable": true,
+      "import_error": null,
+      "expected_callable": "make_surface3d",
+      "callable_exists": false,
+      "demo_data_exists": false,
+      "demo_data_len": 0,
+      "accepts_data": false,
+      "accepts_out": false,
+      "accepts_title": false,
+      "renderer": "svg",
+      "writes_hardcoded_path": false,
+      "hardcoded_dimensions": false,
+      "render_test": "not_run",
+      "render_error": null,
+      "status": "legacy",
+      "errors": [
+        "No DEMO_DATA in make_surface3d.py",
+        "No callable named 'make_surface3d' in make_surface3d.py"
       ]
     },
     {

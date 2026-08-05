@@ -6,9 +6,9 @@ expects. Regenerate with `python tools/audit_generators.py --render`.
 
 - **stable**: 16
 - **experimental**: 0
-- **legacy**: 76
+- **legacy**: 79
 - **unavailable**: 0
-- **total**: 92
+- **total**: 95
 
 | kind | status | reachable | callable | demo_data | render | errors |
 |---|---|---|---|---|---|---|
@@ -29,6 +29,7 @@ expects. Regenerate with `python tools/audit_generators.py --render`.
 | `chord` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_chord.py; No callable named 'make_chord' in make_chord.py |
 | `circle-packing` | legacy | **no** | **no** | **no** | not_run | No DEMO_DATA in make_circle-packing.py; No callable named 'make_circle_packing' in make_circle-packing.py |
 | `columnrange` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `confusion-matrix` | legacy | **no** | **no** | **no** | not_run | No DEMO_DATA in make_confusion-matrix.py; No callable named 'make_confusion_matrix' in make_confusion-matrix.py |
 | `connected-scatter` | legacy | **no** | **no** | **no** | not_run | No DEMO_DATA in make_connected-scatter.py; No callable named 'make_connected_scatter' in make_connected-scatter.py |
 | `convex-hull` | legacy | **no** | **no** | **no** | not_run | No DEMO_DATA in make_convex-hull.py; No callable named 'make_convex_hull' in make_convex-hull.py |
 | `cycle` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_cycle.py; No callable named 'make_cycle' in make_cycle.py |
@@ -65,6 +66,7 @@ expects. Regenerate with `python tools/audit_generators.py --render`.
 | `packed-bubble` | legacy | **no** | **no** | **no** | not_run | No DEMO_DATA in make_packed-bubble.py; No callable named 'make_packed_bubble' in make_packed-bubble.py |
 | `pairplot` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_pairplot.py; No callable named 'make_pairplot' in make_pairplot.py |
 | `parallel-sets` | legacy | **no** | **no** | **no** | not_run | No DEMO_DATA in make_parallel-sets.py; No callable named 'make_parallel_sets' in make_parallel-sets.py |
+| `parcoords` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_parcoords.py; No callable named 'make_parcoords' in make_parcoords.py |
 | `pareto` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_pareto.py; No callable named 'make_pareto' in make_pareto.py |
 | `parliament` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_parliament.py; No callable named 'make_parliament' in make_parliament.py |
 | `pictorial` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_pictorial.py; No callable named 'make_pictorial' in make_pictorial.py |
@@ -90,6 +92,7 @@ expects. Regenerate with `python tools/audit_generators.py --render`.
 | `streamgraph` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_streamgraph.py; No callable named 'make_streamgraph' in make_streamgraph.py |
 | `streamplot` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_streamplot.py; No callable named 'make_streamplot' in make_streamplot.py |
 | `sunburst` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `surface3d` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_surface3d.py; No callable named 'make_surface3d' in make_surface3d.py |
 | `ternary` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_ternary.py; No callable named 'make_ternary' in make_ternary.py |
 | `timeline` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_timeline.py; No callable named 'make_timeline' in make_timeline.py |
 | `tree` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_tree.py; No callable named 'make_tree' in make_tree.py |
