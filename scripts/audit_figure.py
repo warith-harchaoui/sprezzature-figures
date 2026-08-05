@@ -189,6 +189,24 @@ def _unit_rules(spec: Dict[str, Any], path: str) -> List[Dict[str, Any]]:
     if isinstance(mark, dict) and mark.get("shadow"):
         findings.append(make_finding("chartjunk", "warning", "mark has a shadow effect", path))
 
+    # corner policy (see references/corners.md): grids/measurements stay square,
+    # bars round only the value-end, and nothing exceeds the xl cap (16px).
+    if isinstance(mark, dict):
+        radii = {k: v for k, v in mark.items() if k.startswith("cornerRadius") and isinstance(v, (int, float))}
+        if mark_type == "rect" and any(v > 1 for v in radii.values()):
+            findings.append(make_finding(
+                "grid-cell-rounded", "warning",
+                "rect mark (heatmap/matrix cell) is rounded; grid cells must stay square", path))
+        if mark_type == "bar" and radii.get("cornerRadius", 0) > 0:
+            findings.append(make_finding(
+                "bar-baseline-rounded", "warning",
+                "bar rounds all corners; use cornerRadiusEnd so the baseline stays square", path))
+        over = sorted(k for k, v in radii.items() if v > 16)
+        if over:
+            findings.append(make_finding(
+                "radius-over-cap", "warning",
+                f"corner radius over the 16px cap: {', '.join(over)}", path))
+
     return findings
 
 
@@ -338,6 +356,13 @@ def rules_for_svg(text: str, path: str) -> List[Dict[str, Any]]:
     # pie-3d — perspective transform
     if re.search(r"transform=\"matrix\([^\"]*perspective", text, re.IGNORECASE):
         findings.append(make_finding("pie-3d", "error", "SVG uses a perspective transform", path))
+
+    # corner policy: no rounding over the xl cap (16px) on any rect/path corner.
+    over = sorted({float(m) for m in re.findall(r'rx="([0-9.]+)"', text) if float(m) > 16})
+    if over:
+        findings.append(make_finding(
+            "radius-over-cap", "warning",
+            f"rx over the 16px corner cap: {', '.join(f'{v:g}' for v in over)}", path))
 
     return findings
 
