@@ -458,13 +458,17 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         f'<line class="jp-trend" x1="{x0p:.1f}" y1="{y0p:.1f}" x2="{x1p:.1f}" '
         f'y2="{y1p:.1f}" stroke="{trend}" stroke-width="4" stroke-linecap="round"/>'
     )
-    # Name the trend on the line itself, so the reader needs no legend.
-    tl_x = x0p + (x1p - x0p) * 0.28
-    tl_y = y0p + (y1p - y0p) * 0.28 - 14
+    # Name the trend on the line itself, so the reader needs no legend. Sit it on
+    # the sparser right stretch of the descending line (fewer points above it
+    # there) and carry a white halo (paint-order: stroke) so it stays legible
+    # even where it grazes the cloud.
+    tl_x = x0p + (x1p - x0p) * 0.72
+    tl_y = y0p + (y1p - y0p) * 0.72 - 15
     ang = math.degrees(math.atan2(y1p - y0p, x1p - x0p))
     parts.append(
         f'<text x="{tl_x:.1f}" y="{tl_y:.1f}" font-size="17" '
-        f'font-weight="700" fill="{trend}" '
+        f'font-weight="700" fill="{trend}" stroke="#FFFFFF" stroke-width="3.5" '
+        f'paint-order="stroke" text-anchor="middle" '
         f'transform="rotate({ang:.1f} {tl_x:.1f} {tl_y:.1f})">'
         f'fitted trend</text>'
     )
