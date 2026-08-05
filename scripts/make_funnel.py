@@ -149,12 +149,18 @@ def build_svg(
         y_top = MARGIN_V + i * slice_h
         y_bot = y_top + slice_h
 
-        # Trapezoid points: top-left, top-right, bottom-right, bottom-left
-        pts = (
-            f"{cx - half_top:.1f},{y_top:.1f} "
-            f"{cx + half_top:.1f},{y_top:.1f} "
-            f"{cx + half_bot:.1f},{y_bot:.1f} "
-            f"{cx - half_bot:.1f},{y_bot:.1f}"
+        # Smooth funnel: each side is a cubic Bézier that leaves the top edge and
+        # arrives at the bottom edge vertically, so neighbouring stages meet with
+        # a shared vertical tangent and the whole silhouette reads as one curved
+        # funnel rather than a stack of straight-sided (polygonal) trapezoids.
+        ctrl = slice_h * 0.5
+        lt, rt = cx - half_top, cx + half_top
+        lb, rb = cx - half_bot, cx + half_bot
+        d = (
+            f"M{lt:.1f},{y_top:.1f} L{rt:.1f},{y_top:.1f} "
+            f"C{rt:.1f},{y_top + ctrl:.1f} {rb:.1f},{y_bot - ctrl:.1f} {rb:.1f},{y_bot:.1f} "
+            f"L{lb:.1f},{y_bot:.1f} "
+            f"C{lb:.1f},{y_bot - ctrl:.1f} {lt:.1f},{y_top + ctrl:.1f} {lt:.1f},{y_top:.1f} Z"
         )
         conv_str = ""
         if i > 0:
@@ -162,8 +168,8 @@ def build_svg(
             conv_str = f" ({rate:.1f}% conversion)"
         tooltip = f"{stage}: {count:,.0f}{conv_str}"
         lines.append(
-            f'<polygon points="{pts}" fill="{color}" opacity="0.88">'
-            f'<title>{escape(tooltip)}</title></polygon>'
+            f'<path d="{d}" fill="{color}" opacity="0.88">'
+            f'<title>{escape(tooltip)}</title></path>'
         )
 
         # Stage label: name on the left, count on the right
