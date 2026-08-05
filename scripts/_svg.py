@@ -172,6 +172,46 @@ def fmt_compact(v: float) -> str:
     return f"{v:.1f}".rstrip("0").rstrip(".")
 
 
+def rounded_rect_path(
+    x: float, y: float, w: float, h: float,
+    r_tl: float = 0.0, r_tr: float = 0.0, r_br: float = 0.0, r_bl: float = 0.0,
+) -> str:
+    """SVG path ``d`` for a rectangle with per-corner radii (SVG house config
+    for the Sprezzature Corner Policy, see references/corners.md).
+
+    Each radius is clamped to half the smaller side so a corner never overshoots.
+    Zero-radius corners stay square. Use this (not a plain ``<rect rx>``) whenever
+    only *some* corners round — bars, stacked segments, arc-adjacent tiles — so
+    baseline and adjacent corners can stay crisp.
+    """
+    m = min(w, h) / 2.0
+    tl, tr, br, bl = (max(0.0, min(v, m)) for v in (r_tl, r_tr, r_br, r_bl))
+    f = fmt_compact
+    return (
+        f"M{f(x + tl)},{f(y)} "
+        f"H{f(x + w - tr)} " + (f"A{f(tr)},{f(tr)} 0 0 1 {f(x + w)},{f(y + tr)} " if tr else "")
+        + f"V{f(y + h - br)} " + (f"A{f(br)},{f(br)} 0 0 1 {f(x + w - br)},{f(y + h)} " if br else "")
+        + f"H{f(x + bl)} " + (f"A{f(bl)},{f(bl)} 0 0 1 {f(x)},{f(y + h - bl)} " if bl else "")
+        + f"V{f(y + tl)} " + (f"A{f(tl)},{f(tl)} 0 0 1 {f(x + tl)},{f(y)} " if tl else "")
+        + "Z"
+    )
+
+
+def bar_path(x: float, y: float, w: float, h: float, r: float, side: str = "top") -> str:
+    """SVG path ``d`` for a bar rounded on its value-end only (policy: the
+    baseline corners stay square so the bar sits flat on the axis). ``side`` is
+    the value-end: ``top`` / ``bottom`` for columns, ``left`` / ``right`` for
+    horizontal bars."""
+    sides = {
+        "top": (r, r, 0.0, 0.0),
+        "bottom": (0.0, 0.0, r, r),
+        "right": (0.0, r, r, 0.0),
+        "left": (r, 0.0, 0.0, r),
+    }
+    tl, tr, br, bl = sides.get(side, sides["top"])
+    return rounded_rect_path(x, y, w, h, tl, tr, br, bl)
+
+
 def catmull_rom_beziers(
     pts: Sequence[Tuple[float, float]],
     fmt: Callable[[float], str],
