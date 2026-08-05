@@ -78,3 +78,13 @@ python sprezzature-colors/scripts/simulate_cvd.py fig.png --grid                
 python sprezzature-accessibility/scripts/lint_a11y.py public/report.html        # a11y around it
 python sprezzature-ux-laws/scripts/audit_laws_of_ux.py public/report.html       # Laws of UX
 ```
+
+## Corner-policy rules (see `references/corners.md`)
+
+- **`grid-cell-rounded`** (warning) — a Vega `rect` mark (heatmap / matrix cell)
+  carries a `cornerRadius*` > 1. Grid cells must stay square.
+- **`bar-baseline-rounded`** (warning) — a Vega `bar` mark uses `cornerRadius`
+  (all four corners) instead of `cornerRadiusEnd`; the baseline corners must
+  stay square so bars sit flat on the axis.
+- **`radius-over-cap`** (warning) — a corner radius (Vega `cornerRadius*` or an
+  SVG `rx`) exceeds the `xl` cap of 16 px.
