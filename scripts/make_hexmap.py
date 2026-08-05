@@ -504,11 +504,11 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     )
     parts.append(
         f'<text x="0" y="{stat_y + 34:.1f}" font-size="17.5" fill="{_SUBTLE}">'
-        f'of trips start in the</text>'
+        f'of trips start</text>'
     )
     parts.append(
         f'<text x="0" y="{stat_y + 56:.1f}" font-size="17.5" fill="{_SUBTLE}">'
-        f'busiest 10% of hexes</text>'
+        f'in the busiest 10% of hexes</text>'
     )
     parts.append('</g>')
 
