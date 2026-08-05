@@ -128,6 +128,10 @@ def _build_vegalite_spec(
     dict[str, Any]
         Vega-Lite v5 spec.
     """
+    # Headroom above the peak so the μ / ±1σ labels sit in clear space at the
+    # top instead of colliding with the curve's apex and the top gridline.
+    peak_y = max((d["y"] for d in data), default=1.0) * 1.18
+
     # Annotation rules: mean and ±1σ vertical lines
     annotations = [
         {"x": mean,        "label": f"μ = {mean:.1f}", "color": COLOR_MEAN},
@@ -172,6 +176,7 @@ def _build_vegalite_spec(
                         "field": "y",
                         "type": "quantitative",
                         "title": "Probability density",
+                        "scale": {"domain": [0, peak_y]},
                         "axis": {"labelFont": FONT_MONO, "titleFont": FONT,
                                  "titleColor": INK, "labelColor": SECONDARY,
                                  "grid": True, "gridColor": "#E5E5EA",
