@@ -43,6 +43,15 @@ MODES = ("self-contained", "external", "static")
 #: SVG is a live document; it stands down inside a page-module-managed card
 #: (``[data-fs-target]``) and hides itself when there is no Fullscreen API
 #: (e.g. an ``<img>``-embedded SVG, where it never runs at all).
+#:
+#: It also carries a small postMessage bridge: when the SVG is embedded as a
+#: gallery card ``<object>`` (not the fullscreen lightbox's own object, not a
+#: page-module dashboard), a click anywhere on the figure can never bubble out
+#: to the host page — ``<object>`` is a real, isolated document. Cards rely on
+#: this to open the lightbox on click while keeping native hover/``<title>``
+#: tooltips alive (which requires the object to be ``pointer-events:auto``;
+#: see ``live-figures.js`` / ``lightbox.js`` in the web repo for the other
+#: half of this contract).
 _FS_SCRIPT = (
     "(function(){"
     "var me=document.currentScript,svg=me.ownerSVGElement||me.parentNode;"
@@ -50,13 +59,21 @@ _FS_SCRIPT = (
     "if(svg.closest&&svg.closest('[data-fs-target]'))return;"
     "var btn=svg.querySelector('[data-fs-internal]');"
     "var req=svg.requestFullscreen||svg.webkitRequestFullscreen;"
-    "if(!btn||!req)return;"           # no Fullscreen API: leave the button hidden
+    "if(btn&&req){"
     "btn.style.display='';"           # live + self-contained: reveal the button
-    "function t(){var f=document.fullscreenElement||document.webkitFullscreenElement;"
+    "var t=function(){var f=document.fullscreenElement||document.webkitFullscreenElement;"
     "if(f===svg)(document.exitFullscreen||document.webkitExitFullscreen).call(document);"
-    "else req.call(svg);}"
+    "else req.call(svg);};"
     "btn.addEventListener('click',t);"
     "btn.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();t();}});"
+    "}"
+    "var fe=null;try{fe=window.frameElement}catch(err){}"
+    "if(fe&&window.parent!==window&&!fe.hasAttribute('data-lb-obj')){"
+    "svg.addEventListener('click',function(e){"
+    "if(btn&&btn.contains&&btn.contains(e.target))return;"        # button has its own handler
+    "window.parent.postMessage({szFig:1,type:'open-fullscreen'},'*');"
+    "});"
+    "}"
     "})();"
 )
 
