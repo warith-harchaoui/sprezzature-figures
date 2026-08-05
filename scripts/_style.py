@@ -640,6 +640,52 @@ def diverging_pair(cvd_safe: bool = True) -> tuple:
 
 
 # ------------------------------------------------------------------
+# Corners — the Sprezzature Corner Policy (see references/corners.md)
+# ------------------------------------------------------------------
+#: The house radius scale in user-space pixels (figures). The UI mirrors these
+#: as rem tokens in studio/theme.py and sprezzature-ui's generated CSS.
+CORNERS: Dict[str, float] = {
+    "none": 0.0,       # measurements, grids, adjacent/baseline corners
+    "hairline": 1.0,   # the MOST a grid cell may ever have
+    "xs": 2.5,         # tiles (treemap/mosaic/waffle), arc segments, small chips
+    "sm": 4.0,         # bar value-ends, legend swatches, small controls
+    "md": 7.0,         # buttons, inputs, node boxes, badges, tooltips
+    "lg": 12.0,        # cards, chart panels, the figure frame
+    "xl": 16.0,        # large containers / hero panels
+}
+
+#: Per-family size coefficient and cap token for the sizing rule
+#: ``radius = clamp(0, k * min(w, h), cap)``.
+_FAMILY_RULE: Dict[str, Tuple[float, str]] = {
+    "bar": (0.18, "sm"),      # round the value-end only; a flat enough cap to read
+    "tile": (0.12, "xs"),     # treemap / mosaic / waffle; also clamp to gap/2 at call site
+    "arc": (1.0, "xs"),       # pie / donut / sunburst / rose; gentle, subtle
+    "box": (0.20, "md"),      # text/node boxes
+    "panel": (1.0, "lg"),     # cards / chart frame (fixed, not size-scaled)
+}
+
+
+def corner_radius(width: float, height: float, family: str = "bar") -> float:
+    """Radius in px for a data mark, per the Sprezzature Corner Policy.
+
+    ``radius = clamp(0, k * min(width, height), cap)`` where ``k`` and the cap
+    come from the mark ``family`` (see :data:`_FAMILY_RULE`). Small marks fall to
+    ~0 by the cap, which is intended: crisp beats mushy. Grids and measurement
+    marks must not call this at all — they stay square.
+    """
+    k, cap_token = _FAMILY_RULE.get(family, _FAMILY_RULE["bar"])
+    cap = CORNERS[cap_token]
+    return max(0.0, min(k * min(width, height), cap))
+
+
+def inner_radius(outer: float, gap: float) -> float:
+    """Concentric inner radius for a shape nested in a rounded container:
+    ``max(0, outer - gap)`` (Apple's concentric-corner rule). If the gap is at
+    least the outer radius, the inner corner is square."""
+    return max(0.0, outer - gap)
+
+
+# ------------------------------------------------------------------
 # Vega-Lite house config
 # ------------------------------------------------------------------
 def vega_config(dark: bool = False) -> Dict[str, object]:
@@ -661,7 +707,7 @@ def vega_config(dark: bool = False) -> Dict[str, object]:
     return {
         "background": bg,
         "font": "Roboto, Roboto Serif, Roboto Mono, system-ui, sans-serif",
-        "view": {"stroke": None, "cornerRadius": 10},
+        "view": {"stroke": None, "cornerRadius": CORNERS["lg"]},
         "axis": {
             "domain": True,
             "domainColor": fg,
@@ -682,7 +728,11 @@ def vega_config(dark: bool = False) -> Dict[str, object]:
         },
         "title": {"font": "Roboto", "fontSize": 14, "color": fg, "subtitleFont": "Roboto", "subtitleColor": fg},
         "range": {"category": qualitative_sequence(8)},
-        "bar": {"cornerRadiusEnd": 4},
+        # Corner policy: bars round the value-end only; arc marks (pie/donut/
+        # sunburst/radial) get a gentle radius; grids/measurements stay square.
+        "bar": {"cornerRadiusEnd": CORNERS["sm"]},
+        "arc": {"cornerRadius": CORNERS["xs"]},
+        "rect": {"cornerRadius": 0},
         "line": {"strokeWidth": 2},
         "point": {"filled": True, "size": 40},
     }
