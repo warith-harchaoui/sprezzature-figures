@@ -1,6 +1,6 @@
 # Figure Catalogue
 
-122 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type).
+123 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type).
 
 Invoke via:
 
@@ -130,6 +130,7 @@ for the current per-chart status.
 | `step` | make_step.py | Time series | Step-after interpolation between points: value holds constant until it changes, then jumps, never implying an in-between value. Use for inventory level after each transaction, a state machine's value, or any piecewise-constant series. |
 | `streamgraph` | make_streamgraph.py | Time series / Composition | Stacked area chart with a central baseline, flowing like a stream. Use for showing how categorical composition evolves over time when the baseline is less important than the flow. |
 | `streamplot` | make_streamplot.py | Vector field | Stream lines showing a 2-D vector field (wind, fluid flow, electromagnetic). Use to visualise flow direction and speed across a continuous domain. |
+| `strip` | make_strip.py | Distribution | One dot per observation along a categorical axis, jittered horizontally within its group so overlapping points stay visible. Simpler than a beeswarm's deterministic collision avoidance. Use for dose-response data or raw measurements behind a box plot. |
 | `sunburst` | make_sunburst.py | Hierarchy | Radial treemap: nested rings for hierarchical data. Use when two or three levels of hierarchy need to be read simultaneously (e.g., budget by department → team → line item). |
 | `surface3d` | make_surface3d.py | 3-D surface | Static isometric 3-D surface for z = f(x, y): depth-sorted mesh quads shaded by height with a height legend. Hand-authored SVG (no matplotlib). |
 | `ternary` | make_ternary.py | Compositional | Ternary (triangular) plot for three components that sum to a constant. Use in chemistry, geology, or any three-part compositional analysis. |

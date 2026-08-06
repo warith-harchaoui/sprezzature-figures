@@ -1,0 +1,239 @@
+#!/usr/bin/env python3
+"""
+make_strip — a house-styled strip plot as hand-authored SVG.
+
+Plots one dot per observation along a categorical axis, jittered
+horizontally within each category's band so overlapping points stay
+individually visible instead of stacking into an unreadable column.
+Simpler than a beeswarm's deterministic collision avoidance -- pure
+random jitter -- and correspondingly quicker to read for a modest sample
+size per category. Typical uses: dose-response data, raw measurements
+behind a box plot, any small-to-medium sample split by category.
+
+Previously rendered via Vega-Lite (a ``calculate: "random()"`` transform
+feeding an ``xOffset`` encoding, ``vl_convert``); this module now jitters
+each point itself (a seeded RNG, reproducible across renders) and paints
+every dot by hand -- no Vega, no matplotlib. Every dot carries a native
+``<title>`` tooltip.
+
+Author
+------
+`Warith Harchaoui, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
+"""
+
+from __future__ import annotations
+
+import random
+import sys
+from pathlib import Path
+from typing import Any, Dict, List, Optional
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _interactive import fullscreen_control  # noqa: E402
+from _render import render_cli, svg_example_path, write_svg  # noqa: E402
+from _style import load_palette  # noqa: E402
+from _svg import svg_open, xml_escape  # noqa: E402
+
+INK = "#1D1D1F"
+SECONDARY = "#6E6E73"
+BG = "#FFFFFF"
+GRIDLINE = "#E5E5EA"
+FONT_MONO = "Roboto Mono, ui-monospace, monospace"
+
+GROUPS = ["Control", "Low", "High"]
+
+
+def _make_demo_data() -> List[Dict[str, Any]]:
+    rng = random.Random(19)
+    means = {"Control": 52.0, "Low": 61.0, "High": 74.0}
+    rows: List[Dict[str, Any]] = []
+    for g in GROUPS:
+        for _ in range(35):
+            rows.append({"group": g, "value": round(rng.gauss(means[g], 8.5), 1)})
+    return rows
+
+
+DEMO_DATA: List[Dict[str, Any]] = _make_demo_data()
+
+
+def _group_colors(accessibility: str = "universal") -> Dict[str, str]:
+    palette = load_palette(accessibility)
+    hues = [palette.get("Blue", "#007AFF"), palette.get("Orange", "#FF9500"),
+            palette.get("Green", "#34C759")]
+    return {g: hues[i % len(hues)] for i, g in enumerate(GROUPS)}
+
+
+def build_svg(
+    data: Optional[List[Dict[str, Any]]] = None,
+    title: str = "Response by Dose",
+    subtitle: str = "Each dot is one observation, jittered within its group",
+    width: int = 620,
+    height: int = 480,
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> str:
+    """Assemble the full strip plot SVG document as a string.
+
+    Parameters
+    ----------
+    data : list of dict or None
+        Rows with keys ``group`` (str) and ``value`` (numeric). Defaults
+        to :data:`DEMO_DATA`.
+    title, subtitle : str
+        Chart text.
+    width, height : int
+        Canvas size in pixels.
+    mode, accessibility : str, optional
+        Forwarded to :func:`_interactive.fullscreen_control` /
+        :func:`_style.load_palette`.
+
+    Returns
+    -------
+    str
+        A complete, standalone SVG document.
+    """
+    rows = data if data else DEMO_DATA
+    groups = [g for g in GROUPS if any(r["group"] == g for r in rows)] or sorted({r["group"] for r in rows})
+    colors = _group_colors(accessibility)
+    values = [float(r["value"]) for r in rows]
+    v_min, v_max = min(values), max(values)
+    pad = (v_max - v_min) * 0.1 or 1.0
+
+    plot_x, plot_y = 60.0, 118.0
+    right_margin, bottom_reserved = 30.0, 60.0
+    plot_w = width - plot_x - right_margin
+    plot_h = height - plot_y - bottom_reserved
+    n_groups = len(groups)
+    bin_w = plot_w / n_groups if n_groups else plot_w
+    jitter_w = bin_w * 0.55
+
+    def y_for(v: float) -> float:
+        return plot_y + plot_h - (v - (v_min - pad)) / ((v_max + pad) - (v_min - pad)) * plot_h
+
+    rng = random.Random(41)
+    parts: List[str] = []
+    parts.append(svg_open(width, height, "strip-title", "strip-desc"))
+    parts.append(f'<title id="strip-title">{xml_escape(title)}</title>')
+    parts.append(
+        f'<desc id="strip-desc">Strip plot of {len(rows)} observations across {n_groups} '
+        f'groups. Hover or focus a dot for its exact value.</desc>'
+    )
+    parts.append(
+        "<style>"
+        ".dot{transition:r .12s ease;}"
+        ".dot:hover,.dot:focus{r:6;outline:none;}"
+        "@media (prefers-reduced-motion: reduce){.dot{transition:none;}}"
+        "</style>"
+    )
+    parts.append(f'<rect width="{width}" height="{height}" fill="{BG}"/>')
+    parts.append(
+        f'<text x="40" y="46" font-size="22" font-weight="700" fill="{INK}" '
+        f'letter-spacing="-0.3">{xml_escape(title)}</text>'
+    )
+    parts.append(f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>')
+
+    # ---- gridlines ----
+    y_ticks = 5
+    for i in range(y_ticks + 1):
+        val = (v_min - pad) + ((v_max + pad) - (v_min - pad)) * i / y_ticks
+        ty = y_for(val)
+        parts.append(
+            f'<line x1="{plot_x:.1f}" y1="{ty:.1f}" x2="{plot_x + plot_w:.1f}" y2="{ty:.1f}" '
+            f'stroke="{GRIDLINE}" stroke-width="1"/>'
+        )
+        parts.append(
+            f'<text x="{plot_x - 10:.1f}" y="{ty + 4:.1f}" font-size="11" font-family="{FONT_MONO}" '
+            f'fill="{SECONDARY}" text-anchor="end">{val:.0f}</text>'
+        )
+    parts.append(
+        f'<text x="18" y="{plot_y + plot_h / 2:.1f}" font-size="13" fill="{INK}" '
+        f'text-anchor="middle" transform="rotate(-90 18 {plot_y + plot_h / 2:.1f})">Response</text>'
+    )
+
+    # ---- strips ----
+    for gi, g in enumerate(groups):
+        cx0 = plot_x + gi * bin_w + bin_w / 2
+        color = colors.get(g, "#8E8E93")
+        group_rows = [r for r in rows if r["group"] == g]
+        for r in group_rows:
+            v = float(r["value"])
+            jitter = (rng.random() - 0.5) * jitter_w
+            cx, cy = cx0 + jitter, y_for(v)
+            tip = f"{g}: {v:.1f}"
+            parts.append(
+                f'<circle class="dot" tabindex="0" cx="{cx:.1f}" cy="{cy:.1f}" r="4" '
+                f'fill="{color}" fill-opacity="0.65"><title>{xml_escape(tip)}</title></circle>'
+            )
+
+    # ---- x-axis ----
+    axis_y = plot_y + plot_h
+    parts.append(
+        f'<line x1="{plot_x:.1f}" y1="{axis_y:.1f}" x2="{plot_x + plot_w:.1f}" y2="{axis_y:.1f}" '
+        f'stroke="{INK}" stroke-width="1.2"/>'
+    )
+    for gi, g in enumerate(groups):
+        tx = plot_x + gi * bin_w + bin_w / 2
+        parts.append(
+            f'<text x="{tx:.1f}" y="{axis_y + 20:.1f}" font-size="13" fill="{INK}" '
+            f'text-anchor="middle">{xml_escape(g)}</text>'
+        )
+    parts.append(
+        f'<text x="{plot_x + plot_w / 2:.1f}" y="{axis_y + 42:.1f}" font-size="13" '
+        f'fill="{INK}" text-anchor="middle">Group</text>'
+    )
+
+    parts.append(fullscreen_control(width, height, mode))
+    parts.append("</svg>")
+    return "\n".join(parts)
+
+
+def make_strip(
+    data: Optional[List[Dict[str, Any]]] = None,
+    *,
+    out: Optional[Path | str] = None,
+    title: str = "Response by Dose",
+    subtitle: str = "Each dot is one observation, jittered within its group",
+    width: int = 620,
+    height: int = 480,
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render a hand-authored strip plot and write the SVG to *out*.
+
+    Parameters
+    ----------
+    data : list[dict[str, Any]] or None
+        Rows with keys ``group`` (str) and ``value`` (float). Defaults to
+        DEMO_DATA.
+    out : Path, str, or None
+        Output path (.svg). Defaults to ``assets/svg-examples/strip.svg``.
+    title, subtitle : str
+        Chart text.
+    width, height : int
+        Canvas size in pixels.
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+
+    Examples
+    --------
+    >>> p = make_strip()
+    >>> p.exists()
+    True
+    """
+    svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
+                     mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "strip")
+    return write_svg(dest, svg)
+
+
+def main() -> None:
+    render_cli(__file__, "strip", build_svg, description="Generate a strip plot.")
+
+
+if __name__ == "__main__":
+    main()

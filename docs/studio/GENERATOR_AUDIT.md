@@ -4,11 +4,11 @@ Reproducible audit of every `scripts/make_*.py` generator against the
 `make_<kind>(data, *, out, title, ...) -> Path` contract the dispatcher
 expects. Regenerate with `python tools/audit_generators.py --render`.
 
-- **stable**: 42
+- **stable**: 43
 - **experimental**: 0
 - **legacy**: 80
 - **unavailable**: 0
-- **total**: 122
+- **total**: 123
 
 | kind | status | reachable | callable | demo_data | render | errors |
 |---|---|---|---|---|---|---|
@@ -118,6 +118,7 @@ expects. Regenerate with `python tools/audit_generators.py --render`.
 | `step` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `streamgraph` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_streamgraph.py; No callable named 'make_streamgraph' in make_streamgraph.py |
 | `streamplot` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_streamplot.py; No callable named 'make_streamplot' in make_streamplot.py |
+| `strip` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `sunburst` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `surface3d` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_surface3d.py; No callable named 'make_surface3d' in make_surface3d.py |
 | `ternary` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_ternary.py; No callable named 'make_ternary' in make_ternary.py |

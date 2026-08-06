@@ -3940,6 +3940,50 @@
     ]
   },
   {
+    "kind": "strip",
+    "label": "Strip",
+    "aliases": [],
+    "category": "Distribution",
+    "description": "One dot per observation along a categorical axis, jittered horizontally within its group so overlapping points stay visible. Simpler than a beeswarm's deterministic collision avoidance. Use for dose-response data or raw measurements behind a box plot.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "svg",
+    "module": "scripts/make_strip.py",
+    "callable_name": "make_strip",
+    "required_roles": [
+      {
+        "name": "group",
+        "label": "Category",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "value",
+        "label": "Numeric value",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 900,
+    "default_height": 600,
+    "options_schema": {},
+    "warnings": [
+      "Default output path falls back to a shared assets/ directory"
+    ]
+  },
+  {
     "kind": "sunburst",
     "label": "Sunburst",
     "aliases": [],
