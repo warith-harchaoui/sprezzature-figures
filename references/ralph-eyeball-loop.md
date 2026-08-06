@@ -15,10 +15,10 @@ concern. Its domain is every surface where a visual is produced from code:
 | Surface | Source format | Renderer |
 |---|---|---|
 | Web pages, GUI screens | `.html`, `.htm` | Headless Chrome (`ralph_eyeball_loop.py`) |
-| Data figures | `.vl.json`, `.vg.json` (Vega-Lite / Vega) | `vl-convert` via `render_diagram.py` |
+| Data figures | `.svg` (hand-authored SVG, `make-figure`) | native SVG toolchain (`rsvg-convert` / ImageMagick / `resvg`) via `render_diagram.py` |
 | Mathematical figures | `.tex`, `.tikz` (TikZ / LaTeX) | `tectonic` / `pdflatex` via `render_diagram.py` |
 | Flow and architecture diagrams | `.mmd`, `.mermaid` (Mermaid) | `mmdc` via `render_diagram.py` |
-| Hand-authored graphics | `.svg` (raw SVG) | `rsvg-convert` / ImageMagick via `render_diagram.py` |
+| Externally-supplied diagram specs | `.vl.json`, `.vg.json` (Vega-Lite / Vega) | `vl-convert` via `render_diagram.py` — only for a caller-supplied spec; this repo does not author Vega itself |
 
 Data visualization is *one* application. A webpage, a UI component, a
 marketing screenshot, a deployment-architecture diagram, all go through the
@@ -49,9 +49,9 @@ Four steps. The loop is the same for every surface:
 
 1. **Render**: `ralph_eyeball_loop.py` produces a PNG at the size and background
    that matches the real deployment context. For a web page: the desktop and
-   mobile viewports. For a Vega spec: white on a light page, transparent on
-   a dark hero. For a Mermaid diagram: the background where it will be
-   embedded.
+   mobile viewports. For a data figure or other SVG: white on a light page,
+   transparent on a dark hero. For a Mermaid diagram: the background where it
+   will be embedded.
 
 2. **Look**: the Claude Code / OpenCode agent reads the PNG back into the
    conversation using the `Read` tool and studies it with its own vision.
@@ -114,8 +114,8 @@ python sprezzature-figures/scripts/ralph_eyeball_loop.py web/index.html
 # Mobile viewport (see the note below on Chrome's ~500 px minimum)
 python sprezzature-figures/scripts/ralph_eyeball_loop.py web/index.html --width 500 --height 844
 
-# Vega-Lite spec
-python sprezzature-figures/scripts/ralph_eyeball_loop.py figs/histogram.vl.json
+# Hand-authored data figure (SVG, from make-figure)
+python sprezzature-figures/scripts/ralph_eyeball_loop.py figs/histogram.svg
 
 # Mermaid diagram — transparent canvas
 python sprezzature-figures/scripts/ralph_eyeball_loop.py docs/arch.mmd --bg transparent
@@ -139,7 +139,7 @@ Add `--local` to any of the above commands:
 python sprezzature-figures/scripts/ralph_eyeball_loop.py web/index.html --local
 
 # Data figure — local mode
-python sprezzature-figures/scripts/ralph_eyeball_loop.py figs/histogram.vl.json --local
+python sprezzature-figures/scripts/ralph_eyeball_loop.py figs/histogram.svg --local
 
 # Mermaid diagram — local mode, dark canvas
 python sprezzature-figures/scripts/ralph_eyeball_loop.py docs/arch.mmd --bg transparent --local
@@ -166,12 +166,12 @@ python sprezzature-figures/scripts/ralph_eyeball_loop.py --install-tools
 | Surface | Tool | Auto-install | Manual |
 |---|---|---|---|
 | HTML / JS page | Headless Chrome | — | <https://google.com/chrome/> |
-| Vega-Lite / Vega JSON | `vl-convert-python` | `pip install vl-convert-python` | — |
+| Data figure / hand-authored SVG | `rsvg-convert` (librsvg) or `resvg` | `brew install librsvg` | `apt install librsvg2-bin` |
 | Mermaid diagram | `mmdc` (mermaid-cli) | `npm install -g @mermaid-js/mermaid-cli` | — |
 | TikZ / LaTeX figure | `tectonic` (preferred) | `brew install tectonic` | <https://tectonic-typesetting.github.io/> |
 | TikZ rasterise | `pdftoppm` (poppler) | `brew install poppler` | `apt install poppler-utils` |
-| SVG graphic | `rsvg-convert` (librsvg) | `brew install librsvg` | `apt install librsvg2-bin` |
 | SVG / TikZ fallback | ImageMagick | `brew install imagemagick` | `apt install imagemagick` |
+| Externally-supplied Vega-Lite / Vega spec | `vl-convert-python` | `pip install vl-convert-python` | — |
 | Local mode critique | Ollama + `qwen3-vl:8b` | `ollama pull qwen3-vl:8b` | <https://ollama.com/> |
 
 `ralph_eyeball_loop.py` auto-detects the surface kind from the file suffix,
@@ -289,7 +289,7 @@ all surfaces; adapt the emphasis:
 > `document.documentElement.scrollWidth` vs `clientWidth`) before editing the
 > page: it is usually this clamp, not the CSS.
 
-### Data figures (Vega, TikZ)
+### Data figures (hand-authored SVG)
 
 - **Axis labels and tick labels**: do they overlap? Are they readable at the
   intended print size?
@@ -366,26 +366,24 @@ A colored Mermaid diagram you have *rendered, looked at, and refined* through
 this loop beats one you merely wrote with colors, which beats ASCII art (which
 is never acceptable). Writing the Mermaid is not the finish line;
 eyeballing the rendered image is. Reach for TikZ when the figure is
-mathematical or print-grade, and Vega when it is a data chart, but never
-leave a diagram as ASCII, and never leave a diagram un-eyeballed.
+mathematical or print-grade math notation, and hand-authored SVG (via
+`make-figure`) when it is a data chart, but never leave a diagram as ASCII,
+and never leave a diagram un-eyeballed.
 
 ---
 
-## Vega first, SVG as the fallback
+## Hand-authored SVG is the data-figure engine
 
-For a data figure, the engine choice is a policy, not a guess:
+Every data figure in the catalog — bar, line, hexbin, 2D-KDE contours,
+beeswarm, clustermap, quiver, static and interactive 3D surfaces, all ~126
+kinds — is a hand-authored SVG generator (`make_<kind>.py`), not a Vega-Lite
+spec. There is no engine choice to make for a data figure: it is SVG, full
+stop. The full catalog is `FIGURES.md`.
 
-1. **Try Vega first.** Author the spec, run the loop (render → look →
-   refine). Vega is preferred: the spec carries its own data, themes to the
-   house style, and is interactive in a page.
-2. **If the Vega loop can't get there** (the grammar cannot express it: a
-   smoothing filter, arrowhead markers, a gradient mesh), **drop to a
-   hand-authored SVG** and run the *same* loop on it.
-
-This is how the catalog was built: hexbin, 2D-KDE contours, beeswarm,
-clustermap, quiver, and static 3D surfaces stayed in Vega; interpolated
-`imshow` (smooth raster) and `streamplot` (arrowheads) needed SVG. The full
-map is `FIGURES.md`; the Vega dead ends are in `.private/vega-failures/FAILURES.md`.
+Vega is retained for exactly one case: `render_diagram.py --kind vega`
+rasterises a **caller-supplied external** Vega/Vega-Lite spec (someone hands
+you a `.vl.json` from outside this repo) — this repo does not author Vega
+itself anywhere in its own figure generators.
 
 ---
 
@@ -395,12 +393,15 @@ Every render is themed from the **canonical sprezzature-colors palette**
 (`sprezzature-colors/references/palette.csv`, documented at
 <https://harchaoui.org/warith/colors/>) before you look:
 
-- **Vega**: `_style.vega_config` applies the theme on the make side; the
-  spec's own `config` overrides per-figure.
+- **Data figures**: each `make_<kind>.py` generator pulls colors directly
+  from `_style.load_palette()` / `_style.qualitative_sequence()` and writes
+  them straight into the SVG it authors.
 - **TikZ**: a `\definecolor` preamble injected by `render_diagram.py`.
 - **Mermaid**: the `%%{init}%%` theme injected automatically.
 - **HTML / web**: the sprezzature-ui CSS variables carry the palette; the page
   already uses it.
+- **Externally-supplied Vega spec**: `render_diagram.py` keeps whatever the
+  caller's own `config` block declares.
 
 The palette is the *first* choice. Edit specific hues in the source when a
 figure needs it. Pass `--no-theme` to `render_diagram.py` to render a source
@@ -439,7 +440,7 @@ rendered. Two additional checks gate the output before a commit:
 
 ```bash
 # Diagram: audit after looping
-python sprezzature-figures/scripts/audit_figure.py figs/histogram.vl.json
+python sprezzature-figures/scripts/audit_figure.py figs/histogram.svg
 
 # Web page: a11y gate after looping
 python sprezzature-accessibility/scripts/lint_a11y.py web/index.html

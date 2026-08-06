@@ -90,8 +90,8 @@ square. That is intended.
 ## 5. Per-mark-family rules
 
 - **Bars & columns.** Round **only the value end** (the two corners away from the
-  baseline); the baseline corners stay square so bars sit flat on the axis
-  (Vega: `cornerRadiusEnd`). Grouped/stacked: only the outermost segment's free
+  baseline); the baseline corners stay square so bars sit flat on the axis.
+  Grouped/stacked: only the outermost segment's free
   end rounds; internal stack joins stay square so the part-of-whole reads.
   Keep it subtle — the cap is 4px precisely because an over-rounded cap hides
   where the value ends.
@@ -132,13 +132,13 @@ high-contrast and forced-colors. Never change a radius per theme.
 
 ## 8. Implementation hooks
 
-- **Tokens.** Add the px scale to `scripts/_style.py` (mirroring the rem tokens in
-  `studio/theme.py`); export a `CORNERS` dict and a helper
-  `corner_radius(w, h, family)` implementing §4.
-- **Vega house config** (`_style.py`): `bar.cornerRadiusEnd = 4`; arc marks get
-  `cornerRadius = 3`; `view.cornerRadius = 12` (frame). (Today it is
-  `view:10`, `bar.cornerRadiusEnd:4` — bring `view` to the `corner-lg` token and
-  add the arc default.)
+- **Tokens.** The px scale lives in `scripts/_style.py` (mirroring the rem tokens in
+  `studio/theme.py`) as the `CORNERS` dict and the `corner_radius(w, h, family)`
+  helper implementing §4.
+- **Per-generator application.** Each `make_<kind>.py` SVG generator calls
+  `_style.corner_radius()` directly and writes the result into its own `rx=`/`ry=`
+  attributes — bars round the value end, arcs get the gentle radius, grids stay
+  square, per §5 above.
 - **Concentricity helper**: `inner_radius(outer, gap) = max(0, outer - gap)`.
 - **Auditor rule** (`scripts/audit_figure.py`): flag (a) grid-cell marks with
   radius > 1px, (b) bars rounded on the baseline side, (c) any radius above its

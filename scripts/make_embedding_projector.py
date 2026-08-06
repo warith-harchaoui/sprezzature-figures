@@ -77,7 +77,7 @@ _DEFAULT_OUT = (
     / "embedding-projector.svg"
 )
 
-# House-style tokens (mirror _style.vega_config, kept literal so this
+# House-style tokens (mirror the house-style constants, kept literal so this
 # generator needs no import of the dataviz tier at build time).
 _INK = "#1D1D1F"        # primary text
 _SECONDARY = "#6E6E73"  # subtitle / secondary text
