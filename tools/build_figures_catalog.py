@@ -144,6 +144,14 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
         ],
         "optional_roles": [],
     },
+    "bar-grouped": {
+        "required_roles": [
+            {"name": "period", "label": "Outer category", "accepted_types": ["categorical"], "required": True},
+            {"name": "region", "label": "Inner (grouped) category", "accepted_types": ["categorical"], "required": True},
+            {"name": "v", "label": "Numeric value", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
     "dumbbell": {
         "required_roles": [
             {"name": "category", "label": "Category", "accepted_types": ["categorical"], "required": True},
@@ -210,6 +218,7 @@ HAND_LIMITS: dict[str, dict[str, int]] = {
     "funnel": {"max_recommended_categories": 10},
     "waffle": {"max_recommended_categories": 8},
     "donut": {"max_recommended_categories": 6},
+    "bar-grouped": {"max_recommended_categories": 8},
     "treemap": {"max_recommended_categories": 50},
     "sunburst": {"max_recommended_categories": 50},
     "heatmap": {"max_recommended_categories": 30},

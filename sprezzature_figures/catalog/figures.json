@@ -184,6 +184,62 @@
     ]
   },
   {
+    "kind": "bar-grouped",
+    "label": "Bar Grouped",
+    "aliases": [
+      "bar grouped",
+      "bar_grouped"
+    ],
+    "category": "Comparison",
+    "description": "Clustered bars: an outer categorical axis (e.g. quarter) holds a group of side-by-side bars, one per inner category (e.g. region), colour-coded. Use to compare sub-category totals within a period and each sub-category's trend across periods at once.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "svg",
+    "module": "scripts/make_bar-grouped.py",
+    "callable_name": "make_bar_grouped",
+    "required_roles": [
+      {
+        "name": "period",
+        "label": "Outer category",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "region",
+        "label": "Inner (grouped) category",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "v",
+        "label": "Numeric value",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": 8,
+    "default_width": 900,
+    "default_height": 600,
+    "options_schema": {},
+    "warnings": [
+      "make_figure('bar-grouped') cannot resolve to make_bar-grouped.py: hyphen/underscore normalisation looks for a different filename",
+      "Default output path falls back to a shared assets/ directory"
+    ]
+  },
+  {
     "kind": "bar3d",
     "label": "Bar3D",
     "aliases": [],
