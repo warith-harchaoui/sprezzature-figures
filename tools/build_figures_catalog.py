@@ -206,6 +206,15 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
         ],
         "optional_roles": [],
     },
+    "errorbar": {
+        "required_roles": [
+            {"name": "g", "label": "Category", "accepted_types": ["categorical"], "required": True},
+            {"name": "mean", "label": "Point estimate", "accepted_types": ["numeric"], "required": True},
+            {"name": "lo", "label": "Interval low", "accepted_types": ["numeric"], "required": True},
+            {"name": "hi", "label": "Interval high", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
     "dumbbell": {
         "required_roles": [
             {"name": "category", "label": "Category", "accepted_types": ["categorical"], "required": True},

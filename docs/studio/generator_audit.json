@@ -1,6 +1,6 @@
 {
   "summary": {
-    "stable": 25,
+    "stable": 26,
     "experimental": 0,
     "legacy": 80,
     "unavailable": 0
@@ -1017,6 +1017,30 @@
       "errors": [
         "No DEMO_DATA in make_embedding_projector.py",
         "No callable named 'make_embedding_projector' in make_embedding_projector.py"
+      ]
+    },
+    {
+      "kind": "errorbar",
+      "filename": "make_errorbar.py",
+      "hyphenated_kind": false,
+      "dispatcher_reachable_by_kind": true,
+      "importable": true,
+      "import_error": null,
+      "expected_callable": "make_errorbar",
+      "callable_exists": true,
+      "demo_data_exists": true,
+      "demo_data_len": 4,
+      "accepts_data": true,
+      "accepts_out": true,
+      "accepts_title": true,
+      "renderer": "svg",
+      "writes_hardcoded_path": true,
+      "hardcoded_dimensions": true,
+      "render_test": "passed",
+      "render_error": null,
+      "status": "stable",
+      "errors": [
+        "Default output path falls back to a shared assets/ directory"
       ]
     },
     {

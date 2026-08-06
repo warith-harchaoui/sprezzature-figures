@@ -4,11 +4,11 @@ Reproducible audit of every `scripts/make_*.py` generator against the
 `make_<kind>(data, *, out, title, ...) -> Path` contract the dispatcher
 expects. Regenerate with `python tools/audit_generators.py --render`.
 
-- **stable**: 25
+- **stable**: 26
 - **experimental**: 0
 - **legacy**: 80
 - **unavailable**: 0
-- **total**: 105
+- **total**: 106
 
 | kind | status | reachable | callable | demo_data | render | errors |
 |---|---|---|---|---|---|---|
@@ -52,6 +52,7 @@ expects. Regenerate with `python tools/audit_generators.py --render`.
 | `edge-bundling` | legacy | **no** | **no** | **no** | not_run | No DEMO_DATA in make_edge-bundling.py; No callable named 'make_edge_bundling' in make_edge-bundling.py |
 | `elbow` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_elbow.py; No callable named 'make_elbow' in make_elbow.py |
 | `embedding_projector` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_embedding_projector.py; No callable named 'make_embedding_projector' in make_embedding_projector.py |
+| `errorbar` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `forest` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_forest.py; No callable named 'make_forest' in make_forest.py |
 | `funnel` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `gapminder` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_gapminder.py; No callable named 'make_gapminder' in make_gapminder.py |
