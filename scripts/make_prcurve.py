@@ -60,13 +60,13 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 
 # House-style palette + shared primitives live alongside in scripts/.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _render import render_cli  # noqa: E402
+from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
@@ -214,12 +214,12 @@ def _thin(
     ]
 
 
-def make_data(
+def _simulate_rows(
     n: int = 6000,
     prevalence: float = 0.03,
     seed: int = 11,
-) -> Dict[str, Any]:
-    """Simulate two fraud classifiers and return their PR curves + AP.
+) -> List[Dict[str, Any]]:
+    """Simulate ``n`` fraud-detection transactions as row records.
 
     Ground truth is a rare positive class (fraud). Two score generators
     with different separability are simulated:
@@ -228,7 +228,10 @@ def make_data(
     * **Logistic baseline** — noisier scores, the weaker model.
 
     Both are pushed through a logistic link so the scores read as
-    calibrated-ish probabilities in ``(0, 1)``.
+    calibrated-ish probabilities in ``(0, 1)``. This is the row-record
+    source :data:`DEMO_DATA` is built from; :func:`make_data` reshapes any
+    row list of this shape (real or synthetic) into the PR-curve bundle
+    :func:`build_svg` renders.
 
     Parameters
     ----------
@@ -241,11 +244,9 @@ def make_data(
 
     Returns
     -------
-    dict
-        ``{"curves": [record, ...], "ap": {model: float}, "prevalence":
-        float, "points": [operating-point record, ...]}`` — ``curves``
-        feeds the line layers, ``points`` the highlighted operating-point
-        markers, ``ap`` the direct labels, ``prevalence`` the baseline.
+    list of dict
+        One row per transaction: ``{"transaction": int, "is_fraud": bool,
+        "score_strong": float, "score_weak": float}``.
     """
     rng = np.random.default_rng(seed)
 
@@ -265,14 +266,56 @@ def make_data(
     strong = _scores(gap_pos=2.6, gap_neg=-2.2, noise=1.3)
     weak = _scores(gap_pos=1.2, gap_neg=-1.0, noise=1.7)
 
+    return [
+        {
+            "transaction": i,
+            "is_fraud": bool(y_true[i]),
+            "score_strong": round(float(strong[i]), 6),
+            "score_weak": round(float(weak[i]), 6),
+        }
+        for i in range(n)
+    ]
+
+
+#: Row-record demo data: one row per simulated transaction, the contract's
+#: ``list[dict[str, Any]]`` shape. :func:`make_data` reshapes it (or any
+#: caller-supplied row list of the same shape) into the PR-curve bundle.
+DEMO_DATA: List[Dict[str, Any]] = _simulate_rows()
+
+#: Row-level model names, in stacking/plot order; keys must match the
+#: ``score_<slug>`` fields on each :data:`DEMO_DATA` row.
+_ROW_MODELS: Dict[str, str] = {
+    "Gradient-boosted": "score_strong",
+    "Logistic baseline": "score_weak",
+}
+
+
+def make_data(data: Optional[List[Dict[str, Any]]] = None) -> Dict[str, Any]:
+    """Reshape fraud-transaction row records into PR curves + AP.
+
+    Parameters
+    ----------
+    data : list of dict, optional
+        Rows with ``is_fraud`` (bool/0-1) and per-model score keys
+        (``score_strong``, ``score_weak``). Defaults to :data:`DEMO_DATA`.
+
+    Returns
+    -------
+    dict
+        ``{"curves": [record, ...], "ap": {model: float}, "prevalence":
+        float, "points": [operating-point record, ...]}`` — ``curves``
+        feeds the line layers, ``points`` the highlighted operating-point
+        markers, ``ap`` the direct labels, ``prevalence`` the baseline.
+    """
+    rows = data if data else DEMO_DATA
+    y_true = np.array([1 if r.get("is_fraud") else 0 for r in rows])
+
     curves: List[Dict[str, Any]] = []
     ap: Dict[str, float] = {}
     points: List[Dict[str, Any]] = []
 
-    for label, scores in (
-        ("Gradient-boosted", strong),
-        ("Logistic baseline", weak),
-    ):
+    for label, score_key in _ROW_MODELS.items():
+        scores = np.array([float(r[score_key]) for r in rows])
         recall, precision, thresholds, average_precision = _pr_from_scores(y_true, scores)
         curves.extend(_thin(recall, precision, thresholds, label))
         ap[label] = round(average_precision, 3)
@@ -300,7 +343,11 @@ def make_data(
     }
 
 
-def build_svg(mode: str = "self-contained", accessibility: str = "universal") -> str:
+def build_svg(
+    data: Optional[List[Dict[str, Any]]] = None,
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> str:
     """Assemble the full precision-recall-curve SVG string.
 
     The plot is a square unit view (recall on x, precision on y, both in
@@ -327,7 +374,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     str
         A complete, standalone SVG document.
     """
-    bundle = make_data()
+    bundle = make_data(data)
     palette: Dict[str, str] = load_palette(accessibility)
 
     # Two hues that stay apart under deuteranopia and greyscale: blue for the
@@ -732,6 +779,40 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     parts.append(fullscreen_control(width, height, mode))
     parts.append("</svg>")
     return "\n".join(parts)
+
+
+def make_prcurve(
+    data: Optional[List[Dict[str, Any]]] = None,
+    *,
+    out: Optional[Path | str] = None,
+    title: str = "",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the precision-recall curve and write the SVG to *out*.
+
+    Parameters
+    ----------
+    data : list[dict[str, Any]] or None
+        Rows with keys ``is_fraud`` (bool/0-1) and per-model score keys
+        ``score_strong``, ``score_weak``. Defaults to :data:`DEMO_DATA`.
+    out : Path, str, or None
+        Output path (.svg). Defaults to ``assets/svg-examples/prcurve.svg``.
+    title : str, optional
+        Accepted for signature parity; the figure's headline is baked into
+        the diagnostic narrative (unused).
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+    """
+    _ = title
+    svg = build_svg(data, mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "prcurve")
+    return write_svg(dest, svg)
 
 
 def main() -> None:

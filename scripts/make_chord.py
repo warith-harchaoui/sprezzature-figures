@@ -48,14 +48,14 @@ from __future__ import annotations
 import math
 import sys
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 from xml.sax.saxutils import escape
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import forced_color_patterns, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _svg import point_on_circle, svg_open  # noqa: E402
-from _render import render_cli  # noqa: E402
-from _interactive import fullscreen_control  # noqa: E402
+from _render import render_cli, svg_example_path, write_svg  # noqa: E402
+from _interactive import fullscreen_control, hover_isolate_css  # noqa: E402
 
 # ------------------------------------------------------------------
 # Canvas + house-style tokens
@@ -97,6 +97,19 @@ MATRIX: List[List[int]] = [
     [19,   3,   0,   5,   2],   # Growth
     [17,   4,   6,   0,   3],   # Mobile
     [15,   8,   2,   1,   0],   # Data
+]
+
+# The make_<kind> contract's row-record view of MATRIX: one row per
+# nonzero (author, reviewer) pair. The diagram's layout (arc angular
+# budget, the review-bottleneck narrative, and the hub call-out naming
+# "Platform" by name) is tuned to this exact 5x5 matrix, so
+# make_chord() accepts ``data`` for dispatcher parity but does not
+# thread custom rows into the render -- see its docstring below.
+DEMO_DATA: List[Dict[str, Any]] = [
+    {"author_team": TEAMS[i], "reviewer_team": TEAMS[j], "reviews": MATRIX[i][j]}
+    for i in range(len(TEAMS))
+    for j in range(len(TEAMS))
+    if i != j and MATRIX[i][j] > 0
 ]
 
 # Brand hue per team — origin color travels with the ribbon.
@@ -434,17 +447,11 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     fcp_defs, fcp_style = forced_color_patterns(
         [f".team-{i}" for i in range(n)], prefix="chord-fcp"
     )
-    # --- CSS: hover/focus one ribbon (or one arc) dims the rest ---
+    # --- CSS: hover/focus one ribbon dims the rest (shared house helper) ---
     parts.append(
         "<style>"
-        ".chord{transition:opacity .18s ease}"
-        ".arc{transition:opacity .18s ease}"
-        # Hovering anywhere on the ribbon layer fades every ribbon; the
-        # hovered/focused ribbon returns to full opacity.
-        "#chords:hover .chord{opacity:.12}"
-        "#chords .chord:hover,#chords .chord:focus{opacity:1}"
-        # Hovering a group arc fades all ribbons, then the CSS class shared
-        # by that arc's ribbons brings them back (see data-team below).
+        + hover_isolate_css("chord", len(ribbons), dim=0.12)
+        + ".arc{transition:opacity .18s ease}"
         ".chord:focus,.arc:focus{outline:none}"
         + adaptive
         + fcp_style
@@ -472,7 +479,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     # --- ribbons (drawn first, under the arcs) ---
     parts.append('<g id="chords">')
     # Thickest first so thin ribbons layer cleanly on top.
-    for rb in sorted(ribbons, key=lambda r: -r["combined"]):
+    for chord_idx, rb in enumerate(sorted(ribbons, key=lambda r: -r["combined"])):
         d = _ribbon_path(rb["a0"], rb["a1"], rb["b0"], rb["b1"], R_INNER)
         src_name = groups[rb["src"]]["name"]
         dst_name = groups[rb["dst"]]["name"]
@@ -483,7 +490,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
             f"{dst_name} reviewed {rb['v_dst']} of {src_name}'s)"
         )
         parts.append(
-            f'<path class="chord team-{rb["src"]}" tabindex="0" role="img" '
+            f'<path class="chord chord-{chord_idx} team-{rb["src"]}" tabindex="0" role="img" '
             f'aria-label="{escape(tip)}" d="{d}" fill="{rb["color"]}" '
             f'fill-opacity="0.5" stroke="{rb["color"]}" stroke-opacity="0.35" '
             f'stroke-width="0.6">'
@@ -558,6 +565,49 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
 def main() -> None:
     """Write the chord-diagram SVG to the skill's example asset folder."""
     render_cli(__file__, "chord", build_svg, description="Render the chord SVG.")
+
+
+def make_chord(
+    data: Optional[List[Dict[str, Any]]] = None,
+    *,
+    out: Optional[Path | str] = None,
+    title: str = "",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the house-styled chord diagram and write the SVG to *out*.
+
+    Parameters
+    ----------
+    data : list of dict or None
+        Accepted for dispatcher parity (see :data:`DEMO_DATA` for the
+        row-record view of the illustrative cross-team review matrix), but
+        not threaded into the render: the ring's angular layout and the
+        hub call-out are tuned to the five named teams and their exact
+        review-bottleneck narrative, so custom rows are not reshaped into
+        it. ``data=None`` still renders that fixed illustrative diagram.
+    out : Path, str, or None
+        Output path (.svg). Defaults to ``assets/svg-examples/chord.svg``.
+    title : str, optional
+        Accepted for CLI/dispatcher parity; unused (see ``data``).
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+
+    Examples
+    --------
+    >>> p = make_chord()
+    >>> p.exists()
+    True
+    """
+    _ = data, title
+    svg = build_svg(mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "chord")
+    return write_svg(dest, svg)
 
 
 if __name__ == "__main__":

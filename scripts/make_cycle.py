@@ -54,14 +54,14 @@ from __future__ import annotations
 import math
 import sys
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 # The house-style palette lives in _style (stdlib-only, safe to import
 # without the dataviz tier).
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import forced_color_patterns, leveled_colors, os_adaptive_style, os_dark_style  # noqa: E402
 from _svg import point_on_circle, svg_open, xml_escape  # noqa: E402
-from _render import render_cli  # noqa: E402
+from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 
 
@@ -240,6 +240,16 @@ def _arc_path(cx: float, cy: float, r: float, a0: float, a1: float) -> str:
 
 # Local alias for the shared escape helper; call sites keep the _xml name.
 _xml = xml_escape
+
+#: Row-record view of :func:`_phases`' default (``accessibility="universal"``)
+#: order, the shape the ``make_<kind>`` contract asks for: one dict per
+#: growth stage with its label, month span and duration. This is the same
+#: story :func:`build_svg` renders by default; the colour is left out since
+#: it is re-derived per accessibility level inside ``build_svg``.
+DEMO_DATA: List[Dict[str, Any]] = [
+    {"key": p["key"], "label": p["label"], "sub": p["sub"], "months": p["months"]}
+    for p in _phases()
+]
 
 
 def build_svg(mode: str = "self-contained", accessibility: str = "universal") -> str:
@@ -533,6 +543,48 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     parts.append(fullscreen_control(_WIDTH, _HEIGHT, mode))
     parts.append('</svg>')
     return "\n".join(parts)
+
+
+def make_cycle(
+    data: Optional[List[Dict[str, Any]]] = None,
+    *,
+    out: Optional[Path | str] = None,
+    title: str = "",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the winter-wheat cycle-wheel SVG and write it to ``out``.
+
+    The standard ``make_<kind>`` entry the figure registry dispatches to.
+    The seven growth-stage phases, their month spans and the whole
+    narrative annotation are baked into :func:`build_svg`, matching
+    :data:`DEMO_DATA`; ``data`` is accepted for dispatcher parity but not
+    threaded into the drawn ring, since the figure's prose (title,
+    "how to read it", the peak-phase callout) is written for this specific
+    seven-phase story rather than an arbitrary phase list.
+
+    Parameters
+    ----------
+    data : list[dict[str, Any]] or None
+        Accepted for contract parity; unused (see above). Defaults to
+        :data:`DEMO_DATA` conceptually.
+    out : Path, str, or None
+        Output path (.svg). Defaults to ``assets/svg-examples/cycle.svg``.
+    title : str, optional
+        Accepted for dispatcher/CLI parity; unused, since the chart's
+        title is fixed prose.
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+    """
+    _ = data, title  # accepted for dispatcher parity; see docstring
+    svg = build_svg(mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "cycle")
+    return write_svg(dest, svg)
 
 
 def main() -> None:

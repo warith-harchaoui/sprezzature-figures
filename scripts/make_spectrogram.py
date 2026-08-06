@@ -38,13 +38,13 @@ Author
 """
 
 from __future__ import annotations
-from _render import write_svg  # noqa: E402
+from _render import svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _style import os_dark_style  # noqa: E402
 
 import argparse
 from pathlib import Path
-from typing import Dict, List, Sequence, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 import numpy as np
 
@@ -84,22 +84,47 @@ _VIRIDIS: Sequence[Tuple[float, str]] = (
 # --------------------------------------------------------------------------- #
 # Illustrative signal                                                          #
 # --------------------------------------------------------------------------- #
-def _synthesise_clip(seed: int = 3) -> Tuple[np.ndarray, int]:
-    """Synthesise a short, communicative mono audio clip.
+#: Row records describing the three synthesised elements the spectrogram is
+#: built to show: one ``"glissando"`` row (the rising-tone sweep), one or
+#: more ``"drone"`` rows (a steady pitch plus its harmonic), and one row per
+#: ``"tap"`` (a percussive broadband click at a given time). Genuinely
+#: drives :func:`_synthesise_clip` — these rows *are* the clip's data, not a
+#: per-sample dump (which would be 24,000 rows for no extra fidelity).
+DEMO_DATA: List[Dict[str, Any]] = [
+    {"component": "glissando", "start_hz": 200.0, "end_hz": 3200.0, "amplitude": 0.6},
+    {"component": "drone", "hz": 120.0, "amplitude": 0.35},
+    {"component": "drone", "hz": 240.0, "amplitude": 0.12},
+    {"component": "tap", "time_s": 0.55},
+    {"component": "tap", "time_s": 1.5},
+    {"component": "tap", "time_s": 2.35},
+]
+
+
+def _synthesise_clip(
+    components: Optional[List[Dict[str, Any]]] = None, seed: int = 3
+) -> Tuple[np.ndarray, int]:
+    """Synthesise a short, communicative mono audio clip from row records.
 
     The clip layers three easily-recognised elements so the spectrogram tells
     an obvious story:
 
     * a **glissando** — a sine whose frequency sweeps log-linearly upward,
       drawing the bright diagonal that climbs the frequency axis over time;
-    * a steady **bass drone** at a fixed low pitch, the solid band at the base;
-    * three percussive **taps** — short broadband clicks that paint vertical
+    * one or more steady **drones** at a fixed low pitch, the solid band(s)
+      at the base;
+    * percussive **taps** — short broadband clicks that paint vertical
       streaks spanning every frequency at a single instant.
 
     Parameters
     ----------
+    components : list of dict or None
+        Rows with a ``component`` key (``"glissando"``, ``"drone"`` or
+        ``"tap"``) — see :data:`DEMO_DATA` for the field names each type
+        takes. Defaults to :data:`DEMO_DATA`. Duration and sample rate are
+        fixed (3 seconds at 8 kHz) so every clip stays comparable.
     seed : int, optional
-        Seed for the additive noise floor, for a reproducible figure.
+        Seed for the additive noise floor and the taps' broadband bursts,
+        for a reproducible figure.
 
     Returns
     -------
@@ -107,28 +132,38 @@ def _synthesise_clip(seed: int = 3) -> Tuple[np.ndarray, int]:
         ``(samples, sample_rate)`` — a 1-D float array in roughly ``[-1, 1]``
         and the sampling rate in hertz.
     """
+    rows = list(components) if components else DEMO_DATA
     rng = np.random.default_rng(seed)
     sr = 8000                       # sample rate (Hz) — enough for a 0–4 kHz view
     dur = 3.0                       # clip length (seconds)
     t = np.linspace(0.0, dur, int(sr * dur), endpoint=False)
 
-    # Glissando: instantaneous frequency sweeps 200 Hz → 3200 Hz log-linearly.
-    f0, f1 = 200.0, 3200.0
-    inst_f = f0 * (f1 / f0) ** (t / dur)
-    # Integrate frequency to get phase (cumulative), so the sweep is smooth.
-    phase = 2.0 * np.pi * np.cumsum(inst_f) / sr
-    gliss = 0.6 * np.sin(phase)
-    # Fade the glissando in and out so it doesn't clip at the edges.
-    gliss *= np.clip(np.sin(np.pi * t / dur), 0.0, 1.0)
-
-    # Bass drone at 120 Hz plus its first harmonic, gently.
-    drone = 0.35 * np.sin(2.0 * np.pi * 120.0 * t) + 0.12 * np.sin(2.0 * np.pi * 240.0 * t)
-
-    # Three percussive taps: exponentially-decaying broadband bursts.
+    gliss = np.zeros_like(t)
+    drone = np.zeros_like(t)
     taps = np.zeros_like(t)
-    for centre in (0.55, 1.5, 2.35):
-        env = np.exp(-((t - centre) ** 2) / (2.0 * 0.004 ** 2))
-        taps += env * rng.standard_normal(t.size)
+
+    for row in rows:
+        kind = row.get("component")
+        if kind == "glissando":
+            f0 = float(row.get("start_hz", 200.0))
+            f1 = float(row.get("end_hz", 3200.0))
+            amp = float(row.get("amplitude", 0.6))
+            # Instantaneous frequency sweeps log-linearly f0 -> f1; integrate
+            # to get phase (cumulative), so the sweep is smooth.
+            inst_f = f0 * (f1 / f0) ** (t / dur)
+            phase = 2.0 * np.pi * np.cumsum(inst_f) / sr
+            g = amp * np.sin(phase)
+            # Fade in/out so it doesn't clip at the clip's edges.
+            g *= np.clip(np.sin(np.pi * t / dur), 0.0, 1.0)
+            gliss += g
+        elif kind == "drone":
+            hz = float(row.get("hz", 120.0))
+            amp = float(row.get("amplitude", 0.35))
+            drone += amp * np.sin(2.0 * np.pi * hz * t)
+        elif kind == "tap":
+            centre = float(row.get("time_s", 0.0))
+            env = np.exp(-((t - centre) ** 2) / (2.0 * 0.004 ** 2))
+            taps += env * rng.standard_normal(t.size)
     taps *= 0.5
 
     # A very quiet noise floor keeps the "silent" cells from being a dead flat
@@ -554,6 +589,46 @@ def _build_parser() -> argparse.ArgumentParser:
         ),
     )
     return parser
+
+
+def make_spectrogram(
+    data: Optional[List[Dict[str, Any]]] = None,
+    *,
+    out: Optional[Path | str] = None,
+    title: str = "",
+    seed: int = 3,
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Synthesise the clip, compute its STFT, and write the spectrogram SVG.
+
+    Parameters
+    ----------
+    data : list[dict[str, Any]] or None
+        Rows describing the clip's glissando/drone/tap components (see
+        :data:`DEMO_DATA`). Defaults to :data:`DEMO_DATA`.
+    out : Path, str, or None
+        Output path (.svg). Defaults to
+        ``assets/svg-examples/spectrogram.svg``.
+    title : str, optional
+        Accepted for dispatcher parity; the figure's own headline states the
+        specific takeaway, so this is unused.
+    seed : int, optional
+        Seed for the reproducible noise floor and tap bursts.
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+    """
+    del title
+    signal, sr = _synthesise_clip(data, seed=seed)
+    stft = _stft_db(signal, sr)
+    svg = build_svg(stft, sr, mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "spectrogram")
+    return write_svg(dest, svg)
 
 
 def main(argv: List[str] | None = None) -> int:

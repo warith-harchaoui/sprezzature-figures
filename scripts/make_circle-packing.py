@@ -70,7 +70,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _svg import hex_to_rgb as _hex_to_rgb, svg_open  # noqa: E402
 from _render import svg_example_path, write_svg  # noqa: E402
-from _interactive import fullscreen_control  # noqa: E402
+from _interactive import fullscreen_control, hover_isolate_css  # noqa: E402
 
 # ------------------------------------------------------------------
 # Canvas + house-style tokens
@@ -149,6 +149,14 @@ MODULES: List[Tuple[str, int]] = [
     ("tests/test_models.py", 330),
     ("tests/conftest.py", 160),
 ]
+
+# The make_<kind> contract's row-record view of MODULES: one row per leaf
+# module. The packing's hero call-out (naming ``services/payments.py`` by
+# path) and outside label steering (:data:`PKG_LABEL_NUDGE`) are tuned to
+# this exact source tree, so make_circle_packing() accepts ``data`` for
+# dispatcher parity but does not thread custom rows into the render --
+# see its docstring below.
+DEMO_DATA: List[Dict[str, Any]] = [{"path": path, "lines": loc} for path, loc in MODULES]
 
 # Each top-level package owns a hue; the subtree inherits it.
 PALETTE = load_palette()
@@ -826,12 +834,12 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         os_adaptive_style(pkg_fill_series, role="fill")
         + os_adaptive_style(pkg_ring_series, role="stroke")
     )
-    # --- CSS: hover/focus a package lifts it, dims the rest ---
+    # --- CSS: hover/focus a package lifts it, dims the rest (shared helper) ---
+    n_pkg = len(root["children"])  # type: ignore[arg-type]
     parts.append(
         "<style>"
-        "#packs .pkg{transition:opacity .16s ease}"
-        "#packing:hover #packs .pkg{opacity:.30}"
-        "#packs .pkg:hover,#packs .pkg:focus-within{opacity:1}"
+        + hover_isolate_css("pkg", n_pkg, dim=0.30)
+        + "#packs .pkg:focus-within{opacity:1}"
         ".hit:focus{outline:none}"
         + adaptive
         # Additive dark mode. The default map flips the paper and all on-paper
@@ -872,7 +880,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
 
     hero_geom: Optional[Dict[str, Any]] = None
 
-    for pkg in root["children"]:  # type: ignore[index]
+    for pkg_idx, pkg in enumerate(root["children"]):  # type: ignore[index]
         pkg_color = str(pkg["color"])
         px, py, pr = float(pkg["x"]), float(pkg["y"]), float(pkg["r"])
         n_mod = len(pkg["children"])  # type: ignore[arg-type]
@@ -880,7 +888,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         pkg_tip = f'{pkg["label"]} — {n_mod} modules, {pkg_loc:,} lines'
 
         parts.append(
-            f'<g class="pkg" tabindex="0" role="img" '
+            f'<g class="pkg pkg-{pkg_idx}" tabindex="0" role="img" '
             f'aria-label="{escape(pkg_tip)}">'
         )
         # Package container: a very pale wash of the hue + a hairline ring
@@ -1129,6 +1137,50 @@ def main() -> None:
 
     out = svg_example_path(__file__, "circle-packing")
     write_svg(out, build_svg(mode=args.mode, accessibility=args.accessibility))
+
+
+def make_circle_packing(
+    data: Optional[List[Dict[str, Any]]] = None,
+    *,
+    out: Optional[Path | str] = None,
+    title: str = "",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the house-styled circle-packing diagram and write the SVG to *out*.
+
+    Parameters
+    ----------
+    data : list of dict or None
+        Accepted for dispatcher parity (see :data:`DEMO_DATA` for the
+        row-record view of the illustrative module tree), but not threaded
+        into the render: the packing's hero call-out and outside-label
+        steering are tuned to this exact source tree, so custom rows are
+        not reshaped into it. ``data=None`` still renders that fixed
+        illustrative diagram.
+    out : Path, str, or None
+        Output path (.svg). Defaults to
+        ``assets/svg-examples/circle-packing.svg``.
+    title : str, optional
+        Accepted for CLI/dispatcher parity; unused (see ``data``).
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+
+    Examples
+    --------
+    >>> p = make_circle_packing()
+    >>> p.exists()
+    True
+    """
+    _ = data, title
+    svg = build_svg(mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "circle-packing")
+    return write_svg(dest, svg)
 
 
 if __name__ == "__main__":

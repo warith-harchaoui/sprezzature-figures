@@ -36,13 +36,13 @@ Author
 
 from __future__ import annotations
 from _interactive import fullscreen_control  # noqa: E402
-from _render import write_svg  # noqa: E402
+from _render import svg_example_path, write_svg  # noqa: E402
 from _svg import fmt_compact  # noqa: E402
 from _style import leveled_colors, os_adaptive_style, os_dark_style  # noqa: E402
 
 import argparse
 from pathlib import Path
-from typing import Dict, List, Sequence, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 import numpy as np
 
@@ -100,6 +100,55 @@ def _sample_monthly_highs(seed: int = 7) -> Dict[str, np.ndarray]:
         out[name] = rng.normal(mean, spread, size=200)
     # Top-of-stack first: December down to January.
     return {name: out[name] for name in reversed(months)}
+
+
+#: Row-record demo data: one row per month with its seasonal mean and
+#: spread, the contract's ``list[dict[str, Any]]`` shape. Order is
+#: top-of-stack first (December down to January), matching
+#: :func:`_sample_monthly_highs`. :func:`_samples_from_rows` reshapes it
+#: (or any caller-supplied row list of the same shape) into the
+#: ``{month: samples}`` dict :func:`build_svg` renders.
+def _monthly_params() -> List[Dict[str, Any]]:
+    """Return the twelve months' seasonal mean/spread as row records."""
+    months = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December",
+    ]
+    rows: List[Dict[str, Any]] = []
+    for i, name in enumerate(months):
+        phase = 2.0 * np.pi * (i - 6) / 12.0
+        mean = 17.0 + 13.0 * np.cos(phase)
+        spread = 3.0 + 1.4 * abs(np.sin(phase))
+        rows.append({"month": name, "mean_c": round(float(mean), 2), "spread_c": round(float(spread), 2)})
+    return list(reversed(rows))  # December first, top of stack
+
+
+DEMO_DATA: List[Dict[str, Any]] = _monthly_params()
+
+
+def _samples_from_rows(rows: List[Dict[str, Any]], *, seed: int = 7, n: int = 200) -> Dict[str, np.ndarray]:
+    """Draw Gaussian samples per row from its ``mean_c``/``spread_c``.
+
+    Parameters
+    ----------
+    rows : list of dict
+        Rows with ``month`` (str), ``mean_c`` (numeric) and ``spread_c``
+        (numeric) keys; row order fixes the top-to-bottom stack order.
+    seed : int, optional
+        Seed for the random generator, for a reproducible figure.
+    n : int, optional
+        Samples drawn per month. Default 200.
+
+    Returns
+    -------
+    dict of str to numpy.ndarray
+        ``{month_label: samples}`` in the given row order.
+    """
+    rng = np.random.default_rng(seed)
+    return {
+        str(r["month"]): rng.normal(float(r["mean_c"]), float(r["spread_c"]), size=n)
+        for r in rows
+    }
 
 
 # --------------------------------------------------------------------------- #
@@ -440,6 +489,46 @@ def build_svg(
     parts.append(fullscreen_control(width, height, mode, inset=22.0))
     parts.append("</svg>")
     return "".join(parts)
+
+
+def make_ridgeline(
+    data: Optional[List[Dict[str, Any]]] = None,
+    *,
+    out: Optional[Path | str] = None,
+    title: str = "",
+    seed: int = 7,
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the ridgeline (joyplot) and write the SVG to *out*.
+
+    Parameters
+    ----------
+    data : list[dict[str, Any]] or None
+        Rows with keys ``month`` (str, the ridge label), ``mean_c`` and
+        ``spread_c`` (numeric, degrees Celsius); row order fixes the
+        top-to-bottom stack order. Defaults to :data:`DEMO_DATA`.
+    out : Path, str, or None
+        Output path (.svg). Defaults to ``assets/svg-examples/ridgeline.svg``.
+    title : str, optional
+        Accepted for signature parity; the figure's headline is baked into
+        the takeaway text (unused).
+    seed : int, optional
+        Random seed for the per-ridge Gaussian samples. Default 7.
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+    """
+    _ = title
+    rows = data if data else DEMO_DATA
+    samples = _samples_from_rows(rows, seed=seed)
+    svg = build_svg(samples, mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "ridgeline")
+    return write_svg(dest, svg)
 
 
 # --------------------------------------------------------------------------- #

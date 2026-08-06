@@ -61,7 +61,7 @@ import math
 import random
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 from xml.sax.saxutils import escape
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -230,6 +230,12 @@ def _build_points(seed: int) -> List[Dict[str, Any]]:
                 "y": round(y, 4),
             })
     return records
+
+
+#: Row-record view of :func:`_build_points`'s default (fixed-seed) layout,
+#: the shape the ``make_<kind>`` contract asks for: one dict per word with
+#: its cluster and 2D model-space position.
+DEMO_DATA: List[Dict[str, Any]] = _build_points(_SEED)
 
 
 def _nearest_neighbours(records: List[Dict[str, Any]], k: int) -> List[List[int]]:
@@ -927,6 +933,54 @@ def build_svg(
 # --------------------------------------------------------------------------- #
 # CLI                                                                          #
 # --------------------------------------------------------------------------- #
+def make_embedding_projector(
+    data: Optional[List[Dict[str, Any]]] = None,
+    *,
+    out: Optional[Path | str] = None,
+    title: str = "",
+    seed: int = _SEED,
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the embedding-projector SVG and write it to ``out``.
+
+    The standard ``make_<kind>`` entry the figure registry dispatches to.
+    The six word clusters and their 2D layout (see :func:`_build_points`)
+    are baked into :func:`build_svg` around a fixed ``seed``, matching
+    :data:`DEMO_DATA`; ``data`` is accepted for dispatcher parity but not
+    threaded into the plotted layout, since the nearest-neighbour
+    interaction and representative-label selection are precomputed for
+    this specific six-cluster word set. Pass ``seed`` to resample a
+    different (still six-cluster) layout.
+
+    Parameters
+    ----------
+    data : list[dict[str, Any]] or None
+        Accepted for contract parity; unused (see above). Defaults to
+        :data:`DEMO_DATA` conceptually.
+    out : Path, str, or None
+        Output path (.svg). Defaults to
+        ``assets/svg-examples/embedding-projector.svg``.
+    title : str, optional
+        Accepted for dispatcher/CLI parity; unused, since the chart's
+        title is fixed prose.
+    seed : int, optional
+        Random seed for the word layout. Default is the fixed seed
+        :data:`DEMO_DATA` was generated from.
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+    """
+    _ = data, title  # accepted for dispatcher parity; see docstring
+    svg = build_svg(seed=seed, mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else _DEFAULT_OUT
+    return write_svg(dest, svg)
+
+
 def _build_parser() -> argparse.ArgumentParser:
     """Return the argparse parser for the script."""
     parser = argparse.ArgumentParser(

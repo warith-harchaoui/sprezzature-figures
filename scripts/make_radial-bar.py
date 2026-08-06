@@ -39,14 +39,14 @@ from __future__ import annotations
 import math
 import sys
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 # The house-style palette lives in _style (stdlib-only, safe to import
 # without the dataviz tier); the polar helpers live in _svg.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _svg import point_on_circle, svg_open, xml_escape  # noqa: E402
-from _render import render_cli  # noqa: E402
+from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 
 
@@ -122,6 +122,34 @@ def _dataset() -> List[int]:
     ]
 
 
+#: Row-record demo data: one row per clock hour, the contract's
+#: ``list[dict[str, Any]]`` shape. :func:`_trips_from_rows` reshapes it
+#: (or any caller-supplied row list of the same shape) into the
+#: hour-ordered trip-count list :func:`build_svg` renders.
+DEMO_DATA: List[Dict[str, Any]] = [
+    {"hour": h, "trips": v} for h, v in enumerate(_dataset())
+]
+
+
+def _trips_from_rows(data: Optional[List[Dict[str, Any]]]) -> List[int]:
+    """Reshape ``{"hour", "trips"}`` row records into an hour-ordered list.
+
+    Parameters
+    ----------
+    data : list of dict or None
+        Rows with ``hour`` (int) and ``trips`` (numeric) keys. Falls back
+        to :data:`DEMO_DATA` when ``None``/empty.
+
+    Returns
+    -------
+    list of int
+        Trip counts ordered by ascending hour.
+    """
+    rows = data if data else DEMO_DATA
+    ordered = sorted(rows, key=lambda r: int(r["hour"]))
+    return [int(round(float(r["trips"]))) for r in ordered]
+
+
 def _polar(cx: float, cy: float, r: float, hour_angle_deg: float) -> Tuple[float, float]:
     """Convert a clock bearing + radius to an SVG ``(x, y)`` point.
 
@@ -189,11 +217,18 @@ def _fmt_trips(n: int) -> str:
     return f"{n:,}".replace(",", " ")
 
 
-def build_svg(mode: str = "self-contained", accessibility: str = "universal") -> str:
+def build_svg(
+    data: Optional[List[Dict[str, Any]]] = None,
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> str:
     """Assemble the full radial-bar SVG document as a string.
 
     Parameters
     ----------
+    data : list of dict, optional
+        Rows with ``hour`` (int, 0-23) and ``trips`` (numeric) keys.
+        Defaults to :data:`DEMO_DATA`.
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`
         (``"self-contained"`` / ``"external"`` / ``"static"``). Defaults to
@@ -210,7 +245,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         A complete, standalone SVG document.
     """
     hues = _palette_hues(accessibility)
-    data = _dataset()
+    data = _trips_from_rows(data)
     n = len(data)                       # 24 hours
     sector_deg = 360.0 / n              # 15° per hour
     pad_deg = 3.2                       # angular gap so bars read as columns
@@ -452,6 +487,40 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     parts.append(fullscreen_control(_WIDTH, _HEIGHT, mode))
     parts.append('</svg>')
     return "\n".join(parts)
+
+
+def make_radial_bar(
+    data: Optional[List[Dict[str, Any]]] = None,
+    *,
+    out: Optional[Path | str] = None,
+    title: str = "",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the radial bar (clock-dial) chart and write the SVG to *out*.
+
+    Parameters
+    ----------
+    data : list[dict[str, Any]] or None
+        Rows with keys ``hour`` (int, 0-23) and ``trips`` (numeric).
+        Defaults to :data:`DEMO_DATA`.
+    out : Path, str, or None
+        Output path (.svg). Defaults to ``assets/svg-examples/radial-bar.svg``.
+    title : str, optional
+        Accepted for signature parity; the figure's headline is baked into
+        the takeaway text (unused).
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+    """
+    _ = title
+    svg = build_svg(data, mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "radial-bar")
+    return write_svg(dest, svg)
 
 
 def main() -> None:

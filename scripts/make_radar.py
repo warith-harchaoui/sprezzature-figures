@@ -45,7 +45,7 @@ from __future__ import annotations
 import argparse
 import math
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 # Reuse the shared, output-identical SVG primitives.
 import sys
@@ -53,8 +53,14 @@ import sys
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _svg import fmt_compact, point_on_circle, svg_open, xml_escape  # noqa: E402
-from _render import write_svg  # noqa: E402
-from _style import forced_color_patterns, leveled_colors, os_adaptive_style, os_dark_style  # noqa: E402
+from _render import svg_example_path, write_svg  # noqa: E402
+from _style import (  # noqa: E402
+    forced_color_patterns,
+    leveled_colors,
+    os_adaptive_style,
+    os_dark_style,
+    qualitative_sequence,
+)
 
 # Repo-relative default output — the one SVG artifact this figure ships.
 _DEFAULT_OUT = (
@@ -121,6 +127,50 @@ def _sample_scores() -> Dict[str, object]:
         {"name": "Aurora", "values": [92.0, 88.0, 70.0, 64.0, 58.0, 52.0]},
         {"name": "Cloud SQL", "values": [74.0, 66.0, 90.0, 86.0, 62.0, 68.0]},
         {"name": "Cosmos", "values": [68.0, 78.0, 60.0, 58.0, 94.0, 84.0]},
+    ]
+    return {"axes": axes, "series": series}
+
+
+#: Row-record demo data: one row per (axis, series) score, the contract's
+#: ``list[dict[str, Any]]`` shape. :func:`_rows_to_radar_data` reshapes it
+#: (or any caller-supplied row list of the same shape) into the
+#: ``{"axes": [...], "series": [...]}`` structure :func:`build_svg` needs.
+_SAMPLE = _sample_scores()
+DEMO_DATA: List[Dict[str, Any]] = [
+    {"axis": axis, "series": s["name"], "value": v}
+    for s in _SAMPLE["series"]
+    for axis, v in zip(_SAMPLE["axes"], s["values"], strict=True)
+]
+del _SAMPLE
+
+
+def _rows_to_radar_data(rows: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """Reshape ``{"axis", "series", "value"}`` rows into the radar's axes/series shape.
+
+    Parameters
+    ----------
+    rows : list of dict
+        Rows with ``axis`` (str), ``series`` (str) and ``value`` (numeric)
+        keys. Axis order follows first appearance; series order likewise.
+
+    Returns
+    -------
+    dict
+        ``{"axes": [str, ...], "series": [{"name", "values"}, ...]}``, the
+        shape :func:`build_svg` expects.
+    """
+    axes: List[str] = []
+    series_map: "Dict[str, Dict[str, Any]]" = {}
+    for r in rows:
+        axis = str(r["axis"])
+        name = str(r["series"])
+        if axis not in axes:
+            axes.append(axis)
+        bucket = series_map.setdefault(name, {"name": name, "values": {}})
+        bucket["values"][axis] = float(r["value"])
+    series = [
+        {"name": name, "values": [bucket["values"].get(a, 0.0) for a in axes]}
+        for name, bucket in series_map.items()
     ]
     return {"axes": axes, "series": series}
 
@@ -202,8 +252,14 @@ def build_svg(
 
     # Level the fixed categorical series hues to the requested accessibility
     # level; ``universal`` is the identity, so the default stays byte-identical.
+    # A caller-supplied series name outside the curated three falls back to
+    # the house qualitative sequence, so custom data never KeyErrors here.
     series_colors = leveled_colors(_SERIES_COLORS, accessibility)
-    palette = [series_colors[str(s["name"])] for s in series]
+    fallback_hues = qualitative_sequence(max(len(series), 1))
+    palette = [
+        series_colors.get(str(s["name"]), fallback_hues[i % len(fallback_hues)])
+        for i, s in enumerate(series)
+    ]
 
     # Poster-scale canvas: a generous square dial with room for the title band
     # up top, the axis labels around the rim, and the legend along the bottom.
@@ -442,6 +498,42 @@ def _build_parser() -> argparse.ArgumentParser:
         help="palette accessibility level (default: universal, the CVD-safe standard)",
     )
     return parser
+
+
+def make_radar(
+    data: Optional[List[Dict[str, Any]]] = None,
+    *,
+    out: Optional[Path | str] = None,
+    title: str = "",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the radar (spider) chart and write the SVG to *out*.
+
+    Parameters
+    ----------
+    data : list[dict[str, Any]] or None
+        Rows with keys ``axis`` (str), ``series`` (str) and ``value``
+        (numeric, 0-100). Defaults to :data:`DEMO_DATA`.
+    out : Path, str, or None
+        Output path (.svg). Defaults to ``assets/svg-examples/radar.svg``.
+    title : str, optional
+        Accepted for signature parity; the figure's headline is baked into
+        the takeaway text (unused).
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+    """
+    _ = title
+    rows = data if data else DEMO_DATA
+    radar_data = _rows_to_radar_data(rows)
+    svg = build_svg(radar_data, mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "radar")
+    return write_svg(dest, svg)
 
 
 def main(argv: List[str] | None = None) -> int:

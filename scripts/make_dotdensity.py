@@ -212,6 +212,21 @@ def _dataset() -> Tuple[Dict[str, int], Dict[str, str], List[Tuple[str, str]]]:
     return pop, region_of, legend
 
 
+#: Row-record view of :func:`_dataset`'s population/region tables, the
+#: shape the ``make_<kind>`` contract asks for: one dict per department.
+#: The map geometry itself comes from the vendored GeoJSON (see
+#: :func:`_load_departments`), not from this list.
+def _demo_rows() -> List[Dict[str, Any]]:
+    pop, region_of, _legend = _dataset()
+    return [
+        {"department": code, "population": count, "region": region_of.get(code, "")}
+        for code, count in pop.items()
+    ]
+
+
+DEMO_DATA: List[Dict[str, Any]] = _demo_rows()
+
+
 # ------------------------------------------------------------------
 # Geometry helpers
 # ------------------------------------------------------------------

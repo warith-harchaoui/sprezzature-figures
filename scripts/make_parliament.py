@@ -57,7 +57,7 @@ from __future__ import annotations
 import math
 import sys
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 from xml.sax.saxutils import escape
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -65,7 +65,7 @@ from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _svg import point_on_circle, svg_open  # noqa: E402
 from _labels import best_text_colour  # noqa: E402
-from _render import render_cli  # noqa: E402
+from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 
 # ------------------------------------------------------------------
 # Canvas + house-style tokens
@@ -239,33 +239,35 @@ def _row_radii() -> List[float]:
     return [R_INNER + i * step for i in range(N_ROWS)]
 
 
-def _seats_per_row(radii: List[float]) -> List[int]:
+def _seats_per_row(radii: List[float], total_seats: int = TOTAL_SEATS) -> List[int]:
     """Distribute the total seats across rows in proportion to arc length.
 
     Each row's half-circumference (``pi * r``) sets how many seats fit at
     the target :data:`SEAT_PITCH`; the per-row capacities are then scaled
-    so their sum is exactly :data:`TOTAL_SEATS`, with the rounding
-    remainder handed to the longest (outer) rows.
+    so their sum is exactly ``total_seats``, with the rounding remainder
+    handed to the longest (outer) rows.
 
     Parameters
     ----------
     radii : list of float
         Row radii, inner to outer.
+    total_seats : int, optional
+        Total seat count to distribute. Defaults to :data:`TOTAL_SEATS`.
 
     Returns
     -------
     list of int
-        Seat count per row, summing to :data:`TOTAL_SEATS`.
+        Seat count per row, summing to ``total_seats``.
     """
     # Raw capacity of each row from its arc length at the seat pitch.
     caps = [max(1.0, math.pi * r / SEAT_PITCH) for r in radii]
-    scale = TOTAL_SEATS / sum(caps)
+    scale = total_seats / sum(caps)
     scaled = [c * scale for c in caps]
 
     # Floor first, then distribute the leftover seats to the rows with the
     # largest fractional part (longest arcs win ties, so outer rows fill).
     counts = [int(math.floor(s)) for s in scaled]
-    remainder = TOTAL_SEATS - sum(counts)
+    remainder = total_seats - sum(counts)
     fracs = sorted(
         range(len(scaled)),
         key=lambda i: (scaled[i] - counts[i], radii[i]),
@@ -276,7 +278,7 @@ def _seats_per_row(radii: List[float]) -> List[int]:
     return counts
 
 
-def _seat_lattice() -> List[Tuple[float, float, float, float]]:
+def _seat_lattice(total_seats: int = TOTAL_SEATS) -> List[Tuple[float, float, float, float]]:
     """Build every seat as ``(angle, radius, x, y)`` in sweep order.
 
     Seats are generated row by row; within a row they run from the left
@@ -284,13 +286,18 @@ def _seat_lattice() -> List[Tuple[float, float, float, float]]:
     is then sorted by angle so consecutive entries are consecutive on the
     floor — the natural seating order a chamber is dealt in.
 
+    Parameters
+    ----------
+    total_seats : int, optional
+        Total seat count. Defaults to :data:`TOTAL_SEATS`.
+
     Returns
     -------
     list of tuple
         ``(angle_deg, radius, x, y)`` per seat, sorted by sweep angle.
     """
     radii = _row_radii()
-    counts = _seats_per_row(radii)
+    counts = _seats_per_row(radii, total_seats)
 
     seats: List[Tuple[float, float, float, float]] = []
     for r, n in zip(radii, counts):
@@ -311,7 +318,10 @@ def _seat_lattice() -> List[Tuple[float, float, float, float]]:
     return seats
 
 
-def _seat_positions_and_parties() -> Tuple[List[Tuple[float, float]], List[int]]:
+def _seat_positions_and_parties(
+    parties: List[Tuple[str, str, int, str]] = PARTIES,
+    total_seats: Optional[int] = None,
+) -> Tuple[List[Tuple[float, float]], List[int]]:
     """Return seat centres and the party index each seat belongs to.
 
     Parties own contiguous *angular sectors* of the half-ring, sized by
@@ -320,6 +330,15 @@ def _seat_positions_and_parties() -> Tuple[List[Tuple[float, float]], List[int]]
     cumulative-share sector its sweep index falls in, which keeps the
     radial party boundaries crisp regardless of how rows differ in length.
 
+    Parameters
+    ----------
+    parties : list of tuple, optional
+        ``(name, short_label, seats, hex_hue)`` in seating order. Defaults
+        to :data:`PARTIES`.
+    total_seats : int, optional
+        Total seats across ``parties``. Defaults to ``sum(p[2] for p in
+        parties)``.
+
     Returns
     -------
     positions : list of tuple of float
@@ -327,7 +346,8 @@ def _seat_positions_and_parties() -> Tuple[List[Tuple[float, float]], List[int]]
     assignment : list of int
         Party index per seat, aligned with ``positions``.
     """
-    seats = _seat_lattice()
+    total_seats = total_seats if total_seats is not None else sum(p[2] for p in parties)
+    seats = _seat_lattice(total_seats)
     positions = [(x, y) for (_a, _r, x, y) in seats]
 
     # Deal parties in order: the i-th seat by sweep angle goes to whichever
@@ -337,14 +357,14 @@ def _seat_positions_and_parties() -> Tuple[List[Tuple[float, float]], List[int]]
     assignment: List[int] = []
     cum = 0
     thresholds: List[Tuple[int, int]] = []  # (upper_bound_exclusive, party_idx)
-    for idx, (_name, _lab, s, _hue) in enumerate(PARTIES):
+    for idx, (_name, _lab, s, _hue) in enumerate(parties):
         cum += s
         thresholds.append((cum, idx))
     for i in range(len(positions)):
         # Scale the geometric seat index onto the arithmetic seat budget so
-        # a lattice with a few more/fewer dots than TOTAL_SEATS still splits
+        # a lattice with a few more/fewer dots than total_seats still splits
         # cleanly by party share.
-        budget_pos = i * TOTAL_SEATS / max(1, len(positions))
+        budget_pos = i * total_seats / max(1, len(positions))
         pid = thresholds[-1][1]
         for upper, idx in thresholds:
             if budget_pos < upper:
@@ -389,11 +409,19 @@ def _seat_disk(
     )
 
 
-def build_svg(mode: str = "self-contained", accessibility: str = "universal") -> str:
+def build_svg(
+    parties: Optional[List[Tuple[str, str, int, str]]] = None,
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> str:
     """Assemble the full hemicycle SVG document as a string.
 
     Parameters
     ----------
+    parties : list of tuple or None
+        ``(name, short_label, seats, hex_hue)`` in seating order (already
+        resolved to a concrete hex — see :func:`_parties`). Defaults to
+        ``_parties(accessibility)`` (the illustrative election result).
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`
         (``"self-contained"``, ``"external"`` or ``"static"``). Controls
@@ -410,25 +438,27 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     str
         A complete, standalone SVG document.
     """
-    parties = _parties(accessibility)
-    positions, assignment = _seat_positions_and_parties()
+    parties = parties if parties else _parties(accessibility)
+    total_seats = sum(p[2] for p in parties)
+    majority = total_seats // 2 + 1
+    positions, assignment = _seat_positions_and_parties(parties, total_seats)
     parts: List[str] = []
 
     lead_name, _lead_lab, lead_seats, lead_hue = max(parties, key=lambda p: p[2])
-    short = MAJORITY - lead_seats  # how far the largest bloc falls short
+    short = majority - lead_seats  # how far the largest bloc falls short
 
     title_txt = (
         f"Hung parliament: {lead_name} lead but fall {short} short of a majority"
     )
     subtitle_txt = (
-        f"General election result — {TOTAL_SEATS} seats, "
-        f"{MAJORITY} needed to govern alone"
+        f"General election result — {total_seats} seats, "
+        f"{majority} needed to govern alone"
     )
     desc_txt = (
-        f"Hemicycle chart of a {TOTAL_SEATS}-seat national assembly after a "
+        f"Hemicycle chart of a {total_seats}-seat national assembly after a "
         f"general election. Each dot is one seat, arranged in {N_ROWS} arced "
         f"rows and coloured by party. Seats run left to right across the "
-        f"political spectrum. A majority needs {MAJORITY} seats; the largest "
+        f"political spectrum. A majority needs {majority} seats; the largest "
         f"party, {lead_name}, holds {lead_seats} and falls {short} short, so "
         f"no party can govern alone and a coalition is required."
     )
@@ -485,11 +515,11 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     )
 
     # --- majority marker: a slim radial line at the 50 %+1 boundary ---
-    # The boundary sits between seat index (MAJORITY-1) and MAJORITY in
+    # The boundary sits between seat index (majority-1) and majority in
     # seating order; place it at the mid-angle between those two seats so
     # the line falls in the gap, not through a dot.
-    frac_lo = (MAJORITY - 1) / TOTAL_SEATS
-    frac_hi = MAJORITY / TOTAL_SEATS
+    frac_lo = (majority - 1) / total_seats
+    frac_hi = majority / total_seats
     boundary_deg = 180.0 * (frac_lo + frac_hi) / 2.0
     r_line_in = R_INNER - 40.0
     r_line_out = R_OUTER + 34.0
@@ -501,7 +531,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         f'stroke-linecap="round"/>'
     )
     # Majority label pill at the outer end of the marker.
-    lbl = f"Majority · {MAJORITY}"
+    lbl = f"Majority · {majority}"
     lx, ly = _polar(r_line_out + 12.0, boundary_deg)
     parts.append(
         f'<rect x="{lx - 66:.1f}" y="{ly - 40:.1f}" width="132" height="30" '
@@ -531,7 +561,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     # deficiency, greyscale print) still reads which wedge is which party.
     # A seat's sector runs over the sweep angles its assignment covers; we
     # take the mean angle of each party's seats as the label anchor.
-    seat_angles = [a for (a, _r, _x, _y) in _seat_lattice()]
+    seat_angles = [a for (a, _r, _x, _y) in _seat_lattice(total_seats)]
     sector_mid_deg: List[float] = []
     for pidx in range(len(parties)):
         angs = [seat_angles[i] for i, p in enumerate(assignment) if p == pidx]
@@ -585,7 +615,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     )
     parts.append(
         f'<text x="{CX:.1f}" y="{hub_cy + 44:.1f}" text-anchor="middle" '
-        f'font-size="18" fill="{SUBINK}">of {MAJORITY} for a majority</text>'
+        f'font-size="18" fill="{SUBINK}">of {majority} for a majority</text>'
     )
 
     # --- legend: one horizontal strip of party chips, in seating order so
@@ -634,7 +664,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     )
     parts.append(
         f'<text x="52" y="{HEIGHT - 34}" font-size="15" fill="{SUBINK}">'
-        f'One dot = one seat · dashed line marks the {MAJORITY}-seat majority · '
+        f'One dot = one seat · dashed line marks the {majority}-seat majority · '
         f'{escape(lead_name)} need {short} more seats or a coalition partner · '
         f'hover a seat for its member; the party block lifts with it'
         f'</text>'
@@ -644,6 +674,62 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     parts.append(fullscreen_control(WIDTH, HEIGHT, mode))
     parts.append("</svg>")
     return "".join(parts)
+
+
+#: The registry contract's DEMO_DATA: the party rows (before hue
+#: resolution — ``hue`` is a house palette base-colour name, resolved to a
+#: concrete hex at render time so accessibility levels remap it).
+DEMO_DATA: List[Dict[str, Any]] = [
+    {"party": name, "label": lab, "seats": seats, "hue": base}
+    for name, lab, seats, base in _PARTY_ROWS
+]
+
+
+def make_parliament(
+    data: Optional[List[Dict[str, Any]]] = None,
+    *,
+    out: Optional[Path | str] = None,
+    title: str = "",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the parliament hemicycle and write the SVG to *out*.
+
+    Parameters
+    ----------
+    data : list[dict[str, Any]] or None
+        Rows shaped ``{"party", "label", "seats", "hue"}`` — one row per
+        party, in seating order; ``hue`` is a house palette base-colour
+        name (e.g. ``"Blue"``, unresolved). Defaults to :data:`DEMO_DATA`.
+        ``title`` is accepted for signature parity with the rest of the
+        gallery and is currently a documented no-op.
+    out : Path, str, or None
+        Output path. Defaults to ``assets/svg-examples/parliament.svg``.
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+    """
+    _ = title
+    if not data:
+        # No data supplied: match main()/the shipped CLI exactly (build_svg
+        # resolves _parties(accessibility) itself).
+        svg = build_svg(None, mode=mode, accessibility=accessibility)
+    else:
+        palette = load_palette(accessibility)
+        resolved = [
+            (
+                str(r["party"]), str(r["label"]), int(r["seats"]),
+                palette.get(str(r.get("hue", "")), _PARTY_FALLBACK.get(str(r.get("hue", "")), "#8E8E93")),
+            )
+            for r in data
+        ]
+        svg = build_svg(resolved, mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "parliament")
+    return write_svg(dest, svg)
 
 
 def main() -> None:

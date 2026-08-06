@@ -51,14 +51,14 @@ from __future__ import annotations
 import math
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 # The house-style palette lives in _style (stdlib-only, safe to import
 # without the dataviz tier).
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
-from _render import render_cli  # noqa: E402
+from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 
 _xml = xml_escape
@@ -142,6 +142,14 @@ _STATIONS: List[Tuple[Any, ...]] = [
     ("Buoy 44017",    -72.05, 40.69, 205, 30, "R"),
     ("Buoy 44066",    -72.64, 39.62, 205, 40, "R"),
     ("Buoy 44014",    -74.84, 36.61, 220, 25, "R"),
+]
+
+#: Row records: one per station, with ``name``, ``lon``, ``lat``,
+#: ``direction`` (meteorological "from" bearing, degrees) and ``speed``
+#: (knots). Derived from :data:`_STATIONS` so the two stay in lock-step.
+DEMO_DATA: List[Dict[str, Any]] = [
+    {"name": name, "lon": lon, "lat": lat, "direction": dir_from, "speed": speed}
+    for name, lon, lat, dir_from, speed, _side in _STATIONS
 ]
 
 #: Stations we call out with a name label, mapped to the side the label
@@ -414,11 +422,20 @@ def _airmass_color(lon: float, lat: float, warm: str, cold: str) -> str:
 # ------------------------------------------------------------------
 # Build
 # ------------------------------------------------------------------
-def build_svg(mode: str = "self-contained", accessibility: str = "universal") -> str:
+def build_svg(
+    data: Optional[List[Dict[str, Any]]] = None,
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> str:
     """Assemble the full wind-barb station-plot SVG document as a string.
 
     Parameters
     ----------
+    data : list of dict or None
+        Rows with keys ``name``, ``lon``, ``lat``, ``direction`` (degrees,
+        the meteorological "from" bearing) and ``speed`` (knots). Defaults
+        to :data:`DEMO_DATA`. The cold-front glyph, coastline and airmass
+        call-outs are fixed to the shipped Northeast-seaboard story.
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`
         (``"self-contained"``, ``"external"`` or ``"static"``). Defaults to
@@ -559,9 +576,14 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     parts.extend(_front_glyph(fit, front_col))
 
     # ---- wind barbs ----
+    rows = list(data) if data else DEMO_DATA
+    stations = [
+        (str(r["name"]), float(r["lon"]), float(r["lat"]), float(r["direction"]), float(r["speed"]))
+        for r in rows
+    ]
     label_parts: List[str] = []
     parts.append('<g role="list">')
-    for name, lon, lat, dir_from, speed, _side in _STATIONS:
+    for name, lon, lat, dir_from, speed in stations:
         cx, cy = _to_screen(lon, lat, fit)
         col = _airmass_color(lon, lat, warm, cold)
         rounded = _rounded_speed(speed)
@@ -860,6 +882,40 @@ def _legend(warm: str, cold: str, front_col: str) -> List[str]:
         f'fill="{_SUBTLE}">teeth point the way it moves</text>'
     )
     return out
+
+
+def make_windbarb(
+    data: Optional[List[Dict[str, Any]]] = None,
+    *,
+    out: Optional[Path | str] = None,
+    title: str = "",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the wind-barb station plot and write the SVG to *out*.
+
+    Parameters
+    ----------
+    data : list[dict[str, Any]] or None
+        Rows with keys ``name``, ``lon``, ``lat``, ``direction`` and
+        ``speed``. Defaults to :data:`DEMO_DATA`.
+    out : Path, str, or None
+        Output path (.svg). Defaults to ``assets/svg-examples/windbarb.svg``.
+    title : str, optional
+        Accepted for dispatcher parity; the plot's own headline states the
+        specific takeaway, so this is unused.
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+    """
+    del title
+    svg = build_svg(data, mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "windbarb")
+    return write_svg(dest, svg)
 
 
 def main() -> None:

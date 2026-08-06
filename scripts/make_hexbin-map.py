@@ -443,6 +443,15 @@ def _sample_quakes(n: int, rng: random.Random) -> List[Tuple[float, float]]:
     return pts
 
 
+#: Row-record view of the sampled earthquake catalogue, the shape the
+#: ``make_<kind>`` contract asks for: one dict per event with its
+#: longitude/latitude in degrees.
+DEMO_DATA: List[Dict[str, Any]] = [
+    {"lon": round(lon, 3), "lat": round(lat, 3)}
+    for lon, lat in _sample_quakes(_N_QUAKES, random.Random(_SEED))
+]
+
+
 # ------------------------------------------------------------------
 # Hexagon lattice (pointy-top, offset rows) over the projected extent
 # ------------------------------------------------------------------

@@ -25,9 +25,11 @@ from __future__ import annotations
 import csv
 import math
 from pathlib import Path
+from typing import Any
 
 from gapminder_i18n import COUNTRIES_FR, HISTORY_FR, LABELS_FR, REGIONS_FR
 from _interactive import fullscreen_control
+from _render import write_svg
 from _style import forced_color_patterns, leveled_colors, os_adaptive_style, os_dark_style
 
 # English interface strings, mirroring LABELS_FR so the builder is fully bilingual.
@@ -98,6 +100,55 @@ NAME_HISTORY = {
         (1971, 1996, "Zaire"), (1997, 2025, "DR Congo")],
 }
 
+# ------------------------------------------------------------------
+# DEMO_DATA — a small, plausible synthetic stand-in for the real
+# ``tribute-hans-rosling-1950-2025.csv`` dataset, which is not vendored in
+# this repo (see the module docstring / CSV constant above). Six countries
+# across four snapshot years, in the same row shape :func:`load` expects
+# from the real CSV (``country``, ``year``, ``continent``, ``gdpPercap``,
+# ``lifeExp``, ``pop``), so the ``make_<kind>`` contract's ``data=None ->
+# DEMO_DATA`` fallback renders an end-to-end animated bubble chart even
+# without the real dataset on disk. Values are illustrative order-of-
+# magnitude figures, not a transcription of the real series.
+# ------------------------------------------------------------------
+DEMO_DATA: list[dict[str, Any]] = [
+    {"country": "United States", "continent": "Americas", "year": year, "gdpPercap": gdp, "lifeExp": life, "pop": pop}
+    for year, gdp, life, pop in [
+        (1950, 14000, 68.0, 152_000_000), (1980, 28000, 74.0, 227_000_000),
+        (2000, 42000, 77.0, 281_000_000), (2025, 70000, 79.0, 335_000_000),
+    ]
+] + [
+    {"country": "China", "continent": "Asia", "year": year, "gdpPercap": gdp, "lifeExp": life, "pop": pop}
+    for year, gdp, life, pop in [
+        (1950, 600, 43.0, 550_000_000), (1980, 1000, 65.0, 985_000_000),
+        (2000, 3000, 71.0, 1_267_000_000), (2025, 14000, 78.0, 1_410_000_000),
+    ]
+] + [
+    {"country": "Nigeria", "continent": "Africa", "year": year, "gdpPercap": gdp, "lifeExp": life, "pop": pop}
+    for year, gdp, life, pop in [
+        (1950, 900, 36.0, 38_000_000), (1980, 1800, 46.0, 73_000_000),
+        (2000, 1200, 46.0, 123_000_000), (2025, 2300, 55.0, 220_000_000),
+    ]
+] + [
+    {"country": "Germany", "continent": "Europe", "year": year, "gdpPercap": gdp, "lifeExp": life, "pop": pop}
+    for year, gdp, life, pop in [
+        (1950, 4000, 67.0, 68_000_000), (1980, 20000, 73.0, 78_000_000),
+        (2000, 32000, 78.0, 82_000_000), (2025, 55000, 81.0, 84_000_000),
+    ]
+] + [
+    {"country": "Brazil", "continent": "Americas", "year": year, "gdpPercap": gdp, "lifeExp": life, "pop": pop}
+    for year, gdp, life, pop in [
+        (1950, 1500, 46.0, 54_000_000), (1980, 5000, 63.0, 121_000_000),
+        (2000, 7500, 70.0, 174_000_000), (2025, 12000, 76.0, 216_000_000),
+    ]
+] + [
+    {"country": "India", "continent": "Asia", "year": year, "gdpPercap": gdp, "lifeExp": life, "pop": pop}
+    for year, gdp, life, pop in [
+        (1950, 650, 36.0, 376_000_000), (1980, 900, 54.0, 699_000_000),
+        (2000, 1700, 62.0, 1_059_000_000), (2025, 8000, 70.0, 1_428_000_000),
+    ]
+]
+
 W, H = 1020, 520
 X0, X1 = 100, 710       # plot x range (income, log; 3 decades $100-$100k); wide right margin = legend
 Y0, Y1 = 448, 60        # plot y range (life expectancy; y is inverted)
@@ -158,7 +209,7 @@ try{window.parent.document.addEventListener("fullscreenchange",function(){if(!bi
 })();"""
 
 
-def load() -> tuple[list[int], dict[str, dict]]:
+def load(rows: "list[dict[str, Any]] | None" = None) -> tuple[list[int], dict[str, dict]]:
     """Return (years grid, {country: {continent, gdp[], life[], pop[], appear, disappear}}).
 
     The dataset is **ragged**: historical federations end the year they dissolved
@@ -166,8 +217,17 @@ def load() -> tuple[list[int], dict[str, dict]]:
     entity is still placed across the whole grid (its value edge-held for the
     years it did not exist, when it is invisible anyway) plus an appear/disappear
     window, so its bubble can fade in and out at exactly the right year.
+
+    Parameters
+    ----------
+    rows : list of dict, or None
+        Rows with ``country``, ``year``, ``continent``, ``gdpPercap``,
+        ``lifeExp``, ``pop`` keys, e.g. from ``csv.DictReader``. Defaults to
+        :data:`DEMO_DATA` (the real, vendored ``CSV`` is only read by the
+        ``__main__`` CLI, not by this function's own default).
     """
-    rows = list(csv.DictReader(CSV.open(encoding="utf-8")))
+    if rows is None:
+        rows = DEMO_DATA
     years = sorted({int(r["year"]) for r in rows})
     picked = set(COUNTRIES)
     by: dict[str, dict] = {}
@@ -191,7 +251,14 @@ def load() -> tuple[list[int], dict[str, dict]]:
     return years, out
 
 
-def main(lang: str = "en", mode: str = "external", accessibility: str = "universal") -> None:
+def main(
+    lang: str = "en",
+    mode: str = "external",
+    accessibility: str = "universal",
+    *,
+    rows: "list[dict[str, Any]] | None" = None,
+    out: "Path | str | None" = None,
+) -> Path:
     """Build the animated SVG (``lang`` = 'en' or 'fr') and write it to disk.
 
     Parameters
@@ -207,6 +274,18 @@ def main(lang: str = "en", mode: str = "external", accessibility: str = "univers
         identity, so the shipped SVG stays byte-for-byte the same; the other
         levels (``'high-contrast'``, ``'monochrome'``, ``'deuteranopia'``,
         ``'protanopia'``, ``'tritanopia'``) remap the five region hues.
+    rows : list of dict, or None
+        Dataset rows forwarded to :func:`load`; ``None`` uses
+        :data:`DEMO_DATA` (the ``__main__`` CLI passes the real vendored CSV
+        rows here when the CSV asset is present).
+    out : Path, str, or None
+        Output path. Defaults to :data:`OUT` (or its ``.fr.svg`` sibling for
+        ``lang="fr"``).
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
     """
     fr = lang == "fr"
     # Region → colour is a genuine categorical set, so it answers to the
@@ -222,7 +301,7 @@ def main(lang: str = "en", mode: str = "external", accessibility: str = "univers
     fc_defs, fc_style = forced_color_patterns(
         [f".rg-{r.lower()}" for r in REGION_COLOR], prefix="gmfc"
     )
-    out_path = OUT if not fr else OUT.with_suffix(".fr.svg")
+    out_path = Path(out) if out else (OUT if not fr else OUT.with_suffix(".fr.svg"))
     lab = LABELS_FR if fr else LABELS_EN
 
     def tc(name: str) -> str:                       # translate a country label
@@ -234,7 +313,7 @@ def main(lang: str = "en", mode: str = "external", accessibility: str = "univers
     def th(disp: str) -> str:                        # translate a historical-name label
         return HISTORY_FR.get(disp, disp) if fr else disp
 
-    years, data = load()
+    years, data = load(rows)
     n = len(years)
     dur_s = (int(years[-1]) - int(years[0])) * SEC_PER_YEAR
     dur = f"{dur_s}s"                                              # 1 year = 1 s
@@ -452,8 +531,52 @@ def main(lang: str = "en", mode: str = "external", accessibility: str = "univers
     if _fc:
         svg.append(_fc)
     svg.append('</svg>')
-    out_path.write_text("\n".join(svg) + "\n", encoding="utf-8")
-    print(f"wrote {out_path} — {len(data)} entities, {n} snapshots ({lang})")
+    print(f"{len(data)} entities, {n} snapshots ({lang})")
+    return write_svg(out_path, "\n".join(svg) + "\n")
+
+
+def make_gapminder(
+    data: "list[dict[str, Any]] | None" = None,
+    *,
+    out: "Path | str | None" = None,
+    title: str = "",
+    lang: str = "en",
+    mode: str = "external",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the animated Gapminder tribute bubble chart and write it to ``out``.
+
+    The standard ``make_<kind>`` entry the figure registry dispatches to.
+    The real, vendored dataset (``tribute-hans-rosling-1950-2025.csv``) is
+    not shipped in this repo, so ``data=None`` falls back to
+    :data:`DEMO_DATA`, a small synthetic six-country stand-in in the same
+    row shape (``country``, ``year``, ``continent``, ``gdpPercap``,
+    ``lifeExp``, ``pop``) so the animated SMIL bubble chart still renders
+    end to end.
+
+    Parameters
+    ----------
+    data : list[dict[str, Any]] or None
+        Rows with ``country``, ``year``, ``continent``, ``gdpPercap``,
+        ``lifeExp``, ``pop`` keys. Defaults to :data:`DEMO_DATA`.
+    out : Path, str, or None
+        Output path (.svg). Defaults to
+        ``assets/svg-examples/gapminder-animated.svg`` (or its ``.fr.svg``
+        sibling for ``lang="fr"``).
+    title : str, optional
+        Unused (the figure's headline is fixed prose linking to the Rosling
+        talk); accepted for dispatcher parity.
+    lang, mode, accessibility : str
+        Forwarded to :func:`main`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+    """
+    _ = title  # accepted for dispatcher parity; see docstring
+    rows = data if data else DEMO_DATA
+    return main(lang, mode=mode, accessibility=accessibility, rows=rows, out=out)
 
 
 def write_fr_csv() -> None:
@@ -485,7 +608,16 @@ if __name__ == "__main__":
              "the identity that keeps the shipped SVG byte-identical)")
     args = parser.parse_args()
 
-    main("en", accessibility=args.accessibility)
+    # Prefer the real vendored dataset when present; otherwise fall back to
+    # the small synthetic DEMO_DATA so the script still runs end to end.
+    _rows = (
+        list(csv.DictReader(CSV.open(encoding="utf-8"))) if CSV.exists() else None
+    )
+    if _rows is None:
+        print(f"note: {CSV} not found; rendering from the synthetic DEMO_DATA")
+
+    main("en", accessibility=args.accessibility, rows=_rows)
     if not args.en_only:
-        main("fr", accessibility=args.accessibility)
-        write_fr_csv()
+        main("fr", accessibility=args.accessibility, rows=_rows)
+        if CSV.exists():
+            write_fr_csv()

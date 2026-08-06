@@ -48,7 +48,7 @@ from __future__ import annotations
 import argparse
 import sys
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 from xml.sax.saxutils import escape
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -92,33 +92,45 @@ LINK_COLOR = "#C7C7CC"   # default (dimmed) link color
 # ------------------------------------------------------------------
 Node = Tuple[str, str, Optional[str]]
 
-NODES: List[Node] = [
-    ("root", "Machine learning", None),
+#: The contract's row-record shape: one dict per node, ``id`` unique,
+#: ``parent`` referencing another row's ``id`` (or ``None``/absent for the
+#: root). :func:`_rows_to_nodes` turns this into the internal ``Node``
+#: tuple list every layout/emission helper below already understands.
+DEMO_DATA: List[Dict[str, Any]] = [
+    {"id": "root", "label": "Machine learning", "parent": None},
 
     # ---- Family: Supervised (the heavy branch) ----
-    ("sup", "Supervised", "root"),
-    ("cls", "Classification", "sup"),
-    ("logreg", "Logistic regression", "cls"),
-    ("svm", "Support-vector machines", "cls"),
-    ("trees", "Gradient-boosted trees", "cls"),
-    ("reg", "Regression", "sup"),
-    ("linreg", "Linear & ridge", "reg"),
-    ("gp", "Gaussian processes", "reg"),
+    {"id": "sup", "label": "Supervised", "parent": "root"},
+    {"id": "cls", "label": "Classification", "parent": "sup"},
+    {"id": "logreg", "label": "Logistic regression", "parent": "cls"},
+    {"id": "svm", "label": "Support-vector machines", "parent": "cls"},
+    {"id": "trees", "label": "Gradient-boosted trees", "parent": "cls"},
+    {"id": "reg", "label": "Regression", "parent": "sup"},
+    {"id": "linreg", "label": "Linear & ridge", "parent": "reg"},
+    {"id": "gp", "label": "Gaussian processes", "parent": "reg"},
 
     # ---- Family: Unsupervised ----
-    ("uns", "Unsupervised", "root"),
-    ("clust", "Clustering", "uns"),
-    ("dimred", "Dimensionality reduction", "uns"),
+    {"id": "uns", "label": "Unsupervised", "parent": "root"},
+    {"id": "clust", "label": "Clustering", "parent": "uns"},
+    {"id": "dimred", "label": "Dimensionality reduction", "parent": "uns"},
 
     # ---- Family: Deep learning ----
-    ("deep", "Deep learning", "root"),
-    ("cnn", "Convolutional nets", "deep"),
-    ("transf", "Transformers", "deep"),
+    {"id": "deep", "label": "Deep learning", "parent": "root"},
+    {"id": "cnn", "label": "Convolutional nets", "parent": "deep"},
+    {"id": "transf", "label": "Transformers", "parent": "deep"},
 
     # ---- Family: Reinforcement ----
-    ("rl", "Reinforcement", "root"),
-    ("policy", "Policy gradients", "rl"),
+    {"id": "rl", "label": "Reinforcement", "parent": "root"},
+    {"id": "policy", "label": "Policy gradients", "parent": "rl"},
 ]
+
+
+def _rows_to_nodes(rows: List[Dict[str, Any]]) -> List[Node]:
+    """Convert row records (``id``/``label``/``parent``) into ``Node`` tuples."""
+    return [(str(r["id"]), str(r["label"]), r.get("parent")) for r in rows]
+
+
+NODES: List[Node] = _rows_to_nodes(DEMO_DATA)
 
 # Each top-level family owns a hue; the subtree inherits it. These bright
 # hues carry no text — they colour the branch links and the left rules on
@@ -146,23 +158,28 @@ ROOT_COLOR = INK
 # ------------------------------------------------------------------
 # Tree model helpers
 # ------------------------------------------------------------------
-def _children_of() -> Dict[str, List[str]]:
+def _root_id(nodes: List[Node]) -> str:
+    """Return the id of the node whose parent is ``None`` (the tree root)."""
+    return next((n for n, _label, p in nodes if p is None), nodes[0][0] if nodes else "root")
+
+
+def _children_of(nodes: List[Node] = NODES) -> Dict[str, List[str]]:
     """Return ``{parent_id: [child_id, ...]}`` in declaration order."""
     kids: Dict[str, List[str]] = {}
-    for node_id, _label, parent in NODES:
+    for node_id, _label, parent in nodes:
         if parent is not None:
             kids.setdefault(parent, []).append(node_id)
     return kids
 
 
-def _parent_of() -> Dict[str, Optional[str]]:
+def _parent_of(nodes: List[Node] = NODES) -> Dict[str, Optional[str]]:
     """Return ``{node_id: parent_id or None}``."""
-    return {node_id: parent for node_id, _label, parent in NODES}
+    return {node_id: parent for node_id, _label, parent in nodes}
 
 
-def _label_of() -> Dict[str, str]:
+def _label_of(nodes: List[Node] = NODES) -> Dict[str, str]:
     """Return ``{node_id: label}``."""
-    return {node_id: label for node_id, label, _parent in NODES}
+    return {node_id: label for node_id, label, _parent in nodes}
 
 
 def _depth_of(node_id: str, parent: Dict[str, Optional[str]]) -> int:
@@ -175,16 +192,18 @@ def _depth_of(node_id: str, parent: Dict[str, Optional[str]]) -> int:
     return depth
 
 
-def _family_of(node_id: str, parent: Dict[str, Optional[str]]) -> Optional[str]:
+def _family_of(
+    node_id: str, parent: Dict[str, Optional[str]], root_id: str = "root"
+) -> Optional[str]:
     """Return the top-level family id (child-of-root) a node belongs to.
 
     The root itself returns ``None``; every other node walks up until it
     hits a node whose parent is the root.
     """
     cur: Optional[str] = node_id
-    if cur == "root":
+    if cur == root_id:
         return None
-    while cur is not None and parent.get(cur) not in (None, "root"):
+    while cur is not None and parent.get(cur) not in (None, root_id):
         cur = parent[cur]
     return cur
 
@@ -202,7 +221,9 @@ def _lineage(node_id: str, parent: Dict[str, Optional[str]]) -> List[str]:
 # ------------------------------------------------------------------
 # Reingold–Tilford tidy layout (left-to-right)
 # ------------------------------------------------------------------
-def _compute_geometry() -> Dict[str, dict]:
+def _compute_geometry(
+    nodes: List[Node] = NODES, family_color: Optional[Dict[str, str]] = None
+) -> Dict[str, dict]:
     """Place every node with a tidy tree layout.
 
     Depth fixes the x-column; a post-order pass assigns each leaf the
@@ -212,8 +233,10 @@ def _compute_geometry() -> Dict[str, dict]:
     ``{node_id: {"x", "y", "depth", "family", "color"}}`` where ``(x, y)``
     is the *centre* of the node card in SVG pixels.
     """
-    kids = _children_of()
-    parent = _parent_of()
+    fam_color = family_color if family_color is not None else FAMILY_COLOR
+    root_id = _root_id(nodes)
+    kids = _children_of(nodes)
+    parent = _parent_of(nodes)
 
     # --- vertical (row) positions via post-order leaf packing ---
     row_pitch = NODE_H + ROW_GAP
@@ -231,7 +254,7 @@ def _compute_geometry() -> Dict[str, dict]:
         # centre parent on the span of its children
         row[node_id] = (row[children[0]] + row[children[-1]]) / 2.0
 
-    assign("root")
+    assign(root_id)
 
     # Centre the whole stack vertically in the plot band so the tree is
     # never bottom-heavy or top-heavy: measure the row span the leaves
@@ -247,23 +270,24 @@ def _compute_geometry() -> Dict[str, dict]:
     # Every card in a column starts at the same x, so the columns read as
     # a clean grid (no ragged, centre-justified edges). Columns are evenly
     # spaced; the last column leaves room for the deepest leaf labels.
-    max_depth = max(_depth_of(n, parent) for n, _, _ in NODES)
+    max_depth = max(_depth_of(n, parent) for n, _, _ in nodes)
     plot_left = MARGIN_LEFT
     plot_right = WIDTH - MARGIN_RIGHT
     col_span = plot_right - plot_left
     col_x = [plot_left + d * col_span / (max_depth + 1) for d in range(max_depth + 1)]
 
     geometry: Dict[str, dict] = {}
-    for node_id, _label, _p in NODES:
+    for node_id, _label, _p in nodes:
         d = _depth_of(node_id, parent)
-        fam = _family_of(node_id, parent)
-        color = ROOT_COLOR if node_id == "root" else FAMILY_COLOR.get(fam or "", SUBINK)
+        fam = _family_of(node_id, parent, root_id)
+        color = ROOT_COLOR if node_id == root_id else fam_color.get(fam or "", SUBINK)
         geometry[node_id] = {
             "x": col_x[d],                     # left-anchor x for this column
             "y": y_offset + NODE_H / 2.0 + row[node_id] * row_pitch,
             "depth": d,
             "family": fam,
             "color": color,
+            "root_id": root_id,
         }
     return geometry
 
@@ -292,11 +316,21 @@ def _text_width(label: str, font_size: float) -> float:
     return len(label) * font_size * 0.56
 
 
-def build_svg(mode: str = "self-contained", accessibility: str = "universal") -> str:
+def build_svg(
+    data: Optional[List[Dict[str, Any]]] = None,
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> str:
     """Assemble the full tidy-tree SVG document as a string.
 
     Parameters
     ----------
+    data : list of dict or None
+        Row records with keys ``id`` (unique), ``label``, and ``parent``
+        (another row's ``id``, or ``None``/absent for the root). Defaults
+        to :data:`DEMO_DATA`. The family colour tinting is tuned for the
+        shipped 4-branch taxonomy; a custom tree still lays out correctly,
+        with non-family branches falling back to the neutral secondary ink.
     mode : str, optional
         Interactivity mode for the fullscreen control, one of three:
         ``"self-contained"`` (default) ships a self-carrying fullscreen
@@ -316,7 +350,9 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     str
         A complete, standalone SVG document.
     """
-    geometry = _compute_geometry()
+    nodes: List[Node] = _rows_to_nodes(data) if data else NODES
+    root_id = _root_id(nodes)
+    geometry = _compute_geometry(nodes)
 
     # ``universal`` leaves the baked family colours as shipped (output
     # byte-identical); any other level re-reads the palette at that level and
@@ -330,12 +366,12 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
             "rl": pal.get("Green", "#34C759"),
         }
         for node_id, geo in geometry.items():
-            if node_id == "root":
+            if node_id == root_id:
                 continue
             geo["color"] = family_color.get(geo["family"] or "", SUBINK)
-    parent = _parent_of()
-    kids = _children_of()
-    label_of = _label_of()
+    parent = _parent_of(nodes)
+    kids = _children_of(nodes)
+    label_of = _label_of(nodes)
 
     parts: List[str] = []
 
@@ -450,15 +486,15 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     # dimming is uniform, so the duplication is invisible but lets any
     # branch light up its ancestors.
     # ------------------------------------------------------------------
-    leaves = [n for n, _, _ in NODES if n not in kids]
+    leaves = [n for n, _, _ in nodes if n not in kids]
 
     parts.append('<g id="tree">')
 
     # Draw a faint "base" layer first (all links + all nodes at full
     # opacity when nothing is hovered) so the tree reads normally at rest.
     parts.append('<g id="base">')
-    _emit_links(parts, geometry, parent, base=True)
-    _emit_nodes(parts, geometry, label_of, kids, base=True)
+    _emit_links(parts, geometry, parent, base=True, nodes=nodes)
+    _emit_nodes(parts, geometry, label_of, kids, base=True, nodes=nodes)
     parts.append("</g>")
 
     # Then the interactive lineage groups on top (transparent at rest via
@@ -473,7 +509,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         )
         # ancestor links along the chain
         for a, b in zip(chain, chain[1:]):
-            _emit_one_link(parts, geometry, a, b)
+            _emit_one_link(parts, geometry, a, b, label_of=label_of)
         # the nodes along the chain
         for node_id in chain:
             _emit_one_node(parts, geometry, label_of, kids, node_id, interactive=True)
@@ -553,10 +589,11 @@ def _emit_links(
     parent: Dict[str, Optional[str]],
     *,
     base: bool,
+    nodes: List[Node] = NODES,
 ) -> None:
     """Emit every parent→child link once (used for the resting base layer)."""
-    label_of = _label_of()
-    for node_id, _label, p in NODES:
+    label_of = _label_of(nodes)
+    for node_id, _label, p in nodes:
         if p is None:
             continue
         _emit_one_link(parts, geometry, p, node_id, label_of=label_of)
@@ -597,9 +634,10 @@ def _emit_nodes(
     kids: Dict[str, List[str]],
     *,
     base: bool,
+    nodes: List[Node] = NODES,
 ) -> None:
     """Emit every node card once (resting base layer)."""
-    for node_id, _label, _p in NODES:
+    for node_id, _label, _p in nodes:
         _emit_one_node(parts, geometry, label_of, kids, node_id, interactive=False)
 
 
@@ -635,7 +673,8 @@ def _emit_one_node(
         # the white label clears 4.5:1 on the fill (the bright hue would not).
         text_fill = "#FFFFFF"
         fam = g["family"]
-        pill_fill = ROOT_COLOR if node_id == "root" else FAMILY_PILL.get(fam or "", color)
+        is_root = node_id == g.get("root_id", "root")
+        pill_fill = ROOT_COLOR if is_root else FAMILY_PILL.get(fam or "", color)
         # Family pills (not the ink root) get a family class so the OS-adaptive
         # contrast rule can deepen the pill fill together with its branch.
         pill_cls = f' pill-{fam}' if fam else ""
@@ -669,6 +708,40 @@ def _emit_one_node(
         )
 
 
+def make_tree(
+    data: Optional[List[Dict[str, Any]]] = None,
+    *,
+    out: Optional[Path | str] = None,
+    title: str = "",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the tidy node-link tree and write the SVG to *out*.
+
+    Parameters
+    ----------
+    data : list[dict[str, Any]] or None
+        Row records with keys ``id``, ``label`` and ``parent``. Defaults
+        to :data:`DEMO_DATA`.
+    out : Path, str, or None
+        Output path (.svg). Defaults to ``assets/svg-examples/tree.svg``.
+    title : str, optional
+        Accepted for dispatcher parity; the tree's own headline states the
+        specific takeaway, so this is unused.
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+    """
+    del title
+    svg = build_svg(data, mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "tree")
+    return write_svg(dest, svg)
+
+
 def main() -> None:
     """Write the tidy-tree SVG to the skill's example asset folder."""
     parser = argparse.ArgumentParser(description="Render the tidy-tree SVG.")
@@ -694,7 +767,7 @@ def main() -> None:
     parser.add_argument("--out", default=None, help="Output path (defaults to the example asset).")
     args = parser.parse_args()
     out = Path(args.out) if args.out else svg_example_path(__file__, "tree")
-    write_svg(out, build_svg(args.mode, args.accessibility))
+    write_svg(out, build_svg(mode=args.mode, accessibility=args.accessibility))
 
 
 if __name__ == "__main__":

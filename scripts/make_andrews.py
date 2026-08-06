@@ -44,14 +44,14 @@ Author
 """
 
 from __future__ import annotations
-from _render import write_svg  # noqa: E402
+from _render import svg_example_path, write_svg  # noqa: E402
 from _svg import fmt_compact  # noqa: E402
 from _style import leveled_colors, os_adaptive_style, os_dark_style  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 
 import argparse
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 
@@ -136,6 +136,41 @@ def _sample_penguins(seed: int = 11, per_class: int = 26) -> Tuple[np.ndarray, L
         rows.append(block)
         labels.extend([name] * per_class)
     return np.vstack(rows), labels
+
+
+#: Row-record key order matching :data:`_FEATURES` (underscored so each
+#: is a valid dict key / CSV column header).
+_FEATURE_KEYS: List[str] = ["bill_length", "bill_depth", "flipper_length", "body_mass"]
+
+
+def _rows_to_matrix(rows: List[Dict[str, Any]]) -> Tuple[np.ndarray, List[str]]:
+    """Reshape row records into the ``(x_raw, labels)`` pair :func:`build_svg` needs.
+
+    Parameters
+    ----------
+    rows : list of dict
+        Records shaped ``{"species": ..., "bill_length": ..., "bill_depth":
+        ..., "flipper_length": ..., "body_mass": ...}`` (see :data:`DEMO_DATA`).
+
+    Returns
+    -------
+    tuple of (numpy.ndarray, list of str)
+        ``(x_raw, labels)`` — a ``(n_rows, 4)`` measurement matrix in
+        :data:`_FEATURES` order, and the matching per-row species label.
+    """
+    x_raw = np.array([[float(r[k]) for k in _FEATURE_KEYS] for r in rows])
+    labels = [str(r["species"]) for r in rows]
+    return x_raw, labels
+
+
+# The make_<kind> contract's row-record view of the sample penguin table:
+# one specimen per row. make_andrews() reshapes this back into the
+# (x_raw, labels) matrix build_svg() works with via _rows_to_matrix().
+_DEMO_X, _DEMO_LABELS = _sample_penguins(seed=11, per_class=26)
+DEMO_DATA: List[Dict[str, Any]] = [
+    {"species": label, **{k: float(v) for k, v in zip(_FEATURE_KEYS, row, strict=True)}}
+    for row, label in zip(_DEMO_X, _DEMO_LABELS, strict=True)
+]
 
 
 def _standardise(x: np.ndarray) -> np.ndarray:
@@ -533,6 +568,50 @@ def main(argv: List[str] | None = None) -> int:
     svg = build_svg(x_raw, labels, mode=args.mode, accessibility=args.accessibility)
     write_svg(args.out, svg)
     return 0
+
+
+def make_andrews(
+    data: Optional[List[Dict[str, Any]]] = None,
+    *,
+    out: Optional[Path | str] = None,
+    title: str = "",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the house-styled Andrews-curves figure and write the SVG to *out*.
+
+    Parameters
+    ----------
+    data : list of dict or None
+        Rows with keys ``species`` (str) and the four measurement columns
+        ``bill_length``, ``bill_depth``, ``flipper_length``, ``body_mass``
+        (see :data:`DEMO_DATA`). Defaults to a synthesised sample of three
+        penguin species.
+    out : Path, str, or None
+        Output path (.svg). Defaults to ``assets/svg-examples/andrews.svg``.
+    title : str, optional
+        Accepted for CLI/dispatcher parity; this figure's title is derived
+        from the class structure of the data and stays fixed.
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+
+    Examples
+    --------
+    >>> p = make_andrews()
+    >>> p.exists()
+    True
+    """
+    _ = title
+    rows = data if data else DEMO_DATA
+    x_raw, labels = _rows_to_matrix(rows)
+    svg = build_svg(x_raw, labels, mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "andrews")
+    return write_svg(dest, svg)
 
 
 if __name__ == "__main__":

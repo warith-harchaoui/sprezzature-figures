@@ -32,12 +32,12 @@ from __future__ import annotations
 import math
 import sys
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 from xml.sax.saxutils import escape
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
-from _render import render_cli  # noqa: E402
+from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _svg import svg_open  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 
@@ -115,11 +115,26 @@ def _fmt1(v: float) -> str:
     return f"{v:.1f}"
 
 
-def build_svg(mode: str = "self-contained", accessibility: str = "universal") -> str:
+# The make_<kind> contract's row-record view of PLACES: one row per place.
+DEMO_DATA: List[Dict[str, Any]] = [
+    {"name": name, "gdp": gdp, "life": life, "pop": pop, "region": region}
+    for name, gdp, life, pop, region in PLACES
+]
+
+
+def build_svg(
+    data: Optional[List[Dict[str, Any]]] = None,
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> str:
     """Assemble the full bubble-chart SVG document as a string.
 
     Parameters
     ----------
+    data : list of dict or None
+        Rows with keys ``name``, ``region`` (str) and ``gdp``, ``life``,
+        ``pop`` (numeric) — see :data:`DEMO_DATA`. Defaults to a synthetic
+        set of illustrative places.
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`.
     accessibility : str, optional
@@ -131,10 +146,11 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         A complete, standalone SVG document.
     """
     region_color = _region_color(accessibility)
+    places = data if data else DEMO_DATA
 
-    gdps = [p[1] for p in PLACES]
-    lifes = [p[2] for p in PLACES]
-    pops = [p[3] for p in PLACES]
+    gdps = [float(p["gdp"]) for p in places]
+    lifes = [float(p["life"]) for p in places]
+    pops = [float(p["pop"]) for p in places]
     gdp_min, gdp_max = min(gdps), max(gdps)
     life_min, life_max = min(lifes), max(lifes)
     pop_max = max(pops)
@@ -163,7 +179,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     title_txt = "Wealth, longevity, and population"
     subtitle_txt = "Synthetic sample · invented place names, not real countries"
     desc_txt = (
-        f"Bubble chart of {len(PLACES)} synthetic places. The horizontal axis is "
+        f"Bubble chart of {len(places)} synthetic places. The horizontal axis is "
         "GDP per capita in thousands of dollars; the vertical axis is life "
         "expectancy in years; bubble area is population in millions; colour "
         "marks the region (Asia, Europe, Africa). Hover or focus a bubble for "
@@ -238,8 +254,10 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     )
 
     # ---- bubbles, largest-first so small ones never hide under big ones ----
-    ordered = sorted(PLACES, key=lambda p: p[3], reverse=True)
-    for name, gdp, life, pop, region in ordered:
+    ordered = sorted(places, key=lambda p: float(p["pop"]), reverse=True)
+    for row in ordered:
+        name, region = str(row["name"]), str(row["region"])
+        gdp, life, pop = float(row["gdp"]), float(row["life"]), float(row["pop"])
         cx, cy = x_for(gdp), y_for(life)
         r = r_for(pop)
         color = region_color[region]
@@ -301,6 +319,46 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
 def main() -> None:
     """Write the bubble-chart SVG to the skill's example asset folder."""
     render_cli(__file__, "bubble", build_svg, description="Render the bubble chart SVG.")
+
+
+def make_bubble(
+    data: Optional[List[Dict[str, Any]]] = None,
+    *,
+    out: Optional[Path | str] = None,
+    title: str = "",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the house-styled Gapminder-style bubble chart and write it to *out*.
+
+    Parameters
+    ----------
+    data : list of dict or None
+        Rows with keys ``name``, ``region`` (str) and ``gdp``, ``life``,
+        ``pop`` (numeric) — see :data:`DEMO_DATA`. Defaults to a synthetic
+        set of illustrative places (invented names, not real countries).
+    out : Path, str, or None
+        Output path (.svg). Defaults to ``assets/svg-examples/bubble.svg``.
+    title : str, optional
+        Accepted for CLI/dispatcher parity; this figure's title stays fixed.
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+
+    Examples
+    --------
+    >>> p = make_bubble()
+    >>> p.exists()
+    True
+    """
+    _ = title
+    svg = build_svg(data, mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "bubble")
+    return write_svg(dest, svg)
 
 
 if __name__ == "__main__":

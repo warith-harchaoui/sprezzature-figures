@@ -38,14 +38,14 @@ Author
 """
 
 from __future__ import annotations
-from _render import write_svg  # noqa: E402
+from _render import svg_example_path, write_svg  # noqa: E402
 from _svg import fmt_compact  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _style import leveled_colors, os_dark_style  # noqa: E402
 
 import argparse
 from pathlib import Path
-from typing import List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 
@@ -138,6 +138,51 @@ def _sample_surface(n: int = 26, seed: int = 3) -> Tuple[np.ndarray, np.ndarray,
     zz = zz - 0.06 * np.exp(-((xx + 0.5) ** 2 + (yy - 0.5) ** 2) / 0.20)
     # A dusting of tiny noise, then keep it subtle.
     zz = zz + rng.normal(0.0, 0.012, size=zz.shape)
+    return xx, yy, zz
+
+
+#: Row records: the flattened default :func:`_sample_surface` grid, one dict
+#: per vertex with ``x``, ``y`` and ``z``. The contract's required row shape
+#: for a figure whose natural data is a ``z = f(x, y)`` grid.
+DEMO_DATA: List[Dict[str, float]] = [
+    {"x": float(x), "y": float(y), "z": float(z)}
+    for x, y, z in zip(*(a.ravel() for a in _sample_surface()))
+]
+
+
+def _rows_to_grid(rows: List[Dict[str, float]]) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Reshape ``{"x", "y", "z"}`` row records back into a square grid.
+
+    The turntable mesh emitter (:func:`_edge_indices`) assumes a square
+    ``n x n`` lattice, so this requires the same number of distinct ``x``
+    and ``y`` values (raises otherwise).
+
+    Parameters
+    ----------
+    rows : list of dict
+        Row records with ``x``, ``y`` and ``z`` keys, forming a complete
+        rectangular grid.
+
+    Returns
+    -------
+    tuple of numpy.ndarray
+        ``(xx, yy, zz)``, matching the shape :func:`_sample_surface` returns.
+    """
+    xs = sorted({float(r["x"]) for r in rows})
+    ys = sorted({float(r["y"]) for r in rows})
+    if len(xs) * len(ys) != len(rows):
+        raise ValueError(
+            "make_wireframe3d requires `data` to form a complete rectangular "
+            f"x/y grid ({len(xs)} x-values x {len(ys)} y-values != {len(rows)} rows)"
+        )
+    if len(xs) != len(ys):
+        raise ValueError(
+            "make_wireframe3d requires a SQUARE x/y grid (got "
+            f"{len(xs)} x-values and {len(ys)} y-values)"
+        )
+    lookup = {(float(r["x"]), float(r["y"])): float(r["z"]) for r in rows}
+    xx, yy = np.meshgrid(xs, ys)
+    zz = np.array([[lookup[(x, y)] for x in xs] for y in ys])
     return xx, yy, zz
 
 
@@ -629,6 +674,44 @@ def _build_parser() -> argparse.ArgumentParser:
         help="palette accessibility level (default: universal, the CVD-safe standard).",
     )
     return parser
+
+
+def make_wireframe3d(
+    data: Optional[List[Dict[str, float]]] = None,
+    *,
+    out: Optional[Path | str] = None,
+    title: str = "",
+    animate: bool = True,
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the 3-D wireframe surface and write the SVG to *out*.
+
+    Parameters
+    ----------
+    data : list[dict[str, float]] or None
+        Row records with ``x``, ``y`` and ``z``, forming a complete SQUARE
+        grid (equal counts of distinct x and y values — the turntable mesh
+        needs a square lattice). Defaults to :data:`DEMO_DATA`.
+    out : Path, str, or None
+        Output path (.svg). Defaults to
+        ``assets/svg-examples/wireframe3d.svg``.
+    title : str, optional
+        Accepted for dispatcher parity; the figure's own headline is fixed,
+        so this is unused.
+    animate, mode, accessibility
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+    """
+    del title
+    xx, yy, zz = _rows_to_grid(list(data)) if data else _sample_surface()
+    svg = build_svg(xx, yy, zz, animate=animate, mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "wireframe3d")
+    return write_svg(dest, svg)
 
 
 def main(argv: List[str] | None = None) -> int:

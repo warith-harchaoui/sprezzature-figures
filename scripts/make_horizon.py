@@ -38,14 +38,17 @@ Author
 """
 
 from __future__ import annotations
-from _render import write_svg  # noqa: E402
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _render import svg_example_path, write_svg  # noqa: E402
 from _svg import fmt_compact  # noqa: E402
 from _style import os_dark_style  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 
 import argparse
-from pathlib import Path
-from typing import Callable, Dict, List, Sequence, Tuple, cast
+from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, cast
 
 import numpy as np
 
@@ -606,6 +609,91 @@ def build_svg(
     parts.append(fullscreen_control(width, height, mode))
     parts.append("</svg>")
     return "".join(parts)
+
+
+# --------------------------------------------------------------------------- #
+# Contract wiring — DEMO_DATA (row-list) + make_horizon()                     #
+# --------------------------------------------------------------------------- #
+# The registry/dispatcher contract wants DEMO_DATA as a flat list of row
+# records; a horizon chart's natural unit is a whole *series* (one row per
+# node, one column per hour), not one row per sample, so each demo row packs
+# a node's full 24-hour trace under ``values`` alongside its ``label``. This
+# keeps DEMO_DATA genuinely inspectable (each row names its series) while
+# staying reshapeable back into the ``{label: np.ndarray}`` shape build_svg
+# already expects.
+_DEMO_FLEET: Dict[str, np.ndarray] = _sample_fleet_cpu(seed=11)
+DEMO_DATA: List[Dict[str, Any]] = [
+    {"label": label, "values": [round(float(v), 2) for v in series]}
+    for label, series in _DEMO_FLEET.items()
+]
+
+
+def _rows_to_series(rows: List[Dict[str, Any]]) -> Dict[str, np.ndarray]:
+    """Reshape DEMO_DATA-style rows back into ``{label: np.ndarray}``.
+
+    Accepts either the packed ``{"label", "values": [...]}`` shape (what
+    :data:`DEMO_DATA` carries) or a long/tidy shape (``{"label", "hour",
+    "value"}``, one row per sample) so a caller supplying tidy data still
+    works. Series order follows first appearance in ``rows``.
+    """
+    order: List[str] = []
+    packed: Dict[str, List[float]] = {}
+    tidy: Dict[str, Dict[int, float]] = {}
+    for row in rows:
+        label = str(row["label"])
+        if "values" in row:
+            if label not in packed:
+                order.append(label)
+            packed[label] = [float(v) for v in row["values"]]
+        else:
+            if label not in tidy:
+                tidy[label] = {}
+                order.append(label)
+            tidy[label][int(row["hour"])] = float(row["value"])
+    out: Dict[str, np.ndarray] = {}
+    for label in order:
+        if label in packed:
+            out[label] = np.array(packed[label])
+        else:
+            hours = sorted(tidy[label])
+            out[label] = np.array([tidy[label][h] for h in hours])
+    return out
+
+
+def make_horizon(
+    data: Optional[List[Dict[str, Any]]] = None,
+    *,
+    out: Optional[Path | str] = None,
+    title: str = "",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the horizon chart and write the SVG to *out*.
+
+    Parameters
+    ----------
+    data : list[dict[str, Any]] or None
+        Rows shaped ``{"label": str, "values": [24 floats]}`` (one row per
+        series). Defaults to :data:`DEMO_DATA`. ``title`` is accepted for
+        signature parity with the rest of the gallery; the headline is
+        computed from the data itself, so it is currently a documented
+        no-op.
+    out : Path, str, or None
+        Output path. Defaults to ``assets/svg-examples/horizon.svg``.
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+    """
+    _ = title
+    rows = data if data else DEMO_DATA
+    series = _rows_to_series(rows)
+    svg = build_svg(series, mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "horizon")
+    return write_svg(dest, svg)
 
 
 # --------------------------------------------------------------------------- #

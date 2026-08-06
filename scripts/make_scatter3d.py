@@ -49,14 +49,14 @@ Author
 """
 
 from __future__ import annotations
-from _render import write_svg  # noqa: E402
+from _render import svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _style import forced_color_patterns, leveled_colors, os_adaptive_style, os_dark_style  # noqa: E402
 
 import argparse
 import json
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 
@@ -193,6 +193,47 @@ def _sample_clusters(
         np.asarray(zs, dtype=float),
         labels,
     )
+
+
+def _demo_rows() -> List[Dict[str, Any]]:
+    """Flatten :func:`_sample_clusters` into row records."""
+    xs, ys, zs, labels = _sample_clusters()
+    return [
+        {"cultivar": name, "colour_intensity": round(float(x), 4),
+         "flavanoid": round(float(y), 4), "proline": round(float(z), 4)}
+        for x, y, z, name in zip(xs, ys, zs, labels, strict=True)
+    ]
+
+
+#: Row-record demo data: one row per grape sample, the contract's
+#: ``list[dict[str, Any]]`` shape. :func:`_rows_to_clusters` reshapes it
+#: (or any caller-supplied row list of the same shape) into the
+#: ``(xs, ys, zs, labels)`` arrays :func:`build_svg` renders.
+DEMO_DATA: List[Dict[str, Any]] = _demo_rows()
+
+
+def _rows_to_clusters(
+    rows: List[Dict[str, Any]],
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray, List[str]]:
+    """Reshape row records into the ``(xs, ys, zs, labels)`` arrays :func:`build_svg` needs.
+
+    Parameters
+    ----------
+    rows : list of dict
+        Rows with ``cultivar`` (str) and ``colour_intensity``,
+        ``flavanoid``, ``proline`` (numeric, model-space coordinates) keys.
+
+    Returns
+    -------
+    tuple
+        ``(X, Y, Z, labels)`` — three ``(N,)`` coordinate arrays and the
+        cultivar label per point.
+    """
+    xs = np.array([float(r["colour_intensity"]) for r in rows], dtype=float)
+    ys = np.array([float(r["flavanoid"]) for r in rows], dtype=float)
+    zs = np.array([float(r["proline"]) for r in rows], dtype=float)
+    labels = [str(r["cultivar"]) for r in rows]
+    return xs, ys, zs, labels
 
 
 # --------------------------------------------------------------------------- #
@@ -1078,6 +1119,17 @@ def build_svg(
         A complete, self-contained SVG document.
     """
     class_colors = _class_colors(accessibility)
+    # A caller-supplied cultivar name outside the curated three (see
+    # DEMO_DATA/_BASE_CLASS_COLORS) is assigned a colour from the house
+    # qualitative sequence, in first-seen order, so custom data never
+    # KeyErrors while looking up a point's or a legend swatch's colour.
+    unknown = [name for name in dict.fromkeys(labels) if name not in class_colors]
+    if unknown:
+        from _style import qualitative_sequence  # noqa: PLC0415 - keeps the common path import-light
+
+        extra_hues = qualitative_sequence(len(unknown))
+        class_colors = dict(class_colors)
+        class_colors.update(zip(unknown, extra_hues, strict=True))
     # ---- canvas geometry -------------------------------------------------- #
     # Poster-scale canvas: the figure is meant to read from across a room, so
     # the cloud gets a generous plot box rather than a cramped 640x480 panel.
@@ -1229,6 +1281,42 @@ def build_svg(
     parts.append(fullscreen_control(width, height, mode))
     parts.append("</svg>")
     return "".join(parts)
+
+
+def make_scatter3d(
+    data: Optional[List[Dict[str, Any]]] = None,
+    *,
+    out: Optional[Path | str] = None,
+    title: str = "",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the interactive 3D scatter and write the SVG to *out*.
+
+    Parameters
+    ----------
+    data : list[dict[str, Any]] or None
+        Rows with keys ``cultivar`` (str) and ``colour_intensity``,
+        ``flavanoid``, ``proline`` (numeric, model-space coordinates).
+        Defaults to :data:`DEMO_DATA`.
+    out : Path, str, or None
+        Output path (.svg). Defaults to ``assets/svg-examples/scatter3d.svg``.
+    title : str, optional
+        Accepted for signature parity; the figure's headline is baked into
+        the takeaway text (unused).
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+    """
+    _ = title
+    xs, ys, zs, labels = _rows_to_clusters(data if data else DEMO_DATA)
+    svg = build_svg(xs, ys, zs, labels, mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "scatter3d")
+    return write_svg(dest, svg)
 
 
 # --------------------------------------------------------------------------- #

@@ -40,14 +40,14 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 # The house-style palette lives in _style (stdlib-only, safe to import
 # without the dataviz tier).
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
+from _style import load_palette, os_adaptive_style, os_dark_style, qualitative_sequence  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
-from _render import render_cli  # noqa: E402
+from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 
 
@@ -83,8 +83,25 @@ _BG: str = "#FFFFFF"        # background
 _FOCUS: str = "#0A4DA0"     # focus-ring blue
 
 
-def _dataset(accessibility: str = "universal") -> List[Dict[str, Any]]:
-    """Return the communicative fake data for the pictorial.
+#: Row-record demo data: cyclists per 100 commuters, one row per city.
+#: This is the contract's ``list[dict[str, Any]]`` shape (``label`` +
+#: ``value``); :func:`_dataset` reshapes it (or any caller-supplied
+#: row list of the same shape) into the colour-annotated, sorted form
+#: :func:`build_svg` renders.
+DEMO_DATA: List[Dict[str, Any]] = [
+    {"label": "Copenhagen", "value": 62.0},
+    {"label": "Amsterdam", "value": 48.0},
+    {"label": "Tokyo", "value": 27.0},
+    {"label": "Berlin", "value": 18.0},
+    {"label": "Los Angeles", "value": 4.0},
+]
+
+
+def _dataset(
+    data: Optional[List[Dict[str, Any]]] = None,
+    accessibility: str = "universal",
+) -> List[Dict[str, Any]]:
+    """Reshape row records into the colour-annotated, sorted form the SVG needs.
 
     Commuting mode across five cities: of every 100 people who travel to
     work on a typical weekday, how many arrive by bicycle. The framing
@@ -93,6 +110,11 @@ def _dataset(accessibility: str = "universal") -> List[Dict[str, Any]]:
 
     Parameters
     ----------
+    data : list of dict, optional
+        Row records with ``label`` (str) and ``value`` (numeric) keys.
+        An optional ``color`` (hex) key is honoured verbatim; otherwise a
+        colour is assigned by walking the house qualitative sequence.
+        Defaults to :data:`DEMO_DATA`.
     accessibility : str, optional
         Palette accessibility level forwarded to :func:`_style.load_palette`.
 
@@ -102,20 +124,23 @@ def _dataset(accessibility: str = "universal") -> List[Dict[str, Any]]:
         One dict per city with ``label`` (str), ``value`` (float, cyclists
         per 100 commuters), and ``color`` (hex) keys, largest first.
     """
+    rows = data if data else DEMO_DATA
+    ordered = sorted(rows, key=lambda r: -float(r["value"]))
     palette = load_palette(accessibility)
-    # Ordered largest -> smallest so the rows form a tidy staircase and
-    # the reader's eye sweeps from the standout down to the laggard.
-    rows = [
-        ("Copenhagen", 62.0, "Green"),
-        ("Amsterdam", 48.0, "Turquoise"),
-        ("Tokyo", 27.0, "Blue"),
-        ("Berlin", 18.0, "Orange"),
-        ("Los Angeles", 4.0, "Red"),
-    ]
-    return [
-        {"label": label, "value": value, "color": palette[color]}
-        for label, value, color in rows
-    ]
+    fallback_colors = {"Copenhagen": "Green", "Amsterdam": "Teal", "Tokyo": "Blue",
+                        "Berlin": "Orange", "Los Angeles": "Red"}
+    hues = qualitative_sequence(len(ordered))
+    out: List[Dict[str, Any]] = []
+    for i, row in enumerate(ordered):
+        label = str(row["label"])
+        if row.get("color"):
+            color = str(row["color"])
+        elif label in fallback_colors and fallback_colors[label] in palette:
+            color = palette[fallback_colors[label]]
+        else:
+            color = hues[i % len(hues)]
+        out.append({"label": label, "value": float(row["value"]), "color": color})
+    return out
 
 
 def _slug(label: str) -> str:
@@ -236,11 +261,18 @@ def _icon(
     )
 
 
-def build_svg(mode: str = "self-contained", accessibility: str = "universal") -> str:
+def build_svg(
+    data: Optional[List[Dict[str, Any]]] = None,
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> str:
     """Assemble the full pictorial-chart SVG document as a string.
 
     Parameters
     ----------
+    data : list of dict, optional
+        Row records with ``label`` and ``value`` keys; see :func:`_dataset`.
+        Defaults to :data:`DEMO_DATA`.
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`
         (``"self-contained"`` / ``"external"`` / ``"static"``). Defaults to
@@ -256,7 +288,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     str
         A complete, standalone SVG document.
     """
-    data = _dataset(accessibility)
+    data = _dataset(data, accessibility)
 
     # The longest row sets how many icon columns we need; every row draws
     # a full set of ghost icons underneath so the field is visually
@@ -477,6 +509,41 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     parts.append(fullscreen_control(_WIDTH, _HEIGHT, mode))
     parts.append('</svg>')
     return "\n".join(parts)
+
+
+def make_pictorial(
+    data: Optional[List[Dict[str, Any]]] = None,
+    *,
+    out: Optional[Path | str] = None,
+    title: str = "",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the ISOTYPE pictorial chart and write the SVG to *out*.
+
+    Parameters
+    ----------
+    data : list[dict[str, Any]] or None
+        Rows with keys ``label`` (str) and ``value`` (numeric, cyclists per
+        100 commuters); an optional ``color`` (hex) is honoured verbatim.
+        Defaults to :data:`DEMO_DATA`.
+    out : Path, str, or None
+        Output path (.svg). Defaults to ``assets/svg-examples/pictorial.svg``.
+    title : str, optional
+        Accepted for signature parity with the other generators; this
+        figure's headline is baked into the row narrative (unused).
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+    """
+    _ = title
+    svg = build_svg(data, mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "pictorial")
+    return write_svg(dest, svg)
 
 
 def main() -> None:

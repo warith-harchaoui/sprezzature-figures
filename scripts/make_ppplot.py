@@ -56,13 +56,13 @@ from __future__ import annotations
 import math
 import sys
 from pathlib import Path
-from typing import Dict, List
+from typing import Any, Dict, List, Optional
 
 import numpy as np
 
 # House-style palette + shared primitives live alongside in scripts/.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _render import render_cli  # noqa: E402
+from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
@@ -152,6 +152,11 @@ def make_data(n: int = 90, seed: int = 7) -> List[Dict[str, float]]:
     ]
 
 
+#: Row-record demo data: one row per session, already the contract's
+#: ``list[dict[str, Any]]`` shape (see :func:`make_data`).
+DEMO_DATA: List[Dict[str, Any]] = make_data()
+
+
 def _loess(
     xs: np.ndarray,
     ys: np.ndarray,
@@ -204,7 +209,11 @@ def _loess(
     return out
 
 
-def build_svg(mode: str = "self-contained", accessibility: str = "universal") -> str:
+def build_svg(
+    data: Optional[List[Dict[str, Any]]] = None,
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> str:
     """Assemble the full P-P-plot SVG string.
 
     The plot is a square unit view (theoretical probability on x, empirical
@@ -231,7 +240,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     str
         A complete, standalone SVG document.
     """
-    data = make_data()
+    data = data if data else DEMO_DATA
     palette: Dict[str, str] = load_palette(accessibility)
 
     # Signed split, blue vs orange (never red-green): a point ABOVE the
@@ -499,6 +508,41 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     parts.append(fullscreen_control(width, height, mode))
     parts.append("</svg>")
     return "\n".join(parts)
+
+
+def make_ppplot(
+    data: Optional[List[Dict[str, Any]]] = None,
+    *,
+    out: Optional[Path | str] = None,
+    title: str = "",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the P-P plot and write the SVG to *out*.
+
+    Parameters
+    ----------
+    data : list[dict[str, Any]] or None
+        Rows with keys ``empirical``, ``theoretical`` (both probabilities in
+        ``[0, 1]``) and ``minutes`` (session length, shown in tooltips).
+        Defaults to :data:`DEMO_DATA`.
+    out : Path, str, or None
+        Output path (.svg). Defaults to ``assets/svg-examples/ppplot.svg``.
+    title : str, optional
+        Accepted for signature parity; the figure's headline is baked into
+        the diagnostic narrative (unused).
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+    """
+    _ = title
+    svg = build_svg(data, mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "ppplot")
+    return write_svg(dest, svg)
 
 
 def main() -> None:

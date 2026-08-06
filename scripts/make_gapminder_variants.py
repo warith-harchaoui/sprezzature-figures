@@ -48,9 +48,10 @@ import sys
 from _interactive import fullscreen_control  # noqa: E402
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Callable
+from typing import Any, Callable
 
 from gapminder_i18n import COUNTRIES_FR, HISTORY_FR, REGIONS_FR
+from _render import write_svg  # noqa: E402
 from _style import forced_color_patterns, leveled_colors, os_adaptive_style, os_dark_style
 
 # Import the pieces that are identical across the whole tribute family, so the
@@ -330,17 +331,124 @@ VARIANTS = {
     "incomesurvival": INCOME_SURVIVAL,
 }
 
+# ------------------------------------------------------------------
+# DEMO_DATA — neither variant's real CSV (``tribute-fertility-life-
+# 1950-2025.csv`` / ``tribute-childsurvival-income-1950-2025.csv``) is
+# vendored in this repo, so each variant gets a small, plausible synthetic
+# stand-in in the row shape :func:`load` expects, sharing the same six
+# countries as ``make_gapminder.DEMO_DATA`` for a consistent tribute family.
+# Values are illustrative order-of-magnitude figures, not a transcription of
+# the real series.
+# ------------------------------------------------------------------
+DEMO_DATA_FERTILITY: list[dict[str, Any]] = [
+    {"country": "United States", "continent": "Americas", "year": year, "fertility": fert, "lifeExp": life, "pop": pop}
+    for year, fert, life, pop in [
+        (1950, 3.0, 68.0, 152_000_000), (1980, 1.8, 74.0, 227_000_000),
+        (2000, 2.0, 77.0, 281_000_000), (2025, 1.7, 79.0, 335_000_000),
+    ]
+] + [
+    {"country": "China", "continent": "Asia", "year": year, "fertility": fert, "lifeExp": life, "pop": pop}
+    for year, fert, life, pop in [
+        (1950, 6.0, 43.0, 550_000_000), (1980, 2.5, 65.0, 985_000_000),
+        (2000, 1.5, 71.0, 1_267_000_000), (2025, 1.1, 78.0, 1_410_000_000),
+    ]
+] + [
+    {"country": "Nigeria", "continent": "Africa", "year": year, "fertility": fert, "lifeExp": life, "pop": pop}
+    for year, fert, life, pop in [
+        (1950, 6.5, 36.0, 38_000_000), (1980, 6.8, 46.0, 73_000_000),
+        (2000, 6.0, 46.0, 123_000_000), (2025, 4.6, 55.0, 220_000_000),
+    ]
+] + [
+    {"country": "Germany", "continent": "Europe", "year": year, "fertility": fert, "lifeExp": life, "pop": pop}
+    for year, fert, life, pop in [
+        (1950, 2.1, 67.0, 68_000_000), (1980, 1.4, 73.0, 78_000_000),
+        (2000, 1.4, 78.0, 82_000_000), (2025, 1.5, 81.0, 84_000_000),
+    ]
+] + [
+    {"country": "Brazil", "continent": "Americas", "year": year, "fertility": fert, "lifeExp": life, "pop": pop}
+    for year, fert, life, pop in [
+        (1950, 6.2, 46.0, 54_000_000), (1980, 4.1, 63.0, 121_000_000),
+        (2000, 2.3, 70.0, 174_000_000), (2025, 1.6, 76.0, 216_000_000),
+    ]
+] + [
+    {"country": "India", "continent": "Asia", "year": year, "fertility": fert, "lifeExp": life, "pop": pop}
+    for year, fert, life, pop in [
+        (1950, 5.9, 36.0, 376_000_000), (1980, 4.7, 54.0, 699_000_000),
+        (2000, 3.3, 62.0, 1_059_000_000), (2025, 2.0, 70.0, 1_428_000_000),
+    ]
+]
 
-def load(var: Variant) -> tuple[list[int], dict[str, dict]]:
+DEMO_DATA_INCOME_SURVIVAL: list[dict[str, Any]] = [
+    {"country": "United States", "continent": "Americas", "year": year, "gdpPercap": gdp, "childSurvival": surv, "pop": pop}
+    for year, gdp, surv, pop in [
+        (1950, 14000, 97.0, 152_000_000), (1980, 28000, 98.5, 227_000_000),
+        (2000, 42000, 99.2, 281_000_000), (2025, 70000, 99.4, 335_000_000),
+    ]
+] + [
+    {"country": "China", "continent": "Asia", "year": year, "gdpPercap": gdp, "childSurvival": surv, "pop": pop}
+    for year, gdp, surv, pop in [
+        (1950, 600, 78.0, 550_000_000), (1980, 1000, 95.0, 985_000_000),
+        (2000, 3000, 97.0, 1_267_000_000), (2025, 14000, 99.3, 1_410_000_000),
+    ]
+] + [
+    {"country": "Nigeria", "continent": "Africa", "year": year, "gdpPercap": gdp, "childSurvival": surv, "pop": pop}
+    for year, gdp, surv, pop in [
+        (1950, 900, 68.0, 38_000_000), (1980, 1800, 78.0, 73_000_000),
+        (2000, 1200, 82.0, 123_000_000), (2025, 2300, 92.5, 220_000_000),
+    ]
+] + [
+    {"country": "Germany", "continent": "Europe", "year": year, "gdpPercap": gdp, "childSurvival": surv, "pop": pop}
+    for year, gdp, surv, pop in [
+        (1950, 4000, 94.0, 68_000_000), (1980, 20000, 98.8, 78_000_000),
+        (2000, 32000, 99.4, 82_000_000), (2025, 55000, 99.6, 84_000_000),
+    ]
+] + [
+    {"country": "Brazil", "continent": "Americas", "year": year, "gdpPercap": gdp, "childSurvival": surv, "pop": pop}
+    for year, gdp, surv, pop in [
+        (1950, 1500, 80.0, 54_000_000), (1980, 5000, 91.0, 121_000_000),
+        (2000, 7500, 96.5, 174_000_000), (2025, 12000, 98.6, 216_000_000),
+    ]
+] + [
+    {"country": "India", "continent": "Asia", "year": year, "gdpPercap": gdp, "childSurvival": surv, "pop": pop}
+    for year, gdp, surv, pop in [
+        (1950, 650, 74.0, 376_000_000), (1980, 900, 82.0, 699_000_000),
+        (2000, 1700, 90.0, 1_059_000_000), (2025, 8000, 97.0, 1_428_000_000),
+    ]
+]
+
+#: Per-variant DEMO_DATA lookup, keyed like :data:`VARIANTS`.
+_DEMO_DATA_BY_VARIANT: dict[str, list[dict[str, Any]]] = {
+    "fertility": DEMO_DATA_FERTILITY,
+    "incomesurvival": DEMO_DATA_INCOME_SURVIVAL,
+}
+
+#: Module-level ``DEMO_DATA`` the ``make_<kind>`` contract asks for: the
+#: default variant's (``"fertility"``) rows. Pass ``variant`` to
+#: :func:`make_gapminder_variants` to render the other variant instead.
+DEMO_DATA: list[dict[str, Any]] = DEMO_DATA_FERTILITY
+
+
+def load(var: Variant, rows: "list[dict[str, Any]] | None" = None) -> tuple[list[int], dict[str, dict]]:
     """Return (years grid, {country: {continent, x[], y[], pop[], appear, disappear}}).
 
     Same ragged-dataset handling as the first tribute: every entity is placed on
     the whole annual grid (its value edge-held for the years it did not exist,
     when it is invisible anyway) plus an appear/disappear window, so its bubble
     fades in and out at exactly the right year.
+
+    Parameters
+    ----------
+    var : Variant
+        Selects which columns (``var.xcol`` / ``var.ycol``) to read.
+    rows : list of dict, or None
+        Rows with ``country``, ``year``, ``continent``, ``pop`` and the
+        variant's ``xcol`` / ``ycol`` keys. Defaults to this variant's entry
+        in :data:`_DEMO_DATA_BY_VARIANT` (the real, vendored per-variant CSV
+        is only read by the ``__main__`` CLI, not by this function's own
+        default).
     """
-    path = DATA / var.csv_name
-    rows = list(csv.DictReader(path.open(encoding="utf-8")))
+    if rows is None:
+        rows = _DEMO_DATA_BY_VARIANT.get(var.key, DEMO_DATA_FERTILITY)
     years = sorted({int(r["year"]) for r in rows})
     by: dict[str, dict] = {}
     for r in rows:
@@ -364,8 +472,15 @@ def load(var: Variant) -> tuple[list[int], dict[str, dict]]:
     return years, out
 
 
-def build(var: Variant, lang: str = "en", mode: str = "external",
-          accessibility: str = "universal") -> None:
+def build(
+    var: Variant,
+    lang: str = "en",
+    mode: str = "external",
+    accessibility: str = "universal",
+    *,
+    rows: "list[dict[str, Any]] | None" = None,
+    out: "Path | str | None" = None,
+) -> Path:
     """Build one variant's animated SVG (``lang`` = 'en' or 'fr') and write it.
 
     Parameters
@@ -383,6 +498,17 @@ def build(var: Variant, lang: str = "en", mode: str = "external",
         identity, so the shipped SVG stays byte-for-byte the same; the other
         levels (``'high-contrast'``, ``'monochrome'``, ``'deuteranopia'``,
         ``'protanopia'``, ``'tritanopia'``) remap the five region hues.
+    rows : list of dict, or None
+        Dataset rows forwarded to :func:`load`; ``None`` uses this variant's
+        entry in :data:`_DEMO_DATA_BY_VARIANT`.
+    out : Path, str, or None
+        Output path. Defaults to ``SVG_DIR / var.out_name`` (or its
+        ``.fr.svg`` sibling for ``lang="fr"``).
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
     """
     fr = lang == "fr"
     # Region → colour is a genuine categorical set, so it answers to the
@@ -398,9 +524,12 @@ def build(var: Variant, lang: str = "en", mode: str = "external",
     fc_defs, fc_style = forced_color_patterns(
         [f".rg-{r.lower()}" for r in REGION_COLOR], prefix="gmvfc"
     )
-    out_path = SVG_DIR / var.out_name
-    if fr:
-        out_path = out_path.with_suffix(".fr.svg")
+    if out:
+        out_path = Path(out)
+    else:
+        out_path = SVG_DIR / var.out_name
+        if fr:
+            out_path = out_path.with_suffix(".fr.svg")
     lab = var.labels_fr if fr else var.labels_en
 
     def tc(name: str) -> str:                       # translate a country label
@@ -412,7 +541,7 @@ def build(var: Variant, lang: str = "en", mode: str = "external",
     def th(disp: str) -> str:                        # translate a historical-name label
         return HISTORY_FR.get(disp, disp) if fr else disp
 
-    years, data = load(var)
+    years, data = load(var, rows)
     n = len(years)
     dur_s = (int(years[-1]) - int(years[0])) * SEC_PER_YEAR
     dur = f"{dur_s}s"
@@ -615,8 +744,8 @@ def build(var: Variant, lang: str = "en", mode: str = "external",
     if _fc:
         svg.append(_fc)
     svg.append('</svg>')
-    out_path.write_text("\n".join(svg) + "\n", encoding="utf-8")
-    print(f"wrote {out_path} — {len(data)} entities, {n} snapshots ({lang})")
+    print(f"{len(data)} entities, {n} snapshots ({lang})")
+    return write_svg(out_path, "\n".join(svg) + "\n")
 
 
 def write_fr_csv(var: Variant) -> None:
@@ -634,6 +763,51 @@ def write_fr_csv(var: Variant) -> None:
     print(f"wrote {dst}")
 
 
+def make_gapminder_variants(
+    data: "list[dict[str, Any]] | None" = None,
+    *,
+    out: "Path | str | None" = None,
+    title: str = "",
+    variant: str = "fertility",
+    lang: str = "en",
+    mode: str = "external",
+    accessibility: str = "universal",
+) -> Path:
+    """Render one Gapminder-variant tribute chart and write it to ``out``.
+
+    The standard ``make_<kind>`` entry the figure registry dispatches to.
+    Neither variant's real CSV is vendored in this repo, so ``data=None``
+    falls back to that variant's synthetic stand-in (see
+    :data:`DEMO_DATA_FERTILITY` / :data:`DEMO_DATA_INCOME_SURVIVAL`).
+
+    Parameters
+    ----------
+    data : list[dict[str, Any]] or None
+        Rows matching ``variant``'s column schema (see :func:`load`).
+        Defaults to that variant's demo rows.
+    out : Path, str, or None
+        Output path (.svg). Defaults to ``assets/svg-examples/<variant's
+        out_name>`` (or its ``.fr.svg`` sibling for ``lang="fr"``).
+    title : str, optional
+        Unused (each variant's headline is fixed prose); accepted for
+        dispatcher parity.
+    variant : str, optional
+        ``"fertility"`` (default) or ``"incomesurvival"`` -- selects which
+        of the two charts in :data:`VARIANTS` to render.
+    lang, mode, accessibility : str
+        Forwarded to :func:`build`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+    """
+    _ = title  # accepted for dispatcher parity; see docstring
+    var = VARIANTS.get(variant, FERTILITY)
+    rows = data if data else _DEMO_DATA_BY_VARIANT.get(var.key, DEMO_DATA_FERTILITY)
+    return build(var, lang, mode=mode, accessibility=accessibility, rows=rows, out=out)
+
+
 def main(accessibility: str = "universal") -> None:
     """Build all four SVGs (2 variants × EN/FR) and both French CSVs.
 
@@ -646,12 +820,22 @@ def main(accessibility: str = "universal") -> None:
     en_only = "--en-only" in sys.argv
     fr_written: set[str] = set()
     for var in VARIANTS.values():
-        build(var, "en", accessibility=accessibility)
+        # Prefer each variant's real vendored dataset when present;
+        # otherwise fall back to its synthetic DEMO_DATA so the script
+        # still runs end to end.
+        csv_path = DATA / var.csv_name
+        var_rows = (
+            list(csv.DictReader(csv_path.open(encoding="utf-8")))
+            if csv_path.exists() else None
+        )
+        if var_rows is None:
+            print(f"note: {csv_path} not found; rendering from the synthetic DEMO_DATA")
+        build(var, "en", accessibility=accessibility, rows=var_rows)
         if not en_only:
-            build(var, "fr", accessibility=accessibility)
+            build(var, "fr", accessibility=accessibility, rows=var_rows)
             # Variants can share a dataset (income×survival reuses survival×income);
             # write each French CSV once so they don't clobber each other.
-            if var.csv_name not in fr_written:
+            if var.csv_name not in fr_written and csv_path.exists():
                 write_fr_csv(var)
                 fr_written.add(var.csv_name)
 

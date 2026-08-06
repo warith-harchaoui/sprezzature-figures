@@ -49,13 +49,13 @@ from __future__ import annotations
 
 import math
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 # The house-style palette lives in _style.py, one directory up in scripts/.
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _render import render_cli  # noqa: E402
+from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _svg import svg_open  # noqa: E402
@@ -82,8 +82,16 @@ STUDIES: List[Dict[str, Any]] = [
     {"label": "Haddad 2023", "n": 188, "or_": 1.29, "lo": 0.78, "hi": 2.13},
 ]
 
-#: The random-effects pooled summary (DerSimonian-Laird style), quoted
-#: with its own 95% CI.
+#: Row-record alias for :data:`STUDIES` -- the shape the ``make_<kind>``
+#: contract asks for. Every row already carries ``label``/``n``/``or_``/
+#: ``lo``/``hi``, so no reshaping is needed for custom data.
+DEMO_DATA: List[Dict[str, Any]] = STUDIES
+
+#: The random-effects pooled summary quoted under the diamond, for the
+#: shipped :data:`STUDIES`. When :func:`build_svg` is called with custom
+#: ``data``, the diamond is instead recomputed from that data by a simple
+#: inverse-variance-weighted average on the log scale (see ``build_svg``);
+#: this constant only supplies the illustrative heterogeneity note.
 POOLED: Dict[str, Any] = {
     "label": "Pooled (random effects)",
     "or_": 1.44,
@@ -122,11 +130,21 @@ def study_weight(n: int, ci_width_log: float) -> float:
     return n / (ci_width_log**2 + 0.05)
 
 
-def build_svg(mode: str = "self-contained", accessibility: str = "universal") -> str:
+def build_svg(
+    data: Optional[List[Dict[str, Any]]] = None,
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> str:
     """Assemble the full forest-plot SVG string.
 
     Parameters
     ----------
+    data : list of dict or None
+        Trial rows with ``label``, ``n``, ``or_``, ``lo``, ``hi`` keys.
+        Defaults to :data:`DEMO_DATA` (equivalently, :data:`STUDIES`). When
+        custom data is passed, the pooled diamond is recomputed from it (a
+        simple inverse-variance-weighted average on the log scale) rather
+        than using the shipped example's fixed :data:`POOLED` summary.
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`
         (``"self-contained"``, ``"external"`` or ``"static"``). Defaults to
@@ -142,6 +160,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     str
         A complete, standalone SVG document.
     """
+    rows: List[Dict[str, Any]] = data if data else STUDIES
     palette: Dict[str, str] = load_palette(accessibility)
     blue = palette.get("Blue", "#007AFF")
     green = palette.get("Green", "#34C759")
@@ -169,7 +188,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     est_x = panel_x + panel_w + gap
 
     row_h = 34
-    n_rows = len(STUDIES)
+    n_rows = len(rows)
     header_y = m_top
     first_row_y = header_y + 24
     diamond_y = first_row_y + n_rows * row_h + 14
@@ -193,7 +212,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     # box; area ∝ weight, so the side ∝ sqrt(weight).
     weights = [
         study_weight(int(s["n"]), math.log(float(s["hi"])) - math.log(float(s["lo"])))
-        for s in STUDIES
+        for s in rows
     ]
     w_max = max(weights)
     box_max = 15.0  # half-side of the largest box, in px
@@ -206,11 +225,30 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
 
     parts: List[str] = []
 
+    # --- pooled random-effects summary ------------------------------
+    # For the shipped example (no custom data) the fixed, hand-quoted
+    # POOLED summary is used unchanged. For custom data the diamond is
+    # recomputed here: a simple inverse-variance-weighted average of the
+    # log odds ratios, using the same per-study weights as the boxes.
+    n = len(rows)
+    if data:
+        log_ors = [math.log(float(s["or_"])) for s in rows]
+        w_sum = sum(weights) or 1.0
+        pooled_log = sum(w * lo for w, lo in zip(weights, log_ors)) / w_sum
+        se = 1.0 / math.sqrt(w_sum)
+        or_p = math.exp(pooled_log)
+        lo_p = math.exp(pooled_log - 1.96 * se)
+        hi_p = math.exp(pooled_log + 1.96 * se)
+        pooled_label = "Pooled (random effects)"
+        pooled_het = "inverse-variance weighted"
+    else:
+        or_p = float(POOLED["or_"])
+        lo_p = float(POOLED["lo"])
+        hi_p = float(POOLED["hi"])
+        pooled_label = str(POOLED["label"])
+        pooled_het = str(POOLED["het"])
+
     # --- SVG root + accessible description ------------------------
-    n = len(STUDIES)
-    or_p = float(POOLED["or_"])
-    lo_p = float(POOLED["lo"])
-    hi_p = float(POOLED["hi"])
     parts.append(svg_open(width, height, "fp-title", "fp-desc"))
     parts.append(
         '<title id="fp-title">Forest plot: home blood-pressure telemonitoring '
@@ -250,9 +288,10 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         "{stroke:" + keyline + ";stroke-width:2.4}",
         ".row:focus{outline:none}",
         ".row:hover .rowbg,.row:focus .rowbg{fill:#F5F5F7}",
+        "@keyframes fp-in{to{opacity:1}}",
         "@media (prefers-reduced-motion:reduce){"
         ".grow{animation:none}"
-        "[data-anim]{opacity:1 !important}"
+        "[data-anim]{opacity:1 !important;animation:none !important}"
         "}",
     ]
     glyph_series = {".box-sig": green, ".box-cross": blue, ".diamond": orange}
@@ -272,7 +311,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     parts.append(
         f'<text x="{m_left}" y="58" font-size="12.5" fill="{secondary}">'
         f'Pooled odds ratio {or_p:.2f} (95% CI {lo_p:.2f}–{hi_p:.2f}) across '
-        f'{n} randomised trials · {POOLED["het"]}</text>'
+        f'{n} randomised trials · {pooled_het}</text>'
     )
 
     # --- column headers ------------------------------------------
@@ -302,7 +341,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     )
 
     # --- study rows ----------------------------------------------
-    for i, (s, half, w) in enumerate(zip(STUDIES, half_sides, weights)):
+    for i, (s, half, w) in enumerate(zip(rows, half_sides, weights)):
         cy = first_row_y + i * row_h + row_h / 2
         cx = sx(float(s["or_"]))
         x_lo = sx(float(s["lo"]))
@@ -317,8 +356,15 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
             f'weight {pct}% — {sig_note}'
         )
 
+        # A short staggered fade+rise as each row draws in on load (the CSS
+        # already carried an orphaned reduced-motion guard for a `data-anim`
+        # attribute; this is that animation). Purely additive: the base SVG
+        # (and any raster export, which never runs the transition) settles
+        # to the same finished row this whisker/box/cap markup already drew.
         parts.append(
-            f'<g class="row" tabindex="0" role="img" aria-label="{tip}">'
+            f'<g class="row" data-anim tabindex="0" role="img" aria-label="{tip}" '
+            f'style="opacity:0;animation:fp-in .5s ease forwards;'
+            f'animation-delay:{i * 70}ms">'
         )
         parts.append(f"<title>{tip}</title>")
         # Full-width hover band for a comfortable target.
@@ -387,9 +433,13 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     )
     pooled_tip = (
         f'Pooled random-effects OR {or_p:.2f} '
-        f'(95% CI {lo_p:.2f}–{hi_p:.2f}), {POOLED["het"]}'
+        f'(95% CI {lo_p:.2f}–{hi_p:.2f}), {pooled_het}'
     )
-    parts.append(f'<g class="row" tabindex="0" role="img" aria-label="{pooled_tip}">')
+    parts.append(
+        f'<g class="row" data-anim tabindex="0" role="img" aria-label="{pooled_tip}" '
+        f'style="opacity:0;animation:fp-in .5s ease forwards;'
+        f'animation-delay:{n_rows * 70}ms">'
+    )
     parts.append(f"<title>{pooled_tip}</title>")
     parts.append(
         f'<rect class="rowbg" x="{m_left - 6:.1f}" y="{diamond_y:.1f}" '
@@ -398,7 +448,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     )
     parts.append(
         f'<text x="{m_left}" y="{dy + 4:.1f}" font-size="13" font-weight="700" '
-        f'fill="{ink}">{POOLED["label"]}</text>'
+        f'fill="{ink}">{pooled_label}</text>'
     )
     # Pooled diamond: same treatment as the study squares — a solid
     # house-palette fill (orange sets the summary apart from the green /
@@ -452,6 +502,43 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     parts.append(fullscreen_control(width, height, mode))
     parts.append("</svg>")
     return "\n".join(parts)
+
+
+def make_forest(
+    data: Optional[List[Dict[str, Any]]] = None,
+    *,
+    out: Optional[Path | str] = None,
+    title: str = "",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the meta-analysis forest plot and write it to ``out``.
+
+    The standard ``make_<kind>`` entry the figure registry dispatches to.
+
+    Parameters
+    ----------
+    data : list[dict[str, Any]] or None
+        Trial rows with ``label``, ``n``, ``or_``, ``lo``, ``hi`` keys.
+        Defaults to :data:`DEMO_DATA`. When given, the pooled diamond is
+        recomputed from these rows (see :func:`build_svg`).
+    out : Path, str, or None
+        Output path (.svg). Defaults to ``assets/svg-examples/forest.svg``.
+    title : str, optional
+        Accepted for dispatcher/CLI parity; unused, since the chart's
+        title is fixed prose.
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+    """
+    _ = title  # accepted for dispatcher parity; see docstring
+    svg = build_svg(data, mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "forest")
+    return write_svg(dest, svg)
 
 
 def main() -> None:

@@ -39,12 +39,12 @@ from __future__ import annotations
 import math
 import sys
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _svg import point_on_circle, svg_open, xml_escape  # noqa: E402
-from _render import render_cli  # noqa: E402
+from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _style import os_dark_style  # noqa: E402
 
 
@@ -116,43 +116,74 @@ def _speed_bands() -> List[Dict[str, object]]:
     return [{"label": label, "color": color} for label, color in rows]
 
 
-def _dataset() -> List[List[float]]:
-    """Return the communicative fake data: percent of hours per sector × band.
+#: Row records: one per (direction, band) cell, ``direction`` one of
+#: :data:`_DIRECTIONS`, ``band`` one of the labels from :func:`_speed_bands`
+#: (``"< 5 kt"``, ``"5–10 kt"``, ..., ``"≥ 28 kt"``), and ``value`` the
+#: percent of annual hours. A year of hourly observations at a fictional
+#: coastal met station ("Cap Gris-Nez"): the prevailing wind is from the
+#: west-south-west, and the strongest winds arrive from that same quarter —
+#: the classic Atlantic-seaboard signature. Every value is a percentage of
+#: the 8 760 hours in the year, and the whole dataset sums to 100.
+DEMO_DATA: List[Dict[str, Any]] = [
+    {"direction": direction, "band": band, "value": value}
+    for direction, row in zip(
+        (
+            "N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE",
+            "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW",
+        ),
+        [
+            # <5    5-10  10-16 16-22 22-28  >=28
+            [0.9, 1.1, 0.7, 0.3, 0.1, 0.0],  # N
+            [0.8, 0.9, 0.5, 0.2, 0.1, 0.0],  # NNE
+            [0.7, 0.8, 0.4, 0.2, 0.0, 0.0],  # NE
+            [0.6, 0.7, 0.4, 0.1, 0.0, 0.0],  # ENE
+            [0.7, 0.9, 0.5, 0.2, 0.1, 0.0],  # E
+            [0.8, 1.0, 0.6, 0.3, 0.1, 0.0],  # ESE
+            [0.9, 1.2, 0.8, 0.4, 0.2, 0.1],  # SE
+            [1.0, 1.4, 1.0, 0.6, 0.3, 0.1],  # SSE
+            [1.1, 1.7, 1.3, 0.8, 0.4, 0.2],  # S
+            [1.3, 2.1, 1.8, 1.2, 0.7, 0.3],  # SSW
+            [1.6, 2.9, 2.8, 2.1, 1.3, 0.7],  # SW
+            [1.9, 3.6, 3.9, 3.2, 2.2, 1.4],  # WSW  (prevailing + strongest)
+            [1.7, 3.1, 3.2, 2.4, 1.5, 0.9],  # W
+            [1.3, 2.2, 1.9, 1.2, 0.6, 0.3],  # WNW
+            [1.1, 1.6, 1.1, 0.6, 0.3, 0.1],  # NW
+            [1.0, 1.3, 0.8, 0.4, 0.1, 0.0],  # NNW
+        ],
+    )
+    for band, value in zip(
+        ("< 5 kt", "5–10 kt", "10–16 kt", "16–22 kt", "22–28 kt", "≥ 28 kt"), row
+    )
+]
 
-    A year of hourly observations at a fictional coastal met station
-    ("Cap Gris-Nez"). The prevailing wind is from the west-south-west,
-    and the strongest winds arrive from that same quarter — the classic
-    Atlantic-seaboard signature. Row *i* is compass sector
-    ``_DIRECTIONS[i]``; the six columns are the speed bands from
-    :func:`_speed_bands` (weakest first). Every number is a percentage
-    of the 8 760 hours in the year, and the whole grid sums to 100.
+
+def _dataset(data: Optional[List[Dict[str, Any]]] = None) -> List[List[float]]:
+    """Reshape row records into the internal 16 x 6 (direction x band) grid.
+
+    Parameters
+    ----------
+    data : list of dict or None
+        Rows with keys ``direction``, ``band`` and ``value``. Defaults to
+        :data:`DEMO_DATA`. Any direction not in :data:`_DIRECTIONS` or band
+        not among :func:`_speed_bands`' labels is ignored; missing cells
+        default to ``0.0``.
 
     Returns
     -------
     list of list of float
-        A 16 × 6 grid of frequencies (percent of annual hours).
+        A 16 x 6 grid of frequencies (percent of annual hours), row *i*
+        matching ``_DIRECTIONS[i]`` and column *j* the *j*-th speed band.
     """
-    # Sixteen sectors, six bands. Hand-tuned so WSW/SW dominate with a
-    # heavy strong-wind tail, and the grid sums to 100 %.
-    grid = [
-        # <5    5-10  10-16 16-22 22-28  >=28
-        [0.9, 1.1, 0.7, 0.3, 0.1, 0.0],  # N
-        [0.8, 0.9, 0.5, 0.2, 0.1, 0.0],  # NNE
-        [0.7, 0.8, 0.4, 0.2, 0.0, 0.0],  # NE
-        [0.6, 0.7, 0.4, 0.1, 0.0, 0.0],  # ENE
-        [0.7, 0.9, 0.5, 0.2, 0.1, 0.0],  # E
-        [0.8, 1.0, 0.6, 0.3, 0.1, 0.0],  # ESE
-        [0.9, 1.2, 0.8, 0.4, 0.2, 0.1],  # SE
-        [1.0, 1.4, 1.0, 0.6, 0.3, 0.1],  # SSE
-        [1.1, 1.7, 1.3, 0.8, 0.4, 0.2],  # S
-        [1.3, 2.1, 1.8, 1.2, 0.7, 0.3],  # SSW
-        [1.6, 2.9, 2.8, 2.1, 1.3, 0.7],  # SW
-        [1.9, 3.6, 3.9, 3.2, 2.2, 1.4],  # WSW  (prevailing + strongest)
-        [1.7, 3.1, 3.2, 2.4, 1.5, 0.9],  # W
-        [1.3, 2.2, 1.9, 1.2, 0.6, 0.3],  # WNW
-        [1.1, 1.6, 1.1, 0.6, 0.3, 0.1],  # NW
-        [1.0, 1.3, 0.8, 0.4, 0.1, 0.0],  # NNW
-    ]
+    rows = list(data) if data else DEMO_DATA
+    band_labels = [str(b["label"]) for b in _speed_bands()]
+    band_idx = {label: j for j, label in enumerate(band_labels)}
+    dir_idx = {d: i for i, d in enumerate(_DIRECTIONS)}
+    grid = [[0.0] * len(band_labels) for _ in _DIRECTIONS]
+    for row in rows:
+        i = dir_idx.get(str(row["direction"]))
+        j = band_idx.get(str(row["band"]))
+        if i is not None and j is not None:
+            grid[i][j] = float(row["value"])
     return grid
 
 
@@ -226,11 +257,19 @@ def _slug(label: str) -> str:
 _xml = xml_escape
 
 
-def build_svg(mode: str = "self-contained", accessibility: str = "universal") -> str:
+def build_svg(
+    data: Optional[List[Dict[str, Any]]] = None,
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> str:
     """Assemble the full wind-rose SVG document as a string.
 
     Parameters
     ----------
+    data : list of dict or None
+        Rows with keys ``direction`` (one of the 16 compass points),
+        ``band`` (a speed-band label from :func:`_speed_bands`) and
+        ``value`` (percent of hours). Defaults to :data:`DEMO_DATA`.
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`
         (``"self-contained"``, ``"external"`` or ``"static"``). Controls
@@ -257,7 +296,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     # docstring). Naming it keeps the render_cli signature-detection working.
     _ = accessibility
     bands = _speed_bands()
-    grid = _dataset()
+    grid = _dataset(data)
     n_dir = len(_DIRECTIONS)
     sector_deg = 360.0 / n_dir       # 22.5° per compass sector
     pad_deg = 3.0                    # gap between petals so they read as columns
@@ -492,6 +531,40 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     parts.append(fullscreen_control(_WIDTH, _HEIGHT, mode))
     parts.append('</svg>')
     return "\n".join(parts)
+
+
+def make_windrose(
+    data: Optional[List[Dict[str, Any]]] = None,
+    *,
+    out: Optional[Path | str] = None,
+    title: str = "",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the wind rose and write the SVG to *out*.
+
+    Parameters
+    ----------
+    data : list[dict[str, Any]] or None
+        Rows with keys ``direction``, ``band`` and ``value``. Defaults to
+        :data:`DEMO_DATA`.
+    out : Path, str, or None
+        Output path (.svg). Defaults to ``assets/svg-examples/windrose.svg``.
+    title : str, optional
+        Accepted for dispatcher parity; the rose's own headline states the
+        specific takeaway, so this is unused.
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+    """
+    del title
+    svg = build_svg(data, mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "windrose")
+    return write_svg(dest, svg)
 
 
 def main() -> None:

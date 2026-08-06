@@ -37,10 +37,11 @@ from __future__ import annotations
 
 import math
 import random
-from typing import Any, Dict, List, Tuple
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
 
 import _style
-from _render import render_cli  # noqa: E402
+from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 
 # ------------------------------------------------------------------
@@ -459,11 +460,31 @@ def _legend() -> str:
     return "\n".join(parts)
 
 
-def build_svg(mode: str = "self-contained", accessibility: str = "universal") -> str:
+# Three service tiers. Free is the noisiest (largest sigma → longest tail);
+# Enterprise is tightest. n is large — the boxen's raison d'être. Already a
+# genuine row-record list, so build_svg() uses it directly (no reshaping).
+DEMO_DATA: List[Dict[str, Any]] = [
+    {"label": "Free tier", "median": 210.0, "sigma": 0.62, "seed": 11, "n": 24000},
+    {"label": "Pro tier", "median": 150.0, "sigma": 0.44, "seed": 23, "n": 24000},
+    {"label": "Enterprise", "median": 118.0, "sigma": 0.30, "seed": 37, "n": 24000},
+]
+
+
+def build_svg(
+    data: Optional[List[Dict[str, Any]]] = None,
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> str:
     """Assemble the full boxen-plot SVG document as a string.
 
     Parameters
     ----------
+    data : list of dict or None
+        One row per service tier, each shaped ``{"label": ..., "median":
+        ..., "sigma": ..., "seed": ..., "n": ...}`` (see :data:`DEMO_DATA`).
+        ``median``/``sigma`` parameterise the log-normal latency sample
+        (:func:`lognormal_sample`); ``n`` is the sample size. Defaults to
+        three illustrative service tiers.
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`
         (``"self-contained"``, ``"external"`` or ``"static"``). Defaults to
@@ -495,11 +516,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
 
     # Three service tiers. Free is the noisiest (largest sigma → longest
     # tail); Enterprise is tightest. n is large — the boxen's raison d'être.
-    tiers: List[Dict[str, Any]] = [
-        {"label": "Free tier", "median": 210.0, "sigma": 0.62, "seed": 11, "n": 24000},
-        {"label": "Pro tier", "median": 150.0, "sigma": 0.44, "seed": 23, "n": 24000},
-        {"label": "Enterprise", "median": 118.0, "sigma": 0.30, "seed": 37, "n": 24000},
-    ]
+    tiers: List[Dict[str, Any]] = data if data else DEMO_DATA
 
     n_cat = len(tiers)
     band = (PLOT_RIGHT - PLOT_LEFT) / n_cat
@@ -623,6 +640,48 @@ def main() -> None:
     :func:`_interactive.fullscreen_control`.
     """
     render_cli(__file__, "boxen", build_svg, description="Render the boxen-plot SVG.")
+
+
+def make_boxen(
+    data: Optional[List[Dict[str, Any]]] = None,
+    *,
+    out: Optional[Path | str] = None,
+    title: str = "",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the house-styled boxen (letter-value) plot and write it to *out*.
+
+    Parameters
+    ----------
+    data : list of dict or None
+        One row per category, each shaped ``{"label": ..., "median": ...,
+        "sigma": ..., "seed": ..., "n": ...}`` (see :data:`DEMO_DATA`).
+        ``median``/``sigma`` parameterise a log-normal latency sample of
+        size ``n``. Defaults to three illustrative service tiers.
+    out : Path, str, or None
+        Output path (.svg). Defaults to ``assets/svg-examples/boxen.svg``.
+    title : str, optional
+        Accepted for CLI/dispatcher parity; this figure's title compares
+        the tails of the supplied categories and stays fixed.
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+
+    Examples
+    --------
+    >>> p = make_boxen()
+    >>> p.exists()
+    True
+    """
+    _ = title
+    svg = build_svg(data, mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "boxen")
+    return write_svg(dest, svg)
 
 
 if __name__ == "__main__":

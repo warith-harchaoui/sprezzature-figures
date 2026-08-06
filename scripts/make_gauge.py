@@ -28,11 +28,12 @@ from __future__ import annotations
 import argparse
 import math
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 from _style import load_palette, os_adaptive_style, os_dark_style
 from _svg import point_on_circle, xml_escape
 from _interactive import fullscreen_control
+from _render import svg_example_path, write_svg
 
 # ------------------------------------------------------------------
 # The reading. One illustrative KPI: web-server CPU load at a traffic
@@ -47,6 +48,13 @@ VMIN, VMAX = 0.0, 100.0
 
 TITLE = "Web-server CPU load is running hot at the traffic peak"
 SUBTITLE = "app-07 · 12:40 UTC · 1-minute average"
+
+#: Row-record view of the single reading this gauge plots, the shape the
+#: ``make_<kind>`` contract asks for: one row (a gauge shows one KPI).
+DEMO_DATA: List[Dict[str, Any]] = [
+    {"label": TITLE, "sublabel": SUBTITLE, "value": VALUE, "unit": UNIT,
+     "settle_from": SETTLE_FROM}
+]
 
 # Coloured performance zones, low → high. Each is (upper-bound, colour-key,
 # label). Bounds are cumulative and end at VMAX.
@@ -284,11 +292,27 @@ def _zone_of(value: float, pal: Optional[Dict[str, str]] = None) -> Tuple[str, s
     return pal[ZONES[-1][1]], ZONES[-1][2]
 
 
-def build_svg(*, animated: bool = True, mode: str = "self-contained", accessibility: str = "universal") -> str:
+def build_svg(
+    *,
+    value: Optional[float] = None,
+    title: Optional[str] = None,
+    subtitle: Optional[str] = None,
+    settle_from: Optional[float] = None,
+    animated: bool = True,
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> str:
     """Assemble the full radial gauge as an SVG string.
 
     Parameters
     ----------
+    value : float or None, optional
+        The needle's reading, 0-100. Defaults to :data:`VALUE`.
+    title, subtitle : str or None, optional
+        Headline + context line. Default to :data:`TITLE` / :data:`SUBTITLE`.
+    settle_from : float or None, optional
+        The reading the settle animation starts from. Defaults to
+        :data:`SETTLE_FROM`.
     animated : bool, optional
         Whether the needle sweeps in on load (default ``True``).
     mode : str, optional
@@ -306,28 +330,32 @@ def build_svg(*, animated: bool = True, mode: str = "self-contained", accessibil
     str
         A complete, self-contained SVG document.
     """
+    val = VALUE if value is None else float(value)
+    disp_title = TITLE if title is None else title
+    disp_subtitle = SUBTITLE if subtitle is None else subtitle
+    from_val = SETTLE_FROM if settle_from is None else float(settle_from)
     pal = load_palette(accessibility)
-    val_hex, val_name = _zone_of(VALUE, pal)
+    val_hex, val_name = _zone_of(val, pal)
 
     # Specific alt text: the takeaway plus the exact reading and its zone, so
     # a screen-reader user gets the same headline as a sighted one.
     desc_txt = (
         f"Radial gauge of web-server CPU load, scaled 0 to 100 percent of "
         f"capacity across four named zones: Healthy, Busy, Hot, Critical. The "
-        f"needle points to {int(VALUE)} percent, inside the {val_name} zone."
+        f"needle points to {int(val)} percent, inside the {val_name} zone."
     )
     parts: List[str] = [
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" '
         f'viewBox="0 0 {W} {H}" font-family="{FONT}" '
         f'role="img" aria-labelledby="gauge-title gauge-desc">',
-        f'<title id="gauge-title">{xml_escape(TITLE)}</title>',
+        f'<title id="gauge-title">{xml_escape(disp_title)}</title>',
         f'<desc id="gauge-desc">{xml_escape(desc_txt)}</desc>',
         f'<rect width="{W}" height="{H}" fill="#FFFFFF"/>',
         # Title block, left-aligned above the dial.
         f'<text x="70" y="82" font-size="34" font-weight="700" fill="{INK}">'
-        f"{xml_escape(TITLE)}</text>",
+        f"{xml_escape(disp_title)}</text>",
         f'<text x="70" y="120" font-size="20" fill="{SECONDARY}">'
-        f"{xml_escape(SUBTITLE)}</text>",
+        f"{xml_escape(disp_subtitle)}</text>",
         # Faint groove, then the coloured zones on top.
         _round_track(),
     ]
@@ -370,11 +398,11 @@ def build_svg(*, animated: bool = True, mode: str = "self-contained", accessibil
     # number sits in the open bottom of the dial — the two never overlap.
     if animated:
         parts.append(
-            _needle_animated(START_DEG + SWEEP_DEG * (SETTLE_FROM / 100.0),
-                             START_DEG + SWEEP_DEG * (VALUE / 100.0))
+            _needle_animated(START_DEG + SWEEP_DEG * (from_val / 100.0),
+                             START_DEG + SWEEP_DEG * (val / 100.0))
         )
     else:
-        parts.append(_needle(START_DEG + SWEEP_DEG * (VALUE / 100.0)))
+        parts.append(_needle(START_DEG + SWEEP_DEG * (val / 100.0)))
     # Hub: a filled ink disc with a small white centre (clean, no ring).
     parts.append(f'<circle cx="{CX}" cy="{CY}" r="20" fill="{INK}"/>')
     parts.append(f'<circle cx="{CX}" cy="{CY}" r="7" fill="#FFFFFF"/>')
@@ -387,7 +415,7 @@ def build_svg(*, animated: bool = True, mode: str = "self-contained", accessibil
         f'<text x="{CX}" y="{ry:.0f}" font-size="128" font-weight="800" '
         f'fill="{INK}" text-anchor="middle" '
         f'font-family="Roboto, system-ui, sans-serif">'
-        f'{int(VALUE)}<tspan font-size="60" fill="{SECONDARY}" '
+        f'{int(val)}<tspan font-size="60" fill="{SECONDARY}" '
         f'dx="4">{xml_escape(UNIT)}</tspan></text>'
     )
     # Zone chip: a coloured pill naming the current zone (pure fill,
@@ -419,6 +447,53 @@ def build_svg(*, animated: bool = True, mode: str = "self-contained", accessibil
     parts.append(fullscreen_control(W, H, mode))
     parts.append("</svg>")
     return "".join(parts)
+
+
+def make_gauge(
+    data: Optional[List[Dict[str, Any]]] = None,
+    *,
+    out: Optional[Path | str] = None,
+    title: str = "",
+    animated: bool = True,
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the radial KPI gauge and write it to ``out``.
+
+    The standard ``make_<kind>`` entry the figure registry dispatches to.
+
+    Parameters
+    ----------
+    data : list[dict[str, Any]] or None
+        A single-row list with ``label``, ``sublabel``, ``value`` (0-100),
+        ``unit`` and ``settle_from`` keys (only the first row is used, a
+        gauge shows one KPI). Missing keys fall back to the shipped
+        example's values. Defaults to :data:`DEMO_DATA`.
+    out : Path, str, or None
+        Output path (.svg). Defaults to ``assets/svg-examples/gauge.svg``.
+    title : str, optional
+        Overrides the row's ``label`` when non-empty (the ``--title`` CLI
+        flag / dispatcher convention).
+    animated, mode, accessibility : optional
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+    """
+    row = (data or DEMO_DATA)[0]
+    svg = build_svg(
+        value=row.get("value"),
+        title=title or row.get("label"),
+        subtitle=row.get("sublabel"),
+        settle_from=row.get("settle_from"),
+        animated=animated,
+        mode=mode,
+        accessibility=accessibility,
+    )
+    dest = Path(out) if out else svg_example_path(__file__, "gauge")
+    return write_svg(dest, svg)
 
 
 def main() -> None:

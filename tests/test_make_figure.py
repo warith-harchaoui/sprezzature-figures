@@ -224,23 +224,55 @@ def test_scale_env_ignored_for_svg(tmp_path: Path, monkeypatch: pytest.MonkeyPat
     assert plain == scaled
 
 
-def test_make_figure_hyphenated_legacy_kind_warns_and_raises() -> None:
-    """Regression for the hyphen/underscore dispatcher bug plus the non-stable
-    warning contract, on a single realistic call.
+@pytest.mark.slow
+def test_make_figure_hyphenated_kind_dispatches_correctly(tmp_path: Path) -> None:
+    """Regression for the hyphen/underscore dispatcher bug.
 
     make_figure() must locate scripts/make_connected-scatter.py for
-    kind='connected-scatter' (previously it looked for a nonexistent
+    kind='connected-scatter' (it previously looked for a nonexistent
     make_connected_scatter.py and raised a misleading "no script" ValueError).
-    It still fails today because the script has no make_connected_scatter()
-    yet -- but the failure must be AttributeError (contract gap), not
-    ValueError (file not found), and a status='legacy' UserWarning must fire
-    before the failure.
+    connected-scatter is now a contract-complete, stable kind (make_connected_scatter
+    exists), so the strongest version of this regression check is a full
+    successful render, not just "found the file but no callable yet".
     """
+    out = tmp_path / "connected-scatter.svg"
+    result = Path(make_figure("connected-scatter", None, out=str(out)))
+    assert result == out
+    assert out.exists()
+
+
+def test_make_figure_warns_on_non_stable_status(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """The status != 'stable' UserWarning contract, exercised without relying
+    on any real kind currently being non-stable (all 126 are 'stable' as of
+    the legacy-generator promotion -- there is no naturally-broken fixture
+    left in the registry). Monkeypatches the dispatcher's own definition
+    lookup for one call so the warning path still gets real coverage.
+    """
+    import sys
+
+    # sprezzature_figures/__init__.py does `from .make_figure import make_figure`,
+    # which shadows the `sprezzature_figures.make_figure` *submodule* attribute
+    # with the function of the same name -- go through sys.modules to get the
+    # actual module object instead of `import ... as`.
+    make_figure_module = sys.modules["sprezzature_figures.make_figure"]
+
+    real_get_definition = make_figure_module._get_figure_definition
+
+    def fake_get_definition(kind: str):
+        definition = real_get_definition(kind)
+        if kind == "treemap":
+            definition = definition.model_copy(update={"status": "experimental"})
+        return definition
+
+    monkeypatch.setattr(make_figure_module, "_get_figure_definition", fake_get_definition)
+
     with warnings.catch_warnings(record=True) as caught:
         warnings.simplefilter("always")
-        with pytest.raises(AttributeError, match="make_connected_scatter"):
-            make_figure("connected-scatter", [], out="/tmp/should-not-exist.svg")
-    assert any("status='legacy'" in str(w.message) for w in caught)
+        out = tmp_path / "treemap.svg"
+        result = Path(make_figure("treemap", None, out=str(out)))
+    assert result == out
+    assert out.exists()
+    assert any("status='experimental'" in str(w.message) for w in caught)
 
 
 def test_get_figure_definition_exposed_from_make_figure() -> None:

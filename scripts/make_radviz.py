@@ -47,7 +47,7 @@ import argparse
 import math
 import random
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import _style
 from _style import forced_color_patterns, os_adaptive_style, os_dark_style
@@ -174,6 +174,54 @@ def sample_rows(seed: int, per_class: int) -> List[Dict[str, object]]:
             raw = [max(0.0, v) for v in raw]
             rows.append({"cls": ci, "name": prof["name"], "raw": raw})
     return rows
+
+
+#: Row-record demo data: one row per synthetic kernel, the contract's
+#: ``list[dict[str, Any]]`` shape — a ``variety`` key plus one numeric key
+#: per entry of :data:`FEATURES`. :func:`_kernel_rows_from_records`
+#: reshapes it (or any caller-supplied row list of the same shape) into the
+#: ``{"cls", "name", "raw"}`` records :func:`normalise`/:func:`project` use.
+def _demo_rows() -> List[Dict[str, Any]]:
+    """Flatten :func:`sample_rows` into ``{"variety", <feature>: value, ...}`` rows."""
+    rows: List[Dict[str, Any]] = []
+    for r in sample_rows(seed=7, per_class=60):
+        raw = r["raw"]  # type: ignore[index]
+        row: Dict[str, Any] = {"variety": str(r["name"])}
+        for feat, v in zip(FEATURES, raw, strict=True):  # type: ignore[arg-type]
+            row[feat] = round(float(v), 3)
+        rows.append(row)
+    return rows
+
+
+DEMO_DATA: List[Dict[str, Any]] = _demo_rows()
+
+
+def _kernel_rows_from_records(rows: List[Dict[str, Any]]) -> List[Dict[str, object]]:
+    """Reshape ``{"variety", <feature>: value, ...}`` rows into RadViz kernel records.
+
+    Parameters
+    ----------
+    rows : list of dict
+        Rows with a ``variety`` key (str, matching a :data:`CLASSES` name)
+        plus one numeric key per entry of :data:`FEATURES`. A variety not
+        in :data:`CLASSES` is dropped (it has no anchor colour).
+
+    Returns
+    -------
+    list of dict
+        ``{"cls": int, "name": str, "raw": [float, ...]}`` records in
+        :data:`FEATURES` order, ready for :func:`normalise`/:func:`project`.
+    """
+    class_index = {c["name"]: i for i, c in enumerate(CLASSES)}
+    out: List[Dict[str, object]] = []
+    for r in rows:
+        name = str(r.get("variety", ""))
+        ci = class_index.get(name)
+        if ci is None:
+            continue
+        raw = [float(r.get(feat, 0.0)) for feat in FEATURES]
+        out.append({"cls": ci, "name": name, "raw": raw})
+    return out
 
 
 def normalise(rows: List[Dict[str, object]]) -> None:
@@ -418,11 +466,19 @@ def _legend(colours: Dict[str, str] | None = None) -> str:
     return "\n".join(parts)
 
 
-def build_svg(mode: str = "self-contained", accessibility: str = "universal") -> str:
+def build_svg(
+    data: Optional[List[Dict[str, Any]]] = None,
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> str:
     """Assemble the full RadViz SVG document as a string.
 
     Parameters
     ----------
+    data : list of dict, optional
+        Rows with a ``variety`` key plus one numeric key per
+        :data:`FEATURES` entry; see :func:`_kernel_rows_from_records`.
+        Defaults to :data:`DEMO_DATA`.
     mode : str, default ``"self-contained"``
         Fullscreen-control wiring for the emitted SVG:
 
@@ -458,7 +514,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         {cls["name"]: cls["color"] for cls in CLASSES}, accessibility
     )
 
-    rows = sample_rows(seed=7, per_class=60)
+    rows = _kernel_rows_from_records(data if data else DEMO_DATA)
     normalise(rows)
     anchors = anchor_points()
 
@@ -555,6 +611,41 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     return body
 
 
+def make_radviz(
+    data: Optional[List[Dict[str, Any]]] = None,
+    *,
+    out: Optional[Path | str] = None,
+    title: str = "",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the RadViz projection and write the SVG to *out*.
+
+    Parameters
+    ----------
+    data : list[dict[str, Any]] or None
+        Rows with a ``variety`` key (str) plus one numeric key per
+        :data:`FEATURES` entry (``"Area"``, ``"Perimeter"``, ...).
+        Defaults to :data:`DEMO_DATA`.
+    out : Path, str, or None
+        Output path (.svg). Defaults to ``assets/svg-examples/radviz.svg``.
+    title : str, optional
+        Accepted for signature parity; the figure's headline is baked into
+        the takeaway text (unused).
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+    """
+    _ = title
+    svg = build_svg(data, mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "radviz")
+    return write_svg(dest, svg)
+
+
 def main() -> None:
     """Build the SVG and write it to the skill's asset directory."""
     parser = argparse.ArgumentParser(description="Render the RadViz SVG.")
@@ -580,7 +671,7 @@ def main() -> None:
     parser.add_argument("--out", default=None, help="Output path (defaults to the example asset).")
     args = parser.parse_args()
     out = Path(args.out) if args.out else svg_example_path(__file__, "radviz")
-    write_svg(out, build_svg(args.mode, args.accessibility))
+    write_svg(out, build_svg(None, args.mode, args.accessibility))
 
 
 if __name__ == "__main__":

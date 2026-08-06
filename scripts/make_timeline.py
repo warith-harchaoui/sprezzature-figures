@@ -45,13 +45,13 @@ from __future__ import annotations
 import sys
 import textwrap
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 # The house-style palette lives alongside this file, in _style.py.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
-from _render import render_cli  # noqa: E402
+from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 
 
@@ -69,7 +69,11 @@ def _era_slug(name: str) -> str:
 # history, chosen so the timeline reads as a genuine chronology rather
 # than "Event A / Event B / Event C".
 # ------------------------------------------------------------------
-MILESTONES: List[Dict[str, Any]] = [
+#: Row records: one dict per milestone with ``year`` (int), ``name`` (str),
+#: ``blurb`` (str, a one-line description) and ``era`` (str, must match one
+#: of :data:`ERAS`' ``name`` values to inherit that era's colour band; an
+#: unrecognised era falls back to the neutral secondary ink).
+DEMO_DATA: List[Dict[str, Any]] = [
     {
         "year": 1965,
         "name": "Mariner 4",
@@ -149,6 +153,9 @@ MILESTONES: List[Dict[str, Any]] = [
         "era": "Sample Return",
     },
 ]
+
+#: Backward-compatible alias for the pre-contract name.
+MILESTONES = DEMO_DATA
 
 
 # ------------------------------------------------------------------
@@ -238,11 +245,22 @@ def _wrap(text: str, width: int) -> List[str]:
 # ------------------------------------------------------------------
 # SVG assembly
 # ------------------------------------------------------------------
-def build_svg(mode: str = "self-contained", accessibility: str = "universal") -> str:
+def build_svg(
+    data: Optional[List[Dict[str, Any]]] = None,
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> str:
     """Assemble the full event-timeline SVG string.
 
     Parameters
     ----------
+    data : list of dict or None
+        Rows with keys ``year``, ``name``, ``blurb`` and ``era``. Defaults
+        to :data:`DEMO_DATA`. The axis domain (:data:`YEAR_MIN`/``MAX``)
+        and the four coloured era bands are tuned for the shipped Mars
+        chronology; custom milestones outside that span still lay out (they
+        clamp to the axis), and an unrecognised ``era`` falls back to the
+        neutral secondary ink with no band.
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`.
         One of ``"self-contained"`` (default, ships a hidden-until-live
@@ -258,6 +276,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     str
         A complete, standalone SVG document.
     """
+    milestones: List[Dict[str, Any]] = list(data) if data else DEMO_DATA
     palette = load_palette(accessibility)
     ink = "#1D1D1F"
     secondary = "#6E6E73"
@@ -286,7 +305,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
 
     # --- document + accessibility --------------------------------
     parts.append(svg_open(width, height, "tl-title", "tl-desc"))
-    n = len(MILESTONES)
+    n = len(milestones)
     parts.append(
         '<title id="tl-title">Seven decades of Mars exploration as an '
         'event timeline</title>'
@@ -470,7 +489,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
 
     # Pre-compute per-milestone geometry (x, card height, wrapped blurb).
     geom: List[Dict[str, Any]] = []
-    for m in MILESTONES:
+    for m in milestones:
         year = int(m["year"])  # type: ignore[arg-type]
         lines = _wrap(str(m["blurb"]), 28)
         card_h: float = card_pad * 2 + 26 + 24 + len(lines) * line_h
@@ -517,7 +536,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         geom[k]["left"] = left  # type: ignore[index]
         geom[k]["side"] = side  # type: ignore[index]
 
-    for i, m in enumerate(MILESTONES):
+    for i, m in enumerate(milestones):
         year = int(m["year"])  # type: ignore[arg-type]
         name = str(m["name"])
         blurb = str(m["blurb"])
@@ -631,8 +650,8 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     # milestone, drawing the eye through the chronology. It is fully
     # additive: the whole timeline is already drawn at t=0, and the
     # marker is hidden entirely under prefers-reduced-motion (see CSS).
-    x_start = sx(float(MILESTONES[0]["year"]))  # type: ignore[arg-type]
-    x_end = sx(float(MILESTONES[-1]["year"]))  # type: ignore[arg-type]
+    x_start = sx(float(min(m["year"] for m in milestones)))  # type: ignore[arg-type]
+    x_end = sx(float(max(m["year"] for m in milestones)))  # type: ignore[arg-type]
     parts.append(
         f'<g class="sweep">'
         f'<circle cx="{x_start:.1f}" cy="{spine_y}" r="6" '
@@ -678,6 +697,40 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     parts.append(fullscreen_control(width, height, mode))
     parts.append("</svg>")
     return "\n".join(parts)
+
+
+def make_timeline(
+    data: Optional[List[Dict[str, Any]]] = None,
+    *,
+    out: Optional[Path | str] = None,
+    title: str = "",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the event timeline and write the SVG to *out*.
+
+    Parameters
+    ----------
+    data : list[dict[str, Any]] or None
+        Rows with keys ``year``, ``name``, ``blurb`` and ``era``. Defaults
+        to :data:`DEMO_DATA`.
+    out : Path, str, or None
+        Output path (.svg). Defaults to ``assets/svg-examples/timeline.svg``.
+    title : str, optional
+        Accepted for dispatcher parity; the timeline's own headline states
+        the specific takeaway, so this is unused.
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+    """
+    del title
+    svg = build_svg(data, mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "timeline")
+    return write_svg(dest, svg)
 
 
 def main() -> None:

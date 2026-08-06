@@ -41,12 +41,12 @@ import math
 import random
 import sys
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 from xml.sax.saxutils import escape
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
-from _render import render_cli  # noqa: E402
+from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _svg import svg_open  # noqa: E402
 
@@ -151,6 +151,26 @@ def _team_color(accessibility: str = "universal") -> Dict[str, str]:
         "Fulfilment": palette.get("Green", "#34C759"),
         "Growth": palette.get("Purple", "#AF52DE"),
     }
+
+#: Fallback hue-name cycling order for custom team sets beyond the five the
+#: default story names (kept in the same order the default teams already use
+#: so a custom graph whose teams happen to appear in the same order gets the
+#: same hues).
+_TEAM_HUE_ORDER = ["Blue", "Teal", "Orange", "Green", "Purple", "Pink", "Yellow", "Indigo", "Gray"]
+
+
+def _team_colors_for(teams: List[str], accessibility: str = "universal") -> Dict[str, str]:
+    """Return a generic ``{team: hex}`` map by cycling house hues in order.
+
+    Used when :func:`build_svg` is given a custom ``services`` list whose
+    team names are not the five the default microservice story names.
+    """
+    palette = load_palette(accessibility)
+    return {
+        team: palette.get(_TEAM_HUE_ORDER[i % len(_TEAM_HUE_ORDER)], "#8E8E93")
+        for i, team in enumerate(teams)
+    }
+
 
 def _team_slug(team: str) -> str:
     """Return a CSS-class-safe slug for a team name (lower-cased alphanumerics).
@@ -342,11 +362,24 @@ def _radius(indeg: int, max_indeg: int) -> float:
 # ------------------------------------------------------------------
 # SVG emission
 # ------------------------------------------------------------------
-def build_svg(mode: str = "self-contained", accessibility: str = "universal") -> str:
+def build_svg(
+    services: Optional[List[Tuple[str, str, str]]] = None,
+    calls: Optional[List[Tuple[str, str]]] = None,
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> str:
     """Assemble the full node-link network SVG document as a string.
 
     Parameters
     ----------
+    services : list of tuple or None
+        Each ``(id, label, team)``. Defaults to :data:`SERVICES`.
+    calls : list of tuple or None
+        Directed ``(caller_id, callee_id)`` pairs. Defaults to :data:`CALLS`.
+        When a custom ``services``/``calls`` pair is supplied, team colours
+        are assigned generically by cycling house hues in order of first
+        appearance (see :func:`_team_colors_for`) rather than the five
+        story-specific team hues.
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`
         (``"self-contained"``, ``"external"`` or ``"static"``). Defaults to
@@ -362,15 +395,25 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     str
         A complete, standalone SVG document.
     """
-    TEAM_COLOR = _team_color(accessibility)
-    ids = [s[0] for s in SERVICES]
-    label_of = {s[0]: s[1] for s in SERVICES}
-    team_of = {s[0]: s[2] for s in SERVICES}
+    services = services if services else SERVICES
+    calls = calls if calls else CALLS
+    is_default_services = services == SERVICES
+    if is_default_services:
+        TEAM_COLOR = _team_color(accessibility)
+    else:
+        team_order: List[str] = []
+        for s in services:
+            if s[2] not in team_order:
+                team_order.append(s[2])
+        TEAM_COLOR = _team_colors_for(team_order, accessibility)
+    ids = [s[0] for s in services]
+    label_of = {s[0]: s[1] for s in services}
+    team_of = {s[0]: s[2] for s in services}
 
     # Undirected edge set for the layout (dedupe reversed duplicates).
     undirected: List[Tuple[str, str]] = []
     seen_e: set = set()
-    for a, b in CALLS:
+    for a, b in calls:
         key = (min(a, b), max(a, b))
         if key not in seen_e:
             seen_e.add(key)
@@ -382,7 +425,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         neigh[a].add(b)
         neigh[b].add(a)
 
-    indeg = _degrees(ids, CALLS)
+    indeg = _degrees(ids, calls)
     max_indeg = max(indeg.values()) if indeg else 1
 
     box_w = WIDTH - 2 * PLOT_PAD
@@ -531,8 +574,8 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         x, y = pos[nid]
         r = _radius(indeg[nid], max_indeg)
         color = TEAM_COLOR[team_of[nid]]
-        callers = sorted({c for c, e in CALLS if e == nid}, key=lambda c: label_of.get(c, c))
-        callee_of = sorted({e for c, e in CALLS if c == nid}, key=lambda e: label_of.get(e, e))
+        callers = sorted({c for c, e in calls if e == nid}, key=lambda c: label_of.get(c, c))
+        callee_of = sorted({e for c, e in calls if c == nid}, key=lambda e: label_of.get(e, e))
         tip = (
             f"{label_of[nid]} · {team_of[nid]} team — "
             f"called by {indeg[nid]} service(s)"
@@ -586,6 +629,75 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     parts.append(fullscreen_control(WIDTH, HEIGHT, mode))
     parts.append("</svg>")
     return "".join(parts)
+
+
+#: The registry contract wants a flat row list; a network's natural unit is
+#: an edge, so each demo row denormalises one directed call with both
+#: endpoints' label/team so the row list alone can rebuild the full graph.
+_LABEL_OF: Dict[str, str] = {s[0]: s[1] for s in SERVICES}
+_TEAM_OF: Dict[str, str] = {s[0]: s[2] for s in SERVICES}
+DEMO_DATA: List[Dict[str, Any]] = [
+    {
+        "source": a, "source_label": _LABEL_OF[a], "source_team": _TEAM_OF[a],
+        "target": b, "target_label": _LABEL_OF[b], "target_team": _TEAM_OF[b],
+    }
+    for a, b in CALLS
+]
+
+
+def _rows_to_graph(
+    rows: List[Dict[str, Any]],
+) -> "tuple[List[Tuple[str, str, str]], List[Tuple[str, str]]]":
+    """Reshape DEMO_DATA-style edge rows back into ``(services, calls)``."""
+    services: List[Tuple[str, str, str]] = []
+    seen: set = set()
+    calls: List[Tuple[str, str]] = []
+    for r in rows:
+        src, tgt = str(r["source"]), str(r["target"])
+        if src not in seen:
+            services.append((src, str(r.get("source_label", src)), str(r.get("source_team", "Team"))))
+            seen.add(src)
+        if tgt not in seen:
+            services.append((tgt, str(r.get("target_label", tgt)), str(r.get("target_team", "Team"))))
+            seen.add(tgt)
+        calls.append((src, tgt))
+    return services, calls
+
+
+def make_network(
+    data: Optional[List[Dict[str, Any]]] = None,
+    *,
+    out: Optional[Path | str] = None,
+    title: str = "",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the node-link network and write the SVG to *out*.
+
+    Parameters
+    ----------
+    data : list[dict[str, Any]] or None
+        Rows shaped ``{"source", "source_label", "source_team", "target",
+        "target_label", "target_team"}`` — one row per directed edge.
+        Defaults to :data:`DEMO_DATA`. ``title`` is accepted for signature
+        parity with the rest of the gallery and is currently a documented
+        no-op (the headline states a fact about the illustrative call graph).
+    out : Path, str, or None
+        Output path. Defaults to ``assets/svg-examples/network.svg``.
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+    """
+    _ = title
+    rows = data if data else DEMO_DATA
+    services, calls = _rows_to_graph(rows)
+    svg = build_svg(services=services, calls=calls, mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "network")
+    return write_svg(dest, svg)
 
 
 def main() -> None:

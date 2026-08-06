@@ -137,3 +137,56 @@ def fullscreen_control(
         return ""
     _ = width, height, inset  # kept for call-site compatibility; see docstring.
     return f'<script><![CDATA[{_FS_SCRIPT}]]></script>'
+
+
+def hover_isolate_css(class_name: str, count: int, *, dim: float = 0.35) -> str:
+    """Return the "hover one mark, dim the rest" CSS block shared by figures
+    with N repeated marks (bars, bands, arcs, nodes, edges, ...).
+
+    Every hand-authored generator with a small multiple of marks (one per
+    category/series/node) wants the same interaction: hovering or focusing
+    *any* mark dims all the others so the hovered one reads clearly. Rather
+    than every generator hand-writing this CSS block (it was drifting
+    slightly differently across files), this is the one shared source.
+
+    Expects each mark to carry both a shared class (``class_name``) and an
+    index-suffixed class (``f"{class_name}-{i}"`` for ``i`` in
+    ``range(count)``) — e.g. ``class="band band-2"`` for the third band. The
+    figure-specific parts (the marks themselves, tooltips, colors) stay in
+    the generator; only this interaction pattern is shared.
+
+    Parameters
+    ----------
+    class_name : str
+        The shared class every mark carries (e.g. ``"band"``, ``"node"``).
+    count : int
+        How many marks there are (indices ``0..count-1``).
+    dim : float, optional
+        Opacity applied to non-hovered marks while any mark is hovered/focused
+        (default ``0.35``).
+
+    Returns
+    -------
+    str
+        A ``<style>``-ready CSS string (no surrounding ``<style>`` tags).
+
+    Examples
+    --------
+    >>> css = hover_isolate_css("band", 3)
+    >>> ".band{transition:opacity .15s ease;}" in css
+    True
+    >>> "svg:has(.band-2:hover,.band-2:focus) .band-2{opacity:1;}" in css
+    True
+    """
+    per_mark = "".join(
+        f"svg:has(.{class_name}-{i}:hover,.{class_name}-{i}:focus) .{class_name}-{i}{{opacity:1;}}"
+        for i in range(count)
+    )
+    return (
+        f".{class_name}{{transition:opacity .15s ease;}}"
+        f"svg:hover .{class_name},svg:focus-within .{class_name}{{opacity:{dim};}}"
+        f"{per_mark}"
+        "@media (prefers-reduced-motion: reduce){"
+        f".{class_name}{{transition:none;}}"
+        "}"
+    )
