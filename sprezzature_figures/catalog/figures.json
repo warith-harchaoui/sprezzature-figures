@@ -2994,6 +2994,66 @@
     ]
   },
   {
+    "kind": "quiver",
+    "label": "Quiver",
+    "aliases": [],
+    "category": "Vector field",
+    "description": "One small rotated triangular arrow per grid point, direction and colour follow the local vector, size follows magnitude. Use for fluid-flow or wind-field snapshots, gradient fields, or any function assigning a direction and magnitude to every point in a plane.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "svg",
+    "module": "scripts/make_quiver.py",
+    "callable_name": "make_quiver",
+    "required_roles": [
+      {
+        "name": "x",
+        "label": "Grid X",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "y",
+        "label": "Grid Y",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "fx",
+        "label": "Vector X component",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "fy",
+        "label": "Vector Y component",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 900,
+    "default_height": 600,
+    "options_schema": {},
+    "warnings": [
+      "Default output path falls back to a shared assets/ directory"
+    ]
+  },
+  {
     "kind": "radar",
     "label": "Radar",
     "aliases": [],

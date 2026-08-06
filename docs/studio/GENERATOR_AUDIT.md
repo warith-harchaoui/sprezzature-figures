@@ -4,11 +4,11 @@ Reproducible audit of every `scripts/make_*.py` generator against the
 `make_<kind>(data, *, out, title, ...) -> Path` contract the dispatcher
 expects. Regenerate with `python tools/audit_generators.py --render`.
 
-- **stable**: 35
+- **stable**: 36
 - **experimental**: 0
 - **legacy**: 80
 - **unavailable**: 0
-- **total**: 115
+- **total**: 116
 
 | kind | status | reachable | callable | demo_data | render | errors |
 |---|---|---|---|---|---|---|
@@ -93,6 +93,7 @@ expects. Regenerate with `python tools/audit_generators.py --render`.
 | `ppplot` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_ppplot.py; No callable named 'make_ppplot' in make_ppplot.py |
 | `prcurve` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_prcurve.py; No callable named 'make_prcurve' in make_prcurve.py |
 | `qqplot` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `quiver` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `radar` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_radar.py; No callable named 'make_radar' in make_radar.py |
 | `radial-bar` | legacy | **no** | **no** | **no** | not_run | No DEMO_DATA in make_radial-bar.py; No callable named 'make_radial_bar' in make_radial-bar.py |
 | `radial-tree` | legacy | **no** | **no** | **no** | not_run | No DEMO_DATA in make_radial-tree.py; No callable named 'make_radial_tree' in make_radial-tree.py |
