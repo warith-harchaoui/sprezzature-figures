@@ -274,6 +274,25 @@ The `llm` / `vision` tests **skip** (never fail) when no model backend is
 reachable, so they are safe to run without Ollama up. CI runs everything
 except `llm` / `vision`.
 
+### Alternative: conda (local) / Docker (server)
+
+`requirements.txt` (`-e .[cli,dataviz,studio]`) is the shared dependency list
+behind both — `pyproject.toml`'s extras stay the actual source of truth, this
+file just selects which of them to install, so there is nothing to fall out
+of sync.
+
+```bash
+# local dev
+conda env create -f environment.yaml
+conda activate sprezzature-figures
+pip install -r requirements-dev.txt   # pytest, ruff, playwright
+playwright install chromium           # one-time, for headless-Chromium checks
+
+# server (Studio app + CLI, same dependency set as above)
+docker build -t sprezzature-figures .
+docker run --rm sprezzature-figures --list
+```
+
 ---
 
 ## License
