@@ -1,6 +1,6 @@
 # Figure Catalogue
 
-120 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type).
+121 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type).
 
 Invoke via:
 
@@ -126,6 +126,7 @@ for the current per-chart status.
 | `spectrogram` | make_spectrogram.py | Signal | Frequency × time heatmap of a signal's energy. Use for audio, seismic, or any time-varying spectral data. |
 | `spike-map` | make_spike-map.py | Geospatial | Vertical spikes on a map proportional to a value at each location. Cleaner than a dot map for comparing magnitudes; less distorting than a choropleth. |
 | `stacked-area` | make_stacked-area.py | Composition | Stacked area over a continuous quantitative axis (month number, as opposed to `area`'s categorical month-name axis); top edge traces the running total, band thickness traces each series' contribution. Use for monthly cost by service or cumulative resource usage. |
+| `stacked-bar` | make_stacked-bar.py | Composition | Each bar normalised to fill exactly 100%, so segments compare composition (share of the whole) across bars rather than absolute totals. Use for revenue mix by quarter, survey answer distribution by cohort, or market share by region. |
 | `streamgraph` | make_streamgraph.py | Time series / Composition | Stacked area chart with a central baseline, flowing like a stream. Use for showing how categorical composition evolves over time when the baseline is less important than the flow. |
 | `streamplot` | make_streamplot.py | Vector field | Stream lines showing a 2-D vector field (wind, fluid flow, electromagnetic). Use to visualise flow direction and speed across a continuous domain. |
 | `sunburst` | make_sunburst.py | Hierarchy | Radial treemap: nested rings for hierarchical data. Use when two or three levels of hierarchy need to be read simultaneously (e.g., budget by department → team → line item). |

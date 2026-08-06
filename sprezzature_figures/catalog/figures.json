@@ -3783,6 +3783,62 @@
     ]
   },
   {
+    "kind": "stacked-bar",
+    "label": "Stacked Bar",
+    "aliases": [
+      "stacked bar",
+      "stacked_bar"
+    ],
+    "category": "Composition",
+    "description": "Each bar normalised to fill exactly 100%, so segments compare composition (share of the whole) across bars rather than absolute totals. Use for revenue mix by quarter, survey answer distribution by cohort, or market share by region.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "svg",
+    "module": "scripts/make_stacked-bar.py",
+    "callable_name": "make_stacked_bar",
+    "required_roles": [
+      {
+        "name": "quarter",
+        "label": "Outer category",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "type",
+        "label": "Segment",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "share",
+        "label": "Numeric value",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 900,
+    "default_height": 600,
+    "options_schema": {},
+    "warnings": [
+      "make_figure('stacked-bar') cannot resolve to make_stacked-bar.py: hyphen/underscore normalisation looks for a different filename",
+      "Default output path falls back to a shared assets/ directory"
+    ]
+  },
+  {
     "kind": "streamgraph",
     "label": "Streamgraph",
     "aliases": [],
