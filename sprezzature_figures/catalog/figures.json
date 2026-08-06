@@ -1629,6 +1629,66 @@
     ]
   },
   {
+    "kind": "gantt",
+    "label": "Gantt",
+    "aliases": [],
+    "category": "Project planning",
+    "description": "One horizontal bar per task spanning its start-end day, coloured by owning team, top-to-bottom order follows the data. The default chart for a project plan or roadmap.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "svg",
+    "module": "scripts/make_gantt.py",
+    "callable_name": "make_gantt",
+    "required_roles": [
+      {
+        "name": "task",
+        "label": "Task",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "start",
+        "label": "Start day",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "end",
+        "label": "End day",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "team",
+        "label": "Owning team",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 900,
+    "default_height": 600,
+    "options_schema": {},
+    "warnings": [
+      "Default output path falls back to a shared assets/ directory"
+    ]
+  },
+  {
     "kind": "gapminder",
     "label": "Gapminder",
     "aliases": [],
