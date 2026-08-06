@@ -30,6 +30,8 @@ Extras optionnels (combinables, ex. `"sprezzature-figures[cli,dataviz]"`) :
 | `[cli]` | l'interface Click, jumelle de la CLI `make-figure` toujours installée |
 | `[dataviz]` | matplotlib / networkx / wordcloud / shapely / pyproj / pyyaml, nécessaires aux générateurs non Vega-Lite |
 | `[studio]` | Sprezzature Studio : l'application NiceGUI + le copilote Ralph (voir plus bas) |
+| `[api]` | Surface HTTP FastAPI (voir plus bas) |
+| `[mcp]` | Surface d'outils MCP sur `[api]` (voir plus bas) |
 
 Utilisez un environnement virtuel pour tout isoler :
 
@@ -247,6 +249,49 @@ générateurs de graphiques eux-mêmes (voir sa propre docstring) ; il précède
 et n'a aucun rapport avec le moteur Ralph du Studio
 (`sprezzature_figures.studio.ralph`), qui est une implémentation entièrement
 nouvelle, conforme au plan et testée.
+
+---
+
+## API HTTP & MCP
+
+Trois interfaces exposent le même dispatcheur `make_figure()` :
+
+| Interface | Toujours installée ? | Point d'entrée |
+|---|---|---|
+| CLI (argparse) | Oui | `make-figure` |
+| CLI (Click) | Extra `[cli]` | `sprezzature-figures` |
+| API HTTP (FastAPI) | Extra `[api]` | `uvicorn sprezzature_figures.api:app` |
+| Outils MCP (fastapi-mcp) | Extras `[api,mcp]` | `sprezzature-figures-mcp` |
+
+```bash
+pip install "sprezzature-figures[api]"
+uvicorn sprezzature_figures.api:app --host 0.0.0.0 --port 8000
+
+# Lister les types stables
+curl http://localhost:8000/kinds?status=stable
+
+# Rendre le treemap de démonstration en SVG
+curl -X POST http://localhost:8000/render/treemap -o treemap.svg
+
+# Rendre avec vos propres données
+curl -X POST http://localhost:8000/render/bar -H 'Content-Type: application/json' \
+     -d '{"data": [{"region": "North", "value": 42}], "title": "Mon graphique"}' -o bar.svg
+
+# Documentation OpenAPI complète
+open http://localhost:8000/docs
+```
+
+La surface MCP (`sprezzature-figures[api,mcp]`) monte exactement les
+mêmes routes comme outils MCP (`list_kinds`, `get_kind`, `render_figure`)
+sur `/mcp`, sur la même app FastAPI, via
+[fastapi-mcp](https://github.com/tadata-org/fastapi_mcp) — une seule
+ligne enveloppe toute la surface HTTP, les routes ne sont donc jamais
+dupliquées :
+
+```bash
+pip install "sprezzature-figures[api,mcp]"
+sprezzature-figures-mcp
+```
 
 ---
 

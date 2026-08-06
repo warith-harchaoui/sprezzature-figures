@@ -29,6 +29,8 @@ Optional extras (combine as needed, e.g. `"sprezzature-figures[cli,dataviz]"`):
 | `[cli]` | the Click twin of the always-installed `make-figure` CLI |
 | `[dataviz]` | matplotlib / networkx / wordcloud / shapely / pyproj / pyyaml, needed for the non-Vega-Lite generators |
 | `[studio]` | Sprezzature Studio: the NiceGUI app + Ralph copilot (see below) |
+| `[api]` | FastAPI HTTP surface (see below) |
+| `[mcp]` | MCP tool surface on top of `[api]` (see below) |
 
 Use a virtual environment to keep things isolated:
 
@@ -247,6 +249,48 @@ while developing the chart generators themselves (see its own docstring);
 it predates and is unrelated to the Studio's Ralph engine
 (`sprezzature_figures.studio.ralph`), which is a from-scratch,
 plan-driven, testable implementation.
+
+---
+
+## HTTP API & MCP
+
+Three interfaces expose the same `make_figure()` dispatcher:
+
+| Interface | Always installed? | Entry point |
+|---|---|---|
+| CLI (argparse) | Yes | `make-figure` |
+| CLI (Click) | `[cli]` extra | `sprezzature-figures` |
+| HTTP API (FastAPI) | `[api]` extra | `uvicorn sprezzature_figures.api:app` |
+| MCP tools (fastapi-mcp) | `[api,mcp]` extras | `sprezzature-figures-mcp` |
+
+```bash
+pip install "sprezzature-figures[api]"
+uvicorn sprezzature_figures.api:app --host 0.0.0.0 --port 8000
+
+# List stable chart kinds
+curl http://localhost:8000/kinds?status=stable
+
+# Render the demo treemap as SVG
+curl -X POST http://localhost:8000/render/treemap -o treemap.svg
+
+# Render your own data
+curl -X POST http://localhost:8000/render/bar -H 'Content-Type: application/json' \
+     -d '{"data": [{"region": "North", "value": 42}], "title": "My chart"}' -o bar.svg
+
+# Full OpenAPI docs
+open http://localhost:8000/docs
+```
+
+The MCP surface (`sprezzature-figures[api,mcp]`) mounts the exact same
+routes as MCP tools (`list_kinds`, `get_kind`, `render_figure`) at
+`/mcp` on the same FastAPI app, via
+[fastapi-mcp](https://github.com/tadata-org/fastapi_mcp) — one line wraps
+the whole HTTP surface, so the route definitions are never duplicated:
+
+```bash
+pip install "sprezzature-figures[api,mcp]"
+sprezzature-figures-mcp
+```
 
 ---
 

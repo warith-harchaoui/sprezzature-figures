@@ -75,6 +75,25 @@ explain = [
 # call across sprezzature-* routes through best_engine_ai_helper.llm.chat,
 # which itself defaults to a local Ollama backend -- no cloud API required.
 local = ["best-engine-ai-helper>=0.4.0"]
+# FastAPI HTTP surface (sprezzature_figures/api.py) -- GET /kinds,
+# GET /kinds/{kind}, POST /render/{kind}.
+api = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+]
+# MCP surface via fastapi-mcp (sprezzature_figures/mcp.py) -- mounts the
+# FastAPI app as MCP tools so any MCP-aware host can call them directly.
+mcp = [
+    "fastapi-mcp>=0.3",
+    # fastapi-mcp 0.4.0 (the latest as of 2026-08) declares mcp>=1.12.0 with
+    # no upper bound, but calls mcp's Server(name, description) positionally
+    # -- mcp 2.0.0 made `description` keyword-only, so an unconstrained
+    # resolve breaks FastApiMCP(...) at construction time (verified: pip
+    # happily installs mcp 2.0.0 alongside fastapi-mcp 0.4.0, and
+    # `sprezzature_figures.mcp` then raises TypeError on import). Pin below
+    # 2.0 until fastapi-mcp ships a fix.
+    "mcp<2.0",
+]
 # Developer extras
 dev = [
     "pytest>=8",
@@ -94,6 +113,7 @@ dev = [
 sprezzature-figures = "sprezzature_figures.cli:main"
 make-figure = "sprezzature_figures.make_figure:main"
 sprezzature-studio = "sprezzature_figures.studio.cli:main"
+sprezzature-figures-mcp = "sprezzature_figures.mcp:main"
 
 [project.urls]
 Homepage = "https://harchaoui.org/warith/sprezzature/"
