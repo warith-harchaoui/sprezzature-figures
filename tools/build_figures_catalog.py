@@ -280,6 +280,15 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
         ],
         "optional_roles": [],
     },
+    "quiver": {
+        "required_roles": [
+            {"name": "x", "label": "Grid X", "accepted_types": ["numeric"], "required": True},
+            {"name": "y", "label": "Grid Y", "accepted_types": ["numeric"], "required": True},
+            {"name": "fx", "label": "Vector X component", "accepted_types": ["numeric"], "required": True},
+            {"name": "fy", "label": "Vector Y component", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
     "dumbbell": {
         "required_roles": [
             {"name": "category", "label": "Category", "accepted_types": ["categorical"], "required": True},
