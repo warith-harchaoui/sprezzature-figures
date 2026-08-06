@@ -1,6 +1,6 @@
 # Figure Catalogue
 
-111 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type).
+112 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type).
 
 Invoke via:
 
@@ -86,6 +86,7 @@ for the current per-chart status.
 | `kde2d-contour` | make_kde2d-contour.py | Bivariate distribution | 2-D kernel density estimate drawn as isocontour rings over the raw scatter, closer rings where density changes fastest. Use to visualise where a bivariate sample concentrates and sanity-check the smoothing against the raw points. |
 | `liftgain` | make_liftgain.py | Model evaluation | Lift and gain curves for binary classifiers. Use to evaluate how much better than random a model performs when targeting the top N% of a population. |
 | `line` | make_line.py | Time series | Multi-series line chart with points, the default for showing how a numeric value evolves over an ordered axis. Use for monthly revenue by product line, daily active users, sensor readings. |
+| `line-multi` | make_line-multi.py | Time series | Multi-series line chart over a continuous quantitative axis (e.g. hour-of-day), point marker at every sample, hover highlights one series. Use for sessions per hour by platform or any series sampled densely along one continuous axis. |
 | `liquid-gauge` | make_liquid-gauge.py | KPI | Animated liquid fill gauge (wave inside a circle). Use for a single percentage KPI in consumer-facing dashboards where animation adds appeal. |
 | `manhattan` | make_manhattan.py | Genomics / Statistics | Manhattan plot: −log₁₀(p-value) vs. genomic position. The standard chart for genome-wide association study (GWAS) results. |
 | `mosaic` | make_mosaic.py | Categorical | Mosaic (Marimekko) plot: tile area encodes joint frequency of two categorical variables. Use to show contingency tables and test independence visually. |

@@ -2353,6 +2353,62 @@
     ]
   },
   {
+    "kind": "line-multi",
+    "label": "Line Multi",
+    "aliases": [
+      "line multi",
+      "line_multi"
+    ],
+    "category": "Time series",
+    "description": "Multi-series line chart over a continuous quantitative axis (e.g. hour-of-day), point marker at every sample, hover highlights one series. Use for sessions per hour by platform or any series sampled densely along one continuous axis.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "svg",
+    "module": "scripts/make_line-multi.py",
+    "callable_name": "make_line_multi",
+    "required_roles": [
+      {
+        "name": "hour",
+        "label": "Continuous x value",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "platform",
+        "label": "Series",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "sessions",
+        "label": "Numeric value",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 900,
+    "default_height": 600,
+    "options_schema": {},
+    "warnings": [
+      "make_figure('line-multi') cannot resolve to make_line-multi.py: hyphen/underscore normalisation looks for a different filename",
+      "Default output path falls back to a shared assets/ directory"
+    ]
+  },
+  {
     "kind": "liquid-gauge",
     "label": "Liquid Gauge",
     "aliases": [

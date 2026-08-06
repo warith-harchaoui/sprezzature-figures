@@ -4,11 +4,11 @@ Reproducible audit of every `scripts/make_*.py` generator against the
 `make_<kind>(data, *, out, title, ...) -> Path` contract the dispatcher
 expects. Regenerate with `python tools/audit_generators.py --render`.
 
-- **stable**: 31
+- **stable**: 32
 - **experimental**: 0
 - **legacy**: 80
 - **unavailable**: 0
-- **total**: 111
+- **total**: 112
 
 | kind | status | reachable | callable | demo_data | render | errors |
 |---|---|---|---|---|---|---|
@@ -73,6 +73,7 @@ expects. Regenerate with `python tools/audit_generators.py --render`.
 | `kde1d` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `kde2d-contour` | stable | **no** | yes | yes | passed | make_figure('kde2d-contour') cannot resolve to make_kde2d-contour.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
 | `liftgain` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_liftgain.py; No callable named 'make_liftgain' in make_liftgain.py |
+| `line-multi` | stable | **no** | yes | yes | passed | make_figure('line-multi') cannot resolve to make_line-multi.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
 | `line` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `liquid-gauge` | legacy | **no** | **no** | **no** | not_run | No DEMO_DATA in make_liquid-gauge.py; No callable named 'make_liquid_gauge' in make_liquid-gauge.py |
 | `manhattan` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_manhattan.py; No callable named 'make_manhattan' in make_manhattan.py |
