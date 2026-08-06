@@ -4,11 +4,11 @@ Reproducible audit of every `scripts/make_*.py` generator against the
 `make_<kind>(data, *, out, title, ...) -> Path` contract the dispatcher
 expects. Regenerate with `python tools/audit_generators.py --render`.
 
-- **stable**: 36
+- **stable**: 37
 - **experimental**: 0
 - **legacy**: 80
 - **unavailable**: 0
-- **total**: 116
+- **total**: 117
 
 | kind | status | reachable | callable | demo_data | render | errors |
 |---|---|---|---|---|---|---|
@@ -98,6 +98,7 @@ expects. Regenerate with `python tools/audit_generators.py --render`.
 | `radial-bar` | legacy | **no** | **no** | **no** | not_run | No DEMO_DATA in make_radial-bar.py; No callable named 'make_radial_bar' in make_radial-bar.py |
 | `radial-tree` | legacy | **no** | **no** | **no** | not_run | No DEMO_DATA in make_radial-tree.py; No callable named 'make_radial_tree' in make_radial-tree.py |
 | `radviz` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_radviz.py; No callable named 'make_radviz' in make_radviz.py |
+| `regression-ci-band` | stable | **no** | yes | yes | passed | make_figure('regression-ci-band') cannot resolve to make_regression-ci-band.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
 | `residual` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_residual.py; No callable named 'make_residual' in make_residual.py |
 | `ridgeline` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_ridgeline.py; No callable named 'make_ridgeline' in make_ridgeline.py |
 | `rose` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_rose.py; No callable named 'make_rose' in make_rose.py |

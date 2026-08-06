@@ -3176,6 +3176,54 @@
     ]
   },
   {
+    "kind": "regression-ci-band",
+    "label": "Regression Ci Band",
+    "aliases": [
+      "regression ci band",
+      "regression_ci_band"
+    ],
+    "category": "Regression",
+    "description": "OLS-fitted line through a scatter, shaded 95% confidence band around the fitted mean (narrower near the data's centre, wider toward the edges), raw scatter visible underneath. Use to check whether a linear trend is present and how certain the fit is.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "svg",
+    "module": "scripts/make_regression-ci-band.py",
+    "callable_name": "make_regression_ci_band",
+    "required_roles": [
+      {
+        "name": "x",
+        "label": "X value",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "y",
+        "label": "Y value",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 900,
+    "default_height": 600,
+    "options_schema": {},
+    "warnings": [
+      "make_figure('regression-ci-band') cannot resolve to make_regression-ci-band.py: hyphen/underscore normalisation looks for a different filename",
+      "Default output path falls back to a shared assets/ directory"
+    ]
+  },
+  {
     "kind": "residual",
     "label": "Residual",
     "aliases": [],

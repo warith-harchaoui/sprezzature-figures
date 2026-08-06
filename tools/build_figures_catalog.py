@@ -289,6 +289,13 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
         ],
         "optional_roles": [],
     },
+    "regression-ci-band": {
+        "required_roles": [
+            {"name": "x", "label": "X value", "accepted_types": ["numeric"], "required": True},
+            {"name": "y", "label": "Y value", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
     "dumbbell": {
         "required_roles": [
             {"name": "category", "label": "Category", "accepted_types": ["categorical"], "required": True},
