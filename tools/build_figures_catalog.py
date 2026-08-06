@@ -192,6 +192,14 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
         ],
         "optional_roles": [],
     },
+    "corr-matrix": {
+        "required_roles": [
+            {"name": "a", "label": "Feature A", "accepted_types": ["categorical"], "required": True},
+            {"name": "b", "label": "Feature B", "accepted_types": ["categorical"], "required": True},
+            {"name": "r", "label": "Correlation coefficient", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
     "dumbbell": {
         "required_roles": [
             {"name": "category", "label": "Category", "accepted_types": ["categorical"], "required": True},

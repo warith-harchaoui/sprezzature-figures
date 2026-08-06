@@ -1,6 +1,6 @@
 # Figure Catalogue
 
-103 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type).
+104 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type).
 
 Invoke via:
 
@@ -50,6 +50,7 @@ for the current per-chart status.
 | `confusion-matrix` | make_confusion-matrix.py | Model evaluation | Confusion matrix: actual class (rows) vs predicted class (columns), both axes labelled with the class names, cells shaded by count with a strong correct diagonal. Use to see exactly which classes a classifier confuses. |
 | `connected-scatter` | make_connected-scatter.py | Bivariate time series | Scatter plot where consecutive time points are connected by lines. Use to reveal the joint trajectory of two variables over time (e.g., GDP vs. life expectancy). |
 | `convex-hull` | make_convex-hull.py | Clustering | Scatter plot with convex-hull polygons drawn around labelled clusters. Use to visually delimit group boundaries after clustering or classification. |
+| `corr-matrix` | make_corr-matrix.py | Distribution | Symmetric grid of pairwise correlation coefficients, diverging red-white-blue scale centred on zero, coefficient printed per cell. Use to explore a new dataset's feature relationships before modelling or spot multicollinearity. |
 | `cycle` | make_cycle.py | Cyclic | Directed ring of proportional arcs for a process that returns to its start (a crop rotation, the seasons, a product lifecycle, a sprint). Each arc's length is that phase's share of one full turn, wrapped by a flow arrow. Use over a pie when order and recurrence matter. |
 | `dendrogram` | make_dendrogram.py | Hierarchy / Clustering | Hierarchical clustering tree showing how items merge. Use alongside a heatmap for gene expression or customer segmentation; standalone for phylogenetics. |
 | `dependency-wheel` | make_dependency-wheel.py | Network | Circular chord variant emphasising directed dependencies between software modules, packages, or systems. Highlights which components are most depended-upon. |

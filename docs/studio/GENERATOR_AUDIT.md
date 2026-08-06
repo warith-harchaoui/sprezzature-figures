@@ -4,11 +4,11 @@ Reproducible audit of every `scripts/make_*.py` generator against the
 `make_<kind>(data, *, out, title, ...) -> Path` contract the dispatcher
 expects. Regenerate with `python tools/audit_generators.py --render`.
 
-- **stable**: 23
+- **stable**: 24
 - **experimental**: 0
 - **legacy**: 80
 - **unavailable**: 0
-- **total**: 103
+- **total**: 104
 
 | kind | status | reachable | callable | demo_data | render | errors |
 |---|---|---|---|---|---|---|
@@ -39,6 +39,7 @@ expects. Regenerate with `python tools/audit_generators.py --render`.
 | `confusion-matrix` | legacy | **no** | **no** | **no** | not_run | No DEMO_DATA in make_confusion-matrix.py; No callable named 'make_confusion_matrix' in make_confusion-matrix.py |
 | `connected-scatter` | legacy | **no** | **no** | **no** | not_run | No DEMO_DATA in make_connected-scatter.py; No callable named 'make_connected_scatter' in make_connected-scatter.py |
 | `convex-hull` | legacy | **no** | **no** | **no** | not_run | No DEMO_DATA in make_convex-hull.py; No callable named 'make_convex_hull' in make_convex-hull.py |
+| `corr-matrix` | stable | **no** | yes | yes | passed | make_figure('corr-matrix') cannot resolve to make_corr-matrix.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
 | `cycle` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_cycle.py; No callable named 'make_cycle' in make_cycle.py |
 | `dendrogram` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_dendrogram.py; No callable named 'make_dendrogram' in make_dendrogram.py |
 | `dependency-wheel` | legacy | **no** | **no** | **no** | not_run | No DEMO_DATA in make_dependency-wheel.py; No callable named 'make_dependency_wheel' in make_dependency-wheel.py |
