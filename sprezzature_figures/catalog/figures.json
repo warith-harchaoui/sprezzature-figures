@@ -268,6 +268,50 @@
     ]
   },
   {
+    "kind": "beeswarm",
+    "label": "Beeswarm",
+    "aliases": [],
+    "category": "Distribution",
+    "description": "One dot per observation along a shared numeric axis, nudged apart just enough to avoid overlap so the swarm's width is itself a density cue; colour groups several overlapping distributions on one axis. Use where a histogram would hide individual outliers and a box plot would hide shape.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "svg",
+    "module": "scripts/make_beeswarm.py",
+    "callable_name": "make_beeswarm",
+    "required_roles": [
+      {
+        "name": "group",
+        "label": "Group",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "value",
+        "label": "Numeric value",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": 10,
+    "max_recommended_rows": 400,
+    "max_recommended_categories": null,
+    "default_width": 900,
+    "default_height": 600,
+    "options_schema": {},
+    "warnings": [
+      "Default output path falls back to a shared assets/ directory"
+    ]
+  },
+  {
     "kind": "bellcurve",
     "label": "Bellcurve",
     "aliases": [],
