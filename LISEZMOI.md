@@ -86,7 +86,7 @@ print(chemin)  # PosixPath('revenu.png')
 `make_figure()` accepte n'importe quel type enregistré, mais seuls les types
 `status="stable"` sont aujourd'hui vérifiés par rendu de bout en bout. Voir
 [docs/studio/GENERATOR_AUDIT.md](docs/studio/GENERATOR_AUDIT.md) pour le
-statut de chacun des 91 types, et `make-figure --list --status stable` pour
+statut de chacun des 91 types et `make-figure --list --status stable` pour
 la liste de ceux qui fonctionnent dès maintenant (15 à ce jour : `area`,
 `bar`, `boxplot`, `columnrange`, `dumbbell`, `funnel`, `heatmap`,
 `histogram`, `line`, `sankey`, `scatter`, `sunburst`, `treemap`, `waffle`,
@@ -281,11 +281,11 @@ curl -X POST http://localhost:8000/render/bar -H 'Content-Type: application/json
 open http://localhost:8000/docs
 ```
 
-La surface MCP (`sprezzature-figures[api,mcp]`) monte exactement les
-mêmes routes comme outils MCP (`list_kinds`, `get_kind`, `render_figure`)
-sur `/mcp`, sur la même app FastAPI, via
-[fastapi-mcp](https://github.com/tadata-org/fastapi_mcp) — une seule
-ligne enveloppe toute la surface HTTP, les routes ne sont donc jamais
+La surface MCP (`sprezzature-figures[api,mcp]`) expose ces mêmes routes
+comme autant d'outils MCP (`list_kinds`, `get_kind`, `render_figure`) sur
+`/mcp`, dans la même app FastAPI.
+[fastapi-mcp](https://github.com/tadata-org/fastapi_mcp) enveloppe toute
+la surface HTTP en une seule ligne, les routes ne sont donc jamais
 dupliquées :
 
 ```bash

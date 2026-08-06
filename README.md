@@ -281,11 +281,11 @@ curl -X POST http://localhost:8000/render/bar -H 'Content-Type: application/json
 open http://localhost:8000/docs
 ```
 
-The MCP surface (`sprezzature-figures[api,mcp]`) mounts the exact same
-routes as MCP tools (`list_kinds`, `get_kind`, `render_figure`) at
-`/mcp` on the same FastAPI app, via
-[fastapi-mcp](https://github.com/tadata-org/fastapi_mcp) — one line wraps
-the whole HTTP surface, so the route definitions are never duplicated:
+The MCP surface (`sprezzature-figures[api,mcp]`) exposes the exact same
+routes as MCP tools (`list_kinds`, `get_kind`, `render_figure`) at `/mcp`
+on the same FastAPI app.
+[fastapi-mcp](https://github.com/tadata-org/fastapi_mcp) wraps the whole
+HTTP surface in one line, so the route definitions are never duplicated:
 
 ```bash
 pip install "sprezzature-figures[api,mcp]"
@@ -321,9 +321,9 @@ except `llm` / `vision`.
 ### Alternative: conda (local) / Docker (server)
 
 `requirements.txt` (`-e .[cli,dataviz,studio]`) is the shared dependency list
-behind both — `pyproject.toml`'s extras stay the actual source of truth, this
-file just selects which of them to install, so there is nothing to fall out
-of sync.
+behind both; `pyproject.toml`'s extras stay the actual source of truth, and
+this file just selects which of them to install, so there is nothing to
+fall out of sync.
 
 ```bash
 # local dev
