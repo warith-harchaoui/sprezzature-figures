@@ -341,6 +341,14 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
         ],
         "optional_roles": [],
     },
+    "survival-km": {
+        "required_roles": [
+            {"name": "arm", "label": "Arm / group", "accepted_types": ["categorical"], "required": True},
+            {"name": "t", "label": "Duration", "accepted_types": ["numeric"], "required": True},
+            {"name": "event", "label": "Event occurred (bool)", "accepted_types": ["categorical", "numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
     "dumbbell": {
         "required_roles": [
             {"name": "category", "label": "Category", "accepted_types": ["categorical"], "required": True},

@@ -1,6 +1,6 @@
 {
   "summary": {
-    "stable": 43,
+    "stable": 44,
     "experimental": 0,
     "legacy": 80,
     "unavailable": 0
@@ -2755,6 +2755,31 @@
       "errors": [
         "No DEMO_DATA in make_surface3d.py",
         "No callable named 'make_surface3d' in make_surface3d.py"
+      ]
+    },
+    {
+      "kind": "survival-km",
+      "filename": "make_survival-km.py",
+      "hyphenated_kind": true,
+      "dispatcher_reachable_by_kind": false,
+      "importable": true,
+      "import_error": null,
+      "expected_callable": "make_survival_km",
+      "callable_exists": true,
+      "demo_data_exists": true,
+      "demo_data_len": 90,
+      "accepts_data": true,
+      "accepts_out": true,
+      "accepts_title": true,
+      "renderer": "svg",
+      "writes_hardcoded_path": true,
+      "hardcoded_dimensions": true,
+      "render_test": "passed",
+      "render_error": null,
+      "status": "stable",
+      "errors": [
+        "make_figure('survival-km') cannot resolve to make_survival-km.py: hyphen/underscore normalisation looks for a different filename",
+        "Default output path falls back to a shared assets/ directory"
       ]
     },
     {

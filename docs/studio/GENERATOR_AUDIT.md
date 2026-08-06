@@ -4,11 +4,11 @@ Reproducible audit of every `scripts/make_*.py` generator against the
 `make_<kind>(data, *, out, title, ...) -> Path` contract the dispatcher
 expects. Regenerate with `python tools/audit_generators.py --render`.
 
-- **stable**: 43
+- **stable**: 44
 - **experimental**: 0
 - **legacy**: 80
 - **unavailable**: 0
-- **total**: 123
+- **total**: 124
 
 | kind | status | reachable | callable | demo_data | render | errors |
 |---|---|---|---|---|---|---|
@@ -121,6 +121,7 @@ expects. Regenerate with `python tools/audit_generators.py --render`.
 | `strip` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `sunburst` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `surface3d` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_surface3d.py; No callable named 'make_surface3d' in make_surface3d.py |
+| `survival-km` | stable | **no** | yes | yes | passed | make_figure('survival-km') cannot resolve to make_survival-km.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
 | `ternary` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_ternary.py; No callable named 'make_ternary' in make_ternary.py |
 | `timeline` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_timeline.py; No callable named 'make_timeline' in make_timeline.py |
 | `tree` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_tree.py; No callable named 'make_tree' in make_tree.py |
