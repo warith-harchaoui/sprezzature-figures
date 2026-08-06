@@ -6,9 +6,9 @@ expects. Regenerate with `python tools/audit_generators.py --render`.
 
 - **stable**: 16
 - **experimental**: 0
-- **legacy**: 79
+- **legacy**: 80
 - **unavailable**: 0
-- **total**: 95
+- **total**: 96
 
 | kind | status | reachable | callable | demo_data | render | errors |
 |---|---|---|---|---|---|---|
@@ -24,6 +24,7 @@ expects. Regenerate with `python tools/audit_generators.py --render`.
 | `bollinger` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_bollinger.py; No callable named 'make_bollinger' in make_bollinger.py |
 | `boxen` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_boxen.py; No callable named 'make_boxen' in make_boxen.py |
 | `boxplot` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `bubble` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_bubble.py; No callable named 'make_bubble' in make_bubble.py |
 | `bullet` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_bullet.py; No callable named 'make_bullet' in make_bullet.py |
 | `calibration` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_calibration.py; No callable named 'make_calibration' in make_calibration.py |
 | `chord` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_chord.py; No callable named 'make_chord' in make_chord.py |
