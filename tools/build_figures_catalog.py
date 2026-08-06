@@ -349,6 +349,13 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
         ],
         "optional_roles": [],
     },
+    "violin": {
+        "required_roles": [
+            {"name": "g", "label": "Category", "accepted_types": ["categorical"], "required": True},
+            {"name": "y", "label": "Numeric value", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
     "dumbbell": {
         "required_roles": [
             {"name": "category", "label": "Category", "accepted_types": ["categorical"], "required": True},
