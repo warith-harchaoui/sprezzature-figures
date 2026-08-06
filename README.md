@@ -82,15 +82,11 @@ path = make_figure("bar", data, out="revenue.png", title="Revenue by region")
 print(path)  # PosixPath('revenue.png')
 ```
 
-`make_figure()` will attempt any registered chart kind, but only
-`status="stable"` kinds are currently render-verified end to end; see
-[docs/studio/GENERATOR_AUDIT.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/docs/studio/GENERATOR_AUDIT.md)
-for the per-chart status of all 91 types, and `make-figure --list --status stable`
-for the ones that render today (15 as of this writing: `area`, `bar`, `boxplot`,
-`columnrange`, `dumbbell`, `funnel`, `heatmap`, `histogram`, `line`, `sankey`,
-`scatter`, `sunburst`, `treemap`, `waffle`, `waterfall`). Every stable kind
-tolerates optional roles being left unbound: it renders a sensible default
-rather than crashing.
+All 126 registered chart kinds are `status="stable"` (render-verified end to
+end); see [docs/studio/GENERATOR_AUDIT.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/docs/studio/GENERATOR_AUDIT.md)
+for the per-chart audit detail, and `make-figure --list --status stable` to
+confirm the current set. Every stable kind tolerates optional roles being
+left unbound: it renders a sensible default rather than crashing.
 
 ### As a CLI command
 

@@ -83,15 +83,12 @@ chemin = make_figure("bar", donnees, out="revenu.png", title="Revenu par région
 print(chemin)  # PosixPath('revenu.png')
 ```
 
-`make_figure()` accepte n'importe quel type enregistré, mais seuls les types
-`status="stable"` sont aujourd'hui vérifiés par rendu de bout en bout. Voir
-[docs/studio/GENERATOR_AUDIT.md](docs/studio/GENERATOR_AUDIT.md) pour le
-statut de chacun des 91 types et `make-figure --list --status stable` pour
-la liste de ceux qui fonctionnent dès maintenant (15 à ce jour : `area`,
-`bar`, `boxplot`, `columnrange`, `dumbbell`, `funnel`, `heatmap`,
-`histogram`, `line`, `sankey`, `scatter`, `sunburst`, `treemap`, `waffle`,
-`waterfall`). Chaque type stable tolère qu'un rôle optionnel reste non lié :
-il produit un rendu par défaut sensé au lieu de planter.
+Les 126 types enregistrés sont tous `status="stable"` (vérifiés par rendu de
+bout en bout). Voir [docs/studio/GENERATOR_AUDIT.md](docs/studio/GENERATOR_AUDIT.md)
+pour le détail de l'audit par type, et `make-figure --list --status stable`
+pour confirmer l'ensemble actuel. Chaque type stable tolère qu'un rôle
+optionnel reste non lié : il produit un rendu par défaut sensé au lieu de
+planter.
 
 ### En ligne de commande
 
