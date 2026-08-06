@@ -251,6 +251,14 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
         ],
         "optional_roles": [],
     },
+    "line-multi": {
+        "required_roles": [
+            {"name": "hour", "label": "Continuous x value", "accepted_types": ["numeric"], "required": True},
+            {"name": "platform", "label": "Series", "accepted_types": ["categorical"], "required": True},
+            {"name": "sessions", "label": "Numeric value", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
     "dumbbell": {
         "required_roles": [
             {"name": "category", "label": "Category", "accepted_types": ["categorical"], "required": True},
