@@ -1,6 +1,6 @@
 # Figure Catalogue
 
-117 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type).
+118 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type).
 
 Invoke via:
 
@@ -113,6 +113,7 @@ for the current per-chart status.
 | `regression-ci-band` | make_regression-ci-band.py | Regression | OLS-fitted line through a scatter, shaded 95% confidence band around the fitted mean (narrower near the data's centre, wider toward the edges), raw scatter visible underneath. Use to check whether a linear trend is present and how certain the fit is. |
 | `residual` | make_residual.py | Regression diagnostics | Residuals vs. fitted values (or index). Required in any regression reporting to check homoscedasticity and detect patterns in errors. |
 | `ridgeline` | make_ridgeline.py | Distribution | Stacked KDE curves, offset on the y-axis. Use to compare distributions of many groups compactly (e.g., scores across regions, latency across time slices). |
+| `roc-curve` | make_roc-curve.py | Model evaluation | True-positive rate vs. false-positive rate as the decision threshold sweeps, against the diagonal a random guesser would trace; AUC in the title condenses the curve to one number. The standard chart for reporting classifier discrimination. |
 | `rose` | make_rose.py | Cyclic | Polar area chart (Nightingale rose). Use to show magnitude in directional or seasonal data where the angle encodes a cyclic category. |
 | `rug` | make_rug.py | Distribution | 1-D tick marks along an axis showing individual data points. Use as a supplement to a KDE or histogram to expose sample size and individual-point positions. |
 | `sankey` | make_sankey.py | Flow | Sankey diagram: flows between nodes with width proportional to volume. Use for energy balance, budget allocation, or any source → sink flow across categories. |

@@ -296,6 +296,13 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
         ],
         "optional_roles": [],
     },
+    "roc-curve": {
+        "required_roles": [
+            {"name": "score", "label": "Predicted score", "accepted_types": ["numeric"], "required": True},
+            {"name": "label", "label": "True label (0/1)", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
     "dumbbell": {
         "required_roles": [
             {"name": "category", "label": "Category", "accepted_types": ["categorical"], "required": True},
