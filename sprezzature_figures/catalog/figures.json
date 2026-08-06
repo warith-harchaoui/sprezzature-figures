@@ -559,6 +559,62 @@
     ]
   },
   {
+    "kind": "calendar-heatmap",
+    "label": "Calendar Heatmap",
+    "aliases": [
+      "calendar heatmap",
+      "calendar_heatmap"
+    ],
+    "category": "Time series",
+    "description": "GitHub-style week x day grid, cell colour is a daily count on a single pale-to-navy blue ramp. Use for commit activity, daily active users, or habit tracking viewed over months at a glance.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "svg",
+    "module": "scripts/make_calendar-heatmap.py",
+    "callable_name": "make_calendar_heatmap",
+    "required_roles": [
+      {
+        "name": "week",
+        "label": "Week index",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "day",
+        "label": "Day of week",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "count",
+        "label": "Daily count",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 900,
+    "default_height": 600,
+    "options_schema": {},
+    "warnings": [
+      "make_figure('calendar-heatmap') cannot resolve to make_calendar-heatmap.py: hyphen/underscore normalisation looks for a different filename",
+      "Default output path falls back to a shared assets/ directory"
+    ]
+  },
+  {
     "kind": "calibration",
     "label": "Calibration",
     "aliases": [],

@@ -159,6 +159,14 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
         ],
         "optional_roles": [],
     },
+    "calendar-heatmap": {
+        "required_roles": [
+            {"name": "week", "label": "Week index", "accepted_types": ["numeric"], "required": True},
+            {"name": "day", "label": "Day of week", "accepted_types": ["categorical"], "required": True},
+            {"name": "count", "label": "Daily count", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
     "dumbbell": {
         "required_roles": [
             {"name": "category", "label": "Category", "accepted_types": ["categorical"], "required": True},
