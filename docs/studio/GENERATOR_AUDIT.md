@@ -4,11 +4,11 @@ Reproducible audit of every `scripts/make_*.py` generator against the
 `make_<kind>(data, *, out, title, ...) -> Path` contract the dispatcher
 expects. Regenerate with `python tools/audit_generators.py --render`.
 
-- **stable**: 29
+- **stable**: 30
 - **experimental**: 0
 - **legacy**: 80
 - **unavailable**: 0
-- **total**: 109
+- **total**: 110
 
 | kind | status | reachable | callable | demo_data | render | errors |
 |---|---|---|---|---|---|---|
@@ -70,6 +70,7 @@ expects. Regenerate with `python tools/audit_generators.py --render`.
 | `imshow-interpolated` | legacy | **no** | yes | **no** | not_run | No DEMO_DATA in make_imshow-interpolated.py; make_figure('imshow-interpolated') cannot resolve to make_imshow-interpolated.py: hyphen/underscore normalisation looks for a different filename |
 | `interruption-matrix` | stable | **no** | yes | yes | passed | make_figure('interruption-matrix') cannot resolve to make_interruption-matrix.py: hyphen/underscore normalisation looks for a different filename |
 | `jointplot` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_jointplot.py; No callable named 'make_jointplot' in make_jointplot.py |
+| `kde1d` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `liftgain` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_liftgain.py; No callable named 'make_liftgain' in make_liftgain.py |
 | `line` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `liquid-gauge` | legacy | **no** | **no** | **no** | not_run | No DEMO_DATA in make_liquid-gauge.py; No callable named 'make_liquid_gauge' in make_liquid-gauge.py |
