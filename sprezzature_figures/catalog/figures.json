@@ -3588,6 +3588,58 @@
     ]
   },
   {
+    "kind": "slope",
+    "label": "Slope",
+    "aliases": [],
+    "category": "Change",
+    "description": "Connects each item's value at two points in time with a straight line between two vertical axes; slope reads as change, crossing lines flag rank reversals. A tighter alternative to grouped bars for a small before/after item list.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "svg",
+    "module": "scripts/make_slope.py",
+    "callable_name": "make_slope",
+    "required_roles": [
+      {
+        "name": "item",
+        "label": "Item",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "period",
+        "label": "Period",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "v",
+        "label": "Numeric value",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 900,
+    "default_height": 600,
+    "options_schema": {},
+    "warnings": [
+      "Default output path falls back to a shared assets/ directory"
+    ]
+  },
+  {
     "kind": "speaking_time",
     "label": "Speaking Time",
     "aliases": [],
