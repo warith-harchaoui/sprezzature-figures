@@ -361,7 +361,7 @@
     "label": "Boxplot",
     "aliases": [],
     "category": "Distribution",
-    "description": "Box plot summarising median, quartiles, and outliers per category via Vega-Lite's native boxplot mark. Use for salary by department, response time by service, scores by class.",
+    "description": "Box plot summarising median, quartiles, and outliers per category (Tukey 1.5\u00d7IQR rule). Use for salary by department, response time by service, scores by class.",
     "intents": [],
     "status": "stable",
     "renderer": "svg",
@@ -837,6 +837,50 @@
       "No DEMO_DATA in make_difference-chart.py",
       "No callable named 'make_difference_chart' in make_difference-chart.py",
       "make_figure('difference-chart') cannot resolve to make_difference-chart.py: hyphen/underscore normalisation looks for a different filename"
+    ]
+  },
+  {
+    "kind": "donut",
+    "label": "Donut",
+    "aliases": [],
+    "category": "Composition",
+    "description": "Pie chart with an open centre; each category's share of a whole is an arc's angular span, ordered largest to smallest, with a percentage label per wedge. Use for a small (2-6 category) part-of-whole breakdown: traffic by channel, budget by category, votes by candidate.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "svg",
+    "module": "scripts/make_donut.py",
+    "callable_name": "make_donut",
+    "required_roles": [
+      {
+        "name": "source",
+        "label": "Category",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "visits",
+        "label": "Weight / share",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": 6,
+    "default_width": 900,
+    "default_height": 600,
+    "options_schema": {},
+    "warnings": [
+      "Default output path falls back to a shared assets/ directory"
     ]
   },
   {

@@ -1,6 +1,6 @@
 # Figure Catalogue
 
-96 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type).
+97 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type).
 
 Invoke via:
 
@@ -48,6 +48,7 @@ for the current per-chart status.
 | `dendrogram` | make_dendrogram.py | Hierarchy / Clustering | Hierarchical clustering tree showing how items merge. Use alongside a heatmap for gene expression or customer segmentation; standalone for phylogenetics. |
 | `dependency-wheel` | make_dependency-wheel.py | Network | Circular chord variant emphasising directed dependencies between software modules, packages, or systems. Highlights which components are most depended-upon. |
 | `difference-chart` | make_difference-chart.py | Comparison | Two area or line series with the gap between them shaded. Use to emphasise the magnitude and sign of the difference between two time series. |
+| `donut` | make_donut.py | Composition | Pie chart with an open centre; each category's share of a whole is an arc's angular span, ordered largest to smallest, with a percentage label per wedge. Use for a small (2-6 category) part-of-whole breakdown: traffic by channel, budget by category, votes by candidate. |
 | `dotdensity` | make_dotdensity.py | Geospatial | Each dot represents a fixed count of a quantity on a map. Use to show spatial distribution and relative magnitude without imposing arbitrary choropleth boundaries. |
 | `dotplot` | make_dotplot.py | Distribution | Wilkinson dot plot: one dot per observation, binned and stacked so the sample size stays countable while the silhouette shows the distribution's shape. Use for small-to-medium samples where a histogram's bars would hide individual points. |
 | `dumbbell` | make_dumbbell.py | Change | Two dots connected by a line per category (before vs. after). Use for clear before–after or group-A vs. group-B comparison across many categories. |
