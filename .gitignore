@@ -11,7 +11,6 @@ build/
 *.html
 *.svg
 !assets/svg-examples/*.svg
-!assets/vega-examples/*.json
 
 .private/
 # Coverage reports

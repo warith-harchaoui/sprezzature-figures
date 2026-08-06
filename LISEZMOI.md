@@ -190,7 +190,6 @@ sprezzature-figures/
 │   ├── make_connected-scatter.py  # les types avec tiret sont supportés
 │   └── ...                        # 91 scripts make_*.py au total
 ├── assets/
-│   ├── vega-examples/     # spécifications Vega-Lite et Vega
 │   └── svg-examples/      # gabarits SVG
 ├── references/            # documentation des sources de référence
 └── tests/
