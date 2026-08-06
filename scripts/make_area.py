@@ -50,11 +50,11 @@ DEMO_DATA: List[Dict[str, Any]] = [
 ]
 
 
-def _channel_colors(accessibility: str = "universal") -> Dict[str, str]:
+def _channel_colors(channels: List[str], accessibility: str = "universal") -> Dict[str, str]:
     palette = load_palette(accessibility)
     hues = [palette.get("Purple", "#AF52DE"), palette.get("Blue", "#007AFF"),
             palette.get("Orange", "#FF9500"), palette.get("Green", "#34C759")]
-    return {ch: hues[i % len(hues)] for i, ch in enumerate(CHANNELS)}
+    return {ch: hues[i % len(hues)] for i, ch in enumerate(channels)}
 
 
 def build_svg(
@@ -87,11 +87,18 @@ def build_svg(
         A complete, standalone SVG document.
     """
     rows = data if data else DEMO_DATA
-    channels = [c for c in CHANNELS if any(r["channel"] == c for r in rows)] or CHANNELS
+    # "channel" is an optional role (see catalog): rows may omit it entirely
+    # (single unnamed series) or carry values outside the built-in demo set.
+    seen: List[str] = []
+    for r in rows:
+        ch = r.get("channel", "")
+        if ch not in seen:
+            seen.append(ch)
+    channels = [c for c in CHANNELS if c in seen] + [c for c in seen if c not in CHANNELS]
     months = sorted({r["month"] for r in rows}, key=lambda m: MONTHS.index(m) if m in MONTHS else 0)
-    colors = _channel_colors(accessibility)
+    colors = _channel_colors(channels, accessibility)
 
-    lookup: Dict[tuple, float] = {(r["month"], r["channel"]): float(r["visits"]) for r in rows}
+    lookup: Dict[tuple, float] = {(r["month"], r.get("channel", "")): float(r["visits"]) for r in rows}
     # Cumulative stack, bottom-to-top in channel order, per month.
     cum: Dict[str, List[float]] = {m: [] for m in months}
     for m in months:
@@ -118,11 +125,12 @@ def build_svg(
     parts: List[str] = []
     parts.append(svg_open(width, height, "area-title", "area-desc"))
     parts.append(f'<title id="area-title">{xml_escape(title)}</title>')
-    top_channel = channels[-1] if channels else ""
+    top_channel = channels[-1] if len(channels) > 1 else ""
+    stack_note = f" {xml_escape(top_channel)} sits on top of the stack." if top_channel else ""
     parts.append(
-        f'<desc id="area-desc">Stacked area chart of {len(channels)} channels over '
-        f'{n} months, peaking at {max_total:.0f} thousand visits. {xml_escape(top_channel)} '
-        f'sits on top of the stack.</desc>'
+        f'<desc id="area-desc">Stacked area chart of {len(channels)} channel'
+        f'{"s" if len(channels) != 1 else ""} over {n} months, peaking at '
+        f'{max_total:.0f} thousand visits.{stack_note}</desc>'
     )
 
     parts.append(
@@ -145,15 +153,17 @@ def build_svg(
     parts.append(f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>')
 
     # ---- legend (top-left, below subtitle) ----
-    lx = 40.0
-    ly = 100.0
-    parts.append(f'<text x="{lx:.1f}" y="{ly:.1f}" font-size="13" font-weight="700" fill="{INK}">Channel</text>')
-    cursor = lx
-    ly2 = ly + 22
-    for i, ch in enumerate(channels):
-        parts.append(f'<circle cx="{cursor + 6:.1f}" cy="{ly2 - 5:.1f}" r="6" fill="{colors[ch]}"/>')
-        parts.append(f'<text x="{cursor + 18:.1f}" y="{ly2:.1f}" font-size="12" fill="{INK}">{xml_escape(ch)}</text>')
-        cursor += 18 + 7.2 * len(ch) + 22
+    # A single unnamed series needs no legend box -- the title already names it.
+    if len(channels) > 1:
+        lx = 40.0
+        ly = 100.0
+        parts.append(f'<text x="{lx:.1f}" y="{ly:.1f}" font-size="13" font-weight="700" fill="{INK}">Channel</text>')
+        cursor = lx
+        ly2 = ly + 22
+        for i, ch in enumerate(channels):
+            parts.append(f'<circle cx="{cursor + 6:.1f}" cy="{ly2 - 5:.1f}" r="6" fill="{colors[ch]}"/>')
+            parts.append(f'<text x="{cursor + 18:.1f}" y="{ly2:.1f}" font-size="12" fill="{INK}">{xml_escape(ch)}</text>')
+            cursor += 18 + 7.2 * len(ch) + 22
 
     # ---- y-axis gridlines ----
     y_step = max_total / 4.0

@@ -106,7 +106,7 @@ def build_svg(
     parts.append(f'<title id="bar-title">{xml_escape(title)}</title>')
     top = ordered[0] if ordered else None
     peak_desc = (
-        f" {top['region']} leads at {top['value']:.0f}, "
+        f" {top['region']} leads at {float(top['value']):.0f}, "
         f"{float(top['value']) / total * 100:.0f}% of the total."
         if top else ""
     )
