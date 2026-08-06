@@ -167,6 +167,16 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
         ],
         "optional_roles": [],
     },
+    "candlestick": {
+        "required_roles": [
+            {"name": "day", "label": "Period", "accepted_types": ["numeric", "categorical"], "required": True},
+            {"name": "open", "label": "Open", "accepted_types": ["numeric"], "required": True},
+            {"name": "close", "label": "Close", "accepted_types": ["numeric"], "required": True},
+            {"name": "high", "label": "High", "accepted_types": ["numeric"], "required": True},
+            {"name": "low", "label": "Low", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
     "dumbbell": {
         "required_roles": [
             {"name": "category", "label": "Category", "accepted_types": ["categorical"], "required": True},

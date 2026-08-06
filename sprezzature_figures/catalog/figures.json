@@ -644,6 +644,75 @@
     ]
   },
   {
+    "kind": "candlestick",
+    "label": "Candlestick",
+    "aliases": [],
+    "category": "Finance",
+    "description": "OHLC chart per period: a thin wick spans low-high, a thick body spans open-close, coloured green up / red down. The default chart for daily price data or any open/high/low/close-shaped series.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "svg",
+    "module": "scripts/make_candlestick.py",
+    "callable_name": "make_candlestick",
+    "required_roles": [
+      {
+        "name": "day",
+        "label": "Period",
+        "accepted_types": [
+          "numeric",
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "open",
+        "label": "Open",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "close",
+        "label": "Close",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "high",
+        "label": "High",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "low",
+        "label": "Low",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 900,
+    "default_height": 600,
+    "options_schema": {},
+    "warnings": [
+      "Default output path falls back to a shared assets/ directory"
+    ]
+  },
+  {
     "kind": "chord",
     "label": "Chord",
     "aliases": [],
