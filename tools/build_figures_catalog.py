@@ -266,6 +266,14 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
         ],
         "optional_roles": [],
     },
+    "population-pyramid": {
+        "required_roles": [
+            {"name": "age", "label": "Age band", "accepted_types": ["categorical"], "required": True},
+            {"name": "sex", "label": "Category", "accepted_types": ["categorical"], "required": True},
+            {"name": "pct", "label": "Share (%, signed)", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
     "dumbbell": {
         "required_roles": [
             {"name": "category", "label": "Category", "accepted_types": ["categorical"], "required": True},

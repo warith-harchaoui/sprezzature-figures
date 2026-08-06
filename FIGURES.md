@@ -1,6 +1,6 @@
 # Figure Catalogue
 
-113 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type).
+114 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type).
 
 Invoke via:
 
@@ -101,6 +101,7 @@ for the current per-chart status.
 | `parliament` | make_parliament.py | Political / Composition | Semicircular seat chart for legislative bodies. Use to show seat distribution in elections or any grouped proportional allocation. |
 | `pictorial` | make_pictorial.py | Infographic | Bar or unit chart where bars are replaced by repeating icons. Use for general audiences where engagement matters more than precision. |
 | `polar` | make_polar.py | Cyclic | Polar bar chart for cyclic or directional data (hours of the day, compass bearings, seasonal patterns). |
+| `population-pyramid` | make_population-pyramid.py | Distribution | Mirrors two categories' horizontal bars around a shared zero axis, one row per age band, oldest at top. The classic demographic pyramid; the shape tells the story of a young/growing vs. ageing population. |
 | `ppplot` | make_ppplot.py | Goodness of fit | Probability-probability plot: theoretical vs. empirical CDF. Use alongside Q-Q plot to diagnose distributional fit in the body (not tails) of a distribution. |
 | `prcurve` | make_prcurve.py | Model evaluation | Precision-Recall curve for binary classifiers. Preferred over ROC when classes are imbalanced, because it focuses on the minority (positive) class performance. |
 | `radar` | make_radar.py | Multivariate | Radar / spider chart: multiple quantitative axes radiating from a common centre. Use for comparing a small number of entities across 4–8 dimensions. |

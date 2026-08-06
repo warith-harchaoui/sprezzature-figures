@@ -4,11 +4,11 @@ Reproducible audit of every `scripts/make_*.py` generator against the
 `make_<kind>(data, *, out, title, ...) -> Path` contract the dispatcher
 expects. Regenerate with `python tools/audit_generators.py --render`.
 
-- **stable**: 33
+- **stable**: 34
 - **experimental**: 0
 - **legacy**: 80
 - **unavailable**: 0
-- **total**: 113
+- **total**: 114
 
 | kind | status | reachable | callable | demo_data | render | errors |
 |---|---|---|---|---|---|---|
@@ -89,6 +89,7 @@ expects. Regenerate with `python tools/audit_generators.py --render`.
 | `parliament` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_parliament.py; No callable named 'make_parliament' in make_parliament.py |
 | `pictorial` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_pictorial.py; No callable named 'make_pictorial' in make_pictorial.py |
 | `polar` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_polar.py; No callable named 'make_polar' in make_polar.py |
+| `population-pyramid` | stable | **no** | yes | yes | passed | make_figure('population-pyramid') cannot resolve to make_population-pyramid.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
 | `ppplot` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_ppplot.py; No callable named 'make_ppplot' in make_ppplot.py |
 | `prcurve` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_prcurve.py; No callable named 'make_prcurve' in make_prcurve.py |
 | `radar` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_radar.py; No callable named 'make_radar' in make_radar.py |
