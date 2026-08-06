@@ -193,7 +193,6 @@ sprezzature-figures/
 │   ├── make_connected-scatter.py  # hyphenated kinds are supported
 │   └── ...                        # 90 make_*.py scripts total
 ├── assets/
-│   ├── vega-examples/     # Vega-Lite and full-Vega spec examples
 │   └── svg-examples/      # SVG template examples
 ├── references/            # upstream chart documentation
 └── tests/
