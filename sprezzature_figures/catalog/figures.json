@@ -4391,6 +4391,50 @@
     ]
   },
   {
+    "kind": "volcano",
+    "label": "Volcano",
+    "aliases": [],
+    "category": "Genomics / Statistics",
+    "description": "Scatters effect size (log2 fold-change) against significance (-log10 p-value) for many simultaneous tests, dashed threshold lines isolate hits into the two upper corners. The standard chart for differential-expression results, or any large multiple-testing comparison.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "svg",
+    "module": "scripts/make_volcano.py",
+    "callable_name": "make_volcano",
+    "required_roles": [
+      {
+        "name": "lfc",
+        "label": "Log2 fold change",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "neglogp",
+        "label": "-log10 p-value",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 900,
+    "default_height": 600,
+    "options_schema": {},
+    "warnings": [
+      "Default output path falls back to a shared assets/ directory"
+    ]
+  },
+  {
     "kind": "voronoi",
     "label": "Voronoi",
     "aliases": [],

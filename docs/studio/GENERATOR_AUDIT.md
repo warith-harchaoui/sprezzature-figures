@@ -4,11 +4,11 @@ Reproducible audit of every `scripts/make_*.py` generator against the
 `make_<kind>(data, *, out, title, ...) -> Path` contract the dispatcher
 expects. Regenerate with `python tools/audit_generators.py --render`.
 
-- **stable**: 45
+- **stable**: 46
 - **experimental**: 0
 - **legacy**: 80
 - **unavailable**: 0
-- **total**: 125
+- **total**: 126
 
 | kind | status | reachable | callable | demo_data | render | errors |
 |---|---|---|---|---|---|---|
@@ -130,6 +130,7 @@ expects. Regenerate with `python tools/audit_generators.py --render`.
 | `variwide` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_variwide.py; No callable named 'make_variwide' in make_variwide.py |
 | `venn` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_venn.py; No callable named 'make_venn' in make_venn.py |
 | `violin` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `volcano` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `voronoi` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_voronoi.py; No callable named 'make_voronoi' in make_voronoi.py |
 | `waffle` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `waterfall` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |

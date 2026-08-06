@@ -356,6 +356,13 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
         ],
         "optional_roles": [],
     },
+    "volcano": {
+        "required_roles": [
+            {"name": "lfc", "label": "Log2 fold change", "accepted_types": ["numeric"], "required": True},
+            {"name": "neglogp", "label": "-log10 p-value", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
     "dumbbell": {
         "required_roles": [
             {"name": "category", "label": "Category", "accepted_types": ["categorical"], "required": True},
