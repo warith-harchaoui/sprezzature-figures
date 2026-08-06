@@ -1,6 +1,6 @@
 {
   "summary": {
-    "stable": 37,
+    "stable": 38,
     "experimental": 0,
     "legacy": 80,
     "unavailable": 0
@@ -2257,6 +2257,31 @@
       "errors": [
         "No DEMO_DATA in make_ridgeline.py",
         "No callable named 'make_ridgeline' in make_ridgeline.py"
+      ]
+    },
+    {
+      "kind": "roc-curve",
+      "filename": "make_roc-curve.py",
+      "hyphenated_kind": true,
+      "dispatcher_reachable_by_kind": false,
+      "importable": true,
+      "import_error": null,
+      "expected_callable": "make_roc_curve",
+      "callable_exists": true,
+      "demo_data_exists": true,
+      "demo_data_len": 280,
+      "accepts_data": true,
+      "accepts_out": true,
+      "accepts_title": true,
+      "renderer": "svg",
+      "writes_hardcoded_path": true,
+      "hardcoded_dimensions": true,
+      "render_test": "passed",
+      "render_error": null,
+      "status": "stable",
+      "errors": [
+        "make_figure('roc-curve') cannot resolve to make_roc-curve.py: hyphen/underscore normalisation looks for a different filename",
+        "Default output path falls back to a shared assets/ directory"
       ]
     },
     {

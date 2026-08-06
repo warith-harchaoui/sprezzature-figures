@@ -3281,6 +3281,54 @@
     ]
   },
   {
+    "kind": "roc-curve",
+    "label": "Roc Curve",
+    "aliases": [
+      "roc curve",
+      "roc_curve"
+    ],
+    "category": "Model evaluation",
+    "description": "True-positive rate vs. false-positive rate as the decision threshold sweeps, against the diagonal a random guesser would trace; AUC in the title condenses the curve to one number. The standard chart for reporting classifier discrimination.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "svg",
+    "module": "scripts/make_roc-curve.py",
+    "callable_name": "make_roc_curve",
+    "required_roles": [
+      {
+        "name": "score",
+        "label": "Predicted score",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "label",
+        "label": "True label (0/1)",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 900,
+    "default_height": 600,
+    "options_schema": {},
+    "warnings": [
+      "make_figure('roc-curve') cannot resolve to make_roc-curve.py: hyphen/underscore normalisation looks for a different filename",
+      "Default output path falls back to a shared assets/ directory"
+    ]
+  },
+  {
     "kind": "rose",
     "label": "Rose",
     "aliases": [],
