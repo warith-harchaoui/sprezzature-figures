@@ -1038,6 +1038,62 @@
     ]
   },
   {
+    "kind": "corr-matrix",
+    "label": "Corr Matrix",
+    "aliases": [
+      "corr matrix",
+      "corr_matrix"
+    ],
+    "category": "Distribution",
+    "description": "Symmetric grid of pairwise correlation coefficients, diverging red-white-blue scale centred on zero, coefficient printed per cell. Use to explore a new dataset's feature relationships before modelling or spot multicollinearity.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "svg",
+    "module": "scripts/make_corr-matrix.py",
+    "callable_name": "make_corr_matrix",
+    "required_roles": [
+      {
+        "name": "a",
+        "label": "Feature A",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "b",
+        "label": "Feature B",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "r",
+        "label": "Correlation coefficient",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 900,
+    "default_height": 600,
+    "options_schema": {},
+    "warnings": [
+      "make_figure('corr-matrix') cannot resolve to make_corr-matrix.py: hyphen/underscore normalisation looks for a different filename",
+      "Default output path falls back to a shared assets/ directory"
+    ]
+  },
+  {
     "kind": "cycle",
     "label": "Cycle",
     "aliases": [],
