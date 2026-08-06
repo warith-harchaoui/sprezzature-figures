@@ -1,6 +1,6 @@
 # Figure Catalogue
 
-118 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type).
+119 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type).
 
 Invoke via:
 
@@ -121,6 +121,7 @@ for the current per-chart status.
 | `scatter3d` | make_scatter3d.py | 3-D | Interactive 3-D scatter plot for three continuous variables. Use when a 2-D projection loses important structure (e.g., embedding manifolds). |
 | `sfdp-largegraph` | make_sfdp-largegraph.py | Network | Scalable Force-Directed Placement for large graphs (thousands of nodes). Use when standard force-directed layouts become too slow or cluttered. |
 | `situation_map` | make_situation_map.py | Geospatial | Annotated situation map with icons and labels at specific coordinates. Use for field operations, logistics, or incident mapping. |
+| `slope` | make_slope.py | Change | Connects each item's value at two points in time with a straight line between two vertical axes; slope reads as change, crossing lines flag rank reversals. A tighter alternative to grouped bars for a small before/after item list. |
 | `speaking_time` | make_speaking_time.py | Communication | Speaking-time breakdown chart (waterfall or stacked bar). Use to visualise turn-taking or time allocation in meetings, debates, or interviews. |
 | `spectrogram` | make_spectrogram.py | Signal | Frequency × time heatmap of a signal's energy. Use for audio, seismic, or any time-varying spectral data. |
 | `spike-map` | make_spike-map.py | Geospatial | Vertical spikes on a map proportional to a value at each location. Cleaner than a dot map for comparing magnitudes; less distorting than a choropleth. |
