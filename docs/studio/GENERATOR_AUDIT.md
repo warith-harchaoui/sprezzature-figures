@@ -4,11 +4,11 @@ Reproducible audit of every `scripts/make_*.py` generator against the
 `make_<kind>(data, *, out, title, ...) -> Path` contract the dispatcher
 expects. Regenerate with `python tools/audit_generators.py --render`.
 
-- **stable**: 32
+- **stable**: 33
 - **experimental**: 0
 - **legacy**: 80
 - **unavailable**: 0
-- **total**: 112
+- **total**: 113
 
 | kind | status | reachable | callable | demo_data | render | errors |
 |---|---|---|---|---|---|---|
@@ -76,6 +76,7 @@ expects. Regenerate with `python tools/audit_generators.py --render`.
 | `line-multi` | stable | **no** | yes | yes | passed | make_figure('line-multi') cannot resolve to make_line-multi.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
 | `line` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `liquid-gauge` | legacy | **no** | **no** | **no** | not_run | No DEMO_DATA in make_liquid-gauge.py; No callable named 'make_liquid_gauge' in make_liquid-gauge.py |
+| `lollipop` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `manhattan` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_manhattan.py; No callable named 'make_manhattan' in make_manhattan.py |
 | `mosaic` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_mosaic.py; No callable named 'make_mosaic' in make_mosaic.py |
 | `network` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_network.py; No callable named 'make_network' in make_network.py |

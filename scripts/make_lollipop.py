@@ -1,0 +1,209 @@
+#!/usr/bin/env python3
+"""
+make_lollipop — a house-styled lollipop chart as hand-authored SVG.
+
+A lighter-weight cousin of the bar chart: a thin stem from zero to the
+value, capped with a dot, one per category, sorted largest to smallest.
+The thin stem draws less ink than a filled bar while keeping the same
+"length encodes value" reading, so it suits a longer category list or a
+report where restraint matters more than a bar's visual weight.
+
+Previously rendered via Vega-Lite (a layered ``rule`` + ``point`` mark,
+``vl_convert``); this module now paints both by hand -- no Vega, no
+matplotlib. Every lollipop carries a native ``<title>`` tooltip.
+
+Author
+------
+`Warith Harchaoui, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
+"""
+
+from __future__ import annotations
+
+import sys
+from pathlib import Path
+from typing import Any, Dict, List, Optional
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _interactive import fullscreen_control  # noqa: E402
+from _render import render_cli, svg_example_path, write_svg  # noqa: E402
+from _svg import svg_open, xml_escape  # noqa: E402
+
+INK = "#1D1D1F"
+SECONDARY = "#6E6E73"
+BG = "#FFFFFF"
+GRIDLINE = "#E5E5EA"
+FONT_MONO = "Roboto Mono, ui-monospace, monospace"
+COLOR_STEM = "#C7C7CC"
+COLOR_DOT = "#007AFF"
+
+DEMO_DATA: List[Dict[str, Any]] = [
+    {"c": "alpha", "v": 28}, {"c": "beta", "v": 55}, {"c": "gamma", "v": 43},
+    {"c": "delta", "v": 91}, {"c": "epsilon", "v": 62},
+]
+
+
+def build_svg(
+    data: Optional[List[Dict[str, Any]]] = None,
+    title: str = "Score by Group",
+    subtitle: str = "Categories sorted largest to smallest",
+    width: int = 620,
+    height: int = 420,
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> str:
+    """Assemble the full lollipop chart SVG document as a string.
+
+    Parameters
+    ----------
+    data : list of dict or None
+        Rows with keys ``c`` (str) and ``v`` (numeric). Defaults to
+        :data:`DEMO_DATA`.
+    title, subtitle : str
+        Chart text.
+    width, height : int
+        Canvas size in pixels.
+    mode : str, optional
+        Forwarded to :func:`_interactive.fullscreen_control`.
+    accessibility : str, optional
+        Accepted for CLI parity but a documented no-op: a single house-
+        blue dot/stem, no categorical hues to re-level.
+
+    Returns
+    -------
+    str
+        A complete, standalone SVG document.
+    """
+    _ = accessibility
+    rows = sorted(data if data else DEMO_DATA, key=lambda r: -float(r["v"]))
+    max_v = max(float(r["v"]) for r in rows) if rows else 1.0
+    total = sum(float(r["v"]) for r in rows) or 1.0
+
+    plot_x, plot_y = 110.0, 118.0
+    right_margin, bottom_reserved = 40.0, 60.0
+    plot_w = width - plot_x - right_margin
+    plot_h = height - plot_y - bottom_reserved
+    n = len(rows)
+    row_h = plot_h / n if n else plot_h
+
+    def x_for(v: float) -> float:
+        return plot_x + v / max_v * plot_w * 0.92
+
+    parts: List[str] = []
+    parts.append(svg_open(width, height, "lp-title", "lp-desc"))
+    parts.append(f'<title id="lp-title">{xml_escape(title)}</title>')
+    top = rows[0] if rows else None
+    peak_desc = f" {top['c']} leads at {top['v']:.0f}." if top else ""
+    parts.append(
+        f'<desc id="lp-desc">Lollipop chart of {n} categories, tallest {max_v:.0f}.'
+        f'{peak_desc}</desc>'
+    )
+    parts.append(
+        "<style>"
+        ".pop{transition:r .12s ease;}"
+        ".pop:hover,.pop:focus{r:8;outline:none;}"
+        "@media (prefers-reduced-motion: reduce){.pop{transition:none;}}"
+        "</style>"
+    )
+    parts.append(f'<rect width="{width}" height="{height}" fill="{BG}"/>')
+    parts.append(
+        f'<text x="40" y="46" font-size="22" font-weight="700" fill="{INK}" '
+        f'letter-spacing="-0.3">{xml_escape(title)}</text>'
+    )
+    parts.append(f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>')
+
+    # ---- x-axis gridlines ----
+    x_ticks = 5
+    for i in range(x_ticks + 1):
+        val = max_v * i / x_ticks
+        tx = x_for(val)
+        parts.append(
+            f'<line x1="{tx:.1f}" y1="{plot_y:.1f}" x2="{tx:.1f}" y2="{plot_y + plot_h:.1f}" '
+            f'stroke="{GRIDLINE}" stroke-width="1"/>'
+        )
+        parts.append(
+            f'<text x="{tx:.1f}" y="{plot_y + plot_h + 20:.1f}" font-size="11" font-family="{FONT_MONO}" '
+            f'fill="{SECONDARY}" text-anchor="middle">{val:.0f}</text>'
+        )
+    parts.append(
+        f'<text x="{plot_x + plot_w / 2:.1f}" y="{plot_y + plot_h + 42:.1f}" font-size="13" '
+        f'fill="{INK}" text-anchor="middle">Score</text>'
+    )
+
+    # ---- lollipops ----
+    for i, row in enumerate(rows):
+        v = float(row["v"])
+        cy = plot_y + i * row_h + row_h / 2
+        x1 = x_for(v)
+        share = v / total * 100.0
+        tip = f"{row['c']}: {v:.0f} ({share:.1f}% of total)"
+        parts.append(f'<line x1="{plot_x:.1f}" y1="{cy:.1f}" x2="{x1:.1f}" y2="{cy:.1f}" stroke="{COLOR_STEM}" stroke-width="2"/>')
+        parts.append(
+            f'<circle class="pop" tabindex="0" cx="{x1:.1f}" cy="{cy:.1f}" r="7" fill="{COLOR_DOT}" '
+            f'stroke="{BG}" stroke-width="1.5"><title>{xml_escape(tip)}</title></circle>'
+        )
+        parts.append(
+            f'<text x="{plot_x - 12:.1f}" y="{cy + 4:.1f}" font-size="13" fill="{INK}" '
+            f'text-anchor="end">{xml_escape(str(row["c"]))}</text>'
+        )
+
+    axis_y = plot_y + plot_h
+    parts.append(
+        f'<line x1="{plot_x:.1f}" y1="{axis_y:.1f}" x2="{plot_x + plot_w:.1f}" y2="{axis_y:.1f}" '
+        f'stroke="{INK}" stroke-width="1.2"/>'
+    )
+
+    parts.append(fullscreen_control(width, height, mode))
+    parts.append("</svg>")
+    return "\n".join(parts)
+
+
+def make_lollipop(
+    data: Optional[List[Dict[str, Any]]] = None,
+    *,
+    out: Optional[Path | str] = None,
+    title: str = "Score by Group",
+    subtitle: str = "Categories sorted largest to smallest",
+    width: int = 620,
+    height: int = 420,
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render a hand-authored lollipop chart and write the SVG to *out*.
+
+    Parameters
+    ----------
+    data : list[dict[str, Any]] or None
+        Rows with keys ``c`` (str) and ``v`` (float). Defaults to
+        DEMO_DATA.
+    out : Path, str, or None
+        Output path (.svg). Defaults to ``assets/svg-examples/lollipop.svg``.
+    title, subtitle : str
+        Chart text.
+    width, height : int
+        Canvas size in pixels.
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+
+    Examples
+    --------
+    >>> p = make_lollipop()
+    >>> p.exists()
+    True
+    """
+    svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
+                     mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "lollipop")
+    return write_svg(dest, svg)
+
+
+def main() -> None:
+    render_cli(__file__, "lollipop", build_svg, description="Generate a lollipop chart.")
+
+
+if __name__ == "__main__":
+    main()

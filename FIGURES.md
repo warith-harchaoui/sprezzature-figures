@@ -1,6 +1,6 @@
 # Figure Catalogue
 
-112 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type).
+113 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type).
 
 Invoke via:
 
@@ -88,6 +88,7 @@ for the current per-chart status.
 | `line` | make_line.py | Time series | Multi-series line chart with points, the default for showing how a numeric value evolves over an ordered axis. Use for monthly revenue by product line, daily active users, sensor readings. |
 | `line-multi` | make_line-multi.py | Time series | Multi-series line chart over a continuous quantitative axis (e.g. hour-of-day), point marker at every sample, hover highlights one series. Use for sessions per hour by platform or any series sampled densely along one continuous axis. |
 | `liquid-gauge` | make_liquid-gauge.py | KPI | Animated liquid fill gauge (wave inside a circle). Use for a single percentage KPI in consumer-facing dashboards where animation adds appeal. |
+| `lollipop` | make_lollipop.py | Comparison | Thin stem from zero to the value, capped with a dot, one per category sorted largest to smallest. A lighter-weight cousin of the bar chart for a longer category list or a restrained report. |
 | `manhattan` | make_manhattan.py | Genomics / Statistics | Manhattan plot: −log₁₀(p-value) vs. genomic position. The standard chart for genome-wide association study (GWAS) results. |
 | `mosaic` | make_mosaic.py | Categorical | Mosaic (Marimekko) plot: tile area encodes joint frequency of two categorical variables. Use to show contingency tables and test independence visually. |
 | `network` | make_network.py | Network | Force-directed network graph. Use to show relationships in social, citation, or infrastructure networks when node count is < 500. |

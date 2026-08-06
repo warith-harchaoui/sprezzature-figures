@@ -2442,6 +2442,50 @@
     ]
   },
   {
+    "kind": "lollipop",
+    "label": "Lollipop",
+    "aliases": [],
+    "category": "Comparison",
+    "description": "Thin stem from zero to the value, capped with a dot, one per category sorted largest to smallest. A lighter-weight cousin of the bar chart for a longer category list or a restrained report.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "svg",
+    "module": "scripts/make_lollipop.py",
+    "callable_name": "make_lollipop",
+    "required_roles": [
+      {
+        "name": "c",
+        "label": "Category",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "v",
+        "label": "Numeric value",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 900,
+    "default_height": 600,
+    "options_schema": {},
+    "warnings": [
+      "Default output path falls back to a shared assets/ directory"
+    ]
+  },
+  {
     "kind": "manhattan",
     "label": "Manhattan",
     "aliases": [],
