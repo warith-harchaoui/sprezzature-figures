@@ -1,6 +1,6 @@
 # Figure Catalogue
 
-108 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type).
+109 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type).
 
 Invoke via:
 
@@ -73,6 +73,7 @@ for the current per-chart status.
 | `gauge` | make_gauge.py | KPI | Semicircular gauge dial. Use for a single KPI read at a glance; prefer bullet charts in text-heavy reports. |
 | `gaussian-process` | make_gaussian-process.py | Model evaluation | Gaussian-process posterior fit to a handful of observed points: shaded 95% credible band, mean curve, and a few faint posterior sample draws. The classic figure for teaching or auditing Bayesian nonparametric regression. |
 | `heatmap` | make_heatmap.py | Matrix / Image | Row × column matrix with cell color encoding a numeric value. Use for activity by day-of-week × hour, correlation matrices, or cohort × variant test results. |
+| `hexbin` | make_hexbin.py | Distribution | Aggregates a dense scatter into a hexagonal grid, cell colour is the point count. Hexagons tile with less visual bias than square bins. Use for overplotted scatter data or 2-D density of two continuous variables. |
 | `hexbin-map` | make_hexbin-map.py | Geospatial | US (or world) map where equal-area hexagons replace geographic regions. Eliminates size-biased area distortion from choropleth maps. |
 | `hexmap` | make_hexmap.py | Geospatial | Generic hexagonal binning map. Use for local or regional point density where standard hexbin-map doesn't fit. |
 | `histogram` | make_histogram.py | Distribution | Bins a single numeric variable and counts observations per bin. The default chart for understanding a distribution's shape, spread, and skew. |
