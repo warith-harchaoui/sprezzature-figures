@@ -4,11 +4,11 @@ Reproducible audit of every `scripts/make_*.py` generator against the
 `make_<kind>(data, *, out, title, ...) -> Path` contract the dispatcher
 expects. Regenerate with `python tools/audit_generators.py --render`.
 
-- **stable**: 28
+- **stable**: 29
 - **experimental**: 0
 - **legacy**: 80
 - **unavailable**: 0
-- **total**: 108
+- **total**: 109
 
 | kind | status | reachable | callable | demo_data | render | errors |
 |---|---|---|---|---|---|---|
@@ -62,6 +62,7 @@ expects. Regenerate with `python tools/audit_generators.py --render`.
 | `gaussian-process` | stable | **no** | yes | yes | passed | make_figure('gaussian-process') cannot resolve to make_gaussian-process.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
 | `heatmap` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `hexbin-map` | legacy | **no** | yes | **no** | not_run | No DEMO_DATA in make_hexbin-map.py; make_figure('hexbin-map') cannot resolve to make_hexbin-map.py: hyphen/underscore normalisation looks for a different filename |
+| `hexbin` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `hexmap` | legacy | yes | yes | **no** | not_run | No DEMO_DATA in make_hexmap.py; Default output path falls back to a shared assets/ directory |
 | `histogram` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `horizon` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_horizon.py; No callable named 'make_horizon' in make_horizon.py |

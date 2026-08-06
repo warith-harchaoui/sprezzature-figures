@@ -231,6 +231,13 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
         ],
         "optional_roles": [],
     },
+    "hexbin": {
+        "required_roles": [
+            {"name": "x", "label": "X value", "accepted_types": ["numeric"], "required": True},
+            {"name": "y", "label": "Y value", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
     "dumbbell": {
         "required_roles": [
             {"name": "category", "label": "Category", "accepted_types": ["categorical"], "required": True},
@@ -308,6 +315,7 @@ HAND_LIMITS: dict[str, dict[str, int]] = {
     "area": {"min_rows": 2, "max_recommended_rows": 2000},
     "histogram": {"min_rows": 10},
     "boxplot": {"min_rows": 5, "max_recommended_categories": 20},
+    "hexbin": {"min_rows": 50, "max_recommended_rows": 20000},
 }
 
 
