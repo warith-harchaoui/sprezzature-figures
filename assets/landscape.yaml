@@ -32,9 +32,9 @@ meta:
   lower_is_better: []
 axes:
   axis_1:
-    name: User-friendly ↔ Versatile
-    pole_left: User-friendly
-    pole_right: Versatile
+    name: Intuitive ↔ Refined
+    pole_left: Intuitive
+    pole_right: Refined
     loadings:
       Free or open source: 0.2432
       Chart type breadth: 0.3028
@@ -59,9 +59,9 @@ axes:
       Statistical and analytical depth: -0.011
       Responsive: 0.0109
   axis_2:
-    name: Dynamic ↔ Robust
+    name: Dynamic ↔ Insightful
     pole_bottom: Dynamic
-    pole_top: Robust
+    pole_top: Insightful
     loadings:
       Free or open source: 0.0437
       Chart type breadth: -0.081
@@ -90,8 +90,6 @@ approaches:
   coordinates:
     axis_1: 4.1191
     axis_2: 3.8092
-    label_x: 4.1191
-    label_y: 4.2804
   role: best
   color: '#FF3B30'
   attributes:
@@ -121,8 +119,6 @@ approaches:
   coordinates:
     axis_1: 3.8587
     axis_2: 1.292
-    label_x: 3.8587
-    label_y: 1.5667
   role: competitor
   color: '#8DBAFF'
   attributes:
@@ -152,8 +148,6 @@ approaches:
   coordinates:
     axis_1: 1.6907
     axis_2: 3.3215
-    label_x: 1.1534
-    label_y: 3.3215
   role: competitor
   color: '#9B99F0'
   attributes:
@@ -183,8 +177,6 @@ approaches:
   coordinates:
     axis_1: 2.2071
     axis_2: -3.6305
-    label_x: 2.2071
-    label_y: -4.1017
   role: competitor
   color: '#3FD6C7'
   attributes:
@@ -214,8 +206,6 @@ approaches:
   coordinates:
     axis_1: 0.7928
     axis_2: -2.8501
-    label_x: 0.7928
-    label_y: -3.3213
   role: competitor
   color: '#229F73'
   attributes:
@@ -245,8 +235,6 @@ approaches:
   coordinates:
     axis_1: 2.0248
     axis_2: 0.3651
-    label_x: 2.0248
-    label_y: 0.6398
   role: competitor
   color: '#5699DF'
   attributes:
@@ -276,8 +264,6 @@ approaches:
   coordinates:
     axis_1: 2.9613
     axis_2: 3.1756
-    label_x: 3.4498
-    label_y: 3.1756
   role: competitor
   color: '#8195E8'
   attributes:
@@ -307,8 +293,6 @@ approaches:
   coordinates:
     axis_1: 0.8125
     axis_2: -2.5995
-    label_x: 0.8125
-    label_y: -2.1284
   role: competitor
   color: '#46CEAF'
   attributes:
@@ -338,8 +322,6 @@ approaches:
   coordinates:
     axis_1: -1.8246
     axis_2: -0.4524
-    label_x: -1.1899
-    label_y: -0.4524
   role: competitor
   color: '#F8918E'
   attributes:
@@ -369,8 +351,6 @@ approaches:
   coordinates:
     axis_1: -1.985
     axis_2: -1.5422
-    label_x: -1.3503
-    label_y: -1.5422
   role: competitor
   color: '#E3AB51'
   attributes:
@@ -400,8 +380,6 @@ approaches:
   coordinates:
     axis_1: -1.8122
     axis_2: -0.9124
-    label_x: -1.3237
-    label_y: -0.9124
   role: competitor
   color: '#D57460'
   attributes:
@@ -431,8 +409,6 @@ approaches:
   coordinates:
     axis_1: -1.9333
     axis_2: -1.2566
-    label_x: -1.4936
-    label_y: -1.2566
   role: competitor
   color: '#CC724B'
   attributes:
@@ -462,8 +438,6 @@ approaches:
   coordinates:
     axis_1: 4.1191
     axis_2: -3.1832
-    label_x: 4.1191
-    label_y: -2.712
   role: right
   color: '#007AFF'
   attributes:
@@ -493,8 +467,6 @@ approaches:
   coordinates:
     axis_1: 0.0059
     axis_2: -1.0504
-    label_x: 1.2002
-    label_y: -0.5792
   role: competitor
   color: '#62BD80'
   attributes:
@@ -524,8 +496,6 @@ approaches:
   coordinates:
     axis_1: 3.1189
     axis_2: -3.8092
-    label_x: 3.1189
-    label_y: -3.338
   role: competitor
   color: '#00B2C4'
   attributes:
@@ -555,8 +525,6 @@ approaches:
   coordinates:
     axis_1: 2.1676
     axis_2: -3.0181
-    label_x: 2.1676
-    label_y: -2.5469
   role: competitor
   color: '#2FD0D3'
   attributes:
@@ -586,8 +554,6 @@ approaches:
   coordinates:
     axis_1: 1.9785
     axis_2: -0.3727
-    label_x: 1.9785
-    label_y: -0.6473
   role: competitor
   color: '#0093C2'
   attributes:
@@ -617,8 +583,6 @@ approaches:
   coordinates:
     axis_1: 1.1932
     axis_2: -1.3152
-    label_x: 1.1932
-    label_y: -1.0406
   role: competitor
   color: '#4FD7FA'
   attributes:
@@ -648,8 +612,6 @@ approaches:
   coordinates:
     axis_1: 0.0075
     axis_2: -1.4024
-    label_x: 0.0075
-    label_y: -0.7347
   role: competitor
   color: '#68AA61'
   attributes:
@@ -679,8 +641,6 @@ approaches:
   coordinates:
     axis_1: 0.7288
     axis_2: 0.0873
-    label_x: 0.7288
-    label_y: -0.1873
   role: competitor
   color: '#6BC8FF'
   attributes:
@@ -710,8 +670,6 @@ approaches:
   coordinates:
     axis_1: -0.82
     axis_2: -1.8747
-    label_x: -0.82
-    label_y: -2.3459
   role: competitor
   color: '#92BE68'
   attributes:
@@ -741,8 +699,6 @@ approaches:
   coordinates:
     axis_1: -0.9946
     axis_2: 3.1035
-    label_x: -1.6293
-    label_y: 3.1035
   role: competitor
   color: '#B5A0F7'
   attributes:
@@ -772,8 +728,6 @@ approaches:
   coordinates:
     axis_1: -3.3917
     axis_2: -0.1022
-    label_x: -3.3917
-    label_y: 0.1724
   role: competitor
   color: '#F08A99'
   attributes:
@@ -803,8 +757,6 @@ approaches:
   coordinates:
     axis_1: -0.694
     axis_2: -0.0204
-    label_x: -0.694
-    label_y: 0.4508
   role: competitor
   color: '#CC6D8C'
   attributes:
@@ -834,8 +786,6 @@ approaches:
   coordinates:
     axis_1: -1.3417
     axis_2: -2.6578
-    label_x: -0.8044
-    label_y: -2.6578
   role: competitor
   color: '#99AE4E'
   attributes:
@@ -865,8 +815,6 @@ approaches:
   coordinates:
     axis_1: -2.3154
     axis_2: -2.7054
-    label_x: -2.3154
-    label_y: -2.2342
   role: competitor
   color: '#C29B35'
   attributes:
@@ -896,8 +844,6 @@ approaches:
   coordinates:
     axis_1: -2.4151
     axis_2: -1.6022
-    label_x: -2.9035
-    label_y: -1.6022
   role: competitor
   color: '#D48248'
   attributes:
@@ -927,8 +873,6 @@ approaches:
   coordinates:
     axis_1: -1.1023
     axis_2: -1.8416
-    label_x: 0.7744
-    label_y: -1.8416
   role: competitor
   color: '#D7C35C'
   attributes:
@@ -958,8 +902,6 @@ approaches:
   coordinates:
     axis_1: -2.4094
     axis_2: -1.611
-    label_x: -3.6038
-    label_y: -2.0822
   role: competitor
   color: '#DE974B'
   attributes:
@@ -989,8 +931,6 @@ approaches:
   coordinates:
     axis_1: -1.5664
     axis_2: -2.768
-    label_x: -1.0292
-    label_y: -3.0427
   role: competitor
   color: '#A5A53D'
   attributes:
@@ -1020,8 +960,6 @@ approaches:
   coordinates:
     axis_1: -3.7925
     axis_2: 1.7556
-    label_x: -3.7925
-    label_y: 1.481
   role: competitor
   color: '#E588B7'
   attributes:
@@ -1051,8 +989,6 @@ approaches:
   coordinates:
     axis_1: -3.6959
     axis_2: 3.8092
-    label_x: -3.6959
-    label_y: 4.2804
   role: top
   color: '#AF52DE'
   attributes:
@@ -1082,8 +1018,6 @@ approaches:
   coordinates:
     axis_1: -3.1925
     axis_2: 2.4201
-    label_x: -2.704
-    label_y: 2.4201
   role: competitor
   color: '#BA75B9'
   attributes:
@@ -1113,8 +1047,6 @@ approaches:
   coordinates:
     axis_1: -4.1191
     axis_2: -1.3611
-    label_x: -4.8513
-    label_y: -1.3611
   role: worst
   color: '#A52A2A'
   attributes:
@@ -1144,8 +1076,6 @@ approaches:
   coordinates:
     axis_1: -2.0414
     axis_2: 2.3059
-    label_x: -1.6017
-    label_y: 2.3059
   role: competitor
   color: '#AA72BE'
   attributes:
@@ -1175,8 +1105,6 @@ approaches:
   coordinates:
     axis_1: -3.7916
     axis_2: 2.1021
-    label_x: -2.962
-    label_y: 2.1021
   role: competitor
   color: '#F5A0DC'
   attributes:
@@ -1206,8 +1134,6 @@ approaches:
   coordinates:
     axis_1: -2.6492
     axis_2: 3.7074
-    label_x: -2.2094
-    label_y: 3.7074
   role: competitor
   color: '#9C75C6'
   attributes:
