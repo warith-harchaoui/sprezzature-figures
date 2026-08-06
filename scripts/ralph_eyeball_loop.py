@@ -27,10 +27,17 @@ Two modes
 
 **Local mode** (``--local``)
     A fully offline alternative.  After rendering the PNG, the script calls
-    ``qwen3-vl:8b`` via Ollama (a vision-language model) to generate the
-    critique automatically and pre-fill the assessment file.  No cloud API,
-    no Claude Code session required — works in any terminal once Ollama is
-    running and the model is pulled.
+    ``qwen3-vl:8b`` (a vision-language model) to generate the critique
+    automatically and pre-fill the assessment file.  No cloud API, no Claude
+    Code session required — works in any terminal once Ollama is running and
+    the model is pulled.
+
+    The call itself is never made directly: every LLM/VLM call across the
+    ``sprezzature-*`` suite routes through ``best_engine_ai_helper.llm.chat``,
+    which resolves the model and the backend (Ollama by default; OpenAI-
+    compatible or LangChain are opt-in via ``SPREZZATURE_LLM_BACKEND``). This
+    script only shapes the prompt and hands it a PNG — it never talks to
+    Ollama's REST API itself.
 
     Pull the model once::
 
@@ -61,7 +68,7 @@ Rendering toolchain per surface
 +--------------------+----------------------------------------------+-----------------------------+
 | SVG graphic        | rsvg-convert (preferred) or magick           | brew install librsvg        |
 +--------------------+----------------------------------------------+-----------------------------+
-| Local critique     | qwen3-vl:8b via Ollama                      | ollama pull qwen3-vl:8b    |
+| Local critique     | qwen3-vl:8b, via best-engine-ai-helper       | ollama pull qwen3-vl:8b    |
 +--------------------+----------------------------------------------+-----------------------------+
 
 Run ``python ralph_eyeball_loop.py --install-tools`` to check what is
@@ -122,7 +129,12 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
-from sprezzature_local.llm import chat as _llm_chat
+# Every LLM/VLM call across sprezzature-* routes through this one function —
+# no script imports an Ollama/OpenAI/LangChain client directly. It resolves
+# the backend and model tag from the SPREZZATURE_LLM_* environment variables
+# (SPREZZATURE_LLM_BACKEND defaults to "ollama") and shapes the request the
+# same way regardless of which backend answers it.
+from best_engine_ai_helper.llm import chat as _llm_chat
 
 # ---------------------------------------------------------------------------
 # Paths — resolved at import time so the script works from any cwd
@@ -136,15 +148,14 @@ _RENDER_DIAGRAM: Path = _SCRIPT_DIR / "render_diagram.py"
 _PRIVATE_LOOP_DIR: Path = _REPO_ROOT / ".private" / "ralph-loop"
 
 # ---------------------------------------------------------------------------
-# Ollama — the one authorized VLM for the whole sprezzature-* repo
-# qwen3-vl:8b is a vision-language model (VLM): handles both text generation
-# (used by other skills) and image understanding (--local critique mode here).
+# qwen3-vl:8b — the one authorized VLM for the whole sprezzature-* repo's
+# --local critique mode. Reached exclusively via best_engine_ai_helper.llm.chat
+# (imported above); this module never opens an HTTP connection to Ollama
+# itself. _OLLAMA_URL below is used only in the human-readable error message
+# when the backend is unreachable, not to make the call.
 # ---------------------------------------------------------------------------
 _VISION_MODEL: str = "qwen3-vl:8b"
 _OLLAMA_URL: str = "http://localhost:11434/api/generate"
-#: Generous ceiling: a cold model load (~6 GB) plus a tall full-page screenshot
-#: on Apple Silicon can take minutes on the first call. Warm calls are seconds.
-_OLLAMA_TIMEOUT: int = 600
 
 #: Headless Chrome refuses to make its window narrower than this (~500 px on
 #: macOS/Linux). Below it, the page lays out at ~485 px and the screenshot
@@ -618,8 +629,16 @@ def _build_critique_prompt(kind: str) -> str:
     return prompt.strip()
 
 
-def _ollama_critique(png_path: Path, kind: str) -> str:
-    """Call ``qwen3-vl:8b`` via the Ollama REST API to critique a PNG.
+def _vlm_critique(png_path: Path, kind: str) -> str:
+    """Call ``qwen3-vl:8b`` to critique a PNG, via ``best_engine_ai_helper``.
+
+    The call is routed through :func:`best_engine_ai_helper.llm.chat`
+    (imported at module level as ``_llm_chat``), never through a
+    directly-opened Ollama connection. That function reads
+    ``SPREZZATURE_LLM_BACKEND`` to pick the backend (Ollama by default)
+    and ``SPREZZATURE_LLM_VISION`` to override the model tag; the ``model``
+    argument passed here (:data:`_VISION_MODEL`) is a per-call override on
+    top of that, since this loop always wants ``qwen3-vl:8b`` specifically.
 
     Parameters
     ----------
@@ -636,7 +655,7 @@ def _ollama_critique(png_path: Path, kind: str) -> str:
     Raises
     ------
     SystemExit
-        When Ollama is unreachable or the model is not pulled.
+        When the backend is unreachable or the model is not pulled.
     """
     prompt = _build_critique_prompt(kind)
     print(f"ralph_eyeball_loop: calling {_VISION_MODEL} for visual critique "
@@ -645,7 +664,8 @@ def _ollama_critique(png_path: Path, kind: str) -> str:
         return str(_llm_chat(prompt, images=[png_path.read_bytes()], model=_VISION_MODEL)).strip()
     except Exception as exc:
         raise SystemExit(
-            f"ralph_eyeball_loop: Ollama is not reachable at {_OLLAMA_URL}.\n"
+            f"ralph_eyeball_loop: could not reach the vision model backend "
+            f"(default: Ollama at {_OLLAMA_URL}).\n"
             "  Start it with:  ollama serve\n"
             f"  Pull the model: ollama pull {_VISION_MODEL}\n"
             f"  Error: {exc}"
@@ -941,7 +961,7 @@ def main(argv: Optional[list[str]] = None) -> int:
     # ---- Critique ----
     auto_critique: Optional[str] = None
     if args.local:
-        auto_critique = _ollama_critique(png_path, kind)
+        auto_critique = _vlm_critique(png_path, kind)
 
     iteration = _write_assessment(assess_path, src, png_path, kind, h, auto_critique)
 

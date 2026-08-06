@@ -71,8 +71,10 @@ explain = [
     "shap>=0.44",
     "shapash>=2.6",
 ]
-# Local VLM critique (ralph_eyeball_loop.py --local mode)
-local = ["requests>=2.31"]
+# Local VLM critique (ralph_eyeball_loop.py --local mode). Every LLM/VLM
+# call across sprezzature-* routes through best_engine_ai_helper.llm.chat,
+# which itself defaults to a local Ollama backend -- no cloud API required.
+local = ["best-engine-ai-helper>=0.4.0"]
 # Developer extras
 dev = [
     "pytest>=8",
