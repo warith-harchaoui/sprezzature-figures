@@ -1,6 +1,6 @@
 # Figure Catalogue
 
-99 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type).
+100 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type).
 
 Invoke via:
 
@@ -39,6 +39,7 @@ for the current per-chart status.
 | `boxplot` | make_boxplot.py | Distribution | Box plot summarising median, quartiles, and outliers per category (Tukey 1.5×IQR rule). Use for salary by department, response time by service, scores by class. |
 | `bubble` | make_bubble.py | Comparison | Gapminder-style bubble chart: x and y for two measures, bubble area for a third, colour for a category. Use to compare many entities across three numeric dimensions plus a group at once. |
 | `bullet` | make_bullet.py | KPI | Bullet chart: a single bar against a reference measure and qualitative performance bands. The compact alternative to a gauge for dashboards with many KPIs. |
+| `calendar-heatmap` | make_calendar-heatmap.py | Time series | GitHub-style week x day grid, cell colour is a daily count on a single pale-to-navy blue ramp. Use for commit activity, daily active users, or habit tracking viewed over months at a glance. |
 | `calibration` | make_calibration.py | Model evaluation | Plot predicted probability vs. observed frequency. Use after training a classifier to check whether its scores are well-calibrated (reliable confidence estimates). |
 | `chord` | make_chord.py | Flow | Circular chord diagram for symmetric or directed flows between categories. Use when every pair of categories can exchange and the total volume matters (e.g., migration between countries). |
 | `circle-packing` | make_circle-packing.py | Hierarchy | Represent a hierarchy as nested circles whose area encodes a numeric value. Use for a single level of nesting where the visual impact of size differences matters more than precise reading. |
