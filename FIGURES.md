@@ -1,6 +1,6 @@
 # Figure Catalogue
 
-110 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type).
+111 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type).
 
 Invoke via:
 
@@ -83,6 +83,7 @@ for the current per-chart status.
 | `interruption-matrix` | make_interruption-matrix.py | Communication | Directed "who cuts whom" heatmap: rows are speakers being cut off, columns the interrupters, each cell the number of interruptions, tinted by the interrupter. Row/column totals and a crosshair hover make conversational dominance readable at a glance -- who interrupts most (dark column), who gets cut most (dark row). |
 | `jointplot` | make_jointplot.py | Bivariate distribution | Central scatter or hexbin with marginal histograms or KDE on each axis. Use to show bivariate distribution and its univariate projections simultaneously. |
 | `kde1d` | make_kde1d.py | Distribution | Smooths a numeric sample into a continuous density curve via a Gaussian kernel at each point, no binning choice, bandwidth as the only smoothing knob. Use for any single numeric sample where histogram bin edges would distract from the shape. |
+| `kde2d-contour` | make_kde2d-contour.py | Bivariate distribution | 2-D kernel density estimate drawn as isocontour rings over the raw scatter, closer rings where density changes fastest. Use to visualise where a bivariate sample concentrates and sanity-check the smoothing against the raw points. |
 | `liftgain` | make_liftgain.py | Model evaluation | Lift and gain curves for binary classifiers. Use to evaluate how much better than random a model performs when targeting the top N% of a population. |
 | `line` | make_line.py | Time series | Multi-series line chart with points, the default for showing how a numeric value evolves over an ordered axis. Use for monthly revenue by product line, daily active users, sensor readings. |
 | `liquid-gauge` | make_liquid-gauge.py | KPI | Animated liquid fill gauge (wave inside a circle). Use for a single percentage KPI in consumer-facing dashboards where animation adds appeal. |

@@ -2222,6 +2222,54 @@
     ]
   },
   {
+    "kind": "kde2d-contour",
+    "label": "Kde2D Contour",
+    "aliases": [
+      "kde2d contour",
+      "kde2d_contour"
+    ],
+    "category": "Bivariate distribution",
+    "description": "2-D kernel density estimate drawn as isocontour rings over the raw scatter, closer rings where density changes fastest. Use to visualise where a bivariate sample concentrates and sanity-check the smoothing against the raw points.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "svg",
+    "module": "scripts/make_kde2d-contour.py",
+    "callable_name": "make_kde2d_contour",
+    "required_roles": [
+      {
+        "name": "x",
+        "label": "X value",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "y",
+        "label": "Y value",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 900,
+    "default_height": 600,
+    "options_schema": {},
+    "warnings": [
+      "make_figure('kde2d-contour') cannot resolve to make_kde2d-contour.py: hyphen/underscore normalisation looks for a different filename",
+      "Default output path falls back to a shared assets/ directory"
+    ]
+  },
+  {
     "kind": "liftgain",
     "label": "Liftgain",
     "aliases": [],
