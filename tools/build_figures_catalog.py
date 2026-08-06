@@ -177,6 +177,13 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
         ],
         "optional_roles": [],
     },
+    "choropleth": {
+        "required_roles": [
+            {"name": "id", "label": "ISO-3166-1 numeric country code", "accepted_types": ["categorical"], "required": True},
+            {"name": "value", "label": "Numeric value", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
     "dumbbell": {
         "required_roles": [
             {"name": "category", "label": "Category", "accepted_types": ["categorical"], "required": True},
