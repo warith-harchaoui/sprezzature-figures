@@ -7,7 +7,7 @@
 
 [![logo](https://raw.githubusercontent.com/warith-harchaoui/sprezzature-figures/main/assets/logo.png)](https://harchaoui.org/warith/sprezzature/)
 
-96 publication-quality chart types, almost all hand-authored SVG (no Vega) with a handful of matplotlib-based statistical outputs (causal inference, explainability), callable as a Python library or a CLI command.
+126 publication-quality chart types, almost all hand-authored SVG (no Vega) with a handful of matplotlib-based statistical outputs (causal inference, explainability), callable as a Python library or a CLI command.
 
 Part of the [sprezzature](https://harchaoui.org/warith/sprezzature/) suite.
 

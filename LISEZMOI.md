@@ -7,7 +7,7 @@
 
 [![logo](assets/logo.png)](https://harchaoui.org/warith/sprezzature/)
 
-96 types de graphiques de qualité publication, presque tous en SVG écrit à la main (aucun Vega), avec une poignée de générateurs matplotlib pour des sorties statistiques (inférence causale, explicabilité), utilisables comme bibliothèque Python ou en ligne de commande.
+126 types de graphiques de qualité publication, presque tous en SVG écrit à la main (aucun Vega), avec une poignée de générateurs matplotlib pour des sorties statistiques (inférence causale, explicabilité), utilisables comme bibliothèque Python ou en ligne de commande.
 
 Fait partie de la suite [sprezzature](https://harchaoui.org/warith/sprezzature/).
 
