@@ -1,0 +1,38 @@
+Outil de visualisation de données,Gratuit ou open source,Étendue des types de graphiques,Qualité de publication,Facilité d'utilisation,Programmabilité,Interactif,Copilote IA en langage naturel,Contrôle qualité visuel du rendu,Local et hors ligne (sans compte),Reproductibilité,Export en SVG PNG PDF,Personnalisation et thèmes,Flexibilité des sources de données,Maturité et communauté,Géospatial et cartes,Tableaux de bord et BI,Fonctionnalités d'accessibilité,Animé,Performance sur grands jeux de données,Intégrabilité web,Profondeur statistique et analytique,Adaptatif
+sprezzature-figures,5,5,5,4,4,3,4,5,5,5,5,4,3,1,4,1,5,2,3,3,4,3
+Matplotlib,5,5,5,2,5,2,1,1,5,4,5,5,3,5,3,2,3,3,4,3,3,2
+Seaborn,5,3,5,2,4,1,1,1,5,4,4,4,3,5,1,1,3,1,3,3,5,2
+Plotly / Dash,4,5,4,3,5,5,1,1,4,4,4,5,5,5,4,5,3,4,4,5,4,5
+Bokeh,5,4,3,2,4,5,1,1,5,4,3,4,4,4,3,4,2,4,5,5,3,4
+Altair,5,4,4,3,4,4,1,1,5,5,4,4,3,4,3,2,3,2,2,4,3,4
+ggplot,5,4,5,2,4,1,1,1,5,5,4,5,3,4,2,1,3,2,3,2,5,2
+HoloViews,5,4,3,2,4,5,1,1,5,4,3,4,4,3,4,4,2,4,5,4,3,4
+PyGWalker,5,3,3,4,3,5,2,1,5,3,3,3,4,3,2,4,2,2,3,3,3,4
+Streamlit,4,3,3,3,4,4,2,1,4,3,2,3,5,4,3,4,2,2,3,4,3,4
+Gradio,5,3,3,3,4,4,2,1,4,3,2,3,4,4,2,4,2,2,3,4,3,4
+Taipy,5,3,3,3,4,4,2,1,4,3,2,3,4,3,2,5,2,2,4,4,3,4
+D3.js,5,5,5,1,5,5,1,1,5,4,4,5,4,5,5,3,3,5,3,5,2,5
+Chart.js,5,3,3,2,4,4,1,1,5,4,3,3,3,4,2,3,2,3,2,5,2,5
+ECharts,5,5,4,2,4,5,1,1,5,4,4,5,4,5,5,4,3,5,5,5,3,5
+Highcharts,2,5,4,3,4,5,1,1,4,4,4,5,4,5,4,4,4,4,4,5,3,5
+Vega,5,4,4,3,4,4,2,1,5,5,4,4,3,4,4,3,3,2,2,5,3,4
+Observable Plot,5,4,4,3,4,4,1,1,4,4,3,4,4,3,4,3,3,3,3,5,3,4
+vis.js,5,3,3,3,4,5,1,1,5,4,2,4,3,4,2,2,2,4,3,5,2,4
+Datawrapper,5,3,5,5,2,4,1,1,2,3,4,4,3,4,4,2,5,2,2,5,2,5
+Flourish,3,4,4,5,2,5,1,1,2,2,3,4,3,4,4,3,3,5,2,5,2,5
+RAWGraphs,5,5,4,5,1,2,1,1,3,2,4,3,2,3,2,1,2,1,2,3,2,3
+Infogram,2,3,3,5,1,4,1,1,1,2,3,3,3,3,3,3,2,3,2,4,1,4
+Vizzu,5,3,3,3,4,4,1,1,4,3,3,3,3,3,1,2,2,5,2,4,2,4
+Tableau,1,4,4,4,2,5,3,1,3,2,4,4,5,5,5,5,3,3,5,4,4,4
+Power BI,2,4,3,4,2,5,3,1,2,2,3,4,5,5,4,5,3,3,5,4,4,4
+Looker,3,3,3,5,3,4,3,1,2,3,3,4,5,4,3,5,3,2,5,4,4,4
+Apache Superset,5,4,3,4,3,4,1,1,4,3,3,4,5,4,3,5,2,2,5,3,3,4
+Metabase,4,3,3,5,3,4,2,1,4,3,3,3,5,4,3,5,2,2,4,4,3,4
+Grafana,4,3,3,4,3,4,2,1,4,3,3,4,5,5,3,5,2,3,5,4,3,5
+Julius AI,2,3,3,5,3,4,5,2,1,3,3,3,4,3,2,3,2,2,3,2,5,3
+ChatGPT,2,3,2,5,4,2,5,2,1,3,3,3,3,4,2,1,2,1,2,2,5,2
+Claude,2,3,3,5,4,3,5,2,1,3,3,3,3,4,2,2,2,2,2,3,5,3
+ThoughtSpot,1,3,3,5,2,4,5,1,2,2,3,3,5,4,3,5,3,2,5,4,4,4
+Excel,3,3,3,5,2,2,2,1,5,2,3,4,3,5,2,3,3,2,2,2,4,2
+Google Sheets,5,2,2,5,2,2,2,1,2,2,3,3,3,5,2,3,2,1,1,3,3,3
+Canva,3,2,4,5,1,2,3,1,1,1,4,4,2,4,1,1,3,3,1,3,1,2

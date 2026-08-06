@@ -11,6 +11,8 @@ build/
 *.html
 *.svg
 !assets/svg-examples/*.svg
+!assets/landscape.svg
+!assets/paysage.svg
 
 .private/
 # Coverage reports
