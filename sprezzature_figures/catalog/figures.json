@@ -3839,6 +3839,50 @@
     ]
   },
   {
+    "kind": "step",
+    "label": "Step",
+    "aliases": [],
+    "category": "Time series",
+    "description": "Step-after interpolation between points: value holds constant until it changes, then jumps, never implying an in-between value. Use for inventory level after each transaction, a state machine's value, or any piecewise-constant series.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "svg",
+    "module": "scripts/make_step.py",
+    "callable_name": "make_step",
+    "required_roles": [
+      {
+        "name": "t",
+        "label": "X value",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "y",
+        "label": "Y value",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 900,
+    "default_height": 600,
+    "options_schema": {},
+    "warnings": [
+      "Default output path falls back to a shared assets/ directory"
+    ]
+  },
+  {
     "kind": "streamgraph",
     "label": "Streamgraph",
     "aliases": [],
