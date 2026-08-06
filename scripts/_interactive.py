@@ -16,14 +16,13 @@ plain argument on the generator (default ``"self-contained"``):
   :func:`_svg.svg_open` already gives. For print or plain ``<img>`` embedding.
 
 This module owns the *only* piece that is identical across figures: the
-fullscreen control (a small top-right button plus a generic script). The
+fullscreen wiring (a generic script, no visible chrome of its own). The
 figure-specific hit regions and tooltips stay in each generator.
 
-Why this is output-safe for the gallery: the button starts ``display:none`` and
-the script reveals it *only* when the SVG is a live document (``<object>`` or
-inlined) AND not managed by a page module. A ``<img>``-embedded SVG never runs
-the script, and a PNG raster (``vl_convert``) honours ``display:none`` — so the
-button is invisible in every thumbnail. It appears only where it works.
+There is no on-canvas button — the whole figure is the hit target. A
+``<img>``-embedded SVG never runs the ``<script>`` at all (browsers don't
+execute scripts inside `<img>`-referenced SVGs), so nothing changes for
+thumbnails; the script only ever runs once the SVG is a live document.
 
 The module is **stdlib-only** (no imports) so it loads wherever the generators
 do. Composes with :func:`_svg.svg_open` (the responsive, accessible root) and
@@ -39,41 +38,48 @@ from __future__ import annotations
 #: The three supported interactivity modes (see the module docstring).
 MODES = ("self-contained", "external", "static")
 
-#: Generic fullscreen script, identical for every figure. It runs only when the
-#: SVG is a live document; it stands down inside a page-module-managed card
-#: (``[data-fs-target]``) and hides itself when there is no Fullscreen API
-#: (e.g. an ``<img>``-embedded SVG, where it never runs at all).
+#: Generic fullscreen script, identical for every figure. No on-canvas icon —
+#: the whole figure is the hit target, so it stays clean at thumbnail size.
+#: Stands down inside a page-module-managed card (``[data-fs-target]``) and
+#: never runs at all inside an ``<img>``-embedded SVG (browsers don't execute
+#: scripts there).
 #:
-#: It also carries a small postMessage bridge: when the SVG is embedded as a
-#: gallery card ``<object>`` (not the fullscreen lightbox's own object, not a
-#: page-module dashboard), a click anywhere on the figure can never bubble out
-#: to the host page — ``<object>`` is a real, isolated document. Cards rely on
-#: this to open the lightbox on click while keeping native hover/``<title>``
-#: tooltips alive (which requires the object to be ``pointer-events:auto``;
-#: see ``live-figures.js`` / ``lightbox.js`` in the web repo for the other
-#: half of this contract).
+#: Three contexts, told apart by ``window.frameElement``:
+#:
+#: * **Gallery card** (embedded as a live ``<object>``, ``window.parent`` is
+#:   the host page, not the lightbox's own object): a click anywhere on the
+#:   figure can never bubble to the host page — ``<object>`` is a real,
+#:   isolated document. So a click posts a message instead; ``lightbox.js`` in
+#:   the web repo opens the modal on receipt. This keeps the card's own
+#:   ``pointer-events:auto`` (native hover/``<title>`` tooltips stay live).
+#: * **Lightbox's own enlarged object** (``data-lb-obj``): the figure is
+#:   already shown at modal size, so a click on it does nothing extra.
+#: * **Standalone** (opened as its own file/tab, or inlined outside the
+#:   gallery — no ``frameElement`` at all): there is no host page to hand off
+#:   to, so a click (or Enter/Space once focused) toggles the browser's own
+#:   Fullscreen API directly on the SVG.
 _FS_SCRIPT = (
     "(function(){"
     "var me=document.currentScript,svg=me.ownerSVGElement||me.parentNode;"
     # A page module owns this figure (dashboard): let it drive; do nothing here.
     "if(svg.closest&&svg.closest('[data-fs-target]'))return;"
-    "var btn=svg.querySelector('[data-fs-internal]');"
+    "var fe=null;try{fe=window.frameElement}catch(err){}"
+    "if(fe&&fe.hasAttribute('data-lb-obj'))return;"      # already full-size in the lightbox
+    "if(fe&&window.parent!==window){"
+    "svg.addEventListener('click',function(){"
+    "window.parent.postMessage({szFig:1,type:'open-fullscreen'},'*');"
+    "});"
+    "return;"
+    "}"
     "var req=svg.requestFullscreen||svg.webkitRequestFullscreen;"
-    "if(btn&&req){"
-    "btn.style.display='';"           # live + self-contained: reveal the button
+    "if(!req)return;"
     "var t=function(){var f=document.fullscreenElement||document.webkitFullscreenElement;"
     "if(f===svg)(document.exitFullscreen||document.webkitExitFullscreen).call(document);"
     "else req.call(svg);};"
-    "btn.addEventListener('click',t);"
-    "btn.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();t();}});"
-    "}"
-    "var fe=null;try{fe=window.frameElement}catch(err){}"
-    "if(fe&&window.parent!==window&&!fe.hasAttribute('data-lb-obj')){"
-    "svg.addEventListener('click',function(e){"
-    "if(btn&&btn.contains&&btn.contains(e.target))return;"        # button has its own handler
-    "window.parent.postMessage({szFig:1,type:'open-fullscreen'},'*');"
-    "});"
-    "}"
+    "svg.style.cursor='pointer';"
+    "svg.setAttribute('tabindex','0');"
+    "svg.addEventListener('click',t);"
+    "svg.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();t();}});"
     "})();"
 )
 
@@ -85,34 +91,30 @@ def fullscreen_control(
     *,
     inset: float = 14.0,
 ) -> str:
-    """Return the fullscreen control markup for a figure, per interactivity mode.
+    """Return the fullscreen wiring script for a figure, per interactivity mode.
 
     Append the result just before the closing ``</svg>`` of a generator's
-    document. In ``"self-contained"`` mode it is a small top-right button plus
-    the generic wiring script (hidden until the script confirms the SVG is a
-    live, unmanaged document). In ``"external"`` and ``"static"`` modes it is the
-    empty string, so no button ships.
+    document. In ``"self-contained"`` mode it is the generic wiring script
+    (see :data:`_FS_SCRIPT`) — no on-canvas button, the whole figure is the
+    hit target. In ``"external"`` and ``"static"`` modes it is the empty
+    string, so nothing ships.
 
     Parameters
     ----------
-    width : float
-        The SVG canvas width in user-space pixels (the ``viewBox`` width). The
-        button is placed near the top-right corner from this.
-    height : float
-        The canvas height. Unused for placement today (the button hugs the top
-        edge) but kept in the signature so callers pass the full canvas box and
-        future placements stay source-compatible.
+    width, height : float
+        The SVG canvas size. Unused now that there is no button to place, but
+        kept in the signature so the ~90 existing call sites (and any future
+        placement need) stay source-compatible.
     mode : str, optional
         One of :data:`MODES`. Defaults to ``"self-contained"``.
     inset : float, optional
-        Distance in pixels from the top and right edges to the button. Raise it
-        on figures whose top-right corner already holds a legend or label.
+        Unused now that there is no button to place; kept for the same
+        call-site-compatibility reason as ``width``/``height``.
 
     Returns
     -------
     str
-        The SVG fragment (button ``<g>`` + ``<script>``), or ``""`` for the
-        non-self-contained modes.
+        The ``<script>`` fragment, or ``""`` for the non-self-contained modes.
 
     Raises
     ------
@@ -125,7 +127,7 @@ def fullscreen_control(
     ''
     >>> fullscreen_control(800, 600, "external")
     ''
-    >>> "data-fs-internal" in fullscreen_control(800, 600)
+    >>> "<script>" in fullscreen_control(800, 600)
     True
     """
     if mode not in MODES:
@@ -133,20 +135,5 @@ def fullscreen_control(
     # External mode defers to the page module; static ships no interactivity.
     if mode != "self-contained":
         return ""
-
-    # Fixed 34 px hit target, hugged into the top-right corner. The icon path is
-    # the four bracket corners of a "expand" glyph (matches the sprezzature-ui
-    # component so the button reads the same everywhere).
-    size = 34.0
-    x = float(width) - inset - size
-    y = float(inset)
-    _ = height  # placement is top-edge only today; see the docstring note.
-    return (
-        f'<g data-fs-internal="" role="button" tabindex="0" aria-label="Toggle fullscreen" '
-        f'transform="translate({x:.0f},{y:.0f})" style="display:none;cursor:pointer">'
-        f'<rect x="0" y="0" width="34" height="34" rx="8" fill="#F2F3F5"/>'
-        f'<path d="M6 13 V6 h7 M28 13 V6 h-7 M6 21 v7 h7 M28 21 v7 h-7" '
-        f'fill="none" stroke="#1D1D1F" stroke-width="2" stroke-linecap="round"/>'
-        f'</g>'
-        f'<script><![CDATA[{_FS_SCRIPT}]]></script>'
-    )
+    _ = width, height, inset  # kept for call-site compatibility; see docstring.
+    return f'<script><![CDATA[{_FS_SCRIPT}]]></script>'
