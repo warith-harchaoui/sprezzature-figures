@@ -2,6 +2,28 @@
 
 ## Unreleased
 
+### Fixed
+
+- **All 126 registered chart kinds are now `status="stable"`, up from 46.**
+  The other 80 were stuck at `status="legacy"`: real, complete generators
+  (some 400+ lines with a working `build_svg()` and their own CLI) that
+  predated the unified `make_<kind>(data=None, *, out=None, ...) -> Path`
+  contract, so `make_figure()` / the CLI / the API / MCP could not call
+  them even though the scripts worked. Every one now exposes the contract
+  function and a genuine `list[dict]`-shaped `DEMO_DATA`, with caller-supplied
+  data threaded through wherever the underlying renderer's geometry allows it
+  (documented as accepted-but-illustrative-only on the handful where it
+  doesn't, e.g. `chord`, `arcdiagram`, `circle-packing` — a fixed, hand-tuned
+  narrative). `gapminder` / `gapminder_variants`, previously blocked on a
+  missing external dataset, now ship a small embedded synthetic fallback.
+  Added `scripts/_interactive.py`'s `hover_isolate_css()` so the "hover one
+  mark, dim the rest" interaction pattern has one shared source instead of
+  being hand-written slightly differently per generator. Every stable kind
+  now also declares `required_roles`/`optional_roles` in the catalog
+  (`tools/build_figures_catalog.py`'s `HAND_ROLES`), derived from each
+  generator's actual `DEMO_DATA` shape, so the Studio's role-binding UI and
+  `sprezzature-figures recommend` can reach all 126, not 46.
+
 ## 1.1.0 — 2026-08-06
 
 ### Removed
