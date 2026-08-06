@@ -82,6 +82,10 @@ dev = [
     "numpy>=1.24",
     "matplotlib>=3.7",
     "pillow>=10.0",
+    # headless-Chromium checks: scripts/render_gapminder_og.py, the Ralph
+    # eyeball loop, gallery-interactivity verification. Needs a one-time
+    # `playwright install chromium` after this installs, pip can't do that part.
+    "playwright>=1.40",
 ]
 
 [project.scripts]

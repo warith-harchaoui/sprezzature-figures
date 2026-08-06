@@ -1,3 +1,8 @@
+# Adds test/lint tooling on top of requirements.txt. Used for local
+# development and CI; never installed into the server Docker image.
 -r requirements.txt
-pytest>=8.0.0
-ruff>=0.4.0
+
+pytest>=8
+ruff>=0.4
+build
+playwright>=1.40  # headless-Chromium rendering checks (Ralph eyeball loop, gallery interactivity)
