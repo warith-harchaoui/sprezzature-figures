@@ -1,6 +1,6 @@
 # Figure Catalogue
 
-124 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type).
+125 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type).
 
 Invoke via:
 
@@ -141,6 +141,7 @@ for the current per-chart status.
 | `upset` | make_upset.py | Set intersection | UpSet plot: matrix of set membership with bar charts for intersection sizes. Replaces Venn diagrams when more than three sets are compared. |
 | `variwide` | make_variwide.py | Comparison | Column chart where column width encodes a second variable (e.g., bar height = GDP per capita, width = population). Use to pack two dimensions into a single bar-chart read. |
 | `venn` | make_venn.py | Set intersection | Venn diagram for two or three overlapping sets. Use only for two or three sets; switch to UpSet for more. |
+| `violin` | make_violin.py | Distribution | Mirrors a kernel density estimate left and right of a central axis, one violin per category, with a median tick. Shows full distribution shape (bimodal, skewed) that a box plot alone would hide. Use for comparing shape across experiment arms or cohorts. |
 | `voronoi` | make_voronoi.py | Geospatial / Spatial | Voronoi tessellation: colour each region by the nearest point. Use to show catchment areas, service regions, or proximity-based assignments. |
 | `waffle` | make_waffle.py | Composition | Square grid of unit cells coloured by category. Use as an engaging, precise alternative to a pie chart for part-of-whole comparisons (each cell = 1 % or N units). |
 | `waterfall` | make_waterfall.py | Accounting / Decomposition | Running-total bar chart where positive and negative contributions are shown in sequence. Use for financial P&L bridges, budget variance, or cumulative effect analysis. |
