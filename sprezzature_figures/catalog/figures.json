@@ -2186,6 +2186,42 @@
     ]
   },
   {
+    "kind": "kde1d",
+    "label": "Kde1D",
+    "aliases": [],
+    "category": "Distribution",
+    "description": "Smooths a numeric sample into a continuous density curve via a Gaussian kernel at each point, no binning choice, bandwidth as the only smoothing knob. Use for any single numeric sample where histogram bin edges would distract from the shape.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "svg",
+    "module": "scripts/make_kde1d.py",
+    "callable_name": "make_kde1d",
+    "required_roles": [
+      {
+        "name": "x",
+        "label": "Numeric value",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 900,
+    "default_height": 600,
+    "options_schema": {},
+    "warnings": [
+      "Default output path falls back to a shared assets/ directory"
+    ]
+  },
+  {
     "kind": "liftgain",
     "label": "Liftgain",
     "aliases": [],
