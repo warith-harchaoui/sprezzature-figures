@@ -100,6 +100,16 @@ def test_render_treemap_demo_data_svg() -> None:
 
 
 @pytest.mark.slow
+def test_render_with_no_body_at_all() -> None:
+    # README's documented curl example sends no -d flag, i.e. no HTTP body
+    # whatsoever -- distinct from an explicit `json={}`. Every RenderRequest
+    # field is optional, so the body itself must default too.
+    resp = client.post("/render/treemap")
+    assert resp.status_code == 200
+    assert resp.headers["content-type"] == "image/svg+xml"
+
+
+@pytest.mark.slow
 def test_render_bar_custom_data() -> None:
     resp = client.post(
         "/render/bar",
