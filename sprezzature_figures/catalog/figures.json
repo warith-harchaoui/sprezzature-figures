@@ -188,7 +188,7 @@
     "label": "Bar3D",
     "aliases": [],
     "category": "Comparison",
-    "description": "3-D bar chart for a 2-D categorical grid (row × column → height). Use only when a third dimension adds genuine information; prefer grouped or stacked bar for most comparisons.",
+    "description": "3-D bar chart for a 2-D categorical grid (row \u00d7 column \u2192 height). Use only when a third dimension adds genuine information; prefer grouped or stacked bar for most comparisons.",
     "intents": [],
     "status": "legacy",
     "renderer": "svg",
@@ -216,7 +216,7 @@
     "label": "Bellcurve",
     "aliases": [],
     "category": "Distribution",
-    "description": "Overlay a fitted Normal curve on a histogram. Use to test whether a sample is approximately Gaussian or to annotate mean ± σ reference lines for a report audience.",
+    "description": "Overlay a fitted Normal curve on a histogram. Use to test whether a sample is approximately Gaussian or to annotate mean \u00b1 \u03c3 reference lines for a report audience.",
     "intents": [],
     "status": "legacy",
     "renderer": "vega_lite",
@@ -305,7 +305,7 @@
     "label": "Bollinger",
     "aliases": [],
     "category": "Finance",
-    "description": "Time-series price line with Bollinger Bands (rolling mean ± 2σ). Use to visualise volatility regimes and overbought/oversold signals in financial or sensor data.",
+    "description": "Time-series price line with Bollinger Bands (rolling mean \u00b1 2\u03c3). Use to visualise volatility regimes and overbought/oversold signals in financial or sensor data.",
     "intents": [],
     "status": "legacy",
     "renderer": "svg",
@@ -397,6 +397,35 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
+      "Default output path falls back to a shared assets/ directory"
+    ]
+  },
+  {
+    "kind": "bubble",
+    "label": "Bubble",
+    "aliases": [],
+    "category": "Comparison",
+    "description": "Gapminder-style bubble chart: x and y for two measures, bubble area for a third, colour for a category. Use to compare many entities across three numeric dimensions plus a group at once.",
+    "intents": [],
+    "status": "legacy",
+    "renderer": "svg",
+    "module": "scripts/make_bubble.py",
+    "callable_name": "make_bubble",
+    "required_roles": [],
+    "optional_roles": [],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 900,
+    "default_height": 600,
+    "options_schema": {},
+    "warnings": [
+      "No DEMO_DATA in make_bubble.py",
+      "No callable named 'make_bubble' in make_bubble.py",
       "Default output path falls back to a shared assets/ directory"
     ]
   },
@@ -525,7 +554,7 @@
     "label": "Columnrange",
     "aliases": [],
     "category": "Range",
-    "description": "Vertical bars spanning from a low to a high value per category. Use for temperature ranges, salary bands, confidence intervals, or any per-group min–max.",
+    "description": "Vertical bars spanning from a low to a high value per category. Use for temperature ranges, salary bands, confidence intervals, or any per-group min\u2013max.",
     "intents": [],
     "status": "stable",
     "renderer": "vega_lite",
@@ -587,6 +616,38 @@
     "options_schema": {},
     "warnings": [
       "Default output path falls back to a shared assets/ directory"
+    ]
+  },
+  {
+    "kind": "confusion-matrix",
+    "label": "Confusion Matrix",
+    "aliases": [
+      "confusion matrix",
+      "confusion_matrix"
+    ],
+    "category": "Model evaluation",
+    "description": "Confusion matrix: actual class (rows) vs predicted class (columns), both axes labelled with the class names, cells shaded by count with a strong correct diagonal. Use to see exactly which classes a classifier confuses.",
+    "intents": [],
+    "status": "legacy",
+    "renderer": "svg",
+    "module": "scripts/make_confusion-matrix.py",
+    "callable_name": "make_confusion_matrix",
+    "required_roles": [],
+    "optional_roles": [],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 900,
+    "default_height": 600,
+    "options_schema": {},
+    "warnings": [
+      "No DEMO_DATA in make_confusion-matrix.py",
+      "No callable named 'make_confusion_matrix' in make_confusion-matrix.py",
+      "make_figure('confusion-matrix') cannot resolve to make_confusion-matrix.py: hyphen/underscore normalisation looks for a different filename"
     ]
   },
   {
@@ -840,7 +901,7 @@
     "label": "Dumbbell",
     "aliases": [],
     "category": "Change",
-    "description": "Two dots connected by a line per category (before vs. after). Use for clear before–after or group-A vs. group-B comparison across many categories.",
+    "description": "Two dots connected by a line per category (before vs. after). Use for clear before\u2013after or group-A vs. group-B comparison across many categories.",
     "intents": [],
     "status": "stable",
     "renderer": "svg",
@@ -1139,10 +1200,10 @@
     "label": "Heatmap",
     "aliases": [],
     "category": "Matrix / Image",
-    "description": "Row × column matrix with cell color encoding a numeric value. Use for activity by day-of-week × hour, correlation matrices, or cohort × variant test results.",
+    "description": "Row \u00d7 column matrix with cell color encoding a numeric value. Use for activity by day-of-week \u00d7 hour, correlation matrices, or cohort \u00d7 variant test results.",
     "intents": [],
     "status": "stable",
-    "renderer": "vega_lite",
+    "renderer": "svg",
     "module": "scripts/make_heatmap.py",
     "callable_name": "make_heatmap",
     "required_roles": [
@@ -1255,7 +1316,7 @@
     "description": "Bins a single numeric variable and counts observations per bin. The default chart for understanding a distribution's shape, spread, and skew.",
     "intents": [],
     "status": "stable",
-    "renderer": "vega_lite",
+    "renderer": "svg",
     "module": "scripts/make_histogram.py",
     "callable_name": "make_histogram",
     "required_roles": [
@@ -1576,7 +1637,7 @@
     "label": "Manhattan",
     "aliases": [],
     "category": "Genomics / Statistics",
-    "description": "Manhattan plot: −log₁₀(p-value) vs. genomic position. The standard chart for genome-wide association study (GWAS) results.",
+    "description": "Manhattan plot: \u2212log\u2081\u2080(p-value) vs. genomic position. The standard chart for genome-wide association study (GWAS) results.",
     "intents": [],
     "status": "legacy",
     "renderer": "svg",
@@ -1666,7 +1727,7 @@
       "org_chart"
     ],
     "category": "Hierarchy",
-    "description": "Top-down organisation chart. Use for reporting structures, software architecture layers, or any strict parent–child hierarchy.",
+    "description": "Top-down organisation chart. Use for reporting structures, software architecture layers, or any strict parent\u2013child hierarchy.",
     "intents": [],
     "status": "legacy",
     "renderer": "svg",
@@ -1784,6 +1845,34 @@
       "No callable named 'make_parallel_sets' in make_parallel-sets.py",
       "make_figure('parallel-sets') cannot resolve to make_parallel-sets.py: hyphen/underscore normalisation looks for a different filename",
       "Default output path falls back to a shared assets/ directory"
+    ]
+  },
+  {
+    "kind": "parcoords",
+    "label": "Parcoords",
+    "aliases": [],
+    "category": "Relationship",
+    "description": "Parallel coordinates: one vertical axis per numeric metric (with units), each record a polyline crossing them all. Use to see how a few groups separate across several measures at once.",
+    "intents": [],
+    "status": "legacy",
+    "renderer": "svg",
+    "module": "scripts/make_parcoords.py",
+    "callable_name": "make_parcoords",
+    "required_roles": [],
+    "optional_roles": [],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 900,
+    "default_height": 600,
+    "options_schema": {},
+    "warnings": [
+      "No DEMO_DATA in make_parcoords.py",
+      "No callable named 'make_parcoords' in make_parcoords.py"
     ]
   },
   {
@@ -1964,7 +2053,7 @@
     "label": "Radar",
     "aliases": [],
     "category": "Multivariate",
-    "description": "Radar / spider chart: multiple quantitative axes radiating from a common centre. Use for comparing a small number of entities across 4–8 dimensions.",
+    "description": "Radar / spider chart: multiple quantitative axes radiating from a common centre. Use for comparing a small number of entities across 4\u20138 dimensions.",
     "intents": [],
     "status": "legacy",
     "renderer": "svg",
@@ -2201,7 +2290,7 @@
     "label": "Sankey",
     "aliases": [],
     "category": "Flow",
-    "description": "Sankey diagram: flows between nodes with width proportional to volume. Use for energy balance, budget allocation, or any source → sink flow across categories.",
+    "description": "Sankey diagram: flows between nodes with width proportional to volume. Use for energy balance, budget allocation, or any source \u2192 sink flow across categories.",
     "intents": [],
     "status": "stable",
     "renderer": "svg",
@@ -2429,7 +2518,7 @@
     "label": "Spectrogram",
     "aliases": [],
     "category": "Signal",
-    "description": "Frequency × time heatmap of a signal's energy. Use for audio, seismic, or any time-varying spectral data.",
+    "description": "Frequency \u00d7 time heatmap of a signal's energy. Use for audio, seismic, or any time-varying spectral data.",
     "intents": [],
     "status": "legacy",
     "renderer": "svg",
@@ -2546,7 +2635,7 @@
     "label": "Sunburst",
     "aliases": [],
     "category": "Hierarchy",
-    "description": "Radial treemap: nested rings for hierarchical data. Use when two or three levels of hierarchy need to be read simultaneously (e.g., budget by department → team → line item).",
+    "description": "Radial treemap: nested rings for hierarchical data. Use when two or three levels of hierarchy need to be read simultaneously (e.g., budget by department \u2192 team \u2192 line item).",
     "intents": [],
     "status": "stable",
     "renderer": "svg",
@@ -2591,6 +2680,34 @@
     "options_schema": {},
     "warnings": [
       "Default output path falls back to a shared assets/ directory"
+    ]
+  },
+  {
+    "kind": "surface3d",
+    "label": "Surface3D",
+    "aliases": [],
+    "category": "3-D surface",
+    "description": "Static isometric 3-D surface for z = f(x, y): depth-sorted mesh quads shaded by height with a height legend. Hand-authored SVG (no matplotlib).",
+    "intents": [],
+    "status": "legacy",
+    "renderer": "svg",
+    "module": "scripts/make_surface3d.py",
+    "callable_name": "make_surface3d",
+    "required_roles": [],
+    "optional_roles": [],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 900,
+    "default_height": 600,
+    "options_schema": {},
+    "warnings": [
+      "No DEMO_DATA in make_surface3d.py",
+      "No callable named 'make_surface3d' in make_surface3d.py"
     ]
   },
   {
@@ -2685,7 +2802,7 @@
     "label": "Treemap",
     "aliases": [],
     "category": "Hierarchy / Composition",
-    "description": "Nested rectangles where area encodes a numeric value. Use for part-of-whole data with a two-level hierarchy (e.g., market capitalisation by sector → company).",
+    "description": "Nested rectangles where area encodes a numeric value. Use for part-of-whole data with a two-level hierarchy (e.g., market capitalisation by sector \u2192 company).",
     "intents": [],
     "status": "stable",
     "renderer": "svg",
@@ -3057,103 +3174,6 @@
     "warnings": [
       "No DEMO_DATA in make_wordcloud.py",
       "No callable named 'make_wordcloud' in make_wordcloud.py",
-      "Default output path falls back to a shared assets/ directory"
-    ]
-  },
-  {
-    "kind": "confusion-matrix",
-    "label": "Confusion matrix",
-    "aliases": [
-      "confusion_matrix",
-      "confusion matrix"
-    ],
-    "category": "Model evaluation",
-    "description": "Actual vs predicted class grid: the diagonal is correct predictions, off-diagonal cells are specific mistakes. Both axes are labelled with the class names; cells are shaded by count.",
-    "intents": [],
-    "status": "legacy",
-    "renderer": "svg",
-    "module": "scripts/make_confusion-matrix.py",
-    "callable_name": "make_confusion_matrix",
-    "required_roles": [],
-    "optional_roles": [],
-    "supported_outputs": [
-      "svg",
-      "png"
-    ],
-    "min_rows": null,
-    "max_recommended_rows": null,
-    "max_recommended_categories": null,
-    "default_width": 820,
-    "default_height": 640,
-    "options_schema": {},
-    "warnings": [
-      "No DEMO_DATA in make_confusion-matrix.py",
-      "No callable named 'make_confusion_matrix' in make_confusion-matrix.py",
-      "Default output path falls back to a shared assets/ directory"
-    ]
-  },
-  {
-    "kind": "parcoords",
-    "label": "Parallel coordinates",
-    "aliases": [
-      "parallel-coordinates",
-      "parallel_coordinates",
-      "parallel coordinates"
-    ],
-    "category": "Relationship",
-    "description": "One vertical axis per numeric metric; each record a polyline crossing them all. Use to see how a few groups separate across several measures at once. Axis titles carry units.",
-    "intents": [],
-    "status": "legacy",
-    "renderer": "svg",
-    "module": "scripts/make_parcoords.py",
-    "callable_name": "make_parcoords",
-    "required_roles": [],
-    "optional_roles": [],
-    "supported_outputs": [
-      "svg",
-      "png"
-    ],
-    "min_rows": null,
-    "max_recommended_rows": null,
-    "max_recommended_categories": null,
-    "default_width": 1200,
-    "default_height": 720,
-    "options_schema": {},
-    "warnings": [
-      "No DEMO_DATA in make_parcoords.py",
-      "No callable named 'make_parcoords' in make_parcoords.py",
-      "Default output path falls back to a shared assets/ directory"
-    ]
-  },
-  {
-    "kind": "surface3d",
-    "label": "3D surface",
-    "aliases": [
-      "surface-3d",
-      "surface_3d"
-    ],
-    "category": "3D",
-    "description": "A surface sampled on a grid and drawn as a static isometric 3-D projection: depth-sorted mesh quads shaded by height, with a height legend. Hand-authored SVG, no matplotlib.",
-    "intents": [],
-    "status": "legacy",
-    "renderer": "svg",
-    "module": "scripts/make_surface3d.py",
-    "callable_name": "make_surface3d",
-    "required_roles": [],
-    "optional_roles": [],
-    "supported_outputs": [
-      "svg",
-      "png"
-    ],
-    "min_rows": null,
-    "max_recommended_rows": null,
-    "max_recommended_categories": null,
-    "default_width": 900,
-    "default_height": 680,
-    "options_schema": {},
-    "warnings": [
-      "No DEMO_DATA in make_surface3d.py",
-      "No callable named 'make_surface3d' in make_surface3d.py",
       "Default output path falls back to a shared assets/ directory"
     ]
   }
