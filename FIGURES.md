@@ -1,6 +1,6 @@
 # Figure Catalogue
 
-123 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type).
+124 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type).
 
 Invoke via:
 
@@ -133,6 +133,7 @@ for the current per-chart status.
 | `strip` | make_strip.py | Distribution | One dot per observation along a categorical axis, jittered horizontally within its group so overlapping points stay visible. Simpler than a beeswarm's deterministic collision avoidance. Use for dose-response data or raw measurements behind a box plot. |
 | `sunburst` | make_sunburst.py | Hierarchy | Radial treemap: nested rings for hierarchical data. Use when two or three levels of hierarchy need to be read simultaneously (e.g., budget by department → team → line item). |
 | `surface3d` | make_surface3d.py | 3-D surface | Static isometric 3-D surface for z = f(x, y): depth-sorted mesh quads shaded by height with a height legend. Hand-authored SVG (no matplotlib). |
+| `survival-km` | make_survival-km.py | Genomics / Statistics | Kaplan-Meier survival curve: step-down probability-of-survival estimate from possibly-censored durations, with a 95% confidence band and censoring tick marks. The core visual of clinical-trial and reliability-engineering reporting. |
 | `ternary` | make_ternary.py | Compositional | Ternary (triangular) plot for three components that sum to a constant. Use in chemistry, geology, or any three-part compositional analysis. |
 | `timeline` | make_timeline.py | Temporal | Gantt-style horizontal timeline of events or phases. Use for project schedules, historical chronologies, or clinical trial phases. |
 | `tree` | make_tree.py | Hierarchy | Top-down or left-right tree diagram for strict hierarchies. Simpler than a dendrogram when the tree structure itself (not distances) is the message. |

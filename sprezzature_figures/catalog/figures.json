@@ -4064,6 +4064,63 @@
     ]
   },
   {
+    "kind": "survival-km",
+    "label": "Survival Km",
+    "aliases": [
+      "survival km",
+      "survival_km"
+    ],
+    "category": "Genomics / Statistics",
+    "description": "Kaplan-Meier survival curve: step-down probability-of-survival estimate from possibly-censored durations, with a 95% confidence band and censoring tick marks. The core visual of clinical-trial and reliability-engineering reporting.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "svg",
+    "module": "scripts/make_survival-km.py",
+    "callable_name": "make_survival_km",
+    "required_roles": [
+      {
+        "name": "arm",
+        "label": "Arm / group",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "t",
+        "label": "Duration",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "event",
+        "label": "Event occurred (bool)",
+        "accepted_types": [
+          "categorical",
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 900,
+    "default_height": 600,
+    "options_schema": {},
+    "warnings": [
+      "make_figure('survival-km') cannot resolve to make_survival-km.py: hyphen/underscore normalisation looks for a different filename",
+      "Default output path falls back to a shared assets/ directory"
+    ]
+  },
+  {
     "kind": "ternary",
     "label": "Ternary",
     "aliases": [],
