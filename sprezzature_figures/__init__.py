@@ -16,6 +16,6 @@ from .make_figure import get_figure_definition, list_kinds, make_figure, validat
 
 __all__ = ["make_figure", "get_figure_definition", "list_kinds", "validate_figure_input"]
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 __author__ = "Warith Harchaoui"
 __email__ = "warith.harchaoui@gmail.com"
