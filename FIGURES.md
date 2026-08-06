@@ -1,6 +1,6 @@
 # Figure Catalogue
 
-98 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type).
+99 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type).
 
 Invoke via:
 
@@ -30,6 +30,7 @@ for the current per-chart status.
 | `bar` | make_bar.py | Comparison | Grouped bar chart comparing a numeric value across a handful of categories. The default chart for straightforward category comparisons (revenue by region, headcount by department). |
 | `bar-grouped` | make_bar-grouped.py | Comparison | Clustered bars: an outer categorical axis (e.g. quarter) holds a group of side-by-side bars, one per inner category (e.g. region), colour-coded. Use to compare sub-category totals within a period and each sub-category's trend across periods at once. |
 | `bar3d` | make_bar3d.py | Comparison | 3-D bar chart for a 2-D categorical grid (row × column → height). Use only when a third dimension adds genuine information; prefer grouped or stacked bar for most comparisons. |
+| `beeswarm` | make_beeswarm.py | Distribution | One dot per observation along a shared numeric axis, nudged apart just enough to avoid overlap so the swarm's width is itself a density cue; colour groups several overlapping distributions on one axis. Use where a histogram would hide individual outliers and a box plot would hide shape. |
 | `bellcurve` | make_bellcurve.py | Distribution | Overlay a fitted Normal curve on a histogram. Use to test whether a sample is approximately Gaussian or to annotate mean ± σ reference lines for a report audience. |
 | `binned-grid-map` | make_binned-grid-map.py | Geospatial | Aggregate point events into equal-area hexagonal or square grid cells on a map. Use when raw point density is too high to read (e.g., taxi pickups, earthquake epicentres). |
 | `blandaltman` | make_blandaltman.py | Agreement | Plot mean of two measurements vs. their difference (Bland-Altman / Tukey mean-difference). Required for method-comparison studies in clinical or engineering contexts. |

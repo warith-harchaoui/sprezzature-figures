@@ -4,11 +4,11 @@ Reproducible audit of every `scripts/make_*.py` generator against the
 `make_<kind>(data, *, out, title, ...) -> Path` contract the dispatcher
 expects. Regenerate with `python tools/audit_generators.py --render`.
 
-- **stable**: 18
+- **stable**: 19
 - **experimental**: 0
 - **legacy**: 80
 - **unavailable**: 0
-- **total**: 98
+- **total**: 99
 
 | kind | status | reachable | callable | demo_data | render | errors |
 |---|---|---|---|---|---|---|
@@ -19,6 +19,7 @@ expects. Regenerate with `python tools/audit_generators.py --render`.
 | `bar-grouped` | stable | **no** | yes | yes | passed | make_figure('bar-grouped') cannot resolve to make_bar-grouped.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
 | `bar` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `bar3d` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_bar3d.py; No callable named 'make_bar3d' in make_bar3d.py |
+| `beeswarm` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `bellcurve` | legacy | yes | yes | **no** | not_run | No DEMO_DATA in make_bellcurve.py; Default output path falls back to a shared assets/ directory |
 | `binned-grid-map` | legacy | **no** | yes | **no** | not_run | No DEMO_DATA in make_binned-grid-map.py; make_figure('binned-grid-map') cannot resolve to make_binned-grid-map.py: hyphen/underscore normalisation looks for a different filename |
 | `blandaltman` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_blandaltman.py; No callable named 'make_blandaltman' in make_blandaltman.py |
