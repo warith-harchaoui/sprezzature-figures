@@ -6,11 +6,44 @@
     "category": "Flow",
     "description": "Trace how categorical populations shift across multiple sequential stages (e.g., patient treatment paths, hiring funnel). Use over sankey when stages are time-ordered and each row belongs to exactly one bin per stage.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_alluvial.py",
     "callable_name": "make_alluvial",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "channel",
+        "label": "Channel",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "plan",
+        "label": "Plan",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "outcome",
+        "label": "Outcome",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "count",
+        "label": "Count",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -23,8 +56,6 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_alluvial.py",
-      "No callable named 'make_alluvial' in make_alluvial.py",
       "Default output path falls back to a shared assets/ directory"
     ]
   },
@@ -35,11 +66,52 @@
     "category": "Multivariate",
     "description": "Project multivariate observations as Fourier curves. Clusters of similar rows become visually coincident curves; use for detecting clusters or outliers in high-dimensional data before running PCA.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_andrews.py",
     "callable_name": "make_andrews",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "species",
+        "label": "Species",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "bill_length",
+        "label": "Bill length",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "bill_depth",
+        "label": "Bill depth",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "flipper_length",
+        "label": "Flipper length",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "body_mass",
+        "label": "Body mass",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -52,8 +124,7 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_andrews.py",
-      "No callable named 'make_andrews' in make_andrews.py"
+      "Default output path falls back to a shared assets/ directory"
     ]
   },
   {
@@ -63,11 +134,36 @@
     "category": "Network",
     "description": "Show pairwise connections along a linear node axis. Ideal for sequences where crossing arcs reveal unexpected long-range dependencies (e.g., citation links, gene co-expression).",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_arcdiagram.py",
     "callable_name": "make_arcdiagram",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "source",
+        "label": "Source",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "target",
+        "label": "Target",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "weight",
+        "label": "Weight",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -80,8 +176,6 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_arcdiagram.py",
-      "No callable named 'make_arcdiagram' in make_arcdiagram.py",
       "Default output path falls back to a shared assets/ directory"
     ]
   },
@@ -246,11 +340,36 @@
     "category": "Comparison",
     "description": "3-D bar chart for a 2-D categorical grid (row \u00d7 column \u2192 height). Use only when a third dimension adds genuine information; prefer grouped or stacked bar for most comparisons.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_bar3d.py",
     "callable_name": "make_bar3d",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "team",
+        "label": "Team",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "quarter",
+        "label": "Quarter",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "spend_k",
+        "label": "Spend k",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -263,8 +382,7 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_bar3d.py",
-      "No callable named 'make_bar3d' in make_bar3d.py"
+      "Default output path falls back to a shared assets/ directory"
     ]
   },
   {
@@ -318,11 +436,28 @@
     "category": "Distribution",
     "description": "Overlay a fitted Normal curve on a histogram. Use to test whether a sample is approximately Gaussian or to annotate mean \u00b1 \u03c3 reference lines for a report audience.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_bellcurve.py",
     "callable_name": "make_bellcurve",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "mean",
+        "label": "Mean",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "std",
+        "label": "Std",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -335,7 +470,6 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_bellcurve.py",
       "Default output path falls back to a shared assets/ directory"
     ]
   },
@@ -349,11 +483,44 @@
     "category": "Geospatial",
     "description": "Aggregate point events into equal-area hexagonal or square grid cells on a map. Use when raw point density is too high to read (e.g., taxi pickups, earthquake epicentres).",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_binned-grid-map.py",
     "callable_name": "make_binned_grid_map",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "lon",
+        "label": "Longitude",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "lat",
+        "label": "Latitude",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "weight",
+        "label": "Weight",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "sigma",
+        "label": "Sigma",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -366,7 +533,6 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_binned-grid-map.py",
       "make_figure('binned-grid-map') cannot resolve to make_binned-grid-map.py: hyphen/underscore normalisation looks for a different filename",
       "Default output path falls back to a shared assets/ directory"
     ]
@@ -378,11 +544,28 @@
     "category": "Agreement",
     "description": "Plot mean of two measurements vs. their difference (Bland-Altman / Tukey mean-difference). Required for method-comparison studies in clinical or engineering contexts.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_blandaltman.py",
     "callable_name": "make_blandaltman",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "mean",
+        "label": "Mean",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "diff",
+        "label": "Diff",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -395,8 +578,6 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_blandaltman.py",
-      "No callable named 'make_blandaltman' in make_blandaltman.py",
       "Default output path falls back to a shared assets/ directory"
     ]
   },
@@ -407,11 +588,28 @@
     "category": "Finance",
     "description": "Time-series price line with Bollinger Bands (rolling mean \u00b1 2\u03c3). Use to visualise volatility regimes and overbought/oversold signals in financial or sensor data.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_bollinger.py",
     "callable_name": "make_bollinger",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "day",
+        "label": "Day",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "close",
+        "label": "Close",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -424,8 +622,7 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_bollinger.py",
-      "No callable named 'make_bollinger' in make_bollinger.py"
+      "Default output path falls back to a shared assets/ directory"
     ]
   },
   {
@@ -435,11 +632,52 @@
     "category": "Distribution",
     "description": "Letter-value / \"boxen\" plot: extends the box plot with additional quantile boxes. Use for large samples (n > 10 000) where a standard box plot hides distributional detail.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_boxen.py",
     "callable_name": "make_boxen",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "label",
+        "label": "Label",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "median",
+        "label": "Median",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "sigma",
+        "label": "Sigma",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "seed",
+        "label": "Seed",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "n",
+        "label": "N",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -452,8 +690,7 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_boxen.py",
-      "No callable named 'make_boxen' in make_boxen.py"
+      "Default output path falls back to a shared assets/ directory"
     ]
   },
   {
@@ -507,11 +744,52 @@
     "category": "Comparison",
     "description": "Gapminder-style bubble chart: x and y for two measures, bubble area for a third, colour for a category. Use to compare many entities across three numeric dimensions plus a group at once.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_bubble.py",
     "callable_name": "make_bubble",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "name",
+        "label": "Name",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "gdp",
+        "label": "Gdp",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "life",
+        "label": "Life",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "pop",
+        "label": "Pop",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "region",
+        "label": "Region",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -524,8 +802,6 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_bubble.py",
-      "No callable named 'make_bubble' in make_bubble.py",
       "Default output path falls back to a shared assets/ directory"
     ]
   },
@@ -536,11 +812,68 @@
     "category": "KPI",
     "description": "Bullet chart: a single bar against a reference measure and qualitative performance bands. The compact alternative to a gauge for dashboards with many KPIs.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_bullet.py",
     "callable_name": "make_bullet",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "name",
+        "label": "Name",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "unit",
+        "label": "Unit",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "value",
+        "label": "Value",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "target",
+        "label": "Target",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "axis_max",
+        "label": "Axis max",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "bands",
+        "label": "Bands",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "higher",
+        "label": "Higher",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -553,8 +886,6 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_bullet.py",
-      "No callable named 'make_bullet' in make_bullet.py",
       "Default output path falls back to a shared assets/ directory"
     ]
   },
@@ -621,11 +952,52 @@
     "category": "Model evaluation",
     "description": "Plot predicted probability vs. observed frequency. Use after training a classifier to check whether its scores are well-calibrated (reliable confidence estimates).",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_calibration.py",
     "callable_name": "make_calibration",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "predicted",
+        "label": "Predicted",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "observed",
+        "label": "Observed",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "count",
+        "label": "Count",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "gap",
+        "label": "Gap",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "over",
+        "label": "Over",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -638,8 +1010,6 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_calibration.py",
-      "No callable named 'make_calibration' in make_calibration.py",
       "Default output path falls back to a shared assets/ directory"
     ]
   },
@@ -719,11 +1089,36 @@
     "category": "Flow",
     "description": "Circular chord diagram for symmetric or directed flows between categories. Use when every pair of categories can exchange and the total volume matters (e.g., migration between countries).",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_chord.py",
     "callable_name": "make_chord",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "author_team",
+        "label": "Author team",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "reviewer_team",
+        "label": "Reviewer team",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "reviews",
+        "label": "Reviews",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -736,8 +1131,6 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_chord.py",
-      "No callable named 'make_chord' in make_chord.py",
       "Default output path falls back to a shared assets/ directory"
     ]
   },
@@ -795,11 +1188,28 @@
     "category": "Hierarchy",
     "description": "Represent a hierarchy as nested circles whose area encodes a numeric value. Use for a single level of nesting where the visual impact of size differences matters more than precise reading.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_circle-packing.py",
     "callable_name": "make_circle_packing",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "path",
+        "label": "Path",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "lines",
+        "label": "Lines",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -812,8 +1222,6 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_circle-packing.py",
-      "No callable named 'make_circle_packing' in make_circle-packing.py",
       "make_figure('circle-packing') cannot resolve to make_circle-packing.py: hyphen/underscore normalisation looks for a different filename",
       "Default output path falls back to a shared assets/ directory"
     ]
@@ -949,11 +1357,36 @@
     "category": "Model evaluation",
     "description": "Confusion matrix: actual class (rows) vs predicted class (columns), both axes labelled with the class names, cells shaded by count with a strong correct diagonal. Use to see exactly which classes a classifier confuses.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_confusion-matrix.py",
     "callable_name": "make_confusion_matrix",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "actual",
+        "label": "Actual",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "predicted",
+        "label": "Predicted",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "count",
+        "label": "Count",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -966,9 +1399,8 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_confusion-matrix.py",
-      "No callable named 'make_confusion_matrix' in make_confusion-matrix.py",
-      "make_figure('confusion-matrix') cannot resolve to make_confusion-matrix.py: hyphen/underscore normalisation looks for a different filename"
+      "make_figure('confusion-matrix') cannot resolve to make_confusion-matrix.py: hyphen/underscore normalisation looks for a different filename",
+      "Default output path falls back to a shared assets/ directory"
     ]
   },
   {
@@ -981,11 +1413,52 @@
     "category": "Bivariate time series",
     "description": "Scatter plot where consecutive time points are connected by lines. Use to reveal the joint trajectory of two variables over time (e.g., GDP vs. life expectancy).",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_connected-scatter.py",
     "callable_name": "make_connected_scatter",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "year",
+        "label": "Year",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "gdp",
+        "label": "Gdp",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "co2",
+        "label": "Co2",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "label",
+        "label": "Label",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "side",
+        "label": "Side",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -998,8 +1471,6 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_connected-scatter.py",
-      "No callable named 'make_connected_scatter' in make_connected-scatter.py",
       "make_figure('connected-scatter') cannot resolve to make_connected-scatter.py: hyphen/underscore normalisation looks for a different filename",
       "Default output path falls back to a shared assets/ directory"
     ]
@@ -1014,11 +1485,36 @@
     "category": "Clustering",
     "description": "Scatter plot with convex-hull polygons drawn around labelled clusters. Use to visually delimit group boundaries after clustering or classification.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_convex-hull.py",
     "callable_name": "make_convex_hull",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "segment",
+        "label": "Segment",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "spend",
+        "label": "Spend",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "days",
+        "label": "Days",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -1031,8 +1527,6 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_convex-hull.py",
-      "No callable named 'make_convex_hull' in make_convex-hull.py",
       "make_figure('convex-hull') cannot resolve to make_convex-hull.py: hyphen/underscore normalisation looks for a different filename",
       "Default output path falls back to a shared assets/ directory"
     ]
@@ -1100,11 +1594,44 @@
     "category": "Cyclic",
     "description": "Directed ring of proportional arcs for a process that returns to its start (a crop rotation, the seasons, a product lifecycle, a sprint). Each arc's length is that phase's share of one full turn, wrapped by a flow arrow. Use over a pie when order and recurrence matter.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_cycle.py",
     "callable_name": "make_cycle",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "key",
+        "label": "Key",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "label",
+        "label": "Label",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "sub",
+        "label": "Sub",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "months",
+        "label": "Months",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -1117,8 +1644,6 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_cycle.py",
-      "No callable named 'make_cycle' in make_cycle.py",
       "Default output path falls back to a shared assets/ directory"
     ]
   },
@@ -1129,11 +1654,36 @@
     "category": "Hierarchy / Clustering",
     "description": "Hierarchical clustering tree showing how items merge. Use alongside a heatmap for gene expression or customer segmentation; standalone for phylogenetics.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_dendrogram.py",
     "callable_name": "make_dendrogram",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "left",
+        "label": "Left",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "right",
+        "label": "Right",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "height",
+        "label": "Height",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -1146,8 +1696,6 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_dendrogram.py",
-      "No callable named 'make_dendrogram' in make_dendrogram.py",
       "Default output path falls back to a shared assets/ directory"
     ]
   },
@@ -1161,11 +1709,36 @@
     "category": "Network",
     "description": "Circular chord variant emphasising directed dependencies between software modules, packages, or systems. Highlights which components are most depended-upon.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_dependency-wheel.py",
     "callable_name": "make_dependency_wheel",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "source",
+        "label": "Source",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "target",
+        "label": "Target",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "value",
+        "label": "Value",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -1178,8 +1751,6 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_dependency-wheel.py",
-      "No callable named 'make_dependency_wheel' in make_dependency-wheel.py",
       "make_figure('dependency-wheel') cannot resolve to make_dependency-wheel.py: hyphen/underscore normalisation looks for a different filename",
       "Default output path falls back to a shared assets/ directory"
     ]
@@ -1194,11 +1765,36 @@
     "category": "Comparison",
     "description": "Two area or line series with the gap between them shaded. Use to emphasise the magnitude and sign of the difference between two time series.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_difference-chart.py",
     "callable_name": "make_difference_chart",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "month",
+        "label": "Month",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "series",
+        "label": "Series",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "value",
+        "label": "Value",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -1211,9 +1807,8 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_difference-chart.py",
-      "No callable named 'make_difference_chart' in make_difference-chart.py",
-      "make_figure('difference-chart') cannot resolve to make_difference-chart.py: hyphen/underscore normalisation looks for a different filename"
+      "make_figure('difference-chart') cannot resolve to make_difference-chart.py: hyphen/underscore normalisation looks for a different filename",
+      "Default output path falls back to a shared assets/ directory"
     ]
   },
   {
@@ -1267,11 +1862,36 @@
     "category": "Geospatial",
     "description": "Each dot represents a fixed count of a quantity on a map. Use to show spatial distribution and relative magnitude without imposing arbitrary choropleth boundaries.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_dotdensity.py",
     "callable_name": "make_dotdensity",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "department",
+        "label": "Department",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "population",
+        "label": "Population",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "region",
+        "label": "Region",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -1284,7 +1904,6 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_dotdensity.py",
       "Default output path falls back to a shared assets/ directory"
     ]
   },
@@ -1295,11 +1914,20 @@
     "category": "Distribution",
     "description": "Wilkinson dot plot: one dot per observation, binned and stacked so the sample size stays countable while the silhouette shows the distribution's shape. Use for small-to-medium samples where a histogram's bars would hide individual points.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_dotplot.py",
     "callable_name": "make_dotplot",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "hours",
+        "label": "Hours",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -1312,8 +1940,6 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_dotplot.py",
-      "No callable named 'make_dotplot' in make_dotplot.py",
       "Default output path falls back to a shared assets/ directory"
     ]
   },
@@ -1415,11 +2041,28 @@
     "category": "Network",
     "description": "Hierarchical edge-bundling groups edges along their shared ancestry, reducing visual clutter in large graphs. Use for software dependency or call-graph visualisation.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_edge-bundling.py",
     "callable_name": "make_edge_bundling",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "source",
+        "label": "Source",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "target",
+        "label": "Target",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -1432,8 +2075,6 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_edge-bundling.py",
-      "No callable named 'make_edge_bundling' in make_edge-bundling.py",
       "make_figure('edge-bundling') cannot resolve to make_edge-bundling.py: hyphen/underscore normalisation looks for a different filename",
       "Default output path falls back to a shared assets/ directory"
     ]
@@ -1445,11 +2086,28 @@
     "category": "Model selection",
     "description": "Detect the elbow (knee) of a diminishing-returns curve with the Kneedle method: pick k for k-means, the number of PCA components, or `eps` for DBSCAN. An inset draws the normalised difference curve whose peak locates the elbow.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_elbow.py",
     "callable_name": "make_elbow",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "k",
+        "label": "K",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "inertia",
+        "label": "Inertia",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -1462,8 +2120,6 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_elbow.py",
-      "No callable named 'make_elbow' in make_elbow.py",
       "Default output path falls back to a shared assets/ directory"
     ]
   },
@@ -1474,11 +2130,52 @@
     "category": "Dimensionality reduction",
     "description": "2-D or 3-D scatter of high-dimensional embeddings coloured by label. Use to inspect whether a learned embedding separates classes or clusters semantically.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_embedding_projector.py",
     "callable_name": "make_embedding_projector",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "word",
+        "label": "Word",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "cluster",
+        "label": "Cluster",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "ci",
+        "label": "Ci",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "x",
+        "label": "X coordinate",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "y",
+        "label": "Y coordinate",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -1491,8 +2188,7 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_embedding_projector.py",
-      "No callable named 'make_embedding_projector' in make_embedding_projector.py"
+      "Default output path falls back to a shared assets/ directory"
     ]
   },
   {
@@ -1562,11 +2258,52 @@
     "category": "Meta-analysis",
     "description": "Forest plot: effect size with confidence interval per study, plus a pooled diamond. Standard in systematic reviews and meta-analyses.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_forest.py",
     "callable_name": "make_forest",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "label",
+        "label": "Label",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "n",
+        "label": "N",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "or_",
+        "label": "Or ",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "lo",
+        "label": "Lo",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "hi",
+        "label": "Hi",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -1579,8 +2316,6 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_forest.py",
-      "No callable named 'make_forest' in make_forest.py",
       "Default output path falls back to a shared assets/ directory"
     ]
   },
@@ -1695,11 +2430,60 @@
     "category": "Animated bubble",
     "description": "Animated scatter: x = income, y = life expectancy, size = population, colour = region. Use to show development trends across countries over decades.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_gapminder.py",
     "callable_name": "make_gapminder",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "country",
+        "label": "Country",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "continent",
+        "label": "Continent",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "year",
+        "label": "Year",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "gdpPercap",
+        "label": "GdpPercap",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "lifeExp",
+        "label": "LifeExp",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "pop",
+        "label": "Pop",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -1712,8 +2496,7 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_gapminder.py",
-      "No callable named 'make_gapminder' in make_gapminder.py"
+      "Default output path falls back to a shared assets/ directory"
     ]
   },
   {
@@ -1723,11 +2506,60 @@
     "category": "Animated bubble",
     "description": "Regional or subset variants of the Gapminder chart.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_gapminder_variants.py",
     "callable_name": "make_gapminder_variants",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "country",
+        "label": "Country",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "continent",
+        "label": "Continent",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "year",
+        "label": "Year",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "fertility",
+        "label": "Fertility",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "lifeExp",
+        "label": "LifeExp",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "pop",
+        "label": "Pop",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -1740,8 +2572,7 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_gapminder_variants.py",
-      "No callable named 'make_gapminder_variants' in make_gapminder_variants.py"
+      "Default output path falls back to a shared assets/ directory"
     ]
   },
   {
@@ -1751,11 +2582,52 @@
     "category": "KPI",
     "description": "Semicircular gauge dial. Use for a single KPI read at a glance; prefer bullet charts in text-heavy reports.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_gauge.py",
     "callable_name": "make_gauge",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "label",
+        "label": "Label",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "sublabel",
+        "label": "Sublabel",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "value",
+        "label": "Value",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "unit",
+        "label": "Unit",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "settle_from",
+        "label": "Settle from",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -1768,8 +2640,7 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_gauge.py",
-      "No callable named 'make_gauge' in make_gauge.py"
+      "Default output path falls back to a shared assets/ directory"
     ]
   },
   {
@@ -1927,11 +2798,28 @@
     "category": "Geospatial",
     "description": "US (or world) map where equal-area hexagons replace geographic regions. Eliminates size-biased area distortion from choropleth maps.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_hexbin-map.py",
     "callable_name": "make_hexbin_map",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "lon",
+        "label": "Longitude",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "lat",
+        "label": "Latitude",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -1944,7 +2832,6 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_hexbin-map.py",
       "make_figure('hexbin-map') cannot resolve to make_hexbin-map.py: hyphen/underscore normalisation looks for a different filename",
       "Default output path falls back to a shared assets/ directory"
     ]
@@ -1956,11 +2843,28 @@
     "category": "Geospatial",
     "description": "Generic hexagonal binning map. Use for local or regional point density where standard hexbin-map doesn't fit.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_hexmap.py",
     "callable_name": "make_hexmap",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "x",
+        "label": "X coordinate",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "y",
+        "label": "Y coordinate",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -1973,7 +2877,6 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_hexmap.py",
       "Default output path falls back to a shared assets/ directory"
     ]
   },
@@ -2020,11 +2923,28 @@
     "category": "Time series",
     "description": "Horizon chart: fold a time series at regular intervals and overlay bands. Enables many series in compact vertical space (e.g., server metrics, sensor arrays).",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_horizon.py",
     "callable_name": "make_horizon",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "label",
+        "label": "Label",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "values",
+        "label": "Values",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -2037,8 +2957,7 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_horizon.py",
-      "No callable named 'make_horizon' in make_horizon.py"
+      "Default output path falls back to a shared assets/ directory"
     ]
   },
   {
@@ -2048,11 +2967,44 @@
     "category": "Hierarchy",
     "description": "Top-down rectangular treemap (icicle / flame chart). Use to show execution profiles, file-system trees, or budget breakdowns where reading order matters.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_icicle.py",
     "callable_name": "make_icicle",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "id",
+        "label": "Node ID",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "parent",
+        "label": "Parent ID",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "name",
+        "label": "Name",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "ms",
+        "label": "Ms",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -2065,8 +3017,6 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_icicle.py",
-      "No callable named 'make_icicle' in make_icicle.py",
       "Default output path falls back to a shared assets/ directory"
     ]
   },
@@ -2080,11 +3030,36 @@
     "category": "Matrix / Image",
     "description": "Display a 2-D matrix as a heatmap with smooth interpolation. Use for spatial fields (temperature grids, image patches) rather than discrete data.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_imshow-interpolated.py",
     "callable_name": "make_imshow_interpolated",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "x",
+        "label": "X coordinate",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "y",
+        "label": "Y coordinate",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "value",
+        "label": "Value",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -2097,7 +3072,6 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_imshow-interpolated.py",
       "make_figure('imshow-interpolated') cannot resolve to make_imshow-interpolated.py: hyphen/underscore normalisation looks for a different filename"
     ]
   },
@@ -2163,11 +3137,28 @@
     "category": "Bivariate distribution",
     "description": "Central scatter or hexbin with marginal histograms or KDE on each axis. Use to show bivariate distribution and its univariate projections simultaneously.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_jointplot.py",
     "callable_name": "make_jointplot",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "sleep",
+        "label": "Sleep",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "rt",
+        "label": "Rt",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -2180,8 +3171,6 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_jointplot.py",
-      "No callable named 'make_jointplot' in make_jointplot.py",
       "Default output path falls back to a shared assets/ directory"
     ]
   },
@@ -2276,11 +3265,36 @@
     "category": "Model evaluation",
     "description": "Lift and gain curves for binary classifiers. Use to evaluate how much better than random a model performs when targeting the top N% of a population.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_liftgain.py",
     "callable_name": "make_liftgain",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "pop",
+        "label": "Pop",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "gain",
+        "label": "Gain",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "series",
+        "label": "Series",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -2293,8 +3307,6 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_liftgain.py",
-      "No callable named 'make_liftgain' in make_liftgain.py",
       "Default output path falls back to a shared assets/ directory"
     ]
   },
@@ -2418,11 +3430,44 @@
     "category": "KPI",
     "description": "Animated liquid fill gauge (wave inside a circle). Use for a single percentage KPI in consumer-facing dashboards where animation adds appeal.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_liquid-gauge.py",
     "callable_name": "make_liquid_gauge",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "metric",
+        "label": "Metric",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "label",
+        "label": "Label",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "value",
+        "label": "Value",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "median",
+        "label": "Median",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -2435,8 +3480,6 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_liquid-gauge.py",
-      "No callable named 'make_liquid_gauge' in make_liquid-gauge.py",
       "make_figure('liquid-gauge') cannot resolve to make_liquid-gauge.py: hyphen/underscore normalisation looks for a different filename",
       "Default output path falls back to a shared assets/ directory"
     ]
@@ -2492,11 +3535,44 @@
     "category": "Genomics / Statistics",
     "description": "Manhattan plot: \u2212log\u2081\u2080(p-value) vs. genomic position. The standard chart for genome-wide association study (GWAS) results.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_manhattan.py",
     "callable_name": "make_manhattan",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "chromosome",
+        "label": "Chromosome",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "position_fraction",
+        "label": "Position fraction",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "neg_log10p",
+        "label": "Neg log10p",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "gene",
+        "label": "Gene",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -2509,8 +3585,6 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_manhattan.py",
-      "No callable named 'make_manhattan' in make_manhattan.py",
       "Default output path falls back to a shared assets/ directory"
     ]
   },
@@ -2521,11 +3595,44 @@
     "category": "Categorical",
     "description": "Mosaic (Marimekko) plot: tile area encodes joint frequency of two categorical variables. Use to show contingency tables and test independence visually.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_mosaic.py",
     "callable_name": "make_mosaic",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "device",
+        "label": "Device",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "share",
+        "label": "Share",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "method",
+        "label": "Method",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "fraction",
+        "label": "Fraction",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -2538,8 +3645,6 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_mosaic.py",
-      "No callable named 'make_mosaic' in make_mosaic.py",
       "Default output path falls back to a shared assets/ directory"
     ]
   },
@@ -2550,11 +3655,60 @@
     "category": "Network",
     "description": "Force-directed network graph. Use to show relationships in social, citation, or infrastructure networks when node count is < 500.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_network.py",
     "callable_name": "make_network",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "source",
+        "label": "Source",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "source_label",
+        "label": "Source label",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "source_team",
+        "label": "Source team",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "target",
+        "label": "Target",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "target_label",
+        "label": "Target label",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "target_team",
+        "label": "Target team",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -2567,8 +3721,6 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_network.py",
-      "No callable named 'make_network' in make_network.py",
       "Default output path falls back to a shared assets/ directory"
     ]
   },
@@ -2582,11 +3734,44 @@
     "category": "Hierarchy",
     "description": "Top-down organisation chart. Use for reporting structures, software architecture layers, or any strict parent\u2013child hierarchy.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_org-chart.py",
     "callable_name": "make_org_chart",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "id",
+        "label": "Node ID",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "role",
+        "label": "Role",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "headcount",
+        "label": "Headcount",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "parent",
+        "label": "Parent ID",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -2599,8 +3784,6 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_org-chart.py",
-      "No callable named 'make_org_chart' in make_org-chart.py",
       "make_figure('org-chart') cannot resolve to make_org-chart.py: hyphen/underscore normalisation looks for a different filename",
       "Default output path falls back to a shared assets/ directory"
     ]
@@ -2615,11 +3798,36 @@
     "category": "Comparison",
     "description": "Circles packed together, sized by value. Use as a visually engaging alternative to a pie chart when comparing parts of a whole across many categories.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_packed-bubble.py",
     "callable_name": "make_packed_bubble",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "name",
+        "label": "Name",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "share",
+        "label": "Share",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "family",
+        "label": "Family",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -2632,8 +3840,6 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_packed-bubble.py",
-      "No callable named 'make_packed_bubble' in make_packed-bubble.py",
       "make_figure('packed-bubble') cannot resolve to make_packed-bubble.py: hyphen/underscore normalisation looks for a different filename",
       "Default output path falls back to a shared assets/ directory"
     ]
@@ -2645,11 +3851,52 @@
     "category": "Multivariate",
     "description": "Matrix of scatter plots (or KDE on the diagonal) for every pair of numeric variables. Standard EDA chart for tabular datasets up to ~10 columns.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_pairplot.py",
     "callable_name": "make_pairplot",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "chemistry",
+        "label": "Chemistry",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "density",
+        "label": "Density",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "charge",
+        "label": "Charge",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "resistance",
+        "label": "Resistance",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "cycles",
+        "label": "Cycles",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -2662,8 +3909,6 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_pairplot.py",
-      "No callable named 'make_pairplot' in make_pairplot.py",
       "Default output path falls back to a shared assets/ directory"
     ]
   },
@@ -2677,11 +3922,52 @@
     "category": "Categorical flow",
     "description": "Parallel sets / parallel coordinates for categorical variables. Use to show co-occurrence and flow across multiple categorical dimensions simultaneously.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_parallel-sets.py",
     "callable_name": "make_parallel_sets",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "Travel class",
+        "label": "Travel class",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "Sex",
+        "label": "Sex",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "Age group",
+        "label": "Age group",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "Outcome",
+        "label": "Outcome",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "count",
+        "label": "Count",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -2694,8 +3980,6 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_parallel-sets.py",
-      "No callable named 'make_parallel_sets' in make_parallel-sets.py",
       "make_figure('parallel-sets') cannot resolve to make_parallel-sets.py: hyphen/underscore normalisation looks for a different filename",
       "Default output path falls back to a shared assets/ directory"
     ]
@@ -2707,11 +3991,52 @@
     "category": "Relationship",
     "description": "Parallel coordinates: one vertical axis per numeric metric (with units), each record a polyline crossing them all. Use to see how a few groups separate across several measures at once.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_parcoords.py",
     "callable_name": "make_parcoords",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "car_class",
+        "label": "Car class",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "mpg",
+        "label": "Mpg",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "hp",
+        "label": "Hp",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "weight",
+        "label": "Weight",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "accel",
+        "label": "Accel",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -2724,8 +4049,7 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_parcoords.py",
-      "No callable named 'make_parcoords' in make_parcoords.py"
+      "Default output path falls back to a shared assets/ directory"
     ]
   },
   {
@@ -2735,11 +4059,28 @@
     "category": "Quality / Ranking",
     "description": "Bar chart sorted descending with a cumulative-percentage line. Use to identify the \"vital few\" factors that account for the majority of an effect (80/20 rule).",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_pareto.py",
     "callable_name": "make_pareto",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "reason",
+        "label": "Reason",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "count",
+        "label": "Count",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -2752,8 +4093,6 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_pareto.py",
-      "No callable named 'make_pareto' in make_pareto.py",
       "Default output path falls back to a shared assets/ directory"
     ]
   },
@@ -2764,11 +4103,44 @@
     "category": "Political / Composition",
     "description": "Semicircular seat chart for legislative bodies. Use to show seat distribution in elections or any grouped proportional allocation.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_parliament.py",
     "callable_name": "make_parliament",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "party",
+        "label": "Party",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "label",
+        "label": "Label",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "seats",
+        "label": "Seats",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "hue",
+        "label": "Hue",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -2781,8 +4153,6 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_parliament.py",
-      "No callable named 'make_parliament' in make_parliament.py",
       "Default output path falls back to a shared assets/ directory"
     ]
   },
@@ -2793,11 +4163,28 @@
     "category": "Infographic",
     "description": "Bar or unit chart where bars are replaced by repeating icons. Use for general audiences where engagement matters more than precision.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_pictorial.py",
     "callable_name": "make_pictorial",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "label",
+        "label": "Label",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "value",
+        "label": "Value",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -2810,8 +4197,6 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_pictorial.py",
-      "No callable named 'make_pictorial' in make_pictorial.py",
       "Default output path falls back to a shared assets/ directory"
     ]
   },
@@ -2822,11 +4207,28 @@
     "category": "Cyclic",
     "description": "Polar bar chart for cyclic or directional data (hours of the day, compass bearings, seasonal patterns).",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_polar.py",
     "callable_name": "make_polar",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "hour",
+        "label": "Hour",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "count",
+        "label": "Count",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -2839,8 +4241,7 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_polar.py",
-      "No callable named 'make_polar' in make_polar.py"
+      "Default output path falls back to a shared assets/ directory"
     ]
   },
   {
@@ -2906,11 +4307,36 @@
     "category": "Goodness of fit",
     "description": "Probability-probability plot: theoretical vs. empirical CDF. Use alongside Q-Q plot to diagnose distributional fit in the body (not tails) of a distribution.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_ppplot.py",
     "callable_name": "make_ppplot",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "empirical",
+        "label": "Empirical",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "theoretical",
+        "label": "Theoretical",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "minutes",
+        "label": "Minutes",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -2923,8 +4349,6 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_ppplot.py",
-      "No callable named 'make_ppplot' in make_ppplot.py",
       "Default output path falls back to a shared assets/ directory"
     ]
   },
@@ -2935,11 +4359,44 @@
     "category": "Model evaluation",
     "description": "Precision-Recall curve for binary classifiers. Preferred over ROC when classes are imbalanced, because it focuses on the minority (positive) class performance.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_prcurve.py",
     "callable_name": "make_prcurve",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "transaction",
+        "label": "Transaction",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "is_fraud",
+        "label": "Is fraud",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "score_strong",
+        "label": "Score strong",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "score_weak",
+        "label": "Score weak",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -2952,8 +4409,6 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_prcurve.py",
-      "No callable named 'make_prcurve' in make_prcurve.py",
       "Default output path falls back to a shared assets/ directory"
     ]
   },
@@ -3060,11 +4515,36 @@
     "category": "Multivariate",
     "description": "Radar / spider chart: multiple quantitative axes radiating from a common centre. Use for comparing a small number of entities across 4\u20138 dimensions.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_radar.py",
     "callable_name": "make_radar",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "axis",
+        "label": "Axis",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "series",
+        "label": "Series",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "value",
+        "label": "Value",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -3077,8 +4557,7 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_radar.py",
-      "No callable named 'make_radar' in make_radar.py"
+      "Default output path falls back to a shared assets/ directory"
     ]
   },
   {
@@ -3091,11 +4570,28 @@
     "category": "Comparison",
     "description": "Bar chart bent into a circle. Use when aesthetic impact matters and absolute length comparison is secondary.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_radial-bar.py",
     "callable_name": "make_radial_bar",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "hour",
+        "label": "Hour",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "trips",
+        "label": "Trips",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -3108,8 +4604,6 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_radial-bar.py",
-      "No callable named 'make_radial_bar' in make_radial-bar.py",
       "make_figure('radial-bar') cannot resolve to make_radial-bar.py: hyphen/underscore normalisation looks for a different filename",
       "Default output path falls back to a shared assets/ directory"
     ]
@@ -3124,11 +4618,36 @@
     "category": "Hierarchy",
     "description": "Dendrogram laid out radially rather than top-down. Fits deeper or wider trees into a square canvas.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_radial-tree.py",
     "callable_name": "make_radial_tree",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "id",
+        "label": "Node ID",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "label",
+        "label": "Label",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "parent",
+        "label": "Parent ID",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -3141,8 +4660,6 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_radial-tree.py",
-      "No callable named 'make_radial_tree' in make_radial-tree.py",
       "make_figure('radial-tree') cannot resolve to make_radial-tree.py: hyphen/underscore normalisation looks for a different filename",
       "Default output path falls back to a shared assets/ directory"
     ]
@@ -3154,11 +4671,76 @@
     "category": "Multivariate",
     "description": "RadViz: data points attracted to anchors around a circle, each anchor a variable. Use for visual cluster detection in multivariate data.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_radviz.py",
     "callable_name": "make_radviz",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "variety",
+        "label": "Variety",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "Area",
+        "label": "Area",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "Perimeter",
+        "label": "Perimeter",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "Kernel length",
+        "label": "Kernel length",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "Kernel width",
+        "label": "Kernel width",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "Compactness",
+        "label": "Compactness",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "Asymmetry",
+        "label": "Asymmetry",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "Groove length",
+        "label": "Groove length",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -3171,8 +4753,7 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_radviz.py",
-      "No callable named 'make_radviz' in make_radviz.py"
+      "Default output path falls back to a shared assets/ directory"
     ]
   },
   {
@@ -3230,11 +4811,28 @@
     "category": "Regression diagnostics",
     "description": "Residuals vs. fitted values (or index). Required in any regression reporting to check homoscedasticity and detect patterns in errors.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_residual.py",
     "callable_name": "make_residual",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "fitted",
+        "label": "Fitted",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "residual",
+        "label": "Residual",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -3247,8 +4845,6 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_residual.py",
-      "No callable named 'make_residual' in make_residual.py",
       "Default output path falls back to a shared assets/ directory"
     ]
   },
@@ -3259,11 +4855,36 @@
     "category": "Distribution",
     "description": "Stacked KDE curves, offset on the y-axis. Use to compare distributions of many groups compactly (e.g., scores across regions, latency across time slices).",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_ridgeline.py",
     "callable_name": "make_ridgeline",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "month",
+        "label": "Month",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "mean_c",
+        "label": "Mean c",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "spread_c",
+        "label": "Spread c",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -3276,8 +4897,7 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_ridgeline.py",
-      "No callable named 'make_ridgeline' in make_ridgeline.py"
+      "Default output path falls back to a shared assets/ directory"
     ]
   },
   {
@@ -3335,11 +4955,36 @@
     "category": "Cyclic",
     "description": "Polar area chart (Nightingale rose). Use to show magnitude in directional or seasonal data where the angle encodes a cyclic category.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_rose.py",
     "callable_name": "make_rose",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "month",
+        "label": "Month",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "cause",
+        "label": "Cause",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "value",
+        "label": "Value",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -3352,8 +4997,6 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_rose.py",
-      "No callable named 'make_rose' in make_rose.py",
       "Default output path falls back to a shared assets/ directory"
     ]
   },
@@ -3364,11 +5007,20 @@
     "category": "Distribution",
     "description": "1-D tick marks along an axis showing individual data points. Use as a supplement to a KDE or histogram to expose sample size and individual-point positions.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_rug.py",
     "callable_name": "make_rug",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "response_ms",
+        "label": "Response ms",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -3381,8 +5033,6 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_rug.py",
-      "No callable named 'make_rug' in make_rug.py",
       "Default output path falls back to a shared assets/ directory"
     ]
   },
@@ -3506,11 +5156,44 @@
     "category": "3-D",
     "description": "Interactive 3-D scatter plot for three continuous variables. Use when a 2-D projection loses important structure (e.g., embedding manifolds).",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_scatter3d.py",
     "callable_name": "make_scatter3d",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "cultivar",
+        "label": "Cultivar",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "colour_intensity",
+        "label": "Colour intensity",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "flavanoid",
+        "label": "Flavanoid",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "proline",
+        "label": "Proline",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -3523,8 +5206,7 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_scatter3d.py",
-      "No callable named 'make_scatter3d' in make_scatter3d.py"
+      "Default output path falls back to a shared assets/ directory"
     ]
   },
   {
@@ -3537,11 +5219,36 @@
     "category": "Network",
     "description": "Scalable Force-Directed Placement for large graphs (thousands of nodes). Use when standard force-directed layouts become too slow or cluttered.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_sfdp-largegraph.py",
     "callable_name": "make_sfdp_largegraph",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "community",
+        "label": "Community",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "palette_key",
+        "label": "Palette key",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "size",
+        "label": "Size",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -3554,8 +5261,6 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_sfdp-largegraph.py",
-      "No callable named 'make_sfdp_largegraph' in make_sfdp-largegraph.py",
       "make_figure('sfdp-largegraph') cannot resolve to make_sfdp-largegraph.py: hyphen/underscore normalisation looks for a different filename",
       "Default output path falls back to a shared assets/ directory"
     ]
@@ -3567,11 +5272,52 @@
     "category": "Geospatial",
     "description": "Annotated situation map with icons and labels at specific coordinates. Use for field operations, logistics, or incident mapping.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_situation_map.py",
     "callable_name": "make_situation_map",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "region",
+        "label": "Region",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "west",
+        "label": "West",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "south",
+        "label": "South",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "east",
+        "label": "East",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "north",
+        "label": "North",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -3583,9 +5329,7 @@
     "default_width": 900,
     "default_height": 600,
     "options_schema": {},
-    "warnings": [
-      "No DEMO_DATA in make_situation_map.py"
-    ]
+    "warnings": []
   },
   {
     "kind": "slope",
@@ -3646,11 +5390,28 @@
     "category": "Communication",
     "description": "Speaking-time breakdown chart (waterfall or stacked bar). Use to visualise turn-taking or time allocation in meetings, debates, or interviews.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_speaking_time.py",
     "callable_name": "make_speaking_time",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "name",
+        "label": "Name",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "seconds",
+        "label": "Seconds",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -3663,7 +5424,7 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_speaking_time.py"
+      "Default output path falls back to a shared assets/ directory"
     ]
   },
   {
@@ -3673,11 +5434,44 @@
     "category": "Signal",
     "description": "Frequency \u00d7 time heatmap of a signal's energy. Use for audio, seismic, or any time-varying spectral data.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_spectrogram.py",
     "callable_name": "make_spectrogram",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "component",
+        "label": "Component",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "start_hz",
+        "label": "Start hz",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "end_hz",
+        "label": "End hz",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "amplitude",
+        "label": "Amplitude",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -3690,8 +5484,7 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_spectrogram.py",
-      "No callable named 'make_spectrogram' in make_spectrogram.py"
+      "Default output path falls back to a shared assets/ directory"
     ]
   },
   {
@@ -3704,11 +5497,44 @@
     "category": "Geospatial",
     "description": "Vertical spikes on a map proportional to a value at each location. Cleaner than a dot map for comparing magnitudes; less distorting than a choropleth.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_spike-map.py",
     "callable_name": "make_spike_map",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "name",
+        "label": "Name",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "lon",
+        "label": "Longitude",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "lat",
+        "label": "Latitude",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "population",
+        "label": "Population",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -3721,7 +5547,6 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_spike-map.py",
       "make_figure('spike-map') cannot resolve to make_spike-map.py: hyphen/underscore normalisation looks for a different filename",
       "Default output path falls back to a shared assets/ directory"
     ]
@@ -3889,11 +5714,36 @@
     "category": "Time series / Composition",
     "description": "Stacked area chart with a central baseline, flowing like a stream. Use for showing how categorical composition evolves over time when the baseline is less important than the flow.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_streamgraph.py",
     "callable_name": "make_streamgraph",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "year",
+        "label": "Year",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "genre",
+        "label": "Genre",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "value",
+        "label": "Value",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -3906,8 +5756,7 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_streamgraph.py",
-      "No callable named 'make_streamgraph' in make_streamgraph.py"
+      "Default output path falls back to a shared assets/ directory"
     ]
   },
   {
@@ -3917,11 +5766,28 @@
     "category": "Vector field",
     "description": "Stream lines showing a 2-D vector field (wind, fluid flow, electromagnetic). Use to visualise flow direction and speed across a continuous domain.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_streamplot.py",
     "callable_name": "make_streamplot",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "component",
+        "label": "Component",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "speed_kmh",
+        "label": "Speed kmh",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -3934,8 +5800,6 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_streamplot.py",
-      "No callable named 'make_streamplot' in make_streamplot.py",
       "Default output path falls back to a shared assets/ directory"
     ]
   },
@@ -4042,11 +5906,36 @@
     "category": "3-D surface",
     "description": "Static isometric 3-D surface for z = f(x, y): depth-sorted mesh quads shaded by height with a height legend. Hand-authored SVG (no matplotlib).",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_surface3d.py",
     "callable_name": "make_surface3d",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "x",
+        "label": "X coordinate",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "y",
+        "label": "Y coordinate",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "z",
+        "label": "Z value",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -4059,8 +5948,7 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_surface3d.py",
-      "No callable named 'make_surface3d' in make_surface3d.py"
+      "Default output path falls back to a shared assets/ directory"
     ]
   },
   {
@@ -4127,11 +6015,44 @@
     "category": "Compositional",
     "description": "Ternary (triangular) plot for three components that sum to a constant. Use in chemistry, geology, or any three-part compositional analysis.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_ternary.py",
     "callable_name": "make_ternary",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "class",
+        "label": "Class",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "sand",
+        "label": "Sand",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "silt",
+        "label": "Silt",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "clay",
+        "label": "Clay",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -4144,8 +6065,6 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_ternary.py",
-      "No callable named 'make_ternary' in make_ternary.py",
       "Default output path falls back to a shared assets/ directory"
     ]
   },
@@ -4156,11 +6075,44 @@
     "category": "Temporal",
     "description": "Gantt-style horizontal timeline of events or phases. Use for project schedules, historical chronologies, or clinical trial phases.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_timeline.py",
     "callable_name": "make_timeline",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "year",
+        "label": "Year",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "name",
+        "label": "Name",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "blurb",
+        "label": "Blurb",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "era",
+        "label": "Era",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -4173,8 +6125,6 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_timeline.py",
-      "No callable named 'make_timeline' in make_timeline.py",
       "Default output path falls back to a shared assets/ directory"
     ]
   },
@@ -4185,11 +6135,36 @@
     "category": "Hierarchy",
     "description": "Top-down or left-right tree diagram for strict hierarchies. Simpler than a dendrogram when the tree structure itself (not distances) is the message.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_tree.py",
     "callable_name": "make_tree",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "id",
+        "label": "Node ID",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "label",
+        "label": "Label",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "parent",
+        "label": "Parent ID",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -4202,8 +6177,6 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_tree.py",
-      "No callable named 'make_tree' in make_tree.py",
       "Default output path falls back to a shared assets/ directory"
     ]
   },
@@ -4266,11 +6239,28 @@
     "category": "Set intersection",
     "description": "UpSet plot: matrix of set membership with bar charts for intersection sizes. Replaces Venn diagrams when more than three sets are compared.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_upset.py",
     "callable_name": "make_upset",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "sets",
+        "label": "Sets",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "count",
+        "label": "Count",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -4283,8 +6273,6 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_upset.py",
-      "No callable named 'make_upset' in make_upset.py",
       "Default output path falls back to a shared assets/ directory"
     ]
   },
@@ -4295,11 +6283,52 @@
     "category": "Comparison",
     "description": "Column chart where column width encodes a second variable (e.g., bar height = GDP per capita, width = population). Use to pack two dimensions into a single bar-chart read.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_variwide.py",
     "callable_name": "make_variwide",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "name",
+        "label": "Name",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "iso",
+        "label": "Iso",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "pop",
+        "label": "Pop",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "gdp_cap",
+        "label": "Gdp cap",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "color",
+        "label": "Color",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -4312,8 +6341,6 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_variwide.py",
-      "No callable named 'make_variwide' in make_variwide.py",
       "Default output path falls back to a shared assets/ directory"
     ]
   },
@@ -4324,11 +6351,28 @@
     "category": "Set intersection",
     "description": "Venn diagram for two or three overlapping sets. Use only for two or three sets; switch to UpSet for more.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_venn.py",
     "callable_name": "make_venn",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "sets",
+        "label": "Sets",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "count",
+        "label": "Count",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -4341,8 +6385,6 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_venn.py",
-      "No callable named 'make_venn' in make_venn.py",
       "Default output path falls back to a shared assets/ directory"
     ]
   },
@@ -4441,11 +6483,44 @@
     "category": "Geospatial / Spatial",
     "description": "Voronoi tessellation: colour each region by the nearest point. Use to show catchment areas, service regions, or proximity-based assignments.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_voronoi.py",
     "callable_name": "make_voronoi",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "x",
+        "label": "X coordinate",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "y",
+        "label": "Y coordinate",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "chain",
+        "label": "Chain",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "name",
+        "label": "Name",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -4458,8 +6533,6 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_voronoi.py",
-      "No callable named 'make_voronoi' in make_voronoi.py",
       "Default output path falls back to a shared assets/ directory"
     ]
   },
@@ -4567,11 +6640,52 @@
     "category": "Meteorology",
     "description": "Meteorological wind barbs showing direction and speed with feather notation. Standard in weather and oceanographic reporting.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_windbarb.py",
     "callable_name": "make_windbarb",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "name",
+        "label": "Name",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "lon",
+        "label": "Longitude",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "lat",
+        "label": "Latitude",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "direction",
+        "label": "Direction",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "speed",
+        "label": "Speed",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -4584,8 +6698,6 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_windbarb.py",
-      "No callable named 'make_windbarb' in make_windbarb.py",
       "Default output path falls back to a shared assets/ directory"
     ]
   },
@@ -4596,11 +6708,36 @@
     "category": "Meteorology / Cyclic",
     "description": "Polar histogram of wind frequency and speed by direction. Use to summarise directional data (wind, ocean current, traffic) over a period.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_windrose.py",
     "callable_name": "make_windrose",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "direction",
+        "label": "Direction",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "band",
+        "label": "Band",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "value",
+        "label": "Value",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -4613,8 +6750,6 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_windrose.py",
-      "No callable named 'make_windrose' in make_windrose.py",
       "Default output path falls back to a shared assets/ directory"
     ]
   },
@@ -4625,11 +6760,36 @@
     "category": "3-D surface",
     "description": "3-D wireframe surface plot for z = f(x, y). Use to visualise mathematical functions, terrain, or response surfaces from two-factor experiments.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_wireframe3d.py",
     "callable_name": "make_wireframe3d",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "x",
+        "label": "X coordinate",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "y",
+        "label": "Y coordinate",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "z",
+        "label": "Z value",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -4642,8 +6802,7 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_wireframe3d.py",
-      "No callable named 'make_wireframe3d' in make_wireframe3d.py"
+      "Default output path falls back to a shared assets/ directory"
     ]
   },
   {
@@ -4653,11 +6812,36 @@
     "category": "Text",
     "description": "Word cloud where font size encodes term frequency or TF-IDF weight. Use for exploratory text analysis or communication; avoid when precise comparison is needed.",
     "intents": [],
-    "status": "legacy",
+    "status": "stable",
     "renderer": "svg",
     "module": "scripts/make_wordcloud.py",
     "callable_name": "make_wordcloud",
-    "required_roles": [],
+    "required_roles": [
+      {
+        "name": "word",
+        "label": "Word",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "count",
+        "label": "Count",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "group",
+        "label": "Group",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      }
+    ],
     "optional_roles": [],
     "supported_outputs": [
       "svg",
@@ -4670,8 +6854,6 @@
     "default_height": 600,
     "options_schema": {},
     "warnings": [
-      "No DEMO_DATA in make_wordcloud.py",
-      "No callable named 'make_wordcloud' in make_wordcloud.py",
       "Default output path falls back to a shared assets/ directory"
     ]
   }

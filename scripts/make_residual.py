@@ -55,13 +55,13 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-from typing import Dict, List
+from typing import Any, Dict, List, Optional
 
 import numpy as np
 
 # House-style palette + the shared SVG primitives live alongside in scripts/.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _render import render_cli  # noqa: E402
+from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
@@ -118,6 +118,11 @@ def make_data(n: int = 160, seed: int = 11) -> List[Dict[str, float]]:
         {"fitted": round(float(f), 1), "residual": round(float(r), 1)}
         for f, r in zip(fitted, residual)
     ]
+
+
+#: Row-record demo data: one row per home, already the contract's
+#: ``list[dict[str, Any]]`` shape (see :func:`make_data`).
+DEMO_DATA: List[Dict[str, Any]] = make_data()
 
 
 def loess(
@@ -177,7 +182,11 @@ def loess(
     return out
 
 
-def build_svg(mode: str = "self-contained", accessibility: str = "universal") -> str:
+def build_svg(
+    data: Optional[List[Dict[str, Any]]] = None,
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> str:
     """Assemble the full residual-plot SVG string.
 
     Draws, bottom to top: the light gridlines and axes, a dashed grey zero
@@ -210,7 +219,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     grid_col = "#EEEEEE"
     rule_col = "#8E8E93"
 
-    data = make_data()
+    data = data if data else DEMO_DATA
     fitted = [float(d["fitted"]) for d in data]
     residual = [float(d["residual"]) for d in data]
 
@@ -446,6 +455,40 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     parts.append(fullscreen_control(width, height, mode))
     parts.append("</svg>")
     return "\n".join(parts)
+
+
+def make_residual(
+    data: Optional[List[Dict[str, Any]]] = None,
+    *,
+    out: Optional[Path | str] = None,
+    title: str = "",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the residual-vs-fitted diagnostic plot and write the SVG to *out*.
+
+    Parameters
+    ----------
+    data : list[dict[str, Any]] or None
+        Rows with keys ``fitted`` and ``residual`` (both numeric, thousand
+        dollars). Defaults to :data:`DEMO_DATA`.
+    out : Path, str, or None
+        Output path (.svg). Defaults to ``assets/svg-examples/residual.svg``.
+    title : str, optional
+        Accepted for signature parity; the figure's headline is baked into
+        the diagnostic narrative (unused).
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+    """
+    _ = title
+    svg = build_svg(data, mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "residual")
+    return write_svg(dest, svg)
 
 
 def main() -> None:

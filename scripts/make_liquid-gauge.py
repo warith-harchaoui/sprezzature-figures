@@ -40,7 +40,7 @@ import argparse
 import math
 import sys
 from pathlib import Path
-from typing import List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 # The house-style palette lives in _style (stdlib-only, safe to import
 # without the dataviz tier); the XML escape helper lives in _svg.
@@ -48,6 +48,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import load_palette, os_dark_style  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
+from _render import svg_example_path, write_svg  # noqa: E402
 
 
 # ------------------------------------------------------------------
@@ -241,12 +242,23 @@ def _fmt_pct(value: float) -> str:
 
 
 def build_svg(
-    *, animated: bool = True, mode: str = "self-contained", accessibility: str = "universal"
+    *,
+    value: float = _VALUE,
+    median: float = _MEDIAN,
+    animated: bool = True,
+    mode: str = "self-contained",
+    accessibility: str = "universal",
 ) -> str:
     """Assemble the full liquid-fill gauge as an SVG string.
 
     Parameters
     ----------
+    value : float, optional
+        Fill fraction shown by the liquid surface, in percent. Defaults to
+        the illustrative reservoir reading (``63``).
+    median : float, optional
+        Reference level drawn as a dashed line (e.g. a seasonal median), in
+        percent. Defaults to ``68``.
     animated : bool, optional
         When ``True`` (default) the two crest bands carry a slow,
         base-visible SMIL drift. When ``False`` the surface is static —
@@ -269,9 +281,9 @@ def build_svg(
     """
     back_crest, front_crest, body = _liquid_hues(accessibility)
 
-    frac = _VALUE / 100.0
+    frac = value / 100.0
     surface_y = _y_for_fraction(frac)
-    median_y = _y_for_fraction(_MEDIAN / 100.0)
+    median_y = _y_for_fraction(median / 100.0)
 
     # Wave geometry. One wavelength spans a bit over the vessel width so a
     # single, calm ripple crosses the surface. Draw wider than the disc so
@@ -295,14 +307,14 @@ def build_svg(
     # ---- header ----
     parts.append(svg_open(_WIDTH, _HEIGHT, "lg-title", "lg-desc"))
     parts.append(
-        '<title id="lg-title">Reservoir fill level: 63 percent of usable '
-        'capacity, just below the seasonal normal of 68 percent</title>'
+        f'<title id="lg-title">Reservoir fill level: {_fmt_pct(value)} percent of usable '
+        f'capacity, just below the seasonal normal of {_fmt_pct(median)} percent</title>'
     )
     desc = (
         "A circular liquid-fill gauge shaped like a water tank. Wavy blue "
-        f"liquid fills the vessel to {_fmt_pct(_VALUE)} percent of its "
+        f"liquid fills the vessel to {_fmt_pct(value)} percent of its "
         "height, with a bold percentage readout at the centre. A dashed "
-        f"line marks the ten-year seasonal median of {_fmt_pct(_MEDIAN)} "
+        f"line marks the ten-year seasonal median of {_fmt_pct(median)} "
         "percent, which sits just above the current level."
     )
     parts.append(f'<desc id="lg-desc">{desc}</desc>')
@@ -453,17 +465,17 @@ def build_svg(
     parts.append(
         f'<text x="{_CX - _R - 12:.1f}" y="{median_y + 10:.1f}" '
         f'font-size="16" fill="{_SUBTLE}" text-anchor="end">'
-        f'{_fmt_pct(_MEDIAN)}% median</text>'
+        f'{_fmt_pct(median)}% median</text>'
     )
 
     # ---- centre readout: the big number, its unit, and what it measures ----
     # The number sits a little above centre so the caption below balances it
-    # within the disc; both stay clear of the water line at 63 %.
+    # within the disc; both stay clear of the water line.
     ny = _CY - 6.0
     parts.append(
         f'<text x="{_CX:.0f}" y="{ny:.0f}" font-size="150" font-weight="800" '
         f'fill="{readout_hex}" text-anchor="middle">'
-        f'{_fmt_pct(_VALUE)}<tspan font-size="66" dx="6" '
+        f'{_fmt_pct(value)}<tspan font-size="66" dx="6" '
         f'fill="{readout_hex}" fill-opacity="0.72">%</tspan></text>'
     )
     parts.append(
@@ -473,7 +485,7 @@ def build_svg(
     )
 
     # ---- status chip: names how the level compares to normal (pure fill) ----
-    delta = _VALUE - _MEDIAN
+    delta = value - median
     below = delta < 0
     chip_palette = load_palette(accessibility)
     chip_hex = (chip_palette.get("Orange") or "#FF9500") if below else (
@@ -509,6 +521,51 @@ def build_svg(
     parts.append(fullscreen_control(_WIDTH, _HEIGHT, mode))
     parts.append('</svg>')
     return "\n".join(parts)
+
+
+#: The registry contract's DEMO_DATA: a single-row reading, matching the
+#: illustrative reservoir the shipped SVG shows.
+DEMO_DATA: List[Dict[str, Any]] = [
+    {"metric": _METRIC, "label": "Serre-Ponçon lake", "value": _VALUE, "median": _MEDIAN},
+]
+
+
+def make_liquid_gauge(
+    data: Optional[List[Dict[str, Any]]] = None,
+    *,
+    out: Optional[Path | str] = None,
+    title: str = "",
+    animated: bool = True,
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the liquid-fill gauge and write the SVG to *out*.
+
+    Parameters
+    ----------
+    data : list[dict[str, Any]] or None
+        A single-row list ``[{"value": float, "median": float, ...}]``.
+        Defaults to :data:`DEMO_DATA`. ``title`` is accepted for signature
+        parity with the rest of the gallery and is currently a documented
+        no-op (the headline/labels are baked into the hand-authored SVG).
+    out : Path, str, or None
+        Output path. Defaults to ``assets/svg-examples/liquid-gauge.svg``.
+    animated, mode, accessibility
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+    """
+    _ = title
+    rows = data if data else DEMO_DATA
+    row = rows[0] if rows else {}
+    value = float(row.get("value", _VALUE))
+    median = float(row.get("median", _MEDIAN))
+    svg = build_svg(value=value, median=median, animated=animated, mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "liquid-gauge")
+    return write_svg(dest, svg)
 
 
 def main() -> None:

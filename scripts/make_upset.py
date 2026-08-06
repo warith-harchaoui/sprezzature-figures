@@ -43,14 +43,14 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 # The house-style palette lives in _style (stdlib-only, safe to import
 # without the dataviz tier).
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
-from _render import render_cli  # noqa: E402
+from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 
 
@@ -67,33 +67,25 @@ _FOCUS: str = "#0A4DA0"     # focus-ring blue
 # ------------------------------------------------------------------
 # Communicative fake data
 # ------------------------------------------------------------------
-#: The four channels through which a mid-size SaaS product reaches its
-#: monthly-active users. Each user may be reachable through any subset
-#: of them; the UpSet plot answers "which *combinations* of channels do
-#: we actually reach people on, and how big is each pocket?".
-#:
-#: The list is ordered so the individual-set marginals come out
-#: Email > Mobile app > Web app > SMS — the order the left-hand set-size
-#: bars will use (largest set on top).
-_SETS: List[str] = ["Email", "Mobile app", "Web app", "SMS"]
-
-
-#: One observed combination per row: the tuple of member sets and the
-#: number of users reachable through *exactly* that combination (an
-#: exclusive intersection, the quantity UpSet plots). Values are
-#: illustrative, in thousands of monthly-active users. The story: the
-#: single largest pocket is people we can only reach by email, and the
-#: healthy "Email + Mobile app" overlap is the second — the multi-channel
-#: core the growth team wants to grow.
-_COMBINATIONS: List[Tuple[Tuple[str, ...], int]] = [
-    (("Email",), 62),
-    (("Email", "Mobile app"), 48),
-    (("Email", "Mobile app", "Web app"), 31),
-    (("Mobile app",), 24),
-    (("Email", "Web app"), 19),
-    (("Email", "Mobile app", "Web app", "SMS"), 14),
-    (("Web app",), 11),
-    (("Email", "SMS"), 7),
+#: Row records: one per observed combination, ``sets`` the list of member
+#: set names present in that *exclusive* intersection, and ``count`` the
+#: number of users reachable through exactly that combination — the
+#: quantity an UpSet plot bars. The four channels through which a mid-size
+#: SaaS product reaches its monthly-active users; each user may be
+#: reachable through any subset of them. Values are illustrative, in
+#: thousands of monthly-active users. The story: the single largest pocket
+#: is people we can only reach by email, and the healthy "Email + Mobile
+#: app" overlap is the second — the multi-channel core the growth team
+#: wants to grow.
+DEMO_DATA: List[Dict[str, object]] = [
+    {"sets": ["Email"], "count": 62},
+    {"sets": ["Email", "Mobile app"], "count": 48},
+    {"sets": ["Email", "Mobile app", "Web app"], "count": 31},
+    {"sets": ["Mobile app"], "count": 24},
+    {"sets": ["Email", "Web app"], "count": 19},
+    {"sets": ["Email", "Mobile app", "Web app", "SMS"], "count": 14},
+    {"sets": ["Web app"], "count": 11},
+    {"sets": ["Email", "SMS"], "count": 7},
 ]
 
 
@@ -111,30 +103,67 @@ def _combo_id(members: Tuple[str, ...]) -> str:
 _xml = xml_escape
 
 
-def _set_totals() -> Dict[str, int]:
+def _reshape(
+    data: "Optional[List[Dict[str, object]]]" = None,
+) -> Tuple[List[str], List[Tuple[Tuple[str, ...], int]]]:
+    """Reshape row records into ``(sets, combinations)`` for the plot.
+
+    Parameters
+    ----------
+    data : list of dict or None
+        Rows with keys ``sets`` (list of member-set-name strings) and
+        ``count`` (int). Defaults to :data:`DEMO_DATA`.
+
+    Returns
+    -------
+    tuple
+        ``(sets, combinations)`` — ``sets`` is every distinct set name in
+        first-seen order (mirrors the left-hand set-size bar order);
+        ``combinations`` is ``[(members_tuple, count), ...]`` in row order.
+    """
+    rows = list(data) if data else DEMO_DATA
+    sets: List[str] = []
+    combos: List[Tuple[Tuple[str, ...], int]] = []
+    for row in rows:
+        members = tuple(str(m) for m in row["sets"])  # type: ignore[union-attr]
+        for m in members:
+            if m not in sets:
+                sets.append(m)
+        combos.append((members, int(row["count"])))  # type: ignore[arg-type]
+    return sets, combos
+
+
+def _set_totals(sets: List[str], combinations: List[Tuple[Tuple[str, ...], int]]) -> Dict[str, int]:
     """Sum every combination a set participates in to get its marginal.
 
     Because each combination is an *exclusive* intersection, a set's
     total monthly-active reach is just the sum of the combinations it
-    appears in. Returned in the fixed ``_SETS`` order.
+    appears in.
 
     Returns
     -------
     dict of str to int
         Mapping ``{set_name: marginal_total}``.
     """
-    totals: Dict[str, int] = {s: 0 for s in _SETS}
-    for members, size in _COMBINATIONS:
+    totals: Dict[str, int] = {s: 0 for s in sets}
+    for members, size in combinations:
         for m in members:
             totals[m] += size
     return totals
 
 
-def build_svg(mode: str = "self-contained", accessibility: str = "universal") -> str:
+def build_svg(
+    data: Optional[List[Dict[str, object]]] = None,
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> str:
     """Assemble the full UpSet-plot SVG document as a string.
 
     Parameters
     ----------
+    data : list of dict or None
+        Rows with keys ``sets`` (list of member-set-name strings) and
+        ``count`` (int). Defaults to :data:`DEMO_DATA`.
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`
         (``"self-contained"``, ``"external"`` or ``"static"``). Defaults to
@@ -150,6 +179,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     str
         A complete, standalone SVG document.
     """
+    sets, combinations = _reshape(data)
     palette = load_palette(accessibility)
     bar_color = palette.get("Blue", "#007AFF")   # intersection-size bars
     dot_color = palette.get("Purple", "#AF52DE")  # active matrix dots + set bars
@@ -157,8 +187,8 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     # --- panel geometry ------------------------------------------
     # Three coupled panels share a column grid (one column per
     # combination) and a row grid (one row per set).
-    n_combos = len(_COMBINATIONS)
-    n_sets = len(_SETS)
+    n_combos = len(combinations)
+    n_sets = len(sets)
 
     # Poster-scale geometry — a generous, roomy figure that reads well
     # both in the gallery and when dropped into a slide.
@@ -194,7 +224,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         return matrix_y0 + r * row_h + row_h / 2.0
 
     # Intersection-size scale.
-    max_isize = max(size for _, size in _COMBINATIONS)
+    max_isize = max(size for _, size in combinations)
     isize_base_y = top_pad + isize_h  # baseline the size bars grow up from
 
     def isize_bar_h(size: int) -> float:
@@ -206,7 +236,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         return (size / max_isize) * (isize_h - 44.0)
 
     # Set-size scale (left panel). Bars grow leftward from the labels.
-    totals = _set_totals()
+    totals = _set_totals(sets, combinations)
     max_total = max(totals.values())
     setbar_right = left_pad + setbar_w  # bars end here, at their inner edge
 
@@ -218,7 +248,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         '<title id="up-title">How many users each combination of '
         'contact channels reaches</title>'
     )
-    top = _COMBINATIONS[0]
+    top = combinations[0]
     desc = (
         "UpSet plot. Top: a bar chart of intersection sizes, one bar per "
         "observed combination of reach channels, sorted largest first. "
@@ -314,7 +344,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     )
 
     # ---- set-size bars + set-name labels (left panel) ----
-    for r, s in enumerate(_SETS):
+    for r, s in enumerate(sets):
         cy = row_cy(r)
         total = totals[s]
         bar_len = (total / max_total) * (setbar_w - 10.0)
@@ -341,10 +371,10 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         )
 
     # ---- one group per combination: size bar + matrix column + connector ----
-    for i, (members, size) in enumerate(_COMBINATIONS):
+    for i, (members, size) in enumerate(combinations):
         cid = _combo_id(members)
         cx = col_cx(i)
-        member_rows = [r for r, s in enumerate(_SETS) if s in members]
+        member_rows = [r for r, s in enumerate(sets) if s in members]
         tip = (
             f"{' + '.join(members)}: {size}k users"
             if len(members) > 1
@@ -416,6 +446,40 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     parts.append(fullscreen_control(width, height, mode))
     parts.append('</svg>')
     return "\n".join(parts)
+
+
+def make_upset(
+    data: Optional[List[Dict[str, object]]] = None,
+    *,
+    out: Optional[Path | str] = None,
+    title: str = "",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the UpSet plot and write the SVG to *out*.
+
+    Parameters
+    ----------
+    data : list[dict] or None
+        Rows with keys ``sets`` (list of member-set-name strings) and
+        ``count`` (int). Defaults to :data:`DEMO_DATA`.
+    out : Path, str, or None
+        Output path (.svg). Defaults to ``assets/svg-examples/upset.svg``.
+    title : str, optional
+        Accepted for dispatcher parity; the plot's own headline states the
+        specific takeaway, so this is unused.
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+    """
+    del title
+    svg = build_svg(data, mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "upset")
+    return write_svg(dest, svg)
 
 
 def main() -> None:

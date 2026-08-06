@@ -149,7 +149,7 @@ BIN_COLOR: Dict[str, str] = {
 # --------------------------------------------------------------------------- #
 # 2. Geometry                                                                 #
 # --------------------------------------------------------------------------- #
-def _totals(axis_index: int, categories: List[str]) -> Dict[str, int]:
+def _totals(axis_index: int, categories: List[str], flows: List[Dict[str, Any]]) -> Dict[str, int]:
     """Sum the population by category at one axis.
 
     Parameters
@@ -158,6 +158,8 @@ def _totals(axis_index: int, categories: List[str]) -> Dict[str, int]:
         Which slot of each flow's ``path`` tuple to bucket on.
     categories : list of str
         The category order for that axis (defines dict key order).
+    flows : list of dict
+        Flow records, each ``{"path": tuple, "count": int}``.
 
     Returns
     -------
@@ -165,7 +167,7 @@ def _totals(axis_index: int, categories: List[str]) -> Dict[str, int]:
         ``{category: record_count}`` for every category at this axis.
     """
     out: Dict[str, int] = {c: 0 for c in categories}
-    for flow in FLOWS:
+    for flow in flows:
         out[flow["path"][axis_index]] += flow["count"]
     return out
 
@@ -239,11 +241,18 @@ def _ribbon_path(
 # --------------------------------------------------------------------------- #
 # 3. SVG assembly                                                             #
 # --------------------------------------------------------------------------- #
-def build_svg(mode: str = "self-contained", accessibility: str = "universal") -> str:
+def build_svg(
+    flows: Optional[List[Dict[str, Any]]] = None,
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> str:
     """Render the full parallel-sets diagram as an SVG string.
 
     Parameters
     ----------
+    flows : list of dict or None
+        Records ``{"path": (class, sex, age, outcome), "count": int}``, one
+        per full path through the four axes. Defaults to :data:`FLOWS`.
     mode : str, default ``"self-contained"``
         Fullscreen-control wiring for the emitted SVG:
 
@@ -267,6 +276,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         hover interaction, native ``<title>`` tooltips, no external
         assets, no JavaScript).
     """
+    flows = flows if flows else FLOWS
     palette = load_palette(accessibility)
     ink = "#1D1D1F"
     secondary = "#6E6E73"
@@ -283,7 +293,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     bin_w = 30             # width of each category bin bar (the "stations")
     label_gap = 16         # px between a bin and its text label
 
-    total = sum(f["count"] for f in FLOWS)
+    total = sum(f["count"] for f in flows)
 
     plot_top = pad_top
     plot_h = height - pad_top - pad_bottom
@@ -301,7 +311,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     # Lay out every axis's stack, vertically centred within the plot band.
     stacks: List[Dict[str, Dict[str, float]]] = []
     for i, (_, cats) in enumerate(AXES):
-        totals = _totals(i, cats)
+        totals = _totals(i, cats, flows)
         stack_h = sum(totals.values()) * scale + gap * (len(cats) - 1)
         top = plot_top + (plot_h - stack_h) / 2.0
         stacks.append(_stack(totals, top=top, gap=gap, scale=scale))
@@ -431,7 +441,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         # Sort so strands leaving each left bin are ordered by their right-bin
         # position (and vice-versa) — minimises crossings.
         seg_flows = sorted(
-            FLOWS,
+            flows,
             key=lambda f: (a_order[f["path"][a_idx]], b_order[f["path"][b_idx]]),
         )
 
@@ -538,6 +548,64 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     parts.append(fullscreen_control(width, height, mode))
     parts.append("</svg>")
     return "".join(parts)
+
+
+# --------------------------------------------------------------------------- #
+# 3b. Contract wiring — DEMO_DATA (row-list) + make_parallel_sets()          #
+# --------------------------------------------------------------------------- #
+#: The registry contract wants flat row records; each demo row flattens one
+#: flow's axis path (using each axis's own title as the key) plus its count,
+#: so the row list alone can rebuild :data:`FLOWS`.
+DEMO_DATA: List[Dict[str, Any]] = [
+    {AXES[0][0]: f["path"][0], AXES[1][0]: f["path"][1], AXES[2][0]: f["path"][2],
+     AXES[3][0]: f["path"][3], "count": f["count"]}
+    for f in FLOWS
+]
+
+
+def _rows_to_flows(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Reshape DEMO_DATA-style rows back into :data:`FLOWS`-shaped records."""
+    axis_titles = [t for t, _ in AXES]
+    return [
+        {"path": tuple(r[t] for t in axis_titles), "count": int(r["count"])}
+        for r in rows
+    ]
+
+
+def make_parallel_sets(
+    data: Optional[List[Dict[str, Any]]] = None,
+    *,
+    out: Optional[Path | str] = None,
+    title: str = "",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the parallel-sets diagram and write the SVG to *out*.
+
+    Parameters
+    ----------
+    data : list[dict[str, Any]] or None
+        Rows keyed by each axis's own title (``"Travel class"``, ``"Sex"``,
+        ``"Age group"``, ``"Outcome"``) plus ``"count"``. Defaults to
+        :data:`DEMO_DATA`. ``title`` is accepted for signature parity with
+        the rest of the gallery and is currently a documented no-op (the
+        headline states a fact about the illustrative Titanic dataset).
+    out : Path, str, or None
+        Output path. Defaults to ``assets/svg-examples/parallel-sets.svg``.
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+    """
+    _ = title
+    rows = data if data else DEMO_DATA
+    flows = _rows_to_flows(rows)
+    svg = build_svg(flows, mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "parallel-sets")
+    return write_svg(dest, svg)
 
 
 # --------------------------------------------------------------------------- #

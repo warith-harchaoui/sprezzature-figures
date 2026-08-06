@@ -45,7 +45,7 @@ from _interactive import fullscreen_control  # noqa: E402
 
 import argparse
 from pathlib import Path
-from typing import Dict, List, Sequence, Tuple
+from typing import Any, Dict, List, Sequence, Tuple
 
 import numpy as np
 
@@ -476,8 +476,40 @@ def build_svg(
     return "".join(parts)
 
 
+#: The registry contract wants ``DEMO_DATA`` as a flat row list; this figure's
+#: natural unit is a measurement grid cell, so each demo row is one coarse
+#: survey node: ``{"x": metres east, "y": metres north, "value": moisture %}``.
+#: :func:`_rows_to_grid` reshapes that row list back into the ``{"field",
+#: "xs", "ys"}`` grid :func:`build_svg` expects.
+_DEMO_GRID: Dict[str, np.ndarray] = _survey_grid()
+DEMO_DATA: List[Dict[str, Any]] = [
+    {"x": round(float(x), 2), "y": round(float(y), 2), "value": round(float(v), 2)}
+    for yi, y in enumerate(_DEMO_GRID["ys"])
+    for xi, x in enumerate(_DEMO_GRID["xs"])
+    for v in [_DEMO_GRID["field"][yi, xi]]
+]
+
+
+def _rows_to_grid(rows: List[Dict[str, Any]]) -> Dict[str, np.ndarray]:
+    """Reshape ``{"x", "y", "value"}`` cell rows into a ``{"field","xs","ys"}`` grid.
+
+    Rows are expected to lie on a regular rectangular lattice (as
+    :data:`DEMO_DATA` does); ``xs``/``ys`` are the sorted unique coordinates
+    and ``field`` is indexed ``[row_of_y, col_of_x]``, matching what
+    :func:`build_svg` already consumes.
+    """
+    xs = sorted({float(r["x"]) for r in rows})
+    ys = sorted({float(r["y"]) for r in rows})
+    x_idx = {x: i for i, x in enumerate(xs)}
+    y_idx = {y: i for i, y in enumerate(ys)}
+    field = np.zeros((len(ys), len(xs)))
+    for r in rows:
+        field[y_idx[float(r["y"])], x_idx[float(r["x"])]] = float(r["value"])
+    return {"field": field, "xs": np.array(xs), "ys": np.array(ys)}
+
+
 def make_imshow_interpolated(
-    data: "Dict[str, np.ndarray] | None" = None,
+    data: "List[Dict[str, Any]] | None" = None,
     *,
     out: "Path | str | None" = None,
     title: str = "",
@@ -488,16 +520,19 @@ def make_imshow_interpolated(
 
     The standard ``make_<kind>`` entry the figure registry dispatches to, so
     ``make-figure imshow-interpolated`` and the Studio work like every other
-    figure. ``data`` is an optional pre-built survey grid (the ``{name: array}``
-    shape :func:`_survey_grid` returns); when omitted the built-in synthetic
-    survey is used, so the figure renders with no external data. ``title`` is
-    accepted for signature parity with the other generators and is unused (the
-    headline is baked into the hand-authored SVG).
+    figure.
+
+    Parameters
+    ----------
+    data : list[dict[str, Any]] or None
+        Rows shaped ``{"x": float, "y": float, "value": float}`` on a
+        regular grid (one row per measurement cell). Defaults to
+        :data:`DEMO_DATA`. ``title`` is accepted for signature parity with
+        the other generators and is unused (the headline is baked into the
+        hand-authored SVG).
     """
-    # The grid is a ``{field: 2-D array}`` mapping; the dispatcher hands every
-    # generator its (here empty) list-shaped DEMO_DATA, so fall back to the
-    # built-in synthetic survey unless a real grid dict was passed in.
-    grid = data if isinstance(data, dict) and data else _survey_grid()
+    rows = data if data else DEMO_DATA
+    grid = _rows_to_grid(rows)
     svg = build_svg(grid, mode=mode, accessibility=accessibility)
     dest = Path(out) if out else svg_example_path(__file__, "imshow-interpolated")
     return write_svg(dest, svg)

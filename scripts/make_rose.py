@@ -50,14 +50,14 @@ from __future__ import annotations
 import math
 import sys
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 # The house-style palette lives in _style (stdlib-only, safe to import
 # without the dataviz tier).
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import forced_color_patterns, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _svg import point_on_circle, svg_open, xml_escape  # noqa: E402
-from _render import render_cli  # noqa: E402
+from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 
 
@@ -176,6 +176,57 @@ def _dataset() -> List[List[float]]:
     return grid
 
 
+def _demo_rows() -> List[Dict[str, Any]]:
+    """Flatten :func:`_dataset` into ``{"month", "cause", "value"}`` rows."""
+    causes = _causes()
+    grid = _dataset()
+    rows: List[Dict[str, Any]] = []
+    for mi, month in enumerate(_MONTHS):
+        for ci, cause in enumerate(causes):
+            v = grid[mi][ci]
+            if v > 0:
+                rows.append({"month": month, "cause": cause["key"], "value": v})
+    return rows
+
+
+#: Row-record demo data: one row per (month, cause) death-rate cell, the
+#: contract's ``list[dict[str, Any]]`` shape. :func:`_grid_from_rows`
+#: reshapes it (or any caller-supplied row list of the same shape) into
+#: the 12x3 grid :func:`build_svg` renders.
+DEMO_DATA: List[Dict[str, Any]] = _demo_rows()
+
+
+def _grid_from_rows(
+    rows: List[Dict[str, Any]], causes: List[Dict[str, object]]
+) -> List[List[float]]:
+    """Reshape ``{"month", "cause", "value"}`` rows into the month x cause grid.
+
+    Parameters
+    ----------
+    rows : list of dict
+        Rows with ``month`` (str, one of :data:`_MONTHS`), ``cause`` (str,
+        a cause ``key`` from ``causes``) and ``value`` (numeric) keys.
+    causes : list of dict
+        The ordered cause records from :func:`_causes` (fixes column order).
+
+    Returns
+    -------
+    list of list of float
+        A 12 x len(causes) grid, zero-filled for any cell not present in
+        ``rows``.
+    """
+    cause_index = {str(c["key"]): i for i, c in enumerate(causes)}
+    month_index = {m: i for i, m in enumerate(_MONTHS)}
+    grid = [[0.0] * len(causes) for _ in _MONTHS]
+    for r in rows:
+        mi = month_index.get(str(r.get("month")))
+        ci = cause_index.get(str(r.get("cause")))
+        if mi is None or ci is None:
+            continue
+        grid[mi][ci] = float(r["value"])
+    return grid
+
+
 def _polar(cx: float, cy: float, r: float, angle_deg: float) -> Tuple[float, float]:
     """Convert a clock bearing + radius to an SVG (x, y) point.
 
@@ -238,11 +289,18 @@ def _annular_sector(
 _xml = xml_escape
 
 
-def build_svg(mode: str = "self-contained", accessibility: str = "universal") -> str:
+def build_svg(
+    data: Optional[List[Dict[str, Any]]] = None,
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> str:
     """Assemble the full Nightingale-rose SVG document as a string.
 
     Parameters
     ----------
+    data : list of dict, optional
+        Rows with ``month``, ``cause`` and ``value`` keys; see
+        :func:`_grid_from_rows`. Defaults to :data:`DEMO_DATA`.
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`
         (``"self-contained"`` / ``"external"`` / ``"static"``). Defaults to
@@ -259,7 +317,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         A complete, standalone SVG document.
     """
     causes = _causes(accessibility)
-    grid = _dataset()
+    grid = _grid_from_rows(data if data else DEMO_DATA, causes)
     n_month = len(_MONTHS)
     sector_deg = 360.0 / n_month     # 30° per month
     pad_deg = 1.6                    # hairline gap so petals read as spokes
@@ -540,6 +598,42 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     parts.append(fullscreen_control(_WIDTH, _HEIGHT, mode))
     parts.append('</svg>')
     return "\n".join(parts)
+
+
+def make_rose(
+    data: Optional[List[Dict[str, Any]]] = None,
+    *,
+    out: Optional[Path | str] = None,
+    title: str = "",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the Nightingale rose (coxcomb) and write the SVG to *out*.
+
+    Parameters
+    ----------
+    data : list[dict[str, Any]] or None
+        Rows with keys ``month`` (one of ``_MONTHS``, e.g. ``"Apr"``),
+        ``cause`` (one of ``"disease"``, ``"wounds"``, ``"other"``) and
+        ``value`` (numeric, annual rate per 1,000). Defaults to
+        :data:`DEMO_DATA`.
+    out : Path, str, or None
+        Output path (.svg). Defaults to ``assets/svg-examples/rose.svg``.
+    title : str, optional
+        Accepted for signature parity; the figure's headline is baked into
+        the historical narrative (unused).
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+    """
+    _ = title
+    svg = build_svg(data, mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "rose")
+    return write_svg(dest, svg)
 
 
 def main() -> None:

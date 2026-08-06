@@ -38,7 +38,7 @@ import math
 import random
 import sys
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 # The house-style palette lives in _style (stdlib-only, safe to import
 # without the dataviz tier).
@@ -207,6 +207,15 @@ def _sample_points(n: int, rng: random.Random) -> List[Tuple[float, float]]:
         if 0.0 <= x <= 1.0 and 0.0 <= y <= 1.0 and _point_in_poly(x, y, _COAST):
             pts.append((x, y))
     return pts
+
+
+#: Row-record view of the sampled hotspot points, the shape the
+#: ``make_<kind>`` contract asks for: one dict per event with its
+#: normalised ``[0, 1]`` map-extent coordinates.
+DEMO_DATA: List[Dict[str, Any]] = [
+    {"x": round(x, 4), "y": round(y, 4)}
+    for x, y in _sample_points(3200, random.Random(_SEED))
+]
 
 
 # ------------------------------------------------------------------

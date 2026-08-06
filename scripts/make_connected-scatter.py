@@ -51,11 +51,11 @@ from __future__ import annotations
 import math
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 # House-style palette + the shared XML escaper live alongside in scripts/.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _render import render_cli  # noqa: E402
+from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _style import load_palette, os_dark_style  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
@@ -71,7 +71,7 @@ from _svg import svg_open, xml_escape  # noqa: E402
 #: the emissions fall steeply after 2005 while income keeps climbing — the
 #: shape that makes "decoupling" visible. ``label`` flags the waypoints
 #: worth naming; ``side`` steers each visible label clear of the path.
-POINTS: List[Dict[str, Any]] = [
+DEMO_DATA: List[Dict[str, Any]] = [
     {"year": 1990, "gdp": 28.0, "co2": 10.0, "label": True,  "side": "left"},
     {"year": 1995, "gdp": 30.2, "co2": 10.4, "label": False, "side": "left"},
     {"year": 2000, "gdp": 34.6, "co2": 10.5, "label": True,  "side": "top"},
@@ -356,11 +356,19 @@ def arrowhead(
     )
 
 
-def build_svg(mode: str = "self-contained", accessibility: str = "universal") -> str:
+def build_svg(
+    data: Optional[List[Dict[str, Any]]] = None,
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> str:
     """Assemble the full connected-scatter SVG string.
 
     Parameters
     ----------
+    data : list of dict or None
+        Time-ordered waypoints, each ``{"year", "gdp", "co2", "label",
+        "side"}`` (see :data:`DEMO_DATA`). Defaults to the illustrative
+        United Kingdom decoupling trajectory.
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`
         (``"self-contained"``, ``"external"`` or ``"static"``). Defaults to
@@ -393,7 +401,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     secondary = "#6E6E73"
     band = "#F5F5F7"
 
-    rows = list(POINTS)
+    rows = list(data) if data else list(DEMO_DATA)
 
     # --- canvas geometry -----------------------------------------
     width = 1280
@@ -797,6 +805,48 @@ def main() -> None:
         __file__, "connected-scatter", build_svg,
         description="Render the connected-scatter SVG.",
     )
+
+
+def make_connected_scatter(
+    data: Optional[List[Dict[str, Any]]] = None,
+    *,
+    out: Optional[Path | str] = None,
+    title: str = "",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the house-styled connected scatter and write the SVG to *out*.
+
+    Parameters
+    ----------
+    data : list of dict or None
+        Time-ordered waypoints, each ``{"year", "gdp", "co2", "label",
+        "side"}`` (see :data:`DEMO_DATA`). Defaults to the illustrative
+        United Kingdom decoupling trajectory.
+    out : Path, str, or None
+        Output path (.svg). Defaults to
+        ``assets/svg-examples/connected-scatter.svg``.
+    title : str, optional
+        Accepted for CLI/dispatcher parity; this figure's title narrates
+        the decoupling trend and stays fixed.
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+
+    Examples
+    --------
+    >>> p = make_connected_scatter()
+    >>> p.exists()
+    True
+    """
+    _ = title
+    svg = build_svg(data, mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "connected-scatter")
+    return write_svg(dest, svg)
 
 
 if __name__ == "__main__":

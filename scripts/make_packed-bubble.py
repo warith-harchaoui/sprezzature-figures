@@ -47,12 +47,12 @@ from __future__ import annotations
 import math
 import sys
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 from xml.sax.saxutils import escape
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
-from _render import render_cli  # noqa: E402
+from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _svg import svg_open  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 
@@ -166,6 +166,29 @@ def _family_color(accessibility: str = "universal") -> Dict[str, str]:
         "Systems": palette.get("Orange", "#FF9500"),
         "Enterprise & JVM": _darken(palette.get("Purple", "#AF52DE"), 0.10),
     }
+
+
+#: Cycling hue order for a custom family set. Kept in the same order the
+#: four default families already use (Blue/Green/Orange/Purple, with Blue
+#: and Purple darkened) so a custom dataset whose families happen to appear
+#: in the same declaration order gets the same colours as the default story.
+_FAMILY_HUE_ORDER = ["Blue", "Green", "Orange", "Purple", "Teal", "Pink", "Yellow", "Indigo", "Gray"]
+_DARKEN_HUES = {"Blue", "Purple"}
+
+
+def _family_color_for(families: List[str], accessibility: str = "universal") -> Dict[str, str]:
+    """Return a generic ``{family: hex}`` map by cycling house hues in order.
+
+    Used when :func:`build_svg` is given a custom ``languages`` list whose
+    family names are not the four the default story names.
+    """
+    palette = load_palette(accessibility)
+    out: Dict[str, str] = {}
+    for i, fam in enumerate(families):
+        hue_name = _FAMILY_HUE_ORDER[i % len(_FAMILY_HUE_ORDER)]
+        col = palette.get(hue_name, "#8E8E93")
+        out[fam] = _darken(col, 0.10) if hue_name in _DARKEN_HUES else col
+    return out
 
 
 def _family_label(family_color: Dict[str, str]) -> Dict[str, str]:
@@ -350,11 +373,21 @@ def _fit_font(name: str, radius: float) -> float:
 # ------------------------------------------------------------------
 # SVG emission
 # ------------------------------------------------------------------
-def build_svg(mode: str = "self-contained", accessibility: str = "universal") -> str:
+def build_svg(
+    languages: Optional[List[Tuple[str, float, str]]] = None,
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> str:
     """Assemble the full packed-bubble SVG document as a string.
 
     Parameters
     ----------
+    languages : list of tuple or None
+        Each ``(name, share_percent, family)``. Defaults to
+        :data:`LANGUAGES`. When a custom list is supplied, family colours
+        are assigned generically by cycling house hues in order of first
+        appearance (see :func:`_family_color_for`) rather than the four
+        story-specific family hues.
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`
         (``"self-contained"`` / ``"external"`` / ``"static"``). Defaults to
@@ -370,12 +403,15 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     str
         A complete, standalone SVG document.
     """
-    family_color = _family_color(accessibility)
+    languages = languages if languages else LANGUAGES
+    is_default = languages == LANGUAGES
+    family_order = FAMILY_ORDER if is_default else list(dict.fromkeys(fam for _, _, fam in languages))
+    family_color = _family_color(accessibility) if is_default else _family_color_for(family_order, accessibility)
     family_label = _family_label(family_color)
-    share_max = max(share for _, share, _ in LANGUAGES)
+    share_max = max(share for _, share, _ in languages)
 
     # Order largest-first so the pack seeds big disks near the centre.
-    ordered = sorted(LANGUAGES, key=lambda t: t[1], reverse=True)
+    ordered = sorted(languages, key=lambda t: t[1], reverse=True)
     radii = [_radius(share, share_max) for _, share, _ in ordered]
     centres = _pack(radii, PACK_CX, PACK_CY)
 
@@ -415,7 +451,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     #     keeps the hovered family at full opacity while fading the others.
     #     :has() is supported in Chrome (used for the audit shot) and every
     #     modern browser. ---
-    fam_slug = {fam: f"f{idx}" for idx, fam in enumerate(FAMILY_ORDER)}
+    fam_slug = {fam: f"f{idx}" for idx, fam in enumerate(family_order)}
     css: List[str] = [
         ".bubble{transition:opacity .18s ease}",
         ".bubble:focus{outline:none}",
@@ -434,7 +470,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     # still reads without colour. The in-bubble labels keep their inline fill
     # (white / ink); the browser leaves inline SVG fills alone under forced
     # colours, which is the intended behaviour.
-    fam_series = {f".{fam_slug[fam]}": family_color[fam] for fam in FAMILY_ORDER}
+    fam_series = {f".{fam_slug[fam]}": family_color[fam] for fam in family_order}
     css.append(os_adaptive_style(fam_series, role="fill", forced=True))
     # Additive OS dark mode: dark paper + light ink (default ink_map). The family
     # bubble hues are data and the in-bubble labels keep their per-bubble inline
@@ -510,7 +546,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     #     it never collides with the title) ---
     ly = 156
     cursor = 56.0
-    for fam in FAMILY_ORDER:
+    for fam in family_order:
         color = family_color[fam]
         parts.append(
             f'<circle cx="{cursor + 9:.1f}" cy="{ly - 6:.1f}" r="9" fill="{color}"/>'
@@ -532,6 +568,49 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     parts.append(fullscreen_control(WIDTH, HEIGHT, mode))
     parts.append("</svg>")
     return "".join(parts)
+
+
+#: The registry contract's DEMO_DATA: :data:`LANGUAGES` restated as row
+#: records.
+DEMO_DATA: List[Dict[str, Any]] = [
+    {"name": name, "share": share, "family": fam} for name, share, fam in LANGUAGES
+]
+
+
+def make_packed_bubble(
+    data: Optional[List[Dict[str, Any]]] = None,
+    *,
+    out: Optional[Path | str] = None,
+    title: str = "",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the packed-bubble chart and write the SVG to *out*.
+
+    Parameters
+    ----------
+    data : list[dict[str, Any]] or None
+        Rows shaped ``{"name", "share", "family"}`` — one row per bubble.
+        Defaults to :data:`DEMO_DATA`. See :func:`build_svg` for how a
+        custom family set is coloured. ``title`` is accepted for signature
+        parity with the rest of the gallery and is currently a documented
+        no-op.
+    out : Path, str, or None
+        Output path. Defaults to ``assets/svg-examples/packed-bubble.svg``.
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+    """
+    _ = title
+    rows = data if data else DEMO_DATA
+    languages = [(str(r["name"]), float(r["share"]), str(r["family"])) for r in rows]
+    svg = build_svg(languages, mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "packed-bubble")
+    return write_svg(dest, svg)
 
 
 def main() -> None:

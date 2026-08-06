@@ -50,7 +50,7 @@ import json
 import math
 import sys
 from pathlib import Path
-from typing import List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 # The house-style palette lives in _style (stdlib-only, safe to import
 # without the dataviz tier).
@@ -171,6 +171,18 @@ _CITIES: List[Tuple[str, float, float, float, str]] = [
     ("Berlin",         13.40,  52.52,  4.9, "L"),
     ("Khartoum",       32.53,  15.50,  6.2, "R"),
     ("Addis Ababa",    38.74,   9.03,  5.5, "R"),
+]
+
+#: Row records: one per city, with ``name``, ``lon``, ``lat`` and
+#: ``population`` (millions, metropolitan-area order of magnitude). Derived
+#: from :data:`_CITIES` so the two stay in lock-step. The name-label side
+#: (which of the sparse call-outs get a text label, and on which side) is a
+#: presentation detail hand-tuned for the shipped city list (see
+#: :data:`_LABELLED`); custom data still plants every spike, just without a
+#: text label unless its name happens to match one of those keys.
+DEMO_DATA: List[Dict[str, Any]] = [
+    {"name": name, "lon": lon, "lat": lat, "population": pop}
+    for name, lon, lat, pop, _side in _CITIES
 ]
 
 #: Cities we call out with a name label, mapped to the side the label
@@ -370,7 +382,10 @@ def _graticule_paths(fit: Tuple[float, float, float, float, float]) -> List[str]
     return paths
 
 
-def _spike_scale(fit: Tuple[float, float, float, float, float]) -> float:
+def _spike_scale(
+    fit: Tuple[float, float, float, float, float],
+    cities: List[Tuple[str, float, float, float, str]] = _CITIES,
+) -> float:
     """Return the pixels-per-million so the skyline clears the header.
 
     Finds the city whose spike would rise highest — the one that
@@ -383,6 +398,9 @@ def _spike_scale(fit: Tuple[float, float, float, float, float]) -> float:
     ----------
     fit : tuple
         The projection-to-viewport fit from :func:`_fit`.
+    cities : list of tuple, optional
+        ``(name, lon, lat, population, label_side)`` rows. Defaults to
+        :data:`_CITIES`.
 
     Returns
     -------
@@ -391,12 +409,12 @@ def _spike_scale(fit: Tuple[float, float, float, float, float]) -> float:
     """
     # For each city, the scale that would put its tip on the ceiling.
     per_city = []
-    for _name, lon, lat, pop, _side in _CITIES:
+    for _name, lon, lat, pop, _side in cities:
         _bx, by = _to_screen(lon, lat, fit)
         per_city.append((by - _TIP_CEILING) / pop)
     # The smallest such scale keeps every tip at or below the ceiling.
     scale = min(per_city)
-    max_pop = max(c[3] for c in _CITIES)
+    max_pop = max(c[3] for c in cities)
     # Clamp so the tallest spike never exceeds the hard pixel cap.
     return min(scale, _MAX_SPIKE_PX / max_pop)
 
@@ -404,11 +422,20 @@ def _spike_scale(fit: Tuple[float, float, float, float, float]) -> float:
 # ------------------------------------------------------------------
 # Build
 # ------------------------------------------------------------------
-def build_svg(mode: str = "self-contained", accessibility: str = "universal") -> str:
+def build_svg(
+    data: Optional[List[Dict[str, Any]]] = None,
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> str:
     """Assemble the full spike-map SVG document as a string.
 
     Parameters
     ----------
+    data : list of dict or None
+        Rows with keys ``name``, ``lon``, ``lat`` and ``population``
+        (millions). Defaults to :data:`DEMO_DATA`. Only cities named in
+        :data:`_LABELLED` get a fixed on-map text label; custom cities
+        still plant a spike with a hover tooltip.
     mode : str, optional
         Interactivity mode for the fullscreen control, one of three:
         ``"self-contained"`` (default) ships a self-carrying fullscreen
@@ -429,6 +456,12 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     """
     global _min_py
 
+    rows = list(data) if data else DEMO_DATA
+    cities: List[Tuple[str, float, float, float, str]] = [
+        (str(r["name"]), float(r["lon"]), float(r["lat"]), float(r["population"]), "")
+        for r in rows
+    ]
+
     palette = load_palette(accessibility)
     spike_color = palette[_SPIKE_KEY]
 
@@ -445,7 +478,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     # then clamp so no single needle exceeds _MAX_SPIKE_PX. This keeps
     # the height↔population map strictly linear while guaranteeing the
     # skyline never crosses the header band.
-    px_per_m = _spike_scale(fit)
+    px_per_m = _spike_scale(fit, cities)
 
     # ---- header scaffold ----
     parts: List[str] = []
@@ -549,12 +582,12 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     # ---- spikes ----
     # Sort by latitude descending so northern (upper) spikes render first
     # and southern ones paint over them; the skyline layers back-to-front.
-    order = sorted(range(len(_CITIES)), key=lambda i: -_CITIES[i][2])
+    order = sorted(range(len(cities)), key=lambda i: -cities[i][2])
 
     label_parts: List[str] = []  # labels drawn last, above every spike
     parts.append('<g>')
     for i in order:
-        name, lon, lat, pop, _side = _CITIES[i]
+        name, lon, lat, pop, _side = cities[i]
         bx, by = _to_screen(lon, lat, fit)
         h = pop * px_per_m
         tip_y = by - h
@@ -735,9 +768,9 @@ def _size_legend(spike_color: str, px_per_m: float) -> List[str]:
 
 
 def make_spike_map(
-    data: "object | None" = None,
+    data: Optional[List[Dict[str, Any]]] = None,
     *,
-    out: "Path | str | None" = None,
+    out: Optional[Path | str] = None,
     title: str = "",
     mode: str = "self-contained",
     accessibility: str = "universal",
@@ -745,11 +778,24 @@ def make_spike_map(
     """Render the spike map and write it to ``out``.
 
     The standard ``make_<kind>`` entry the figure registry dispatches to, so
-    ``make-figure spike-map`` and the Studio work like every other figure. The
-    demo geography and values are baked into the hand-authored SVG, so ``data``
-    and ``title`` are accepted for dispatcher parity and unused.
+    ``make-figure spike-map`` and the Studio work like every other figure.
+
+    Parameters
+    ----------
+    data : list[dict[str, Any]] or None
+        Rows with keys ``name``, ``lon``, ``lat`` and ``population``
+        (millions). Defaults to :data:`DEMO_DATA`.
+    out : Path, str, or None
+        Output path (.svg). Defaults to
+        ``assets/svg-examples/spike-map.svg``.
+    title : str, optional
+        Accepted for dispatcher parity; the map's own headline states the
+        specific takeaway, so this is unused.
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
     """
-    svg = build_svg(mode=mode, accessibility=accessibility)
+    del title
+    svg = build_svg(data, mode=mode, accessibility=accessibility)
     dest = Path(out) if out else svg_example_path(__file__, "spike-map")
     return write_svg(dest, svg)
 
@@ -779,7 +825,7 @@ def main() -> None:
     parser.add_argument("--out", default=None, help="Output path (defaults to the example asset).")
     args = parser.parse_args()
     out = Path(args.out) if args.out else svg_example_path(__file__, "spike-map")
-    write_svg(out, build_svg(args.mode, args.accessibility))
+    write_svg(out, build_svg(mode=args.mode, accessibility=args.accessibility))
 
 
 if __name__ == "__main__":

@@ -56,12 +56,12 @@ from __future__ import annotations
 import math
 import sys
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 from xml.sax.saxutils import escape
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
-from _render import render_cli  # noqa: E402
+from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _svg import svg_open  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 
@@ -205,6 +205,12 @@ EDGES: List[Tuple[str, str]] = [
     ("Payments", "Logging"),
     ("Login", "Logging"),
     ("Router", "Config"),
+]
+
+#: Row-record view of :data:`EDGES`, the shape the ``make_<kind>`` contract
+#: asks for: one dict per module-dependency edge.
+DEMO_DATA: List[Dict[str, Any]] = [
+    {"source": u, "target": v} for u, v in EDGES
 ]
 
 
@@ -647,6 +653,48 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     parts.append(fullscreen_control(WIDTH, HEIGHT, mode))
     parts.append("</svg>")
     return "".join(parts)
+
+
+def make_edge_bundling(
+    data: Optional[List[Dict[str, Any]]] = None,
+    *,
+    out: Optional[Path | str] = None,
+    title: str = "",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the module-dependency edge-bundling SVG and write it to ``out``.
+
+    The standard ``make_<kind>`` entry the figure registry dispatches to.
+    The six subsystems, their module leaves and the dependency edges
+    (:data:`SUBSYSTEMS` / :data:`EDGES`) are baked into :func:`build_svg`,
+    matching :data:`DEMO_DATA`; ``data`` is accepted for dispatcher parity
+    but not threaded into the drawn graph, since the ring layout is
+    computed once for this fixed subsystem/leaf hierarchy.
+
+    Parameters
+    ----------
+    data : list[dict[str, Any]] or None
+        Accepted for contract parity; unused (see above). Defaults to
+        :data:`DEMO_DATA` conceptually.
+    out : Path, str, or None
+        Output path (.svg). Defaults to
+        ``assets/svg-examples/edge-bundling.svg``.
+    title : str, optional
+        Accepted for dispatcher/CLI parity; unused, since the chart's
+        title is fixed prose.
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+    """
+    _ = data, title  # accepted for dispatcher parity; see docstring
+    svg = build_svg(mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "edge-bundling")
+    return write_svg(dest, svg)
 
 
 def main() -> None:

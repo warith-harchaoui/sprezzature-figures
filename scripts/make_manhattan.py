@@ -48,14 +48,14 @@ import math
 import random
 import sys
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 # The house-style palette lives in _style (stdlib-only, safe to import
 # without the dataviz tier).
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
-from _render import render_cli  # noqa: E402
+from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 
 
@@ -241,11 +241,23 @@ def _band_geometry() -> Tuple[List[Tuple[str, int, float, float, float]], float]
     return bands, mb_per_px
 
 
-def build_svg(mode: str = "self-contained", accessibility: str = "universal") -> str:
+def build_svg(
+    peaks: Optional[List[Tuple[str, float, float, str]]] = None,
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> str:
     """Assemble the full Manhattan-plot SVG document as a string.
 
     Parameters
     ----------
+    peaks : list of tuple or None
+        Labelled lead-SNP peaks, each ``(chromosome, position_fraction,
+        neg_log10p, gene)``. Defaults to :data:`_PEAKS`. The unlabelled
+        "grass" scatter behind the peaks stays procedurally generated from
+        a fixed seed (it is illustrative background density, not a
+        first-class data series), but every labelled peak — including any
+        custom ones supplied here — is placed exactly and gets its own
+        tooltip and gene label.
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`.
         One of ``"self-contained"`` (default, ships a hidden-until-live
@@ -261,6 +273,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     str
         A complete, standalone SVG document.
     """
+    peaks = peaks if peaks else _PEAKS
     palette = load_palette(accessibility)
     odd_hex, even_hex = _alternating_tints(palette)
     hit_hex = palette.get("Red", "#FF3B30")  # genome-wide-significant peaks
@@ -366,12 +379,12 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     # Precompute where each labelled peak falls so its column can be given
     # the peak height (and so nearby points swell into a plausible skyline).
     peak_lookup: Dict[str, List[Tuple[float, float, str]]] = {}
-    for chrom, pos_frac, peak_val, gene in _PEAKS:
+    for chrom, pos_frac, peak_val, gene in peaks:
         peak_lookup.setdefault(chrom, []).append((pos_frac, peak_val, gene))
 
     # Minor loci raise a clump but carry no gene label ("" sentinel).
     shoulder_lookup: Dict[str, List[Tuple[float, float]]] = {}
-    for chrom, pos_frac, peak_val, _gene in _PEAKS:
+    for chrom, pos_frac, peak_val, _gene in peaks:
         shoulder_lookup.setdefault(chrom, []).append((pos_frac, peak_val))
     for chrom, pos_frac, peak_val in _MINOR_PEAKS:
         shoulder_lookup.setdefault(chrom, []).append((pos_frac, peak_val))
@@ -522,6 +535,53 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     parts.append(fullscreen_control(_WIDTH, _HEIGHT, mode))
     parts.append('</svg>')
     return "\n".join(parts)
+
+
+#: The registry contract's DEMO_DATA: the labelled lead-SNP peaks (the
+#: figure's one first-class data series) as row records.
+DEMO_DATA: List[Dict[str, Any]] = [
+    {"chromosome": c, "position_fraction": p, "neg_log10p": v, "gene": g}
+    for c, p, v, g in _PEAKS
+]
+
+
+def make_manhattan(
+    data: Optional[List[Dict[str, Any]]] = None,
+    *,
+    out: Optional[Path | str] = None,
+    title: str = "",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the Manhattan plot and write the SVG to *out*.
+
+    Parameters
+    ----------
+    data : list[dict[str, Any]] or None
+        Rows shaped ``{"chromosome", "position_fraction", "neg_log10p",
+        "gene"}`` — one row per labelled lead SNP. Defaults to
+        :data:`DEMO_DATA`. See :func:`build_svg` for what stays
+        procedurally generated. ``title`` is accepted for signature parity
+        with the rest of the gallery and is currently a documented no-op.
+    out : Path, str, or None
+        Output path. Defaults to ``assets/svg-examples/manhattan.svg``.
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+    """
+    _ = title
+    rows = data if data else DEMO_DATA
+    peaks = [
+        (str(r["chromosome"]), float(r["position_fraction"]), float(r["neg_log10p"]), str(r["gene"]))
+        for r in rows
+    ]
+    svg = build_svg(peaks, mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "manhattan")
+    return write_svg(dest, svg)
 
 
 def main() -> None:

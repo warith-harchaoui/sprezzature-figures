@@ -32,7 +32,7 @@ Author
 """
 
 from __future__ import annotations
-from _render import write_svg  # noqa: E402
+from _render import svg_example_path, write_svg  # noqa: E402
 from _style import leveled_colors, os_adaptive_style, os_dark_style  # noqa: E402
 from _svg import svg_open  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
@@ -41,7 +41,7 @@ import argparse
 import math
 import random
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 
 # ------------------------------------------------------------------
@@ -99,6 +99,33 @@ def sample_response_times(seed: int = 7) -> List[float]:
     return values
 
 
+#: Row-record demo data: one row per observed response time, the
+#: contract's ``list[dict[str, Any]]`` shape. :func:`_values_from_rows`
+#: reshapes it (or any caller-supplied row list of the same shape) into
+#: the flat value list :func:`build_svg` renders.
+DEMO_DATA: List[Dict[str, Any]] = [
+    {"response_ms": round(v, 1)} for v in sample_response_times()
+]
+
+
+def _values_from_rows(data: Optional[List[Dict[str, Any]]]) -> List[float]:
+    """Reshape ``{"response_ms"}`` row records into a flat value list.
+
+    Parameters
+    ----------
+    data : list of dict or None
+        Rows with a ``response_ms`` (numeric) key. Falls back to
+        :data:`DEMO_DATA` when ``None``/empty.
+
+    Returns
+    -------
+    list of float
+        Response times in milliseconds, sorted ascending.
+    """
+    rows = data if data else DEMO_DATA
+    return sorted(float(r["response_ms"]) for r in rows)
+
+
 def gaussian_kde(samples: List[float], grid: List[float], bandwidth: float) -> List[float]:
     """Evaluate a Gaussian kernel-density estimate on a grid.
 
@@ -139,11 +166,18 @@ def _fmt(v: float) -> str:
     return f"{v:.0f}"
 
 
-def build_svg(mode: str = "self-contained", accessibility: str = "universal") -> str:
+def build_svg(
+    data: Optional[List[Dict[str, Any]]] = None,
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> str:
     """Assemble the full rug-plot SVG document as a string.
 
     Parameters
     ----------
+    data : list of dict, optional
+        Rows with a ``response_ms`` (numeric) key. Defaults to
+        :data:`DEMO_DATA`.
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`.
         One of ``"self-contained"`` (default, ships a hidden-until-live
@@ -163,7 +197,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     # answers to the accessibility argument.
     blue = leveled_colors({"series": BLUE}, accessibility)["series"]
 
-    samples = sample_response_times()
+    samples = _values_from_rows(data)
     lo, hi = 40.0, 560.0           # display window (ms)
 
     # Kernel-density silhouette across the window.
@@ -317,6 +351,40 @@ def _out_path() -> Path:
     """Resolve the canonical output path for the rug SVG."""
     here = Path(__file__).resolve()
     return here.parent.parent / "assets" / "svg-examples" / "rug.svg"
+
+
+def make_rug(
+    data: Optional[List[Dict[str, Any]]] = None,
+    *,
+    out: Optional[Path | str] = None,
+    title: str = "",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the rug (+ KDE) plot and write the SVG to *out*.
+
+    Parameters
+    ----------
+    data : list[dict[str, Any]] or None
+        Rows with a ``response_ms`` (numeric) key. Defaults to
+        :data:`DEMO_DATA`.
+    out : Path, str, or None
+        Output path (.svg). Defaults to ``assets/svg-examples/rug.svg``.
+    title : str, optional
+        Accepted for signature parity; the figure's headline is baked into
+        the takeaway text (unused).
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+    """
+    _ = title
+    svg = build_svg(data, mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "rug")
+    return write_svg(dest, svg)
 
 
 def main() -> None:

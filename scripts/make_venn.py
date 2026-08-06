@@ -35,14 +35,14 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 # The house-style palette lives in _style (stdlib-only, safe to import
 # without the dataviz tier).
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
-from _render import render_cli  # noqa: E402
+from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 
 
@@ -72,20 +72,44 @@ _BG: str = "#FFFFFF"        # background
 _FOCUS: str = "#0A4DA0"     # focus-ring blue
 
 
-def _dataset(accessibility: str = "universal") -> Dict[str, object]:
-    """Return the communicative fake data for the three-set Venn.
+#: Row records: one per disjoint region, ``sets`` naming the exact set
+#: membership (a list of 1-3 set names — every respondent counted once, in
+#: exactly the sets named) and ``count`` its size. A skills-overlap survey
+#: of 1,000 working data professionals fluent in **Python**, **SQL**, and
+#: **Cloud** platforms (Amazon Web Services / Google Cloud / Azure). The
+#: seven rows are the disjoint tallies, so they sum to the number of
+#: respondents who know at least one of the three.
+DEMO_DATA: List[Dict[str, object]] = [
+    {"sets": ["Python"], "count": 96},                    # Python only
+    {"sets": ["SQL"], "count": 74},                        # SQL only
+    {"sets": ["Cloud"], "count": 58},                       # Cloud only
+    {"sets": ["Python", "SQL"], "count": 188},              # Python + SQL
+    {"sets": ["Python", "Cloud"], "count": 121},            # Python + Cloud
+    {"sets": ["SQL", "Cloud"], "count": 63},                # SQL + Cloud
+    {"sets": ["Python", "SQL", "Cloud"], "count": 214},     # all three
+]
 
-    A skills-overlap survey: of 1,000 working data professionals, who
-    is fluent in **Python**, in **SQL**, and in **Cloud** platforms
-    (Amazon Web Services / Google Cloud / Azure). The seven region
-    counts are the disjoint tallies (people counted once, in exactly
-    one region), so they sum to the number of respondents who know at
-    least one of the three.
+#: Hue key (into the house palette) for each set, matched by first-seen
+#: order when data supplies exactly three distinct set names; falls back to
+#: this cycle for any set not in the shipped Python/SQL/Cloud triple.
+_SET_HUES = ("Blue", "Green", "Orange")
+
+
+def _dataset(
+    accessibility: str = "universal",
+    data: "Optional[List[Dict[str, object]]]" = None,
+) -> Dict[str, object]:
+    """Reshape row records into the internal three-set / seven-region shape.
 
     Parameters
     ----------
     accessibility : str, optional
         Palette accessibility level forwarded to :func:`_style.load_palette`.
+    data : list of dict or None
+        Rows with keys ``sets`` (a list of 1-3 set-name strings) and
+        ``count`` (int). Must name exactly three distinct sets across all
+        rows (a Venn diagram's geometry is fixed at three circles). Defaults
+        to :data:`DEMO_DATA`.
 
     Returns
     -------
@@ -96,26 +120,47 @@ def _dataset(accessibility: str = "universal") -> Dict[str, object]:
         ``"ABC"``) to its integer count.
     """
     palette = load_palette(accessibility)
+    rows = list(data) if data else DEMO_DATA
+
+    # Discover the three set names in first-seen order across the rows.
+    names: List[str] = []
+    for row in rows:
+        for name in row["sets"]:  # type: ignore[union-attr]
+            if name not in names:
+                names.append(str(name))
+    if len(names) != 3:
+        raise ValueError(
+            f"make_venn expects exactly 3 distinct set names across `sets`, got {names!r}"
+        )
+    letters = ("A", "B", "C")
+    name_to_letter = dict(zip(names, letters))
 
     # Equilateral placement: A top, B lower-left, C lower-right. Blue /
     # Green / Orange are pairwise distinct under the common color-vision
     # deficiencies and avoid the red+green trap the auditor flags.
+    positions = {
+        "A": (_CX, _CY - _OFF),
+        "B": (_CX - _OFF * 0.92, _CY + _OFF * 0.62),
+        "C": (_CX + _OFF * 0.92, _CY + _OFF * 0.62),
+    }
     sets = {
-        "A": {"label": "Python", "color": palette["Blue"], "cx": _CX, "cy": _CY - _OFF},
-        "B": {"label": "SQL", "color": palette["Green"], "cx": _CX - _OFF * 0.92, "cy": _CY + _OFF * 0.62},
-        "C": {"label": "Cloud", "color": palette["Orange"], "cx": _CX + _OFF * 0.92, "cy": _CY + _OFF * 0.62},
+        letter: {
+            "label": name,
+            "color": palette.get(_SET_HUES[i], _SET_HUES[i]),
+            "cx": positions[letter][0],
+            "cy": positions[letter][1],
+        }
+        for i, (name, letter) in enumerate(zip(names, letters))
     }
 
-    # Disjoint region counts (each respondent counted exactly once).
-    regions = {
-        "A": 96,     # Python only
-        "B": 74,     # SQL only
-        "C": 58,     # Cloud only
-        "AB": 188,   # Python + SQL
-        "AC": 121,   # Python + Cloud
-        "BC": 63,    # SQL + Cloud
-        "ABC": 214,  # all three
-    }
+    # Disjoint region counts (each respondent counted exactly once), keyed
+    # by the sorted letters of the row's set membership (e.g. "AB", "ABC").
+    regions: Dict[str, int] = {}
+    for row in rows:
+        key = "".join(sorted(name_to_letter[str(n)] for n in row["sets"]))  # type: ignore[union-attr]
+        regions[key] = regions.get(key, 0) + int(row["count"])  # type: ignore[arg-type]
+    for key in ("A", "B", "C", "AB", "AC", "BC", "ABC"):
+        regions.setdefault(key, 0)
     return {"sets": sets, "regions": regions}
 
 
@@ -155,11 +200,19 @@ def _region_centroids() -> Dict[str, Tuple[float, float]]:
 _xml = xml_escape
 
 
-def build_svg(mode: str = "self-contained", accessibility: str = "universal") -> str:
+def build_svg(
+    data: Optional[List[Dict[str, object]]] = None,
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> str:
     """Assemble the full three-set Venn SVG document as a string.
 
     Parameters
     ----------
+    data : list of dict or None
+        Rows with keys ``sets`` (list of 1-3 set-name strings) and
+        ``count`` (int); must name exactly three distinct sets. Defaults to
+        :data:`DEMO_DATA`.
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`
         (``"self-contained"`` / ``"external"`` / ``"static"``). Defaults to
@@ -175,9 +228,9 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     str
         A complete, standalone SVG document.
     """
-    data = _dataset(accessibility)
-    sets: Dict[str, Dict[str, object]] = data["sets"]  # type: ignore[assignment]
-    regions: Dict[str, int] = data["regions"]  # type: ignore[assignment]
+    shaped = _dataset(accessibility, data)
+    sets: Dict[str, Dict[str, object]] = shaped["sets"]  # type: ignore[assignment]
+    regions: Dict[str, int] = shaped["regions"]  # type: ignore[assignment]
     centroids = _region_centroids()
 
     totals = {ltr: _set_total(regions, ltr) for ltr in ("A", "B", "C")}
@@ -372,6 +425,41 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     parts.append(fullscreen_control(_WIDTH, _HEIGHT, mode))
     parts.append('</svg>')
     return "\n".join(parts)
+
+
+def make_venn(
+    data: Optional[List[Dict[str, object]]] = None,
+    *,
+    out: "Optional[Path | str]" = None,
+    title: str = "",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the three-set Venn diagram and write the SVG to *out*.
+
+    Parameters
+    ----------
+    data : list[dict] or None
+        Rows with keys ``sets`` (list of 1-3 set-name strings) and
+        ``count`` (int); must name exactly three distinct sets across all
+        rows. Defaults to :data:`DEMO_DATA`.
+    out : Path, str, or None
+        Output path (.svg). Defaults to ``assets/svg-examples/venn.svg``.
+    title : str, optional
+        Accepted for dispatcher parity; the diagram's own headline states
+        the specific takeaway, so this is unused.
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+    """
+    del title
+    svg = build_svg(data, mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "venn")
+    return write_svg(dest, svg)
 
 
 def main() -> None:

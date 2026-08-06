@@ -36,7 +36,7 @@ from __future__ import annotations
 import argparse
 import sys
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 from xml.sax.saxutils import escape
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -46,7 +46,7 @@ from _style import (  # noqa: E402
     os_adaptive_style,
     os_dark_style,
 )
-from _render import write_svg  # noqa: E402
+from _render import svg_example_path, write_svg  # noqa: E402
 from _svg import svg_open  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 
@@ -156,6 +156,8 @@ def build_tiles(
     plot_h: float,
     gap: float,
     accessibility: str = "universal",
+    devices: Optional[List[Dict[str, Any]]] = None,
+    composition: Optional[Dict[str, Dict[str, float]]] = None,
 ) -> List[Dict[str, Any]]:
     """Compute one rect record per (device, method) mosaic tile.
 
@@ -172,6 +174,9 @@ def build_tiles(
         (``"universal"``, ``"high-contrast"``, ``"monochrome"``,
         ``"deuteranopia"``, ``"protanopia"`` or ``"tritanopia"``). Defaults
         to ``"universal"``, the colour-vision-safe standard.
+    devices, composition : optional
+        Override :data:`DEVICES` / :data:`COMPOSITION`; see
+        :func:`render_svg`.
 
     Returns
     -------
@@ -180,19 +185,21 @@ def build_tiles(
         ``device``, ``method``, ``color``, and ``pct`` (within-column share, in
         percent) so the renderer can draw and label without recomputing.
     """
+    devices = devices if devices else DEVICES
+    composition = composition if composition else COMPOSITION
     colors = method_colors(accessibility)
-    n_gaps = len(DEVICES) - 1
+    n_gaps = len(devices) - 1
     inner_w = plot_w - gap * n_gaps  # width available to the columns themselves
-    total_share = sum(d["share"] for d in DEVICES)
+    total_share = sum(d["share"] for d in devices)
 
     tiles: List[Dict[str, Any]] = []
     cursor_x = plot_x
-    for dev in DEVICES:
+    for dev in devices:
         col_w = inner_w * (dev["share"] / total_share)
-        comp = COMPOSITION[dev["name"]]
+        comp = composition.get(dev["name"], {})
         cursor_y = plot_y
         for method in METHODS:
-            frac = comp[method]
+            frac = comp.get(method, 0.0)
             seg_h = plot_h * frac
             tiles.append({
                 "x": cursor_x,
@@ -213,11 +220,25 @@ def build_tiles(
 # --------------------------------------------------------------------------- #
 # SVG assembly                                                                  #
 # --------------------------------------------------------------------------- #
-def render_svg(mode: str = "self-contained", accessibility: str = "universal") -> str:
+def render_svg(
+    devices: Optional[List[Dict[str, Any]]] = None,
+    composition: Optional[Dict[str, Dict[str, float]]] = None,
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> str:
     """Assemble the full mosaic SVG document as a string.
 
     Parameters
     ----------
+    devices : list of dict or None
+        First-level (column) categories, each ``{"name": str, "share":
+        float}``. Defaults to :data:`DEVICES`.
+    composition : dict of str to dict or None
+        Within-column composition, ``{device_name: {method_name: fraction}}``
+        (fractions should sum to ~1 per device). Defaults to
+        :data:`COMPOSITION`; only the payment methods already in
+        :data:`METHODS` are drawn (a custom device missing a method is
+        simply treated as 0 for that segment).
     mode : str, optional
         Interactivity mode for the shared fullscreen control (see
         :mod:`_interactive`). Three modes: ``"self-contained"`` (default) ships
@@ -249,7 +270,12 @@ def render_svg(mode: str = "self-contained", accessibility: str = "universal") -
     muted = "#6E6E73"
     hairline = "#E5E5EA"
 
-    tiles = build_tiles(plot_x, plot_y, plot_w, plot_h, gap, accessibility)
+    devices = devices if devices else DEVICES
+    composition = composition if composition else COMPOSITION
+    tiles = build_tiles(
+        plot_x, plot_y, plot_w, plot_h, gap, accessibility,
+        devices=devices, composition=composition,
+    )
 
     parts: List[str] = []
     parts.append(svg_open(width, height, "mosaic-t", "mosaic-d"))
@@ -364,7 +390,7 @@ def render_svg(mode: str = "self-contained", accessibility: str = "universal") -
             )
 
     # Column headers: device name + its width-share, above each column.
-    for dev in DEVICES:
+    for dev in devices:
         # Find the column's tiles to recover its x-extent.
         col = [t for t in tiles if t["device"] == dev["name"]]
         cx = col[0]["x"] + col[0]["w"] / 2.0
@@ -408,6 +434,70 @@ def render_svg(mode: str = "self-contained", accessibility: str = "universal") -
 
     parts.append("</svg>")
     return "\n".join(parts)
+
+
+# --------------------------------------------------------------------------- #
+# Contract wiring — DEMO_DATA (row-list) + make_mosaic()                      #
+# --------------------------------------------------------------------------- #
+#: The registry contract wants a flat row list; each row is one
+#: (device, method) cell of the mosaic: the column's own share of the whole
+#: plus that cell's within-column fraction.
+DEMO_DATA: List[Dict[str, Any]] = [
+    {"device": dev["name"], "share": dev["share"], "method": method, "fraction": COMPOSITION[dev["name"]][method]}
+    for dev in DEVICES
+    for method in METHODS
+]
+
+
+def _rows_to_mosaic(
+    rows: List[Dict[str, Any]],
+) -> "tuple[List[Dict[str, Any]], Dict[str, Dict[str, float]]]":
+    """Reshape DEMO_DATA-style rows back into ``(devices, composition)``."""
+    devices: List[Dict[str, Any]] = []
+    seen_dev: set = set()
+    composition: Dict[str, Dict[str, float]] = {}
+    for r in rows:
+        name = str(r["device"])
+        if name not in seen_dev:
+            seen_dev.add(name)
+            devices.append({"name": name, "share": float(r["share"])})
+        composition.setdefault(name, {})[str(r["method"])] = float(r["fraction"])
+    return devices, composition
+
+
+def make_mosaic(
+    data: Optional[List[Dict[str, Any]]] = None,
+    *,
+    out: Optional[Path | str] = None,
+    title: str = "",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the mosaic / Marimekko chart and write the SVG to *out*.
+
+    Parameters
+    ----------
+    data : list[dict[str, Any]] or None
+        Rows shaped ``{"device", "share", "method", "fraction"}`` — one row
+        per (device, method) cell. Defaults to :data:`DEMO_DATA`. ``title``
+        is accepted for signature parity with the rest of the gallery and
+        is currently a documented no-op.
+    out : Path, str, or None
+        Output path. Defaults to ``assets/svg-examples/mosaic.svg``.
+    mode, accessibility : str
+        Forwarded to :func:`render_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+    """
+    _ = title
+    rows = data if data else DEMO_DATA
+    devices, composition = _rows_to_mosaic(rows)
+    svg = render_svg(devices=devices, composition=composition, mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "mosaic")
+    return write_svg(dest, svg)
 
 
 # --------------------------------------------------------------------------- #

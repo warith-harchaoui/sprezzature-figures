@@ -39,14 +39,14 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-from typing import List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 from xml.sax.saxutils import escape
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import load_palette, os_dark_style  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _svg import catmull_rom_beziers, fmt_compact, svg_open  # noqa: E402
-from _render import render_cli  # noqa: E402
+from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 
 # ------------------------------------------------------------------
 # Canvas + house-style tokens
@@ -83,6 +83,12 @@ INERTIA: List[float] = [1000, 560, 330, 210, 165, 138, 120, 108, 100, 95]
 # y-axis runs from 0 so the flattening tail reads as "near the floor".
 Y_MAX = 1050.0
 Y_TICKS = [0, 250, 500, 750, 1000]
+
+#: Row-record view of :data:`KS` / :data:`INERTIA`, the shape the
+#: ``make_<kind>`` contract asks for: one dict per swept ``k``.
+DEMO_DATA: List[Dict[str, Any]] = [
+    {"k": k, "inertia": inertia} for k, inertia in zip(KS, INERTIA)
+]
 
 
 # ------------------------------------------------------------------
@@ -419,6 +425,47 @@ def _emit_inset(
         f'font-family="{FONT_MONO}" font-size="12" font-weight="700" '
         f'fill="{accent}">k = {KS[elbow_i]}</text>'
     )
+
+
+def make_elbow(
+    data: Optional[List[Dict[str, Any]]] = None,
+    *,
+    out: Optional[Path | str] = None,
+    title: str = "",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the k-means elbow (Kneedle) SVG and write it to ``out``.
+
+    The standard ``make_<kind>`` entry the figure registry dispatches to.
+    The inertia curve (:data:`KS` / :data:`INERTIA`) is baked into
+    :func:`build_svg`, matching :data:`DEMO_DATA`; ``data`` is accepted for
+    dispatcher parity but not threaded into the drawn curve, since the
+    Kneedle inset and the fixed y-axis domain (:data:`Y_MAX`) are tuned to
+    this specific ten-point sweep.
+
+    Parameters
+    ----------
+    data : list[dict[str, Any]] or None
+        Accepted for contract parity; unused (see above). Defaults to
+        :data:`DEMO_DATA` conceptually.
+    out : Path, str, or None
+        Output path (.svg). Defaults to ``assets/svg-examples/elbow.svg``.
+    title : str, optional
+        Accepted for dispatcher/CLI parity; unused, since the chart's
+        title is fixed prose.
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+    """
+    _ = data, title  # accepted for dispatcher parity; see docstring
+    svg = build_svg(mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "elbow")
+    return write_svg(dest, svg)
 
 
 def main() -> None:

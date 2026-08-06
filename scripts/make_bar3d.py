@@ -47,13 +47,13 @@ Author
 
 from __future__ import annotations
 from _interactive import fullscreen_control  # noqa: E402
-from _render import write_svg  # noqa: E402
+from _render import svg_example_path, write_svg  # noqa: E402
 from _svg import fmt_compact  # noqa: E402
 from _style import os_dark_style  # noqa: E402
 
 import argparse
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 # Repo-relative default output — the one SVG artifact this figure ships.
 _DEFAULT_OUT = (
@@ -106,6 +106,64 @@ def _sample_grid() -> Dict[str, Any]:
         [9.0, 11.0, 10.0, 12.0],    # Docs  — the flat plain
     ]
     return {"rows": rows, "cols": cols, "z": z}
+
+
+def _grid_to_rows(grid: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """Flatten a ``{"rows", "cols", "z"}`` grid into row records.
+
+    Parameters
+    ----------
+    grid : dict
+        A grid as returned by :func:`_sample_grid` (or with the same shape).
+
+    Returns
+    -------
+    list of dict
+        One record per cell: ``{"team": row_name, "quarter": col_name,
+        "spend_k": value}``.
+    """
+    rows, cols, z = grid["rows"], grid["cols"], grid["z"]
+    return [
+        {"team": r, "quarter": c, "spend_k": float(z[ri][ci])}
+        for ri, r in enumerate(rows)
+        for ci, c in enumerate(cols)
+    ]
+
+
+def _rows_to_grid(records: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """Reshape row records back into the ``{"rows", "cols", "z"}`` grid shape.
+
+    Parameters
+    ----------
+    records : list of dict
+        Rows shaped ``{"team": ..., "quarter": ..., "spend_k": ...}`` (see
+        :data:`DEMO_DATA`); row/column order follows first appearance.
+
+    Returns
+    -------
+    dict
+        ``{"rows": [...], "cols": [...], "z": [[...], ...]}`` — the shape
+        :func:`build_svg` works with.
+    """
+    rows: List[str] = []
+    cols: List[str] = []
+    values: Dict[Tuple[str, str], float] = {}
+    for rec in records:
+        team = str(rec["team"])
+        quarter = str(rec["quarter"])
+        if team not in rows:
+            rows.append(team)
+        if quarter not in cols:
+            cols.append(quarter)
+        values[(team, quarter)] = float(rec["spend_k"])
+    z = [[values.get((r, c), 0.0) for c in cols] for r in rows]
+    return {"rows": rows, "cols": cols, "z": z}
+
+
+# The make_<kind> contract's row-record view of the sample grid: one row
+# per (team, quarter) cell. make_bar3d() reshapes this back into the
+# {"rows", "cols", "z"} grid build_svg() works with via _rows_to_grid().
+DEMO_DATA: List[Dict[str, Any]] = _grid_to_rows(_sample_grid())
 
 
 # --------------------------------------------------------------------------- #
@@ -585,6 +643,50 @@ def main(argv: List[str] | None = None) -> int:
     svg = build_svg(grid, mode=args.mode, accessibility=args.accessibility)
     write_svg(args.out, svg)
     return 0
+
+
+def make_bar3d(
+    data: Optional[List[Dict[str, Any]]] = None,
+    *,
+    out: Optional[Path | str] = None,
+    title: str = "",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the house-styled 3D-bar chart and write the SVG to *out*.
+
+    Parameters
+    ----------
+    data : list of dict or None
+        Rows with keys ``team``, ``quarter`` (str) and ``spend_k`` (float),
+        one per grid cell (see :data:`DEMO_DATA`). Row/column order follows
+        first appearance. Defaults to the illustrative quarterly
+        cloud-infrastructure-spend grid.
+    out : Path, str, or None
+        Output path (.svg). Defaults to ``assets/svg-examples/bar3d.svg``.
+    title : str, optional
+        Accepted for CLI/dispatcher parity; this figure's title names the
+        tallest ridge and stays fixed regardless of the data supplied.
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+
+    Examples
+    --------
+    >>> p = make_bar3d()
+    >>> p.exists()
+    True
+    """
+    _ = title
+    rows = data if data else DEMO_DATA
+    grid = _rows_to_grid(rows)
+    svg = build_svg(grid, mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "bar3d")
+    return write_svg(dest, svg)
 
 
 if __name__ == "__main__":

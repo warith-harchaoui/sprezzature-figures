@@ -40,7 +40,7 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
-from typing import Dict, List, Sequence, Tuple
+from typing import Dict, List, Optional, Sequence, Tuple
 
 import numpy as np
 
@@ -51,7 +51,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _labels import best_text_colour  # noqa: E402
 from _style import forced_color_patterns, leveled_colors, os_adaptive_style, os_dark_style  # noqa: E402
 from _svg import catmull_rom_beziers, fmt_compact, xml_escape  # noqa: E402
-from _render import write_svg  # noqa: E402
+from _render import svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 
 # --------------------------------------------------------------------------- #
@@ -146,6 +146,55 @@ def _sample_genre_share() -> Tuple[np.ndarray, List[str], np.ndarray]:
 
     volume = frac * total                               # (n_genres, n_years)
     return years, genres, volume
+
+
+def _demo_rows() -> List[Dict[str, object]]:
+    """Flatten :func:`_sample_genre_share` into row records for `DEMO_DATA`."""
+    years, genres, volume = _sample_genre_share()
+    return [
+        {"year": int(year), "genre": genre, "value": float(volume[gi, yi])}
+        for gi, genre in enumerate(genres)
+        for yi, year in enumerate(years)
+    ]
+
+
+#: Row records: the flattened :func:`_sample_genre_share` matrix, one dict
+#: per (year, genre) cell with ``year`` (int), ``genre`` (str, bottom-to-top
+#: stacking order preserved by first-seen order) and ``value`` (float,
+#: billions of streams that year).
+DEMO_DATA: List[Dict[str, object]] = _demo_rows()
+
+
+def _rows_to_matrix(
+    rows: List[Dict[str, object]],
+) -> Tuple[np.ndarray, List[str], np.ndarray]:
+    """Reshape ``{"year", "genre", "value"}`` row records into a matrix.
+
+    Parameters
+    ----------
+    rows : list of dict
+        Row records with ``year``, ``genre`` and ``value`` keys.
+
+    Returns
+    -------
+    tuple
+        ``(years, genres, volume)`` matching :func:`_sample_genre_share`'s
+        return shape — ``genres`` in first-seen row order (the bottom-to-top
+        stacking order), ``years`` sorted ascending, ``volume`` a
+        ``(n_genres, n_years)`` array (missing cells default to ``0.0``).
+    """
+    years_sorted = sorted({int(r["year"]) for r in rows})  # type: ignore[arg-type]
+    year_idx = {y: i for i, y in enumerate(years_sorted)}
+    genres: List[str] = []
+    for r in rows:
+        g = str(r["genre"])
+        if g not in genres:
+            genres.append(g)
+    genre_idx = {g: i for i, g in enumerate(genres)}
+    volume = np.zeros((len(genres), len(years_sorted)))
+    for r in rows:
+        volume[genre_idx[str(r["genre"])], year_idx[int(r["year"])]] = float(r["value"])  # type: ignore[arg-type]
+    return np.array(years_sorted), genres, volume
 
 
 # --------------------------------------------------------------------------- #
@@ -650,6 +699,42 @@ def _build_parser() -> argparse.ArgumentParser:
         help="palette accessibility level (default: universal, the CVD-safe standard)",
     )
     return parser
+
+
+def make_streamgraph(
+    data: Optional[List[Dict[str, object]]] = None,
+    *,
+    out: Optional[Path | str] = None,
+    title: str = "",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the streamgraph and write the SVG to *out*.
+
+    Parameters
+    ----------
+    data : list[dict[str, object]] or None
+        Rows with keys ``year``, ``genre`` and ``value``. Defaults to
+        :data:`DEMO_DATA`.
+    out : Path, str, or None
+        Output path (.svg). Defaults to
+        ``assets/svg-examples/streamgraph.svg``.
+    title : str, optional
+        Accepted for dispatcher parity; the river's own headline states the
+        specific takeaway, so this is unused.
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+    """
+    del title
+    years, genres, volume = _rows_to_matrix(list(data)) if data else _sample_genre_share()
+    svg = build_svg(years, genres, volume, mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "streamgraph")
+    return write_svg(dest, svg)
 
 
 def main(argv: List[str] | None = None) -> int:

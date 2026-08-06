@@ -265,11 +265,22 @@ def _clip_label(name: str, width_px: float) -> str:
 # --------------------------------------------------------------------------- #
 # SVG assembly                                                                  #
 # --------------------------------------------------------------------------- #
-def render_svg(mode: str = "self-contained", accessibility: str = "universal") -> str:
+def render_svg(
+    tree: Optional[Dict[str, Any]] = None,
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> str:
     """Assemble the full icicle / flame-graph SVG document as a string.
 
     Parameters
     ----------
+    tree : dict or None
+        A call-tree node shaped like :data:`TREE` (``name``, ``ms``,
+        ``children``). Defaults to :data:`TREE`. When a custom tree is
+        supplied and it has no node named ``"run_sql"``, the callout that
+        annotates that specific hot bar is simply omitted rather than
+        raising — the rest of the chart (bars, depth ramp, tooltips) is
+        fully data-driven.
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`.
         One of ``"self-contained"`` (default, ships a hidden-until-live
@@ -297,6 +308,7 @@ def render_svg(mode: str = "self-contained", accessibility: str = "universal") -
     # ramps are a tuned sequential map, already CVD/greyscale-safe, and a
     # categorical level would de-tune them. Reference it so linters see it used.
     del accessibility
+    tree = tree if tree else TREE
     width, height = 1300, 860
     plot_x, plot_y = 88.0, 234.0
     plot_w = width - plot_x - 88.0
@@ -307,11 +319,11 @@ def render_svg(mode: str = "self-contained", accessibility: str = "universal") -
     muted = "#6E6E73"
     hairline = "#E5E5EA"
 
-    total_ms = float(TREE["ms"])
+    total_ms = float(tree["ms"])
     px_per_ms = plot_w / total_ms
 
     rects: List[Dict[str, Any]] = []
-    flatten(TREE, 0, 0.0, px_per_ms, rects)
+    flatten(tree, 0, 0.0, px_per_ms, rects)
     max_depth = max(r["depth"] for r in rects)
 
     parts: List[str] = []
@@ -453,21 +465,26 @@ def render_svg(mode: str = "self-contained", accessibility: str = "universal") -
                 )
 
     # Callout: annotate the hot bar so the takeaway is unmissable in the raster.
-    hot = next(r for r in rects if r["name"] == "run_sql")
-    hx = plot_x + (hot["x_ms"] + hot["w_ms"] / 2.0) * px_per_ms
-    hy = plot_y + hot["depth"] * (row_h + row_gap)
+    # Only drawn when the tree actually has the labelled hot node — a custom
+    # tree without a "run_sql" node simply skips this specific annotation.
+    hot = next((r for r in rects if r["name"] == "run_sql"), None)
     ann_y = plot_y + (max_depth + 1) * (row_h + row_gap) + 46.0
-    parts.append(
-        f'<line x1="{_fmt(hx)}" y1="{_fmt(hy + row_h)}" x2="{_fmt(hx)}" y2="{_fmt(ann_y - 22)}" '
-        f'stroke="{muted}" stroke-width="1.5" stroke-dasharray="3 4"/>'
-    )
-    parts.append(
-        f'<circle cx="{_fmt(hx)}" cy="{_fmt(ann_y - 22)}" r="3.5" fill="{muted}"/>'
-    )
-    parts.append(
-        f'<text x="{_fmt(hx)}" y="{_fmt(ann_y)}" font-size="17" font-weight="600" fill="{ink}" '
-        f'text-anchor="middle">run_sql = 214 ms (45%) - a single un-cached query holds a lock</text>'
-    )
+    if hot is not None:
+        hx = plot_x + (hot["x_ms"] + hot["w_ms"] / 2.0) * px_per_ms
+        hy = plot_y + hot["depth"] * (row_h + row_gap)
+        parts.append(
+            f'<line x1="{_fmt(hx)}" y1="{_fmt(hy + row_h)}" x2="{_fmt(hx)}" y2="{_fmt(ann_y - 22)}" '
+            f'stroke="{muted}" stroke-width="1.5" stroke-dasharray="3 4"/>'
+        )
+        parts.append(
+            f'<circle cx="{_fmt(hx)}" cy="{_fmt(ann_y - 22)}" r="3.5" fill="{muted}"/>'
+        )
+        parts.append(
+            f'<text x="{_fmt(hx)}" y="{_fmt(ann_y)}" font-size="17" font-weight="600" fill="{ink}" '
+            f'text-anchor="middle">run_sql = 214 ms (45%) - a single un-cached query holds a lock</text>'
+        )
+    else:
+        ann_y = plot_y + (max_depth + 1) * (row_h + row_gap) + 10.0
 
     # Legend: root anchor + warm depth ramp + the on/off critical-path split.
     # Every fill on the canvas — blue root, warm ramp, cool off-path grey — gets
@@ -518,6 +535,79 @@ def render_svg(mode: str = "self-contained", accessibility: str = "universal") -
 
 
 # --------------------------------------------------------------------------- #
+# Contract wiring — DEMO_DATA (row-list) + make_icicle()                      #
+# --------------------------------------------------------------------------- #
+def _flatten_tree_to_rows(
+    node: Dict[str, Any], parent_id: Optional[str], out: List[Dict[str, Any]]
+) -> None:
+    """Flatten a nested call-tree into id/parent rows (pre-order)."""
+    node_id = str(node["name"])
+    out.append({"id": node_id, "parent": parent_id, "name": node["name"], "ms": node["ms"]})
+    for child in node.get("children", []):
+        _flatten_tree_to_rows(child, node_id, out)
+
+
+#: The registry contract wants a flat row list; a call tree is naturally
+#: hierarchical, so each row carries its own ``id`` and its ``parent`` id
+#: (``None`` for the root) and :func:`_rows_to_tree` rebuilds the nesting.
+DEMO_DATA: List[Dict[str, Any]] = []
+_flatten_tree_to_rows(TREE, None, DEMO_DATA)
+
+
+def _rows_to_tree(rows: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+    """Rebuild a nested call tree from :data:`DEMO_DATA`-shaped rows."""
+    by_id: Dict[str, Dict[str, Any]] = {
+        str(r["id"]): {"name": r["name"], "ms": r["ms"], "children": []} for r in rows
+    }
+    root: Optional[Dict[str, Any]] = None
+    for r in rows:
+        node = by_id[str(r["id"])]
+        parent_id = r.get("parent")
+        if parent_id is None:
+            root = node
+        elif str(parent_id) in by_id:
+            by_id[str(parent_id)]["children"].append(node)
+    return root
+
+
+def make_icicle(
+    data: Optional[List[Dict[str, Any]]] = None,
+    *,
+    out: Optional[Path | str] = None,
+    title: str = "",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the icicle / flame-graph figure and write the SVG to *out*.
+
+    Parameters
+    ----------
+    data : list[dict[str, Any]] or None
+        Rows shaped ``{"id", "parent", "name", "ms"}`` (one row per call-tree
+        node; ``parent`` is ``None`` for the root). Defaults to
+        :data:`DEMO_DATA`. ``title`` is accepted for signature parity with
+        the rest of the gallery and is currently a documented no-op (the
+        headline states a fact specific to the shipped example).
+    out : Path, str, or None
+        Output path. Defaults to ``assets/svg-examples/icicle.svg``.
+    mode, accessibility : str
+        Forwarded to :func:`render_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+    """
+    _ = title
+    rows = data if data else DEMO_DATA
+    tree = _rows_to_tree(rows) or TREE
+    svg = render_svg(tree, mode=mode, accessibility=accessibility)
+    dest = Path(__file__).resolve().parent.parent / "assets" / "svg-examples" / "icicle.svg"
+    dest = Path(out) if out else dest
+    return write_svg(dest, svg)
+
+
+# --------------------------------------------------------------------------- #
 # CLI                                                                           #
 # --------------------------------------------------------------------------- #
 def main(argv: Optional[List[str]] = None) -> int:
@@ -558,7 +648,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     args = parser.parse_args(argv)
 
     out_path = Path(args.out)
-    write_svg(out_path, render_svg(args.mode, accessibility=args.accessibility))
+    write_svg(out_path, render_svg(mode=args.mode, accessibility=args.accessibility))
     return 0
 
 

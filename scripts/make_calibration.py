@@ -50,14 +50,14 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 
 # House-style tokens + the shared SVG primitives live alongside in scripts/.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
-from _render import render_cli  # noqa: E402
+from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _style import leveled_colors, load_palette, os_dark_style  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
 
@@ -157,7 +157,40 @@ def make_data(
     return bins, round(ece, 3)
 
 
-def build_svg(mode: str = "self-contained", accessibility: str = "universal") -> str:
+def _expected_calibration_error(bins: List[Dict[str, float]]) -> float:
+    """Recompute the count-weighted Expected Calibration Error from bins.
+
+    Used when a caller supplies its own reliability bins (via ``data``)
+    instead of the module's simulated ``ece`` from :func:`make_data`.
+
+    Parameters
+    ----------
+    bins : list of dict
+        Reliability records, each carrying ``predicted``, ``observed`` and
+        ``count`` (``gap``/``over`` are recomputed here so a caller-supplied
+        row need only provide those three).
+
+    Returns
+    -------
+    float
+        The Expected Calibration Error, rounded to 3 decimals.
+    """
+    total = sum(float(b["count"]) for b in bins) or 1.0
+    num = sum(float(b["count"]) * abs(float(b["observed"]) - float(b["predicted"])) for b in bins)
+    return round(num / total, 3)
+
+
+# The make_<kind> contract's DEMO_DATA: one row per populated probability
+# bin, already in the shape build_svg() works with directly.
+DEMO_DATA: List[Dict[str, float]]
+DEMO_DATA, _DEMO_ECE = make_data()
+
+
+def build_svg(
+    data: Optional[List[Dict[str, float]]] = None,
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> str:
     """Assemble the full calibration-curve SVG string.
 
     Two stacked panels share the same x-axis (predicted probability).
@@ -189,6 +222,10 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
 
     Parameters
     ----------
+    data : list of dict or None
+        Reliability-bin rows, each ``{"predicted", "observed", "count",
+        "gap", "over"}`` (see :data:`DEMO_DATA`). Defaults to a simulated
+        overconfident churn classifier's bins.
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`
         (``"self-contained"``, ``"external"`` or ``"static"``). Defaults to
@@ -213,7 +250,20 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     ink = "#1D1D1F"
     secondary = "#6E6E73"
 
-    bins, ece = make_data()
+    if data:
+        # Normalise caller-supplied rows: "gap"/"over" are derived fields the
+        # renderer relies on downstream, so fill them in when absent.
+        bins = [
+            {
+                **b,
+                "gap": b.get("gap", round(float(b["observed"]) - float(b["predicted"]), 4)),
+                "over": b.get("over", bool(float(b["observed"]) - float(b["predicted"]) < 0)),
+            }
+            for b in data
+        ]
+        ece = _expected_calibration_error(bins)
+    else:
+        bins, ece = DEMO_DATA, _DEMO_ECE
 
     # --- canvas geometry -----------------------------------------
     # The reliability square is the hero mark, so it gets a generous side.
@@ -639,6 +689,47 @@ def main() -> None:
             "to SVG."
         ),
     )
+
+
+def make_calibration(
+    data: Optional[List[Dict[str, float]]] = None,
+    *,
+    out: Optional[Path | str] = None,
+    title: str = "",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the house-styled calibration curve and write the SVG to *out*.
+
+    Parameters
+    ----------
+    data : list of dict or None
+        Reliability-bin rows, each ``{"predicted", "observed", "count"}``
+        (``gap``/``over`` are recomputed if absent; see :data:`DEMO_DATA`).
+        Defaults to a simulated overconfident churn classifier.
+    out : Path, str, or None
+        Output path (.svg). Defaults to ``assets/svg-examples/calibration.svg``.
+    title : str, optional
+        Accepted for CLI/dispatcher parity; this figure's title narrates the
+        overconfidence finding and stays fixed.
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+
+    Examples
+    --------
+    >>> p = make_calibration()
+    >>> p.exists()
+    True
+    """
+    _ = title
+    svg = build_svg(data, mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "calibration")
+    return write_svg(dest, svg)
 
 
 if __name__ == "__main__":

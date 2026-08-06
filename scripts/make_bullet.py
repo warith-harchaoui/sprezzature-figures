@@ -38,14 +38,14 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 # The house-style palette lives alongside this file, in _style.py.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
-from _render import render_cli  # noqa: E402
+from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 
 
 # ------------------------------------------------------------------
@@ -57,7 +57,7 @@ from _render import render_cli  # noqa: E402
 # (latency, churn) — a bullet graph reads either way once the bands are
 # shaded correctly, so we shade poor→good in the beneficial direction.
 # ------------------------------------------------------------------
-KPIS: List[Dict[str, Any]] = [
+DEMO_DATA: List[Dict[str, Any]] = [
     {
         "name": "New revenue",
         "unit": "$k",
@@ -159,11 +159,19 @@ def _band_hex(palette: Dict[str, str]) -> List[str]:
 # ------------------------------------------------------------------
 # SVG assembly
 # ------------------------------------------------------------------
-def build_svg(mode: str = "self-contained", accessibility: str = "universal") -> str:
+def build_svg(
+    data: Optional[List[Dict[str, Any]]] = None,
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> str:
     """Assemble the full KPI bullet-graph SVG string.
 
     Parameters
     ----------
+    data : list of dict or None
+        One row per KPI, each shaped ``{"name", "unit", "value", "target",
+        "axis_max", "bands": [lo, hi], "higher": bool}`` (see
+        :data:`DEMO_DATA`). Defaults to a five-KPI SaaS Q3 scorecard.
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`
         (``"self-contained"``, ``"external"`` or ``"static"``). Controls
@@ -211,7 +219,8 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     row_h = 118          # vertical pitch between KPI rows
     bar_h = 22           # measure-bar thickness
     band_h = 62          # qualitative-band block height
-    n = len(KPIS)
+    kpis: List[Dict[str, Any]] = data if data else DEMO_DATA
+    n = len(kpis)
     height = m_top + n * row_h + 56
 
     parts: List[str] = []
@@ -222,7 +231,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         v, t, hi = float(k["value"]), float(k["target"]), bool(k["higher"])
         return v >= t if hi else v <= t
 
-    n_beat = sum(1 for k in KPIS if _beats(k))
+    n_beat = sum(1 for k in kpis if _beats(k))
 
     # --- document + accessibility --------------------------------
     parts.append(svg_open(width, height, "bl-title", "bl-desc"))
@@ -308,7 +317,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     )
 
     # --- rows ----------------------------------------------------
-    for i, k in enumerate(KPIS):
+    for i, k in enumerate(kpis):
         name = str(k["name"])
         unit = str(k["unit"])
         value = float(k["value"])
@@ -458,6 +467,47 @@ def main() -> None:
         build_svg,
         description="Write the house-style KPI bullet-graph SVG example.",
     )
+
+
+def make_bullet(
+    data: Optional[List[Dict[str, Any]]] = None,
+    *,
+    out: Optional[Path | str] = None,
+    title: str = "",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the house-styled KPI bullet-graph panel and write it to *out*.
+
+    Parameters
+    ----------
+    data : list of dict or None
+        One row per KPI, each shaped ``{"name", "unit", "value", "target",
+        "axis_max", "bands": [lo, hi], "higher": bool}`` (see
+        :data:`DEMO_DATA`). Defaults to a five-KPI SaaS Q3 scorecard.
+    out : Path, str, or None
+        Output path (.svg). Defaults to ``assets/svg-examples/bullet.svg``.
+    title : str, optional
+        Accepted for CLI/dispatcher parity; this figure's title counts how
+        many rows beat target and stays fixed to the demo narrative.
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+
+    Examples
+    --------
+    >>> p = make_bullet()
+    >>> p.exists()
+    True
+    """
+    _ = title
+    svg = build_svg(data, mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "bullet")
+    return write_svg(dest, svg)
 
 
 if __name__ == "__main__":

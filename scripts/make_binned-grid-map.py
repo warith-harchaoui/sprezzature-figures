@@ -40,7 +40,7 @@ from __future__ import annotations
 import random
 import sys
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Tuple
 
 # The house-style palette lives in _style (stdlib-only, safe to import
 # without the dataviz tier).
@@ -204,6 +204,17 @@ _HOTSPOTS: List[Tuple[float, float, float, float]] = [
     (0.72, 0.70, 0.16, 0.11),    # riverside market
     (0.20, 0.62, 0.12, 0.10),    # west-end retail strip
     (0.82, 0.34, 0.08, 0.09),    # north gateway
+]
+
+# The make_<kind> contract's row-record view of the hotspot mixture that
+# seeds the (deterministically re-sampled) incident cloud. The map's full
+# geography -- city boundary, river, parks, cartographic furniture -- is
+# baked into the hand-authored layout alongside a fixed random seed, so
+# make_binned_grid_map() accepts ``data`` for dispatcher parity but does
+# not thread custom rows into the render; see its docstring below.
+DEMO_DATA: List[Dict[str, Any]] = [
+    {"lon": cx, "lat": cy, "weight": w, "sigma": sigma}
+    for cx, cy, w, sigma in _HOTSPOTS
 ]
 
 
@@ -712,9 +723,9 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
 
 
 def make_binned_grid_map(
-    data: "object | None" = None,
+    data: List[Dict[str, Any]] | None = None,
     *,
-    out: "Path | str | None" = None,
+    out: Path | str | None = None,
     title: str = "",
     mode: str = "self-contained",
     accessibility: str = "universal",
@@ -723,8 +734,11 @@ def make_binned_grid_map(
 
     The standard ``make_<kind>`` entry the figure registry dispatches to, so
     ``make-figure binned-grid-map`` and the Studio work like every other figure.
-    The demo geography and values are baked into the hand-authored SVG, so
-    ``data`` and ``title`` are accepted for dispatcher parity and unused.
+    ``data`` defaults to :data:`DEMO_DATA` (the hotspot mixture's row-record
+    view), but the demo geography, city boundary/river/park layout, event
+    sampling and cartographic furniture are baked into the hand-authored
+    SVG's fixed random seed, so ``data`` and ``title`` are accepted for
+    dispatcher parity and not threaded into the render.
     """
     svg = build_svg(mode=mode, accessibility=accessibility)
     dest = Path(out) if out else svg_example_path(__file__, "binned-grid-map")

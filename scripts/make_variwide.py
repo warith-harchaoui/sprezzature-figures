@@ -40,14 +40,14 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 # The house-style palette lives alongside this file, in _style.py.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
-from _render import render_cli  # noqa: E402
+from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 
 
 # ------------------------------------------------------------------
@@ -56,8 +56,10 @@ from _render import render_cli  # noqa: E402
 # per capita in thousands of US dollars (column HEIGHT). Their product,
 # ``pop * gdp_cap / 1000``, is total GDP in trillions of US dollars —
 # the column AREA. Figures are World Bank / IMF 2023 estimates, rounded.
+# Each row: name, ISO3 code, population (millions), GDP per capita
+# (US$ thousands), and a house-palette colour key.
 # ------------------------------------------------------------------
-COUNTRIES: List[Dict[str, Any]] = [
+DEMO_DATA: List[Dict[str, Any]] = [
     {"name": "United States", "iso": "USA", "pop": 335.0, "gdp_cap": 81.7, "color": "Blue"},
     {"name": "Germany", "iso": "DEU", "pop": 84.0, "gdp_cap": 52.7, "color": "Purple"},
     {"name": "United Kingdom", "iso": "GBR", "pop": 67.0, "gdp_cap": 48.9, "color": "Teal"},
@@ -109,11 +111,19 @@ def _fmt_pop(pop: float) -> str:
 # ------------------------------------------------------------------
 # SVG assembly
 # ------------------------------------------------------------------
-def build_svg(mode: str = "self-contained", accessibility: str = "universal") -> str:
+def build_svg(
+    data: Optional[List[Dict[str, Any]]] = None,
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> str:
     """Assemble the full variwide-column SVG string.
 
     Parameters
     ----------
+    data : list of dict or None
+        Rows with keys ``name``, ``iso``, ``pop`` (millions), ``gdp_cap``
+        (US$ thousands) and ``color`` (a house-palette key). Defaults to
+        :data:`DEMO_DATA`.
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`
         (``"self-contained"``, ``"external"`` or ``"static"``). Controls
@@ -130,6 +140,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     str
         A complete, standalone SVG document.
     """
+    rows: List[Dict[str, Any]] = list(data) if data else DEMO_DATA
     palette = load_palette(accessibility)
     ink = "#1D1D1F"
     secondary = "#6E6E73"
@@ -153,10 +164,10 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     # --- scales --------------------------------------------------
     # WIDTH: population maps onto the total plot width, so columns tile
     # the band edge to edge with no gaps (the defining variwide look).
-    total_pop = sum(float(c["pop"]) for c in COUNTRIES)
+    total_pop = sum(float(c["pop"]) for c in rows)
     # HEIGHT: GDP per capita maps onto the plot height. A little headroom
     # (max scaled to 0.94 of plot_h) keeps the tallest value label clear.
-    max_gdp_cap = max(float(c["gdp_cap"]) for c in COUNTRIES)
+    max_gdp_cap = max(float(c["gdp_cap"]) for c in rows)
     height_scale = (plot_h * 0.94) / max_gdp_cap
     px_per_pop = plot_w / total_pop
 
@@ -191,7 +202,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     # value labels remain the colour-independent readout.
     col_series = {
         f".col-{str(c['iso'])}": palette.get(str(c["color"]), "#007AFF")
-        for c in COUNTRIES
+        for c in rows
     }
     contrast_css = os_adaptive_style(col_series, role="fill", forced=True)
     # Additive OS dark-mode block. White is used both as the page surface and as
@@ -297,7 +308,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     # columns can borrow horizontal room from their wide neighbours.
     cols: List[Dict[str, Any]] = []
     x_cursor = float(m_left)
-    for c in COUNTRIES:
+    for c in rows:
         pop = float(c["pop"])
         gdp_cap = float(c["gdp_cap"])
         col_w = pop * px_per_pop
@@ -495,6 +506,40 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     parts.append(fullscreen_control(width, height, mode))
     parts.append("</svg>")
     return "\n".join(parts)
+
+
+def make_variwide(
+    data: Optional[List[Dict[str, Any]]] = None,
+    *,
+    out: Optional[Path | str] = None,
+    title: str = "",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the variwide-column chart and write the SVG to *out*.
+
+    Parameters
+    ----------
+    data : list[dict[str, Any]] or None
+        Rows with keys ``name``, ``iso``, ``pop`` (millions), ``gdp_cap``
+        (US$ thousands) and ``color``. Defaults to :data:`DEMO_DATA`.
+    out : Path, str, or None
+        Output path (.svg). Defaults to ``assets/svg-examples/variwide.svg``.
+    title : str, optional
+        Accepted for dispatcher parity; the chart's own headline is fixed
+        (it states the takeaway, not a generic title) so this is unused.
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+    """
+    del title
+    svg = build_svg(data, mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "variwide")
+    return write_svg(dest, svg)
 
 
 def main() -> None:

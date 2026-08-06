@@ -59,7 +59,7 @@ from _style import (  # noqa: E402
     os_adaptive_style,
     os_dark_style,
 )
-from _interactive import fullscreen_control  # noqa: E402
+from _interactive import fullscreen_control, hover_isolate_css  # noqa: E402
 
 
 # --------------------------------------------------------------------------- #
@@ -113,15 +113,28 @@ OUTCOME_COLOR: Dict[str, str] = {
     "Churned": "Gray",
 }
 
+# The make_<kind> contract's row-record view of FLOWS: one row per
+# (channel, plan, outcome) path with its record count. build_svg() converts
+# this back into the internal {"path": (...), "count": n} shape it works
+# with, so a caller can hand make_alluvial() its own rows shaped this way.
+DEMO_DATA: List[Dict[str, Any]] = [
+    {"channel": path[0], "plan": path[1], "outcome": path[2], "count": count}
+    for flow in FLOWS
+    for path, count in [(flow["path"], flow["count"])]
+]
+
 
 # --------------------------------------------------------------------------- #
 # 2. Geometry                                                                 #
 # --------------------------------------------------------------------------- #
-def _totals(axis_index: int, categories: List[str]) -> Dict[str, int]:
+def _totals(flows: List[Dict[str, Any]], axis_index: int, categories: List[str]) -> Dict[str, int]:
     """Sum the cohort by category at one axis.
 
     Parameters
     ----------
+    flows : list of dict
+        The ``{"path": (...), "count": n}`` records to bucket (either the
+        module default :data:`FLOWS` or a caller-supplied equivalent).
     axis_index : int
         Which slot of each flow's ``path`` tuple to bucket on.
     categories : list of str
@@ -133,7 +146,7 @@ def _totals(axis_index: int, categories: List[str]) -> Dict[str, int]:
         ``{category: record_count}`` for every category at this axis.
     """
     out: Dict[str, int] = {c: 0 for c in categories}
-    for flow in FLOWS:
+    for flow in flows:
         out[flow["path"][axis_index]] += flow["count"]
     return out
 
@@ -217,11 +230,20 @@ def _esc(text: str) -> str:
     return html.escape(str(text), quote=True)
 
 
-def build_svg(mode: str = "self-contained", accessibility: str = "universal") -> str:
+def build_svg(
+    data: Optional[List[Dict[str, Any]]] = None,
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> str:
     """Render the full alluvial diagram as an SVG string.
 
     Parameters
     ----------
+    data : list of dict or None
+        Row records, one per (channel, plan, outcome) path, each shaped
+        ``{"channel": ..., "plan": ..., "outcome": ..., "count": n}``
+        (see :data:`DEMO_DATA`). Falls back to the module's illustrative
+        SaaS cohort when ``None``.
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`.
         One of ``"self-contained"`` (default, ships a hidden-until-live
@@ -243,6 +265,14 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     ink = "#1D1D1F"
     secondary = "#6E6E73"
 
+    # Row records -> the internal {"path": (...), "count": n} shape the rest
+    # of this function works with.
+    rows = data if data else DEMO_DATA
+    flows: List[Dict[str, Any]] = [
+        {"path": (r["channel"], r["plan"], r["outcome"]), "count": int(r["count"])}
+        for r in rows
+    ]
+
     # -- canvas ------------------------------------------------------------- #
     # Poster-scale so the ribbons read from across a room and every label
     # has room to breathe. Roughly 1.9x the old 760x480 footprint.
@@ -256,7 +286,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     block_w = 26          # width of each category block (the "stations")
     label_gap = 15        # px between a block and its text label
 
-    total_records = sum(f["count"] for f in FLOWS)
+    total_records = sum(f["count"] for f in flows)
 
     # Vertical scale: fit the tallest axis (which is the full cohort) into
     # the plot band, minus the inter-block gaps of the busiest axis.
@@ -278,7 +308,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     # Lay out every axis's stack, vertically centred within the plot band.
     stacks: List[Dict[str, Dict[str, float]]] = []
     for i, (_, cats) in enumerate(AXES):
-        totals = _totals(i, cats)
+        totals = _totals(flows, i, cats)
         stack_h = sum(totals.values()) * scale + gap * (len(cats) - 1)
         top = plot_top + (plot_h - stack_h) / 2.0
         stacks.append(_stack(totals, top=top, height=plot_h, gap=gap, scale=scale))
@@ -336,13 +366,14 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     fcp_defs, fcp_style = forced_color_patterns(
         [f".ribbon-{cat}" for cat in OUTCOME_COLOR], prefix="alluvial-fcp"
     )
+    # One ribbon per flow per axis-to-axis segment: shared "hover one, dim the
+    # rest" pattern via the house helper (each ribbon also carries a
+    # ribbon-idx-N class so the helper can target it individually).
+    total_ribbons = (n_axes - 1) * len(flows)
     parts.append(
         "<style>"
-        ".ribbon{transition:opacity .18s ease;}"
-        ".flows:hover .ribbon{opacity:.14;}"
-        ".flows .ribbon:hover{opacity:.95;}"
-        ".flows .ribbon:focus{opacity:.95;outline:none;}"
-        "@media (prefers-reduced-motion: reduce){.ribbon{transition:none;}}"
+        + hover_isolate_css("ribbon", total_ribbons, dim=0.14)
+        + ".flows .ribbon:hover,.flows .ribbon:focus{opacity:.95;outline:none;}"
         + adaptive
         + fcp_style
         + os_dark_style()
@@ -404,6 +435,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
 
     # For deterministic stacking inside each block, sort flows by the target
     # ordering at each junction. We render both segments (0→1 and 1→2).
+    ribbon_idx = 0
     for seg in range(n_axes - 1):
         a_idx, b_idx = seg, seg + 1
         _, a_cats = AXES[a_idx]
@@ -418,7 +450,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         # Sort flows so that, leaving each left block, strands are ordered by
         # their right-block position (and vice versa) — minimises crossings.
         seg_flows = sorted(
-            FLOWS,
+            flows,
             key=lambda f: (a_order[f["path"][a_idx]], b_order[f["path"][b_idx]]),
         )
 
@@ -448,12 +480,14 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
             # stacked green (or gray) ribbons never merge into an opaque blob —
             # each path keeps a crisp edge against its neighbour.
             parts.append(
-                f'<path class="ribbon ribbon-{outcome}" tabindex="0" d="{d}" '
+                f'<path class="ribbon ribbon-{outcome} ribbon-{ribbon_idx}" '
+                f'tabindex="0" d="{d}" '
                 f'fill="{color}" '
                 f'fill-opacity="0.46" stroke="#FFFFFF" stroke-opacity="0.85" '
                 f'stroke-width="1.1" stroke-linejoin="round">'
                 f"<title>{_esc(tip)}</title></path>"
             )
+            ribbon_idx += 1
     parts.append("</g>")
 
     # -- category blocks + labels ------------------------------------------ #
@@ -571,8 +605,49 @@ def main(argv: Optional[List[str]] = None) -> int:
     )
     args = parser.parse_args(argv)
 
-    write_svg(args.out, build_svg(args.mode, args.accessibility))
+    write_svg(args.out, build_svg(mode=args.mode, accessibility=args.accessibility))
     return 0
+
+
+def make_alluvial(
+    data: Optional[List[Dict[str, Any]]] = None,
+    *,
+    out: Optional[Path | str] = None,
+    title: str = "",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the house-styled alluvial diagram and write the SVG to *out*.
+
+    Parameters
+    ----------
+    data : list of dict or None
+        Rows with keys ``channel``, ``plan``, ``outcome`` (str) and
+        ``count`` (int); one row per path through the funnel. Defaults to
+        :data:`DEMO_DATA`, an illustrative SaaS sign-up cohort.
+    out : Path, str, or None
+        Output path (.svg). Defaults to ``assets/svg-examples/alluvial.svg``.
+    title : str, optional
+        Accepted for CLI/dispatcher parity; the figure's title and takeaway
+        subtitle are derived from the data's structure and stay fixed.
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+
+    Examples
+    --------
+    >>> p = make_alluvial()
+    >>> p.exists()
+    True
+    """
+    _ = title
+    svg = build_svg(data, mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "alluvial")
+    return write_svg(dest, svg)
 
 
 if __name__ == "__main__":

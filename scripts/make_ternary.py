@@ -39,14 +39,14 @@ from __future__ import annotations
 import math
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 # The house-style palette lives in _style (stdlib-only, safe to import
 # without the dataviz tier).
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
-from _render import render_cli  # noqa: E402
+from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 
 
@@ -81,20 +81,60 @@ _FOCUS: str = "#0A4DA0"     # focus-ring blue
 _GRID_STEP: int = 5
 
 
-def _dataset(accessibility: str = "universal") -> List[Dict[str, Any]]:
-    """Return the communicative fake data for the ternary plot.
+#: Row records: one per topsoil sample, ``sand``/``silt``/``clay`` the
+#: three grain-size percentages (each row sums to 100) and ``class`` the
+#: USDA-style texture class it belongs to. Field topsoil samples grouped
+#: into three texture classes so the reader sees how each class occupies
+#: its own region of the triangle.
+DEMO_DATA: List[Dict[str, Any]] = [
+    {"class": cls, "sand": s, "silt": si, "clay": c}
+    for cls, pts in (
+        (
+            "Sandy loam",
+            [
+                (68, 24, 8), (74, 14, 12), (63, 29, 8), (71, 15, 14),
+                (60, 26, 14), (77, 17, 6), (66, 20, 14), (58, 34, 8),
+                (72, 22, 6), (64, 18, 18),
+            ],
+        ),
+        (
+            "Silt loam",
+            [
+                (22, 66, 12), (16, 68, 16), (28, 58, 14), (19, 63, 18),
+                (13, 72, 15), (25, 65, 10), (31, 55, 14), (17, 61, 22),
+                (23, 70, 7), (14, 66, 20),
+            ],
+        ),
+        (
+            "Clay",
+            [
+                (20, 22, 58), (14, 24, 62), (26, 16, 58), (12, 20, 68),
+                (24, 14, 62), (18, 28, 54), (10, 26, 64), (28, 18, 54),
+                (16, 18, 66), (22, 26, 52),
+            ],
+        ),
+    )
+    for s, si, c in pts
+]
 
-    Field topsoil samples plotted by their mineral texture: the
-    fractions of **sand**, **silt**, and **clay** (the three grain-size
-    classes), which by construction sum to 100 %. Samples are grouped
-    into three USDA-style texture classes so the reader sees how each
-    class occupies its own region of the triangle.
+#: Hue cycle for texture classes, in first-seen order (matches the shipped
+#: Sandy loam / Silt loam / Clay story: Orange, Blue, Purple).
+_CLASS_HUES = ("Orange", "Blue", "Purple", "Green", "Teal", "Red")
+
+
+def _dataset(
+    accessibility: str = "universal", data: Optional[List[Dict[str, Any]]] = None
+) -> List[Dict[str, Any]]:
+    """Group row records into the internal per-class plotting shape.
 
     Parameters
     ----------
     accessibility : str, optional
         Palette accessibility level forwarded to
         :func:`_style.load_palette`.
+    data : list of dict or None
+        Rows with keys ``class``, ``sand``, ``silt`` and ``clay``. Defaults
+        to :data:`DEMO_DATA`.
 
     Returns
     -------
@@ -104,40 +144,19 @@ def _dataset(accessibility: str = "universal") -> List[Dict[str, Any]]:
         in percent, each summing to 100).
     """
     palette = load_palette(accessibility)
-    # Three texture classes, each a small cloud of samples. The triples
-    # are (sand, silt, clay) and every triple sums to 100.
-    rows = [
-        (
-            "Sandy loam",
-            "Orange",
-            [
-                (68, 24, 8), (74, 14, 12), (63, 29, 8), (71, 15, 14),
-                (60, 26, 14), (77, 17, 6), (66, 20, 14), (58, 34, 8),
-                (72, 22, 6), (64, 18, 18),
-            ],
-        ),
-        (
-            "Silt loam",
-            "Blue",
-            [
-                (22, 66, 12), (16, 68, 16), (28, 58, 14), (19, 63, 18),
-                (13, 72, 15), (25, 65, 10), (31, 55, 14), (17, 61, 22),
-                (23, 70, 7), (14, 66, 20),
-            ],
-        ),
-        (
-            "Clay",
-            "Purple",
-            [
-                (20, 22, 58), (14, 24, 62), (26, 16, 58), (12, 20, 68),
-                (24, 14, 62), (18, 28, 54), (10, 26, 64), (28, 18, 54),
-                (16, 18, 66), (22, 26, 52),
-            ],
-        ),
-    ]
+    rows = list(data) if data else DEMO_DATA
+    classes: Dict[str, List[Tuple[float, float, float]]] = {}
+    for row in rows:
+        classes.setdefault(str(row["class"]), []).append(
+            (float(row["sand"]), float(row["silt"]), float(row["clay"]))
+        )
     return [
-        {"label": label, "color": palette[color], "points": pts}
-        for label, color, pts in rows
+        {
+            "label": label,
+            "color": palette.get(_CLASS_HUES[i % len(_CLASS_HUES)], "#007AFF"),
+            "points": pts,
+        }
+        for i, (label, pts) in enumerate(classes.items())
     ]
 
 
@@ -263,11 +282,18 @@ def _axis_labels() -> List[str]:
     return parts
 
 
-def build_svg(mode: str = "self-contained", accessibility: str = "universal") -> str:
+def build_svg(
+    data: Optional[List[Dict[str, Any]]] = None,
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> str:
     """Assemble the full ternary-plot SVG document as a string.
 
     Parameters
     ----------
+    data : list of dict or None
+        Rows with keys ``class``, ``sand``, ``silt`` and ``clay`` (each row
+        summing to 100). Defaults to :data:`DEMO_DATA`.
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`
         (``"self-contained"`` / ``"external"`` / ``"static"``). Defaults to
@@ -283,7 +309,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     str
         A complete, standalone SVG document.
     """
-    data = _dataset(accessibility)
+    grouped = _dataset(accessibility, data)
 
     # ---- header ----
     parts: List[str] = []
@@ -298,7 +324,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         "(bottom-right). Each dot is one topsoil sample, positioned by "
         "its sand / silt / clay percentages, which always sum to 100. "
         "Samples cluster into three texture classes: "
-        + ", ".join(_xml(str(d["label"])) for d in data)
+        + ", ".join(_xml(str(d["label"])) for d in grouped)
         + ". Sandy loam sits toward the sand corner, silt loam toward "
         "the silt corner, and clay near the top."
     )
@@ -310,7 +336,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         # Hover/focus any class (a marker or its legend swatch) dims the rest.
         "svg:hover .cls, svg:focus-within .cls { opacity: .16; }",
     ]
-    for d in data:
+    for d in grouped:
         s = _slug(str(d["label"]))
         style_rows.append(
             f".cls-{s}:hover .cls-{s}, .cls-{s}:focus .cls-{s}, "
@@ -330,7 +356,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     # because each cloud is separated in the triangle and named in the legend,
     # so identity survives with no colour; a stronger marker stroke keeps the
     # now-monochrome dots from merging where clouds brush the same region.
-    class_series = {f".cls-{_slug(str(d['label']))}": str(d["color"]) for d in data}
+    class_series = {f".cls-{_slug(str(d['label']))}": str(d["color"]) for d in grouped}
     style_rows.append(
         os_adaptive_style(
             class_series,
@@ -387,7 +413,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     parts.extend(_axis_labels())
 
     # ---- sample markers, grouped by texture class ----
-    for d in data:
+    for d in grouped:
         s = _slug(str(d["label"]))
         color = str(d["color"])
         parts.append(f'<g class="cls cls-{s}">')
@@ -411,7 +437,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         f'<text x="0" y="-16" font-size="16" font-weight="700" '
         f'fill="{_SUBTLE}">Texture class</text>'
     )
-    for k, d in enumerate(data):
+    for k, d in enumerate(grouped):
         s = _slug(str(d["label"]))
         color = str(d["color"])
         cy = k * row_h
@@ -442,6 +468,40 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     parts.append(fullscreen_control(_WIDTH, _HEIGHT, mode))
     parts.append('</svg>')
     return "\n".join(parts)
+
+
+def make_ternary(
+    data: Optional[List[Dict[str, Any]]] = None,
+    *,
+    out: Optional[Path | str] = None,
+    title: str = "",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the ternary plot and write the SVG to *out*.
+
+    Parameters
+    ----------
+    data : list[dict[str, Any]] or None
+        Rows with keys ``class``, ``sand``, ``silt`` and ``clay``. Defaults
+        to :data:`DEMO_DATA`.
+    out : Path, str, or None
+        Output path (.svg). Defaults to ``assets/svg-examples/ternary.svg``.
+    title : str, optional
+        Accepted for dispatcher parity; the plot's own headline states the
+        specific takeaway, so this is unused.
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+    """
+    del title
+    svg = build_svg(data, mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "ternary")
+    return write_svg(dest, svg)
 
 
 def main() -> None:

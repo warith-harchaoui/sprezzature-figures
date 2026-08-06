@@ -60,7 +60,7 @@ from typing import Any, Dict, List
 
 # House-style helpers live alongside this script in scripts/.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _render import render_cli  # noqa: E402
+from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
@@ -156,7 +156,11 @@ def make_data(tickets: List[Dict[str, Any]] | None = None) -> Dict[str, Any]:
     return {"rows": rows, "total": total, "crossing": crossing}
 
 
-def build_svg(mode: str = "self-contained", accessibility: str = "universal") -> str:
+def build_svg(
+    tickets: "List[Dict[str, Any]] | None" = None,
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> str:
     """Assemble the full Pareto-chart SVG string.
 
     Draws, back to sprezzature: the light plot band and gridlines, the 80 %
@@ -170,6 +174,10 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
 
     Parameters
     ----------
+    tickets : list of dict or None
+        Raw tallies, each ``{"reason": str, "count": int}``. Defaults to
+        the module's one-week support-ticket tally. Forwarded to
+        :func:`make_data`.
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`
         (``"self-contained"``, ``"external"`` or ``"static"``). Defaults to
@@ -185,7 +193,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     str
         A complete, standalone SVG document.
     """
-    data = make_data()
+    data = make_data(tickets)
     rows = data["rows"]
     crossing = data["crossing"]
     total = data["total"]
@@ -519,6 +527,43 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     parts.append(fullscreen_control(width, height, mode))
     parts.append("</svg>")
     return "\n".join(parts)
+
+
+#: The registry contract's DEMO_DATA: the raw one-week ticket tallies.
+DEMO_DATA: List[Dict[str, Any]] = _TICKETS
+
+
+def make_pareto(
+    data: "List[Dict[str, Any]] | None" = None,
+    *,
+    out: "Path | str | None" = None,
+    title: str = "",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the Pareto chart and write the SVG to *out*.
+
+    Parameters
+    ----------
+    data : list[dict[str, Any]] or None
+        Raw tallies, each ``{"reason": str, "count": int}``. Defaults to
+        :data:`DEMO_DATA`. ``title`` is accepted for signature parity with
+        the rest of the gallery and is currently a documented no-op.
+    out : Path, str, or None
+        Output path. Defaults to ``assets/svg-examples/pareto.svg``.
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+    """
+    _ = title
+    rows = data if data else DEMO_DATA
+    svg = build_svg(rows, mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "pareto")
+    return write_svg(dest, svg)
 
 
 def main() -> None:

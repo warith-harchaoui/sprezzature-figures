@@ -23,40 +23,53 @@ from __future__ import annotations
 import argparse
 import math
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from _interactive import fullscreen_control
 from _render import svg_example_path, write_svg
-from _style import load_palette, os_adaptive_style, os_dark_style
+from _style import load_palette, os_adaptive_style, os_dark_style, qualitative_sequence
 from _svg import point_on_circle, xml_escape
 
 # ------------------------------------------------------------------
 # Illustrative diarisation output — a 40-minute round-table. Talk-time
 # is whole seconds so ``mm:ss`` and ``%`` stay mutually consistent; the
 # four values sum to 2400 s = 40:00 with clean integer percentages.
+#
+# Row-record demo data: one row per speaker, the contract's
+# ``list[dict[str, Any]]`` shape (``name`` + ``seconds``).
 # ------------------------------------------------------------------
-SPEAKERS: List[Dict[str, Any]] = [
+DEMO_DATA: List[Dict[str, Any]] = [
     {"name": "Alice Nguyen", "seconds": 984},   # 16:24 · 41 %
     {"name": "Marc Dubois", "seconds": 648},     # 10:48 · 27 %
     {"name": "Sofia Rossi", "seconds": 432},     # 07:12 · 18 %
     {"name": "Karim Haddad", "seconds": 336},    # 05:36 · 14 %
 ]
 
-def _slice_colors(accessibility: str = "universal") -> List[str]:
-    """Return the four donut-slice hues at a given accessibility level.
+def _slice_colors(accessibility: str = "universal", n: int = 4) -> List[str]:
+    """Return ``n`` donut-slice hues at a given accessibility level.
+
+    The first four match the house Blue/Orange/Green/Purple set (so the
+    shipped four-speaker demo stays byte-for-byte the same); any additional
+    slice a caller's row data needs is filled from the house qualitative
+    sequence.
 
     Parameters
     ----------
     accessibility : str, optional
         Palette accessibility level forwarded to :func:`_style.load_palette`.
+    n : int, optional
+        Number of slice colours to return (one per speaker). Default 4.
 
     Returns
     -------
     list of str
-        Four hex strings, one per speaker slice (in speaker order).
+        ``n`` hex strings, one per speaker slice (in speaker order).
     """
     pal = load_palette(accessibility)
-    return [pal["Blue"], pal["Orange"], pal["Green"], pal["Purple"]]
+    base = [pal["Blue"], pal["Orange"], pal["Green"], pal["Purple"]]
+    if n <= len(base):
+        return base[:n]
+    return (base + qualitative_sequence(n))[:n]
 
 
 SLICE_COLORS = _slice_colors()
@@ -130,11 +143,18 @@ def _segment(a0: float, a1: float) -> str:
     return " ".join(seg)
 
 
-def build_svg(mode: str = "self-contained", accessibility: str = "universal") -> str:
+def build_svg(
+    data: Optional[List[Dict[str, Any]]] = None,
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> str:
     """Assemble the full speaking-time donut as an SVG string.
 
     Parameters
     ----------
+    data : list of dict, optional
+        Rows with ``name`` (str) and ``seconds`` (numeric) keys, one per
+        speaker. Defaults to :data:`DEMO_DATA`.
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`
         (``"self-contained"`` / ``"external"`` / ``"static"``). Defaults to
@@ -145,8 +165,9 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         ``"deuteranopia"``, ``"protanopia"`` and ``"tritanopia"``). Wired
         through the ``--accessibility`` CLI flag by :func:`main`.
     """
-    slice_colors = _slice_colors(accessibility)
-    total = sum(int(s["seconds"]) for s in SPEAKERS)
+    speakers = data if data else DEMO_DATA
+    slice_colors = _slice_colors(accessibility, n=len(speakers))
+    total = sum(int(s["seconds"]) for s in speakers)
 
     # Accessible name + description. Every slice is also labelled outside
     # the ring with its speaker's name, duration and share, so identity is
@@ -156,7 +177,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     ranked = ", ".join(
         f"{s['name']} {_mmss(int(s['seconds']))} "
         f"({round(100 * int(s['seconds']) / total)} %)"
-        for s in SPEAKERS
+        for s in speakers
     )
     a11y_title = "Qui a parlé, et combien de temps"
     a11y_desc = (
@@ -205,7 +226,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     # Arcs start at the top (−90°) and run clockwise.
     angle = -math.pi / 2
     labels: List[str] = []
-    for i, (spk, color) in enumerate(zip(SPEAKERS, slice_colors)):
+    for i, (spk, color) in enumerate(zip(speakers, slice_colors, strict=True)):
         secs = int(spk["seconds"])
         frac = secs / total
         a0, a1 = angle, angle + 2 * math.pi * frac
@@ -253,7 +274,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
 
 
 def make_speaking_time(
-    data: "Any | None" = None,
+    data: Optional[List[Dict[str, Any]]] = None,
     *,
     out: "Path | str | None" = None,
     title: str = "",
@@ -264,10 +285,23 @@ def make_speaking_time(
 
     The standard ``make_<kind>`` entry the figure registry dispatches to, so
     ``make-figure speaking_time`` and the Studio behave like every other figure.
-    The demo speaks for itself (the segments are baked into the hand-authored
-    SVG), so ``data`` and ``title`` are accepted for signature parity and unused.
+
+    Parameters
+    ----------
+    data : list[dict[str, Any]] or None
+        Rows with ``name`` (str) and ``seconds`` (numeric) keys, one per
+        speaker. Defaults to :data:`DEMO_DATA`.
+    out : Path, str, or None
+        Output path (.svg). Defaults to
+        ``assets/svg-examples/speaking_time.svg``.
+    title : str, optional
+        Accepted for signature parity; the figure's headline is in French
+        by design (unused).
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
     """
-    svg = build_svg(mode=mode, accessibility=accessibility)
+    _ = title
+    svg = build_svg(data, mode=mode, accessibility=accessibility)
     dest = Path(out) if out else svg_example_path(__file__, "speaking_time")
     return write_svg(dest, svg)
 

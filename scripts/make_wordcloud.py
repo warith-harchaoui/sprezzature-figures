@@ -47,14 +47,14 @@ from __future__ import annotations
 import math
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 # The house-style palette lives in _style (stdlib-only, safe to import
 # without the dataviz tier).
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
-from _render import render_cli  # noqa: E402
+from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 
 
@@ -116,24 +116,18 @@ def _groups(accessibility: str = "universal") -> Dict[str, Dict[str, str]]:
     }
 
 
-def _dataset() -> List[Tuple[str, int, str]]:
-    """Return the communicative fake data: ~40 words × mention count × group.
-
-    A year of reviews for a fictional burr coffee grinder ("Aurora
-    Grind One"). Counts are how many of the ~2,400 reviews mentioned
-    each word. Hand-tuned so the story reads straight off the cloud: the
-    two dominant words are *grind* and *quiet* (green), buyers mostly
-    love how it runs; the biggest red word is *noisy*, the one gripe
-    that keeps coming up; the blue words are the neutral vocabulary both
-    camps reach for.
-
-    Returns
-    -------
-    list of tuple
-        ``(word, mention_count, group_key)`` triples, any order — the
-        packer sorts them biggest-first itself.
-    """
-    return [
+#: Row records: one dict per word with ``word`` (str), ``count`` (int,
+#: mention count) and ``group`` (str, one of ``"praise"``/``"gripe"``/
+#: ``"neutral"`` — see :func:`_groups`). A year of reviews for a fictional
+#: burr coffee grinder ("Aurora Grind One"). Counts are how many of the
+#: ~2,400 reviews mentioned each word. Hand-tuned so the story reads
+#: straight off the cloud: the two dominant words are *grind* and *quiet*
+#: (green), buyers mostly love how it runs; the biggest red word is
+#: *noisy*, the one gripe that keeps coming up; the blue words are the
+#: neutral vocabulary both camps reach for.
+DEMO_DATA: List[Dict[str, Any]] = [
+    {"word": w, "count": c, "group": g}
+    for w, c, g in [
         # --- praise (green): the things reviewers love ---
         ("quiet", 812, "praise"),
         ("consistent", 604, "praise"),
@@ -177,6 +171,7 @@ def _dataset() -> List[Tuple[str, int, str]]:
         ("morning", 54, "neutral"),
         ("kitchen", 42, "neutral"),
     ]
+]
 
 
 # ------------------------------------------------------------------
@@ -299,7 +294,7 @@ def _in_field(cx: float, cy: float, hw: float, hh: float) -> bool:
 # ------------------------------------------------------------------
 # Archimedean-spiral placement
 # ------------------------------------------------------------------
-def _place_words() -> List[Dict[str, Any]]:
+def _place_words(data: Optional[List[Dict[str, Any]]] = None) -> List[Dict[str, Any]]:
     """Pack every word with collision-free Archimedean-spiral placement.
 
     The algorithm is the classic offline word-cloud packer, kept
@@ -318,14 +313,20 @@ def _place_words() -> List[Dict[str, Any]]:
     tall), so the spiral is scaled to match — this is what gives the
     finished piece its calm landscape shape instead of a tight disc.
 
+    Parameters
+    ----------
+    data : list of dict or None
+        Rows with keys ``word``, ``count`` and ``group``. Defaults to
+        :data:`DEMO_DATA`.
+
     Returns
     -------
     list of dict
         One dict per placed word: ``{"word", "count", "group", "size",
         "x", "y"}`` where ``x``/``y`` is the glyph's centre.
     """
-    data = _dataset()
-    counts = [c for _, c, _ in data]
+    rows: List[Dict[str, Any]] = list(data) if data else DEMO_DATA
+    counts = [int(r["count"]) for r in rows]
     lo, hi = min(counts), max(counts)
 
     # Each word paints with its theme's sign glyph in front, so the box
@@ -334,7 +335,7 @@ def _place_words() -> List[Dict[str, Any]]:
     glyphs = {k: str(v["glyph"]) for k, v in _groups().items()}
 
     # Biggest-first: the two head words anchor the centre.
-    ordered = sorted(data, key=lambda t: t[1], reverse=True)
+    ordered = sorted(rows, key=lambda r: int(r["count"]), reverse=True)
 
     cx0 = (_FIELD_LEFT + _FIELD_RIGHT) / 2.0
     # Nudge the spiral origin a hair below the geometric centre: the tail
@@ -353,7 +354,10 @@ def _place_words() -> List[Dict[str, Any]]:
     placed_boxes: List[Tuple[float, float, float, float]] = []
     placed: List[Dict[str, Any]] = []
 
-    for word, count, group in ordered:
+    for row in ordered:
+        word = str(row["word"])
+        count = int(row["count"])
+        group = str(row["group"])
         size = _size_for(count, lo, hi)
         # A leading "+ " / "− " widens the box; measure the painted string.
         prefix = f"{glyphs[group]} " if glyphs[group] else ""
@@ -392,11 +396,21 @@ def _place_words() -> List[Dict[str, Any]]:
 _xml = xml_escape
 
 
-def build_svg(mode: str = "self-contained", accessibility: str = "universal") -> str:
+def build_svg(
+    data: Optional[List[Dict[str, Any]]] = None,
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> str:
     """Assemble the full word-cloud SVG document as a string.
 
     Parameters
     ----------
+    data : list of dict or None
+        Rows with keys ``word`` (str), ``count`` (int) and ``group`` (str,
+        one of ``"praise"``/``"gripe"``/``"neutral"``). Defaults to
+        :data:`DEMO_DATA`. The headline and subtitle name specific words
+        from the shipped coffee-grinder story, so they stay fixed even when
+        custom data is supplied — only the packed cloud itself reflects it.
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`.
         One of ``"self-contained"`` (default, ships a hidden-until-live
@@ -413,17 +427,21 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         A complete, standalone SVG document.
     """
     groups = _groups(accessibility)
-    placed = _place_words()
-    total_reviews = 2412  # the corpus size quoted in the subtitle
+    placed = _place_words(data)
+    total_reviews = 2412  # the corpus size quoted in the subtitle (shipped demo)
 
     # Head words for the takeaway, read straight off the placed set. The
     # overall top word is neutral ("grind"), so name the leading praise
-    # word ("quiet") plus the runner-up for a fuller headline.
+    # word ("quiet") plus the runner-up for a fuller headline. Falls back
+    # gracefully to the top overall word if custom data has fewer than two
+    # praise-group entries (the fixed headline text still names "grind"
+    # regardless — see the docstring).
     by_count = sorted(placed, key=lambda p: int(p["count"]), reverse=True)
     praise_ranked = [p for p in by_count if p["group"] == "praise"]
-    top_praise = praise_ranked[0]
-    second_praise = praise_ranked[1]
-    top_gripe = next(p for p in by_count if p["group"] == "gripe")
+    top_praise = praise_ranked[0] if praise_ranked else by_count[0]
+    second_praise = praise_ranked[1] if len(praise_ranked) > 1 else by_count[min(1, len(by_count) - 1)]
+    gripe_ranked = [p for p in by_count if p["group"] == "gripe"]
+    top_gripe = gripe_ranked[0] if gripe_ranked else by_count[0]
 
     parts: List[str] = []
 
@@ -578,6 +596,40 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     parts.append(fullscreen_control(_WIDTH, _HEIGHT, mode))
     parts.append("</svg>")
     return "\n".join(parts)
+
+
+def make_wordcloud(
+    data: Optional[List[Dict[str, Any]]] = None,
+    *,
+    out: Optional[Path | str] = None,
+    title: str = "",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the word cloud and write the SVG to *out*.
+
+    Parameters
+    ----------
+    data : list[dict[str, Any]] or None
+        Rows with keys ``word``, ``count`` and ``group``. Defaults to
+        :data:`DEMO_DATA`.
+    out : Path, str, or None
+        Output path (.svg). Defaults to ``assets/svg-examples/wordcloud.svg``.
+    title : str, optional
+        Accepted for dispatcher parity; the cloud's own headline states the
+        specific takeaway, so this is unused.
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+    """
+    del title
+    svg = build_svg(data, mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "wordcloud")
+    return write_svg(dest, svg)
 
 
 def main() -> None:

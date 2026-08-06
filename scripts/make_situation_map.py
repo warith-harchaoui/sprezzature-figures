@@ -1194,6 +1194,21 @@ _DEMO_CONFIG: dict[str, Any] = {
     "projection": "auto",
 }
 
+#: Row-record demo data, the contract's ``list[dict[str, Any]]`` shape.
+#: This generator is config-driven (a whole layered basemap, not a table
+#: of rows — see :func:`make_situation_map`), so ``data`` is accepted for
+#: dispatcher parity and unused; this constant exists to satisfy the
+#: ``DEMO_DATA`` contract and documents the demo region as a row.
+DEMO_DATA: list[dict[str, Any]] = [
+    {
+        "region": "Western Europe",
+        "west": -11.0,
+        "south": 35.0,
+        "east": 30.0,
+        "north": 60.0,
+    }
+]
+
 
 def make_situation_map(
     data: "Any | None" = None,

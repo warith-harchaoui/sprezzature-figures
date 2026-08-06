@@ -45,7 +45,7 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
-from typing import Dict, List, Sequence, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 import numpy as np
 
@@ -53,9 +53,15 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _svg import catmull_rom_beziers, fmt_compact  # noqa: E402
-from _render import write_svg  # noqa: E402
+from _render import svg_example_path, write_svg  # noqa: E402
 from _style import leveled_colors, os_adaptive_style, os_dark_style  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
+
+#: Month labels, Jan -> Dec, matching :func:`_sample_revenue`'s 12 values.
+MONTHS: List[str] = [
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+]
 
 # Repo-relative default output — the one SVG artifact this figure ships.
 _DEFAULT_OUT = (
@@ -129,6 +135,44 @@ def _sample_revenue(seed: int = 7) -> Dict[str, np.ndarray]:
     actual = plan + envelope + noise
 
     return {"plan": plan, "actual": actual}
+
+
+#: Row-record (long-format) view of :func:`_sample_revenue`'s default
+#: (``seed=7``) sample, the shape the ``make_<kind>`` contract asks for: one
+#: dict per (month, series) pair with its value.
+DEMO_DATA: List[Dict[str, Any]] = [
+    {"month": MONTHS[i], "series": series, "value": round(float(v), 2)}
+    for series, values in _sample_revenue(seed=7).items()
+    for i, v in enumerate(values)
+]
+
+
+def _rows_to_series(rows: Sequence[Dict[str, Any]]) -> Dict[str, np.ndarray]:
+    """Reshape long-format ``(month, series, value)`` rows into two arrays.
+
+    The inverse of the transform that built :data:`DEMO_DATA`: groups rows
+    by ``series`` (expected: ``"plan"`` and ``"actual"``) and orders each
+    series' 12 values by :data:`MONTHS`.
+
+    Parameters
+    ----------
+    rows : sequence of dict
+        Rows with ``month`` (one of :data:`MONTHS`), ``series`` (``"plan"``
+        or ``"actual"``) and ``value`` (numeric) keys.
+
+    Returns
+    -------
+    dict of str to numpy.ndarray
+        ``{"plan": np.ndarray, "actual": np.ndarray}``, 12 values each.
+    """
+    month_index = {m: i for i, m in enumerate(MONTHS)}
+    plan = [0.0] * 12
+    actual = [0.0] * 12
+    for row in rows:
+        i = month_index[str(row["month"])]
+        target = plan if str(row["series"]) == "plan" else actual
+        target[i] = float(row["value"])
+    return {"plan": np.array(plan), "actual": np.array(actual)}
 
 
 # --------------------------------------------------------------------------- #
@@ -585,6 +629,46 @@ def build_svg(
     parts.append(fullscreen_control(width, height, mode))
     parts.append("</svg>")
     return "".join(parts)
+
+
+def make_difference_chart(
+    data: Optional[List[Dict[str, Any]]] = None,
+    *,
+    out: Optional[Path | str] = None,
+    title: str = "",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the actual-vs-plan difference chart and write it to ``out``.
+
+    The standard ``make_<kind>`` entry the figure registry dispatches to.
+
+    Parameters
+    ----------
+    data : list[dict[str, Any]] or None
+        Long-format rows with ``month`` (one of :data:`MONTHS`), ``series``
+        (``"plan"`` or ``"actual"``) and ``value`` keys. Defaults to
+        :data:`DEMO_DATA`.
+    out : Path, str, or None
+        Output path (.svg). Defaults to
+        ``assets/svg-examples/difference-chart.svg``.
+    title : str, optional
+        Accepted for dispatcher/CLI parity; unused, since the chart's
+        title is fixed prose.
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+    """
+    _ = title  # accepted for dispatcher parity; see docstring
+    rows = data if data else DEMO_DATA
+    series = _rows_to_series(rows)
+    svg = build_svg(series, mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "difference-chart")
+    return write_svg(dest, svg)
 
 
 # --------------------------------------------------------------------------- #

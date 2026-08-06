@@ -31,6 +31,685 @@ _ROW_RE = re.compile(r"^\|\s*`([^`]+)`\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*([
 # make_<kind>(data, *, out, title) -> Path contract (§3.1 required_roles).
 # Every other figure defaults to no declared roles until it is adapted.
 HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
+    "alluvial": {
+        "required_roles": [
+            {"name": "channel", "label": "Channel", "accepted_types": ["categorical"], "required": True},
+            {"name": "plan", "label": "Plan", "accepted_types": ["categorical"], "required": True},
+            {"name": "outcome", "label": "Outcome", "accepted_types": ["categorical"], "required": True},
+            {"name": "count", "label": "Count", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "andrews": {
+        "required_roles": [
+            {"name": "species", "label": "Species", "accepted_types": ["categorical"], "required": True},
+            {"name": "bill_length", "label": "Bill length", "accepted_types": ["numeric"], "required": True},
+            {"name": "bill_depth", "label": "Bill depth", "accepted_types": ["numeric"], "required": True},
+            {"name": "flipper_length", "label": "Flipper length", "accepted_types": ["numeric"], "required": True},
+            {"name": "body_mass", "label": "Body mass", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "arcdiagram": {
+        "required_roles": [
+            {"name": "source", "label": "Source", "accepted_types": ["categorical"], "required": True},
+            {"name": "target", "label": "Target", "accepted_types": ["categorical"], "required": True},
+            {"name": "weight", "label": "Weight", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "bar3d": {
+        "required_roles": [
+            {"name": "team", "label": "Team", "accepted_types": ["categorical"], "required": True},
+            {"name": "quarter", "label": "Quarter", "accepted_types": ["categorical"], "required": True},
+            {"name": "spend_k", "label": "Spend k", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "bellcurve": {
+        "required_roles": [
+            {"name": "mean", "label": "Mean", "accepted_types": ["numeric"], "required": True},
+            {"name": "std", "label": "Std", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "binned-grid-map": {
+        "required_roles": [
+            {"name": "lon", "label": "Longitude", "accepted_types": ["numeric"], "required": True},
+            {"name": "lat", "label": "Latitude", "accepted_types": ["numeric"], "required": True},
+            {"name": "weight", "label": "Weight", "accepted_types": ["numeric"], "required": True},
+            {"name": "sigma", "label": "Sigma", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "blandaltman": {
+        "required_roles": [
+            {"name": "mean", "label": "Mean", "accepted_types": ["numeric"], "required": True},
+            {"name": "diff", "label": "Diff", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "bollinger": {
+        "required_roles": [
+            {"name": "day", "label": "Day", "accepted_types": ["numeric"], "required": True},
+            {"name": "close", "label": "Close", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "boxen": {
+        "required_roles": [
+            {"name": "label", "label": "Label", "accepted_types": ["categorical"], "required": True},
+            {"name": "median", "label": "Median", "accepted_types": ["numeric"], "required": True},
+            {"name": "sigma", "label": "Sigma", "accepted_types": ["numeric"], "required": True},
+            {"name": "seed", "label": "Seed", "accepted_types": ["numeric"], "required": True},
+            {"name": "n", "label": "N", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "bubble": {
+        "required_roles": [
+            {"name": "name", "label": "Name", "accepted_types": ["categorical"], "required": True},
+            {"name": "gdp", "label": "Gdp", "accepted_types": ["numeric"], "required": True},
+            {"name": "life", "label": "Life", "accepted_types": ["numeric"], "required": True},
+            {"name": "pop", "label": "Pop", "accepted_types": ["numeric"], "required": True},
+            {"name": "region", "label": "Region", "accepted_types": ["categorical"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "bullet": {
+        "required_roles": [
+            {"name": "name", "label": "Name", "accepted_types": ["categorical"], "required": True},
+            {"name": "unit", "label": "Unit", "accepted_types": ["categorical"], "required": True},
+            {"name": "value", "label": "Value", "accepted_types": ["numeric"], "required": True},
+            {"name": "target", "label": "Target", "accepted_types": ["numeric"], "required": True},
+            {"name": "axis_max", "label": "Axis max", "accepted_types": ["numeric"], "required": True},
+            {"name": "bands", "label": "Bands", "accepted_types": ["categorical"], "required": True},
+            {"name": "higher", "label": "Higher", "accepted_types": ["categorical"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "calibration": {
+        "required_roles": [
+            {"name": "predicted", "label": "Predicted", "accepted_types": ["numeric"], "required": True},
+            {"name": "observed", "label": "Observed", "accepted_types": ["numeric"], "required": True},
+            {"name": "count", "label": "Count", "accepted_types": ["numeric"], "required": True},
+            {"name": "gap", "label": "Gap", "accepted_types": ["numeric"], "required": True},
+            {"name": "over", "label": "Over", "accepted_types": ["categorical"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "chord": {
+        "required_roles": [
+            {"name": "author_team", "label": "Author team", "accepted_types": ["categorical"], "required": True},
+            {"name": "reviewer_team", "label": "Reviewer team", "accepted_types": ["categorical"], "required": True},
+            {"name": "reviews", "label": "Reviews", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "circle-packing": {
+        "required_roles": [
+            {"name": "path", "label": "Path", "accepted_types": ["categorical"], "required": True},
+            {"name": "lines", "label": "Lines", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "confusion-matrix": {
+        "required_roles": [
+            {"name": "actual", "label": "Actual", "accepted_types": ["categorical"], "required": True},
+            {"name": "predicted", "label": "Predicted", "accepted_types": ["categorical"], "required": True},
+            {"name": "count", "label": "Count", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "connected-scatter": {
+        "required_roles": [
+            {"name": "year", "label": "Year", "accepted_types": ["numeric"], "required": True},
+            {"name": "gdp", "label": "Gdp", "accepted_types": ["numeric"], "required": True},
+            {"name": "co2", "label": "Co2", "accepted_types": ["numeric"], "required": True},
+            {"name": "label", "label": "Label", "accepted_types": ["categorical"], "required": True},
+            {"name": "side", "label": "Side", "accepted_types": ["categorical"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "convex-hull": {
+        "required_roles": [
+            {"name": "segment", "label": "Segment", "accepted_types": ["categorical"], "required": True},
+            {"name": "spend", "label": "Spend", "accepted_types": ["numeric"], "required": True},
+            {"name": "days", "label": "Days", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "cycle": {
+        "required_roles": [
+            {"name": "key", "label": "Key", "accepted_types": ["categorical"], "required": True},
+            {"name": "label", "label": "Label", "accepted_types": ["categorical"], "required": True},
+            {"name": "sub", "label": "Sub", "accepted_types": ["categorical"], "required": True},
+            {"name": "months", "label": "Months", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "dendrogram": {
+        "required_roles": [
+            {"name": "left", "label": "Left", "accepted_types": ["categorical"], "required": True},
+            {"name": "right", "label": "Right", "accepted_types": ["categorical"], "required": True},
+            {"name": "height", "label": "Height", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "dependency-wheel": {
+        "required_roles": [
+            {"name": "source", "label": "Source", "accepted_types": ["categorical"], "required": True},
+            {"name": "target", "label": "Target", "accepted_types": ["categorical"], "required": True},
+            {"name": "value", "label": "Value", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "difference-chart": {
+        "required_roles": [
+            {"name": "month", "label": "Month", "accepted_types": ["categorical"], "required": True},
+            {"name": "series", "label": "Series", "accepted_types": ["categorical"], "required": True},
+            {"name": "value", "label": "Value", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "dotdensity": {
+        "required_roles": [
+            {"name": "department", "label": "Department", "accepted_types": ["categorical"], "required": True},
+            {"name": "population", "label": "Population", "accepted_types": ["numeric"], "required": True},
+            {"name": "region", "label": "Region", "accepted_types": ["categorical"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "dotplot": {
+        "required_roles": [
+            {"name": "hours", "label": "Hours", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "edge-bundling": {
+        "required_roles": [
+            {"name": "source", "label": "Source", "accepted_types": ["categorical"], "required": True},
+            {"name": "target", "label": "Target", "accepted_types": ["categorical"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "elbow": {
+        "required_roles": [
+            {"name": "k", "label": "K", "accepted_types": ["numeric"], "required": True},
+            {"name": "inertia", "label": "Inertia", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "embedding_projector": {
+        "required_roles": [
+            {"name": "word", "label": "Word", "accepted_types": ["categorical"], "required": True},
+            {"name": "cluster", "label": "Cluster", "accepted_types": ["categorical"], "required": True},
+            {"name": "ci", "label": "Ci", "accepted_types": ["numeric"], "required": True},
+            {"name": "x", "label": "X coordinate", "accepted_types": ["numeric"], "required": True},
+            {"name": "y", "label": "Y coordinate", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "forest": {
+        "required_roles": [
+            {"name": "label", "label": "Label", "accepted_types": ["categorical"], "required": True},
+            {"name": "n", "label": "N", "accepted_types": ["numeric"], "required": True},
+            {"name": "or_", "label": "Or ", "accepted_types": ["numeric"], "required": True},
+            {"name": "lo", "label": "Lo", "accepted_types": ["numeric"], "required": True},
+            {"name": "hi", "label": "Hi", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "gapminder": {
+        "required_roles": [
+            {"name": "country", "label": "Country", "accepted_types": ["categorical"], "required": True},
+            {"name": "continent", "label": "Continent", "accepted_types": ["categorical"], "required": True},
+            {"name": "year", "label": "Year", "accepted_types": ["numeric"], "required": True},
+            {"name": "gdpPercap", "label": "GdpPercap", "accepted_types": ["numeric"], "required": True},
+            {"name": "lifeExp", "label": "LifeExp", "accepted_types": ["numeric"], "required": True},
+            {"name": "pop", "label": "Pop", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "gauge": {
+        "required_roles": [
+            {"name": "label", "label": "Label", "accepted_types": ["categorical"], "required": True},
+            {"name": "sublabel", "label": "Sublabel", "accepted_types": ["categorical"], "required": True},
+            {"name": "value", "label": "Value", "accepted_types": ["numeric"], "required": True},
+            {"name": "unit", "label": "Unit", "accepted_types": ["categorical"], "required": True},
+            {"name": "settle_from", "label": "Settle from", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "hexbin-map": {
+        "required_roles": [
+            {"name": "lon", "label": "Longitude", "accepted_types": ["numeric"], "required": True},
+            {"name": "lat", "label": "Latitude", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "hexmap": {
+        "required_roles": [
+            {"name": "x", "label": "X coordinate", "accepted_types": ["numeric"], "required": True},
+            {"name": "y", "label": "Y coordinate", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "horizon": {
+        "required_roles": [
+            {"name": "label", "label": "Label", "accepted_types": ["categorical"], "required": True},
+            {"name": "values", "label": "Values", "accepted_types": ["categorical"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "icicle": {
+        "required_roles": [
+            {"name": "id", "label": "Node ID", "accepted_types": ["categorical"], "required": True},
+            {"name": "parent", "label": "Parent ID", "accepted_types": ["categorical"], "required": True},
+            {"name": "name", "label": "Name", "accepted_types": ["categorical"], "required": True},
+            {"name": "ms", "label": "Ms", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "imshow-interpolated": {
+        "required_roles": [
+            {"name": "x", "label": "X coordinate", "accepted_types": ["numeric"], "required": True},
+            {"name": "y", "label": "Y coordinate", "accepted_types": ["numeric"], "required": True},
+            {"name": "value", "label": "Value", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "jointplot": {
+        "required_roles": [
+            {"name": "sleep", "label": "Sleep", "accepted_types": ["numeric"], "required": True},
+            {"name": "rt", "label": "Rt", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "liftgain": {
+        "required_roles": [
+            {"name": "pop", "label": "Pop", "accepted_types": ["numeric"], "required": True},
+            {"name": "gain", "label": "Gain", "accepted_types": ["numeric"], "required": True},
+            {"name": "series", "label": "Series", "accepted_types": ["categorical"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "liquid-gauge": {
+        "required_roles": [
+            {"name": "metric", "label": "Metric", "accepted_types": ["categorical"], "required": True},
+            {"name": "label", "label": "Label", "accepted_types": ["categorical"], "required": True},
+            {"name": "value", "label": "Value", "accepted_types": ["numeric"], "required": True},
+            {"name": "median", "label": "Median", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "manhattan": {
+        "required_roles": [
+            {"name": "chromosome", "label": "Chromosome", "accepted_types": ["categorical"], "required": True},
+            {"name": "position_fraction", "label": "Position fraction", "accepted_types": ["numeric"], "required": True},
+            {"name": "neg_log10p", "label": "Neg log10p", "accepted_types": ["numeric"], "required": True},
+            {"name": "gene", "label": "Gene", "accepted_types": ["categorical"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "mosaic": {
+        "required_roles": [
+            {"name": "device", "label": "Device", "accepted_types": ["categorical"], "required": True},
+            {"name": "share", "label": "Share", "accepted_types": ["numeric"], "required": True},
+            {"name": "method", "label": "Method", "accepted_types": ["categorical"], "required": True},
+            {"name": "fraction", "label": "Fraction", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "network": {
+        "required_roles": [
+            {"name": "source", "label": "Source", "accepted_types": ["categorical"], "required": True},
+            {"name": "source_label", "label": "Source label", "accepted_types": ["categorical"], "required": True},
+            {"name": "source_team", "label": "Source team", "accepted_types": ["categorical"], "required": True},
+            {"name": "target", "label": "Target", "accepted_types": ["categorical"], "required": True},
+            {"name": "target_label", "label": "Target label", "accepted_types": ["categorical"], "required": True},
+            {"name": "target_team", "label": "Target team", "accepted_types": ["categorical"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "org-chart": {
+        "required_roles": [
+            {"name": "id", "label": "Node ID", "accepted_types": ["categorical"], "required": True},
+            {"name": "role", "label": "Role", "accepted_types": ["categorical"], "required": True},
+            {"name": "headcount", "label": "Headcount", "accepted_types": ["numeric"], "required": True},
+            {"name": "parent", "label": "Parent ID", "accepted_types": ["categorical"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "packed-bubble": {
+        "required_roles": [
+            {"name": "name", "label": "Name", "accepted_types": ["categorical"], "required": True},
+            {"name": "share", "label": "Share", "accepted_types": ["numeric"], "required": True},
+            {"name": "family", "label": "Family", "accepted_types": ["categorical"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "pairplot": {
+        "required_roles": [
+            {"name": "chemistry", "label": "Chemistry", "accepted_types": ["categorical"], "required": True},
+            {"name": "density", "label": "Density", "accepted_types": ["numeric"], "required": True},
+            {"name": "charge", "label": "Charge", "accepted_types": ["numeric"], "required": True},
+            {"name": "resistance", "label": "Resistance", "accepted_types": ["numeric"], "required": True},
+            {"name": "cycles", "label": "Cycles", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "parallel-sets": {
+        "required_roles": [
+            {"name": "Travel class", "label": "Travel class", "accepted_types": ["categorical"], "required": True},
+            {"name": "Sex", "label": "Sex", "accepted_types": ["categorical"], "required": True},
+            {"name": "Age group", "label": "Age group", "accepted_types": ["categorical"], "required": True},
+            {"name": "Outcome", "label": "Outcome", "accepted_types": ["categorical"], "required": True},
+            {"name": "count", "label": "Count", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "parcoords": {
+        "required_roles": [
+            {"name": "car_class", "label": "Car class", "accepted_types": ["categorical"], "required": True},
+            {"name": "mpg", "label": "Mpg", "accepted_types": ["numeric"], "required": True},
+            {"name": "hp", "label": "Hp", "accepted_types": ["numeric"], "required": True},
+            {"name": "weight", "label": "Weight", "accepted_types": ["numeric"], "required": True},
+            {"name": "accel", "label": "Accel", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "pareto": {
+        "required_roles": [
+            {"name": "reason", "label": "Reason", "accepted_types": ["categorical"], "required": True},
+            {"name": "count", "label": "Count", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "parliament": {
+        "required_roles": [
+            {"name": "party", "label": "Party", "accepted_types": ["categorical"], "required": True},
+            {"name": "label", "label": "Label", "accepted_types": ["categorical"], "required": True},
+            {"name": "seats", "label": "Seats", "accepted_types": ["numeric"], "required": True},
+            {"name": "hue", "label": "Hue", "accepted_types": ["categorical"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "pictorial": {
+        "required_roles": [
+            {"name": "label", "label": "Label", "accepted_types": ["categorical"], "required": True},
+            {"name": "value", "label": "Value", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "polar": {
+        "required_roles": [
+            {"name": "hour", "label": "Hour", "accepted_types": ["numeric"], "required": True},
+            {"name": "count", "label": "Count", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "ppplot": {
+        "required_roles": [
+            {"name": "empirical", "label": "Empirical", "accepted_types": ["numeric"], "required": True},
+            {"name": "theoretical", "label": "Theoretical", "accepted_types": ["numeric"], "required": True},
+            {"name": "minutes", "label": "Minutes", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "prcurve": {
+        "required_roles": [
+            {"name": "transaction", "label": "Transaction", "accepted_types": ["numeric"], "required": True},
+            {"name": "is_fraud", "label": "Is fraud", "accepted_types": ["categorical"], "required": True},
+            {"name": "score_strong", "label": "Score strong", "accepted_types": ["numeric"], "required": True},
+            {"name": "score_weak", "label": "Score weak", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "radar": {
+        "required_roles": [
+            {"name": "axis", "label": "Axis", "accepted_types": ["categorical"], "required": True},
+            {"name": "series", "label": "Series", "accepted_types": ["categorical"], "required": True},
+            {"name": "value", "label": "Value", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "radial-bar": {
+        "required_roles": [
+            {"name": "hour", "label": "Hour", "accepted_types": ["numeric"], "required": True},
+            {"name": "trips", "label": "Trips", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "radial-tree": {
+        "required_roles": [
+            {"name": "id", "label": "Node ID", "accepted_types": ["categorical"], "required": True},
+            {"name": "label", "label": "Label", "accepted_types": ["categorical"], "required": True},
+            {"name": "parent", "label": "Parent ID", "accepted_types": ["categorical"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "radviz": {
+        "required_roles": [
+            {"name": "variety", "label": "Variety", "accepted_types": ["categorical"], "required": True},
+            {"name": "Area", "label": "Area", "accepted_types": ["numeric"], "required": True},
+            {"name": "Perimeter", "label": "Perimeter", "accepted_types": ["numeric"], "required": True},
+            {"name": "Kernel length", "label": "Kernel length", "accepted_types": ["numeric"], "required": True},
+            {"name": "Kernel width", "label": "Kernel width", "accepted_types": ["numeric"], "required": True},
+            {"name": "Compactness", "label": "Compactness", "accepted_types": ["numeric"], "required": True},
+            {"name": "Asymmetry", "label": "Asymmetry", "accepted_types": ["numeric"], "required": True},
+            {"name": "Groove length", "label": "Groove length", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "residual": {
+        "required_roles": [
+            {"name": "fitted", "label": "Fitted", "accepted_types": ["numeric"], "required": True},
+            {"name": "residual", "label": "Residual", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "ridgeline": {
+        "required_roles": [
+            {"name": "month", "label": "Month", "accepted_types": ["categorical"], "required": True},
+            {"name": "mean_c", "label": "Mean c", "accepted_types": ["numeric"], "required": True},
+            {"name": "spread_c", "label": "Spread c", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "rose": {
+        "required_roles": [
+            {"name": "month", "label": "Month", "accepted_types": ["categorical"], "required": True},
+            {"name": "cause", "label": "Cause", "accepted_types": ["categorical"], "required": True},
+            {"name": "value", "label": "Value", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "rug": {
+        "required_roles": [
+            {"name": "response_ms", "label": "Response ms", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "scatter3d": {
+        "required_roles": [
+            {"name": "cultivar", "label": "Cultivar", "accepted_types": ["categorical"], "required": True},
+            {"name": "colour_intensity", "label": "Colour intensity", "accepted_types": ["numeric"], "required": True},
+            {"name": "flavanoid", "label": "Flavanoid", "accepted_types": ["numeric"], "required": True},
+            {"name": "proline", "label": "Proline", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "sfdp-largegraph": {
+        "required_roles": [
+            {"name": "community", "label": "Community", "accepted_types": ["categorical"], "required": True},
+            {"name": "palette_key", "label": "Palette key", "accepted_types": ["categorical"], "required": True},
+            {"name": "size", "label": "Size", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "situation_map": {
+        "required_roles": [
+            {"name": "region", "label": "Region", "accepted_types": ["categorical"], "required": True},
+            {"name": "west", "label": "West", "accepted_types": ["numeric"], "required": True},
+            {"name": "south", "label": "South", "accepted_types": ["numeric"], "required": True},
+            {"name": "east", "label": "East", "accepted_types": ["numeric"], "required": True},
+            {"name": "north", "label": "North", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "speaking_time": {
+        "required_roles": [
+            {"name": "name", "label": "Name", "accepted_types": ["categorical"], "required": True},
+            {"name": "seconds", "label": "Seconds", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "spectrogram": {
+        "required_roles": [
+            {"name": "component", "label": "Component", "accepted_types": ["categorical"], "required": True},
+            {"name": "start_hz", "label": "Start hz", "accepted_types": ["numeric"], "required": True},
+            {"name": "end_hz", "label": "End hz", "accepted_types": ["numeric"], "required": True},
+            {"name": "amplitude", "label": "Amplitude", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "spike-map": {
+        "required_roles": [
+            {"name": "name", "label": "Name", "accepted_types": ["categorical"], "required": True},
+            {"name": "lon", "label": "Longitude", "accepted_types": ["numeric"], "required": True},
+            {"name": "lat", "label": "Latitude", "accepted_types": ["numeric"], "required": True},
+            {"name": "population", "label": "Population", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "streamgraph": {
+        "required_roles": [
+            {"name": "year", "label": "Year", "accepted_types": ["numeric"], "required": True},
+            {"name": "genre", "label": "Genre", "accepted_types": ["categorical"], "required": True},
+            {"name": "value", "label": "Value", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "streamplot": {
+        "required_roles": [
+            {"name": "component", "label": "Component", "accepted_types": ["categorical"], "required": True},
+            {"name": "speed_kmh", "label": "Speed kmh", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "surface3d": {
+        "required_roles": [
+            {"name": "x", "label": "X coordinate", "accepted_types": ["numeric"], "required": True},
+            {"name": "y", "label": "Y coordinate", "accepted_types": ["numeric"], "required": True},
+            {"name": "z", "label": "Z value", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "ternary": {
+        "required_roles": [
+            {"name": "class", "label": "Class", "accepted_types": ["categorical"], "required": True},
+            {"name": "sand", "label": "Sand", "accepted_types": ["numeric"], "required": True},
+            {"name": "silt", "label": "Silt", "accepted_types": ["numeric"], "required": True},
+            {"name": "clay", "label": "Clay", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "timeline": {
+        "required_roles": [
+            {"name": "year", "label": "Year", "accepted_types": ["numeric"], "required": True},
+            {"name": "name", "label": "Name", "accepted_types": ["categorical"], "required": True},
+            {"name": "blurb", "label": "Blurb", "accepted_types": ["categorical"], "required": True},
+            {"name": "era", "label": "Era", "accepted_types": ["categorical"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "tree": {
+        "required_roles": [
+            {"name": "id", "label": "Node ID", "accepted_types": ["categorical"], "required": True},
+            {"name": "label", "label": "Label", "accepted_types": ["categorical"], "required": True},
+            {"name": "parent", "label": "Parent ID", "accepted_types": ["categorical"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "upset": {
+        "required_roles": [
+            {"name": "sets", "label": "Sets", "accepted_types": ["categorical"], "required": True},
+            {"name": "count", "label": "Count", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "variwide": {
+        "required_roles": [
+            {"name": "name", "label": "Name", "accepted_types": ["categorical"], "required": True},
+            {"name": "iso", "label": "Iso", "accepted_types": ["categorical"], "required": True},
+            {"name": "pop", "label": "Pop", "accepted_types": ["numeric"], "required": True},
+            {"name": "gdp_cap", "label": "Gdp cap", "accepted_types": ["numeric"], "required": True},
+            {"name": "color", "label": "Color", "accepted_types": ["categorical"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "venn": {
+        "required_roles": [
+            {"name": "sets", "label": "Sets", "accepted_types": ["categorical"], "required": True},
+            {"name": "count", "label": "Count", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "voronoi": {
+        "required_roles": [
+            {"name": "x", "label": "X coordinate", "accepted_types": ["numeric"], "required": True},
+            {"name": "y", "label": "Y coordinate", "accepted_types": ["numeric"], "required": True},
+            {"name": "chain", "label": "Chain", "accepted_types": ["categorical"], "required": True},
+            {"name": "name", "label": "Name", "accepted_types": ["categorical"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "windbarb": {
+        "required_roles": [
+            {"name": "name", "label": "Name", "accepted_types": ["categorical"], "required": True},
+            {"name": "lon", "label": "Longitude", "accepted_types": ["numeric"], "required": True},
+            {"name": "lat", "label": "Latitude", "accepted_types": ["numeric"], "required": True},
+            {"name": "direction", "label": "Direction", "accepted_types": ["numeric"], "required": True},
+            {"name": "speed", "label": "Speed", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "windrose": {
+        "required_roles": [
+            {"name": "direction", "label": "Direction", "accepted_types": ["categorical"], "required": True},
+            {"name": "band", "label": "Band", "accepted_types": ["categorical"], "required": True},
+            {"name": "value", "label": "Value", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "wireframe3d": {
+        "required_roles": [
+            {"name": "x", "label": "X coordinate", "accepted_types": ["numeric"], "required": True},
+            {"name": "y", "label": "Y coordinate", "accepted_types": ["numeric"], "required": True},
+            {"name": "z", "label": "Z value", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "wordcloud": {
+        "required_roles": [
+            {"name": "word", "label": "Word", "accepted_types": ["categorical"], "required": True},
+            {"name": "count", "label": "Count", "accepted_types": ["numeric"], "required": True},
+            {"name": "group", "label": "Group", "accepted_types": ["categorical"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "gapminder_variants": {
+        "required_roles": [
+            {"name": "country", "label": "Country", "accepted_types": ["categorical"], "required": True},
+            {"name": "continent", "label": "Continent", "accepted_types": ["categorical"], "required": True},
+            {"name": "year", "label": "Year", "accepted_types": ["numeric"], "required": True},
+            {"name": "fertility", "label": "Fertility", "accepted_types": ["numeric"], "required": True},
+            {"name": "lifeExp", "label": "LifeExp", "accepted_types": ["numeric"], "required": True},
+            {"name": "pop", "label": "Pop", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
     "columnrange": {
         "required_roles": [
             {"name": "month", "label": "Category (x-axis)", "accepted_types": ["categorical"], "required": True},

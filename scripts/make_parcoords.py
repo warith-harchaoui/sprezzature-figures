@@ -23,12 +23,12 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import load_palette  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
-from _render import render_cli  # noqa: E402
+from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 
 # --- axes: (key, title-with-unit, domain low, high) ---------------------------
@@ -78,13 +78,53 @@ def _fmt(v: float) -> str:
     return f"{v:g}"
 
 
-def build_svg(mode: str = "self-contained", accessibility: str = "universal") -> str:
+#: Cycling hue order for a custom class set beyond the three the default
+#: story names, in the same order the default classes already use.
+_CLASS_HUE_ORDER = ["Blue", "Orange", "Green", "Purple", "Teal", "Pink", "Yellow", "Indigo", "Gray"]
+
+
+def build_svg(
+    rows: Optional[List[Dict[str, Any]]] = None,
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> str:
+    """Assemble the full parallel-coordinates SVG string.
+
+    Parameters
+    ----------
+    rows : list of dict or None
+        Records with a ``car_class`` label plus the four axis keys
+        (``mpg``, ``hp``, ``weight``, ``accel``). Defaults to the built-in
+        illustrative fleet (:data:`CARS`, flattened). A custom class set
+        gets its colours by cycling house hues in order of first
+        appearance rather than the three story-specific class hues.
+    mode, accessibility : str
+        Canvas interactivity mode / palette accessibility level.
+
+    Returns
+    -------
+    str
+        A complete, standalone SVG document.
+    """
     pal = load_palette(accessibility)
-    class_color = {
-        "Compact": pal.get("Blue", "#007AFF"),
-        "Midsize": pal.get("Orange", "#FF9500"),
-        "SUV": pal.get("Green", "#34C759"),
-    }
+    if rows:
+        grouped: Dict[str, List[Dict[str, float]]] = {}
+        for r in rows:
+            grouped.setdefault(str(r["car_class"]), []).append(
+                {key: float(r[key]) for key, _t, _lo, _hi in AXES if key in r}
+            )
+        cars_by_class = grouped
+        class_color = {
+            name: pal.get(_CLASS_HUE_ORDER[i % len(_CLASS_HUE_ORDER)], "#8E8E93")
+            for i, name in enumerate(grouped)
+        }
+    else:
+        cars_by_class = CARS
+        class_color = {
+            "Compact": pal.get("Blue", "#007AFF"),
+            "Midsize": pal.get("Orange", "#FF9500"),
+            "SUV": pal.get("Green", "#34C759"),
+        }
     n_ax = len(AXES)
     span = _WIDTH - _M_LEFT - _M_RIGHT
     ax_x = [_M_LEFT + (span * i / (n_ax - 1)) for i in range(n_ax)]
@@ -121,7 +161,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
 
     # Legend (top, under the subtitle).
     lx = 40.0
-    for name in ("Compact", "Midsize", "SUV"):
+    for name in cars_by_class:
         color = class_color[name]
         parts.append(f'<rect x="{lx:.1f}" y="108" width="16" height="16" rx="3" fill="{color}"/>')
         parts.append(
@@ -152,7 +192,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         )
 
     # Polylines: one per car, coloured by class.
-    for name, cars in CARS.items():
+    for name, cars in cars_by_class.items():
         color = class_color[name]
         for car in cars:
             pts = " ".join(
@@ -169,6 +209,47 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     parts.append(fullscreen_control(_WIDTH, _HEIGHT, mode))
     parts.append("</svg>")
     return "\n".join(parts)
+
+
+#: The registry contract's DEMO_DATA: :data:`CARS` flattened to row records.
+DEMO_DATA: List[Dict[str, Any]] = [
+    {"car_class": name, **car} for name, cars in CARS.items() for car in cars
+]
+
+
+def make_parcoords(
+    data: Optional[List[Dict[str, Any]]] = None,
+    *,
+    out: Optional[Path | str] = None,
+    title: str = "",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the parallel-coordinates plot and write the SVG to *out*.
+
+    Parameters
+    ----------
+    data : list[dict[str, Any]] or None
+        Rows with a ``car_class`` label plus ``mpg``, ``hp``, ``weight``,
+        ``accel``. Defaults to :data:`DEMO_DATA`. See :func:`build_svg` for
+        how a custom class set is coloured. ``title`` is accepted for
+        signature parity with the rest of the gallery and is currently a
+        documented no-op.
+    out : Path, str, or None
+        Output path. Defaults to ``assets/svg-examples/parcoords.svg``.
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+    """
+    _ = title
+    rows = data if data else DEMO_DATA
+    svg = build_svg(rows, mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "parcoords")
+    return write_svg(dest, svg)
 
 
 def main() -> None:

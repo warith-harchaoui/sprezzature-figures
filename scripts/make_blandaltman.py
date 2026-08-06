@@ -50,14 +50,14 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 import numpy as np
 
 # House-style tokens + the shared SVG primitives live alongside in scripts/.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
-from _render import render_cli  # noqa: E402
+from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _style import leveled_colors, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
 
@@ -118,6 +118,12 @@ def make_data(n: int = 90, seed: int = 7) -> List[Dict[str, float]]:
     ]
 
 
+# The make_<kind> contract's DEMO_DATA: one row per (simulated) patient,
+# already in the {"mean", "diff"} shape build_svg()/agreement_stats() work
+# with directly -- no reshaping needed in make_blandaltman().
+DEMO_DATA: List[Dict[str, float]] = make_data()
+
+
 def agreement_stats(data: List[Dict[str, float]]) -> Dict[str, float]:
     """Compute the bias and 95 % limits of agreement from the differences.
 
@@ -170,7 +176,11 @@ def _linear_fit(xs: List[float], ys: List[float]) -> tuple[float, float]:
     return float(slope), float(intercept)
 
 
-def build_svg(mode: str = "self-contained", accessibility: str = "universal") -> str:
+def build_svg(
+    data: Optional[List[Dict[str, float]]] = None,
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> str:
     """Assemble the full Bland-Altman SVG string.
 
     Draws, bottom to top:
@@ -195,6 +205,10 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
 
     Parameters
     ----------
+    data : list of dict or None
+        Paired-measurement rows, each ``{"mean": ..., "diff": ...}`` (see
+        :data:`DEMO_DATA`). Defaults to a simulated wrist-vs-arm-cuff
+        cohort.
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`
         (``"self-contained"``, ``"external"`` or ``"static"``). Defaults to
@@ -228,7 +242,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     ink = "#1D1D1F"
     secondary = "#6E6E73"
 
-    data = make_data()
+    data = data if data else DEMO_DATA
     stats = agreement_stats(data)
     bias = round(stats["bias"], 1)
     loa_lo = round(stats["loa_lo"], 1)
@@ -505,6 +519,46 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     parts.append(fullscreen_control(width, height, mode, inset=240.0))
     parts.append("</svg>")
     return "\n".join(parts)
+
+
+def make_blandaltman(
+    data: Optional[List[Dict[str, float]]] = None,
+    *,
+    out: Optional[Path | str] = None,
+    title: str = "",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the house-styled Bland-Altman agreement plot and write it to *out*.
+
+    Parameters
+    ----------
+    data : list of dict or None
+        Paired-measurement rows, each ``{"mean": ..., "diff": ...}`` (see
+        :data:`DEMO_DATA`). Defaults to a simulated wrist-vs-arm-cuff cohort.
+    out : Path, str, or None
+        Output path (.svg). Defaults to ``assets/svg-examples/blandaltman.svg``.
+    title : str, optional
+        Accepted for CLI/dispatcher parity; this figure's title states the
+        agreement question and stays fixed regardless of the data supplied.
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+
+    Examples
+    --------
+    >>> p = make_blandaltman()
+    >>> p.exists()
+    True
+    """
+    _ = title
+    svg = build_svg(data, mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "blandaltman")
+    return write_svg(dest, svg)
 
 
 def main() -> None:

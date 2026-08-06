@@ -61,12 +61,12 @@ from __future__ import annotations
 import math
 import sys
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 from xml.sax.saxutils import escape
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import forced_color_patterns, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
-from _render import render_cli  # noqa: E402
+from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _svg import svg_open  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 
@@ -142,6 +142,40 @@ NODES: List[Node] = [
     ("access", "Access policies", "govern"),
 ]
 
+
+#: Row-record demo data: one row per node, the contract's
+#: ``list[dict[str, Any]]`` shape (``id``, ``label``, ``parent``).
+#: :func:`_rows_to_nodes` reshapes it (or any caller-supplied row list of
+#: the same shape) into the ``(id, label, parent)`` tuples the layout and
+#: rendering helpers below expect. Declaration order fixes sibling order.
+DEMO_DATA: List[Dict[str, Any]] = [
+    {"id": node_id, "label": label, "parent": parent}
+    for node_id, label, parent in NODES
+]
+
+
+def _rows_to_nodes(rows: List[Dict[str, Any]]) -> List[Node]:
+    """Reshape ``{"id", "label", "parent"}`` rows into ``(id, label, parent)`` tuples.
+
+    Parameters
+    ----------
+    rows : list of dict
+        Rows with ``id`` (str), ``label`` (str) and ``parent`` (str or
+        ``None``) keys; declaration order fixes sibling order. By
+        convention the root row's ``id`` is ``"root"`` and its ``parent``
+        is falsy.
+
+    Returns
+    -------
+    list of Node
+        ``(id, label, parent)`` tuples, ready for :func:`_compute_geometry`
+        and the emitters.
+    """
+    return [
+        (str(r["id"]), str(r["label"]), (str(r["parent"]) if r.get("parent") else None))
+        for r in rows
+    ]
+
 # Each top-level pillar owns a hue; the subtree inherits it.
 def _pillar_color(accessibility: str = "universal") -> Dict[str, str]:
     """Map each top-level pillar to its hue at a given accessibility level.
@@ -174,23 +208,23 @@ ROOT_COLOR = INK
 # ------------------------------------------------------------------
 # Tree model helpers
 # ------------------------------------------------------------------
-def _children_of() -> Dict[str, List[str]]:
+def _children_of(nodes: List[Node] = NODES) -> Dict[str, List[str]]:
     """Return ``{parent_id: [child_id, ...]}`` in declaration order."""
     kids: Dict[str, List[str]] = {}
-    for node_id, _label, parent in NODES:
+    for node_id, _label, parent in nodes:
         if parent is not None:
             kids.setdefault(parent, []).append(node_id)
     return kids
 
 
-def _parent_of() -> Dict[str, Optional[str]]:
+def _parent_of(nodes: List[Node] = NODES) -> Dict[str, Optional[str]]:
     """Return ``{node_id: parent_id or None}``."""
-    return {node_id: parent for node_id, _label, parent in NODES}
+    return {node_id: parent for node_id, _label, parent in nodes}
 
 
-def _label_of() -> Dict[str, str]:
+def _label_of(nodes: List[Node] = NODES) -> Dict[str, str]:
     """Return ``{node_id: label}``."""
-    return {node_id: label for node_id, label, _parent in NODES}
+    return {node_id: label for node_id, label, _parent in nodes}
 
 
 def _depth_of(node_id: str, parent: Dict[str, Optional[str]]) -> int:
@@ -230,7 +264,10 @@ def _lineage(node_id: str, parent: Dict[str, Optional[str]]) -> List[str]:
 # ------------------------------------------------------------------
 # Radial tidy layout
 # ------------------------------------------------------------------
-def _compute_geometry(pillar_color: Optional[Dict[str, str]] = None) -> Dict[str, dict]:
+def _compute_geometry(
+    pillar_color: Optional[Dict[str, str]] = None,
+    nodes: List[Node] = NODES,
+) -> Dict[str, dict]:
     """Place every node with a radial tidy-tree layout.
 
     A post-order pass assigns each leaf the next free angular slice; each
@@ -246,13 +283,17 @@ def _compute_geometry(pillar_color: Optional[Dict[str, str]] = None) -> Dict[str
     pillar_color : dict of str to str, optional
         ``{pillar_id: hex}`` colour map; defaults to the module-level
         :data:`PILLAR_COLOR` (the universal palette).
+    nodes : list of Node, optional
+        ``(id, label, parent)`` tuples; defaults to the module-level
+        :data:`NODES`. By convention the root's id is ``"root"`` (its
+        parent is ``None``); :func:`_pillar_of` relies on that literal id.
     """
     if pillar_color is None:
         pillar_color = PILLAR_COLOR
-    kids = _children_of()
-    parent = _parent_of()
+    kids = _children_of(nodes)
+    parent = _parent_of(nodes)
 
-    leaves = [n for n, _, _ in NODES if n not in kids]
+    leaves = [n for n, _, _ in nodes if n not in kids]
     n_leaves = len(leaves)
 
     # Spread the leaves across an arc slightly short of a full turn so the
@@ -279,7 +320,7 @@ def _compute_geometry(pillar_color: Optional[Dict[str, str]] = None) -> Dict[str
     assign("root")
 
     geometry: Dict[str, dict] = {}
-    for node_id, _label, _p in NODES:
+    for node_id, _label, _p in nodes:
         d = _depth_of(node_id, parent)
         r = RING_RADIUS[d] if d < len(RING_RADIUS) else RING_RADIUS[-1]
         a = angle[node_id]
@@ -366,11 +407,19 @@ def _wrap_subtitle(text: str, max_chars: int = 108) -> List[str]:
     return lines[:2]
 
 
-def build_svg(mode: str = "self-contained", accessibility: str = "universal") -> str:
+def build_svg(
+    nodes: List[Node] = NODES,
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> str:
     """Assemble the full radial-tree SVG document as a string.
 
     Parameters
     ----------
+    nodes : list of Node, optional
+        ``(id, label, parent)`` tuples; defaults to the module-level
+        :data:`NODES`. See :func:`_rows_to_nodes` for the row-record shape
+        callers reshape into this.
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`.
         One of ``"self-contained"`` (default, ships a hidden-until-live
@@ -389,10 +438,10 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         no entrance animation.
     """
     pillar_color = _pillar_color(accessibility)
-    geometry = _compute_geometry(pillar_color)
-    parent = _parent_of()
-    kids = _children_of()
-    label_of = _label_of()
+    geometry = _compute_geometry(pillar_color, nodes)
+    parent = _parent_of(nodes)
+    kids = _children_of(nodes)
+    label_of = _label_of(nodes)
 
     parts: List[str] = []
 
@@ -507,12 +556,12 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     # --- resting base layer: all links + nodes, fully drawn ---
     parts.append('<g id="tree">')
     parts.append('<g id="base">')
-    _emit_links(parts, geometry)
-    _emit_nodes(parts, geometry, label_of, kids)
+    _emit_links(parts, geometry, nodes)
+    _emit_nodes(parts, geometry, label_of, kids, nodes)
     parts.append("</g>")
 
     # --- interactive lineage groups on top (opacity-only at rest) ---
-    leaves = [n for n, _, _ in NODES if n not in kids]
+    leaves = [n for n, _, _ in nodes if n not in kids]
     parts.append('<g id="lineages">')
     for leaf in leaves:
         chain = _lineage(leaf, parent)
@@ -531,7 +580,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     parts.append("</g>")  # #tree
 
     # --- pillar legend (bottom-left) ---
-    _emit_legend(parts, pillar_color)
+    _emit_legend(parts, pillar_color, nodes)
 
     # --- footnote: read the affordances ---
     parts.append(
@@ -548,9 +597,9 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
 # ------------------------------------------------------------------
 # Link / node emitters
 # ------------------------------------------------------------------
-def _emit_links(parts: List[str], geometry: Dict[str, dict]) -> None:
+def _emit_links(parts: List[str], geometry: Dict[str, dict], nodes: List[Node] = NODES) -> None:
     """Emit every parent→child link once for the resting base layer."""
-    for node_id, _label, p in NODES:
+    for node_id, _label, p in nodes:
         if p is None:
             continue
         _emit_one_link(parts, geometry, p, node_id)
@@ -589,9 +638,10 @@ def _emit_nodes(
     geometry: Dict[str, dict],
     label_of: Dict[str, str],
     kids: Dict[str, List[str]],
+    nodes: List[Node] = NODES,
 ) -> None:
     """Emit every node (dot + label) once for the resting base layer."""
-    for node_id, _label, _p in NODES:
+    for node_id, _label, _p in nodes:
         _emit_one_node(parts, geometry, label_of, kids, node_id)
 
 
@@ -681,7 +731,11 @@ def _emit_one_node(
     )
 
 
-def _emit_legend(parts: List[str], pillar_color: Optional[Dict[str, str]] = None) -> None:
+def _emit_legend(
+    parts: List[str],
+    pillar_color: Optional[Dict[str, str]] = None,
+    nodes: List[Node] = NODES,
+) -> None:
     """Emit the pillar legend as a small swatch column, bottom-left.
 
     Parameters
@@ -691,15 +745,18 @@ def _emit_legend(parts: List[str], pillar_color: Optional[Dict[str, str]] = None
     pillar_color : dict of str to str, optional
         ``{pillar_id: hex}`` colour map; defaults to the module-level
         :data:`PILLAR_COLOR` (the universal palette).
+    nodes : list of Node, optional
+        ``(id, label, parent)`` tuples used to count each pillar's subtree
+        size; defaults to the module-level :data:`NODES`.
     """
     if pillar_color is None:
         pillar_color = PILLAR_COLOR
     # Count each pillar's subtree size (nodes below it, inclusive of itself).
-    parent = _parent_of()
+    parent = _parent_of(nodes)
 
     def subtree_size(pillar_id: str) -> int:
         return sum(
-            1 for n, _, _ in NODES if _pillar_of(n, parent) == pillar_id
+            1 for n, _, _ in nodes if _pillar_of(n, parent) == pillar_id
         )
 
     order = ["ingest", "transform", "serve", "govern"]
@@ -733,6 +790,43 @@ def _emit_legend(parts: List[str], pillar_color: Optional[Dict[str, str]] = None
         )
         ry += 31
     parts.append("</g>")
+
+
+def make_radial_tree(
+    data: Optional[List[Dict[str, Any]]] = None,
+    *,
+    out: Optional[Path | str] = None,
+    title: str = "",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the radial tree and write the SVG to *out*.
+
+    Parameters
+    ----------
+    data : list[dict[str, Any]] or None
+        Rows with keys ``id`` (str), ``label`` (str) and ``parent`` (str or
+        ``None``); declaration order fixes sibling order and the root row's
+        ``id`` must be ``"root"``. Defaults to :data:`DEMO_DATA`.
+    out : Path, str, or None
+        Output path (.svg). Defaults to ``assets/svg-examples/radial-tree.svg``.
+    title : str, optional
+        Accepted for signature parity; the figure's headline is baked into
+        the takeaway text (unused).
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+    """
+    _ = title
+    rows = data if data else DEMO_DATA
+    nodes = _rows_to_nodes(rows)
+    svg = build_svg(nodes, mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "radial-tree")
+    return write_svg(dest, svg)
 
 
 def main() -> None:

@@ -17,13 +17,13 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-from typing import List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _svg import svg_open, xml_escape  # noqa: E402
-from _render import render_cli  # noqa: E402
+from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 
 _WIDTH = 900
@@ -68,9 +68,65 @@ def _sample() -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     return xx, yy, zz
 
 
-def build_svg(mode: str = "self-contained", accessibility: str = "universal") -> str:
+#: Row records: the flattened :func:`_sample` grid, one dict per vertex
+#: with ``x``, ``y`` and ``z``. The contract's required row shape for a
+#: figure whose natural data is a ``z = f(x, y)`` grid.
+DEMO_DATA: List[Dict[str, float]] = [
+    {"x": float(x), "y": float(y), "z": float(z)}
+    for x, y, z in zip(*(a.ravel() for a in _sample()))
+]
+
+
+def _rows_to_grid(rows: List[Dict[str, float]]) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Reshape ``{"x", "y", "z"}`` row records back into a regular grid.
+
+    Requires the rows to form a complete rectangular grid (every ``x`` paired
+    with every ``y``); raises otherwise, since the depth-sorted-quad renderer
+    needs a regular lattice.
+
+    Parameters
+    ----------
+    rows : list of dict
+        Row records with ``x``, ``y`` and ``z`` keys.
+
+    Returns
+    -------
+    tuple of numpy.ndarray
+        ``(xx, yy, zz)``, matching the shape :func:`_sample` returns.
+    """
+    xs = sorted({float(r["x"]) for r in rows})
+    ys = sorted({float(r["y"]) for r in rows})
+    if len(xs) * len(ys) != len(rows):
+        raise ValueError(
+            "make_surface3d requires `data` to form a complete rectangular "
+            f"x/y grid ({len(xs)} x-values x {len(ys)} y-values != {len(rows)} rows)"
+        )
+    lookup = {(float(r["x"]), float(r["y"])): float(r["z"]) for r in rows}
+    xx, yy = np.meshgrid(xs, ys)
+    zz = np.array([[lookup[(x, y)] for x in xs] for y in ys])
+    return xx, yy, zz
+
+
+def build_svg(
+    data: Optional[List[Dict[str, float]]] = None,
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> str:
+    """Assemble the full 3-D surface SVG document as a string.
+
+    Parameters
+    ----------
+    data : list of dict or None
+        Row records with ``x``, ``y`` and ``z``, forming a complete
+        rectangular grid. Defaults to :data:`DEMO_DATA`.
+    mode, accessibility : str
+        Forwarded to :func:`_interactive.fullscreen_control` /
+        palette selection (accessibility is a documented no-op here — see
+        below).
+    """
     _ = accessibility  # single blue height ramp reads in greyscale / CVD
-    xx, yy, zz = _sample()
+    xx, yy, zz = _rows_to_grid(list(data)) if data else _sample()
+    n_rows, n_cols = zz.shape
     zmin, zmax = float(zz.min()), float(zz.max())
 
     cx, cy = 500.0, 380.0
@@ -82,14 +138,14 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     persp = dist / (dist - cym)
     span = 1.7
     scale = plot_w / (2.0 * span)
-    px = (cx + cxm * persp * scale).reshape(_N, _N)
-    py = (cy - czm * persp * scale).reshape(_N, _N)
-    depth = (-cym).reshape(_N, _N)
+    px = (cx + cxm * persp * scale).reshape(n_rows, n_cols)
+    py = (cy - czm * persp * scale).reshape(n_rows, n_cols)
+    depth = (-cym).reshape(n_rows, n_cols)
 
     # Quads, painter-sorted far -> near, shaded by mean height.
     quads: List[Tuple[float, str, str]] = []
-    for i in range(_N - 1):
-        for j in range(_N - 1):
+    for i in range(n_rows - 1):
+        for j in range(n_cols - 1):
             corners = [(i, j), (i, j + 1), (i + 1, j + 1), (i + 1, j)]
             poly = " ".join(f"{px[a, b]:.1f},{py[a, b]:.1f}" for a, b in corners)
             zmean = float(np.mean([zz[a, b] for a, b in corners]))
@@ -155,6 +211,40 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     parts.append(fullscreen_control(_WIDTH, _HEIGHT, mode))
     parts.append("</svg>")
     return "\n".join(parts)
+
+
+def make_surface3d(
+    data: Optional[List[Dict[str, float]]] = None,
+    *,
+    out: Optional[Path | str] = None,
+    title: str = "",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the 3-D surface and write the SVG to *out*.
+
+    Parameters
+    ----------
+    data : list[dict[str, float]] or None
+        Row records with ``x``, ``y`` and ``z``, forming a complete
+        rectangular grid. Defaults to :data:`DEMO_DATA`.
+    out : Path, str, or None
+        Output path (.svg). Defaults to ``assets/svg-examples/surface3d.svg``.
+    title : str, optional
+        Accepted for dispatcher parity; the figure's own headline is fixed,
+        so this is unused.
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+    """
+    del title
+    svg = build_svg(data, mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "surface3d")
+    return write_svg(dest, svg)
 
 
 def main() -> None:

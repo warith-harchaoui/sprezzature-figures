@@ -46,7 +46,7 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
-from typing import Any, Dict, List, Sequence, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 import numpy as np
 
@@ -54,7 +54,7 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _svg import catmull_rom_beziers, fmt_compact  # noqa: E402
-from _render import write_svg  # noqa: E402
+from _render import svg_example_path, write_svg  # noqa: E402
 from _style import leveled_colors, os_adaptive_style, os_dark_style  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 
@@ -138,6 +138,32 @@ def _sample_prices(seed: int = 11) -> Dict[str, np.ndarray]:
     close = close + lift
 
     return {"close": close}
+
+
+# The make_<kind> contract's row-record view of the sampled price series:
+# one row per trading day. make_bollinger() reshapes this back into the
+# {"close": ndarray} shape build_svg() works with.
+DEMO_DATA: List[Dict[str, Any]] = [
+    {"day": i, "close": float(v)} for i, v in enumerate(_sample_prices(seed=11)["close"])
+]
+
+
+def _rows_to_close(rows: List[Dict[str, Any]]) -> Dict[str, np.ndarray]:
+    """Reshape day/close row records into the ``{"close": ndarray}`` shape.
+
+    Parameters
+    ----------
+    rows : list of dict
+        Records shaped ``{"day": int, "close": float}`` (see
+        :data:`DEMO_DATA`), sorted by ``day``.
+
+    Returns
+    -------
+    dict of str to numpy.ndarray
+        ``{"close": ndarray}`` in day order, the shape :func:`build_svg` works with.
+    """
+    ordered = sorted(rows, key=lambda r: r["day"])
+    return {"close": np.array([float(r["close"]) for r in ordered])}
 
 
 def _rolling_bands(
@@ -749,6 +775,55 @@ def main(argv: List[str] | None = None) -> int:
     )
     write_svg(args.out, svg)
     return 0
+
+
+def make_bollinger(
+    data: Optional[List[Dict[str, Any]]] = None,
+    *,
+    out: Optional[Path | str] = None,
+    title: str = "",
+    window: int = 20,
+    n_sigma: float = 2.0,
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the house-styled Bollinger-band chart and write the SVG to *out*.
+
+    Parameters
+    ----------
+    data : list of dict or None
+        Rows with keys ``day`` (int) and ``close`` (float), one per trading
+        day (see :data:`DEMO_DATA`). Defaults to a simulated one-year
+        squeeze-then-breakout price series.
+    out : Path, str, or None
+        Output path (.svg). Defaults to ``assets/svg-examples/bollinger.svg``.
+    title : str, optional
+        Accepted for CLI/dispatcher parity; this figure's title narrates the
+        squeeze/breakout it detects and stays fixed.
+    window : int, optional
+        Rolling window for the moving average and bands (default 20).
+    n_sigma : float, optional
+        Band half-width in standard deviations (default 2.0).
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+
+    Examples
+    --------
+    >>> p = make_bollinger()
+    >>> p.exists()
+    True
+    """
+    _ = title
+    rows = data if data else DEMO_DATA
+    price_data = _rows_to_close(rows)
+    svg = build_svg(price_data, window=window, n_sigma=n_sigma, mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "bollinger")
+    return write_svg(dest, svg)
 
 
 if __name__ == "__main__":

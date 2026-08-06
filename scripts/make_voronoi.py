@@ -47,12 +47,12 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import forced_color_patterns, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _svg import hex_to_rgb, svg_open, xml_escape  # noqa: E402
-from _render import render_cli  # noqa: E402
+from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 
 # ------------------------------------------------------------------
@@ -134,13 +134,28 @@ CITY: List[Tuple[float, float, str, str]] = [
     (34.0, 20.0, "Independent", ""),
 ]
 
+#: Row records: one per pharmacy, ``x``/``y`` on a 0..100 city grid,
+#: ``chain`` the owning chain name, and ``name`` an optional flagship-store
+#: label (empty string for unlabelled dots). Derived from :data:`CITY` so
+#: the two stay in lock-step.
+DEMO_DATA: List[Dict[str, Any]] = [
+    {"x": x, "y": y, "chain": chain, "name": name} for x, y, chain, name in CITY
+]
+
 CHAIN_ORDER: List[str] = ["Greenleaf", "Meridian", "Cedar & Co", "Aster", "Independent"]
+
+
+#: Hue cycle for any chain name outside the shipped five (e.g. custom
+#: data), so a novel chain still gets a stable, distinct territory hue.
+_FALLBACK_HUES = ("Teal", "Red", "Yellow", "Mint", "Indigo")
 
 
 # Five chains, five distinct saturated hues that stay legible edge-to-edge
 # as filled territories (no red/green ambiguity; the neutral Gray reads as
 # "unbranded" for the independents).
-def _chain_color(accessibility: str = "universal") -> Dict[str, str]:
+def _chain_color(
+    accessibility: str = "universal", chain_order: Optional[List[str]] = None
+) -> Dict[str, str]:
     """Map each chain to its territory hue at a given accessibility level.
 
     Parameters
@@ -148,20 +163,38 @@ def _chain_color(accessibility: str = "universal") -> Dict[str, str]:
     accessibility : str, optional
         The palette accessibility level threaded into :func:`load_palette`;
         ``"universal"`` (default) is the colour-vision-safe standard.
+    chain_order : list of str or None
+        The chains actually present, in first-seen order. Any name outside
+        the shipped five (Greenleaf/Meridian/Cedar & Co/Aster/Independent)
+        is assigned the next hue from :data:`_FALLBACK_HUES`, cycling if
+        there are more than five novel chains.
 
     Returns
     -------
     dict of str to str
-        ``{chain_name: hex}`` for every chain.
+        ``{chain_name: hex}`` for every chain in ``chain_order`` (or the
+        shipped five when ``chain_order`` is ``None``).
     """
     palette = load_palette(accessibility)
-    return {
+    known = {
         "Greenleaf": palette.get("Green", "#34C759"),
         "Meridian": palette.get("Blue", "#007AFF"),
         "Cedar & Co": palette.get("Purple", "#AF52DE"),
         "Aster": palette.get("Orange", "#FF9500"),
         "Independent": palette.get("Gray", "#8E8E93"),
     }
+    if chain_order is None:
+        return known
+    out: Dict[str, str] = {}
+    fallback_idx = 0
+    for name in chain_order:
+        if name in known:
+            out[name] = known[name]
+        else:
+            hue = _FALLBACK_HUES[fallback_idx % len(_FALLBACK_HUES)]
+            fallback_idx += 1
+            out[name] = palette.get(hue, "#5AC8FA")
+    return out
 
 
 PALETTE = load_palette()
@@ -468,11 +501,20 @@ def _poly_points(poly: Poly) -> str:
 # ------------------------------------------------------------------
 # SVG emission
 # ------------------------------------------------------------------
-def build_svg(mode: str = "self-contained", accessibility: str = "universal") -> str:
+def build_svg(
+    data: Optional[List[Dict[str, Any]]] = None,
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> str:
     """Assemble the full Voronoi catchment-map SVG document as a string.
 
     Parameters
     ----------
+    data : list of dict or None
+        Rows with keys ``x``/``y`` (0..100 city-grid coordinates), ``chain``
+        (owning-chain name) and ``name`` (optional flagship-store label, ``""``
+        for unlabelled). Defaults to :data:`DEMO_DATA`. Chains outside the
+        shipped five get a stable fallback hue (see :func:`_chain_color`).
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`.
         One of ``"self-contained"`` (default, ships a hidden-until-live
@@ -488,19 +530,28 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     str
         A complete, standalone SVG document.
     """
-    chain_color = _chain_color(accessibility)
-    seeds: List[Point] = [_to_canvas(gx, gy) for gx, gy, _, _ in CITY]
-    chains = [chain for _, _, chain, _ in CITY]
+    rows = list(data) if data else DEMO_DATA
+    city: List[Tuple[float, float, str, str]] = [
+        (float(r["x"]), float(r["y"]), str(r["chain"]), str(r.get("name") or ""))
+        for r in rows
+    ]
+    chain_order: List[str] = []
+    for _x, _y, chain, _name in city:
+        if chain not in chain_order:
+            chain_order.append(chain)
+    chain_color = _chain_color(accessibility, chain_order)
+    seeds: List[Point] = [_to_canvas(gx, gy) for gx, gy, _, _ in city]
+    chains = [chain for _, _, chain, _ in city]
     cells = _voronoi_cells(seeds, (MAP_X0, MAP_Y0, MAP_X1, MAP_Y1))
 
     # Area captured per chain — this is what the takeaway rests on.
     total_area = sum(_polygon_area(c) for c in cells) or 1.0
-    area_by_chain: Dict[str, float] = {c: 0.0 for c in CHAIN_ORDER}
-    count_by_chain: Dict[str, int] = {c: 0 for c in CHAIN_ORDER}
+    area_by_chain: Dict[str, float] = {c: 0.0 for c in chain_order}
+    count_by_chain: Dict[str, int] = {c: 0 for c in chain_order}
     for chain, cell in zip(chains, cells):
         area_by_chain[chain] += _polygon_area(cell)
         count_by_chain[chain] += 1
-    share = {c: 100.0 * area_by_chain[c] / total_area for c in CHAIN_ORDER}
+    share = {c: 100.0 * area_by_chain[c] / total_area for c in chain_order}
 
     title_txt = "Greenleaf owns the map, not just the most shops"
     subtitle_txt = (
@@ -529,7 +580,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     # --- CSS: hover/focus a cell lifts its whole chain, dims the rest.
     #     Each cell carries a chain class; one :has() rule per chain keeps
     #     the hovered chain's cells strong while fading the others. ---
-    chain_slug = {chain: f"c{idx}" for idx, chain in enumerate(CHAIN_ORDER)}
+    chain_slug = {chain: f"c{idx}" for idx, chain in enumerate(chain_order)}
     css: List[str] = [
         f".cell polygon{{fill-opacity:{CELL_FILL_ALPHA};transition:fill-opacity .18s ease}}",
         ".cell{transition:opacity .18s ease}",
@@ -559,17 +610,17 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     # (referenced only inside the forced-colors media query), so the shipped SVG
     # is byte-for-byte unchanged.
     cell_series = {
-        f".cell.{chain_slug[chain]} polygon": chain_color[chain] for chain in CHAIN_ORDER
+        f".cell.{chain_slug[chain]} polygon": chain_color[chain] for chain in chain_order
     }
     leg_series = {
-        f".leg-{chain_slug[chain]}": chain_color[chain] for chain in CHAIN_ORDER
+        f".leg-{chain_slug[chain]}": chain_color[chain] for chain in chain_order
     }
     # One pattern per chain, shared by its cells and its legend swatch via a
     # combined selector, so the legend key matches the territory it decodes.
     fcp_defs, fcp_style = forced_color_patterns(
         [
             f".cell.{chain_slug[chain]} polygon,.leg-{chain_slug[chain]}"
-            for chain in CHAIN_ORDER
+            for chain in chain_order
         ],
         prefix="voronoi-fcp",
     )
@@ -618,7 +669,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     # --- chain legend with area share (its own row below the subtitle) ---
     ly = 164.0
     cursor = 56.0
-    for chain in CHAIN_ORDER:
+    for chain in chain_order:
         color = chain_color[chain]
         pct = share[chain]
         cnt = count_by_chain[chain]
@@ -652,7 +703,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
 
     # --- cells layer (clipped to the rounded map card) ---
     parts.append('<g id="cells" clip-path="url(#mapclip)">')
-    for (gx, gy, chain, name), cell in zip(CITY, cells):
+    for (gx, gy, chain, name), cell in zip(city, cells):
         if len(cell) < 3:
             continue
         color = chain_color[chain]
@@ -678,7 +729,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
 
     # --- seed dots layer (white ring is a pure fill halo, not a dark stroke) ---
     parts.append('<g id="seeds" clip-path="url(#mapclip)">')
-    for (gx, gy, chain, _name) in CITY:
+    for (gx, gy, chain, _name) in city:
         color = chain_color[chain]
         slug = chain_slug[chain]
         px, py = _to_canvas(gx, gy)
@@ -702,7 +753,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     #   Long "Chain · Place" names stack onto two lines to keep the pill
     #   compact enough to sit clear of the cell's edges.
     parts.append('<g id="labels">')
-    for (gx, gy, chain, name), cell in zip(CITY, cells):
+    for (gx, gy, chain, name), cell in zip(city, cells):
         if not name or len(cell) < 3:
             continue
         slug = chain_slug[chain]
@@ -770,6 +821,40 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     parts.append(fullscreen_control(WIDTH, HEIGHT, mode))
     parts.append("</svg>")
     return "".join(parts)
+
+
+def make_voronoi(
+    data: Optional[List[Dict[str, Any]]] = None,
+    *,
+    out: Optional[Path | str] = None,
+    title: str = "",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the Voronoi catchment map and write the SVG to *out*.
+
+    Parameters
+    ----------
+    data : list[dict[str, Any]] or None
+        Rows with keys ``x``/``y`` (0..100 city-grid coordinates), ``chain``
+        and ``name``. Defaults to :data:`DEMO_DATA`.
+    out : Path, str, or None
+        Output path (.svg). Defaults to ``assets/svg-examples/voronoi.svg``.
+    title : str, optional
+        Accepted for dispatcher parity; the map's own headline states the
+        specific takeaway, so this is unused.
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+    """
+    del title
+    svg = build_svg(data, mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "voronoi")
+    return write_svg(dest, svg)
 
 
 def main() -> None:

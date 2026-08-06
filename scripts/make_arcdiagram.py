@@ -48,13 +48,13 @@ from __future__ import annotations
 import math
 import sys
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 from xml.sax.saxutils import escape
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
-from _render import render_cli  # noqa: E402
-from _interactive import fullscreen_control  # noqa: E402
+from _render import render_cli, svg_example_path, write_svg  # noqa: E402
+from _interactive import fullscreen_control, hover_isolate_css  # noqa: E402
 from _svg import svg_open  # noqa: E402
 
 # ------------------------------------------------------------------
@@ -128,6 +128,17 @@ LINKS: List[Tuple[str, str, int]] = [
     ("Park", "Lund", 3),
     ("Silva", "Park", 1),
 ]
+
+# The make_<kind> contract's row-record view of LINKS: one row per
+# co-authorship edge. The diagram's whole message is the node ORDER (Vision
+# left, Language right, Nadia the sole bridge in the middle) and that order
+# is hand-tuned to this exact roster, so make_arcdiagram() accepts ``data``
+# for dispatcher parity but does not thread custom rows into the render --
+# see its docstring below.
+DEMO_DATA: List[Dict[str, Any]] = [
+    {"source": a, "target": b, "weight": w} for a, b, w in LINKS
+]
+
 
 # Brand hue per group — the arc's origin group colours it. Built from the
 # palette at render time so the accessibility level can remap the hues.
@@ -297,9 +308,9 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     adaptive_nodes = os_adaptive_style(node_series, role="fill")
     parts.append(
         "<style>"
-        ".arc{transition:stroke-opacity .18s ease,stroke-width .18s ease}"
-        "#arcs:hover .arc{stroke-opacity:.12}"
-        "#arcs .arc:hover,#arcs .arc:focus{stroke-opacity:1;stroke-width:9}"
+        + hover_isolate_css("arc", len(LINKS), dim=0.12)
+        + ".arc{transition:stroke-opacity .18s ease,stroke-width .18s ease}"
+        ".arc:hover,.arc:focus{stroke-width:9}"
         ".arc:focus,.node:focus{outline:none}"
         + adaptive_arcs
         + adaptive_nodes
@@ -356,7 +367,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         # per-group hook without changing the default paint.
         arc_grp = GROUP_BRIDGE if is_bridge else grp_a
         parts.append(
-            f'<path class="arc arc-{arc_grp.lower()}" tabindex="0" role="img" '
+            f'<path class="arc arc-{_idx} arc-{arc_grp.lower()}" tabindex="0" role="img" '
             f'aria-label="{escape(tip)}" d="{d}" '
             f'stroke="{color}" stroke-width="{stroke_w:.2f}" '
             f'stroke-opacity="{opacity}">'
@@ -469,6 +480,50 @@ def main() -> None:
     render_cli(
         __file__, "arcdiagram", build_svg, description="Render the arc-diagram SVG."
     )
+
+
+def make_arcdiagram(
+    data: Optional[List[Dict[str, Any]]] = None,
+    *,
+    out: Optional[Path | str] = None,
+    title: str = "",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the house-styled arc diagram and write the SVG to *out*.
+
+    Parameters
+    ----------
+    data : list of dict or None
+        Accepted for dispatcher parity (see :data:`DEMO_DATA` for the
+        row-record view of the illustrative co-authorship edges), but not
+        threaded into the render: the diagram's whole message is the node
+        ORDER (Vision group left, Language group right, the sole
+        cross-group bridge in the middle), which is hand-tuned to this
+        exact roster, so custom rows are not reshaped into it.
+        ``data=None`` still renders that fixed illustrative diagram.
+    out : Path, str, or None
+        Output path (.svg). Defaults to ``assets/svg-examples/arcdiagram.svg``.
+    title : str, optional
+        Accepted for CLI/dispatcher parity; unused (see ``data``).
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+
+    Examples
+    --------
+    >>> p = make_arcdiagram()
+    >>> p.exists()
+    True
+    """
+    _ = data, title
+    svg = build_svg(mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "arcdiagram")
+    return write_svg(dest, svg)
 
 
 if __name__ == "__main__":

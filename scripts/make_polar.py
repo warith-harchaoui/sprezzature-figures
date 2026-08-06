@@ -39,7 +39,7 @@ Author
 """
 
 from __future__ import annotations
-from _render import write_svg  # noqa: E402
+from _render import svg_example_path, write_svg  # noqa: E402
 from _style import CORNERS, leveled_colors, os_adaptive_style, os_dark_style  # noqa: E402
 from _svg import fmt_compact, svg_open  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
@@ -47,7 +47,7 @@ from _interactive import fullscreen_control  # noqa: E402
 import argparse
 import math
 from pathlib import Path
-from typing import List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 
@@ -103,6 +103,35 @@ def _sample_hourly_trips(seed: int = 11) -> np.ndarray:
     counts = baseline + morning + evening + midday
     counts = counts + rng.normal(0.0, 14.0, size=24)  # small measurement jitter
     return np.clip(counts, 0.0, None)
+
+
+#: Row-record demo data: one row per hour of the day. This is the
+#: contract's ``list[dict[str, Any]]`` shape; :func:`_counts_from_rows`
+#: reshapes it (or any caller-supplied row list of the same shape) back
+#: into the length-24 array :func:`build_svg` renders.
+DEMO_DATA: List[Dict[str, Any]] = [
+    {"hour": int(h), "count": round(float(c), 1)}
+    for h, c in enumerate(_sample_hourly_trips(seed=11))
+]
+
+
+def _counts_from_rows(data: Optional[List[Dict[str, Any]]]) -> np.ndarray:
+    """Reshape ``{"hour", "count"}`` row records into an hour-ordered array.
+
+    Parameters
+    ----------
+    data : list of dict or None
+        Rows with ``hour`` (int) and ``count`` (numeric) keys. Falls back
+        to :data:`DEMO_DATA` when ``None``/empty.
+
+    Returns
+    -------
+    numpy.ndarray
+        Counts ordered by ascending hour.
+    """
+    rows = data if data else DEMO_DATA
+    ordered = sorted(rows, key=lambda r: int(r["hour"]))
+    return np.array([float(r["count"]) for r in ordered], dtype=float)
 
 
 # --------------------------------------------------------------------------- #
@@ -423,6 +452,41 @@ def _build_parser() -> argparse.ArgumentParser:
         help="palette accessibility level (default: universal, the CVD-safe standard)",
     )
     return parser
+
+
+def make_polar(
+    data: Optional[List[Dict[str, Any]]] = None,
+    *,
+    out: Optional[Path | str] = None,
+    title: str = "",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the polar (clock) plot and write the SVG to *out*.
+
+    Parameters
+    ----------
+    data : list[dict[str, Any]] or None
+        Rows with keys ``hour`` (int, 0-23) and ``count`` (numeric).
+        Defaults to :data:`DEMO_DATA`.
+    out : Path, str, or None
+        Output path (.svg). Defaults to ``assets/svg-examples/polar.svg``.
+    title : str, optional
+        Accepted for signature parity; the figure's headline is baked into
+        the takeaway text (unused).
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+    """
+    _ = title
+    counts = _counts_from_rows(data)
+    svg = build_svg(counts, mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "polar")
+    return write_svg(dest, svg)
 
 
 def main(argv: List[str] | None = None) -> int:

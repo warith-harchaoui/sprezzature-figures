@@ -54,13 +54,13 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _svg import svg_open, xml_escape as escape  # noqa: E402
-from _render import render_cli  # noqa: E402
+from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 
 # ------------------------------------------------------------------
 # Canvas + house-style tokens
@@ -143,7 +143,16 @@ _DIVISION_FALLBACK: Dict[str, str] = {
 }
 
 
-def _division_colors(accessibility: str = "universal") -> Dict[str, str]:
+#: Cycling hue order for a custom hierarchy's divisions. Kept in the same
+#: order the default four divisions already use (Blue/Orange/Purple/Green)
+#: so a custom tree whose divisions declare in the same order gets the same
+#: colours as the default story.
+_DIV_HUE_ORDER = ["Blue", "Orange", "Purple", "Green", "Teal", "Pink", "Yellow", "Indigo", "Gray"]
+
+
+def _division_colors(
+    accessibility: str = "universal", division_ids: Optional[List[str]] = None
+) -> Dict[str, str]:
     """Return the per-division hue map at a given accessibility level.
 
     Parameters
@@ -151,6 +160,10 @@ def _division_colors(accessibility: str = "universal") -> Dict[str, str]:
     accessibility : str, optional
         Palette accessibility level forwarded to :func:`_style.load_palette`;
         ``"universal"`` (default) is the identity.
+    division_ids : list of str, optional
+        When given (a custom hierarchy's direct-children-of-root ids),
+        colours are assigned generically by cycling :data:`_DIV_HUE_ORDER`
+        in declaration order instead of the four fixed story divisions.
 
     Returns
     -------
@@ -158,6 +171,11 @@ def _division_colors(accessibility: str = "universal") -> Dict[str, str]:
         ``{division_key: "#RRGGBB"}``.
     """
     palette = load_palette(accessibility)
+    if division_ids is not None:
+        return {
+            did: palette.get(_DIV_HUE_ORDER[i % len(_DIV_HUE_ORDER)], "#8E8E93")
+            for i, did in enumerate(division_ids)
+        }
     return {
         key: palette.get(base, _DIVISION_FALLBACK[key])
         for key, base in _DIVISION_BASE.items()
@@ -180,28 +198,28 @@ DIVISION_NAME: Dict[str, str] = {
 # ------------------------------------------------------------------
 # Tree model helpers
 # ------------------------------------------------------------------
-def _children_of() -> Dict[str, List[str]]:
+def _children_of(nodes: List[Node] = NODES) -> Dict[str, List[str]]:
     """Return ``{parent_id: [child_id, ...]}`` in declaration order."""
     kids: Dict[str, List[str]] = {}
-    for node_id, _role, _hc, parent in NODES:
+    for node_id, _role, _hc, parent in nodes:
         if parent is not None:
             kids.setdefault(parent, []).append(node_id)
     return kids
 
 
-def _parent_of() -> Dict[str, Optional[str]]:
+def _parent_of(nodes: List[Node] = NODES) -> Dict[str, Optional[str]]:
     """Return ``{node_id: parent_id or None}``."""
-    return {node_id: parent for node_id, _role, _hc, parent in NODES}
+    return {node_id: parent for node_id, _role, _hc, parent in nodes}
 
 
-def _role_of() -> Dict[str, str]:
+def _role_of(nodes: List[Node] = NODES) -> Dict[str, str]:
     """Return ``{node_id: role label}``."""
-    return {node_id: role for node_id, role, _hc, _parent in NODES}
+    return {node_id: role for node_id, role, _hc, _parent in nodes}
 
 
-def _own_headcount() -> Dict[str, int]:
+def _own_headcount(nodes: List[Node] = NODES) -> Dict[str, int]:
     """Return ``{node_id: the box's own printed headcount}``."""
-    return {node_id: hc for node_id, _role, hc, _parent in NODES}
+    return {node_id: hc for node_id, _role, hc, _parent in nodes}
 
 
 def _depth_of(node_id: str, parent: Dict[str, Optional[str]]) -> int:
@@ -214,29 +232,29 @@ def _depth_of(node_id: str, parent: Dict[str, Optional[str]]) -> int:
     return depth
 
 
-def _division_of(node_id: str, parent: Dict[str, Optional[str]]) -> Optional[str]:
-    """Return the VP id (child-of-CEO) a node belongs to.
+def _division_of(node_id: str, parent: Dict[str, Optional[str]], root_id: str = "ceo") -> Optional[str]:
+    """Return the id of the direct-child-of-root a node belongs to.
 
-    The chief executive returns ``None``; every other node walks up
-    until it hits a node whose parent is the chief executive.
+    The root itself returns ``None``; every other node walks up until it
+    hits a node whose parent is the root.
     """
     cur: Optional[str] = node_id
-    if cur == "ceo":
+    if cur == root_id:
         return None
-    while cur is not None and parent.get(cur) not in (None, "ceo"):
+    while cur is not None and parent.get(cur) not in (None, root_id):
         cur = parent[cur]
     return cur
 
 
-def _subtree_headcount() -> Dict[str, int]:
+def _subtree_headcount(nodes: List[Node] = NODES) -> Dict[str, int]:
     """Return ``{node_id: total people in this node's subtree, inclusive}``."""
-    kids = _children_of()
-    own = _own_headcount()
+    kids = _children_of(nodes)
+    own = _own_headcount(nodes)
 
     def total(node_id: str) -> int:
         return own[node_id] + sum(total(c) for c in kids.get(node_id, []))
 
-    return {node_id: total(node_id) for node_id, _r, _h, _p in NODES}
+    return {node_id: total(node_id) for node_id, _r, _h, _p in nodes}
 
 
 def _lineage(node_id: str, parent: Dict[str, Optional[str]]) -> List[str]:
@@ -301,7 +319,12 @@ def _box_width(
 # ------------------------------------------------------------------
 # Top-down tidy layout
 # ------------------------------------------------------------------
-def _compute_geometry(accessibility: str = "universal") -> Dict[str, dict]:
+def _compute_geometry(
+    accessibility: str = "universal",
+    nodes: List[Node] = NODES,
+    root_id: str = "ceo",
+    division_ids: Optional[List[str]] = None,
+) -> Dict[str, dict]:
     """Place every node with a top-down tidy tree layout.
 
     Depth fixes the row (y); a post-order pass gives each leaf the next
@@ -314,6 +337,13 @@ def _compute_geometry(accessibility: str = "universal") -> Dict[str, dict]:
     accessibility : str, optional
         Palette accessibility level forwarded to :func:`_style.load_palette`;
         ``"universal"`` (default) is the identity.
+    nodes : list of Node, optional
+        The hierarchy to lay out. Defaults to :data:`NODES`.
+    root_id : str, optional
+        The id of the root node (``nodes[0][0]`` for a well-formed tree).
+    division_ids : list of str, optional
+        The root's direct children (used to colour a custom hierarchy
+        generically); ``None`` uses the four fixed story divisions.
 
     Returns
     -------
@@ -322,22 +352,22 @@ def _compute_geometry(accessibility: str = "universal") -> Dict[str, dict]:
         where ``cx`` is the horizontal centre of the card and ``y_top``
         its top edge, both in SVG pixels.
     """
-    kids = _children_of()
-    parent = _parent_of()
-    role_of = _role_of()
-    own_hc = _own_headcount()
-    sub_hc = _subtree_headcount()
+    kids = _children_of(nodes)
+    parent = _parent_of(nodes)
+    role_of = _role_of(nodes)
+    own_hc = _own_headcount(nodes)
+    sub_hc = _subtree_headcount(nodes)
 
-    depth = {n: _depth_of(n, parent) for n, _r, _h, _p in NODES}
+    depth = {n: _depth_of(n, parent) for n, _r, _h, _p in nodes}
     width = {
         n: _box_width(n, role_of, depth[n], own_hc, sub_hc)
-        for n, _r, _h, _p in NODES
+        for n, _r, _h, _p in nodes
     }
 
     # --- horizontal packing of the leaf row (the teams) ---
     # Walk leaves left-to-right, advancing a running x cursor by each
     # card's own width plus a fixed gap, so nothing ever overlaps.
-    leaves = [n for n, _r, _h, _p in NODES if n not in kids]
+    leaves = [n for n, _r, _h, _p in nodes if n not in kids]
     plot_left = MARGIN_LEFT
     cursor: float = plot_left
     leaf_cx: Dict[str, float] = {}
@@ -365,7 +395,7 @@ def _compute_geometry(accessibility: str = "universal") -> Dict[str, dict]:
         cx[node_id] = (xs[0] + xs[-1]) / 2.0
         return cx[node_id]
 
-    place("ceo")
+    place(root_id)
 
     # --- rows (depth → y) evenly spaced across the plot band ---
     plot_top = MARGIN_TOP
@@ -378,12 +408,12 @@ def _compute_geometry(accessibility: str = "universal") -> Dict[str, dict]:
         band = plot_bottom - plot_top - BOX_H
         row_y = {d: plot_top + d * band / max_depth for d in range(max_depth + 1)}
 
-    division_color = _division_colors(accessibility)
+    division_color = _division_colors(accessibility, division_ids)
     geometry: Dict[str, dict] = {}
-    for node_id, _role, _hc, _p in NODES:
+    for node_id, _role, _hc, _p in nodes:
         d = depth[node_id]
-        div = _division_of(node_id, parent)
-        color = CEO_COLOR if node_id == "ceo" else division_color.get(div or "", SUBINK)
+        div = _division_of(node_id, parent, root_id)
+        color = CEO_COLOR if node_id == root_id else division_color.get(div or "", SUBINK)
         geometry[node_id] = {
             "cx": cx[node_id],
             "y_top": row_y[d],
@@ -398,13 +428,13 @@ def _compute_geometry(accessibility: str = "universal") -> Dict[str, dict]:
 # ------------------------------------------------------------------
 # Connector geometry (orthogonal elbows through a shared bus)
 # ------------------------------------------------------------------
-def _bus_y(geometry: Dict[str, dict], parent_id: str) -> float:
+def _bus_y(geometry: Dict[str, dict], parent_id: str, nodes: List[Node] = NODES) -> float:
     """Return the y of the horizontal bus between a parent and its children.
 
     The bus sits midway between the parent's bottom edge and the
     children's top edge, so the two drops are visually balanced.
     """
-    kids = _children_of()
+    kids = _children_of(nodes)
     children = kids[parent_id]
     parent_bottom = geometry[parent_id]["y_top"] + BOX_H
     child_top = geometry[children[0]]["y_top"]
@@ -425,6 +455,8 @@ def _emit_connectors(
     parent_id: str,
     *,
     interactive: bool,
+    nodes: List[Node] = NODES,
+    root_id: str = "ceo",
 ) -> None:
     """Emit the orthogonal connector set from a parent to all its children.
 
@@ -433,34 +465,34 @@ def _emit_connectors(
     child's top edge. Coloured by the division hue so a branch reads as
     a unit. Rounded joins keep the elbows soft, matching the cards.
     """
-    kids = _children_of()
+    kids = _children_of(nodes)
     children = kids.get(parent_id, [])
     if not children:
         return
-    bus_y = _bus_y(geometry, parent_id)
+    bus_y = _bus_y(geometry, parent_id, nodes)
     gp = geometry[parent_id]
     parent_cx = gp["cx"]
     parent_bottom = gp["y_top"] + BOX_H
 
-    # The children under a VP share the VP's hue; the CEO's four stubs to
-    # the VPs each take the destination VP's hue so every line is owned.
+    # The children under a VP share the VP's hue; the root's stubs to its
+    # direct children each take the destination's hue so every line is owned.
     xs = [geometry[c]["cx"] for c in children]
     bus_left = min(xs + [parent_cx])
     bus_right = max(xs + [parent_cx])
 
     op = "" if interactive else ""
 
-    # Parent drop to the bus. When the parent is the CEO the drop is
-    # neutral ink (it fans into four coloured buses just below); otherwise
-    # it takes the division colour.
-    drop_color = INK if parent_id == "ceo" else gp["color"]
+    # Parent drop to the bus. When the parent is the root the drop is
+    # neutral ink (it fans into coloured buses just below); otherwise it
+    # takes the division colour.
+    drop_color = INK if parent_id == root_id else gp["color"]
     parts.append(
         f'<path class="wire" d="M{_fmt(parent_cx)},{_fmt(parent_bottom)} '
         f'L{_fmt(parent_cx)},{_fmt(bus_y)}" fill="none" stroke="{drop_color}" '
         f'stroke-width="3.2" stroke-linecap="round"{op}/>'
     )
 
-    if parent_id == "ceo":
+    if parent_id == root_id:
         # Draw each CEO→VP leg as its own coloured elbow (bus segment +
         # drop) so the four divisions are colour-owned from the top. Each leg
         # takes the destination VP's division class so the OS-adaptive media
@@ -531,10 +563,10 @@ def _emit_box(
     div = g["division"]
     div_cls = f" div-{div}" if div else ""
 
-    if node_id == "ceo":
+    if depth == 0:
         headcount = sub_hc[node_id]
         caption = f"{headcount} people total"
-        tip = f"Chief Executive — {headcount} people across the company"
+        tip = f"{role} — {headcount} people across the company"
     elif depth == 1:
         headcount = sub_hc[node_id]
         caption = f"{headcount} people"
@@ -543,7 +575,7 @@ def _emit_box(
         headcount = own_hc[node_id]
         div = g["division"]
         caption = f"{headcount} people"
-        tip = f"{role} — {headcount} people — {DIVISION_NAME.get(div or '', '')}"
+        tip = f"{role} — {headcount} people — {DIVISION_NAME.get(div, role_of.get(div or '', ''))}"
 
     if depth <= 1:
         # Filled card — CEO ink, VPs their hue. White role + white caption.
@@ -582,11 +614,23 @@ def _emit_box(
         )
 
 
-def build_svg(mode: str = "self-contained", accessibility: str = "universal") -> str:
+def build_svg(
+    nodes: Optional[List[Node]] = None,
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> str:
     """Assemble the full org-chart SVG document as a string.
 
     Parameters
     ----------
+    nodes : list of Node or None
+        Rows ``(id, role, headcount, parent_id_or_None)``, root first.
+        Defaults to :data:`NODES`. When a custom hierarchy is supplied, its
+        divisions (the root's direct children) get colours by cycling
+        house hues in declaration order (see :func:`_division_colors`) and
+        the headline/subtitle are computed generically from the largest
+        division's share, rather than the fixed "Product & Engineering"
+        story text.
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`
         (``"self-contained"``, ``"external"`` or ``"static"``). Controls
@@ -603,32 +647,60 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     str
         A complete, standalone SVG document.
     """
-    geometry = _compute_geometry(accessibility)
-    kids = _children_of()
-    role_of = _role_of()
-    own_hc = _own_headcount()
-    sub_hc = _subtree_headcount()
+    nodes = nodes if nodes else NODES
+    is_default = nodes == NODES
+    root_id = nodes[0][0]
+    kids = _children_of(nodes)
+    role_of = _role_of(nodes)
+    own_hc = _own_headcount(nodes)
+    sub_hc = _subtree_headcount(nodes)
+    division_ids = kids.get(root_id, [])
 
-    total = sub_hc["ceo"]
-    eng_total = sub_hc["vp_eng"]
-    eng_pct = round(100 * eng_total / total)
+    geometry = _compute_geometry(
+        accessibility, nodes, root_id, division_ids=None if is_default else division_ids
+    )
+
+    total = sub_hc[root_id]
 
     parts: List[str] = []
 
     # --- accessible header ---
-    title_txt = "One division carries nearly half the company"
-    subtitle_txt = (
-        f"Product & Engineering is {eng_pct}% of headcount, the classic shape "
-        f"of a product-led software company."
-    )
-    desc_txt = (
-        "Top-down organization chart of a software company of about "
-        f"{total} people. The chief executive sits over four vice-presidents: "
-        "Product & Engineering, Revenue, Operations, and People. Each division "
-        "card is tinted its own colour and prints its total headcount; team "
-        "cards below print their own size. Product & Engineering, with four "
-        f"teams, is the largest division at {eng_pct}% of the company."
-    )
+    if is_default:
+        eng_total = sub_hc["vp_eng"]
+        eng_pct = round(100 * eng_total / total) if total else 0
+        title_txt = "One division carries nearly half the company"
+        subtitle_txt = (
+            f"Product & Engineering is {eng_pct}% of headcount, the classic shape "
+            f"of a product-led software company."
+        )
+        desc_txt = (
+            "Top-down organization chart of a software company of about "
+            f"{total} people. The chief executive sits over four vice-presidents: "
+            "Product & Engineering, Revenue, Operations, and People. Each division "
+            "card is tinted its own colour and prints its total headcount; team "
+            "cards below print their own size. Product & Engineering, with four "
+            f"teams, is the largest division at {eng_pct}% of the company."
+        )
+    else:
+        largest_div = max(division_ids, key=lambda d: sub_hc[d]) if division_ids else None
+        largest_pct = round(100 * sub_hc[largest_div] / total) if largest_div and total else 0
+        largest_name = (
+            DIVISION_NAME.get(largest_div, role_of.get(largest_div, largest_div))
+            if largest_div else ""
+        )
+        title_txt = (
+            f"{largest_name} carries the largest share of the company"
+            if largest_div else "Organization chart"
+        )
+        subtitle_txt = (
+            f"{largest_name} is {largest_pct}% of headcount" if largest_div else ""
+        )
+        desc_txt = (
+            f"Top-down organization chart of {total} people. "
+            f"Each division card is tinted its own colour and prints its total "
+            f"headcount; team cards below print their own size."
+            + (f" {largest_name}, at {largest_pct}% of the company, is the largest division." if largest_div else "")
+        )
     parts.append(svg_open(WIDTH, HEIGHT, "org-title", "org-desc", font_family=FONT))
     parts.append(f'<title id="org-title">{escape(title_txt)}</title>')
     parts.append(f'<desc id="org-desc">{escape(desc_txt)}</desc>')
@@ -637,21 +709,16 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     # OS-adaptive overrides (additive; the default render is unchanged because
     # every rule lives inside a media query and a class rule only outranks the
     # inline colour when its media query is active). Under prefers-contrast the
-    # four division hues deepen to their high-contrast variants on BOTH fill
+    # division hues deepen to their high-contrast variants on BOTH fill
     # (VP cards, team left-rules) and stroke (connector wires). Under forced
     # colours everything classed drops to the system CanvasText line-art — safe
     # here because an org chart's identity is carried by position, box role
     # labels, and headcounts, not by colour. The helper forces `fill` for the
     # classed selectors; the wires need their stroke forced too, hence the
     # extra ``.wire{stroke:CanvasText}`` rule.
-    division_color = _division_colors(accessibility)
+    division_color = _division_colors(accessibility, None if is_default else division_ids)
     os_media = os_adaptive_style(
-        {
-            ".div-vp_eng": division_color["vp_eng"],
-            ".div-vp_rev": division_color["vp_rev"],
-            ".div-vp_ops": division_color["vp_ops"],
-            ".div-vp_ppl": division_color["vp_ppl"],
-        },
+        {f".div-{did}": division_color[did] for did in division_ids},
         role="both",
         forced=True,
         extra_forced=".wire{stroke:CanvasText;}",
@@ -717,20 +784,20 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     # ------------------------------------------------------------------
     parts.append('<g id="org">')
 
-    # Base layer: CEO box + the four CEO→VP legs (each already coloured).
+    # Base layer: root box + its direct-child legs (each already coloured).
     parts.append('<g id="base">')
-    _emit_connectors(parts, geometry, "ceo", interactive=False)
-    _emit_box(parts, geometry, role_of, own_hc, sub_hc, "ceo")
+    _emit_connectors(parts, geometry, root_id, interactive=False, nodes=nodes, root_id=root_id)
+    _emit_box(parts, geometry, role_of, own_hc, sub_hc, root_id)
     parts.append("</g>")
 
     # One group per division.
-    for vp in ("vp_eng", "vp_rev", "vp_ops", "vp_ppl"):
-        dname = DIVISION_NAME[vp]
+    for vp in division_ids:
+        dname = DIVISION_NAME.get(vp, role_of.get(vp, vp))
         parts.append(
             f'<g class="division" role="group" aria-label="{escape(dname)} division">'
         )
         # VP → team connectors first (so cards sit on top).
-        _emit_connectors(parts, geometry, vp, interactive=True)
+        _emit_connectors(parts, geometry, vp, interactive=True, nodes=nodes, root_id=root_id)
         # VP card, then its team cards.
         _emit_box(parts, geometry, role_of, own_hc, sub_hc, vp)
         for team in kids.get(vp, []):
@@ -767,6 +834,61 @@ def _wrap(text: str, max_chars: int) -> List[str]:
     if cur:
         lines.append(cur)
     return lines
+
+
+# --------------------------------------------------------------------------- #
+# Contract wiring — DEMO_DATA (row-list) + make_org_chart()                   #
+# --------------------------------------------------------------------------- #
+#: The registry contract's DEMO_DATA: :data:`NODES` restated as row records
+#: (``id``, ``role``, ``headcount``, ``parent``), root first — the exact
+#: same hierarchy, just row-shaped.
+DEMO_DATA: List[Dict[str, Any]] = [
+    {"id": node_id, "role": role, "headcount": hc, "parent": parent}
+    for node_id, role, hc, parent in NODES
+]
+
+
+def make_org_chart(
+    data: Optional[List[Dict[str, Any]]] = None,
+    *,
+    out: Optional[Path | str] = None,
+    title: str = "",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the org chart and write the SVG to *out*.
+
+    Note the registered callable name is ``make_org_chart`` (underscore),
+    despite the hyphenated kind ``"org-chart"`` and filename
+    ``make_org-chart.py`` — see ``sprezzature_figures/catalog/figures.json``.
+
+    Parameters
+    ----------
+    data : list[dict[str, Any]] or None
+        Rows shaped ``{"id", "role", "headcount", "parent"}``, root first
+        (``parent`` is ``None`` for the root). Defaults to :data:`DEMO_DATA`.
+        See :func:`build_svg` for how a custom hierarchy is coloured and
+        titled. ``title`` is accepted for signature parity with the rest of
+        the gallery and is currently a documented no-op.
+    out : Path, str, or None
+        Output path. Defaults to ``assets/svg-examples/org-chart.svg``.
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+    """
+    _ = title
+    rows = data if data else DEMO_DATA
+    nodes: List[Node] = [
+        (str(r["id"]), str(r["role"]), int(r["headcount"]), r.get("parent"))
+        for r in rows
+    ]
+    svg = build_svg(nodes, mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "org-chart")
+    return write_svg(dest, svg)
 
 
 def main() -> None:

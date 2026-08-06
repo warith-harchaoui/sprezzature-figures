@@ -44,13 +44,13 @@ import math
 import random
 import sys
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 from xml.sax.saxutils import escape
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import forced_color_patterns, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
-from _render import render_cli  # noqa: E402
+from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _svg import svg_open  # noqa: E402
 
 # ------------------------------------------------------------------
@@ -98,6 +98,39 @@ P_IN = 0.09      # edge probability inside a community
 P_OUT = 0.0016   # edge probability across two communities
 
 
+#: Row-record demo data: one row per community, the contract's
+#: ``list[dict[str, Any]]`` shape. :func:`_communities_from_rows` reshapes
+#: it (or any caller-supplied row list of the same shape) into the
+#: ``(communities, sizes)`` pair :func:`build_graph`/:func:`layout` need.
+DEMO_DATA: List[Dict[str, Any]] = [
+    {"community": label, "palette_key": key, "size": size}
+    for (label, key), size in zip(COMMUNITIES, SIZES, strict=True)
+]
+
+
+def _communities_from_rows(
+    rows: List[Dict[str, Any]],
+) -> Tuple[List[Tuple[str, str]], List[int]]:
+    """Reshape ``{"community", "palette_key", "size"}`` rows into layout inputs.
+
+    Parameters
+    ----------
+    rows : list of dict
+        Rows with ``community`` (str, label), ``palette_key`` (str, a
+        :func:`_style.load_palette` base colour name) and ``size`` (int,
+        node budget) keys. Row order fixes the ring/legend order.
+
+    Returns
+    -------
+    tuple
+        ``(communities, sizes)`` — ``communities`` is a list of
+        ``(label, palette_key)`` pairs, ``sizes`` the matching node counts.
+    """
+    communities = [(str(r["community"]), str(r["palette_key"])) for r in rows]
+    sizes = [max(1, int(r["size"])) for r in rows]
+    return communities, sizes
+
+
 # ------------------------------------------------------------------
 # Palette
 # ------------------------------------------------------------------
@@ -134,15 +167,21 @@ def _lighten(hexv: str, t: float) -> str:
 # ------------------------------------------------------------------
 # Graph generation — a planted stochastic-block model
 # ------------------------------------------------------------------
-def build_graph() -> Tuple[List[int], List[int], List[Tuple[int, int]]]:
+def build_graph(sizes: List[int] = SIZES) -> Tuple[List[int], List[int], List[Tuple[int, int]]]:
     """Sample a stochastic-block-model graph with planted communities.
 
-    Every node is assigned to one of the six communities. A pair of nodes
+    Every node is assigned to one of the communities. A pair of nodes
     in the *same* community is joined with probability :data:`P_IN`; a pair
     in *different* communities with the much smaller :data:`P_OUT`. This is
     the canonical generator for "does my layout recover the communities?"
     demonstrations because the ground-truth grouping is known by
     construction.
+
+    Parameters
+    ----------
+    sizes : list of int, optional
+        Node budget per community; defaults to the module-level
+        :data:`SIZES`.
 
     Returns
     -------
@@ -153,7 +192,7 @@ def build_graph() -> Tuple[List[int], List[int], List[Tuple[int, int]]]:
     """
     rng = random.Random(SEED)
     comm: List[int] = []
-    for ci, size in enumerate(SIZES):
+    for ci, size in enumerate(sizes):
         comm.extend([ci] * size)
     n = len(comm)
 
@@ -234,7 +273,7 @@ def layout(
 
     # Community anchors on a ring — the multilevel "seed" that keeps the
     # blocks from piling on top of each other.
-    n_comm = len(SIZES)
+    n_comm = (max(comm) + 1) if comm else 0
     cx, cy = width / 2, height / 2
     ring = 0.40 * min(width, height)
     anchors = [
@@ -372,11 +411,19 @@ def _radius(degree: int, max_deg: int) -> float:
 # ------------------------------------------------------------------
 # SVG emission
 # ------------------------------------------------------------------
-def build_svg(mode: str = "self-contained", accessibility: str = "universal") -> str:
+def build_svg(
+    data: Optional[List[Dict[str, Any]]] = None,
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> str:
     """Assemble the full force-directed large-graph SVG document.
 
     Parameters
     ----------
+    data : list of dict, optional
+        Rows with ``community`` (str), ``palette_key`` (str) and ``size``
+        (int) keys; see :func:`_communities_from_rows`. Defaults to
+        :data:`DEMO_DATA`.
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`
         (``"self-contained"``, ``"external"`` or ``"static"``). Controls
@@ -393,7 +440,8 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     str
         A complete, standalone SVG document.
     """
-    comm, degree, edges = build_graph()
+    communities, sizes = _communities_from_rows(data if data else DEMO_DATA)
+    comm, degree, edges = build_graph(sizes)
     n = len(comm)
     max_deg = max(degree) if degree else 1
 
@@ -403,8 +451,8 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     fitted = _fit(raw, box_w, box_h, pad=18)
     pos = [(PLOT_PAD + x, PLOT_TOP + y) for x, y in fitted]
 
-    labels = [c[0] for c in COMMUNITIES]
-    colors = [_hex(c[1], accessibility) for c in COMMUNITIES]
+    labels = [c[0] for c in communities]
+    colors = [_hex(c[1], accessibility) for c in communities]
     light = [_lighten(c, 0.55) for c in colors]   # pale fill so overlapping same-colour nodes read as rings
 
     # Cross-community edge count for the subtitle takeaway.
@@ -441,7 +489,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         ".comm,.cedge,.clabel{transition:opacity .18s ease}",
         ".legend g{cursor:pointer}",
     ]
-    for c in range(len(COMMUNITIES)):
+    for c in range(len(communities)):
         cond = f'#fig:has(.legend .sw-{c}:is(:hover,:focus))'
         css.append(f"{cond} .comm{{opacity:.10}}")
         css.append(f"{cond} .cedge{{opacity:.05}}")
@@ -466,8 +514,8 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     # stripped. The ~318 tiny node discs are left as system line art (patterning
     # marks that small would only read as noise); the labelled pills carry the
     # community identity.
-    node_series = {f".c-{c}": colors[c] for c in range(len(COMMUNITIES))}
-    dot_series = {f".sfdp-dot-{c}": colors[c] for c in range(len(COMMUNITIES))}
+    node_series = {f".c-{c}": colors[c] for c in range(len(communities))}
+    dot_series = {f".sfdp-dot-{c}": colors[c] for c in range(len(communities))}
     fcp_defs, fcp_style = forced_color_patterns(list(dot_series), prefix="sfdp-fcp")
     contrast_block = (
         os_adaptive_style(node_series, role="stroke")
@@ -539,7 +587,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     fig_cx = PLOT_PAD + box_w / 2
     fig_cy = PLOT_TOP + box_h / 2
     parts.append('<g id="clabels">')
-    for c in range(len(COMMUNITIES)):
+    for c in range(len(communities)):
         members = [i for i in range(n) if comm[i] == c]
         mx = sum(pos[i][0] for i in members) / len(members)
         my = sum(pos[i][1] for i in members) / len(members)
@@ -577,8 +625,8 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     lx = 52
     parts.append('<g class="legend">')
     cursor: float = lx
-    for c, (label, _key) in enumerate(COMMUNITIES):
-        count = SIZES[c]
+    for c, (label, _key) in enumerate(communities):
+        count = sizes[c]
         seg = f"{label} ({count})"
         parts.append(
             f'<g class="sw-{c}" tabindex="0" role="button" '
@@ -600,6 +648,43 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     parts.append(fullscreen_control(WIDTH, HEIGHT, mode))
     parts.append("</svg>")
     return "".join(parts)
+
+
+def make_sfdp_largegraph(
+    data: Optional[List[Dict[str, Any]]] = None,
+    *,
+    out: Optional[Path | str] = None,
+    title: str = "",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the force-directed large-graph figure and write the SVG to *out*.
+
+    Parameters
+    ----------
+    data : list[dict[str, Any]] or None
+        Rows with keys ``community`` (str, label), ``palette_key`` (str,
+        a house palette base colour name) and ``size`` (int, node budget).
+        Row order fixes the ring/legend order. Defaults to
+        :data:`DEMO_DATA`.
+    out : Path, str, or None
+        Output path (.svg). Defaults to
+        ``assets/svg-examples/sfdp-largegraph.svg``.
+    title : str, optional
+        Accepted for signature parity; the figure's headline is baked into
+        the takeaway text (unused).
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+    """
+    _ = title
+    svg = build_svg(data, mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "sfdp-largegraph")
+    return write_svg(dest, svg)
 
 
 def main() -> None:

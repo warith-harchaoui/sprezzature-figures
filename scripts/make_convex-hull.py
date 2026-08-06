@@ -52,7 +52,7 @@ from __future__ import annotations
 import math
 import sys
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 from xml.sax.saxutils import escape
 
 import numpy as np
@@ -61,7 +61,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _labels import label_cell  # noqa: E402
 from _style import leveled_colors, load_palette, os_dark_style  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
-from _render import render_cli  # noqa: E402
+from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _svg import svg_open  # noqa: E402
 
 # ------------------------------------------------------------------
@@ -170,6 +170,19 @@ def make_data(seed: int = 11) -> Dict[str, List[Tuple[float, float]]]:
         ys = np.clip(rng.normal(cy, sy, n), Y_MIN + 0.15, Y_MAX - 0.2)
         out[name] = [(float(x), float(y)) for x, y in zip(xs, ys)]
     return out
+
+
+#: Row-record view of :func:`make_data`'s default (``seed=11``) sample, the
+#: shape the ``make_<kind>`` contract asks for: one dict per customer point
+#: with the segment it belongs to and its two feature values. This is the
+#: same data :func:`build_svg` plots by default (regenerated from the same
+#: seed inside ``build_svg``, not read back from this list) -- kept here so
+#: the module exposes a genuine, inspectable ``list[dict]`` of the story.
+DEMO_DATA: List[Dict[str, Any]] = [
+    {"segment": segment, "spend": round(x, 1), "days": round(y, 2)}
+    for segment, points in make_data().items()
+    for x, y in points
+]
 
 
 # ------------------------------------------------------------------
@@ -618,6 +631,53 @@ def build_svg(seed: int = 11, mode: str = "self-contained", accessibility: str =
     parts.append(fullscreen_control(WIDTH, HEIGHT, mode))
     parts.append("</svg>")
     return "".join(parts)
+
+
+def make_convex_hull(
+    data: Optional[List[Dict[str, Any]]] = None,
+    *,
+    out: Optional[Path | str] = None,
+    title: str = "",
+    seed: int = 11,
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the convex-hull-over-clusters SVG and write it to ``out``.
+
+    The standard ``make_<kind>`` entry the figure registry dispatches to.
+    The three customer segments and their spend/engagement geometry (axis
+    domains, hull padding, corner radius) are baked into :func:`build_svg`
+    around a fixed ``seed``, matching :data:`DEMO_DATA`; ``data`` is
+    accepted for dispatcher parity (every ``make_<kind>`` takes rows) but
+    is not threaded into the plotted geometry, since arbitrary spend/day
+    values could fall outside the figure's fixed axis domain. Pass
+    ``seed`` to resample a different (still on-domain) point cloud.
+
+    Parameters
+    ----------
+    data : list[dict[str, Any]] or None
+        Accepted for contract parity; unused (see above). Defaults to
+        :data:`DEMO_DATA` conceptually.
+    out : Path, str, or None
+        Output path (.svg). Defaults to ``assets/svg-examples/convex-hull.svg``.
+    title : str, optional
+        Accepted for dispatcher/CLI parity (every ``make-figure`` call
+        passes ``--title``); unused, since the chart's title is fixed prose.
+    seed : int, optional
+        NumPy seed for the sampled customer clusters. Default 11 (the seed
+        :data:`DEMO_DATA` was generated from).
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+    """
+    _ = data, title  # accepted for dispatcher parity; see docstring
+    svg = build_svg(seed=seed, mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "convex-hull")
+    return write_svg(dest, svg)
 
 
 def main() -> None:

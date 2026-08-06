@@ -36,7 +36,7 @@ from __future__ import annotations
 import math
 import sys
 from pathlib import Path
-from typing import Callable, List, Tuple, cast
+from typing import Any, Callable, Dict, List, Optional, Tuple, cast
 
 # The house-style palette lives in _style (stdlib-only, safe to import
 # without the dataviz tier). _svg gives the XML escape helper.
@@ -45,7 +45,7 @@ from _labels import label_cell  # noqa: E402
 from _style import load_palette, os_dark_style  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
-from _render import render_cli  # noqa: E402
+from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 
 
 # ------------------------------------------------------------------
@@ -82,6 +82,71 @@ _STORM_INFLOW: float = 20.0    # inward pull so streamlines spiral in
 
 #: Steady background westerly (blows toward +x, i.e. eastward).
 _BASE_WIND: float = 20.0       # km/h
+
+#: The field's two components at their shipped defaults, kept aside so a
+#: caller-less render (or `data=None`) can always be restored exactly.
+_FIELD_DEFAULTS: Dict[str, float] = {
+    "base_wind": _BASE_WIND,
+    "storm_x": _STORM_X,
+    "storm_y": _STORM_Y,
+    "storm_swirl": _STORM_SWIRL,
+    "storm_core": _STORM_CORE,
+    "storm_inflow": _STORM_INFLOW,
+}
+
+#: Row records describing the field's two physical components: a steady
+#: background wind and a cyclonic vortex (see :func:`_field`). Genuinely
+#: drives the streamline integration, the storm marker and the legend —
+#: unlike a per-point sampling of the field (which would be thousands of
+#: rows for no extra fidelity), these two rows *are* the field's data.
+DEMO_DATA: List[Dict[str, Any]] = [
+    {"component": "wind", "speed_kmh": _BASE_WIND},
+    {
+        "component": "vortex",
+        "x": _STORM_X,
+        "y": _STORM_Y,
+        "swirl_kmh": _STORM_SWIRL,
+        "core_radius_km": _STORM_CORE,
+        "inflow_kmh": _STORM_INFLOW,
+    },
+]
+
+
+def _apply_field_params(data: Optional[List[Dict[str, Any]]]) -> None:
+    """Set the module-level field constants from row records (or reset them).
+
+    :func:`_field` and its callers (the RK4 integrator, the storm marker,
+    the seed rings) all read the plain module-level constants below rather
+    than threading a parameters object through every helper — this is the
+    one place that reconciles them with a caller's ``data``. Called once at
+    the top of :func:`build_svg` before any field evaluation.
+
+    Parameters
+    ----------
+    data : list of dict or None
+        Rows with ``component`` either ``"wind"`` (``speed_kmh``) or
+        ``"vortex"`` (``x``, ``y``, ``swirl_kmh``, ``core_radius_km``,
+        ``inflow_kmh``). ``None`` restores :data:`_FIELD_DEFAULTS`.
+    """
+    global _BASE_WIND, _STORM_X, _STORM_Y, _STORM_SWIRL, _STORM_CORE, _STORM_INFLOW
+    _BASE_WIND = _FIELD_DEFAULTS["base_wind"]
+    _STORM_X = _FIELD_DEFAULTS["storm_x"]
+    _STORM_Y = _FIELD_DEFAULTS["storm_y"]
+    _STORM_SWIRL = _FIELD_DEFAULTS["storm_swirl"]
+    _STORM_CORE = _FIELD_DEFAULTS["storm_core"]
+    _STORM_INFLOW = _FIELD_DEFAULTS["storm_inflow"]
+    if not data:
+        return
+    for row in data:
+        component = row.get("component")
+        if component == "wind":
+            _BASE_WIND = float(row.get("speed_kmh", _BASE_WIND))
+        elif component == "vortex":
+            _STORM_X = float(row.get("x", _STORM_X))
+            _STORM_Y = float(row.get("y", _STORM_Y))
+            _STORM_SWIRL = float(row.get("swirl_kmh", _STORM_SWIRL))
+            _STORM_CORE = float(row.get("core_radius_km", _STORM_CORE))
+            _STORM_INFLOW = float(row.get("inflow_kmh", _STORM_INFLOW))
 
 
 def _field(x: float, y: float) -> Tuple[float, float]:
@@ -615,11 +680,23 @@ def _legend(parts: List[str], ramp: Callable[[float], str], v_min: float, v_max:
     )
 
 
-def build_svg(mode: str = "self-contained", accessibility: str = "universal") -> str:
+def build_svg(
+    data: Optional[List[Dict[str, Any]]] = None,
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> str:
     """Assemble the full streamplot SVG document as a string.
 
     Parameters
     ----------
+    data : list of dict or None
+        Rows describing the field's components: ``{"component": "wind",
+        "speed_kmh": ...}`` and/or ``{"component": "vortex", "x", "y",
+        "swirl_kmh", "core_radius_km", "inflow_kmh"}``. Defaults to
+        :data:`DEMO_DATA`. Sets the module-level field constants for the
+        duration of this call (see :func:`_apply_field_params`); the domain
+        extent, coastline framing and axis titles stay fixed to the shipped
+        coastal scene.
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`
         (``"self-contained"``, ``"external"`` or ``"static"``). Controls
@@ -636,6 +713,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     str
         A complete, standalone SVG document.
     """
+    _apply_field_params(data)
     sx, sy = _make_scales()
     ramp = _speed_ramp(accessibility)
     lines = _streamlines()
@@ -812,6 +890,41 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     parts.append(fullscreen_control(_WIDTH, _HEIGHT, mode))
     parts.append('</svg>')
     return "\n".join(parts)
+
+
+def make_streamplot(
+    data: Optional[List[Dict[str, Any]]] = None,
+    *,
+    out: Optional[Path | str] = None,
+    title: str = "",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the streamplot and write the SVG to *out*.
+
+    Parameters
+    ----------
+    data : list[dict[str, Any]] or None
+        Rows describing the field's wind/vortex components. Defaults to
+        :data:`DEMO_DATA`.
+    out : Path, str, or None
+        Output path (.svg). Defaults to
+        ``assets/svg-examples/streamplot.svg``.
+    title : str, optional
+        Accepted for dispatcher parity; the field's own headline states the
+        specific takeaway, so this is unused.
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+    """
+    del title
+    svg = build_svg(data, mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "streamplot")
+    return write_svg(dest, svg)
 
 
 def main() -> None:

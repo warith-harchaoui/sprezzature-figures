@@ -61,9 +61,11 @@ def test_static_audit_is_wellformed_and_never_swallows_errors() -> None:
     [
         # sankey was rewritten to take real data + expose make_sankey (plan §7).
         ("sankey", True, None),
-        # difference-chart still exposes only build_svg()/main(): a documented,
-        # deferred gap (see docs/studio/STATUS.md), pinned as legacy.
-        ("difference-chart", False, "legacy"),
+        # difference-chart was promoted to the contract (make_difference_chart,
+        # real data threaded through); render=False here so the best this
+        # static-only pass can confirm is "experimental", not "stable" (that
+        # needs a successful --render, covered by the slow test below).
+        ("difference-chart", True, "experimental"),
     ],
 )
 def test_audit_reflects_each_generator_contract(kind, callable_exists, status) -> None:

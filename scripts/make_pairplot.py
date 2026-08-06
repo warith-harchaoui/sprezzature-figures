@@ -50,11 +50,11 @@ import math
 import random
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 # House-style tokens + shared SVG primitives live alongside in scripts/.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _render import render_cli  # noqa: E402
+from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _style import qualitative_sequence, os_adaptive_style, os_dark_style  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
@@ -298,7 +298,7 @@ def _legend_glyph(shape: str, cx: float, cy: float, r: float, fill: str, cls: st
     return _marker(shape, cx, cy, r, fill, cls)
 
 
-def build_svg(mode: str = "self-contained") -> str:
+def build_svg(rows: "List[Dict[str, Any]] | None" = None, mode: str = "self-contained") -> str:
     """Assemble the full SPLOM SVG string.
 
     Lays out an N×N grid of cells inside a plotting area. Off-diagonal cells are
@@ -310,6 +310,12 @@ def build_svg(mode: str = "self-contained") -> str:
 
     Parameters
     ----------
+    rows : list of dict or None
+        Cell records, each carrying the four measured fields (``density``,
+        ``charge``, ``resistance``, ``cycles``) plus a ``chemistry`` label.
+        Defaults to :func:`make_rows`'s illustrative battery-cell fleet. Any
+        number of distinct ``chemistry`` values is accepted; the three hues
+        and marker shapes cycle for a fourth group and beyond.
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`
         (``"self-contained"``, ``"external"`` or ``"static"``). In
@@ -323,10 +329,12 @@ def build_svg(mode: str = "self-contained") -> str:
     str
         A complete, standalone SVG document.
     """
-    rows = make_rows()
+    rows = rows if rows else make_rows()
     variables = VARIABLES
     n = len(variables)
-    chem_names = list(CHEMISTRIES.keys())
+    chem_names = list(dict.fromkeys(r["chemistry"] for r in rows))
+    colors = [COLORS[i % len(COLORS)] for i in range(len(chem_names))]
+    shapes = [SHAPES[i % len(SHAPES)] for i in range(len(chem_names))]
 
     # --- per-variable scales (shared across the whole row/column) ----
     # Each variable gets ONE padded window + tick set, reused by every cell in
@@ -407,11 +415,7 @@ def build_svg(mode: str = "self-contained") -> str:
     parts.append(
         "<style>\n"
         + os_adaptive_style(
-            {
-                ".chem-0": COLORS[0],
-                ".chem-1": COLORS[1],
-                ".chem-2": COLORS[2],
-            },
+            {f".chem-{i}": colors[i] for i in range(len(chem_names))},
             role="both",
             forced=True,
         )
@@ -451,7 +455,7 @@ def build_svg(mode: str = "self-contained") -> str:
     )
     leg_x = float(m_left)
     for i, name in enumerate(chem_names):
-        glyph = _legend_glyph(SHAPES[i], leg_x + 11, leg_y, 8.5, COLORS[i], f"chem-{i}")
+        glyph = _legend_glyph(shapes[i], leg_x + 11, leg_y, 8.5, colors[i], f"chem-{i}")
         parts.append(glyph)
         parts.append(
             f'<text x="{leg_x + 28:.1f}" y="{leg_y + 6:.1f}" font-size="19" '
@@ -489,8 +493,8 @@ def build_svg(mode: str = "self-contained") -> str:
 
         # Points, grouped by chemistry so each keeps its own hue + shape.
         for ci, chem in enumerate(chem_names):
-            fill = COLORS[ci]
-            shape = SHAPES[ci]
+            fill = colors[ci]
+            shape = shapes[ci]
             for r in rows:
                 if r["chemistry"] != chem:
                     continue
@@ -525,7 +529,7 @@ def build_svg(mode: str = "self-contained") -> str:
             vals = [float(r[key]) for r in rows if r["chemistry"] == chem]
             pts = _kde(vals, lo, hi, steps=48)
             peak = max(peak, max(d for _, d in pts))
-            curves.append((ci, COLORS[ci], chem, pts))
+            curves.append((ci, colors[ci], chem, pts))
         if peak <= 0:
             peak = 1.0
         usable_h = cell * 0.86
@@ -628,6 +632,48 @@ def build_svg(mode: str = "self-contained") -> str:
     parts.append(fullscreen_control(width, height, mode))
     parts.append("</svg>")
     return "\n".join(parts)
+
+
+#: The registry contract's DEMO_DATA — the same cell-record rows
+#: :func:`make_rows` already produces (a fixed seed keeps it reproducible).
+DEMO_DATA: List[Dict[str, Any]] = make_rows()
+
+
+def make_pairplot(
+    data: Optional[List[Dict[str, Any]]] = None,
+    *,
+    out: Optional[Path | str] = None,
+    title: str = "",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the pair plot (SPLOM) and write the SVG to *out*.
+
+    Parameters
+    ----------
+    data : list[dict[str, Any]] or None
+        Rows carrying the four measured fields (``density``, ``charge``,
+        ``resistance``, ``cycles``) plus a ``chemistry`` label. Defaults to
+        :data:`DEMO_DATA`. ``title`` and ``accessibility`` are accepted for
+        signature parity with the rest of the gallery; ``build_svg`` has no
+        accessibility parameter (its dual hue+shape encoding is already
+        CVD-safe by construction), so ``accessibility`` is currently a
+        documented no-op here.
+    out : Path, str, or None
+        Output path. Defaults to ``assets/svg-examples/pairplot.svg``.
+    mode : str
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+    """
+    _ = title, accessibility
+    rows = data if data else DEMO_DATA
+    svg = build_svg(rows, mode=mode)
+    dest = Path(out) if out else svg_example_path(__file__, "pairplot")
+    return write_svg(dest, svg)
 
 
 def main() -> None:

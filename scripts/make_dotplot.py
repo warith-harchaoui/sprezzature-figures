@@ -33,13 +33,13 @@ import math
 import random
 import sys
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 # The house-style palette lives one directory up, in _style.py.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
-from _render import render_cli  # noqa: E402
+from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _svg import svg_open  # noqa: E402
 
 
@@ -82,6 +82,10 @@ def _response_hours(n: int = 68, seed: int = 11) -> List[float]:
 #: the first few hours; a handful drag into a long tail — the story the
 #: dot plot makes obvious at a glance. Values are illustrative.
 RESPONSE_HOURS: List[float] = _response_hours()
+
+#: Row-record view of :data:`RESPONSE_HOURS`, the shape the ``make_<kind>``
+#: contract asks for: one dict per ticket with its first-response time.
+DEMO_DATA: List[Dict[str, Any]] = [{"hours": h} for h in RESPONSE_HOURS]
 
 
 # ------------------------------------------------------------------
@@ -131,11 +135,18 @@ def wilkinson_bins(values: List[float], bin_width: float) -> List[Tuple[float, L
 # ------------------------------------------------------------------
 # SVG assembly
 # ------------------------------------------------------------------
-def build_svg(mode: str = "self-contained", accessibility: str = "universal") -> str:
+def build_svg(
+    data: Optional[List[Dict[str, Any]]] = None,
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> str:
     """Assemble the full Wilkinson dot-plot SVG string.
 
     Parameters
     ----------
+    data : list of dict or None
+        Rows with an ``hours`` key (first-response time). Defaults to
+        :data:`DEMO_DATA` (equivalently, :data:`RESPONSE_HOURS`).
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`
         (``"self-contained"``, ``"external"`` or ``"static"``). Controls
@@ -152,6 +163,9 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     str
         A complete, standalone SVG document.
     """
+    response_hours: List[float] = (
+        [float(r["hours"]) for r in data] if data else RESPONSE_HOURS
+    )
     palette: Dict[str, str] = load_palette(accessibility)
     blue = palette.get("Blue", "#007AFF")
     red = palette.get("Red", "#FF3B30")
@@ -182,7 +196,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     r = 11.0
     pitch = 2 * r + 2.5
 
-    bins = wilkinson_bins(RESPONSE_HOURS, bin_width)
+    bins = wilkinson_bins(response_hours, bin_width)
 
     # Fit the canvas to the tallest stack so columns fill the panel.
     tallest = max(len(members) for _, members in bins)
@@ -196,8 +210,8 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     target = 4.0
 
     parts: List[str] = []
-    n = len(RESPONSE_HOURS)
-    within = sum(1 for v in RESPONSE_HOURS if v <= target)
+    n = len(response_hours)
+    within = sum(1 for v in response_hours if v <= target)
     pct_within = round(100 * within / n)
 
     parts.append(svg_open(width, height, "dp-title", "dp-desc"))
@@ -329,6 +343,41 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     parts.append(fullscreen_control(width, height, mode))
     parts.append("</svg>")
     return "\n".join(parts)
+
+
+def make_dotplot(
+    data: Optional[List[Dict[str, Any]]] = None,
+    *,
+    out: Optional[Path | str] = None,
+    title: str = "",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the Wilkinson dot-plot SVG and write it to ``out``.
+
+    The standard ``make_<kind>`` entry the figure registry dispatches to.
+
+    Parameters
+    ----------
+    data : list[dict[str, Any]] or None
+        Rows with an ``hours`` key. Defaults to :data:`DEMO_DATA`.
+    out : Path, str, or None
+        Output path (.svg). Defaults to ``assets/svg-examples/dotplot.svg``.
+    title : str, optional
+        Accepted for dispatcher/CLI parity; unused, since the chart's
+        title is fixed prose.
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+    """
+    _ = title  # accepted for dispatcher parity; see docstring
+    svg = build_svg(data, mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "dotplot")
+    return write_svg(dest, svg)
 
 
 def main() -> None:

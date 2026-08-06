@@ -51,8 +51,12 @@ def test_list_kinds_filtered_by_status() -> None:
     assert resp.status_code == 200
     kinds = resp.json()
     assert "treemap" in kinds
-    # A known-legacy kind must not appear under the stable filter.
-    assert "rose" not in kinds
+    # Every kind under the filter must genuinely carry that status (all 126
+    # happen to be 'stable' right now, so this can't be a fixed negative
+    # example -- verify the filter is real by cross-checking each entry).
+    for kind in kinds:
+        detail = client.get(f"/kinds/{kind}")
+        assert detail.json()["status"] == "stable"
 
 
 def test_get_kind_definition() -> None:
@@ -81,12 +85,19 @@ def test_render_unknown_kind_404() -> None:
     assert resp.status_code == 404
 
 
-def test_render_legacy_kind_422_not_500() -> None:
-    # "rose" is a registered-but-legacy kind (no make_<kind> callable yet).
-    # The dispatcher's AttributeError must surface as a client error (422),
-    # not an unhandled 500 -- the registry already told the caller it was
-    # legacy via GET /kinds/rose's "status" field.
-    resp = client.post("/render/rose", json={})
+def test_render_broken_kind_422_not_500(monkeypatch: pytest.MonkeyPatch) -> None:
+    # All 126 registered kinds are 'stable' now, so there is no naturally
+    # broken fixture left to hit this path with -- simulate the dispatcher
+    # raising the contract-gap error (AttributeError) a genuinely-legacy kind
+    # used to produce, and confirm the API still surfaces it as a client
+    # error (422), not an unhandled 500.
+    import sprezzature_figures.api as api_module
+
+    def broken_make_figure(kind, data, **kwargs):
+        raise AttributeError(f"Registered module for {kind!r} has no callable.")
+
+    monkeypatch.setattr(api_module, "make_figure", broken_make_figure)
+    resp = client.post("/render/treemap", json={})
     assert resp.status_code == 422
 
 

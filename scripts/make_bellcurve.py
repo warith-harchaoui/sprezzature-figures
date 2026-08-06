@@ -23,7 +23,7 @@ from __future__ import annotations
 import math
 import sys
 from pathlib import Path
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
@@ -40,6 +40,11 @@ COLOR_FILL = "#007AFF"
 COLOR_STROKE = "#0051A8"
 COLOR_SIGMA1 = "#28CD41"
 COLOR_MEAN = "#FF3B30"
+
+# The make_<kind> contract's row-record view of the distribution: a single
+# row carrying the two parameters the curve is drawn from. make_bellcurve()
+# reads ``mean``/``std`` off the first row when ``data`` is supplied.
+DEMO_DATA: List[Dict[str, Any]] = [{"mean": 72.4, "std": 9.1}]
 
 
 def _normal_pdf(x: float, mean: float, std: float) -> float:
@@ -179,9 +184,10 @@ def build_svg(
 
 
 def make_bellcurve(
-    mean: float = 72.4,
-    std: float = 9.1,
+    data: Optional[List[Dict[str, Any]]] = None,
     *,
+    mean: Optional[float] = None,
+    std: Optional[float] = None,
     out: Optional[Path | str] = None,
     title: str = "Distribution of Student Exam Scores",
     subtitle: str = "Normal distribution fitted to 1,840 exam results; shaded area = one standard deviation around the mean",
@@ -194,10 +200,16 @@ def make_bellcurve(
 
     Parameters
     ----------
-    mean : float
-        Distribution mean. Default 72.4 (exam score example).
-    std : float
-        Standard deviation. Default 9.1.
+    data : list of dict or None
+        A single-row record ``[{"mean": ..., "std": ...}]`` (see
+        :data:`DEMO_DATA`). Defaults to the illustrative exam-score
+        distribution. Ignored for any parameter also passed explicitly via
+        ``mean``/``std``.
+    mean : float or None
+        Distribution mean; overrides ``data`` when given. Falls back to
+        72.4 (exam score example) if neither is supplied.
+    std : float or None
+        Standard deviation; overrides ``data`` when given. Falls back to 9.1.
     out : Path, str, or None
         Output path (.svg). Defaults to ``assets/svg-examples/bellcurve.svg``.
     title, subtitle : str
@@ -218,7 +230,11 @@ def make_bellcurve(
     >>> p.exists()
     True
     """
-    svg = build_svg(mean, std, title=title, subtitle=subtitle, width=width, height=height,
+    rows = data if data else DEMO_DATA
+    rec = rows[0] if rows else {}
+    resolved_mean = mean if mean is not None else float(rec.get("mean", 72.4))
+    resolved_std = std if std is not None else float(rec.get("std", 9.1))
+    svg = build_svg(resolved_mean, resolved_std, title=title, subtitle=subtitle, width=width, height=height,
                      mode=mode, accessibility=accessibility)
     dest = Path(out) if out else svg_example_path(__file__, "bellcurve")
     return write_svg(dest, svg)

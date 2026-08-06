@@ -56,7 +56,7 @@ import numpy as np
 
 # House-style palette + the shared SVG primitives live alongside in scripts/.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _render import render_cli  # noqa: E402
+from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _style import (  # noqa: E402
     forced_color_patterns,
@@ -149,7 +149,11 @@ def histogram(
     return [(lo + i * width, lo + (i + 1) * width, counts[i]) for i in range(bins)]
 
 
-def build_svg(mode: str = "self-contained", accessibility: str = "universal") -> str:
+def build_svg(
+    data: "List[Dict[str, float]] | None" = None,
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> str:
     """Assemble the full joint-plot SVG string.
 
     Layout is a central scatter with two marginal histograms: the top rail
@@ -159,6 +163,9 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
 
     Parameters
     ----------
+    data : list of dict or None
+        Rows with keys ``sleep`` (hours) and ``rt`` (reaction time, ms).
+        Defaults to :func:`make_data`'s illustrative sleep study.
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`
         (``"self-contained"``, ``"external"`` or ``"static"``). Defaults to
@@ -188,7 +195,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     secondary = "#6E6E73"
     grid_col = "#EEEEEE"
 
-    data = make_data()
+    data = data if data else make_data()
     sleep = [float(d["sleep"]) for d in data]
     rt = [float(d["rt"]) for d in data]
 
@@ -476,6 +483,47 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     parts.append(fullscreen_control(width, height, mode))
     parts.append("</svg>")
     return "\n".join(parts)
+
+
+#: The registry contract's DEMO_DATA — the same sleep-study rows
+#: :func:`make_data` already produces (a fixed seed keeps it reproducible).
+DEMO_DATA: List[Dict[str, float]] = make_data()
+
+
+def make_jointplot(
+    data: "List[Dict[str, float]] | None" = None,
+    *,
+    out: "Path | str | None" = None,
+    title: str = "",
+    subtitle: str = "",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the joint plot and write the SVG to *out*.
+
+    Parameters
+    ----------
+    data : list[dict[str, float]] or None
+        Rows with keys ``sleep`` (hours) and ``rt`` (reaction time, ms).
+        Defaults to :data:`DEMO_DATA`. ``title``/``subtitle`` are accepted
+        for signature parity with the rest of the gallery; the headline
+        states a fact about the illustrative sleep study and is currently a
+        documented no-op.
+    out : Path, str, or None
+        Output path. Defaults to ``assets/svg-examples/jointplot.svg``.
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+    """
+    _ = title, subtitle
+    rows = data if data else DEMO_DATA
+    svg = build_svg(rows, mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "jointplot")
+    return write_svg(dest, svg)
 
 
 def main() -> None:

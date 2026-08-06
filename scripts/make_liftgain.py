@@ -66,7 +66,7 @@ import numpy as np
 
 # House-style helpers live alongside this script in scripts/.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _render import render_cli  # noqa: E402
+from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
@@ -190,7 +190,11 @@ def make_data(n: int = 4000, base_rate: float = 0.18, seed: int = 11) -> Dict[st
     return {"curve": records, "operating": operating, "prevalence": round(prevalence, 4)}
 
 
-def build_svg(mode: str = "self-contained", accessibility: str = "universal") -> str:
+def build_svg(
+    curve: "List[Dict[str, Any]] | None" = None,
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> str:
     """Assemble the full cumulative-gain (lift/gain) SVG string.
 
     Draws, back to sprezzature: the light plot band and gridlines, the shaded
@@ -202,6 +206,14 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
 
     Parameters
     ----------
+    curve : list of dict or None
+        Rows shaped ``{"pop": float, "gain": float, "series": "Model" |
+        "Perfect model" | "Random baseline"}`` sharing one 0..1 population
+        grid (the shape :func:`make_data`'s ``"curve"`` key returns).
+        Defaults to the illustrative churn-model curve. The operating point
+        (top-20% marker) and the perfect model's prevalence kink are both
+        *derived from this curve* rather than re-simulated, so a caller
+        supplying real gain-curve data still gets an accurate marker.
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`
         (``"self-contained"``, ``"external"`` or ``"static"``). Defaults to
@@ -217,10 +229,24 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     str
         A complete, standalone SVG document.
     """
-    data = make_data()
-    curve = data["curve"]
-    op = data["operating"]
-    prevalence = float(data["prevalence"])
+    if curve:
+        model_all = [(float(r["pop"]), float(r["gain"])) for r in curve if r["series"] == "Model"]
+        perfect_all = [(float(r["pop"]), float(r["gain"])) for r in curve if r["series"] == "Perfect model"]
+        prevalence = next((p for p, g in perfect_all if g >= 0.999), (perfect_all[-1][0] if perfect_all else 0.2))
+        if model_all:
+            op_pop, op_gain = min(model_all, key=lambda pg: abs(pg[0] - _OPERATING_FRACTION))
+        else:
+            op_pop, op_gain = _OPERATING_FRACTION, _OPERATING_FRACTION
+        op = {
+            "pop": round(op_pop, 4),
+            "gain": round(op_gain, 4),
+            "lift": round(op_gain / op_pop, 2) if op_pop else 0.0,
+        }
+    else:
+        computed = make_data()
+        curve = computed["curve"]
+        op = computed["operating"]
+        prevalence = float(computed["prevalence"])
 
     palette: Dict[str, str] = load_palette(accessibility)
     model_c = palette.get("Blue", "#007AFF")     # the hero: what we shipped
@@ -505,6 +531,47 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     parts.append(fullscreen_control(width, height, mode))
     parts.append("</svg>")
     return "\n".join(parts)
+
+
+#: The registry contract's DEMO_DATA: the same row-shaped curve
+#: :func:`make_data`'s ``"curve"`` key already returns (fixed seed, so it is
+#: reproducible), one row per (population fraction, series) sample.
+DEMO_DATA: List[Dict[str, Any]] = make_data()["curve"]
+
+
+def make_liftgain(
+    data: "List[Dict[str, Any]] | None" = None,
+    *,
+    out: "Path | str | None" = None,
+    title: str = "",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> Path:
+    """Render the cumulative-gain (lift/gain) chart and write the SVG to *out*.
+
+    Parameters
+    ----------
+    data : list[dict[str, Any]] or None
+        Rows shaped ``{"pop", "gain", "series"}`` — see :func:`build_svg`.
+        Defaults to :data:`DEMO_DATA`. ``title`` is accepted for signature
+        parity with the rest of the gallery; the headline states a fact
+        about the illustrative churn campaign and is currently a documented
+        no-op.
+    out : Path, str, or None
+        Output path. Defaults to ``assets/svg-examples/liftgain.svg``.
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
+
+    Returns
+    -------
+    Path
+        Absolute path to the written SVG file.
+    """
+    _ = title
+    rows = data if data else DEMO_DATA
+    svg = build_svg(rows, mode=mode, accessibility=accessibility)
+    dest = Path(out) if out else svg_example_path(__file__, "liftgain")
+    return write_svg(dest, svg)
 
 
 def main() -> None:
