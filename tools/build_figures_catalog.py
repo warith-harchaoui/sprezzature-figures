@@ -311,6 +311,14 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
         ],
         "optional_roles": [],
     },
+    "stacked-area": {
+        "required_roles": [
+            {"name": "month", "label": "Continuous x value", "accepted_types": ["numeric"], "required": True},
+            {"name": "service", "label": "Series", "accepted_types": ["categorical"], "required": True},
+            {"name": "cost", "label": "Numeric value", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
     "dumbbell": {
         "required_roles": [
             {"name": "category", "label": "Category", "accepted_types": ["categorical"], "required": True},
