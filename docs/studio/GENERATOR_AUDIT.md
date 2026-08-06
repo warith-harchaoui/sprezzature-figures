@@ -4,11 +4,11 @@ Reproducible audit of every `scripts/make_*.py` generator against the
 `make_<kind>(data, *, out, title, ...) -> Path` contract the dispatcher
 expects. Regenerate with `python tools/audit_generators.py --render`.
 
-- **stable**: 22
+- **stable**: 23
 - **experimental**: 0
 - **legacy**: 80
 - **unavailable**: 0
-- **total**: 102
+- **total**: 103
 
 | kind | status | reachable | callable | demo_data | render | errors |
 |---|---|---|---|---|---|---|
@@ -34,6 +34,7 @@ expects. Regenerate with `python tools/audit_generators.py --render`.
 | `chord` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_chord.py; No callable named 'make_chord' in make_chord.py |
 | `choropleth` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `circle-packing` | legacy | **no** | **no** | **no** | not_run | No DEMO_DATA in make_circle-packing.py; No callable named 'make_circle_packing' in make_circle-packing.py |
+| `clustermap` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `columnrange` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `confusion-matrix` | legacy | **no** | **no** | **no** | not_run | No DEMO_DATA in make_confusion-matrix.py; No callable named 'make_confusion_matrix' in make_confusion-matrix.py |
 | `connected-scatter` | legacy | **no** | **no** | **no** | not_run | No DEMO_DATA in make_connected-scatter.py; No callable named 'make_connected_scatter' in make_connected-scatter.py |

@@ -819,6 +819,58 @@
     ]
   },
   {
+    "kind": "clustermap",
+    "label": "Clustermap",
+    "aliases": [],
+    "category": "Distribution",
+    "description": "Heatmap with rows and columns reordered by hierarchical clustering, with a dendrogram guide along each axis showing the merge structure. Use for gene-expression matrices, correlated-feature discovery, or customer-segment x product affinity.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "svg",
+    "module": "scripts/make_clustermap.py",
+    "callable_name": "make_clustermap",
+    "required_roles": [
+      {
+        "name": "row",
+        "label": "Row category",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "col",
+        "label": "Column category",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "value",
+        "label": "Cell value",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 900,
+    "default_height": 600,
+    "options_schema": {},
+    "warnings": [
+      "Default output path falls back to a shared assets/ directory"
+    ]
+  },
+  {
     "kind": "columnrange",
     "label": "Columnrange",
     "aliases": [],

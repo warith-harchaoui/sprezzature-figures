@@ -1,6 +1,6 @@
 {
   "summary": {
-    "stable": 22,
+    "stable": 23,
     "experimental": 0,
     "legacy": 80,
     "unavailable": 0
@@ -557,6 +557,30 @@
         "No DEMO_DATA in make_circle-packing.py",
         "No callable named 'make_circle_packing' in make_circle-packing.py",
         "make_figure('circle-packing') cannot resolve to make_circle-packing.py: hyphen/underscore normalisation looks for a different filename",
+        "Default output path falls back to a shared assets/ directory"
+      ]
+    },
+    {
+      "kind": "clustermap",
+      "filename": "make_clustermap.py",
+      "hyphenated_kind": false,
+      "dispatcher_reachable_by_kind": true,
+      "importable": true,
+      "import_error": null,
+      "expected_callable": "make_clustermap",
+      "callable_exists": true,
+      "demo_data_exists": true,
+      "demo_data_len": 48,
+      "accepts_data": true,
+      "accepts_out": true,
+      "accepts_title": true,
+      "renderer": "svg",
+      "writes_hardcoded_path": true,
+      "hardcoded_dimensions": true,
+      "render_test": "passed",
+      "render_error": null,
+      "status": "stable",
+      "errors": [
         "Default output path falls back to a shared assets/ directory"
       ]
     },

@@ -184,6 +184,14 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
         ],
         "optional_roles": [],
     },
+    "clustermap": {
+        "required_roles": [
+            {"name": "row", "label": "Row category", "accepted_types": ["categorical"], "required": True},
+            {"name": "col", "label": "Column category", "accepted_types": ["categorical"], "required": True},
+            {"name": "value", "label": "Cell value", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
     "dumbbell": {
         "required_roles": [
             {"name": "category", "label": "Category", "accepted_types": ["categorical"], "required": True},
