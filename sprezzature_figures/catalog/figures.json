@@ -742,6 +742,50 @@
     ]
   },
   {
+    "kind": "choropleth",
+    "label": "Choropleth",
+    "aliases": [],
+    "category": "Geospatial",
+    "description": "World map with per-country fill on a single pale-to-navy blue ramp; no-data countries fall back to neutral grey. Use for any per-country indicator where geography carries meaning the reader already has spatial intuition for.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "svg",
+    "module": "scripts/make_choropleth.py",
+    "callable_name": "make_choropleth",
+    "required_roles": [
+      {
+        "name": "id",
+        "label": "ISO-3166-1 numeric country code",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "value",
+        "label": "Numeric value",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 900,
+    "default_height": 600,
+    "options_schema": {},
+    "warnings": [
+      "Default output path falls back to a shared assets/ directory"
+    ]
+  },
+  {
     "kind": "circle-packing",
     "label": "Circle Packing",
     "aliases": [

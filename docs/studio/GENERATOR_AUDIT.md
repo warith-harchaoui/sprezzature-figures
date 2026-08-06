@@ -4,11 +4,11 @@ Reproducible audit of every `scripts/make_*.py` generator against the
 `make_<kind>(data, *, out, title, ...) -> Path` contract the dispatcher
 expects. Regenerate with `python tools/audit_generators.py --render`.
 
-- **stable**: 21
+- **stable**: 22
 - **experimental**: 0
 - **legacy**: 80
 - **unavailable**: 0
-- **total**: 101
+- **total**: 102
 
 | kind | status | reachable | callable | demo_data | render | errors |
 |---|---|---|---|---|---|---|
@@ -32,6 +32,7 @@ expects. Regenerate with `python tools/audit_generators.py --render`.
 | `calibration` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_calibration.py; No callable named 'make_calibration' in make_calibration.py |
 | `candlestick` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `chord` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_chord.py; No callable named 'make_chord' in make_chord.py |
+| `choropleth` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `circle-packing` | legacy | **no** | **no** | **no** | not_run | No DEMO_DATA in make_circle-packing.py; No callable named 'make_circle_packing' in make_circle-packing.py |
 | `columnrange` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `confusion-matrix` | legacy | **no** | **no** | **no** | not_run | No DEMO_DATA in make_confusion-matrix.py; No callable named 'make_confusion_matrix' in make_confusion-matrix.py |
