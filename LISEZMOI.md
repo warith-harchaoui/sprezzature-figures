@@ -148,31 +148,31 @@ départage rarement ; c'est le but qui rend le classement décisif.
 
 ## Catalogue des graphiques
 
-91 types de graphiques dans 21 catégories. Voir [FIGURES.md](FIGURES.md) pour le tableau complet.
+126 types de graphiques dans 21 catégories. Voir [FIGURES.md](FIGURES.md) pour le tableau complet.
 
 | Catégorie | Graphiques |
 |-----------|------------|
-| Comparaison | bar, bar3d, columnrange, difference-chart, dotplot, dumbbell, packed-bubble, pareto, radial-bar, variwide, waterfall |
-| Composition | area, parliament, pictorial, ternary, waffle |
-| Distribution | bellcurve, blandaltman, boxen, boxplot, histogram, mosaic, ridgeline, rug |
+| Comparaison | bar, bar-grouped, bar3d, bubble, columnrange, difference-chart, dotplot, dumbbell, lollipop, packed-bubble, pareto, radial-bar, variwide, waterfall |
+| Composition | area, donut, parliament, pictorial, stacked-area, stacked-bar, ternary, waffle |
+| Distribution | beeswarm, bellcurve, blandaltman, boxen, boxplot, corr-matrix, ecdf, errorbar, hexbin, histogram, kde1d, kde2d-contour, mosaic, population-pyramid, ridgeline, rug, strip, violin |
 | Flux | alluvial, chord, funnel, parallel-sets, sankey |
-| Géospatial | binned-grid-map, dotdensity, hexbin-map, hexmap, situation_map, spike-map, voronoi |
+| Géospatial | binned-grid-map, choropleth, dotdensity, hexbin-map, hexmap, situation_map, spike-map, voronoi |
 | Hiérarchie | circle-packing, convex-hull, dendrogram, icicle, org-chart, radial-tree, sunburst, tree, treemap |
 | KPI | bullet, gauge, liquid-gauge |
-| Matrice / Image | heatmap, imshow-interpolated |
+| Matrice / Image | clustermap, heatmap, imshow-interpolated |
 | Météorologie | windbarb, windrose |
-| Évaluation de modèles | calibration, liftgain, manhattan, ppplot, prcurve |
+| Évaluation de modèles | calibration, confusion-matrix, elbow, gaussian-process, liftgain, manhattan, ppplot, prcurve, qqplot, roc-curve, survival-km |
 | Réseau | arcdiagram, dependency-wheel, edge-bundling, network, sfdp-largegraph |
-| Régression | residual |
-| Relation | scatter |
-| Signal | spectrogram, streamplot |
+| Régression | regression-ci-band, residual |
+| Relation | parcoords, scatter, volcano |
+| Signal | quiver, spectrogram, streamplot |
 | Texte | wordcloud |
-| 3D | scatter3d, wireframe3d |
-| Série temporelle | bollinger, connected-scatter, horizon, line, streamgraph, timeline |
+| 3D | scatter3d, surface3d, wireframe3d |
+| Série temporelle | bollinger, calendar-heatmap, candlestick, connected-scatter, horizon, line, line-multi, slope, step, streamgraph, timeline |
 | Multivarié | andrews, embedding_projector, jointplot, pairplot, radar, radviz, upset, venn |
 | Méta-analyse | forest |
 | Animé | gapminder, gapminder_variants |
-| Autre | polar, rose, speaking_time |
+| Autre | cycle, gantt, interruption-matrix, polar, rose, speaking_time |
 
 ---
 
@@ -188,14 +188,13 @@ sprezzature-figures/
 ├── scripts/
 │   ├── make_treemap.py            # script autonome par type de graphique
 │   ├── make_connected-scatter.py  # les types avec tiret sont supportés
-│   └── ...                        # 91 scripts make_*.py au total
+│   └── ...                        # 126 scripts make_*.py au total
 ├── assets/
 │   └── svg-examples/      # gabarits SVG
-├── references/            # documentation des sources de référence
 └── tests/
 ```
 
-Chaque script `make_<type>.py` est autonome : il importe ce dont il a besoin, définit `make_<type>(donnees, *, out=None, title="", ...) -> Path` et expose une liste `DEMO_DATA` pour la CLI et les tests. `make_figure()` résout le type via `sprezzature_figures/catalog/figures.json` plutôt que de deviner le nom de fichier ; voir [docs/studio/GENERATOR_AUDIT.md](docs/studio/GENERATOR_AUDIT.md) pour savoir lesquels des 90 scripts respectent déjà ce contrat.
+Chaque script `make_<type>.py` est autonome : il importe ce dont il a besoin, définit `make_<type>(donnees, *, out=None, title="", ...) -> Path` et expose une liste `DEMO_DATA` pour la CLI et les tests. `make_figure()` résout le type via `sprezzature_figures/catalog/figures.json` plutôt que de deviner le nom de fichier ; voir [docs/studio/GENERATOR_AUDIT.md](docs/studio/GENERATOR_AUDIT.md) pour savoir lesquels des 126 scripts respectent déjà ce contrat.
 
 ---
 

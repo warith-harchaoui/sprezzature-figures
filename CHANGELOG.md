@@ -2,16 +2,57 @@
 
 ## Unreleased
 
+### Removed
+
+- **The last live Vega code path.** `scripts/make_figure.py` (a legacy
+  CSV/x/y/kind dispatcher emitting Vega-Lite JSON or matplotlib) predated the
+  one-generator-per-kind SVG architecture and was never wired to any
+  console-script entry point, but stayed directly runnable and documented in
+  `references/publication-presets.md`. Both are deleted, along with
+  `_style.vega_config` (its only caller) and `references/figure-catalog.md`
+  (an obsolete "prefer Vega-Lite" policy doc). All 126 chart kinds are
+  hand-authored SVG; the only Vega left anywhere in the repo is
+  `render_diagram.py` rasterising a caller-supplied external spec.
+
+### Fixed
+
+- **Two library crashes found by live-testing the CLI/API surfaces.**
+  `make_bar`'s "leads at ..." subtitle formatted `value` with `:.0f` without
+  the `float()` cast every other aggregate already had, so a string-typed
+  `value` column (the common case from CSV/JSON input) raised `ValueError`.
+  `make_area` indexed `row["channel"]` unconditionally and colored bands from
+  a dict keyed to the four hardcoded demo channel names, even though
+  `channel` is declared optional in the catalog — real data with no channel
+  column, or a channel value outside that fixed set, raised `KeyError`.
+  Channels are now derived from whatever the data actually carries, falling
+  back to a single unnamed series with no legend. Found via
+  `sprezzature-figures recommend --render` on a plain three-column CSV.
+
+### Changed
+
+- **`references/` moved off `main` onto a `skills` branch.** It's guidance
+  for a human or coding agent (Ralph Eyeball Loop protocol, corner-radius
+  policy, engine-selection tables, ...), not something any script or the
+  packaged library reads at runtime, and isn't shipped by `pyproject.toml`.
+  It now lives alongside the planned Claude/OpenCode `SKILL.md` rewrite on
+  the `skills` branch.
+- **CI cut from 9 jobs per push to 2.** The 3-OS x 2-Python test matrix plus
+  a 3-OS packaging matrix wasn't needed for day-to-day regression coverage
+  and left runs queuing during a burst of pushes. Both jobs now run once on
+  `ubuntu-latest` / Python 3.12, with a `concurrency` group
+  (`cancel-in-progress: true`) so a fast sequence of pushes supersedes its
+  own stale runs instead of piling up.
+
 ### Fixed
 
 - **`--out` now honours the file extension.** The SVG-first generators used to
   write their SVG string verbatim into whatever path you named, so `--out
   chart.png` produced SVG bytes in a `.png` file. `write_svg` (the shared tail
   every generator calls) now converts the font-embedded SVG to the requested
-  format: `.png`, `.pdf`, `.jpg` via `vl_convert`, `.html` wrapped in a minimal
+  format: `.png`, `.pdf`, `.jpg` via `resvg_py`, `.html` wrapped in a minimal
   responsive document, and `.svg` written byte-for-byte as before. Applies to
   the library and both CLIs. (The Studio was already correct here: it always
-  renders vega figures to `.svg` and rasterizes a separate PNG preview.)
+  renders the figure to `.svg` and rasterizes a separate PNG preview.)
 
 ### Fixed
 

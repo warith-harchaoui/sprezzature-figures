@@ -77,7 +77,7 @@ catalogue, the CLI), see the top-level [README.md](../../README.md) /
 
 The library, catalogue, dispatcher, ingest pipeline, core domain models, LLM
 client, Ralph engine, NiceGUI app, and iteration history/export are all built
-and tested. 15 of 90 chart types are `status="stable"` (render-verified end to
+and tested. 46 of 126 chart types are `status="stable"` (render-verified end to
 end); the rest are cataloged with an explicit status rather than silently
 assumed to work. The `FigurePlan`'s transformations (filter / sort / aggregate
 / top-N / ...) are executed deterministically on the render and export paths,
