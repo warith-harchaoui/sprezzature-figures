@@ -3727,6 +3727,62 @@
     ]
   },
   {
+    "kind": "stacked-area",
+    "label": "Stacked Area",
+    "aliases": [
+      "stacked area",
+      "stacked_area"
+    ],
+    "category": "Composition",
+    "description": "Stacked area over a continuous quantitative axis (month number, as opposed to `area`'s categorical month-name axis); top edge traces the running total, band thickness traces each series' contribution. Use for monthly cost by service or cumulative resource usage.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "svg",
+    "module": "scripts/make_stacked-area.py",
+    "callable_name": "make_stacked_area",
+    "required_roles": [
+      {
+        "name": "month",
+        "label": "Continuous x value",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "service",
+        "label": "Series",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "cost",
+        "label": "Numeric value",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 900,
+    "default_height": 600,
+    "options_schema": {},
+    "warnings": [
+      "make_figure('stacked-area') cannot resolve to make_stacked-area.py: hyphen/underscore normalisation looks for a different filename",
+      "Default output path falls back to a shared assets/ directory"
+    ]
+  },
+  {
     "kind": "streamgraph",
     "label": "Streamgraph",
     "aliases": [],
