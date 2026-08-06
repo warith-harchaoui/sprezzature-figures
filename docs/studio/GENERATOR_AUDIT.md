@@ -4,11 +4,11 @@ Reproducible audit of every `scripts/make_*.py` generator against the
 `make_<kind>(data, *, out, title, ...) -> Path` contract the dispatcher
 expects. Regenerate with `python tools/audit_generators.py --render`.
 
-- **stable**: 24
+- **stable**: 25
 - **experimental**: 0
 - **legacy**: 80
 - **unavailable**: 0
-- **total**: 104
+- **total**: 105
 
 | kind | status | reachable | callable | demo_data | render | errors |
 |---|---|---|---|---|---|---|
@@ -48,6 +48,7 @@ expects. Regenerate with `python tools/audit_generators.py --render`.
 | `dotdensity` | legacy | yes | yes | **no** | not_run | No DEMO_DATA in make_dotdensity.py; Default output path falls back to a shared assets/ directory |
 | `dotplot` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_dotplot.py; No callable named 'make_dotplot' in make_dotplot.py |
 | `dumbbell` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `ecdf` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `edge-bundling` | legacy | **no** | **no** | **no** | not_run | No DEMO_DATA in make_edge-bundling.py; No callable named 'make_edge_bundling' in make_edge-bundling.py |
 | `elbow` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_elbow.py; No callable named 'make_elbow' in make_elbow.py |
 | `embedding_projector` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_embedding_projector.py; No callable named 'make_embedding_projector' in make_embedding_projector.py |
