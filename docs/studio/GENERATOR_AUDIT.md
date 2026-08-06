@@ -4,11 +4,11 @@ Reproducible audit of every `scripts/make_*.py` generator against the
 `make_<kind>(data, *, out, title, ...) -> Path` contract the dispatcher
 expects. Regenerate with `python tools/audit_generators.py --render`.
 
-- **stable**: 20
+- **stable**: 21
 - **experimental**: 0
 - **legacy**: 80
 - **unavailable**: 0
-- **total**: 100
+- **total**: 101
 
 | kind | status | reachable | callable | demo_data | render | errors |
 |---|---|---|---|---|---|---|
@@ -30,6 +30,7 @@ expects. Regenerate with `python tools/audit_generators.py --render`.
 | `bullet` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_bullet.py; No callable named 'make_bullet' in make_bullet.py |
 | `calendar-heatmap` | stable | **no** | yes | yes | passed | make_figure('calendar-heatmap') cannot resolve to make_calendar-heatmap.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
 | `calibration` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_calibration.py; No callable named 'make_calibration' in make_calibration.py |
+| `candlestick` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `chord` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_chord.py; No callable named 'make_chord' in make_chord.py |
 | `circle-packing` | legacy | **no** | **no** | **no** | not_run | No DEMO_DATA in make_circle-packing.py; No callable named 'make_circle_packing' in make_circle-packing.py |
 | `columnrange` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
