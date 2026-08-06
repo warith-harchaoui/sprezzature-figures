@@ -2844,6 +2844,62 @@
     ]
   },
   {
+    "kind": "population-pyramid",
+    "label": "Population Pyramid",
+    "aliases": [
+      "population pyramid",
+      "population_pyramid"
+    ],
+    "category": "Distribution",
+    "description": "Mirrors two categories' horizontal bars around a shared zero axis, one row per age band, oldest at top. The classic demographic pyramid; the shape tells the story of a young/growing vs. ageing population.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "svg",
+    "module": "scripts/make_population-pyramid.py",
+    "callable_name": "make_population_pyramid",
+    "required_roles": [
+      {
+        "name": "age",
+        "label": "Age band",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "sex",
+        "label": "Category",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "pct",
+        "label": "Share (%, signed)",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 900,
+    "default_height": 600,
+    "options_schema": {},
+    "warnings": [
+      "make_figure('population-pyramid') cannot resolve to make_population-pyramid.py: hyphen/underscore normalisation looks for a different filename",
+      "Default output path falls back to a shared assets/ directory"
+    ]
+  },
+  {
     "kind": "ppplot",
     "label": "Ppplot",
     "aliases": [],
