@@ -4,11 +4,11 @@ Reproducible audit of every `scripts/make_*.py` generator against the
 `make_<kind>(data, *, out, title, ...) -> Path` contract the dispatcher
 expects. Regenerate with `python tools/audit_generators.py --render`.
 
-- **stable**: 16
+- **stable**: 17
 - **experimental**: 0
 - **legacy**: 80
 - **unavailable**: 0
-- **total**: 96
+- **total**: 97
 
 | kind | status | reachable | callable | demo_data | render | errors |
 |---|---|---|---|---|---|---|
@@ -37,6 +37,7 @@ expects. Regenerate with `python tools/audit_generators.py --render`.
 | `dendrogram` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_dendrogram.py; No callable named 'make_dendrogram' in make_dendrogram.py |
 | `dependency-wheel` | legacy | **no** | **no** | **no** | not_run | No DEMO_DATA in make_dependency-wheel.py; No callable named 'make_dependency_wheel' in make_dependency-wheel.py |
 | `difference-chart` | legacy | **no** | **no** | **no** | not_run | No DEMO_DATA in make_difference-chart.py; No callable named 'make_difference_chart' in make_difference-chart.py |
+| `donut` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `dotdensity` | legacy | yes | yes | **no** | not_run | No DEMO_DATA in make_dotdensity.py; Default output path falls back to a shared assets/ directory |
 | `dotplot` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_dotplot.py; No callable named 'make_dotplot' in make_dotplot.py |
 | `dumbbell` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |

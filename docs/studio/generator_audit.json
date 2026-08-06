@@ -1,6 +1,6 @@
 {
   "summary": {
-    "stable": 16,
+    "stable": 17,
     "experimental": 0,
     "legacy": 80,
     "unavailable": 0
@@ -645,6 +645,30 @@
         "No DEMO_DATA in make_difference-chart.py",
         "No callable named 'make_difference_chart' in make_difference-chart.py",
         "make_figure('difference-chart') cannot resolve to make_difference-chart.py: hyphen/underscore normalisation looks for a different filename"
+      ]
+    },
+    {
+      "kind": "donut",
+      "filename": "make_donut.py",
+      "hyphenated_kind": false,
+      "dispatcher_reachable_by_kind": true,
+      "importable": true,
+      "import_error": null,
+      "expected_callable": "make_donut",
+      "callable_exists": true,
+      "demo_data_exists": true,
+      "demo_data_len": 4,
+      "accepts_data": true,
+      "accepts_out": true,
+      "accepts_title": true,
+      "renderer": "svg",
+      "writes_hardcoded_path": true,
+      "hardcoded_dimensions": true,
+      "render_test": "passed",
+      "render_error": null,
+      "status": "stable",
+      "errors": [
+        "Default output path falls back to a shared assets/ directory"
       ]
     },
     {
