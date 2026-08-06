@@ -1,6 +1,6 @@
 # Figure Catalogue
 
-106 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type).
+107 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type).
 
 Invoke via:
 
@@ -67,6 +67,7 @@ for the current per-chart status.
 | `figure` | make_figure.py | — | Internal dispatcher; do not invoke directly. |
 | `forest` | make_forest.py | Meta-analysis | Forest plot: effect size with confidence interval per study, plus a pooled diamond. Standard in systematic reviews and meta-analyses. |
 | `funnel` | make_funnel.py | Pipeline | Horizontal bars narrowing to show drop-off across sequential stages (conversion funnel, hiring, clinical trial enrolment). Percentage labels on each stage. |
+| `gantt` | make_gantt.py | Project planning | One horizontal bar per task spanning its start-end day, coloured by owning team, top-to-bottom order follows the data. The default chart for a project plan or roadmap. |
 | `gapminder` | make_gapminder.py | Animated bubble | Animated scatter: x = income, y = life expectancy, size = population, colour = region. Use to show development trends across countries over decades. |
 | `gapminder_variants` | make_gapminder_variants.py | Animated bubble | Regional or subset variants of the Gapminder chart. |
 | `gauge` | make_gauge.py | KPI | Semicircular gauge dial. Use for a single KPI read at a glance; prefer bullet charts in text-heavy reports. |

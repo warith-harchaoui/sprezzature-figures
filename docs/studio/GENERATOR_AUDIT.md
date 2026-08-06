@@ -4,11 +4,11 @@ Reproducible audit of every `scripts/make_*.py` generator against the
 `make_<kind>(data, *, out, title, ...) -> Path` contract the dispatcher
 expects. Regenerate with `python tools/audit_generators.py --render`.
 
-- **stable**: 26
+- **stable**: 27
 - **experimental**: 0
 - **legacy**: 80
 - **unavailable**: 0
-- **total**: 106
+- **total**: 107
 
 | kind | status | reachable | callable | demo_data | render | errors |
 |---|---|---|---|---|---|---|
@@ -55,6 +55,7 @@ expects. Regenerate with `python tools/audit_generators.py --render`.
 | `errorbar` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `forest` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_forest.py; No callable named 'make_forest' in make_forest.py |
 | `funnel` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `gantt` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `gapminder` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_gapminder.py; No callable named 'make_gapminder' in make_gapminder.py |
 | `gapminder_variants` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_gapminder_variants.py; No callable named 'make_gapminder_variants' in make_gapminder_variants.py |
 | `gauge` | legacy | yes | **no** | **no** | not_run | No DEMO_DATA in make_gauge.py; No callable named 'make_gauge' in make_gauge.py |

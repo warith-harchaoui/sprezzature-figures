@@ -215,6 +215,15 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
         ],
         "optional_roles": [],
     },
+    "gantt": {
+        "required_roles": [
+            {"name": "task", "label": "Task", "accepted_types": ["categorical"], "required": True},
+            {"name": "start", "label": "Start day", "accepted_types": ["numeric"], "required": True},
+            {"name": "end", "label": "End day", "accepted_types": ["numeric"], "required": True},
+            {"name": "team", "label": "Owning team", "accepted_types": ["categorical"], "required": True},
+        ],
+        "optional_roles": [],
+    },
     "dumbbell": {
         "required_roles": [
             {"name": "category", "label": "Category", "accepted_types": ["categorical"], "required": True},
