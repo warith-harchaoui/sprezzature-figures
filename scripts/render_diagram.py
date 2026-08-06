@@ -34,9 +34,10 @@ sprezzature-colors palette** (``sprezzature-colors/references/palette.csv``, the
 tokens documented at <https://harchaoui.org/warith/colors/>) via
 :mod:`_style`. TikZ gets a ``\\definecolor`` preamble of the base hues;
 Mermaid gets an injected ``%%{init}%%`` theme; Vega keeps whatever the
-spec's own ``config`` declares (the make path already applies
-``_style.vega_config``). You can always edit the colors afterwards — the
-palette is the *first* choice, not a lock-in.
+spec's own ``config`` declares — this renderer only rasterises a
+caller-supplied external spec, it does not author Vega itself. You can
+always edit the colors afterwards — the palette is the *first* choice,
+not a lock-in.
 
 Background is selectable per the embedding context:
 ``--background white`` (drop onto a light page), ``--background
@@ -100,10 +101,10 @@ from _style import load_palette, load_semantic_palette  # noqa: E402
 
 
 # ------------------------------------------------------------------
-# House canvas tokens — mirror _style.vega_config / matplotlib_rc so
-# TikZ and Mermaid share the exact background / foreground the Vega
-# path already uses. Kept as small local constants (rather than parsing
-# the config dict) so this module stays cheap to import.
+# House canvas tokens — mirror the house-style background / foreground
+# constants so TikZ and Mermaid share the same palette as everything
+# else. Kept as small local constants so this module stays cheap to
+# import.
 # ------------------------------------------------------------------
 _LIGHT_BG = "#FFFFFF"
 _DARK_BG = "#1D1D1F"

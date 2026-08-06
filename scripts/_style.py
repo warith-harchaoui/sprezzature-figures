@@ -686,59 +686,6 @@ def inner_radius(outer: float, gap: float) -> float:
 
 
 # ------------------------------------------------------------------
-# Vega-Lite house config
-# ------------------------------------------------------------------
-def vega_config(dark: bool = False) -> Dict[str, object]:
-    """Emit the sprezzature-* house-style Vega-Lite ``config`` block.
-
-    Parameters
-    ----------
-    dark : bool, optional
-        Toggle the dark-mode variant (background, text, gridlines).
-
-    Returns
-    -------
-    dict
-        A JSON-serialisable ``config`` block ready to merge into a
-        Vega-Lite v5 spec.
-    """
-    fg = "#F5F5F7" if dark else "#1D1D1F"
-    bg = "#1D1D1F" if dark else "#FFFFFF"
-    return {
-        "background": bg,
-        "font": "Roboto, Roboto Serif, Roboto Mono, system-ui, sans-serif",
-        "view": {"stroke": None, "cornerRadius": CORNERS["lg"]},
-        "axis": {
-            "domain": True,
-            "domainColor": fg,
-            "labelColor": fg,
-            "titleColor": fg,
-            "grid": False,
-            "ticks": False,
-            "labelFont": "Roboto Mono",
-            "titleFont": "Roboto",
-        },
-        "axisTop": {"domain": False, "domainColor": None, "labels": False, "ticks": False, "title": None},
-        "axisRight": {"domain": False, "domainColor": None, "labels": False, "ticks": False, "title": None},
-        "legend": {
-            "titleFont": "Roboto",
-            "labelFont": "Roboto",
-            "labelColor": fg,
-            "titleColor": fg,
-        },
-        "title": {"font": "Roboto", "fontSize": 14, "color": fg, "subtitleFont": "Roboto", "subtitleColor": fg},
-        "range": {"category": qualitative_sequence(8)},
-        # Corner policy: bars round the value-end only; arc marks (pie/donut/
-        # sunburst/radial) get a gentle radius; grids/measurements stay square.
-        "bar": {"cornerRadiusEnd": CORNERS["sm"]},
-        "arc": {"cornerRadius": CORNERS["xs"]},
-        "rect": {"cornerRadius": 0},
-        "line": {"strokeWidth": 2},
-        "point": {"filled": True, "size": 40},
-    }
-
-
-# ------------------------------------------------------------------
 # Matplotlib rcParams
 # ------------------------------------------------------------------
 def matplotlib_rc(dark: bool = False) -> Dict[str, object]:

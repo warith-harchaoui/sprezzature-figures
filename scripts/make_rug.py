@@ -46,7 +46,7 @@ from typing import Dict, List, Tuple
 
 # ------------------------------------------------------------------
 # House-style tokens (kept local so the module is import-light; they
-# mirror the values emitted by ``_style.vega_config``).
+# mirror the house-style color/typography constants).
 # ------------------------------------------------------------------
 INK = "#1D1D1F"        # primary text
 SECONDARY = "#6E6E73"  # subtitle / supporting text

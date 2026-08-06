@@ -2,10 +2,10 @@
 
 > **Experimental.** This surface is wired at the command level, not yet at the
 > visual-design level: SHAP / Shapash / LIME render through matplotlib, so their
-> figures do **not** inherit the Vega-first house style the rest of the system
-> guarantees. Treat the output as a diagnostic, not a publication-ready figure,
-> until it has dedicated end-to-end tests, real worked case studies, and
-> Vega-conforming output. And read explanations for what they are, *local
+> figures do **not** inherit the hand-authored-SVG house style the rest of the
+> system guarantees. Treat the output as a diagnostic, not a publication-ready
+> figure, until it has dedicated end-to-end tests, real worked case studies,
+> and house-conforming output. And read explanations for what they are, *local
 > approximations* of a model, not ground truth: state the assumptions (feature
 > independence for kernel SHAP, locality for LIME) and their failure modes
 > before drawing conclusions.
@@ -19,11 +19,6 @@ Sources: [SHAP docs](https://shap.readthedocs.io/),
 [TimeSHAP repo](https://github.com/feedzai/timeshap),
 [LIME paper](https://arxiv.org/abs/1602.04938) and
 [Interpretable ML by Molnar](https://christophm.github.io/interpretable-ml-book/).
-
-For Vega-native versions of these plots (beeswarm, importance bar,
-waterfall, LIME weights, PD/ICE) driven from the extracted model numbers
-rather than matplotlib, see [figure-catalog.md](figure-catalog.md)
-§ "Explainability & causality".
 
 ## Engine selection matrix
 
