@@ -259,6 +259,13 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
         ],
         "optional_roles": [],
     },
+    "lollipop": {
+        "required_roles": [
+            {"name": "c", "label": "Category", "accepted_types": ["categorical"], "required": True},
+            {"name": "v", "label": "Numeric value", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
     "dumbbell": {
         "required_roles": [
             {"name": "category", "label": "Category", "accepted_types": ["categorical"], "required": True},
