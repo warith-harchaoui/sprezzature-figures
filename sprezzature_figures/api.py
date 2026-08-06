@@ -146,7 +146,7 @@ def kind_definition(kind: str) -> FigureDefinition:
 
 
 @app.post("/render/{kind}", tags=["actions"], operation_id="render_figure")
-def render(kind: str, body: RenderRequest) -> Response:
+def render(kind: str, body: RenderRequest = RenderRequest()) -> Response:
     """Render a chart and return the file bytes with the matching Content-Type."""
     canonical = resolve_kind(kind)
     if canonical is None:
