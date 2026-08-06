@@ -1,6 +1,6 @@
 # Figure Catalogue
 
-114 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type).
+115 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type).
 
 Invoke via:
 
@@ -104,6 +104,7 @@ for the current per-chart status.
 | `population-pyramid` | make_population-pyramid.py | Distribution | Mirrors two categories' horizontal bars around a shared zero axis, one row per age band, oldest at top. The classic demographic pyramid; the shape tells the story of a young/growing vs. ageing population. |
 | `ppplot` | make_ppplot.py | Goodness of fit | Probability-probability plot: theoretical vs. empirical CDF. Use alongside Q-Q plot to diagnose distributional fit in the body (not tails) of a distribution. |
 | `prcurve` | make_prcurve.py | Model evaluation | Precision-Recall curve for binary classifiers. Preferred over ROC when classes are imbalanced, because it focuses on the minority (positive) class performance. |
+| `qqplot` | make_qqplot.py | Goodness of fit | Sorted sample vs. theoretical normal quantiles; a sample drawn from a normal population falls on the dashed y=x reference line. The standard diagnostic for whether a residual or measurement sample is approximately Gaussian. |
 | `radar` | make_radar.py | Multivariate | Radar / spider chart: multiple quantitative axes radiating from a common centre. Use for comparing a small number of entities across 4–8 dimensions. |
 | `radial-bar` | make_radial-bar.py | Comparison | Bar chart bent into a circle. Use when aesthetic impact matters and absolute length comparison is secondary. |
 | `radial-tree` | make_radial-tree.py | Hierarchy | Dendrogram laid out radially rather than top-down. Fits deeper or wider trees into a square canvas. |
