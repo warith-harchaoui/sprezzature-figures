@@ -2958,6 +2958,42 @@
     ]
   },
   {
+    "kind": "qqplot",
+    "label": "Qqplot",
+    "aliases": [],
+    "category": "Goodness of fit",
+    "description": "Sorted sample vs. theoretical normal quantiles; a sample drawn from a normal population falls on the dashed y=x reference line. The standard diagnostic for whether a residual or measurement sample is approximately Gaussian.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "svg",
+    "module": "scripts/make_qqplot.py",
+    "callable_name": "make_qqplot",
+    "required_roles": [
+      {
+        "name": "sample",
+        "label": "Numeric value",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 900,
+    "default_height": 600,
+    "options_schema": {},
+    "warnings": [
+      "Default output path falls back to a shared assets/ directory"
+    ]
+  },
+  {
     "kind": "radar",
     "label": "Radar",
     "aliases": [],
