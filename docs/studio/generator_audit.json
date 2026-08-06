@@ -1,6 +1,6 @@
 {
   "summary": {
-    "stable": 41,
+    "stable": 42,
     "experimental": 0,
     "legacy": 80,
     "unavailable": 0
@@ -2606,6 +2606,30 @@
       "status": "stable",
       "errors": [
         "make_figure('stacked-bar') cannot resolve to make_stacked-bar.py: hyphen/underscore normalisation looks for a different filename",
+        "Default output path falls back to a shared assets/ directory"
+      ]
+    },
+    {
+      "kind": "step",
+      "filename": "make_step.py",
+      "hyphenated_kind": false,
+      "dispatcher_reachable_by_kind": true,
+      "importable": true,
+      "import_error": null,
+      "expected_callable": "make_step",
+      "callable_exists": true,
+      "demo_data_exists": true,
+      "demo_data_len": 10,
+      "accepts_data": true,
+      "accepts_out": true,
+      "accepts_title": true,
+      "renderer": "svg",
+      "writes_hardcoded_path": true,
+      "hardcoded_dimensions": true,
+      "render_test": "passed",
+      "render_error": null,
+      "status": "stable",
+      "errors": [
         "Default output path falls back to a shared assets/ directory"
       ]
     },
