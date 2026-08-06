@@ -1,6 +1,6 @@
 # Figure Catalogue
 
-116 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type).
+117 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type).
 
 Invoke via:
 
@@ -110,6 +110,7 @@ for the current per-chart status.
 | `radial-bar` | make_radial-bar.py | Comparison | Bar chart bent into a circle. Use when aesthetic impact matters and absolute length comparison is secondary. |
 | `radial-tree` | make_radial-tree.py | Hierarchy | Dendrogram laid out radially rather than top-down. Fits deeper or wider trees into a square canvas. |
 | `radviz` | make_radviz.py | Multivariate | RadViz: data points attracted to anchors around a circle, each anchor a variable. Use for visual cluster detection in multivariate data. |
+| `regression-ci-band` | make_regression-ci-band.py | Regression | OLS-fitted line through a scatter, shaded 95% confidence band around the fitted mean (narrower near the data's centre, wider toward the edges), raw scatter visible underneath. Use to check whether a linear trend is present and how certain the fit is. |
 | `residual` | make_residual.py | Regression diagnostics | Residuals vs. fitted values (or index). Required in any regression reporting to check homoscedasticity and detect patterns in errors. |
 | `ridgeline` | make_ridgeline.py | Distribution | Stacked KDE curves, offset on the y-axis. Use to compare distributions of many groups compactly (e.g., scores across regions, latency across time slices). |
 | `rose` | make_rose.py | Cyclic | Polar area chart (Nightingale rose). Use to show magnitude in directional or seasonal data where the angle encodes a cyclic category. |
