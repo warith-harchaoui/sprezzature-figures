@@ -51,7 +51,7 @@ def _render_scale() -> float:
     set this one environment variable just before they call the generator, and
     the single rasterisation choke point below reads it. Absent or unparseable,
     the scale is ``1.0`` (native pixel size), so the default output is unchanged.
-    A non-positive value is ignored the same way — ``vl_convert`` would reject it.
+    A non-positive value is ignored the same way — ``resvg_py`` would reject it.
     """
     raw = os.environ.get("SPREZZATURE_RENDER_SCALE")
     if not raw:
@@ -112,14 +112,13 @@ def write_svg(out: Path, svg: str, *, embed_fonts: bool = True) -> Path:
     user-facing CLI message (the generators are run by hand), not diagnostic
     logging, so it stays a plain ``print``.
 
-    Also the shared choke point for font embedding: generators that hand-write
-    their SVG already carry an embedded ``@font-face`` block from
-    ``_svg.svg_open(embed_fonts=True)``, but the Vega-Lite generators (whose
-    SVG comes from ``vlc.vega_to_svg``) do not. When ``embed_fonts`` is true
-    (the default) and the string does not already carry one, this splices the
-    bundled Roboto/Roboto Mono ``@font-face`` block in right after the opening
-    ``<svg ...>`` tag, so every generator's output -- hand-written or
-    Vega-Lite -- is font-independent, not just the ones that call svg_open().
+    Also the shared choke point for font embedding: every generator hand-writes
+    its SVG via ``_svg.svg_open(embed_fonts=True)``, which already carries an
+    embedded ``@font-face`` block. When ``embed_fonts`` is true (the default)
+    and the string does not already carry one, this splices the bundled
+    Roboto/Roboto Mono ``@font-face`` block in right after the opening
+    ``<svg ...>`` tag, so the raster/PDF export stays font-independent even
+    for a caller that built its own SVG string by hand.
 
     Parameters
     ----------
@@ -158,54 +157,19 @@ def write_svg(out: Path, svg: str, *, embed_fonts: bool = True) -> Path:
     return out
 
 
-def titled_svg(svg: str, title: str, desc: str = "") -> str:
-    """Give a Vega-rendered SVG an accessible name via ``<title>``/``<desc>``.
+def _svg_to_png_bytes(svg: str) -> bytes:
+    """Rasterise a complete SVG document to PNG bytes at :func:`_render_scale`.
 
-    ``vl_convert`` renders a spec's title as visible text marks but emits no
-    SVG ``<title>`` element, so the document has no accessible name and no
-    native hover tooltip. This splices a ``<title>`` (and optional ``<desc>``)
-    in as the first children of the root ``<svg>`` and wires ``role="img"`` +
-    ``aria-labelledby`` so screen readers announce the figure and browsers show
-    the title on hover — the same treatment the hand-authored generators get
-    from :func:`_svg.svg_open`.
-
-    Parameters
-    ----------
-    svg : str
-        A complete SVG document whose root is ``<svg ...>`` (e.g. the return of
-        ``vlc.vega_to_svg`` / ``vlc.vegalite_to_svg``).
-    title : str
-        The accessible name (the figure's headline). Shown as the hover tooltip.
-    desc : str, optional
-        A longer description (the subtitle), announced after the title.
-
-    Returns
-    -------
-    str
-        The SVG with the accessibility nodes injected. Returned unchanged if the
-        root tag cannot be located or a ``<title>`` is already present.
+    ``resvg_py`` (a thin wrapper around the Rust ``resvg`` crate) is the
+    house rasteriser: it needs no browser, no Node, and no Vega runtime, and
+    it renders exactly the static markup the hand-authored generators emit
+    (embedded ``@font-face`` fonts, gradients, filters) rather than
+    re-interpreting a chart grammar.
     """
-    import re
-    from xml.sax.saxutils import escape
+    import resvg_py
 
-    if "<title" in svg[:600]:
-        return svg
-    m = re.match(r"\s*<svg\b[^>]*>", svg)
-    if not m:
-        return svg
-    tag = m.group(0)
-    tid, did = "fig-title", "fig-desc"
-    add = ""
-    if "role=" not in tag:
-        add += ' role="img"'
-    if "aria-labelledby" not in tag and "aria-label" not in tag:
-        add += f' aria-labelledby="{tid}{" " + did if desc else ""}"'
-    if add:
-        tag = tag[:-1] + add + ">"
-    nodes = f'<title id="{tid}">{escape(title)}</title>'
-    if desc:
-        nodes += f'<desc id="{did}">{escape(desc)}</desc>'
-    return tag + nodes + svg[m.end():]
+    zoom = _render_scale()
+    return resvg_py.svg_to_bytes(svg_string=svg, zoom=zoom if zoom != 1.0 else None)
 
 
 def _write_in_format(out: Path, svg: str) -> None:
@@ -214,28 +178,33 @@ def _write_in_format(out: Path, svg: str) -> None:
     The generators all build an SVG string; a user who asks for ``--out
     chart.png`` expects a PNG, not SVG bytes in a ``.png`` file. This converts
     the (font-embedded, self-contained) SVG to the requested raster/vector
-    format via ``vl_convert``. ``.svg`` stays a plain UTF-8 write, byte-for-byte
-    what every generator produced before, so nothing about the SVG path changes.
-    Unknown extensions fall back to writing the SVG text rather than guessing.
+    format: PNG comes straight from :func:`_svg_to_png_bytes`; PDF and JPEG go
+    through that same PNG by way of Pillow (already a house dependency),
+    since PNG is the only raster format the rasteriser itself emits.
+    ``.svg`` stays a plain UTF-8 write, byte-for-byte what every generator
+    produced before, so nothing about the SVG path changes. Unknown
+    extensions fall back to writing the SVG text rather than guessing.
     """
     suffix = out.suffix.lower()
     if suffix in ("", ".svg", ".txt"):
         out.write_text(svg, encoding="utf-8")
     elif suffix in (".html", ".htm"):
         out.write_text(_svg_to_html(svg), encoding="utf-8")
-    elif suffix in (".png", ".pdf", ".jpg", ".jpeg"):
-        import vl_convert as vlc
+    elif suffix == ".png":
+        out.write_bytes(_svg_to_png_bytes(svg))
+    elif suffix in (".pdf", ".jpg", ".jpeg"):
+        import io
 
-        converter = {
-            ".png": vlc.svg_to_png,
-            ".pdf": vlc.svg_to_pdf,
-            ".jpg": vlc.svg_to_jpeg,
-            ".jpeg": vlc.svg_to_jpeg,
-        }[suffix]
-        # ``scale`` upsamples the raster (and enlarges the PDF page) for hi-DPI
-        # output; all three vl_convert converters accept it. At the default 1.0
-        # the bytes are identical to the un-scaled call.
-        out.write_bytes(converter(svg, scale=_render_scale()))
+        from PIL import Image
+
+        image = Image.open(io.BytesIO(_svg_to_png_bytes(svg)))
+        if suffix == ".pdf":
+            image.convert("RGB").save(out, format="PDF")
+        else:
+            # JPEG has no alpha channel; flatten onto white first.
+            flat = Image.new("RGB", image.size, "#FFFFFF")
+            flat.paste(image, mask=image.split()[3] if image.mode == "RGBA" else None)
+            flat.save(out, format="JPEG", quality=92)
     else:
         # Unknown extension (e.g. .json): the generator only has an SVG string,
         # so write that rather than silently producing a mislabelled binary.

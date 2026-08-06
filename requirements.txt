@@ -4,7 +4,7 @@
 # to fall out of sync when a dependency's version bound changes.
 #
 # cli     — the `click`-based CLI twin of the always-installed argparse one
-# dataviz — the full hand-authored-SVG + legacy-Vega figure surface
+# dataviz — the matplotlib-based generators (causal inference, explainability)
 # studio  — the NiceGUI app (chat-driven figure editing, Ralph eyeball loop)
 -e .[cli,dataviz,studio]
 

@@ -13,8 +13,10 @@ Google Fonts repository (see the ``OFL-*.txt`` files alongside the fonts).
 This module is deliberately **stdlib-only** at import time (only
 ``base64``/``functools``/``pathlib``) so ``scripts/_svg.py`` -- which must
 stay importable without the dataviz tier -- can depend on it. The optional
-integrations (:func:`register_matplotlib`, :func:`register_vl_convert`)
-import their target library lazily and no-op if it is not installed.
+integration (:func:`register_matplotlib`) imports its target library lazily
+and no-ops if it is not installed. The rasteriser (``resvg_py``) has no
+persistent font-directory registration -- callers pass :data:`RESVG_FONT_DIRS`
+as the ``font_dirs`` keyword on each ``svg_to_bytes`` call instead.
 
 Author
 ------
@@ -181,26 +183,13 @@ def register_matplotlib() -> bool:
     return True
 
 
-_vl_convert_registered = False
-
-
-def register_vl_convert() -> bool:
-    """Point vl_convert's (resvg-backed) font database at the bundled fonts
-    directory, so every Vega-Lite / SVG-to-PNG render (the Studio preview
-    pipeline) rasterizes the real bundled Roboto instead of falling back to
-    a system font resvg happens to find. No-ops if vl_convert is not
-    installed. Idempotent.
-    """
-    global _vl_convert_registered
-    if _vl_convert_registered:
-        return True
-    try:
-        import vl_convert as vlc
-    except ImportError:
-        return False
-    vlc.register_font_directory(str(FONTS_DIR))
-    _vl_convert_registered = True
-    return True
+# ``resvg_py.svg_to_bytes(..., font_dirs=RESVG_FONT_DIRS)`` -- passed on each
+# call (resvg has no persistent global font database to register into, unlike
+# the vl_convert rasteriser this replaced). Covers faces that are registered
+# for matplotlib/the web app but never embedded into every generated SVG
+# (Roboto Serif -- see :data:`DEFAULT_SVG_FACES`); the embedded-font path
+# already makes every generator's own render font-independent without this.
+RESVG_FONT_DIRS: tuple[str, ...] = (str(FONTS_DIR),)
 
 
 def register_all() -> None:
@@ -211,7 +200,6 @@ def register_all() -> None:
     :func:`sprezzature_figures.make_figure.make_figure`.
     """
     register_matplotlib()
-    register_vl_convert()
 
 
 def available_faces() -> Sequence[str]:

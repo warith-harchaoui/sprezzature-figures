@@ -7,7 +7,7 @@
 
 [![logo](assets/logo.png)](https://harchaoui.org/warith/sprezzature/)
 
-91 types de graphiques de qualité publication (Vega-Lite, Vega complet et matplotlib/SVG), utilisables comme bibliothèque Python ou en ligne de commande.
+96 types de graphiques de qualité publication, presque tous en SVG écrit à la main (aucun Vega), avec une poignée de générateurs matplotlib pour des sorties statistiques (inférence causale, explicabilité), utilisables comme bibliothèque Python ou en ligne de commande.
 
 Fait partie de la suite [sprezzature](https://harchaoui.org/warith/sprezzature/).
 
@@ -28,7 +28,7 @@ Extras optionnels (combinables, ex. `"sprezzature-figures[cli,dataviz]"`) :
 | Extra | Ajoute |
 |-------|--------|
 | `[cli]` | l'interface Click, jumelle de la CLI `make-figure` toujours installée |
-| `[dataviz]` | matplotlib / networkx / wordcloud / shapely / pyproj / pyyaml, nécessaires aux générateurs non Vega-Lite |
+| `[dataviz]` | matplotlib / networkx / wordcloud / shapely / pyproj / pyyaml, nécessaires à la poignée de générateurs matplotlib (inférence causale, explicabilité) |
 | `[studio]` | Sprezzature Studio : l'application NiceGUI + le copilote Ralph (voir plus bas) |
 | `[api]` | Surface HTTP FastAPI (voir plus bas) |
 | `[mcp]` | Surface d'outils MCP sur `[api]` (voir plus bas) |
@@ -305,7 +305,7 @@ ruff check sprezzature_figures/
 python -m pytest tests/ -q
 ```
 
-Tests de rendu (nécessitent un affichage ou vl-convert) :
+Tests de rendu (génèrent réellement les figures, quelques secondes chacun) :
 
 ```bash
 python -m pytest -m slow tests/

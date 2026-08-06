@@ -5,7 +5,7 @@ LABEL description="sprezzature-figures: CLI + Studio server, ~95 chart types"
 
 WORKDIR /app
 
-# System deps for matplotlib (headless) and vl-convert
+# System deps for matplotlib (headless) and the resvg_py rasteriser
 RUN apt-get update && apt-get install -y --no-install-recommends \
         libgomp1 \
         fonts-liberation \
@@ -23,8 +23,8 @@ COPY assets/ ./assets/
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Non-root user for production use. HOME must point at appuser's own home
-# (not root's) — vl-convert's font cache and matplotlib's config dir both
-# write there on first use, and appuser can't write into /root.
+# (not root's) — matplotlib's config dir writes there on first use, and
+# appuser can't write into /root.
 RUN useradd --create-home appuser
 ENV HOME=/home/appuser
 USER appuser

@@ -7,7 +7,7 @@
 
 [![logo](https://raw.githubusercontent.com/warith-harchaoui/sprezzature-figures/main/assets/logo.png)](https://harchaoui.org/warith/sprezzature/)
 
-91 publication-quality chart types (Vega-Lite, full Vega, and matplotlib/SVG), callable as a Python library or a CLI command.
+96 publication-quality chart types, almost all hand-authored SVG (no Vega) with a handful of matplotlib-based statistical outputs (causal inference, explainability), callable as a Python library or a CLI command.
 
 Part of the [sprezzature](https://harchaoui.org/warith/sprezzature/) suite.
 
@@ -27,7 +27,7 @@ Optional extras (combine as needed, e.g. `"sprezzature-figures[cli,dataviz]"`):
 | Extra | Adds |
 |-------|------|
 | `[cli]` | the Click twin of the always-installed `make-figure` CLI |
-| `[dataviz]` | matplotlib / networkx / wordcloud / shapely / pyproj / pyyaml, needed for the non-Vega-Lite generators |
+| `[dataviz]` | matplotlib / networkx / wordcloud / shapely / pyproj / pyyaml, needed for the small set of matplotlib-based generators (causal inference, explainability) |
 | `[studio]` | Sprezzature Studio: the NiceGUI app + Ralph copilot (see below) |
 | `[api]` | FastAPI HTTP surface (see below) |
 | `[mcp]` | MCP tool surface on top of `[api]` (see below) |

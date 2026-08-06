@@ -130,8 +130,8 @@ def test_out_extension_controls_output_format(ext: str, magic: bytes, tmp_path: 
 
     Regression for the SVG-first generators writing their SVG string verbatim
     regardless of the requested extension. write_svg now converts to the
-    destination format (png/pdf/jpg via vl_convert, html wrapper), leaving
-    .svg byte-identical.
+    destination format (png via resvg_py, pdf/jpg via resvg_py + Pillow,
+    html wrapper), leaving .svg byte-identical.
     """
     data = _load_demo_data("treemap")
     out = tmp_path / f"treemap{ext}"

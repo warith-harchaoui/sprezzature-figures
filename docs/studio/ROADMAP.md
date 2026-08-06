@@ -84,7 +84,7 @@ Scoped out along the way, each documented at the point it was cut (see
 ## Not attempted at all (out of the MVP's stated scope)
 
 Authentication, multi-tenant hosting, real-time collaboration, direct
-Vega/SVG editing by the user, arbitrary code generation, full adaptation of
-all 90 figures, remote databases, Google Sheets integration, pixel-level
+SVG editing by the user, arbitrary code generation, full adaptation of
+all 96 figures, remote databases, Google Sheets integration, pixel-level
 manual editing, an agent that modifies this repository, fine-tuning,
 cloud storage, legacy XLS support, automatic slide-deck export.

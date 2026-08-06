@@ -2,7 +2,7 @@
 Unified rendering: turns a figure kind + data into a RenderResult with both
 the source artifact and a PNG preview, using atomic writes so a reader never
 sees a half-written file. Never depends on the studio extras (pandas,
-nicegui, ...) -- only vl_convert, already a core dependency, is needed to
+nicegui, ...) -- only resvg_py, already a core dependency, is needed to
 convert SVG to PNG.
 
 Author
@@ -65,17 +65,16 @@ def atomic_write_text(path: Path, text: str, *, encoding: str = "utf-8") -> Path
 
 
 def svg_to_png_bytes(svg_text: str, *, scale: float = 2.0) -> bytes:
-    """Rasterize an SVG string to PNG bytes via vl_convert.
+    """Rasterize an SVG string to PNG bytes via resvg_py.
 
     `scale` defaults to 2x so previews stay crisp on high-density displays
     (a VLM inspecting the preview also benefits from the extra resolution).
     """
-    import vl_convert as vlc
+    import resvg_py
 
-    from ..fonts import register_vl_convert
+    from ..fonts import RESVG_FONT_DIRS
 
-    register_vl_convert()
-    return vlc.svg_to_png(svg_text, scale=scale)
+    return resvg_py.svg_to_bytes(svg_string=svg_text, zoom=scale, font_dirs=list(RESVG_FONT_DIRS))
 
 
 def render_preview(source_path: Path, preview_path: Path, *, renderer: str) -> Path:

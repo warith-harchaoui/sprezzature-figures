@@ -34,7 +34,7 @@ for the current per-chart status.
 | `blandaltman` | make_blandaltman.py | Agreement | Plot mean of two measurements vs. their difference (Bland-Altman / Tukey mean-difference). Required for method-comparison studies in clinical or engineering contexts. |
 | `bollinger` | make_bollinger.py | Finance | Time-series price line with Bollinger Bands (rolling mean ± 2σ). Use to visualise volatility regimes and overbought/oversold signals in financial or sensor data. |
 | `boxen` | make_boxen.py | Distribution | Letter-value / "boxen" plot: extends the box plot with additional quantile boxes. Use for large samples (n > 10 000) where a standard box plot hides distributional detail. |
-| `boxplot` | make_boxplot.py | Distribution | Box plot summarising median, quartiles, and outliers per category via Vega-Lite's native boxplot mark. Use for salary by department, response time by service, scores by class. |
+| `boxplot` | make_boxplot.py | Distribution | Box plot summarising median, quartiles, and outliers per category (Tukey 1.5×IQR rule). Use for salary by department, response time by service, scores by class. |
 | `bubble` | make_bubble.py | Comparison | Gapminder-style bubble chart: x and y for two measures, bubble area for a third, colour for a category. Use to compare many entities across three numeric dimensions plus a group at once. |
 | `bullet` | make_bullet.py | KPI | Bullet chart: a single bar against a reference measure and qualitative performance bands. The compact alternative to a gauge for dashboards with many KPIs. |
 | `calibration` | make_calibration.py | Model evaluation | Plot predicted probability vs. observed frequency. Use after training a classifier to check whether its scores are well-calibrated (reliable confidence estimates). |

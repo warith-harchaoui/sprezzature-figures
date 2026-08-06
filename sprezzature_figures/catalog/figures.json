@@ -93,7 +93,7 @@
     "description": "Stacked area chart showing how a whole made of several categories evolves over an ordered axis. Use for traffic by channel, cumulative headcount, or resource usage over time.",
     "intents": [],
     "status": "stable",
-    "renderer": "vega_lite",
+    "renderer": "svg",
     "module": "scripts/make_area.py",
     "callable_name": "make_area",
     "required_roles": [
@@ -147,7 +147,7 @@
     "description": "Grouped bar chart comparing a numeric value across a handful of categories. The default chart for straightforward category comparisons (revenue by region, headcount by department).",
     "intents": [],
     "status": "stable",
-    "renderer": "vega_lite",
+    "renderer": "svg",
     "module": "scripts/make_bar.py",
     "callable_name": "make_bar",
     "required_roles": [
@@ -219,7 +219,7 @@
     "description": "Overlay a fitted Normal curve on a histogram. Use to test whether a sample is approximately Gaussian or to annotate mean \u00b1 \u03c3 reference lines for a report audience.",
     "intents": [],
     "status": "legacy",
-    "renderer": "vega_lite",
+    "renderer": "svg",
     "module": "scripts/make_bellcurve.py",
     "callable_name": "make_bellcurve",
     "required_roles": [],
@@ -364,7 +364,7 @@
     "description": "Box plot summarising median, quartiles, and outliers per category via Vega-Lite's native boxplot mark. Use for salary by department, response time by service, scores by class.",
     "intents": [],
     "status": "stable",
-    "renderer": "vega_lite",
+    "renderer": "svg",
     "module": "scripts/make_boxplot.py",
     "callable_name": "make_boxplot",
     "required_roles": [
@@ -557,7 +557,7 @@
     "description": "Vertical bars spanning from a low to a high value per category. Use for temperature ranges, salary bands, confidence intervals, or any per-group min\u2013max.",
     "intents": [],
     "status": "stable",
-    "renderer": "vega_lite",
+    "renderer": "svg",
     "module": "scripts/make_columnrange.py",
     "callable_name": "make_columnrange",
     "required_roles": [
@@ -1553,7 +1553,7 @@
     "description": "Multi-series line chart with points, the default for showing how a numeric value evolves over an ordered axis. Use for monthly revenue by product line, daily active users, sensor readings.",
     "intents": [],
     "status": "stable",
-    "renderer": "vega_lite",
+    "renderer": "svg",
     "module": "scripts/make_line.py",
     "callable_name": "make_line",
     "required_roles": [
@@ -2345,7 +2345,7 @@
     "description": "Plots two numeric variables against each other, with optional color and size encodings. The default chart for revealing correlation, clusters, or outliers.",
     "intents": [],
     "status": "stable",
-    "renderer": "vega_lite",
+    "renderer": "svg",
     "module": "scripts/make_scatter.py",
     "callable_name": "make_scatter",
     "required_roles": [
