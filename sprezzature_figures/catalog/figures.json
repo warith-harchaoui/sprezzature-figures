@@ -1370,6 +1370,42 @@
     ]
   },
   {
+    "kind": "ecdf",
+    "label": "Ecdf",
+    "aliases": [],
+    "category": "Distribution",
+    "description": "Empirical cumulative distribution function: a step curve where every observation contributes exactly one step, no binning choice, any percentile readable directly, with a dashed reference line at a chosen percentile. Use for latency SLOs or any sample where percentile thresholds matter.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "svg",
+    "module": "scripts/make_ecdf.py",
+    "callable_name": "make_ecdf",
+    "required_roles": [
+      {
+        "name": "latency",
+        "label": "Numeric value",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 900,
+    "default_height": 600,
+    "options_schema": {},
+    "warnings": [
+      "Default output path falls back to a shared assets/ directory"
+    ]
+  },
+  {
     "kind": "edge-bundling",
     "label": "Edge Bundling",
     "aliases": [

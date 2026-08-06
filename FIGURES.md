@@ -1,6 +1,6 @@
 # Figure Catalogue
 
-104 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type).
+105 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type).
 
 Invoke via:
 
@@ -59,6 +59,7 @@ for the current per-chart status.
 | `dotdensity` | make_dotdensity.py | Geospatial | Each dot represents a fixed count of a quantity on a map. Use to show spatial distribution and relative magnitude without imposing arbitrary choropleth boundaries. |
 | `dotplot` | make_dotplot.py | Distribution | Wilkinson dot plot: one dot per observation, binned and stacked so the sample size stays countable while the silhouette shows the distribution's shape. Use for small-to-medium samples where a histogram's bars would hide individual points. |
 | `dumbbell` | make_dumbbell.py | Change | Two dots connected by a line per category (before vs. after). Use for clear before–after or group-A vs. group-B comparison across many categories. |
+| `ecdf` | make_ecdf.py | Distribution | Empirical cumulative distribution function: a step curve where every observation contributes exactly one step, no binning choice, any percentile readable directly, with a dashed reference line at a chosen percentile. Use for latency SLOs or any sample where percentile thresholds matter. |
 | `edge-bundling` | make_edge-bundling.py | Network | Hierarchical edge-bundling groups edges along their shared ancestry, reducing visual clutter in large graphs. Use for software dependency or call-graph visualisation. |
 | `elbow` | make_elbow.py | Model selection | Detect the elbow (knee) of a diminishing-returns curve with the Kneedle method: pick k for k-means, the number of PCA components, or `eps` for DBSCAN. An inset draws the normalised difference curve whose peak locates the elbow. |
 | `embedding_projector` | make_embedding_projector.py | Dimensionality reduction | 2-D or 3-D scatter of high-dimensional embeddings coloured by label. Use to inspect whether a learned embedding separates classes or clusters semantically. |
