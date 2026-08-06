@@ -1,0 +1,1161 @@
+meta:
+  reference: sprezzature-figures
+  rotation_deg: 141.174
+  explained_variance_ratio:
+  - 0.291
+  - 0.2094
+  cumulative_variance: 0.5004
+  n_approaches: 37
+  attributes:
+  - Gratuit ou open source
+  - Étendue des types de graphiques
+  - Qualité de publication
+  - Facilité d'utilisation
+  - Programmabilité
+  - Interactif
+  - Copilote IA en langage naturel
+  - Contrôle qualité visuel du rendu
+  - Local et hors ligne (sans compte)
+  - Reproductibilité
+  - Export en SVG PNG PDF
+  - Personnalisation et thèmes
+  - Flexibilité des sources de données
+  - Maturité et communauté
+  - Géospatial et cartes
+  - Tableaux de bord et BI
+  - Fonctionnalités d'accessibilité
+  - Animé
+  - Performance sur grands jeux de données
+  - Intégrabilité web
+  - Profondeur statistique et analytique
+  - Adaptatif
+  lower_is_better: []
+axes:
+  axis_1:
+    name: Simplicité ↔ Maîtrise
+    pole_left: Simplicité
+    pole_right: Maîtrise
+    loadings:
+      Gratuit ou open source: 0.2432
+      Étendue des types de graphiques: 0.3028
+      Qualité de publication: 0.3461
+      Facilité d'utilisation: -0.3003
+      Programmabilité: 0.2489
+      Interactif: -0.0311
+      Copilote IA en langage naturel: -0.2187
+      Contrôle qualité visuel du rendu: 0.0778
+      Local et hors ligne (sans compte): 0.2906
+      Reproductibilité: 0.332
+      Export en SVG PNG PDF: 0.2955
+      Personnalisation et thèmes: 0.3166
+      Flexibilité des sources de données: -0.114
+      Maturité et communauté: 0.0119
+      Géospatial et cartes: 0.1486
+      Tableaux de bord et BI: -0.1609
+      Fonctionnalités d'accessibilité: 0.2279
+      Animé: 0.1305
+      Performance sur grands jeux de données: 0.0101
+      Intégrabilité web: 0.099
+      Profondeur statistique et analytique: -0.011
+      Adaptatif: 0.0109
+  axis_2:
+    name: Dynamisme ↔ Précision
+    pole_bottom: Dynamisme
+    pole_top: Précision
+    loadings:
+      Gratuit ou open source: 0.0437
+      Étendue des types de graphiques: -0.081
+      Qualité de publication: 0.1083
+      Facilité d'utilisation: 0.0994
+      Programmabilité: -0.05
+      Interactif: -0.3865
+      Copilote IA en langage naturel: 0.1162
+      Contrôle qualité visuel du rendu: 0.1986
+      Local et hors ligne (sans compte): -0.0609
+      Reproductibilité: 0.016
+      Export en SVG PNG PDF: 0.1616
+      Personnalisation et thèmes: -0.0695
+      Flexibilité des sources de données: -0.3304
+      Maturité et communauté: -0.1325
+      Géospatial et cartes: -0.2515
+      Tableaux de bord et BI: -0.3776
+      Fonctionnalités d'accessibilité: 0.0722
+      Animé: -0.2533
+      Performance sur grands jeux de données: -0.2827
+      Intégrabilité web: -0.318
+      Profondeur statistique et analytique: 0.1056
+      Adaptatif: -0.3689
+approaches:
+- name: sprezzature-figures
+  coordinates:
+    axis_1: 4.1191
+    axis_2: 3.8092
+  role: best
+  color: '#FF3B30'
+  attributes:
+    Gratuit ou open source: 5.0
+    Étendue des types de graphiques: 5.0
+    Qualité de publication: 5.0
+    Facilité d'utilisation: 4.0
+    Programmabilité: 4.0
+    Interactif: 3.0
+    Copilote IA en langage naturel: 4.0
+    Contrôle qualité visuel du rendu: 5.0
+    Local et hors ligne (sans compte): 5.0
+    Reproductibilité: 5.0
+    Export en SVG PNG PDF: 5.0
+    Personnalisation et thèmes: 4.0
+    Flexibilité des sources de données: 3.0
+    Maturité et communauté: 1.0
+    Géospatial et cartes: 4.0
+    Tableaux de bord et BI: 1.0
+    Fonctionnalités d'accessibilité: 5.0
+    Animé: 2.0
+    Performance sur grands jeux de données: 3.0
+    Intégrabilité web: 3.0
+    Profondeur statistique et analytique: 4.0
+    Adaptatif: 3.0
+- name: Matplotlib
+  coordinates:
+    axis_1: 3.8587
+    axis_2: 1.292
+  role: competitor
+  color: '#8DBAFF'
+  attributes:
+    Gratuit ou open source: 5.0
+    Étendue des types de graphiques: 5.0
+    Qualité de publication: 5.0
+    Facilité d'utilisation: 2.0
+    Programmabilité: 5.0
+    Interactif: 2.0
+    Copilote IA en langage naturel: 1.0
+    Contrôle qualité visuel du rendu: 1.0
+    Local et hors ligne (sans compte): 5.0
+    Reproductibilité: 4.0
+    Export en SVG PNG PDF: 5.0
+    Personnalisation et thèmes: 5.0
+    Flexibilité des sources de données: 3.0
+    Maturité et communauté: 5.0
+    Géospatial et cartes: 3.0
+    Tableaux de bord et BI: 2.0
+    Fonctionnalités d'accessibilité: 3.0
+    Animé: 3.0
+    Performance sur grands jeux de données: 4.0
+    Intégrabilité web: 3.0
+    Profondeur statistique et analytique: 3.0
+    Adaptatif: 2.0
+- name: Seaborn
+  coordinates:
+    axis_1: 1.6907
+    axis_2: 3.3215
+  role: competitor
+  color: '#9B99F0'
+  attributes:
+    Gratuit ou open source: 5.0
+    Étendue des types de graphiques: 3.0
+    Qualité de publication: 5.0
+    Facilité d'utilisation: 2.0
+    Programmabilité: 4.0
+    Interactif: 1.0
+    Copilote IA en langage naturel: 1.0
+    Contrôle qualité visuel du rendu: 1.0
+    Local et hors ligne (sans compte): 5.0
+    Reproductibilité: 4.0
+    Export en SVG PNG PDF: 4.0
+    Personnalisation et thèmes: 4.0
+    Flexibilité des sources de données: 3.0
+    Maturité et communauté: 5.0
+    Géospatial et cartes: 1.0
+    Tableaux de bord et BI: 1.0
+    Fonctionnalités d'accessibilité: 3.0
+    Animé: 1.0
+    Performance sur grands jeux de données: 3.0
+    Intégrabilité web: 3.0
+    Profondeur statistique et analytique: 5.0
+    Adaptatif: 2.0
+- name: Plotly / Dash
+  coordinates:
+    axis_1: 2.2071
+    axis_2: -3.6305
+  role: competitor
+  color: '#3FD6C7'
+  attributes:
+    Gratuit ou open source: 4.0
+    Étendue des types de graphiques: 5.0
+    Qualité de publication: 4.0
+    Facilité d'utilisation: 3.0
+    Programmabilité: 5.0
+    Interactif: 5.0
+    Copilote IA en langage naturel: 1.0
+    Contrôle qualité visuel du rendu: 1.0
+    Local et hors ligne (sans compte): 4.0
+    Reproductibilité: 4.0
+    Export en SVG PNG PDF: 4.0
+    Personnalisation et thèmes: 5.0
+    Flexibilité des sources de données: 5.0
+    Maturité et communauté: 5.0
+    Géospatial et cartes: 4.0
+    Tableaux de bord et BI: 5.0
+    Fonctionnalités d'accessibilité: 3.0
+    Animé: 4.0
+    Performance sur grands jeux de données: 4.0
+    Intégrabilité web: 5.0
+    Profondeur statistique et analytique: 4.0
+    Adaptatif: 5.0
+- name: Bokeh
+  coordinates:
+    axis_1: 0.7928
+    axis_2: -2.8501
+  role: competitor
+  color: '#229F73'
+  attributes:
+    Gratuit ou open source: 5.0
+    Étendue des types de graphiques: 4.0
+    Qualité de publication: 3.0
+    Facilité d'utilisation: 2.0
+    Programmabilité: 4.0
+    Interactif: 5.0
+    Copilote IA en langage naturel: 1.0
+    Contrôle qualité visuel du rendu: 1.0
+    Local et hors ligne (sans compte): 5.0
+    Reproductibilité: 4.0
+    Export en SVG PNG PDF: 3.0
+    Personnalisation et thèmes: 4.0
+    Flexibilité des sources de données: 4.0
+    Maturité et communauté: 4.0
+    Géospatial et cartes: 3.0
+    Tableaux de bord et BI: 4.0
+    Fonctionnalités d'accessibilité: 2.0
+    Animé: 4.0
+    Performance sur grands jeux de données: 5.0
+    Intégrabilité web: 5.0
+    Profondeur statistique et analytique: 3.0
+    Adaptatif: 4.0
+- name: Altair
+  coordinates:
+    axis_1: 2.0248
+    axis_2: 0.3651
+  role: competitor
+  color: '#5699DF'
+  attributes:
+    Gratuit ou open source: 5.0
+    Étendue des types de graphiques: 4.0
+    Qualité de publication: 4.0
+    Facilité d'utilisation: 3.0
+    Programmabilité: 4.0
+    Interactif: 4.0
+    Copilote IA en langage naturel: 1.0
+    Contrôle qualité visuel du rendu: 1.0
+    Local et hors ligne (sans compte): 5.0
+    Reproductibilité: 5.0
+    Export en SVG PNG PDF: 4.0
+    Personnalisation et thèmes: 4.0
+    Flexibilité des sources de données: 3.0
+    Maturité et communauté: 4.0
+    Géospatial et cartes: 3.0
+    Tableaux de bord et BI: 2.0
+    Fonctionnalités d'accessibilité: 3.0
+    Animé: 2.0
+    Performance sur grands jeux de données: 2.0
+    Intégrabilité web: 4.0
+    Profondeur statistique et analytique: 3.0
+    Adaptatif: 4.0
+- name: ggplot
+  coordinates:
+    axis_1: 2.9613
+    axis_2: 3.1756
+  role: competitor
+  color: '#8195E8'
+  attributes:
+    Gratuit ou open source: 5.0
+    Étendue des types de graphiques: 4.0
+    Qualité de publication: 5.0
+    Facilité d'utilisation: 2.0
+    Programmabilité: 4.0
+    Interactif: 1.0
+    Copilote IA en langage naturel: 1.0
+    Contrôle qualité visuel du rendu: 1.0
+    Local et hors ligne (sans compte): 5.0
+    Reproductibilité: 5.0
+    Export en SVG PNG PDF: 4.0
+    Personnalisation et thèmes: 5.0
+    Flexibilité des sources de données: 3.0
+    Maturité et communauté: 4.0
+    Géospatial et cartes: 2.0
+    Tableaux de bord et BI: 1.0
+    Fonctionnalités d'accessibilité: 3.0
+    Animé: 2.0
+    Performance sur grands jeux de données: 3.0
+    Intégrabilité web: 2.0
+    Profondeur statistique et analytique: 5.0
+    Adaptatif: 2.0
+- name: HoloViews
+  coordinates:
+    axis_1: 0.8125
+    axis_2: -2.5995
+  role: competitor
+  color: '#46CEAF'
+  attributes:
+    Gratuit ou open source: 5.0
+    Étendue des types de graphiques: 4.0
+    Qualité de publication: 3.0
+    Facilité d'utilisation: 2.0
+    Programmabilité: 4.0
+    Interactif: 5.0
+    Copilote IA en langage naturel: 1.0
+    Contrôle qualité visuel du rendu: 1.0
+    Local et hors ligne (sans compte): 5.0
+    Reproductibilité: 4.0
+    Export en SVG PNG PDF: 3.0
+    Personnalisation et thèmes: 4.0
+    Flexibilité des sources de données: 4.0
+    Maturité et communauté: 3.0
+    Géospatial et cartes: 4.0
+    Tableaux de bord et BI: 4.0
+    Fonctionnalités d'accessibilité: 2.0
+    Animé: 4.0
+    Performance sur grands jeux de données: 5.0
+    Intégrabilité web: 4.0
+    Profondeur statistique et analytique: 3.0
+    Adaptatif: 4.0
+- name: PyGWalker
+  coordinates:
+    axis_1: -1.8246
+    axis_2: -0.4524
+  role: competitor
+  color: '#F8918E'
+  attributes:
+    Gratuit ou open source: 5.0
+    Étendue des types de graphiques: 3.0
+    Qualité de publication: 3.0
+    Facilité d'utilisation: 4.0
+    Programmabilité: 3.0
+    Interactif: 5.0
+    Copilote IA en langage naturel: 2.0
+    Contrôle qualité visuel du rendu: 1.0
+    Local et hors ligne (sans compte): 5.0
+    Reproductibilité: 3.0
+    Export en SVG PNG PDF: 3.0
+    Personnalisation et thèmes: 3.0
+    Flexibilité des sources de données: 4.0
+    Maturité et communauté: 3.0
+    Géospatial et cartes: 2.0
+    Tableaux de bord et BI: 4.0
+    Fonctionnalités d'accessibilité: 2.0
+    Animé: 2.0
+    Performance sur grands jeux de données: 3.0
+    Intégrabilité web: 3.0
+    Profondeur statistique et analytique: 3.0
+    Adaptatif: 4.0
+- name: Streamlit
+  coordinates:
+    axis_1: -1.985
+    axis_2: -1.5422
+  role: competitor
+  color: '#E3AB51'
+  attributes:
+    Gratuit ou open source: 4.0
+    Étendue des types de graphiques: 3.0
+    Qualité de publication: 3.0
+    Facilité d'utilisation: 3.0
+    Programmabilité: 4.0
+    Interactif: 4.0
+    Copilote IA en langage naturel: 2.0
+    Contrôle qualité visuel du rendu: 1.0
+    Local et hors ligne (sans compte): 4.0
+    Reproductibilité: 3.0
+    Export en SVG PNG PDF: 2.0
+    Personnalisation et thèmes: 3.0
+    Flexibilité des sources de données: 5.0
+    Maturité et communauté: 4.0
+    Géospatial et cartes: 3.0
+    Tableaux de bord et BI: 4.0
+    Fonctionnalités d'accessibilité: 2.0
+    Animé: 2.0
+    Performance sur grands jeux de données: 3.0
+    Intégrabilité web: 4.0
+    Profondeur statistique et analytique: 3.0
+    Adaptatif: 4.0
+- name: Gradio
+  coordinates:
+    axis_1: -1.8122
+    axis_2: -0.9124
+  role: competitor
+  color: '#D57460'
+  attributes:
+    Gratuit ou open source: 5.0
+    Étendue des types de graphiques: 3.0
+    Qualité de publication: 3.0
+    Facilité d'utilisation: 3.0
+    Programmabilité: 4.0
+    Interactif: 4.0
+    Copilote IA en langage naturel: 2.0
+    Contrôle qualité visuel du rendu: 1.0
+    Local et hors ligne (sans compte): 4.0
+    Reproductibilité: 3.0
+    Export en SVG PNG PDF: 2.0
+    Personnalisation et thèmes: 3.0
+    Flexibilité des sources de données: 4.0
+    Maturité et communauté: 4.0
+    Géospatial et cartes: 2.0
+    Tableaux de bord et BI: 4.0
+    Fonctionnalités d'accessibilité: 2.0
+    Animé: 2.0
+    Performance sur grands jeux de données: 3.0
+    Intégrabilité web: 4.0
+    Profondeur statistique et analytique: 3.0
+    Adaptatif: 4.0
+- name: Taipy
+  coordinates:
+    axis_1: -1.9333
+    axis_2: -1.2566
+  role: competitor
+  color: '#CC724B'
+  attributes:
+    Gratuit ou open source: 5.0
+    Étendue des types de graphiques: 3.0
+    Qualité de publication: 3.0
+    Facilité d'utilisation: 3.0
+    Programmabilité: 4.0
+    Interactif: 4.0
+    Copilote IA en langage naturel: 2.0
+    Contrôle qualité visuel du rendu: 1.0
+    Local et hors ligne (sans compte): 4.0
+    Reproductibilité: 3.0
+    Export en SVG PNG PDF: 2.0
+    Personnalisation et thèmes: 3.0
+    Flexibilité des sources de données: 4.0
+    Maturité et communauté: 3.0
+    Géospatial et cartes: 2.0
+    Tableaux de bord et BI: 5.0
+    Fonctionnalités d'accessibilité: 2.0
+    Animé: 2.0
+    Performance sur grands jeux de données: 4.0
+    Intégrabilité web: 4.0
+    Profondeur statistique et analytique: 3.0
+    Adaptatif: 4.0
+- name: D3.js
+  coordinates:
+    axis_1: 4.1191
+    axis_2: -3.1832
+  role: right
+  color: '#007AFF'
+  attributes:
+    Gratuit ou open source: 5.0
+    Étendue des types de graphiques: 5.0
+    Qualité de publication: 5.0
+    Facilité d'utilisation: 1.0
+    Programmabilité: 5.0
+    Interactif: 5.0
+    Copilote IA en langage naturel: 1.0
+    Contrôle qualité visuel du rendu: 1.0
+    Local et hors ligne (sans compte): 5.0
+    Reproductibilité: 4.0
+    Export en SVG PNG PDF: 4.0
+    Personnalisation et thèmes: 5.0
+    Flexibilité des sources de données: 4.0
+    Maturité et communauté: 5.0
+    Géospatial et cartes: 5.0
+    Tableaux de bord et BI: 3.0
+    Fonctionnalités d'accessibilité: 3.0
+    Animé: 5.0
+    Performance sur grands jeux de données: 3.0
+    Intégrabilité web: 5.0
+    Profondeur statistique et analytique: 2.0
+    Adaptatif: 5.0
+- name: Chart.js
+  coordinates:
+    axis_1: 0.0059
+    axis_2: -1.0504
+  role: competitor
+  color: '#62BD80'
+  attributes:
+    Gratuit ou open source: 5.0
+    Étendue des types de graphiques: 3.0
+    Qualité de publication: 3.0
+    Facilité d'utilisation: 2.0
+    Programmabilité: 4.0
+    Interactif: 4.0
+    Copilote IA en langage naturel: 1.0
+    Contrôle qualité visuel du rendu: 1.0
+    Local et hors ligne (sans compte): 5.0
+    Reproductibilité: 4.0
+    Export en SVG PNG PDF: 3.0
+    Personnalisation et thèmes: 3.0
+    Flexibilité des sources de données: 3.0
+    Maturité et communauté: 4.0
+    Géospatial et cartes: 2.0
+    Tableaux de bord et BI: 3.0
+    Fonctionnalités d'accessibilité: 2.0
+    Animé: 3.0
+    Performance sur grands jeux de données: 2.0
+    Intégrabilité web: 5.0
+    Profondeur statistique et analytique: 2.0
+    Adaptatif: 5.0
+- name: ECharts
+  coordinates:
+    axis_1: 3.1189
+    axis_2: -3.8092
+  role: competitor
+  color: '#00B2C4'
+  attributes:
+    Gratuit ou open source: 5.0
+    Étendue des types de graphiques: 5.0
+    Qualité de publication: 4.0
+    Facilité d'utilisation: 2.0
+    Programmabilité: 4.0
+    Interactif: 5.0
+    Copilote IA en langage naturel: 1.0
+    Contrôle qualité visuel du rendu: 1.0
+    Local et hors ligne (sans compte): 5.0
+    Reproductibilité: 4.0
+    Export en SVG PNG PDF: 4.0
+    Personnalisation et thèmes: 5.0
+    Flexibilité des sources de données: 4.0
+    Maturité et communauté: 5.0
+    Géospatial et cartes: 5.0
+    Tableaux de bord et BI: 4.0
+    Fonctionnalités d'accessibilité: 3.0
+    Animé: 5.0
+    Performance sur grands jeux de données: 5.0
+    Intégrabilité web: 5.0
+    Profondeur statistique et analytique: 3.0
+    Adaptatif: 5.0
+- name: Highcharts
+  coordinates:
+    axis_1: 2.1676
+    axis_2: -3.0181
+  role: competitor
+  color: '#2FD0D3'
+  attributes:
+    Gratuit ou open source: 2.0
+    Étendue des types de graphiques: 5.0
+    Qualité de publication: 4.0
+    Facilité d'utilisation: 3.0
+    Programmabilité: 4.0
+    Interactif: 5.0
+    Copilote IA en langage naturel: 1.0
+    Contrôle qualité visuel du rendu: 1.0
+    Local et hors ligne (sans compte): 4.0
+    Reproductibilité: 4.0
+    Export en SVG PNG PDF: 4.0
+    Personnalisation et thèmes: 5.0
+    Flexibilité des sources de données: 4.0
+    Maturité et communauté: 5.0
+    Géospatial et cartes: 4.0
+    Tableaux de bord et BI: 4.0
+    Fonctionnalités d'accessibilité: 4.0
+    Animé: 4.0
+    Performance sur grands jeux de données: 4.0
+    Intégrabilité web: 5.0
+    Profondeur statistique et analytique: 3.0
+    Adaptatif: 5.0
+- name: Vega
+  coordinates:
+    axis_1: 1.9785
+    axis_2: -0.3727
+  role: competitor
+  color: '#0093C2'
+  attributes:
+    Gratuit ou open source: 5.0
+    Étendue des types de graphiques: 4.0
+    Qualité de publication: 4.0
+    Facilité d'utilisation: 3.0
+    Programmabilité: 4.0
+    Interactif: 4.0
+    Copilote IA en langage naturel: 2.0
+    Contrôle qualité visuel du rendu: 1.0
+    Local et hors ligne (sans compte): 5.0
+    Reproductibilité: 5.0
+    Export en SVG PNG PDF: 4.0
+    Personnalisation et thèmes: 4.0
+    Flexibilité des sources de données: 3.0
+    Maturité et communauté: 4.0
+    Géospatial et cartes: 4.0
+    Tableaux de bord et BI: 3.0
+    Fonctionnalités d'accessibilité: 3.0
+    Animé: 2.0
+    Performance sur grands jeux de données: 2.0
+    Intégrabilité web: 5.0
+    Profondeur statistique et analytique: 3.0
+    Adaptatif: 4.0
+- name: Observable Plot
+  coordinates:
+    axis_1: 1.1932
+    axis_2: -1.3152
+  role: competitor
+  color: '#4FD7FA'
+  attributes:
+    Gratuit ou open source: 5.0
+    Étendue des types de graphiques: 4.0
+    Qualité de publication: 4.0
+    Facilité d'utilisation: 3.0
+    Programmabilité: 4.0
+    Interactif: 4.0
+    Copilote IA en langage naturel: 1.0
+    Contrôle qualité visuel du rendu: 1.0
+    Local et hors ligne (sans compte): 4.0
+    Reproductibilité: 4.0
+    Export en SVG PNG PDF: 3.0
+    Personnalisation et thèmes: 4.0
+    Flexibilité des sources de données: 4.0
+    Maturité et communauté: 3.0
+    Géospatial et cartes: 4.0
+    Tableaux de bord et BI: 3.0
+    Fonctionnalités d'accessibilité: 3.0
+    Animé: 3.0
+    Performance sur grands jeux de données: 3.0
+    Intégrabilité web: 5.0
+    Profondeur statistique et analytique: 3.0
+    Adaptatif: 4.0
+- name: vis.js
+  coordinates:
+    axis_1: 0.0075
+    axis_2: -1.4024
+  role: competitor
+  color: '#68AA61'
+  attributes:
+    Gratuit ou open source: 5.0
+    Étendue des types de graphiques: 3.0
+    Qualité de publication: 3.0
+    Facilité d'utilisation: 3.0
+    Programmabilité: 4.0
+    Interactif: 5.0
+    Copilote IA en langage naturel: 1.0
+    Contrôle qualité visuel du rendu: 1.0
+    Local et hors ligne (sans compte): 5.0
+    Reproductibilité: 4.0
+    Export en SVG PNG PDF: 2.0
+    Personnalisation et thèmes: 4.0
+    Flexibilité des sources de données: 3.0
+    Maturité et communauté: 4.0
+    Géospatial et cartes: 2.0
+    Tableaux de bord et BI: 2.0
+    Fonctionnalités d'accessibilité: 2.0
+    Animé: 4.0
+    Performance sur grands jeux de données: 3.0
+    Intégrabilité web: 5.0
+    Profondeur statistique et analytique: 2.0
+    Adaptatif: 4.0
+- name: Datawrapper
+  coordinates:
+    axis_1: 0.7288
+    axis_2: 0.0873
+  role: competitor
+  color: '#6BC8FF'
+  attributes:
+    Gratuit ou open source: 5.0
+    Étendue des types de graphiques: 3.0
+    Qualité de publication: 5.0
+    Facilité d'utilisation: 5.0
+    Programmabilité: 2.0
+    Interactif: 4.0
+    Copilote IA en langage naturel: 1.0
+    Contrôle qualité visuel du rendu: 1.0
+    Local et hors ligne (sans compte): 2.0
+    Reproductibilité: 3.0
+    Export en SVG PNG PDF: 4.0
+    Personnalisation et thèmes: 4.0
+    Flexibilité des sources de données: 3.0
+    Maturité et communauté: 4.0
+    Géospatial et cartes: 4.0
+    Tableaux de bord et BI: 2.0
+    Fonctionnalités d'accessibilité: 5.0
+    Animé: 2.0
+    Performance sur grands jeux de données: 2.0
+    Intégrabilité web: 5.0
+    Profondeur statistique et analytique: 2.0
+    Adaptatif: 5.0
+- name: Flourish
+  coordinates:
+    axis_1: -0.82
+    axis_2: -1.8747
+  role: competitor
+  color: '#92BE68'
+  attributes:
+    Gratuit ou open source: 3.0
+    Étendue des types de graphiques: 4.0
+    Qualité de publication: 4.0
+    Facilité d'utilisation: 5.0
+    Programmabilité: 2.0
+    Interactif: 5.0
+    Copilote IA en langage naturel: 1.0
+    Contrôle qualité visuel du rendu: 1.0
+    Local et hors ligne (sans compte): 2.0
+    Reproductibilité: 2.0
+    Export en SVG PNG PDF: 3.0
+    Personnalisation et thèmes: 4.0
+    Flexibilité des sources de données: 3.0
+    Maturité et communauté: 4.0
+    Géospatial et cartes: 4.0
+    Tableaux de bord et BI: 3.0
+    Fonctionnalités d'accessibilité: 3.0
+    Animé: 5.0
+    Performance sur grands jeux de données: 2.0
+    Intégrabilité web: 5.0
+    Profondeur statistique et analytique: 2.0
+    Adaptatif: 5.0
+- name: RAWGraphs
+  coordinates:
+    axis_1: -0.9946
+    axis_2: 3.1035
+  role: competitor
+  color: '#B5A0F7'
+  attributes:
+    Gratuit ou open source: 5.0
+    Étendue des types de graphiques: 5.0
+    Qualité de publication: 4.0
+    Facilité d'utilisation: 5.0
+    Programmabilité: 1.0
+    Interactif: 2.0
+    Copilote IA en langage naturel: 1.0
+    Contrôle qualité visuel du rendu: 1.0
+    Local et hors ligne (sans compte): 3.0
+    Reproductibilité: 2.0
+    Export en SVG PNG PDF: 4.0
+    Personnalisation et thèmes: 3.0
+    Flexibilité des sources de données: 2.0
+    Maturité et communauté: 3.0
+    Géospatial et cartes: 2.0
+    Tableaux de bord et BI: 1.0
+    Fonctionnalités d'accessibilité: 2.0
+    Animé: 1.0
+    Performance sur grands jeux de données: 2.0
+    Intégrabilité web: 3.0
+    Profondeur statistique et analytique: 2.0
+    Adaptatif: 3.0
+- name: Infogram
+  coordinates:
+    axis_1: -3.3917
+    axis_2: -0.1022
+  role: competitor
+  color: '#F08A99'
+  attributes:
+    Gratuit ou open source: 2.0
+    Étendue des types de graphiques: 3.0
+    Qualité de publication: 3.0
+    Facilité d'utilisation: 5.0
+    Programmabilité: 1.0
+    Interactif: 4.0
+    Copilote IA en langage naturel: 1.0
+    Contrôle qualité visuel du rendu: 1.0
+    Local et hors ligne (sans compte): 1.0
+    Reproductibilité: 2.0
+    Export en SVG PNG PDF: 3.0
+    Personnalisation et thèmes: 3.0
+    Flexibilité des sources de données: 3.0
+    Maturité et communauté: 3.0
+    Géospatial et cartes: 3.0
+    Tableaux de bord et BI: 3.0
+    Fonctionnalités d'accessibilité: 2.0
+    Animé: 3.0
+    Performance sur grands jeux de données: 2.0
+    Intégrabilité web: 4.0
+    Profondeur statistique et analytique: 1.0
+    Adaptatif: 4.0
+- name: Vizzu
+  coordinates:
+    axis_1: -0.694
+    axis_2: -0.0204
+  role: competitor
+  color: '#CC6D8C'
+  attributes:
+    Gratuit ou open source: 5.0
+    Étendue des types de graphiques: 3.0
+    Qualité de publication: 3.0
+    Facilité d'utilisation: 3.0
+    Programmabilité: 4.0
+    Interactif: 4.0
+    Copilote IA en langage naturel: 1.0
+    Contrôle qualité visuel du rendu: 1.0
+    Local et hors ligne (sans compte): 4.0
+    Reproductibilité: 3.0
+    Export en SVG PNG PDF: 3.0
+    Personnalisation et thèmes: 3.0
+    Flexibilité des sources de données: 3.0
+    Maturité et communauté: 3.0
+    Géospatial et cartes: 1.0
+    Tableaux de bord et BI: 2.0
+    Fonctionnalités d'accessibilité: 2.0
+    Animé: 5.0
+    Performance sur grands jeux de données: 2.0
+    Intégrabilité web: 4.0
+    Profondeur statistique et analytique: 2.0
+    Adaptatif: 4.0
+- name: Tableau
+  coordinates:
+    axis_1: -1.3417
+    axis_2: -2.6578
+  role: competitor
+  color: '#99AE4E'
+  attributes:
+    Gratuit ou open source: 1.0
+    Étendue des types de graphiques: 4.0
+    Qualité de publication: 4.0
+    Facilité d'utilisation: 4.0
+    Programmabilité: 2.0
+    Interactif: 5.0
+    Copilote IA en langage naturel: 3.0
+    Contrôle qualité visuel du rendu: 1.0
+    Local et hors ligne (sans compte): 3.0
+    Reproductibilité: 2.0
+    Export en SVG PNG PDF: 4.0
+    Personnalisation et thèmes: 4.0
+    Flexibilité des sources de données: 5.0
+    Maturité et communauté: 5.0
+    Géospatial et cartes: 5.0
+    Tableaux de bord et BI: 5.0
+    Fonctionnalités d'accessibilité: 3.0
+    Animé: 3.0
+    Performance sur grands jeux de données: 5.0
+    Intégrabilité web: 4.0
+    Profondeur statistique et analytique: 4.0
+    Adaptatif: 4.0
+- name: Power BI
+  coordinates:
+    axis_1: -2.3154
+    axis_2: -2.7054
+  role: competitor
+  color: '#C29B35'
+  attributes:
+    Gratuit ou open source: 2.0
+    Étendue des types de graphiques: 4.0
+    Qualité de publication: 3.0
+    Facilité d'utilisation: 4.0
+    Programmabilité: 2.0
+    Interactif: 5.0
+    Copilote IA en langage naturel: 3.0
+    Contrôle qualité visuel du rendu: 1.0
+    Local et hors ligne (sans compte): 2.0
+    Reproductibilité: 2.0
+    Export en SVG PNG PDF: 3.0
+    Personnalisation et thèmes: 4.0
+    Flexibilité des sources de données: 5.0
+    Maturité et communauté: 5.0
+    Géospatial et cartes: 4.0
+    Tableaux de bord et BI: 5.0
+    Fonctionnalités d'accessibilité: 3.0
+    Animé: 3.0
+    Performance sur grands jeux de données: 5.0
+    Intégrabilité web: 4.0
+    Profondeur statistique et analytique: 4.0
+    Adaptatif: 4.0
+- name: Looker
+  coordinates:
+    axis_1: -2.4151
+    axis_2: -1.6022
+  role: competitor
+  color: '#D48248'
+  attributes:
+    Gratuit ou open source: 3.0
+    Étendue des types de graphiques: 3.0
+    Qualité de publication: 3.0
+    Facilité d'utilisation: 5.0
+    Programmabilité: 3.0
+    Interactif: 4.0
+    Copilote IA en langage naturel: 3.0
+    Contrôle qualité visuel du rendu: 1.0
+    Local et hors ligne (sans compte): 2.0
+    Reproductibilité: 3.0
+    Export en SVG PNG PDF: 3.0
+    Personnalisation et thèmes: 4.0
+    Flexibilité des sources de données: 5.0
+    Maturité et communauté: 4.0
+    Géospatial et cartes: 3.0
+    Tableaux de bord et BI: 5.0
+    Fonctionnalités d'accessibilité: 3.0
+    Animé: 2.0
+    Performance sur grands jeux de données: 5.0
+    Intégrabilité web: 4.0
+    Profondeur statistique et analytique: 4.0
+    Adaptatif: 4.0
+- name: Apache Superset
+  coordinates:
+    axis_1: -1.1023
+    axis_2: -1.8416
+  role: competitor
+  color: '#D7C35C'
+  attributes:
+    Gratuit ou open source: 5.0
+    Étendue des types de graphiques: 4.0
+    Qualité de publication: 3.0
+    Facilité d'utilisation: 4.0
+    Programmabilité: 3.0
+    Interactif: 4.0
+    Copilote IA en langage naturel: 1.0
+    Contrôle qualité visuel du rendu: 1.0
+    Local et hors ligne (sans compte): 4.0
+    Reproductibilité: 3.0
+    Export en SVG PNG PDF: 3.0
+    Personnalisation et thèmes: 4.0
+    Flexibilité des sources de données: 5.0
+    Maturité et communauté: 4.0
+    Géospatial et cartes: 3.0
+    Tableaux de bord et BI: 5.0
+    Fonctionnalités d'accessibilité: 2.0
+    Animé: 2.0
+    Performance sur grands jeux de données: 5.0
+    Intégrabilité web: 3.0
+    Profondeur statistique et analytique: 3.0
+    Adaptatif: 4.0
+- name: Metabase
+  coordinates:
+    axis_1: -2.4094
+    axis_2: -1.611
+  role: competitor
+  color: '#DE974B'
+  attributes:
+    Gratuit ou open source: 4.0
+    Étendue des types de graphiques: 3.0
+    Qualité de publication: 3.0
+    Facilité d'utilisation: 5.0
+    Programmabilité: 3.0
+    Interactif: 4.0
+    Copilote IA en langage naturel: 2.0
+    Contrôle qualité visuel du rendu: 1.0
+    Local et hors ligne (sans compte): 4.0
+    Reproductibilité: 3.0
+    Export en SVG PNG PDF: 3.0
+    Personnalisation et thèmes: 3.0
+    Flexibilité des sources de données: 5.0
+    Maturité et communauté: 4.0
+    Géospatial et cartes: 3.0
+    Tableaux de bord et BI: 5.0
+    Fonctionnalités d'accessibilité: 2.0
+    Animé: 2.0
+    Performance sur grands jeux de données: 4.0
+    Intégrabilité web: 4.0
+    Profondeur statistique et analytique: 3.0
+    Adaptatif: 4.0
+- name: Grafana
+  coordinates:
+    axis_1: -1.5664
+    axis_2: -2.768
+  role: competitor
+  color: '#A5A53D'
+  attributes:
+    Gratuit ou open source: 4.0
+    Étendue des types de graphiques: 3.0
+    Qualité de publication: 3.0
+    Facilité d'utilisation: 4.0
+    Programmabilité: 3.0
+    Interactif: 4.0
+    Copilote IA en langage naturel: 2.0
+    Contrôle qualité visuel du rendu: 1.0
+    Local et hors ligne (sans compte): 4.0
+    Reproductibilité: 3.0
+    Export en SVG PNG PDF: 3.0
+    Personnalisation et thèmes: 4.0
+    Flexibilité des sources de données: 5.0
+    Maturité et communauté: 5.0
+    Géospatial et cartes: 3.0
+    Tableaux de bord et BI: 5.0
+    Fonctionnalités d'accessibilité: 2.0
+    Animé: 3.0
+    Performance sur grands jeux de données: 5.0
+    Intégrabilité web: 4.0
+    Profondeur statistique et analytique: 3.0
+    Adaptatif: 5.0
+- name: Julius AI
+  coordinates:
+    axis_1: -3.7925
+    axis_2: 1.7556
+  role: competitor
+  color: '#E588B7'
+  attributes:
+    Gratuit ou open source: 2.0
+    Étendue des types de graphiques: 3.0
+    Qualité de publication: 3.0
+    Facilité d'utilisation: 5.0
+    Programmabilité: 3.0
+    Interactif: 4.0
+    Copilote IA en langage naturel: 5.0
+    Contrôle qualité visuel du rendu: 2.0
+    Local et hors ligne (sans compte): 1.0
+    Reproductibilité: 3.0
+    Export en SVG PNG PDF: 3.0
+    Personnalisation et thèmes: 3.0
+    Flexibilité des sources de données: 4.0
+    Maturité et communauté: 3.0
+    Géospatial et cartes: 2.0
+    Tableaux de bord et BI: 3.0
+    Fonctionnalités d'accessibilité: 2.0
+    Animé: 2.0
+    Performance sur grands jeux de données: 3.0
+    Intégrabilité web: 2.0
+    Profondeur statistique et analytique: 5.0
+    Adaptatif: 3.0
+- name: ChatGPT
+  coordinates:
+    axis_1: -3.6959
+    axis_2: 3.8092
+  role: top
+  color: '#AF52DE'
+  attributes:
+    Gratuit ou open source: 2.0
+    Étendue des types de graphiques: 3.0
+    Qualité de publication: 2.0
+    Facilité d'utilisation: 5.0
+    Programmabilité: 4.0
+    Interactif: 2.0
+    Copilote IA en langage naturel: 5.0
+    Contrôle qualité visuel du rendu: 2.0
+    Local et hors ligne (sans compte): 1.0
+    Reproductibilité: 3.0
+    Export en SVG PNG PDF: 3.0
+    Personnalisation et thèmes: 3.0
+    Flexibilité des sources de données: 3.0
+    Maturité et communauté: 4.0
+    Géospatial et cartes: 2.0
+    Tableaux de bord et BI: 1.0
+    Fonctionnalités d'accessibilité: 2.0
+    Animé: 1.0
+    Performance sur grands jeux de données: 2.0
+    Intégrabilité web: 2.0
+    Profondeur statistique et analytique: 5.0
+    Adaptatif: 2.0
+- name: Claude
+  coordinates:
+    axis_1: -3.1925
+    axis_2: 2.4201
+  role: competitor
+  color: '#BA75B9'
+  attributes:
+    Gratuit ou open source: 2.0
+    Étendue des types de graphiques: 3.0
+    Qualité de publication: 3.0
+    Facilité d'utilisation: 5.0
+    Programmabilité: 4.0
+    Interactif: 3.0
+    Copilote IA en langage naturel: 5.0
+    Contrôle qualité visuel du rendu: 2.0
+    Local et hors ligne (sans compte): 1.0
+    Reproductibilité: 3.0
+    Export en SVG PNG PDF: 3.0
+    Personnalisation et thèmes: 3.0
+    Flexibilité des sources de données: 3.0
+    Maturité et communauté: 4.0
+    Géospatial et cartes: 2.0
+    Tableaux de bord et BI: 2.0
+    Fonctionnalités d'accessibilité: 2.0
+    Animé: 2.0
+    Performance sur grands jeux de données: 2.0
+    Intégrabilité web: 3.0
+    Profondeur statistique et analytique: 5.0
+    Adaptatif: 3.0
+- name: ThoughtSpot
+  coordinates:
+    axis_1: -4.1191
+    axis_2: -1.3611
+  role: worst
+  color: '#A52A2A'
+  attributes:
+    Gratuit ou open source: 1.0
+    Étendue des types de graphiques: 3.0
+    Qualité de publication: 3.0
+    Facilité d'utilisation: 5.0
+    Programmabilité: 2.0
+    Interactif: 4.0
+    Copilote IA en langage naturel: 5.0
+    Contrôle qualité visuel du rendu: 1.0
+    Local et hors ligne (sans compte): 2.0
+    Reproductibilité: 2.0
+    Export en SVG PNG PDF: 3.0
+    Personnalisation et thèmes: 3.0
+    Flexibilité des sources de données: 5.0
+    Maturité et communauté: 4.0
+    Géospatial et cartes: 3.0
+    Tableaux de bord et BI: 5.0
+    Fonctionnalités d'accessibilité: 3.0
+    Animé: 2.0
+    Performance sur grands jeux de données: 5.0
+    Intégrabilité web: 4.0
+    Profondeur statistique et analytique: 4.0
+    Adaptatif: 4.0
+- name: Excel
+  coordinates:
+    axis_1: -2.0414
+    axis_2: 2.3059
+  role: competitor
+  color: '#AA72BE'
+  attributes:
+    Gratuit ou open source: 3.0
+    Étendue des types de graphiques: 3.0
+    Qualité de publication: 3.0
+    Facilité d'utilisation: 5.0
+    Programmabilité: 2.0
+    Interactif: 2.0
+    Copilote IA en langage naturel: 2.0
+    Contrôle qualité visuel du rendu: 1.0
+    Local et hors ligne (sans compte): 5.0
+    Reproductibilité: 2.0
+    Export en SVG PNG PDF: 3.0
+    Personnalisation et thèmes: 4.0
+    Flexibilité des sources de données: 3.0
+    Maturité et communauté: 5.0
+    Géospatial et cartes: 2.0
+    Tableaux de bord et BI: 3.0
+    Fonctionnalités d'accessibilité: 3.0
+    Animé: 2.0
+    Performance sur grands jeux de données: 2.0
+    Intégrabilité web: 2.0
+    Profondeur statistique et analytique: 4.0
+    Adaptatif: 2.0
+- name: Google Sheets
+  coordinates:
+    axis_1: -3.7916
+    axis_2: 2.1021
+  role: competitor
+  color: '#F5A0DC'
+  attributes:
+    Gratuit ou open source: 5.0
+    Étendue des types de graphiques: 2.0
+    Qualité de publication: 2.0
+    Facilité d'utilisation: 5.0
+    Programmabilité: 2.0
+    Interactif: 2.0
+    Copilote IA en langage naturel: 2.0
+    Contrôle qualité visuel du rendu: 1.0
+    Local et hors ligne (sans compte): 2.0
+    Reproductibilité: 2.0
+    Export en SVG PNG PDF: 3.0
+    Personnalisation et thèmes: 3.0
+    Flexibilité des sources de données: 3.0
+    Maturité et communauté: 5.0
+    Géospatial et cartes: 2.0
+    Tableaux de bord et BI: 3.0
+    Fonctionnalités d'accessibilité: 2.0
+    Animé: 1.0
+    Performance sur grands jeux de données: 1.0
+    Intégrabilité web: 3.0
+    Profondeur statistique et analytique: 3.0
+    Adaptatif: 3.0
+- name: Canva
+  coordinates:
+    axis_1: -2.6492
+    axis_2: 3.7074
+  role: competitor
+  color: '#9C75C6'
+  attributes:
+    Gratuit ou open source: 3.0
+    Étendue des types de graphiques: 2.0
+    Qualité de publication: 4.0
+    Facilité d'utilisation: 5.0
+    Programmabilité: 1.0
+    Interactif: 2.0
+    Copilote IA en langage naturel: 3.0
+    Contrôle qualité visuel du rendu: 1.0
+    Local et hors ligne (sans compte): 1.0
+    Reproductibilité: 1.0
+    Export en SVG PNG PDF: 4.0
+    Personnalisation et thèmes: 4.0
+    Flexibilité des sources de données: 2.0
+    Maturité et communauté: 4.0
+    Géospatial et cartes: 1.0
+    Tableaux de bord et BI: 1.0
+    Fonctionnalités d'accessibilité: 3.0
+    Animé: 3.0
+    Performance sur grands jeux de données: 1.0
+    Intégrabilité web: 3.0
+    Profondeur statistique et analytique: 1.0
+    Adaptatif: 2.0

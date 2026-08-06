@@ -16,7 +16,7 @@ sprezzature suite
 
 ## When to choose sprezzature-figures
 
-- You need 90 ready-to-use chart types behind a single consistent API, where `make_figure("treemap", data)` just works without reading docs.
+- You need 126 ready-to-use chart types behind a single consistent API, where `make_figure("treemap", data)` just works without reading docs.
 - You want the output to stay entirely on your machine: import, profiling, manual figure choice, and export all run with no model and no cloud.
 - You want a copilot that edits a structured, reproducible plan and actually looks at the rendered image (the Ralph Eyeball Loop) rather than one that emits a chart on faith.
 - You are building a pipeline that feeds publication-grade figures into a web page, and you want a plan plus a `reproduce.py` you can rerun later.
@@ -66,3 +66,5 @@ Every alternative rated 1 to 5 on each criterion, higher is better (⭐ weak to 
 | Excel | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐ |
 | Google Sheets | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐ | ⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ |
 | Canva | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐ | ⭐ | ⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ | ⭐ | ⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐ | ⭐⭐⭐ | ⭐ | ⭐⭐ |
+
+![sprezzature-figures against 36 other data-viz tools, positioned on two PCA-derived axes](assets/landscape.svg)
