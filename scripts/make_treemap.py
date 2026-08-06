@@ -1,17 +1,19 @@
 #!/usr/bin/env python3
 """
-make_treemap — a treemap figure rendered via full Vega (squarify layout).
+make_treemap — a house-styled treemap as hand-authored SVG.
 
 A treemap encodes a hierarchy as a set of nested rectangles. Area is
 proportional to a numeric measure so the viewer can compare part-to-whole
 relationships across many categories at once. Colour encodes a second
-dimension (such as the parent category) so the eye groups siblings before
-comparing across groups. The classic use cases are software package sizes,
-portfolio composition, file-system usage, and any taxonomy with a value
-attached to each leaf.
+dimension (the parent category) so the eye groups siblings before comparing
+across groups. Typical uses: software package sizes, portfolio composition,
+file-system usage, and any taxonomy with a value attached to each leaf.
 
-Vega-Lite cannot produce a treemap natively; this generator uses a full
-Vega v5 spec with the squarify layout.
+Previously rendered via full Vega (``vl_convert``, ``treemap`` transform
+with the squarify method); this module now runs the squarify algorithm
+itself (Bruls, Huizing & van Wijk, 2000) and paints the nested rectangles
+by hand -- no Vega, no matplotlib. Every leaf carries a native ``<title>``
+tooltip with its exact value.
 
 Author
 ------
@@ -20,37 +22,27 @@ Author
 
 from __future__ import annotations
 
-import argparse
-import json
 import sys
+from collections import defaultdict
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _render import svg_example_path, titled_svg, write_svg  # noqa: E402
+from _interactive import fullscreen_control  # noqa: E402
+from _render import render_cli, svg_example_path, write_svg  # noqa: E402
+from _svg import svg_open, xml_escape  # noqa: E402
 
-# ---------------------------------------------------------------------------
-# Output paths
-# ---------------------------------------------------------------------------
-_SCRIPT = Path(__file__).resolve()
-_ASSET_DIR = _SCRIPT.parent.parent / "assets" / "svg-examples"
-_WEB_DIR = _SCRIPT.parent.parent.parent / "web" / "img" / "figures"
-
-# ---------------------------------------------------------------------------
-# House palette (six parent-category colours + neutral ink)
-# ---------------------------------------------------------------------------
 INK = "#1D1D1F"
 SECONDARY = "#6E6E73"
 BG = "#FFFFFF"
-FONT = "Roboto, system-ui, sans-serif"
 
 CATEGORY_COLORS: Dict[str, str] = {
     "Infrastructure": "#007AFF",
-    "Applications":  "#AF52DE",
-    "Security":      "#FF9500",
-    "Data & AI":     "#28CD41",
-    "Networking":    "#FF3B30",
-    "Compliance":    "#79DBDC",
+    "Applications": "#AF52DE",
+    "Security": "#FF9500",
+    "Data & AI": "#28CD41",
+    "Networking": "#FF3B30",
+    "Compliance": "#79DBDC",
 }
 
 # ---------------------------------------------------------------------------
@@ -58,218 +50,214 @@ CATEGORY_COLORS: Dict[str, str] = {
 # Two-level hierarchy: parent = domain, name = service, value = spend.
 # ---------------------------------------------------------------------------
 DEMO_DATA: List[Dict[str, Any]] = [
-    # Infrastructure
     {"parent": "Infrastructure", "name": "Compute (EC2/GCE)", "value": 312},
-    {"parent": "Infrastructure", "name": "Storage (S3/GCS)",  "value": 148},
-    {"parent": "Infrastructure", "name": "Managed DB",        "value": 97},
-    {"parent": "Infrastructure", "name": "Container registry","value": 34},
-    # Applications
-    {"parent": "Applications",   "name": "CRM platform",      "value": 210},
-    {"parent": "Applications",   "name": "ERP system",        "value": 178},
-    {"parent": "Applications",   "name": "Dev toolchain",     "value": 85},
-    {"parent": "Applications",   "name": "Collaboration",     "value": 62},
-    # Security
-    {"parent": "Security",       "name": "SIEM / SOC",        "value": 134},
-    {"parent": "Security",       "name": "WAF / DDoS",        "value": 76},
-    {"parent": "Security",       "name": "Identity (IAM)",    "value": 58},
-    # Data & AI
-    {"parent": "Data & AI",      "name": "Data warehouse",    "value": 189},
-    {"parent": "Data & AI",      "name": "ML training",       "value": 143},
-    {"parent": "Data & AI",      "name": "BI tooling",        "value": 67},
-    # Networking
-    {"parent": "Networking",     "name": "CDN / egress",      "value": 112},
-    {"parent": "Networking",     "name": "VPN / SD-WAN",      "value": 54},
-    # Compliance
-    {"parent": "Compliance",     "name": "Audit tooling",     "value": 43},
-    {"parent": "Compliance",     "name": "Data residency",    "value": 29},
+    {"parent": "Infrastructure", "name": "Storage (S3/GCS)", "value": 148},
+    {"parent": "Infrastructure", "name": "Managed DB", "value": 97},
+    {"parent": "Infrastructure", "name": "Container registry", "value": 34},
+    {"parent": "Applications", "name": "CRM platform", "value": 210},
+    {"parent": "Applications", "name": "ERP system", "value": 178},
+    {"parent": "Applications", "name": "Dev toolchain", "value": 85},
+    {"parent": "Applications", "name": "Collaboration", "value": 62},
+    {"parent": "Security", "name": "SIEM / SOC", "value": 134},
+    {"parent": "Security", "name": "WAF / DDoS", "value": 76},
+    {"parent": "Security", "name": "Identity (IAM)", "value": 58},
+    {"parent": "Data & AI", "name": "Data warehouse", "value": 189},
+    {"parent": "Data & AI", "name": "ML training", "value": 143},
+    {"parent": "Data & AI", "name": "BI tooling", "value": 67},
+    {"parent": "Networking", "name": "CDN / egress", "value": 112},
+    {"parent": "Networking", "name": "VPN / SD-WAN", "value": 54},
+    {"parent": "Compliance", "name": "Audit tooling", "value": 43},
+    {"parent": "Compliance", "name": "Data residency", "value": 29},
 ]
 
 
-def _build_vega_spec(
-    data: List[Dict[str, Any]],
-    title: str,
-    subtitle: str,
-    width: int,
-    height: int,
-) -> Dict[str, Any]:
-    """Return a full Vega v5 spec for the treemap.
+def _layout_row(sizes: List[float], x: float, y: float, dx: float, dy: float) -> List[Dict[str, float]]:
+    covered = sum(sizes)
+    width = covered / dy if dy else 0.0
+    rects, cy = [], y
+    for size in sizes:
+        h = size / width if width else 0.0
+        rects.append({"x": x, "y": cy, "dx": width, "dy": h})
+        cy += h
+    return rects
+
+
+def _layout_col(sizes: List[float], x: float, y: float, dx: float, dy: float) -> List[Dict[str, float]]:
+    covered = sum(sizes)
+    height = covered / dx if dx else 0.0
+    rects, cx = [], x
+    for size in sizes:
+        w = size / height if height else 0.0
+        rects.append({"x": cx, "y": y, "dx": w, "dy": height})
+        cx += w
+    return rects
+
+
+def _layout(sizes: List[float], x: float, y: float, dx: float, dy: float) -> List[Dict[str, float]]:
+    return _layout_row(sizes, x, y, dx, dy) if dx >= dy else _layout_col(sizes, x, y, dx, dy)
+
+
+def _leftover(sizes: List[float], x: float, y: float, dx: float, dy: float):
+    covered = sum(sizes)
+    if dx >= dy:
+        width = covered / dy if dy else 0.0
+        return (x + width, y, dx - width, dy)
+    height = covered / dx if dx else 0.0
+    return (x, y + height, dx, dy - height)
+
+
+def _worst_ratio(sizes: List[float], x: float, y: float, dx: float, dy: float) -> float:
+    rects = _layout(sizes, x, y, dx, dy)
+    return max(max(r["dx"] / r["dy"], r["dy"] / r["dx"]) for r in rects if r["dx"] and r["dy"])
+
+
+def _squarify(sizes: List[float], x: float, y: float, dx: float, dy: float) -> List[Dict[str, float]]:
+    """Squarified treemap layout (Bruls, Huizing & van Wijk, 2000).
 
     Parameters
     ----------
-    data : list[dict[str, Any]]
-        Flat rows with ``parent``, ``name``, ``value``.
-    title, subtitle : str
-        Chart headline and sub-line.
-    width, height : int
-        Canvas dimensions in pixels.
+    sizes : list of float
+        Areas, pre-normalised so that ``sum(sizes) == dx * dy``, sorted
+        descending for best aspect ratios.
+    x, y, dx, dy : float
+        The rectangle to subdivide.
 
     Returns
     -------
-    dict[str, Any]
-        A Vega v5 specification object.
+    list of dict
+        One ``{x, y, dx, dy}`` rect per input size, same order as *sizes*.
     """
-    # Build the node list Vega expects: a root node plus one node per category
-    # (intermediate) and one per leaf.
-    parents = sorted(set(row["parent"] for row in data))
-    nodes: List[Dict[str, Any]] = [{"id": "root", "parent": None, "name": "", "value": 0}]
-    for parent in parents:
-        nodes.append({"id": parent, "parent": "root", "name": parent, "value": 0})
-    for row in data:
-        leaf_id = f"{row['parent']}/{row['name']}"
-        nodes.append({"id": leaf_id, "parent": row["parent"],
-                      "name": row["name"], "value": row["value"]})
+    if not sizes:
+        return []
+    if len(sizes) == 1:
+        return _layout(sizes, x, y, dx, dy)
+    i = 1
+    while i < len(sizes) and _worst_ratio(sizes[:i], x, y, dx, dy) >= _worst_ratio(sizes[: i + 1], x, y, dx, dy):
+        i += 1
+    current, remaining = sizes[:i], sizes[i:]
+    lx, ly, ldx, ldy = _leftover(current, x, y, dx, dy)
+    return _layout(current, x, y, dx, dy) + _squarify(remaining, lx, ly, ldx, ldy)
 
-    # Color domain: map each parent to its house color
-    color_domain = list(CATEGORY_COLORS.keys())
-    color_range = [CATEGORY_COLORS[k] for k in color_domain]
 
-    spec: Dict[str, Any] = {
-        "$schema": "https://vega.github.io/schema/vega/v5.json",
-        "width": width,
-        "height": height,
-        "background": BG,
-        "title": {
-            "text": title,
-            "subtitle": subtitle,
-            "font": FONT,
-            "fontSize": 22,
-            "fontWeight": 600,
-            "subtitleFont": FONT,
-            "subtitleFontSize": 13,
-            "subtitleColor": SECONDARY,
-            "color": INK,
-            "anchor": "start",
-            "offset": 12,
-        },
-        "data": [
-            {
-                "name": "tree",
-                "values": nodes,
-                "transform": [
-                    {
-                        "type": "stratify",
-                        "key": "id",
-                        "parentKey": "parent",
-                    },
-                    {
-                        "type": "treemap",
-                        "field": "value",
-                        "sort": {"field": "value", "order": "descending"},
-                        "round": True,
-                        "method": "squarify",
-                        "ratio": 1.618,
-                        "size": [{"signal": "width"}, {"signal": "height - 60"}],
-                    },
-                ],
-            }
-        ],
-        "scales": [
-            {
-                "name": "color",
-                "type": "ordinal",
-                "domain": color_domain,
-                "range": color_range,
-            }
-        ],
-        "marks": [
-            {
-                # Leaf rectangles
-                "type": "rect",
-                "from": {"data": "tree"},
-                "encode": {
-                    "enter": {
-                        "x": {"field": "x0"},
-                        "y": {"field": "y0", "offset": 60},
-                        "x2": {"field": "x1"},
-                        "y2": {"field": "y1", "offset": 60},
-                        "fill": {"scale": "color", "field": "parent"},
-                        "fillOpacity": [
-                            # Leaves get 0.82 opacity; intermediate nodes get 0
-                            {
-                                "test": "datum.depth === 2",
-                                "value": 0.82,
-                            },
-                            {"value": 0},
-                        ],
-                        "stroke": {"value": BG},
-                        "strokeWidth": {"value": 2},
-                        "tooltip": {
-                            "signal": (
-                                "datum.depth === 2 ? "
-                                "datum.parent + ' / ' + datum.name + ': ' + datum.value + 'k EUR' "
-                                ": ''"
-                            )
-                        },
-                    }
-                },
-            },
-            {
-                # Leaf labels (name + value)
-                "type": "text",
-                "from": {"data": "tree"},
-                "encode": {
-                    "enter": {
-                        "x": {"signal": "(datum.x0 + datum.x1) / 2"},
-                        "y": {"signal": "60 + (datum.y0 + datum.y1) / 2 - 6"},
-                        "text": {
-                            "signal": (
-                                "datum.depth === 2 && (datum.x1 - datum.x0) > 50 && "
-                                "(datum.y1 - datum.y0) > 30 ? datum.name : ''"
-                            )
-                        },
-                        "align": {"value": "center"},
-                        "baseline": {"value": "middle"},
-                        "font": {"value": FONT},
-                        "fontSize": {"value": 11},
-                        "fontWeight": {"value": "normal"},
-                        "fill": {"value": BG},
-                        "limit": {"signal": "datum.x1 - datum.x0 - 6"},
-                    }
-                },
-            },
-            {
-                # Value label below name
-                "type": "text",
-                "from": {"data": "tree"},
-                "encode": {
-                    "enter": {
-                        "x": {"signal": "(datum.x0 + datum.x1) / 2"},
-                        "y": {"signal": "60 + (datum.y0 + datum.y1) / 2 + 10"},
-                        "text": {
-                            "signal": (
-                                "datum.depth === 2 && (datum.x1 - datum.x0) > 50 && "
-                                "(datum.y1 - datum.y0) > 40 ? datum.value + 'k' : ''"
-                            )
-                        },
-                        "align": {"value": "center"},
-                        "baseline": {"value": "middle"},
-                        "font": {"value": FONT},
-                        "fontSize": {"value": 10},
-                        "fill": {"value": BG},
-                        "opacity": {"value": 0.8},
-                    }
-                },
-            },
-        ],
-        "legends": [
-            {
-                "fill": "color",
-                "title": "Domain",
-                "titleFont": FONT,
-                "titleFontSize": 12,
-                "titleColor": INK,
-                "labelFont": FONT,
-                "labelFontSize": 12,
-                "labelColor": INK,
-                "orient": "top-left",
-                "direction": "horizontal",
-                "symbolType": "square",
-                "symbolSize": 140,
-                "offset": 4,
-            }
-        ],
-    }
-    return spec
+def _normalize(values: List[float], area: float) -> List[float]:
+    total = sum(values)
+    if total <= 0:
+        return [0.0 for _ in values]
+    return [v * area / total for v in values]
+
+
+def build_svg(
+    data: Optional[List[Dict[str, Any]]] = None,
+    title: str = "IT Cloud Spending by Service — FY 2024",
+    subtitle: str = "Annual spend in thousands of EUR; area proportional to budget",
+    width: int = 900,
+    height: int = 600,
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+) -> str:
+    """Assemble the full treemap SVG document as a string.
+
+    Parameters
+    ----------
+    data : list of dict or None
+        Rows with keys ``parent`` (str), ``name`` (str), ``value``
+        (numeric). Defaults to :data:`DEMO_DATA`.
+    title, subtitle : str
+        Chart text.
+    width, height : int
+        Canvas size in pixels.
+    mode : str, optional
+        Forwarded to :func:`_interactive.fullscreen_control`.
+    accessibility : str, optional
+        Accepted for CLI parity but a documented no-op: category colours
+        are fixed house hues, not a CVD-safe palette re-level.
+
+    Returns
+    -------
+    str
+        A complete, standalone SVG document.
+    """
+    _ = accessibility
+    rows = data if data else DEMO_DATA
+    grouped: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
+    for row in rows:
+        grouped[row["parent"]].append(row)
+    for p in grouped:
+        grouped[p].sort(key=lambda r: -float(r["value"]))
+    categories = sorted(grouped, key=lambda p: -sum(float(r["value"]) for r in grouped[p]))
+
+    legend_y = 94.0
+    plot_x, plot_y = 20.0, 128.0
+    right_margin, bottom_margin = 20.0, 20.0
+    plot_w = width - plot_x - right_margin
+    plot_h = height - plot_y - bottom_margin
+    area = plot_w * plot_h
+
+    cat_totals = [sum(float(r["value"]) for r in grouped[p]) for p in categories]
+    cat_sizes = _normalize(cat_totals, area)
+    cat_rects = _squarify(cat_sizes, plot_x, plot_y, plot_w, plot_h)
+
+    parts: List[str] = []
+    parts.append(svg_open(width, height, "tm-title", "tm-desc"))
+    parts.append(f'<title id="tm-title">{xml_escape(title)}</title>')
+    parts.append(
+        f'<desc id="tm-desc">Treemap of {len(categories)} domains and {len(rows)} services. '
+        f'Hover or focus a rectangle for its exact value.</desc>'
+    )
+
+    parts.append(
+        "<style>"
+        ".leaf{transition:opacity .15s ease;cursor:default;}"
+        ".leaf:hover,.leaf:focus{opacity:.72;outline:none;}"
+        "@media (prefers-reduced-motion: reduce){.leaf{transition:none;}}"
+        "</style>"
+    )
+
+    parts.append(f'<rect width="{width}" height="{height}" fill="{BG}"/>')
+    parts.append(
+        f'<text x="20" y="46" font-size="24" font-weight="700" fill="{INK}" '
+        f'letter-spacing="-0.3">{xml_escape(title)}</text>'
+    )
+    parts.append(f'<text x="20" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>')
+
+    # ---- legend ----
+    cursor = 20.0
+    for cat in categories:
+        color = CATEGORY_COLORS.get(cat, "#8E8E93")
+        parts.append(f'<rect x="{cursor:.1f}" y="{legend_y - 11:.1f}" width="12" height="12" rx="2" fill="{color}"/>')
+        parts.append(f'<text x="{cursor + 18:.1f}" y="{legend_y:.1f}" font-size="12" fill="{INK}">{xml_escape(cat)}</text>')
+        cursor += 24 + 7.0 * len(cat) + 22
+
+    # ---- rectangles ----
+    for cat, crect in zip(categories, cat_rects):
+        color = CATEGORY_COLORS.get(cat, "#8E8E93")
+        leaves = grouped[cat]
+        leaf_vals = [float(r["value"]) for r in leaves]
+        leaf_area = crect["dx"] * crect["dy"]
+        leaf_sizes = _normalize(leaf_vals, leaf_area)
+        leaf_rects = _squarify(leaf_sizes, crect["x"], crect["y"], crect["dx"], crect["dy"])
+        for row, r in zip(leaves, leaf_rects):
+            tip = f"{cat} / {row['name']}: {float(row['value']):,.0f}k EUR"
+            parts.append(
+                f'<rect class="leaf" tabindex="0" x="{r["x"]:.1f}" y="{r["y"]:.1f}" '
+                f'width="{max(0.0, r["dx"]):.1f}" height="{max(0.0, r["dy"]):.1f}" '
+                f'fill="{color}" fill-opacity="0.82" stroke="{BG}" stroke-width="2">'
+                f'<title>{xml_escape(tip)}</title></rect>'
+            )
+            if r["dx"] > 60 and r["dy"] > 34:
+                cxm, cym = r["x"] + r["dx"] / 2, r["y"] + r["dy"] / 2
+                parts.append(
+                    f'<text x="{cxm:.1f}" y="{cym - 4:.1f}" font-size="11" fill="{BG}" '
+                    f'text-anchor="middle">{xml_escape(row["name"])}</text>'
+                )
+                parts.append(
+                    f'<text x="{cxm:.1f}" y="{cym + 11:.1f}" font-size="10" fill="{BG}" '
+                    f'fill-opacity="0.85" text-anchor="middle">{float(row["value"]):,.0f}k</text>'
+                )
+
+    parts.append(fullscreen_control(width, height, mode))
+    parts.append("</svg>")
+    return "\n".join(parts)
 
 
 def make_treemap(
@@ -280,8 +268,10 @@ def make_treemap(
     subtitle: str = "Annual spend in thousands of EUR; area proportional to budget",
     width: int = 900,
     height: int = 600,
+    mode: str = "self-contained",
+    accessibility: str = "universal",
 ) -> Path:
-    """Render a treemap and write it to *out*.
+    """Render a hand-authored treemap and write the SVG to *out*.
 
     Parameters
     ----------
@@ -290,14 +280,12 @@ def make_treemap(
         Defaults to DEMO_DATA (IT cloud spending by domain and service).
     out : Path, str, or None
         Output path (.svg). Defaults to ``assets/svg-examples/treemap.svg``.
-    title : str
-        Chart headline.
-    subtitle : str
-        One-line subtitle.
-    width : int
-        Canvas width in pixels. Default 900.
-    height : int
-        Canvas height in pixels. Default 600.
+    title, subtitle : str
+        Chart text.
+    width, height : int
+        Canvas size in pixels.
+    mode, accessibility : str
+        Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -310,30 +298,15 @@ def make_treemap(
     >>> p.exists()
     True
     """
-    if data is None:
-        data = DEMO_DATA
-
-    spec = _build_vega_spec(data, title, subtitle, width, height)
-    spec_json = json.dumps(spec, ensure_ascii=False)
-
-    import vl_convert as vlc  # type: ignore
-    svg_str = titled_svg(vlc.vega_to_svg(spec_json), title, desc=subtitle)
-
+    svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
+                     mode=mode, accessibility=accessibility)
     dest = Path(out) if out else svg_example_path(__file__, "treemap")
-    return write_svg(dest, svg_str)
+    return write_svg(dest, svg)
+
+
+def main() -> None:
+    render_cli(__file__, "treemap", build_svg, description="Generate a treemap figure.")
 
 
 if __name__ == "__main__":
-    p = argparse.ArgumentParser(description="Generate a treemap figure.")
-    p.add_argument("--out", default=None)
-    p.add_argument("--title", default="IT Cloud Spending by Service — FY 2024")
-    p.add_argument("--subtitle",
-                   default="Annual spend in thousands of EUR; area proportional to budget")
-    p.add_argument("--width", type=int, default=900)
-    p.add_argument("--height", type=int, default=600)
-    args = p.parse_args()
-    result = make_treemap(
-        out=args.out, title=args.title, subtitle=args.subtitle,
-        width=args.width, height=args.height,
-    )
-    print(result)
+    main()

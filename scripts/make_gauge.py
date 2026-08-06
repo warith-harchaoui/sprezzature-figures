@@ -423,7 +423,7 @@ def build_svg(*, animated: bool = True, mode: str = "self-contained", accessibil
 
 def main() -> None:
     """Render the gauge to SVG (and companion PNGs)."""
-    import vl_convert as vlc  # only needed for the PNG companions
+    import resvg_py  # only needed for the PNG companions
 
     parser = argparse.ArgumentParser(description="Render the gauge SVG (and PNG companions).")
     parser.add_argument(
@@ -447,7 +447,9 @@ def main() -> None:
 
     # Static (non-animated) SVG for the raster companions so the PNG is the
     # settled truth, not a mid-animation frame.
-    png = vlc.svg_to_png(build_svg(animated=False, mode="static", accessibility=args.accessibility), scale=2)
+    png = resvg_py.svg_to_bytes(
+        svg_string=build_svg(animated=False, mode="static", accessibility=args.accessibility), zoom=2.0
+    )
     for dest in (
         here.parent / "assets" / "figures-gallery" / "gauge.png",
         here.parents[1] / "web" / "img" / "figures" / "gauge.png",

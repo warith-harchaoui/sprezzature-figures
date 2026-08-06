@@ -274,7 +274,7 @@ def make_speaking_time(
 
 def main() -> None:
     """Render the speaking-time donut to SVG (and a companion PNG)."""
-    import vl_convert as vlc  # only needed for the PNG companion
+    import resvg_py  # only needed for the PNG companion
 
     parser = argparse.ArgumentParser(description="Render the speaking-time SVG (and a PNG companion).")
     parser.add_argument(
@@ -296,7 +296,7 @@ def main() -> None:
     out_svg.parent.mkdir(parents=True, exist_ok=True)
     out_svg.write_text(svg, encoding="utf-8")
 
-    png = vlc.svg_to_png(svg, scale=2)
+    png = resvg_py.svg_to_bytes(svg_string=svg, zoom=2.0)
     for dest in (
         here.parent / "assets" / "figures-gallery" / "speaking_time.png",
         here.parents[1] / "web" / "img" / "figures" / "speaking_time.png",

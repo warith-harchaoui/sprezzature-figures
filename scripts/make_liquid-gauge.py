@@ -538,10 +538,10 @@ def main() -> None:
     # Static (non-animated) SVG for the raster companions so the PNG is the
     # settled truth, not a mid-drift frame.
     try:
-        import vl_convert as vlc  # only needed for the PNG companions
+        import resvg_py  # only needed for the PNG companions
 
-        png = vlc.svg_to_png(
-            build_svg(animated=False, mode="static", accessibility=args.accessibility), scale=2
+        png = resvg_py.svg_to_bytes(
+            svg_string=build_svg(animated=False, mode="static", accessibility=args.accessibility), zoom=2.0
         )
         for dest in (
             here.parent / "assets" / "figures-gallery" / "liquid-gauge.png",
