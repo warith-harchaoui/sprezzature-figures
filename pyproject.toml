@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "sprezzature-figures"
 version = "1.1.0"
-description = "Publication-quality data figures for the sprezzature stack: 126 hand-authored SVG chart types (no Vega), with a handful of matplotlib-based statistical outputs. Includes the Ralph Eyeball Loop for autonomous visual quality feedback."
+description = "Publication-quality data figures for the sprezzature stack: 124 hand-authored SVG chart types (no Vega), with a handful of matplotlib-based statistical outputs. Includes the Ralph Eyeball Loop for autonomous visual quality feedback."
 readme = "README.md"
 requires-python = ">=3.10,<3.14"
 license = {text = "BSD-3-Clause"}

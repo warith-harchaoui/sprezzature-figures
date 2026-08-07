@@ -548,16 +548,6 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
         ],
         "optional_roles": [],
     },
-    "situation_map": {
-        "required_roles": [
-            {"name": "region", "label": "Region", "accepted_types": ["categorical"], "required": True},
-            {"name": "west", "label": "West", "accepted_types": ["numeric"], "required": True},
-            {"name": "south", "label": "South", "accepted_types": ["numeric"], "required": True},
-            {"name": "east", "label": "East", "accepted_types": ["numeric"], "required": True},
-            {"name": "north", "label": "North", "accepted_types": ["numeric"], "required": True},
-        ],
-        "optional_roles": [],
-    },
     "speaking_time": {
         "required_roles": [
             {"name": "name", "label": "Name", "accepted_types": ["categorical"], "required": True},
@@ -853,13 +843,6 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
             {"name": "close", "label": "Close", "accepted_types": ["numeric"], "required": True},
             {"name": "high", "label": "High", "accepted_types": ["numeric"], "required": True},
             {"name": "low", "label": "Low", "accepted_types": ["numeric"], "required": True},
-        ],
-        "optional_roles": [],
-    },
-    "choropleth": {
-        "required_roles": [
-            {"name": "id", "label": "ISO-3166-1 numeric country code", "accepted_types": ["categorical"], "required": True},
-            {"name": "value", "label": "Numeric value", "accepted_types": ["numeric"], "required": True},
         ],
         "optional_roles": [],
     },

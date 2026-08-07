@@ -82,7 +82,7 @@ path = make_figure("bar", data, out="revenue.png", title="Revenue by region")
 print(path)  # PosixPath('revenue.png')
 ```
 
-All 126 registered chart kinds are `status="stable"` (render-verified end to
+All 124 registered chart kinds are `status="stable"` (render-verified end to
 end); see [docs/studio/GENERATOR_AUDIT.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/docs/studio/GENERATOR_AUDIT.md)
 for the per-chart audit detail, and `make-figure --list --status stable` to
 confirm the current set. Every stable kind tolerates optional roles being
@@ -145,7 +145,7 @@ ranking decisive.
 
 ## Chart catalogue
 
-126 chart types across 21 categories. See [FIGURES.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/FIGURES.md) for the full table with per-chart guidance on when to use each type.
+124 chart types across 21 categories. See [FIGURES.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/FIGURES.md) for the full table with per-chart guidance on when to use each type.
 
 Quick overview:
 
@@ -187,13 +187,13 @@ sprezzature-figures/
 ├── scripts/
 │   ├── make_treemap.py            # self-contained chart script
 │   ├── make_connected-scatter.py  # hyphenated kinds are supported
-│   └── ...                        # 126 make_*.py scripts total
+│   └── ...                        # 124 make_*.py scripts total
 ├── assets/
 │   └── svg-examples/      # SVG template examples
 └── tests/
 ```
 
-Each `make_<kind>.py` script is self-contained: it imports what it needs, defines `make_<kind>(data, *, out=None, title="", ...) -> Path` and exposes a `DEMO_DATA` list for CLI and test use. `make_figure()` resolves the kind through `sprezzature_figures/catalog/figures.json` rather than guessing the filename; see [docs/studio/GENERATOR_AUDIT.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/docs/studio/GENERATOR_AUDIT.md) for which of the 126 scripts currently satisfy this contract.
+Each `make_<kind>.py` script is self-contained: it imports what it needs, defines `make_<kind>(data, *, out=None, title="", ...) -> Path` and exposes a `DEMO_DATA` list for CLI and test use. `make_figure()` resolves the kind through `sprezzature_figures/catalog/figures.json` rather than guessing the filename; see [docs/studio/GENERATOR_AUDIT.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/docs/studio/GENERATOR_AUDIT.md) for which of the 124 scripts currently satisfy this contract.
 
 ---
 

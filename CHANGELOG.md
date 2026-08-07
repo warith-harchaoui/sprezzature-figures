@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+### Removed
+
+- **`choropleth` and `situation_map` moved to their own repo,
+  [sprezzature-maps](https://github.com/warith-harchaoui/sprezzature-maps).**
+  126 registered chart kinds -> 124. Sprezzature Studio will not grow
+  map support; maps get their own product (and, eventually, their own
+  Studio) instead of two entries in this catalogue. `sprezzature-maps`
+  depends on this package for shared rendering primitives (font
+  embedding, self-contained SVG mode) rather than duplicating them; the
+  other Geospatial-category kinds that share `assets/geo/` (`dotdensity`,
+  `hexbin-map`, `spike-map`) stayed here, unaffected.
+
 ### Fixed
 
 - **All 126 registered chart kinds are now `status="stable"`, up from 46.**

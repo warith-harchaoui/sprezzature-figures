@@ -7,7 +7,7 @@
 
 [![logo](assets/logo.png)](https://harchaoui.org/warith/sprezzature/)
 
-126 types de graphiques de qualité publication, presque tous en SVG écrit à la main (aucun Vega), avec une poignée de générateurs matplotlib pour des sorties statistiques (inférence causale, explicabilité), utilisables comme bibliothèque Python ou en ligne de commande.
+124 types de graphiques de qualité publication, presque tous en SVG écrit à la main (aucun Vega), avec une poignée de générateurs matplotlib pour des sorties statistiques (inférence causale, explicabilité), utilisables comme bibliothèque Python ou en ligne de commande.
 
 Fait partie de la suite [sprezzature](https://harchaoui.org/warith/sprezzature/).
 
@@ -83,7 +83,7 @@ chemin = make_figure("bar", donnees, out="revenu.png", title="Revenu par région
 print(chemin)  # PosixPath('revenu.png')
 ```
 
-Les 126 types enregistrés sont tous `status="stable"` (vérifiés par rendu de
+Les 124 types enregistrés sont tous `status="stable"` (vérifiés par rendu de
 bout en bout). Voir [docs/studio/GENERATOR_AUDIT.md](docs/studio/GENERATOR_AUDIT.md)
 pour le détail de l'audit par type, et `make-figure --list --status stable`
 pour confirmer l'ensemble actuel. Chaque type stable tolère qu'un rôle
@@ -145,7 +145,7 @@ départage rarement ; c'est le but qui rend le classement décisif.
 
 ## Catalogue des graphiques
 
-126 types de graphiques dans 21 catégories. Voir [FIGURES.md](FIGURES.md) pour le tableau complet.
+124 types de graphiques dans 21 catégories. Voir [FIGURES.md](FIGURES.md) pour le tableau complet.
 
 | Catégorie | Graphiques |
 |-----------|------------|
@@ -185,13 +185,13 @@ sprezzature-figures/
 ├── scripts/
 │   ├── make_treemap.py            # script autonome par type de graphique
 │   ├── make_connected-scatter.py  # les types avec tiret sont supportés
-│   └── ...                        # 126 scripts make_*.py au total
+│   └── ...                        # 124 scripts make_*.py au total
 ├── assets/
 │   └── svg-examples/      # gabarits SVG
 └── tests/
 ```
 
-Chaque script `make_<type>.py` est autonome : il importe ce dont il a besoin, définit `make_<type>(donnees, *, out=None, title="", ...) -> Path` et expose une liste `DEMO_DATA` pour la CLI et les tests. `make_figure()` résout le type via `sprezzature_figures/catalog/figures.json` plutôt que de deviner le nom de fichier ; voir [docs/studio/GENERATOR_AUDIT.md](docs/studio/GENERATOR_AUDIT.md) pour savoir lesquels des 126 scripts respectent déjà ce contrat.
+Chaque script `make_<type>.py` est autonome : il importe ce dont il a besoin, définit `make_<type>(donnees, *, out=None, title="", ...) -> Path` et expose une liste `DEMO_DATA` pour la CLI et les tests. `make_figure()` résout le type via `sprezzature_figures/catalog/figures.json` plutôt que de deviner le nom de fichier ; voir [docs/studio/GENERATOR_AUDIT.md](docs/studio/GENERATOR_AUDIT.md) pour savoir lesquels des 124 scripts respectent déjà ce contrat.
 
 ---
 

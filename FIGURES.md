@@ -1,6 +1,6 @@
 # Figure Catalogue
 
-126 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type).
+124 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type). `choropleth` and `situation_map` moved to their own repo, [sprezzature-maps](https://github.com/warith-harchaoui/sprezzature-maps).
 
 Invoke via:
 
@@ -43,7 +43,6 @@ for the current per-chart status.
 | `calibration` | make_calibration.py | Model evaluation | Plot predicted probability vs. observed frequency. Use after training a classifier to check whether its scores are well-calibrated (reliable confidence estimates). |
 | `candlestick` | make_candlestick.py | Finance | OHLC chart per period: a thin wick spans low-high, a thick body spans open-close, coloured green up / red down. The default chart for daily price data or any open/high/low/close-shaped series. |
 | `chord` | make_chord.py | Flow | Circular chord diagram for symmetric or directed flows between categories. Use when every pair of categories can exchange and the total volume matters (e.g., migration between countries). |
-| `choropleth` | make_choropleth.py | Geospatial | World map with per-country fill on a single pale-to-navy blue ramp; no-data countries fall back to neutral grey. Use for any per-country indicator where geography carries meaning the reader already has spatial intuition for. |
 | `circle-packing` | make_circle-packing.py | Hierarchy | Represent a hierarchy as nested circles whose area encodes a numeric value. Use for a single level of nesting where the visual impact of size differences matters more than precise reading. |
 | `clustermap` | make_clustermap.py | Distribution | Heatmap with rows and columns reordered by hierarchical clustering, with a dendrogram guide along each axis showing the merge structure. Use for gene-expression matrices, correlated-feature discovery, or customer-segment x product affinity. |
 | `columnrange` | make_columnrange.py | Range | Vertical bars spanning from a low to a high value per category. Use for temperature ranges, salary bands, confidence intervals, or any per-group min–max. |
@@ -120,7 +119,6 @@ for the current per-chart status.
 | `scatter` | make_scatter.py | Relationship | Plots two numeric variables against each other, with optional color and size encodings. The default chart for revealing correlation, clusters, or outliers. |
 | `scatter3d` | make_scatter3d.py | 3-D | Interactive 3-D scatter plot for three continuous variables. Use when a 2-D projection loses important structure (e.g., embedding manifolds). |
 | `sfdp-largegraph` | make_sfdp-largegraph.py | Network | Scalable Force-Directed Placement for large graphs (thousands of nodes). Use when standard force-directed layouts become too slow or cluttered. |
-| `situation_map` | make_situation_map.py | Geospatial | Annotated situation map with icons and labels at specific coordinates. Use for field operations, logistics, or incident mapping. |
 | `slope` | make_slope.py | Change | Connects each item's value at two points in time with a straight line between two vertical axes; slope reads as change, crossing lines flag rank reversals. A tighter alternative to grouped bars for a small before/after item list. |
 | `speaking_time` | make_speaking_time.py | Communication | Speaking-time breakdown chart (waterfall or stacked bar). Use to visualise turn-taking or time allocation in meetings, debates, or interviews. |
 | `spectrogram` | make_spectrogram.py | Signal | Frequency × time heatmap of a signal's energy. Use for audio, seismic, or any time-varying spectral data. |
