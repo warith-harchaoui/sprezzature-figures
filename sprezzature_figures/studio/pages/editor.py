@@ -76,7 +76,9 @@ def _record_iteration(
     save_iteration_record(project_dir / "iterations" / render.iteration_id, record)
 
 
-def _resolve_data_and_notes(state: SessionState, plan: FigurePlan) -> tuple[list[dict[str, Any]], list[str]]:
+def _resolve_data_and_notes(
+    state: SessionState, plan: FigurePlan
+) -> tuple[list[dict[str, Any]], list[str]]:
     """Turn imported rows into what a make_<kind> generator expects, and report
     any transform that was skipped.
 
@@ -89,7 +91,9 @@ def _resolve_data_and_notes(state: SessionState, plan: FigurePlan) -> tuple[list
     caller can show it, instead of it only reaching the log.
     """
     rows, notes = apply_transformations(state.data, plan.transformations)
-    resolved = [{role: row.get(binding.column) for role, binding in plan.bindings.items()} for row in rows]
+    resolved = [
+        {role: row.get(binding.column) for role, binding in plan.bindings.items()} for row in rows
+    ]
     return resolved, [str(note) for note in notes]
 
 
@@ -106,7 +110,9 @@ def _summarize_result(result: RalphResult) -> str:
     if result.critique is not None:
         parts.append(result.critique.concise_summary or f"Critique: {result.critique.verdict}.")
     if result.pending_confirmation:
-        parts.append(f"{len(result.pending_confirmation)} change(s) need your confirmation (see below).")
+        parts.append(
+            f"{len(result.pending_confirmation)} change(s) need your confirmation (see below)."
+        )
     summary = " ".join(parts) or "No changes applied."
     # RalphResult.notes carries best-effort warnings (a model that couldn't be
     # reached, a critique that didn't come back): surface them, never swallow.
@@ -126,7 +132,9 @@ def build_editor(state: SessionState) -> None:
 
     def create_initial_render(plan: FigurePlan) -> None:
         if state.project_dir is None:
-            state.project_dir = create_project(state.source_name or "untitled", source_name=state.source_name)
+            state.project_dir = create_project(
+                state.source_name or "untitled", source_name=state.source_name
+            )
         parent = _parent_iteration_id(state.project_dir)
         iteration_dir = allocate_iteration_dir(state.project_dir)
         resolved, notes = _resolve_data_and_notes(state, plan)
@@ -146,8 +154,13 @@ def build_editor(state: SessionState) -> None:
             ui.notify(f"Render failed: {exc}", type="negative")
             return
         _record_iteration(
-            state.project_dir, result, parent_id=parent,
-            plan_before=plan, plan_after=plan, user_message=None, summary="Figure created.",
+            state.project_dir,
+            result,
+            parent_id=parent,
+            plan_before=plan,
+            plan_after=plan,
+            user_message=None,
+            summary="Figure created.",
         )
         state.plan = plan
         state.render = result
@@ -188,8 +201,13 @@ def build_editor(state: SessionState) -> None:
 
         summary = _summarize_result(result)
         _record_iteration(
-            state.project_dir, result.render, parent_id=parent,
-            plan_before=plan_before, plan_after=result.plan, user_message=message, summary=summary,
+            state.project_dir,
+            result.render,
+            parent_id=parent,
+            plan_before=plan_before,
+            plan_after=result.plan,
+            user_message=message,
+            summary=summary,
         )
         state.plan = result.plan
         state.render = result.render
@@ -225,8 +243,12 @@ def build_editor(state: SessionState) -> None:
             state.add_chat("assistant", f"Confirmed changes but re-render failed: {exc}")
             return
         _record_iteration(
-            state.project_dir, result, parent_id=parent,
-            plan_before=plan_before, plan_after=state.plan, user_message=None,
+            state.project_dir,
+            result,
+            parent_id=parent,
+            plan_before=plan_before,
+            plan_after=state.plan,
+            user_message=None,
             summary="Applied the confirmed change(s).",
         )
         state.render = result
@@ -316,8 +338,12 @@ def build_editor(state: SessionState) -> None:
             ui.notify(f"Render failed: {exc}", type="negative")
             return
         _record_iteration(
-            state.project_dir, result, parent_id=parent,
-            plan_before=plan_before, plan_after=new_plan, user_message=None,
+            state.project_dir,
+            result,
+            parent_id=parent,
+            plan_before=plan_before,
+            plan_after=new_plan,
+            user_message=None,
             summary=f"Set {option} to {value}.",
         )
         state.plan = new_plan
@@ -326,28 +352,51 @@ def build_editor(state: SessionState) -> None:
         refresh_history()
         refresh_properties()
 
-    with ui.row().classes("w-full items-center justify-between px-6 py-4 sz-header").style(
-        "position: sticky; top: 0; z-index: 10;"
+    dark = ui.dark_mode(value=False)
+
+    def _toggle_dark() -> None:
+        dark.toggle()
+        theme_toggle.set_text("🌛" if dark.value else "🌞")
+        theme_toggle.props(
+            f"aria-label={'Switch to light theme' if dark.value else 'Switch to dark theme'}"
+        )
+
+    with (
+        ui.row()
+        .classes("w-full items-center justify-between px-6 py-4 sz-header")
+        .style("position: sticky; top: 0; z-index: 10;")
     ):
         ui.label("Sprezzature Studio").classes("text-lg font-semibold text-neutral-900")
-        build_engine_status()
+        with ui.row().classes("items-center gap-3"):
+            build_engine_status()
+            theme_toggle = (
+                ui.button("🌞", on_click=_toggle_dark)
+                .props("flat round dense aria-label='Switch to dark theme'")
+                .classes("text-lg")
+            )
 
     # flex-basis:0 (not a width-% class) so the three panes divide the row by
     # grow ratio *after* the gaps are subtracted -- Quasar's own `.row` class
     # sets `flex-wrap: wrap`, so percentage widths that sum to 100% plus gap
     # spacing overflow and wrap the third pane onto its own line; explicit
     # `flex-wrap: nowrap` plus ratio-based flex-basis avoids that entirely.
-    with ui.row().classes("w-full gap-4 p-6 items-start").style(
-        "height: calc(100vh - 65px); box-sizing: border-box; flex-wrap: nowrap;"
+    with (
+        ui.row()
+        .classes("w-full gap-4 p-6 items-start")
+        .style("height: calc(100vh - 65px); box-sizing: border-box; flex-wrap: nowrap;")
     ):
-        with ui.column().classes("h-full overflow-y-auto gap-4").style("flex: 1 1 0%; min-width: 0;"):
+        with (
+            ui.column().classes("h-full overflow-y-auto gap-4").style("flex: 1 1 0%; min-width: 0;")
+        ):
             with ui.column().classes("w-full gap-3 sz-card"):
                 build_data_panel(state, on_ready=create_initial_render)
             with ui.column().classes("w-full gap-3 sz-card"):
                 refresh_properties = build_property_panel(state, on_change=handle_style_change)
 
         with (
-            ui.column().classes("h-full overflow-y-auto gap-3").style("flex: 2 1 0%; min-width: 0;"),
+            ui.column()
+            .classes("h-full overflow-y-auto gap-3")
+            .style("flex: 2 1 0%; min-width: 0;"),
             ui.column().classes("w-full gap-3 sz-card"),
         ):
             refresh_canvas = build_figure_canvas(state)
@@ -356,9 +405,16 @@ def build_editor(state: SessionState) -> None:
             )
 
         with (
-            ui.column().classes("h-full overflow-y-auto gap-4").style("flex: 1 1 0%; min-width: 0;"),
-            ui.column().classes("w-full gap-3 sz-card").style("height: 100%; box-sizing: border-box;"),
+            ui.column()
+            .classes("h-full overflow-y-auto gap-4")
+            .style("flex: 1 1 0%; min-width: 0;"),
+            ui.column()
+            .classes("w-full gap-3 sz-card")
+            .style("height: 100%; box-sizing: border-box;"),
         ):
             build_chat_panel(
-                state, on_send=handle_send, on_confirm=handle_confirm, on_cancel_pending=handle_cancel
+                state,
+                on_send=handle_send,
+                on_confirm=handle_confirm,
+                on_cancel_pending=handle_cancel,
             )

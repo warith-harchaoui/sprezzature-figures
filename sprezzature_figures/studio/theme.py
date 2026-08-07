@@ -116,9 +116,35 @@ _CARD = """
 .sz-chat-bubble-assistant { background: #F5F5F5; }
 """
 
+# Dark mode, scoped under Quasar's own `body--dark` class (what NiceGUI's
+# `ui.dark_mode()` element sets via `Dark.set()` -- see `dark_mode.js`; no
+# custom toggle plumbing needed, the class is Quasar's, not ours). Values are
+# the reference site's actual `dark:` tokens (grepped from figures.html, not
+# guessed): body #0B0B0C / text neutral-100, cards neutral-950 on
+# neutral-800 borders, secondary text neutral-400.
+_DARK = """
+body.body--dark, body.body--dark html, body.body--dark .nicegui-content { background: #0B0B0C; color: #F5F5F5; }
+body.body--dark .sz-card { background: #0A0A0A; border-color: #262626; }
+body.body--dark .sz-header { background: #0B0B0C; border-color: #262626; }
+body.body--dark .sz-chat-bubble-user { background: #0A3D91; color: #F5F5F5; }
+body.body--dark .sz-chat-bubble-assistant { background: #171717; color: #F5F5F5; }
+body.body--dark .bg-white { background-color: #0A0A0A; }
+body.body--dark .bg-neutral-50, body.body--dark .bg-neutral-100 { background-color: #171717; }
+body.body--dark .border, body.body--dark .border-t, body.body--dark .border-b,
+body.body--dark .border-l, body.body--dark .border-r { border-color: #262626; }
+body.body--dark .text-neutral-900 { color: #F5F5F5; }
+body.body--dark .text-neutral-700 { color: #D4D4D4; }
+body.body--dark .text-neutral-600, body.body--dark .text-neutral-500 { color: #A3A3A3; }
+body.body--dark .text-neutral-400 { color: #737373; }
+body.body--dark .q-field__control { background: #0A0A0A; }
+body.body--dark .q-field--outlined .q-field__control:before { border-color: #404040 !important; }
+body.body--dark .q-btn.bg-primary, body.body--dark .q-btn[color=primary] { background: var(--sz-blue-dark) !important; }
+body.body--dark .q-uploader { background: #0A0A0A; border-color: #404040; }
+"""
+
 
 def theme_css() -> str:
-    return _TOKENS + _BASE + _COMPONENTS + _UTILITIES + _CARD
+    return _TOKENS + _BASE + _COMPONENTS + _UTILITIES + _CARD + _DARK
 
 
 # A class selector is a dot followed by a letter, then class-name chars
