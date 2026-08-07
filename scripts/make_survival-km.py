@@ -98,9 +98,11 @@ def _survival_at(curve: List[Tuple[float, float, float, float]], t: float) -> fl
     return s
 
 
-def _arm_colors(accessibility: str = "universal") -> Dict[str, str]:
+def _arm_colors(arms: List[str], accessibility: str = "universal") -> Dict[str, str]:
     palette = load_palette(accessibility)
-    return {"Treatment": palette.get("Blue", "#007AFF"), "Control": palette.get("Orange", "#FF9500")}
+    hues = [palette.get("Blue", "#007AFF"), palette.get("Orange", "#FF9500"),
+            palette.get("Green", "#34C759"), palette.get("Purple", "#AF52DE")]
+    return {a: hues[i % len(hues)] for i, a in enumerate(arms)}
 
 
 def build_svg(
@@ -134,8 +136,12 @@ def build_svg(
         A complete, standalone SVG document.
     """
     rows = data if data else DEMO_DATA
-    arms = [a for a in ARMS if any(r["arm"] == a for r in rows)] or sorted({r["arm"] for r in rows})
-    colors = _arm_colors(accessibility)
+    seen_arms: List[str] = []
+    for r in rows:
+        if r["arm"] not in seen_arms:
+            seen_arms.append(r["arm"])
+    arms = [a for a in ARMS if a in seen_arms] + [a for a in seen_arms if a not in ARMS]
+    colors = _arm_colors(arms, accessibility)
     t_max = max(float(r["t"]) for r in rows) if rows else 1.0
 
     plot_x, plot_y = 60.0, 150.0

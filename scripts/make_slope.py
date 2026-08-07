@@ -48,13 +48,13 @@ DEMO_DATA: List[Dict[str, Any]] = [
 ]
 
 
-def _item_colors(accessibility: str = "universal") -> Dict[str, str]:
+def _item_colors(items: List[str], accessibility: str = "universal") -> Dict[str, str]:
     palette = load_palette(accessibility)
     hues = [palette.get(h, d) for h, d in (
         ("Blue", "#007AFF"), ("Orange", "#FF9500"), ("Green", "#34C759"),
         ("Purple", "#AF52DE"), ("Red", "#FF3B30"), ("Teal", "#79DBDC"),
     )]
-    return {item: hues[i % len(hues)] for i, item in enumerate(ITEMS)}
+    return {item: hues[i % len(hues)] for i, item in enumerate(items)}
 
 
 def build_svg(
@@ -87,9 +87,17 @@ def build_svg(
         A complete, standalone SVG document.
     """
     rows = data if data else DEMO_DATA
-    items = [i for i in ITEMS if any(r["item"] == i for r in rows)] or sorted({r["item"] for r in rows})
-    periods = [p for p in PERIODS if any(r["period"] == p for r in rows)] or sorted({r["period"] for r in rows})
-    colors = _item_colors(accessibility)
+    seen_items: List[str] = []
+    for r in rows:
+        if r["item"] not in seen_items:
+            seen_items.append(r["item"])
+    items = [i for i in ITEMS if i in seen_items] + [i for i in seen_items if i not in ITEMS]
+    seen_periods: List[str] = []
+    for r in rows:
+        if r["period"] not in seen_periods:
+            seen_periods.append(r["period"])
+    periods = [p for p in PERIODS if p in seen_periods] + [p for p in seen_periods if p not in PERIODS]
+    colors = _item_colors(items, accessibility)
     lookup: Dict[tuple, float] = {(r["item"], r["period"]): float(r["v"]) for r in rows}
     all_vals = list(lookup.values())
     v_min, v_max = min(all_vals), max(all_vals)

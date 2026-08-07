@@ -64,12 +64,12 @@ DEMO_DATA: List[Dict[str, Any]] = [
 ]
 
 
-def _city_colors(accessibility: str = "universal") -> Dict[str, str]:
+def _city_colors(cities: List[str], accessibility: str = "universal") -> Dict[str, str]:
     palette = load_palette(accessibility)
     hues = [palette.get("Blue", "#007AFF"), palette.get("Purple", "#AF52DE"),
             palette.get("Green", "#34C759"), palette.get("Orange", "#FF9500"),
             palette.get("Red", "#FF3B30")]
-    return {c: hues[i % len(hues)] for i, c in enumerate(CITIES)}
+    return {c: hues[i % len(hues)] for i, c in enumerate(cities)}
 
 
 def build_svg(
@@ -102,9 +102,13 @@ def build_svg(
         A complete, standalone SVG document.
     """
     rows = data if data else DEMO_DATA
-    cities = [c for c in CITIES if any(r["city"] == c for r in rows)] or CITIES
+    seen_cities: List[str] = []
+    for r in rows:
+        if r["city"] not in seen_cities:
+            seen_cities.append(r["city"])
+    cities = [c for c in CITIES if c in seen_cities] + [c for c in seen_cities if c not in CITIES]
     months = sorted({r["month"] for r in rows}, key=lambda m: MONTHS.index(m) if m in MONTHS else 0)
-    colors = _city_colors(accessibility)
+    colors = _city_colors(cities, accessibility)
 
     lookup: Dict[tuple, tuple] = {(r["city"], r["month"]): (float(r["low"]), float(r["high"])) for r in rows}
     lows = [v[0] for v in lookup.values()]

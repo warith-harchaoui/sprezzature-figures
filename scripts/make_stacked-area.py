@@ -50,11 +50,11 @@ DEMO_DATA: List[Dict[str, Any]] = [
 ]
 
 
-def _service_colors(accessibility: str = "universal") -> Dict[str, str]:
+def _service_colors(services: List[str], accessibility: str = "universal") -> Dict[str, str]:
     palette = load_palette(accessibility)
     hues = [palette.get("Blue", "#007AFF"), palette.get("Orange", "#FF9500"),
-            palette.get("Green", "#34C759")]
-    return {s: hues[i % len(hues)] for i, s in enumerate(SERVICES)}
+            palette.get("Green", "#34C759"), palette.get("Purple", "#AF52DE")]
+    return {s: hues[i % len(hues)] for i, s in enumerate(services)}
 
 
 def build_svg(
@@ -87,8 +87,12 @@ def build_svg(
         A complete, standalone SVG document.
     """
     rows = data if data else DEMO_DATA
-    services = [s for s in SERVICES if any(r["service"] == s for r in rows)] or sorted({r["service"] for r in rows})
-    colors = _service_colors(accessibility)
+    seen_services: List[str] = []
+    for r in rows:
+        if r["service"] not in seen_services:
+            seen_services.append(r["service"])
+    services = [s for s in SERVICES if s in seen_services] + [s for s in seen_services if s not in SERVICES]
+    colors = _service_colors(services, accessibility)
     months = sorted({float(r["month"]) for r in rows})
 
     lookup: Dict[tuple, float] = {(r["service"], float(r["month"])): float(r["cost"]) for r in rows}

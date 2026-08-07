@@ -56,11 +56,11 @@ def _make_demo_data() -> List[Dict[str, Any]]:
 DEMO_DATA: List[Dict[str, Any]] = _make_demo_data()
 
 
-def _group_colors(accessibility: str = "universal") -> Dict[str, str]:
+def _group_colors(groups: List[str], accessibility: str = "universal") -> Dict[str, str]:
     palette = load_palette(accessibility)
     hues = [palette.get("Blue", "#007AFF"), palette.get("Orange", "#FF9500"),
-            palette.get("Green", "#34C759")]
-    return {g: hues[i % len(hues)] for i, g in enumerate(GROUPS)}
+            palette.get("Green", "#34C759"), palette.get("Purple", "#AF52DE")]
+    return {g: hues[i % len(hues)] for i, g in enumerate(groups)}
 
 
 def build_svg(
@@ -93,8 +93,12 @@ def build_svg(
         A complete, standalone SVG document.
     """
     rows = data if data else DEMO_DATA
-    groups = [g for g in GROUPS if any(r["group"] == g for r in rows)] or sorted({r["group"] for r in rows})
-    colors = _group_colors(accessibility)
+    seen_groups: List[str] = []
+    for r in rows:
+        if r["group"] not in seen_groups:
+            seen_groups.append(r["group"])
+    groups = [g for g in GROUPS if g in seen_groups] + [g for g in seen_groups if g not in GROUPS]
+    colors = _group_colors(groups, accessibility)
     values = [float(r["value"]) for r in rows]
     v_min, v_max = min(values), max(values)
     pad = (v_max - v_min) * 0.1 or 1.0

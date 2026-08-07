@@ -61,10 +61,11 @@ def _make_demo_data() -> List[Dict[str, Any]]:
 DEMO_DATA: List[Dict[str, Any]] = _make_demo_data()
 
 
-def _segment_colors(accessibility: str = "universal") -> Dict[str, str]:
+def _segment_colors(segments: List[str], accessibility: str = "universal") -> Dict[str, str]:
     palette = load_palette(accessibility)
-    hues = [palette.get("Blue", "#007AFF"), palette.get("Orange", "#FF9500"), palette.get("Green", "#34C759")]
-    return {s: hues[i % len(hues)] for i, s in enumerate(SEGMENTS)}
+    hues = [palette.get("Blue", "#007AFF"), palette.get("Orange", "#FF9500"),
+            palette.get("Green", "#34C759"), palette.get("Purple", "#AF52DE")]
+    return {s: hues[i % len(hues)] for i, s in enumerate(segments)}
 
 
 def build_svg(
@@ -97,8 +98,13 @@ def build_svg(
         A complete, standalone SVG document.
     """
     rows = data if data else DEMO_DATA
-    segments = [s for s in SEGMENTS if any(r.get("segment") == s for r in rows)] or SEGMENTS
-    colors = _segment_colors(accessibility)
+    seen_segments: List[str] = []
+    for r in rows:
+        seg = r.get("segment")
+        if seg is not None and seg not in seen_segments:
+            seen_segments.append(seg)
+    segments = [s for s in SEGMENTS if s in seen_segments] + [s for s in seen_segments if s not in SEGMENTS]
+    colors = _segment_colors(segments, accessibility)
     has_weight = any("weight" in r and r["weight"] is not None for r in rows)
 
     xs = [float(r["horsepower"]) for r in rows]

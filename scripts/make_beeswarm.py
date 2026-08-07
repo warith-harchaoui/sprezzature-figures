@@ -120,7 +120,11 @@ def build_svg(
         A complete, standalone SVG document.
     """
     rows = data if data else DEMO_DATA
-    groups = [g for g in GROUPS if any(r["group"] == g for r in rows)] or sorted({r["group"] for r in rows})
+    seen_groups: List[str] = []
+    for r in rows:
+        if r["group"] not in seen_groups:
+            seen_groups.append(r["group"])
+    groups = [g for g in GROUPS if g in seen_groups] + [g for g in seen_groups if g not in GROUPS]
     palette = load_palette(accessibility)
     hue_order = [palette.get("Red", "#FF3B30"), palette.get("Blue", "#007AFF"), palette.get("Green", "#34C759")]
     colors = {g: hue_order[i % len(hue_order)] for i, g in enumerate(groups)}
