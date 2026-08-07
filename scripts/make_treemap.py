@@ -30,6 +30,7 @@ from typing import Any, Dict, List, Optional
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
+from _style import qualitative_sequence  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
 
 INK = "#1D1D1F"
@@ -185,6 +186,14 @@ def build_svg(
     for p in grouped:
         grouped[p].sort(key=lambda r: -float(r["value"]))
     categories = sorted(grouped, key=lambda p: -sum(float(r["value"]) for r in grouped[p]))
+    # CATEGORY_COLORS only names the shipped demo's 6 domains; a category
+    # outside that set used to fall back to flat grey for every rectangle.
+    # Keep the fixed house hues where they match (stable colours for the
+    # demo data) and assign the qualitative sequence to anything else.
+    palette_cycle = iter(qualitative_sequence(max(len(categories), 1)))
+    category_colors = {
+        cat: CATEGORY_COLORS.get(cat) or next(palette_cycle) for cat in categories
+    }
 
     legend_y = 94.0
     plot_x, plot_y = 20.0, 128.0
@@ -223,14 +232,14 @@ def build_svg(
     # ---- legend ----
     cursor = 20.0
     for cat in categories:
-        color = CATEGORY_COLORS.get(cat, "#8E8E93")
+        color = category_colors[cat]
         parts.append(f'<rect x="{cursor:.1f}" y="{legend_y - 11:.1f}" width="12" height="12" rx="2" fill="{color}"/>')
         parts.append(f'<text x="{cursor + 18:.1f}" y="{legend_y:.1f}" font-size="12" fill="{INK}">{xml_escape(cat)}</text>')
         cursor += 24 + 7.0 * len(cat) + 22
 
     # ---- rectangles ----
     for cat, crect in zip(categories, cat_rects):
-        color = CATEGORY_COLORS.get(cat, "#8E8E93")
+        color = category_colors[cat]
         leaves = grouped[cat]
         leaf_vals = [float(r["value"]) for r in leaves]
         leaf_area = crect["dx"] * crect["dy"]
