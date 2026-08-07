@@ -46,6 +46,36 @@ CATEGORY_COLORS: Dict[str, str] = {
     "Compliance": "#79DBDC",
 }
 
+# Chrome text (title/subtitle/accessible desc) in the two languages Studio
+# can ask for (studio/i18n.py detects the language from the imported CSV's
+# column names; the CLI/library/API/MCP always call with the "en" default).
+# Data-derived text -- parent/name labels, numeric values -- is never
+# translated here; it already carries whatever language the caller's data
+# uses.
+_STRINGS: Dict[str, Dict[str, str]] = {
+    "en": {
+        "title": "IT Cloud Spending by Service — FY 2024",
+        "subtitle": "Annual spend in thousands of EUR; area proportional to budget",
+        "desc_template": (
+            "Treemap of {n_parents} domains and {n_children} services. "
+            "Hover or focus a rectangle for its exact value."
+        ),
+    },
+    "fr": {
+        "title": "Dépenses cloud IT par service — exercice 2024",
+        "subtitle": "Dépense annuelle en milliers d'euros ; l'aire est proportionnelle au budget",
+        "desc_template": (
+            "Treemap de {n_parents} domaines et {n_children} services. "
+            "Survolez ou activez le focus sur un rectangle pour sa valeur exacte."
+        ),
+    },
+}
+
+
+def _strings(language: str) -> Dict[str, str]:
+    """Chrome-text dict for `language`, falling back to English."""
+    return _STRINGS.get(language, _STRINGS["en"])
+
 # ---------------------------------------------------------------------------
 # Demo data: annual cloud spending by service, IT department FY-2024 (k EUR).
 # Two-level hierarchy: parent = domain, name = service, value = spend.
@@ -149,12 +179,13 @@ def _normalize(values: List[float], area: float) -> List[float]:
 
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
-    title: str = "IT Cloud Spending by Service — FY 2024",
-    subtitle: str = "Annual spend in thousands of EUR; area proportional to budget",
+    title: str | None = None,
+    subtitle: str | None = None,
     width: int = 900,
     height: int = 600,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    language: str = "en",
 ) -> str:
     """Assemble the full treemap SVG document as a string.
 
@@ -163,8 +194,10 @@ def build_svg(
     data : list of dict or None
         Rows with keys ``parent`` (str), ``name`` (str), ``value``
         (numeric). Defaults to :data:`DEMO_DATA`.
-    title, subtitle : str
-        Chart text.
+    title, subtitle : str or None
+        Chart text. ``None`` (the default) picks the illustrative title/
+        subtitle for `language`; an explicit string is always honoured
+        verbatim regardless of `language`.
     width, height : int
         Canvas size in pixels.
     mode : str, optional
@@ -172,6 +205,11 @@ def build_svg(
     accessibility : str, optional
         Accepted for CLI parity but a documented no-op: category colours
         are fixed house hues, not a CVD-safe palette re-level.
+    language : str, optional
+        Chrome-text language, ``"en"`` or ``"fr"`` (see :data:`_STRINGS`).
+        Only the title/subtitle default and accessible desc switch;
+        ``parent``/``name`` labels and values always render as given in
+        `data`. Defaults to ``"en"``.
 
     Returns
     -------
@@ -179,6 +217,9 @@ def build_svg(
         A complete, standalone SVG document.
     """
     _ = accessibility
+    strings = _strings(language)
+    title = strings["title"] if title is None else title
+    subtitle = strings["subtitle"] if subtitle is None else subtitle
     rows = data if data else DEMO_DATA
     grouped: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
     for row in rows:
@@ -209,10 +250,8 @@ def build_svg(
     parts: List[str] = []
     parts.append(svg_open(width, height, "tm-title", "tm-desc"))
     parts.append(f'<title id="tm-title">{xml_escape(title)}</title>')
-    parts.append(
-        f'<desc id="tm-desc">Treemap of {len(categories)} domains and {len(rows)} services. '
-        f'Hover or focus a rectangle for its exact value.</desc>'
-    )
+    desc = strings["desc_template"].format(n_parents=len(categories), n_children=len(rows))
+    parts.append(f'<desc id="tm-desc">{xml_escape(desc)}</desc>')
 
     parts.append(
         "<style>"
@@ -273,12 +312,13 @@ def make_treemap(
     data: Optional[List[Dict[str, Any]]] = None,
     *,
     out: Optional[Path | str] = None,
-    title: str = "IT Cloud Spending by Service — FY 2024",
-    subtitle: str = "Annual spend in thousands of EUR; area proportional to budget",
+    title: str | None = None,
+    subtitle: str | None = None,
     width: int = 900,
     height: int = 600,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    language: str = "en",
 ) -> Path:
     """Render a hand-authored treemap and write the SVG to *out*.
 
@@ -289,12 +329,16 @@ def make_treemap(
         Defaults to DEMO_DATA (IT cloud spending by domain and service).
     out : Path, str, or None
         Output path (.svg). Defaults to ``assets/svg-examples/treemap.svg``.
-    title, subtitle : str
-        Chart text.
+    title, subtitle : str or None
+        Chart text. ``None`` picks the `language`-appropriate default.
     width, height : int
         Canvas size in pixels.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    language : str, optional
+        Chrome-text language, ``"en"`` or ``"fr"``. Defaults to ``"en"``;
+        Sprezzature Studio passes the language detected from the imported
+        CSV's column names (see :data:`_STRINGS`).
 
     Returns
     -------
@@ -308,7 +352,7 @@ def make_treemap(
     True
     """
     svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
-                     mode=mode, accessibility=accessibility)
+                     mode=mode, accessibility=accessibility, language=language)
     dest = Path(out) if out else svg_example_path(__file__, "treemap")
     return write_svg(dest, svg)
 

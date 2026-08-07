@@ -20,6 +20,7 @@ from sprezzature_figures.core import DatasetProfile, FigurePlan
 from sprezzature_figures.core.operations import FigureOperation
 from sprezzature_figures.core.rendering import RenderResult
 from sprezzature_figures.studio.assistant.client import LLMClient, default_client
+from sprezzature_figures.studio.i18n import DEFAULT_LANGUAGE
 from sprezzature_figures.studio.ralph.engine import RalphMode
 from sprezzature_figures.studio.ralph.history import RalphHistory
 
@@ -47,6 +48,11 @@ class SessionState:
     source_name: str = ""
     dataset_profile: DatasetProfile | None = None
     data: list[dict[str, Any]] = field(default_factory=list)
+    # The single chrome language ("fr"/"en") every language-aware figure
+    # renders in for this session -- French until a CSV is imported, then
+    # re-detected from that CSV's column names (see studio/i18n.py) so one
+    # dataset never mixes languages across its figures.
+    language: str = DEFAULT_LANGUAGE
 
     plan: FigurePlan | None = None
     render: RenderResult | None = None

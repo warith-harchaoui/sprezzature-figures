@@ -43,6 +43,37 @@ DEMO_DATA: List[Dict[str, Any]] = [
     {"region": "West", "value": 11},
 ]
 
+# Chrome text (title/subtitle/axis titles/desc/tooltip templates) in the two
+# languages Studio can ask for (studio/i18n.py detects the language from the
+# imported CSV's column names; the CLI/library/API/MCP always call with the
+# "en" default). Category names and numeric labels are never translated here
+# -- they render exactly as the caller's data/columns give them.
+_STRINGS: Dict[str, Dict[str, str]] = {
+    "en": {
+        "title": "Revenue by Region",
+        "subtitle": "Quarterly figures",
+        "axis_value": "Value",
+        "axis_category": "Region",
+        "desc_template": "Bar chart of {n} categories, tallest {max_val:.0f}.",
+        "peak_template": " {region} leads at {value:.0f}, {pct:.0f}% of the total.",
+        "tooltip_template": "{region}: {value:.0f} ({share:.1f}% of total)",
+    },
+    "fr": {
+        "title": "Chiffre d'affaires par région",
+        "subtitle": "Chiffres trimestriels",
+        "axis_value": "Valeur",
+        "axis_category": "Région",
+        "desc_template": "Graphique à barres de {n} catégories, maximum {max_val:.0f}.",
+        "peak_template": " {region} est en tête avec {value:.0f}, {pct:.0f} % du total.",
+        "tooltip_template": "{region} : {value:.0f} ({share:.1f} % du total)",
+    },
+}
+
+
+def _strings(language: str) -> Dict[str, str]:
+    """Chrome-text dict for `language`, falling back to English."""
+    return _STRINGS.get(language, _STRINGS["en"])
+
 
 def _category_colors(accessibility: str = "universal") -> Dict[str, str]:
     palette = load_palette(accessibility)
@@ -53,12 +84,13 @@ def _category_colors(accessibility: str = "universal") -> Dict[str, str]:
 
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
-    title: str = "Revenue by Region",
-    subtitle: str = "Quarterly figures",
+    title: Optional[str] = None,
+    subtitle: Optional[str] = None,
     width: int = 745,
     height: int = 505,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    language: str = "en",
 ) -> str:
     """Assemble the full grouped bar chart SVG document as a string.
 
@@ -67,36 +99,54 @@ def build_svg(
     data : list of dict or None
         Rows with keys ``region`` (str) and ``value`` (numeric). Defaults
         to :data:`DEMO_DATA`.
-    title, subtitle : str
-        Chart text.
+    title, subtitle : str or None
+        Chart text. ``None`` (the default) falls back to `language`'s
+        chrome default (see :data:`_STRINGS`); an explicit string always
+        wins regardless of `language`.
     width, height : int
         Canvas size in pixels.
     mode, accessibility : str, optional
         Forwarded to :func:`_interactive.fullscreen_control` /
         :func:`_style.load_palette`.
+    language : str, optional
+        Chrome-text language, ``"en"`` or ``"fr"``. Only title/subtitle
+        defaults, axis titles, and the desc/tooltip wording switch; category
+        names and numeric labels always render as given in `data`. Defaults
+        to ``"en"``.
 
     Returns
     -------
     str
         A complete, standalone SVG document.
     """
+    strings = _strings(language)
+    title = strings["title"] if title is None else title
+    subtitle = strings["subtitle"] if subtitle is None else subtitle
     rows = data if data else DEMO_DATA
     colors = _category_colors(accessibility)
     ordered = sorted(rows, key=lambda r: -float(r["value"]))
     total = sum(float(r["value"]) for r in rows) or 1.0
     max_val = max(float(r["value"]) for r in rows) if rows else 1.0
 
-    plot_x, plot_y = 64.0, 118.0
+    y_step = max_val / 4.0
+    y_ticks = [i * y_step for i in range(5)]
+    y_domain = y_ticks[-1] or 1.0
+
+    plot_y = 118.0
+    # 64px was sized for short (2-3 digit) tick numbers; on 6-digit values
+    # (e.g. "915000") the widest tick's right-anchored text overran that
+    # margin and sat on top of the rotated axis title. Widen it to the
+    # actual widest tick (mono font, flat per-char estimate) plus room for
+    # the rotated title, instead of a fixed constant.
+    max_tick_chars = max((len(f"{t:.0f}") for t in y_ticks), default=1)
+    tick_label_w = max_tick_chars * 12 * 0.62
+    plot_x = max(64.0, 10 + tick_label_w + 24)
     right_margin, bottom_reserved = 32.0, 70.0
     plot_w = width - plot_x - right_margin
     plot_h = height - plot_y - bottom_reserved
     n = len(ordered)
     bin_w = plot_w / n if n else plot_w
     bar_w = max(1.0, bin_w * 0.6)
-
-    y_step = max_val / 4.0
-    y_ticks = [i * y_step for i in range(5)]
-    y_domain = y_ticks[-1] or 1.0
 
     def y_for(v: float) -> float:
         return plot_y + plot_h - (v / y_domain * plot_h)
@@ -106,12 +156,13 @@ def build_svg(
     parts.append(f'<title id="bar-title">{xml_escape(title)}</title>')
     top = ordered[0] if ordered else None
     peak_desc = (
-        f" {top['region']} leads at {float(top['value']):.0f}, "
-        f"{float(top['value']) / total * 100:.0f}% of the total."
+        strings["peak_template"].format(
+            region=top["region"], value=float(top["value"]), pct=float(top["value"]) / total * 100
+        )
         if top else ""
     )
     parts.append(
-        f'<desc id="bar-desc">Bar chart of {n} categories, tallest {max_val:.0f}.'
+        f'<desc id="bar-desc">{strings["desc_template"].format(n=n, max_val=max_val)}'
         f'{peak_desc}</desc>'
     )
 
@@ -142,9 +193,15 @@ def build_svg(
             f'<text x="{plot_x - 10:.1f}" y="{ty + 4:.1f}" font-size="12" '
             f'font-family="{FONT_MONO}" fill="{SECONDARY}" text-anchor="end">{tick:.0f}</text>'
         )
+    # plot_x above already widened to clear the widest tick label plus this
+    # title's own room, so a fixed 14px inset from the canvas edge is enough
+    # regardless of how many digits the tick numbers run to.
+    axis_value_x = 14.0
+    axis_value_y = plot_y + plot_h / 2
     parts.append(
-        f'<text x="24" y="{plot_y + plot_h / 2:.1f}" font-size="14" fill="{INK}" '
-        f'text-anchor="middle" transform="rotate(-90 24 {plot_y + plot_h / 2:.1f})">Value</text>'
+        f'<text x="{axis_value_x:.1f}" y="{axis_value_y:.1f}" font-size="14" fill="{INK}" '
+        f'text-anchor="middle" transform="rotate(-90 {axis_value_x:.1f} {axis_value_y:.1f})">'
+        f'{xml_escape(strings["axis_value"])}</text>'
     )
 
     for i, row in enumerate(ordered):
@@ -155,7 +212,7 @@ def build_svg(
         h = plot_y + plot_h - y
         r = corner_radius(bar_w, max(h, 1.0), "bar")
         share = value / total * 100.0
-        tip = f"{region}: {value:.0f} ({share:.1f}% of total)"
+        tip = strings["tooltip_template"].format(region=region, value=value, share=share)
         if h <= 0:
             continue
         path = bar_path(x, y, bar_w, h, r, side="top")
@@ -177,7 +234,7 @@ def build_svg(
         )
     parts.append(
         f'<text x="{plot_x + plot_w / 2:.1f}" y="{axis_y + 44:.1f}" font-size="14" '
-        f'fill="{INK}" text-anchor="middle">Region</text>'
+        f'fill="{INK}" text-anchor="middle">{xml_escape(strings["axis_category"])}</text>'
     )
 
     parts.append(fullscreen_control(width, height, mode))
@@ -189,12 +246,13 @@ def make_bar(
     data: Optional[List[Dict[str, Any]]] = None,
     *,
     out: Optional[Path | str] = None,
-    title: str = "Revenue by Region",
-    subtitle: str = "Quarterly figures",
+    title: Optional[str] = None,
+    subtitle: Optional[str] = None,
     width: int = 745,
     height: int = 505,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    language: str = "en",
 ) -> Path:
     """Render a hand-authored grouped bar chart and write the SVG to *out*.
 
@@ -205,12 +263,16 @@ def make_bar(
         Defaults to DEMO_DATA.
     out : Path, str, or None
         Output path (.svg). Defaults to ``assets/svg-examples/bar.svg``.
-    title, subtitle : str
-        Chart text.
+    title, subtitle : str or None
+        Chart text. ``None`` falls back to `language`'s chrome default.
     width, height : int
         Canvas size in pixels.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    language : str, optional
+        Chrome-text language, ``"en"`` or ``"fr"``. Defaults to ``"en"``;
+        Sprezzature Studio passes the language detected from the imported
+        CSV's column names (see :data:`_STRINGS`).
 
     Returns
     -------
@@ -224,7 +286,7 @@ def make_bar(
     True
     """
     svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
-                     mode=mode, accessibility=accessibility)
+                     mode=mode, accessibility=accessibility, language=language)
     dest = Path(out) if out else svg_example_path(__file__, "bar")
     return write_svg(dest, svg)
 

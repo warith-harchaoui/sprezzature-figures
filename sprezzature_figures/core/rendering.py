@@ -25,6 +25,17 @@ from ..make_figure import get_figure_definition, make_figure
 # Renderers whose source artifact needs conversion to get a PNG preview.
 _SVG_LIKE_RENDERERS = {"vega_lite", "vega", "svg"}
 
+# Kinds whose generator accepts a `language` kwarg ("en"/"fr") and switches
+# its own title/subtitle/axis/legend text accordingly. Every generator still
+# defaults to "en" when called directly (CLI, library, API, MCP); Studio is
+# the only caller that passes a non-default language, and only for a kind in
+# this set -- everyone else has hard-coded English chrome and would raise
+# TypeError on an unexpected `language` kwarg. Extend as more generators gain
+# a language switch; see sprezzature_figures/studio/i18n.py.
+_LANGUAGE_AWARE_KINDS = frozenset({
+    "bar", "bar-grouped", "bar3d", "sunburst", "treemap", "line", "pareto", "lollipop",
+})
+
 
 class RenderResult(BaseModel):
     """Everything downstream (history, export, the Ralph loop) needs about
@@ -155,6 +166,9 @@ def render_figure_to_project(
     definition = get_figure_definition(kind)
     extension = "svg" if definition.renderer in _SVG_LIKE_RENDERERS else "png"
     source_path = iteration_dir / f"render.{extension}"
+
+    if kwargs.get("language") is None or definition.kind not in _LANGUAGE_AWARE_KINDS:
+        kwargs.pop("language", None)
 
     result_path = make_figure(kind, data, out=str(source_path), **kwargs)
 

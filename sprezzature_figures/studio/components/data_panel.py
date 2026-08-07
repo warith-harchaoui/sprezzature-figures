@@ -18,6 +18,7 @@ from nicegui import events, ui
 from sprezzature_figures.catalog import get_figure_definition, list_kinds
 from sprezzature_figures.core.figure_plan import ColumnBinding, FigurePlan
 from sprezzature_figures.studio.components.recommendation_cards import build_recommendation_cards
+from sprezzature_figures.studio.i18n import detect_language
 from sprezzature_figures.studio.ingest import (
     csv_fingerprint,
     excel_fingerprint,
@@ -82,6 +83,10 @@ def _load_upload(state: SessionState, filename: str, content: bytes) -> str | No
         )
         state.data = df.to_dict("records")
         state.source_name = filename
+        # This CSV's column names become the one chrome language every
+        # figure built from it renders in (see studio/i18n.py) -- re-detected
+        # per import so a second file in the same session can switch it.
+        state.language = detect_language(list(df.columns))
         return None
     finally:
         tmp_path.unlink(missing_ok=True)
@@ -116,33 +121,36 @@ def build_data_panel(state: SessionState, *, on_ready: Callable[[FigurePlan], No
         role_selects: dict[str, ui.select] = {}
         role_container = ui.column().classes("w-full gap-1")
 
+        # Build elements directly (no nested `with role_container:` and no
+        # manual `role_container.clear()`): `@ui.refreshable` already wraps
+        # this call in its own tracked container and clears *that* container
+        # before each `.refresh()`. The previous version re-entered
+        # `with role_container:` and cleared `role_container` itself from
+        # inside the function -- on the very first call that deleted the
+        # refreshable's own freshly-created container as a side effect
+        # (it was a child of role_container), silently dropping it from
+        # `render_roles.targets` on the next `.refresh()`'s `prune()`. Every
+        # later kind switch then called a `.refresh()` with zero live
+        # targets: no exception, no log line, nothing -- the dropdown label
+        # changed but the role fields underneath never did. Letting the
+        # decorator own its container (elements just parented to whatever
+        # `role_container` wraps) fixes both the crash-on-switch bug this
+        # comment used to describe and the visible-refresh gap it left open.
         @ui.refreshable
         def render_roles(kind: str | None) -> None:
             role_selects.clear()
-            role_container.clear()
             if not kind:
                 return
             definition = get_figure_definition(kind)
-            with role_container:
-                for role in [*definition.required_roles, *definition.optional_roles]:
-                    label = f"{role.label}{'' if role.required else ' (optional)'}"
-                    role_selects[role.name] = ui.select(columns, label=label, value=None).classes("w-full")
+            for role in [*definition.required_roles, *definition.optional_roles]:
+                label = f"{role.label}{'' if role.required else ' (optional)'}"
+                role_selects[role.name] = ui.select(columns, label=label, value=None).classes("w-full")
 
         # Pass the new value straight from the change event instead of having
-        # render_roles() re-read kind_select.value itself: relying on the select's
-        # own .value inside the refreshable left role_selects built for the
-        # *previous* kind after a switch (its keys never matched the new kind's
-        # roles), so confirm() below KeyError'd on the first required role name --
-        # silently, since NiceGUI logs a bare handler exception to the server
-        # console and shows the user nothing at all. KNOWN REMAINING GAP: the
-        # role fields still don't visibly refresh in the browser after a kind
-        # switch (traced to render_roles' refresh target going stale, likely
-        # because binding_form -- the outer @ui.refreshable -- re-renders after
-        # the recommendation cards resolve and orphans this container; needs a
-        # deeper look at binding_form's own refresh triggers). This fix's
-        # purpose is narrower and already achieved: confirm() below now always
-        # reads role definitions fresh off kind_select.value and reports a
-        # correct "Missing required roles" warning instead of crashing silently.
+        # render_roles() re-read kind_select.value itself: relying on the
+        # select's own .value inside the refreshable left role_selects built
+        # for the *previous* kind after a switch, so confirm() below could
+        # read stale role names.
         kind_select.on_value_change(lambda e: render_roles.refresh(e.value))
         with role_container:
             render_roles(kind_select.value)

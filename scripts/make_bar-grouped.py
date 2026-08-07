@@ -50,6 +50,44 @@ DEMO_DATA: List[Dict[str, Any]] = [
     {"period": "Q4", "region": "South", "v": 40}, {"period": "Q4", "region": "East", "v": 33},
 ]
 
+# Chrome text (title/subtitle/legend heading/axis titles/desc/tooltip
+# templates) in the two languages Studio can ask for (studio/i18n.py detects
+# the language from the imported CSV's column names; the CLI/library/API/MCP
+# always call with the "en" default). Period/region names and numeric labels
+# are never translated here -- they render exactly as the caller's data gives
+# them.
+_STRINGS: Dict[str, Dict[str, str]] = {
+    "en": {
+        "title": "Sales by Region and Quarter",
+        "subtitle": "Units sold per region, by quarter",
+        "legend_heading": "Region",
+        "axis_units": "Units",
+        "axis_period": "Quarter",
+        "desc_template": (
+            "Grouped bar chart of {n_regions} regions across {n_periods} "
+            "periods, peaking at {max_val:.0f}. Hover or focus a bar for its exact value."
+        ),
+        "tooltip_template": "{region}, {period}: {value:.0f}",
+    },
+    "fr": {
+        "title": "Ventes par région et par trimestre",
+        "subtitle": "Unités vendues par région, par trimestre",
+        "legend_heading": "Région",
+        "axis_units": "Unités",
+        "axis_period": "Trimestre",
+        "desc_template": (
+            "Graphique à barres groupées de {n_regions} régions sur {n_periods} "
+            "périodes, maximum {max_val:.0f}. Survolez ou activez une barre pour sa valeur exacte."
+        ),
+        "tooltip_template": "{region}, {period} : {value:.0f}",
+    },
+}
+
+
+def _strings(language: str) -> Dict[str, str]:
+    """Chrome-text dict for `language`, falling back to English."""
+    return _STRINGS.get(language, _STRINGS["en"])
+
 
 def _region_colors(regions: List[str], accessibility: str = "universal") -> Dict[str, str]:
     palette = load_palette(accessibility)
@@ -60,12 +98,13 @@ def _region_colors(regions: List[str], accessibility: str = "universal") -> Dict
 
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
-    title: str = "Sales by Region and Quarter",
-    subtitle: str = "Units sold per region, by quarter",
+    title: Optional[str] = None,
+    subtitle: Optional[str] = None,
     width: int = 745,
     height: int = 505,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    language: str = "en",
 ) -> str:
     """Assemble the full grouped bar chart SVG document as a string.
 
@@ -74,19 +113,29 @@ def build_svg(
     data : list of dict or None
         Rows with keys ``period`` (str), ``region`` (str), ``v``
         (numeric). Defaults to :data:`DEMO_DATA`.
-    title, subtitle : str
-        Chart text.
+    title, subtitle : str or None
+        Chart text. ``None`` (the default) falls back to `language`'s
+        chrome default; an explicit string always wins regardless of
+        `language`.
     width, height : int
         Canvas size in pixels.
     mode, accessibility : str, optional
         Forwarded to :func:`_interactive.fullscreen_control` /
         :func:`_style.load_palette`.
+    language : str, optional
+        Chrome-text language, ``"en"`` or ``"fr"``. Only title/subtitle
+        defaults, the legend heading, axis titles, and the desc/tooltip
+        wording switch; period/region names and numeric labels always
+        render as given in `data`. Defaults to ``"en"``.
 
     Returns
     -------
     str
         A complete, standalone SVG document.
     """
+    strings = _strings(language)
+    title = strings["title"] if title is None else title
+    subtitle = strings["subtitle"] if subtitle is None else subtitle
     rows = data if data else DEMO_DATA
     seen_periods: List[str] = []
     for row in rows:
@@ -106,7 +155,19 @@ def build_svg(
     lookup: Dict[tuple, float] = {(r["period"], r["region"]): float(r["v"]) for r in rows}
     max_val = max(lookup.values()) if lookup else 1.0
 
-    plot_x, plot_y = 64.0, 150.0
+    y_step = max_val / 4.0
+    y_ticks = [i * y_step for i in range(5)]
+    y_domain = y_ticks[-1] or 1.0
+
+    plot_y = 150.0
+    # 64px was sized for short (2-3 digit) tick numbers; imported data with
+    # bigger values (5-6 digit revenue, say) would push the widest tick's
+    # right-anchored text back over the rotated axis title, the same bug
+    # found and fixed in make_bar.py. Widen it to the actual widest tick
+    # (mono font, flat per-char estimate) plus room for that title.
+    max_tick_chars = max((len(f"{t:.0f}") for t in y_ticks), default=1)
+    tick_label_w = max_tick_chars * 12 * 0.62
+    plot_x = max(64.0, 10 + tick_label_w + 24)
     right_margin, bottom_reserved = 32.0, 70.0
     plot_w = width - plot_x - right_margin
     plot_h = height - plot_y - bottom_reserved
@@ -116,10 +177,6 @@ def build_svg(
     group_w = bin_w * 0.78
     bar_w = group_w / n_regions if n_regions else group_w
 
-    y_step = max_val / 4.0
-    y_ticks = [i * y_step for i in range(5)]
-    y_domain = y_ticks[-1] or 1.0
-
     def y_for(v: float) -> float:
         return plot_y + plot_h - (v / y_domain * plot_h)
 
@@ -127,8 +184,7 @@ def build_svg(
     parts.append(svg_open(width, height, "bg-title", "bg-desc"))
     parts.append(f'<title id="bg-title">{xml_escape(title)}</title>')
     parts.append(
-        f'<desc id="bg-desc">Grouped bar chart of {n_regions} regions across {n_periods} '
-        f'periods, peaking at {max_val:.0f}. Hover or focus a bar for its exact value.</desc>'
+        f'<desc id="bg-desc">{strings["desc_template"].format(n_regions=n_regions, n_periods=n_periods, max_val=max_val)}</desc>'
     )
     parts.append(
         "<style>"
@@ -146,7 +202,7 @@ def build_svg(
 
     # ---- legend ----
     lx, ly = 40.0, 100.0
-    parts.append(f'<text x="{lx:.1f}" y="{ly:.1f}" font-size="13" font-weight="700" fill="{INK}">Region</text>')
+    parts.append(f'<text x="{lx:.1f}" y="{ly:.1f}" font-size="13" font-weight="700" fill="{INK}">{xml_escape(strings["legend_heading"])}</text>')
     cursor = lx
     ly2 = ly + 22
     for reg in regions:
@@ -165,9 +221,12 @@ def build_svg(
             f'<text x="{plot_x - 10:.1f}" y="{ty + 4:.1f}" font-size="12" font-family="{FONT_MONO}" '
             f'fill="{SECONDARY}" text-anchor="end">{tick:.0f}</text>'
         )
+    axis_units_x = 18.0
+    axis_units_y = plot_y + plot_h / 2
     parts.append(
-        f'<text x="18" y="{plot_y + plot_h / 2:.1f}" font-size="13" fill="{INK}" '
-        f'text-anchor="middle" transform="rotate(-90 18 {plot_y + plot_h / 2:.1f})">Units</text>'
+        f'<text x="{axis_units_x:.1f}" y="{axis_units_y:.1f}" font-size="13" fill="{INK}" '
+        f'text-anchor="middle" transform="rotate(-90 {axis_units_x:.1f} {axis_units_y:.1f})">'
+        f'{xml_escape(strings["axis_units"])}</text>'
     )
 
     # ---- bars ----
@@ -181,7 +240,7 @@ def build_svg(
             if h <= 0:
                 continue
             r = corner_radius(bar_w, h, "bar")
-            tip = f"{region}, {period}: {value:.0f}"
+            tip = strings["tooltip_template"].format(region=region, period=period, value=value)
             path = bar_path(x, y, bar_w * 0.88, h, r, side="top")
             parts.append(
                 f'<path class="bar" tabindex="0" d="{path}" fill="{colors.get(region, "#007AFF")}">'
@@ -202,7 +261,7 @@ def build_svg(
         )
     parts.append(
         f'<text x="{plot_x + plot_w / 2:.1f}" y="{axis_y + 44:.1f}" font-size="13" '
-        f'fill="{INK}" text-anchor="middle">Quarter</text>'
+        f'fill="{INK}" text-anchor="middle">{xml_escape(strings["axis_period"])}</text>'
     )
 
     parts.append(fullscreen_control(width, height, mode))
@@ -214,12 +273,13 @@ def make_bar_grouped(
     data: Optional[List[Dict[str, Any]]] = None,
     *,
     out: Optional[Path | str] = None,
-    title: str = "Sales by Region and Quarter",
-    subtitle: str = "Units sold per region, by quarter",
+    title: Optional[str] = None,
+    subtitle: Optional[str] = None,
     width: int = 745,
     height: int = 505,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    language: str = "en",
 ) -> Path:
     """Render a hand-authored grouped bar chart and write the SVG to *out*.
 
@@ -230,12 +290,16 @@ def make_bar_grouped(
         Defaults to DEMO_DATA.
     out : Path, str, or None
         Output path (.svg). Defaults to ``assets/svg-examples/bar-grouped.svg``.
-    title, subtitle : str
-        Chart text.
+    title, subtitle : str or None
+        Chart text. ``None`` falls back to `language`'s chrome default.
     width, height : int
         Canvas size in pixels.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    language : str, optional
+        Chrome-text language, ``"en"`` or ``"fr"``. Defaults to ``"en"``;
+        Sprezzature Studio passes the language detected from the imported
+        CSV's column names (see :data:`_STRINGS`).
 
     Returns
     -------
@@ -249,7 +313,7 @@ def make_bar_grouped(
     True
     """
     svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
-                     mode=mode, accessibility=accessibility)
+                     mode=mode, accessibility=accessibility, language=language)
     dest = Path(out) if out else svg_example_path(__file__, "bar-grouped")
     return write_svg(dest, svg)
 

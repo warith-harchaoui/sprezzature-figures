@@ -41,6 +41,33 @@ DEMO_DATA: List[Dict[str, Any]] = [
     {"c": "delta", "v": 91}, {"c": "epsilon", "v": 62},
 ]
 
+# Chrome text (Studio detects "en"/"fr" from the imported CSV's column
+# names; the CLI/library/API/MCP default to "en"). Title/subtitle are
+# already caller-supplied strings (Studio always passes an explicit
+# `title=`), so only this generator's own fixed labels need translation:
+# the x-axis title, the desc template, the "leads at" clause, and the
+# tooltip's "of total" suffix. Category names and values are never
+# translated -- they come straight from the caller's data.
+_STRINGS: Dict[str, Dict[str, str]] = {
+    "en": {
+        "x_axis": "Score",
+        "desc": "Lollipop chart of {n} categories, tallest {max_v:.0f}.",
+        "leads_at": " {name} leads at {value:.0f}.",
+        "of_total": "of total",
+    },
+    "fr": {
+        "x_axis": "Score",
+        "desc": "Graphique en sucette de {n} catégories, la plus haute à {max_v:.0f}.",
+        "leads_at": " {name} est en tête à {value:.0f}.",
+        "of_total": "du total",
+    },
+}
+
+
+def _strings(language: str) -> Dict[str, str]:
+    """Chrome-text dict for `language`, falling back to English."""
+    return _STRINGS.get(language, _STRINGS["en"])
+
 
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
@@ -50,6 +77,7 @@ def build_svg(
     height: int = 420,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    language: str = "en",
 ) -> str:
     """Assemble the full lollipop chart SVG document as a string.
 
@@ -67,6 +95,10 @@ def build_svg(
     accessibility : str, optional
         Accepted for CLI parity but a documented no-op: a single house-
         blue dot/stem, no categorical hues to re-level.
+    language : str, optional
+        Chrome-text language, ``"en"`` or ``"fr"`` (see :data:`_STRINGS`).
+        Only this generator's own fixed labels switch; category names and
+        values always render exactly as given. Defaults to ``"en"``.
 
     Returns
     -------
@@ -74,6 +106,7 @@ def build_svg(
         A complete, standalone SVG document.
     """
     _ = accessibility
+    strings = _strings(language)
     rows = sorted(data if data else DEMO_DATA, key=lambda r: -float(r["v"]))
     max_v = max(float(r["v"]) for r in rows) if rows else 1.0
     total = sum(float(r["v"]) for r in rows) or 1.0
@@ -92,9 +125,9 @@ def build_svg(
     parts.append(svg_open(width, height, "lp-title", "lp-desc"))
     parts.append(f'<title id="lp-title">{xml_escape(title)}</title>')
     top = rows[0] if rows else None
-    peak_desc = f" {top['c']} leads at {top['v']:.0f}." if top else ""
+    peak_desc = strings["leads_at"].format(name=top["c"], value=top["v"]) if top else ""
     parts.append(
-        f'<desc id="lp-desc">Lollipop chart of {n} categories, tallest {max_v:.0f}.'
+        f'<desc id="lp-desc">{strings["desc"].format(n=n, max_v=max_v)}'
         f'{peak_desc}</desc>'
     )
     parts.append(
@@ -126,7 +159,7 @@ def build_svg(
         )
     parts.append(
         f'<text x="{plot_x + plot_w / 2:.1f}" y="{plot_y + plot_h + 42:.1f}" font-size="13" '
-        f'fill="{INK}" text-anchor="middle">Score</text>'
+        f'fill="{INK}" text-anchor="middle">{strings["x_axis"]}</text>'
     )
 
     # ---- lollipops ----
@@ -135,7 +168,7 @@ def build_svg(
         cy = plot_y + i * row_h + row_h / 2
         x1 = x_for(v)
         share = v / total * 100.0
-        tip = f"{row['c']}: {v:.0f} ({share:.1f}% of total)"
+        tip = f"{row['c']}: {v:.0f} ({share:.1f}% {strings['of_total']})"
         parts.append(f'<line x1="{plot_x:.1f}" y1="{cy:.1f}" x2="{x1:.1f}" y2="{cy:.1f}" stroke="{COLOR_STEM}" stroke-width="2"/>')
         parts.append(
             f'<circle class="pop" tabindex="0" cx="{x1:.1f}" cy="{cy:.1f}" r="7" fill="{COLOR_DOT}" '
@@ -167,6 +200,7 @@ def make_lollipop(
     height: int = 420,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    language: str = "en",
 ) -> Path:
     """Render a hand-authored lollipop chart and write the SVG to *out*.
 
@@ -181,7 +215,7 @@ def make_lollipop(
         Chart text.
     width, height : int
         Canvas size in pixels.
-    mode, accessibility : str
+    mode, accessibility, language : str
         Forwarded to :func:`build_svg`.
 
     Returns
@@ -196,7 +230,7 @@ def make_lollipop(
     True
     """
     svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
-                     mode=mode, accessibility=accessibility)
+                     mode=mode, accessibility=accessibility, language=language)
     dest = Path(out) if out else svg_example_path(__file__, "lollipop")
     return write_svg(dest, svg)
 

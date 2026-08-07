@@ -44,6 +44,39 @@ BG = "#FFFFFF"
 
 REGIONS = ["Americas", "Asia Pacific", "Europe", "Middle East & Africa"]
 
+# Chrome text (title/subtitle/legend header/accessible desc) in the two
+# languages Studio can ask for (studio/i18n.py detects the language from the
+# imported CSV's column names; the CLI/library/API/MCP always call with the
+# "en" default). Data-derived text -- parent/name labels, numeric values --
+# is never translated here; it already carries whatever language the
+# caller's data uses.
+_STRINGS: Dict[str, Dict[str, str]] = {
+    "en": {
+        "title": "Global R&D Investment by Region and Country — 2023",
+        "subtitle": "Total expenditure in billions of USD; arc length proportional to investment",
+        "legend_header": "Region",
+        "desc_template": (
+            "Sunburst of {n_parents} regions and {n_children} countries, "
+            "total {total} billion USD. Hover or focus an arc for its exact value."
+        ),
+    },
+    "fr": {
+        "title": "Investissement mondial en R&D par région et pays — 2023",
+        "subtitle": "Dépense totale en milliards de dollars ; la longueur d'arc est proportionnelle à l'investissement",
+        "legend_header": "Région",
+        "desc_template": (
+            "Diagramme en soleil de {n_parents} régions et {n_children} pays, "
+            "total {total} milliards de dollars. Survolez ou activez le focus "
+            "sur un arc pour sa valeur exacte."
+        ),
+    },
+}
+
+
+def _strings(language: str) -> Dict[str, str]:
+    """Chrome-text dict for `language`, falling back to English."""
+    return _STRINGS.get(language, _STRINGS["en"])
+
 # ---------------------------------------------------------------------------
 # Demo data: global R&D investment by region and country (billion USD, 2023).
 # Two-level hierarchy: region -> country.
@@ -95,12 +128,13 @@ def _annular_sector_path(cx: float, cy: float, r_inner: float, r_outer: float,
 
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
-    title: str = "Global R&D Investment by Region and Country — 2023",
-    subtitle: str = "Total expenditure in billions of USD; arc length proportional to investment",
+    title: str | None = None,
+    subtitle: str | None = None,
     width: int = 800,
     height: int = 640,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    language: str = "en",
 ) -> str:
     """Assemble the full sunburst SVG document as a string.
 
@@ -109,19 +143,29 @@ def build_svg(
     data : list of dict or None
         Flat rows with keys ``parent`` (region), ``name`` (country),
         ``value`` (numeric). Defaults to :data:`DEMO_DATA`.
-    title, subtitle : str
-        Chart text.
+    title, subtitle : str or None
+        Chart text. ``None`` (the default) picks the illustrative title/
+        subtitle for `language`; an explicit string is always honoured
+        verbatim regardless of `language`.
     width, height : int
         Canvas size in pixels.
     mode, accessibility : str, optional
         Forwarded to :func:`_interactive.fullscreen_control` /
         :func:`_style.load_palette`.
+    language : str, optional
+        Chrome-text language, ``"en"`` or ``"fr"`` (see :data:`_STRINGS`).
+        Only the title/subtitle default, legend header and accessible desc
+        switch; ``parent``/``name`` labels and values always render as
+        given in `data`. Defaults to ``"en"``.
 
     Returns
     -------
     str
         A complete, standalone SVG document.
     """
+    strings = _strings(language)
+    title = strings["title"] if title is None else title
+    subtitle = strings["subtitle"] if subtitle is None else subtitle
     rows = data if data else DEMO_DATA
     region_totals: Dict[str, float] = defaultdict(float)
     grouped: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
@@ -153,10 +197,10 @@ def build_svg(
     parts: List[str] = []
     parts.append(svg_open(width, height, "sb-title", "sb-desc"))
     parts.append(f'<title id="sb-title">{xml_escape(title)}</title>')
-    parts.append(
-        f'<desc id="sb-desc">Sunburst of {len(regions_sorted)} regions and {len(rows)} countries, '
-        f'total {total:,.1f} billion USD. Hover or focus an arc for its exact value.</desc>'
+    desc = strings["desc_template"].format(
+        n_parents=len(regions_sorted), n_children=len(rows), total=f"{total:,.1f}"
     )
+    parts.append(f'<desc id="sb-desc">{xml_escape(desc)}</desc>')
 
     parts.append(
         "<style>"
@@ -215,7 +259,10 @@ def build_svg(
     # ---- legend ----
     lx0 = side_margin + avail_w + 30.0
     ly0 = top_margin
-    parts.append(f'<text x="{lx0:.1f}" y="{ly0:.1f}" font-size="13" font-weight="700" fill="{INK}">Region</text>')
+    parts.append(
+        f'<text x="{lx0:.1f}" y="{ly0:.1f}" font-size="13" font-weight="700" '
+        f'fill="{INK}">{xml_escape(strings["legend_header"])}</text>'
+    )
     for i, r in enumerate(regions_sorted):
         ly = ly0 + 26.0 + i * 24.0
         parts.append(f'<circle cx="{lx0 + 6:.1f}" cy="{ly - 4:.1f}" r="6" fill="{region_colors[r]}"/>')
@@ -230,12 +277,13 @@ def make_sunburst(
     data: Optional[List[Dict[str, Any]]] = None,
     *,
     out: Optional[Path | str] = None,
-    title: str = "Global R&D Investment by Region and Country — 2023",
-    subtitle: str = "Total expenditure in billions of USD; arc length proportional to investment",
+    title: str | None = None,
+    subtitle: str | None = None,
     width: int = 800,
     height: int = 640,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    language: str = "en",
 ) -> Path:
     """Render a hand-authored sunburst chart and write the SVG to *out*.
 
@@ -246,12 +294,16 @@ def make_sunburst(
         (float). Defaults to DEMO_DATA (R&D investment by region/country).
     out : Path, str, or None
         Output path (.svg). Defaults to ``assets/svg-examples/sunburst.svg``.
-    title, subtitle : str
-        Chart text.
+    title, subtitle : str or None
+        Chart text. ``None`` picks the `language`-appropriate default.
     width, height : int
         Canvas size in pixels.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    language : str, optional
+        Chrome-text language, ``"en"`` or ``"fr"``. Defaults to ``"en"``;
+        Sprezzature Studio passes the language detected from the imported
+        CSV's column names (see :data:`_STRINGS`).
 
     Returns
     -------
@@ -265,7 +317,7 @@ def make_sunburst(
     True
     """
     svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
-                     mode=mode, accessibility=accessibility)
+                     mode=mode, accessibility=accessibility, language=language)
     dest = Path(out) if out else svg_example_path(__file__, "sunburst")
     return write_svg(dest, svg)
 

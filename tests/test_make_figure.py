@@ -87,6 +87,26 @@ def test_demo_data_exists(kind: str) -> None:
     assert len(data) >= 1, f"make_{kind}.DEMO_DATA is empty"
 
 
+def test_line_renders_single_series_data_without_the_optional_series_role(tmp_path: Path) -> None:
+    """`series` is declared optional on the "line" kind, so a plain
+    month+value dataset (no `series` column at all -- the shape produced
+    when Studio's recommendation cards only bind required roles) must
+    render, not raise a bare KeyError('series'). Also checks the custom
+    axis labels keep the rows' own chronological order: sorting a set of
+    non-canonical labels by "MONTHS.index if present else 0" used to tie
+    them all at key 0 and fall back to Python's set-hash order instead.
+    """
+    rows = [
+        {"month": "2025-01-01", "value": 1200},
+        {"month": "2025-02-01", "value": 1350},
+        {"month": "2025-03-01", "value": 1410},
+    ]
+    out = tmp_path / "line_single_series.svg"
+    result = make_figure("line", rows, out=str(out))
+    svg = Path(result).read_text()
+    assert svg.index(">2025-01-01<") < svg.index(">2025-02-01<") < svg.index(">2025-03-01<")
+
+
 @pytest.mark.slow
 @pytest.mark.parametrize("kind", ["treemap", "funnel"])
 def test_stable_kind_renders_to_png(kind: str, tmp_path: Path) -> None:

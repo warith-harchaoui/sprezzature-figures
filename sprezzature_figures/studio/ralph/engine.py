@@ -122,6 +122,7 @@ class RalphEngine:
         iteration_dir: Path,
         dataset: DatasetProfile | None = None,
         history: RalphHistory | None = None,
+        language: str | None = None,
     ) -> RalphResult:
         """Interpret `message` against `plan`, apply what's safe to apply
         automatically, render, and (in assisted/autopilot mode) inspect and
@@ -151,6 +152,10 @@ class RalphEngine:
             Carries stopping-criteria state across calls; pass the same
             instance back in for a multi-turn session, or omit for a
             one-shot call.
+        language : str or None
+            Forwarded to every render_figure_to_project() call in this
+            method (see studio/state.SessionState.language); None leaves
+            each generator on its own default ("en").
 
         Returns
         -------
@@ -169,7 +174,8 @@ class RalphEngine:
 
         current_plan = apply_operations(plan, applied_ops)
         render_result = render_figure_to_project(
-            current_plan.figure_kind, data, project_id=project_id, iteration_dir=iteration_dir, title=current_plan.title
+            current_plan.figure_kind, data, project_id=project_id, iteration_dir=iteration_dir,
+            title=current_plan.title, language=language,
         )
 
         if mode == RalphMode.manual:
@@ -205,7 +211,8 @@ class RalphEngine:
             if repair_ops:
                 current_plan = repaired_plan
                 render_result = render_figure_to_project(
-                    current_plan.figure_kind, data, project_id=project_id, iteration_dir=iteration_dir, title=current_plan.title
+                    current_plan.figure_kind, data, project_id=project_id, iteration_dir=iteration_dir,
+                    title=current_plan.title, language=language,
                 )
             return RalphResult(
                 plan=current_plan,
@@ -240,7 +247,8 @@ class RalphEngine:
             history.rounds[-1].applied_operations = repair_ops
             repairs_this_call.extend(repair_ops)
             render_result = render_figure_to_project(
-                current_plan.figure_kind, data, project_id=project_id, iteration_dir=iteration_dir, title=current_plan.title
+                current_plan.figure_kind, data, project_id=project_id, iteration_dir=iteration_dir,
+                title=current_plan.title, language=language,
             )
             critique, crit_note = self._try_critique(
                 render_result.preview_path.read_bytes(), current_plan, dataset, previous_critique=critique

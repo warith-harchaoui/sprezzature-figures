@@ -77,6 +77,44 @@ _MONO = "Roboto Mono, ui-monospace, monospace"
 _LOW = "#B9E4E8"        # pale teal  — shortest bars
 _HIGH = "#0A4DA0"       # deep blue  — tallest bars
 
+# Chrome text (title/subtitle/desc/legend) in the two languages Studio can
+# ask for (studio/i18n.py detects the language from the imported CSV's
+# column names; the CLI/library/API/MCP always call with the "en" default).
+# The bar/cell data itself (row, column, value labels) is never translated
+# here — it already carries whatever language the caller's data uses.
+_STRINGS: Dict[str, Dict[str, str]] = {
+    "en": {
+        "title": "The Data team's cloud bill is running away from everyone else",
+        "subtitle": "Quarterly infrastructure spend by team (thousands of USD)",
+        "desc": (
+            "3D bar chart: a 4x4 grid of solid bars, one per team per "
+            "quarter, height and blue depth of colour both encoding quarterly "
+            "cloud spend. The Data team's bars form a rising ridge along the back "
+            "that towers over the flat Docs plain in the foreground."
+        ),
+        "legend_low": "lower",
+        "legend_high": "higher spend (top-cap number = $ thousands)",
+    },
+    "fr": {
+        "title": "La facture cloud de l'équipe Data explose face aux autres équipes",
+        "subtitle": "Dépenses trimestrielles d'infrastructure par équipe (milliers de $)",
+        "desc": (
+            "Graphique à barres 3D : une grille de barres pleines, une par équipe "
+            "et par trimestre, la hauteur et la profondeur de bleu codant toutes "
+            "deux la dépense cloud trimestrielle. Les barres de l'équipe Data "
+            "forment une crête montante qui domine la plaine plate de l'équipe "
+            "Docs au premier plan."
+        ),
+        "legend_low": "plus bas",
+        "legend_high": "dépense plus élevée (chiffre en haut = milliers de $)",
+    },
+}
+
+
+def _strings(language: str) -> Dict[str, str]:
+    """Chrome-text dict for `language`, falling back to English."""
+    return _STRINGS.get(language, _STRINGS["en"])
+
 
 # --------------------------------------------------------------------------- #
 #                                                             #
@@ -397,6 +435,7 @@ def build_svg(
     grid: Dict[str, Any],
     mode: str = "self-contained",
     accessibility: str = "universal",
+    language: str = "en",
 ) -> str:
     """Assemble the full 3D-bar SVG document as a string.
 
@@ -404,6 +443,10 @@ def build_svg(
     ----------
     grid : dict
         The table from :func:`_sample_grid` — ``rows``, ``cols``, ``z``.
+    language : str, optional
+        Chrome-text language, ``"en"`` or ``"fr"`` (see :data:`_STRINGS`).
+        Only the title/subtitle/desc/legend switch; row, column and value
+        labels always render as given in `grid`. Defaults to ``"en"``.
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`
         (``"self-contained"``, ``"external"`` or ``"static"``). Controls
@@ -434,6 +477,7 @@ def build_svg(
     # CVD/greyscale-safe (see the parameter note above), so levelling it would
     # only de-tune it.
     _ = accessibility
+    strings = _strings(language)
     rows: List[str] = list(grid["rows"])
     cols: List[str] = list(grid["cols"])
     z: List[List[float]] = grid["z"]
@@ -445,16 +489,25 @@ def build_svg(
     # Generous, poster-sized canvas. The diamond floor is centred
     # horizontally and seated low enough to leave headroom for the tallest
     # bar plus its value cap.
-    width, height = 1040, 760
+    width, height = 1040, 800
     ox = 500.0 - (_U[0] * (n_cols - 1) + _V[0] * (n_rows - 1)) / 2.0
-    oy = 452.0
-    h_scale = 3.15   # px per unit of z; z_max ~96 -> ~302 px tall
+    # Seated lower than the legend/subtitle block so the tallest possible bar
+    # (worst case: the max value lands on the back-most cell, whose top edge
+    # reaches straight up to oy - target) always clears it with visible air,
+    # instead of grazing the legend baseline as it did at oy=452.
+    oy = 520.0
+    # Tallest bar always lands at ~260px regardless of the data's own units
+    # (thousands of dollars in the demo grid, raw dollars or any other scale
+    # in imported data) — a fixed h_scale sized for z_max~96 blew up to
+    # ~140,000px tall on data in the tens of thousands.
+    _TARGET_TALLEST_BAR_PX = 260.0
+    h_scale = _TARGET_TALLEST_BAR_PX / z_max if z_max else 3.15
 
     parts: List[str] = []
 
     # ---- header ----------------------------------------------------------- #
-    title = "The Data team's cloud bill is running away from everyone else"
-    subtitle = "Quarterly infrastructure spend by team (thousands of USD)"
+    title = strings["title"]
+    subtitle = strings["subtitle"]
     parts.append(
         f'<svg role="img" aria-label="{title}" '
         f'xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" '
@@ -486,13 +539,7 @@ def build_svg(
         )
         + "</style>"
     )
-    parts.append(
-        f"<title>{title}</title>"
-        f"<desc>3D bar chart: a 4x4 grid of solid bars, one per team per "
-        f"quarter, height and blue depth of colour both encoding quarterly "
-        f"cloud spend. The Data team's bars form a rising ridge along the back "
-        f"that towers over the flat Docs plain at the sprezzature.</desc>"
-    )
+    parts.append(f"<title>{title}</title><desc>{strings['desc']}</desc>")
     parts.append(f'<rect class="paper" width="{width}" height="{height}" rx="14" fill="{_BG}"/>')
     parts.append(
         f'<text x="52" y="60" font-size="30" font-weight="700" '
@@ -527,7 +574,7 @@ def build_svg(
     # Painter's algorithm: a bar occludes another when it is nearer the camera.
     # In this basis, larger (row + col) is nearer the viewer, so sort ascending
     # by (row + col) and draw farthest first.
-    bar_w = 0.62
+    bar_w = 0.5
     order = sorted(
         ((r, c) for r in range(n_rows) for c in range(n_cols)),
         key=lambda rc: rc[0] + rc[1],
@@ -575,9 +622,15 @@ def build_svg(
     lx, ly = 52, 150
     parts.append(
         f'<text x="{lx}" y="{ly}" font-size="15" font-family="{_MONO}" '
-        f'fill="{_SECONDARY}">lower</text>'
+        f'fill="{_SECONDARY}">{strings["legend_low"]}</text>'
     )
-    swatch_x = lx + 62
+    # Gap sized off the actual rendered text instead of a fixed offset tuned
+    # for English "lower" -- a longer FR label was overlapping the gradient
+    # swatch at a hardcoded lx+62. Roboto Mono is a fixed-width face, so a
+    # flat per-character advance (calibrated a touch generous, same spirit
+    # as _textfit.text_width) is exact enough at this one font size.
+    _MONO_CHAR_EM = 0.62
+    swatch_x = lx + len(strings["legend_low"]) * 15 * _MONO_CHAR_EM + 14
     n_swatch = 30
     swatch_w = 5.2
     for k in range(n_swatch):
@@ -590,7 +643,7 @@ def build_svg(
     parts.append(
         f'<text x="{swatch_x + n_swatch * swatch_w + 12:.1f}" y="{ly}" '
         f'font-size="15" font-family="{_MONO}" '
-        f'fill="{_SECONDARY}">higher spend (top-cap number = $ thousands)</text>'
+        f'fill="{_SECONDARY}">{strings["legend_high"]}</text>'
     )
 
     # Fullscreen control (top-right corner is clear; bottom band holds the
@@ -633,6 +686,12 @@ def _build_parser() -> argparse.ArgumentParser:
             "sequential teal->blue height ramp is already CVD/greyscale-safe."
         ),
     )
+    parser.add_argument(
+        "--language",
+        choices=("en", "fr"),
+        default="en",
+        help="chrome-text language for title/subtitle/legend (default: en).",
+    )
     return parser
 
 
@@ -640,7 +699,7 @@ def main(argv: List[str] | None = None) -> int:
     """CLI entry point: build the SVG and write it to disk."""
     args = _build_parser().parse_args(argv)
     grid = _sample_grid()
-    svg = build_svg(grid, mode=args.mode, accessibility=args.accessibility)
+    svg = build_svg(grid, mode=args.mode, accessibility=args.accessibility, language=args.language)
     write_svg(args.out, svg)
     return 0
 
@@ -652,6 +711,7 @@ def make_bar3d(
     title: str = "",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    language: str = "en",
 ) -> Path:
     """Render the house-styled 3D-bar chart and write the SVG to *out*.
 
@@ -669,6 +729,10 @@ def make_bar3d(
         tallest ridge and stays fixed regardless of the data supplied.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    language : str, optional
+        Chrome-text language, ``"en"`` or ``"fr"``. Defaults to ``"en"``;
+        Sprezzature Studio passes the language detected from the imported
+        CSV's column names (see :data:`_STRINGS`).
 
     Returns
     -------
@@ -684,7 +748,7 @@ def make_bar3d(
     _ = title
     rows = data if data else DEMO_DATA
     grid = _rows_to_grid(rows)
-    svg = build_svg(grid, mode=mode, accessibility=accessibility)
+    svg = build_svg(grid, mode=mode, accessibility=accessibility, language=language)
     dest = Path(out) if out else svg_example_path(__file__, "bar3d")
     return write_svg(dest, svg)
 

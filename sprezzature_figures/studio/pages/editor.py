@@ -140,6 +140,7 @@ def build_editor(state: SessionState) -> None:
                 project_id=state.project_dir.name,
                 iteration_dir=iteration_dir,
                 title=plan.title or plan.figure_kind.replace("-", " ").title(),
+                language=state.language,
             )
         except Exception as exc:  # noqa: BLE001 - surfaced to the user, not raised
             ui.notify(f"Render failed: {exc}", type="negative")
@@ -179,6 +180,7 @@ def build_editor(state: SessionState) -> None:
                 iteration_dir=iteration_dir,
                 dataset=state.dataset_profile,
                 history=state.ralph_history,
+                language=state.language,
             )
         except Exception as exc:  # noqa: BLE001 - surfaced in chat, not raised
             state.add_chat("assistant", f"Something went wrong: {exc}")
@@ -217,6 +219,7 @@ def build_editor(state: SessionState) -> None:
                 project_id=state.project_dir.name,
                 iteration_dir=iteration_dir,
                 title=state.plan.title or state.plan.figure_kind,
+                language=state.language,
             )
         except Exception as exc:  # noqa: BLE001 - surfaced in chat, not raised
             state.add_chat("assistant", f"Confirmed changes but re-render failed: {exc}")
@@ -307,6 +310,7 @@ def build_editor(state: SessionState) -> None:
                 project_id=state.project_dir.name,
                 iteration_dir=iteration_dir,
                 title=new_plan.title or new_plan.figure_kind,
+                language=state.language,
             )
         except Exception as exc:  # noqa: BLE001 - surfaced to the user, not raised
             ui.notify(f"Render failed: {exc}", type="negative")

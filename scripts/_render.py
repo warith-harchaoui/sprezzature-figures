@@ -281,17 +281,25 @@ def render_cli(
         default="universal",
         help="palette accessibility level (default: universal, the CVD-safe standard)",
     )
+    parser.add_argument(
+        "--language",
+        choices=("en", "fr"),
+        default="en",
+        help="chrome-text language for title/subtitle/legend (default: en).",
+    )
     args = parser.parse_args()
     # Build lazily (after parsing) so ``--help`` never runs the figure code.
-    # Pass ``mode`` / ``accessibility`` only to generators whose ``build_svg``
-    # accepts them, so this helper keeps working for figures that have not
-    # adopted these arguments yet.
+    # Pass ``mode`` / ``accessibility`` / ``language`` only to generators
+    # whose ``build_svg`` accepts them, so this helper keeps working for
+    # figures that have not adopted these arguments yet.
     params = inspect.signature(build_svg).parameters
     kwargs = {}
     if "mode" in params:
         kwargs["mode"] = args.mode
     if "accessibility" in params:
         kwargs["accessibility"] = args.accessibility
+    if "language" in params:
+        kwargs["language"] = args.language
     write_svg(args.out, build_svg(**kwargs))
 
 

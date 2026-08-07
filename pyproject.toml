@@ -49,6 +49,7 @@ studio = [
     "charset-normalizer>=3",
     "best-engine-ai-helper>=0.4.0",
     "os-helper>=1.8.0",
+    "langdetect>=1.0.9",
 ]
 # Full dataviz stack (matplotlib, networkx, wordcloud, etc.)
 dataviz = [

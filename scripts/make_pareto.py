@@ -70,6 +70,78 @@ from _svg import svg_open, xml_escape  # noqa: E402
 # from the trivial many. 80 % is the textbook 80/20 line.
 _PARETO_THRESHOLD = 80.0
 
+# Chrome text (title/subtitle/desc/legend/axis/tooltip wording) in the two
+# languages Studio can ask for (studio/i18n.py detects the language from the
+# imported CSV's column names; the CLI/library/API/MCP always call with the
+# "en" default). Every string here is a str.format() template filled from
+# the render's own numbers -- reason names and counts are never translated,
+# they always come from the caller's data verbatim. Earlier versions of this
+# generator hardcoded "reasons"/"tickets"/"one week" -- fine for the bundled
+# support-ticket demo data, but nonsensical once a reader imports their own
+# categories (e.g. countries/revenue): the templates below are generic
+# ("categories"/"total") so they read sensibly for any imported dataset.
+_STRINGS: Dict[str, Dict[str, str]] = {
+    "en": {
+        "accessible_title": "A few categories drive most of the total",
+        "desc": (
+            "Pareto chart of {total:,} categorized records. Bars show each "
+            "category’s share of the total, sorted tallest-first against "
+            "the left percentage axis; the {n_vital} tallest are tinted blue "
+            "as the “vital few” and the remaining {n_trivial} fade to "
+            "grey as the “trivial many”. An orange line traces the "
+            "cumulative share against the right percentage axis, climbing to "
+            "100 %. The dashed 80 % Pareto line marks the 80/20 threshold: the "
+            "cumulative curve first clears it at category {n_vital}, so "
+            "{n_vital} categories account for {cross_cum} % of the total "
+            "({cross_count:,} of {total:,})."
+        ),
+        "headline": "{n_vital} of {n} categories drive {cross_cum}% of the total",
+        "subtitle": "Categories sorted by volume; the cumulative share climbs to the 80% line",
+        "caption": "{total:,} total across {n} categories",
+        "ref_line_label": "80% Pareto line",
+        "bar_tooltip": "{reason}: {count:,} ({share:.1f}% of total, cumulative {cum:.1f}%)",
+        "curve_label": "cumulative %",
+        "point_tooltip": "{reason}: cumulative {cum:.1f}% of total",
+        "crossing_line1": "{n_vital} categories → {cum}% of total",
+        "crossing_line2": "{cc:,} of {total:,}",
+        "axis_left_title": "Share of total (bars)",
+        "axis_right_title": "Cumulative share (line)",
+    },
+    "fr": {
+        "accessible_title": "Quelques catégories concentrent l'essentiel du total",
+        "desc": (
+            "Diagramme de Pareto de {total:,} enregistrements catégorisés. "
+            "Les barres montrent la part de chaque catégorie dans le total, "
+            "triées de la plus grande à la plus petite selon l'axe de "
+            "pourcentage de gauche ; les {n_vital} plus grandes sont teintées "
+            "en bleu comme « essentielles » et les {n_trivial} restantes "
+            "s'estompent en gris comme « secondaires ». Une ligne orange "
+            "trace la part cumulée selon l'axe de pourcentage de droite, "
+            "montant jusqu'à 100 %. La ligne pointillée à 80 % marque "
+            "le seuil 80/20 : la courbe cumulée le franchit à la "
+            "catégorie {n_vital}, donc {n_vital} catégories "
+            "représentent {cross_cum} % du total ({cross_count:,} sur "
+            "{total:,})."
+        ),
+        "headline": "{n_vital} des {n} catégories concentrent {cross_cum} % du total",
+        "subtitle": "Catégories triées par volume, la part cumulée grimpe jusqu'à la ligne des 80 %",
+        "caption": "{total:,} au total sur {n} catégories",
+        "ref_line_label": "Ligne de Pareto à 80 %",
+        "bar_tooltip": "{reason} : {count:,} ({share:.1f} % du total, cumul {cum:.1f} %)",
+        "curve_label": "cumul %",
+        "point_tooltip": "{reason} : cumul {cum:.1f} % du total",
+        "crossing_line1": "{n_vital} catégories → {cum} % du total",
+        "crossing_line2": "{cc:,} sur {total:,}",
+        "axis_left_title": "Part du total (barres)",
+        "axis_right_title": "Part cumulée (courbe)",
+    },
+}
+
+
+def _strings(language: str) -> Dict[str, str]:
+    """Chrome-text dict for `language`, falling back to English."""
+    return _STRINGS.get(language, _STRINGS["en"])
+
 # ------------------------------------------------------------------
 # Communicative real-sounding data — one week of support tickets, tagged
 # by the single reason each was opened. Counts, not "Category A/B/C".
@@ -160,6 +232,7 @@ def build_svg(
     tickets: "List[Dict[str, Any]] | None" = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    language: str = "en",
 ) -> str:
     """Assemble the full Pareto-chart SVG string.
 
@@ -187,12 +260,17 @@ def build_svg(
         (``"universal"``, ``"high-contrast"``, ``"monochrome"``,
         ``"deuteranopia"``, ``"protanopia"`` or ``"tritanopia"``). Defaults to
         ``"universal"``, the colour-vision-safe standard.
+    language : str, optional
+        Chrome-text language, ``"en"`` or ``"fr"`` (see :data:`_STRINGS`).
+        Reason labels and counts always render as given in `tickets`.
+        Defaults to ``"en"``.
 
     Returns
     -------
     str
         A complete, standalone SVG document.
     """
+    strings = _strings(language)
     data = make_data(tickets)
     rows = data["rows"]
     crossing = data["crossing"]
@@ -252,24 +330,16 @@ def build_svg(
 
     # --- SVG root + accessible description ------------------------
     parts.append(svg_open(width, height, "pa-title", "pa-desc"))
-    parts.append(
-        '<title id="pa-title">A few support-ticket reasons drive most of '
-        'the weekly backlog</title>'
-    )
+    parts.append(f'<title id="pa-title">{strings["accessible_title"]}</title>')
     cross_cum = round(crossing["cum"]) if crossing else 0
     cross_count = int(crossing["cum_count"]) if crossing else 0
     parts.append(
-        f'<desc id="pa-desc">Pareto chart of one week of customer-support '
-        f'tickets ({total:,} total). Bars show each reason’s '
-        f'share of tickets, sorted tallest-first against the left percentage '
-        f'axis; the {n_vital} tallest are tinted blue as the “vital few” '
-        f'and the remaining {n - n_vital} fade to grey as the “trivial '
-        f'many”. An orange line traces the cumulative share against the '
-        f'right percentage axis, climbing to 100 %. The dashed 80 % Pareto '
-        f'line marks the 80/20 threshold: the cumulative curve first clears '
-        f'it at reason {n_vital}, so {n_vital} reasons account for '
-        f'{cross_cum} % of tickets ({cross_count:,} of {total:,}). '
-        f'</desc>'
+        '<desc id="pa-desc">'
+        + strings["desc"].format(
+            total=total, n_vital=n_vital, n_trivial=n - n_vital,
+            cross_cum=cross_cum, cross_count=cross_count,
+        )
+        + "</desc>"
     )
 
     # Static figure: hover / focus emphasis only, no motion to guard.
@@ -312,19 +382,19 @@ def build_svg(
     )
 
     # --- title + subtitle (the takeaway) -------------------------
+    headline = strings["headline"].format(n_vital=n_vital, n=n, cross_cum=cross_cum)
     parts.append(
         f'<text x="{m_left}" y="80" font-size="42" font-weight="700" '
-        f'fill="{ink}">{n_vital} of {n} reasons drive four in five tickets</text>'
+        f'fill="{ink}">{xml_escape(headline)}</text>'
     )
     parts.append(
         f'<text x="{m_left}" y="124" font-size="24" fill="{secondary}">'
-        f'Ticket reasons sorted by volume; the cumulative share climbs to '
-        f'the 80% line</text>'
+        f'{xml_escape(strings["subtitle"])}</text>'
     )
+    caption = strings["caption"].format(total=total, n=n)
     parts.append(
         f'<text x="{m_left}" y="156" font-size="20" fill="{secondary}">'
-        f'One week of support tickets ({total:,} total)'
-        f'data</text>'
+        f'{xml_escape(caption)}</text>'
     )
 
     # --- gridlines (very light, on the shared percentage grid) ---
@@ -344,7 +414,8 @@ def build_svg(
     )
     parts.append(
         f'<text x="{plot_x + plot_w - 6:.1f}" y="{ref_y - 10:.1f}" '
-        f'font-size="20" fill="{ref_c}" text-anchor="end">80% Pareto line</text>'
+        f'font-size="20" fill="{ref_c}" text-anchor="end">'
+        f'{xml_escape(strings["ref_line_label"])}</text>'
     )
 
     # --- sorted bars (vital few Blue, trivial many grey) ---------
@@ -360,9 +431,8 @@ def build_svg(
         # neutral grey (no class), unaffected.
         rect_cls = ' class="pa-vital"' if is_vital else ""
         x0 = cx - bar_w / 2.0
-        tip = (
-            f'{r["reason"]}: {int(r["count"]):,} tickets '
-            f'({share:.1f}% of the week, cumulative {float(r["cum"]):.1f}%)'
+        tip = strings["bar_tooltip"].format(
+            reason=r["reason"], count=int(r["count"]), share=share, cum=float(r["cum"]),
         )
         parts.append(
             f'<g class="bar" tabindex="0" role="img" '
@@ -399,7 +469,7 @@ def build_svg(
     lbl_x, lbl_y = pts[0]
     parts.append(
         f'<text x="{lbl_x + 18:.1f}" y="{lbl_y + 30:.1f}" font-size="21" '
-        f'font-weight="600" fill="{line_c}">cumulative %</text>'
+        f'font-weight="600" fill="{line_c}">{xml_escape(strings["curve_label"])}</text>'
     )
 
     # Round markers at every step; the crossing point reuses the same recipe,
@@ -409,7 +479,7 @@ def build_svg(
         cum = float(r["cum"])
         is_cross = bool(crossing) and int(r["rank"]) == int(crossing["rank"])
         rr = 10.0 if is_cross else 6.5
-        tip = f'{r["reason"]}: cumulative {cum:.1f}% of tickets'
+        tip = strings["point_tooltip"].format(reason=r["reason"], cum=cum)
         parts.append(
             f'<g class="pt" tabindex="0" role="img" '
             f'aria-label="{xml_escape(tip)}">'
@@ -440,14 +510,15 @@ def build_svg(
             f'y2="{cy - 44:.1f}" stroke="{secondary}" stroke-width="1.4" '
             f'stroke-dasharray="3 4"/>'
         )
+        line1 = strings["crossing_line1"].format(n_vital=nv, cum=round(crossing["cum"]))
         parts.append(
             f'<text x="{note_x:.1f}" y="{cy - 44:.1f}" font-size="22" '
-            f'font-weight="700" fill="{ink}">'
-            f'{nv} reasons → {round(crossing["cum"])}% of tickets</text>'
+            f'font-weight="700" fill="{ink}">{xml_escape(line1)}</text>'
         )
+        line2 = strings["crossing_line2"].format(cc=cc, total=total)
         parts.append(
             f'<text x="{note_x:.1f}" y="{cy - 18:.1f}" font-size="20" '
-            f'fill="{secondary}">{cc:,} of {total:,} in one week</text>'
+            f'fill="{secondary}">{xml_escape(line2)}</text>'
         )
 
     # --- axes: left (bar shares) + right (cumulative) ------------
@@ -499,7 +570,7 @@ def build_svg(
         f'<text x="{lt_x:.1f}" y="{lt_y:.1f}" font-size="21" fill="{ink}" '
         f'text-anchor="middle" '
         f'transform="rotate(-90 {lt_x:.1f} {lt_y:.1f})">'
-        f'Share of tickets (bars)</text>'
+        f'{xml_escape(strings["axis_left_title"])}</text>'
     )
     # Right axis title (cumulative curve).
     rt_x = width - 34
@@ -508,7 +579,7 @@ def build_svg(
         f'<text x="{rt_x:.1f}" y="{rt_y:.1f}" font-size="21" fill="{line_c}" '
         f'text-anchor="middle" '
         f'transform="rotate(90 {rt_x:.1f} {rt_y:.1f})">'
-        f'Cumulative share (line)</text>'
+        f'{xml_escape(strings["axis_right_title"])}</text>'
     )
 
     # --- x-axis reason labels (angled so long names never collide) ---
@@ -540,6 +611,7 @@ def make_pareto(
     title: str = "",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    language: str = "en",
 ) -> Path:
     """Render the Pareto chart and write the SVG to *out*.
 
@@ -553,6 +625,10 @@ def make_pareto(
         Output path. Defaults to ``assets/svg-examples/pareto.svg``.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    language : str, optional
+        Chrome-text language, ``"en"`` or ``"fr"``. Defaults to ``"en"``;
+        Sprezzature Studio passes the language detected from the imported
+        CSV's column names (see :data:`_STRINGS`).
 
     Returns
     -------
@@ -561,7 +637,7 @@ def make_pareto(
     """
     _ = title
     rows = data if data else DEMO_DATA
-    svg = build_svg(rows, mode=mode, accessibility=accessibility)
+    svg = build_svg(rows, mode=mode, accessibility=accessibility, language=language)
     dest = Path(out) if out else svg_example_path(__file__, "pareto")
     return write_svg(dest, svg)
 
