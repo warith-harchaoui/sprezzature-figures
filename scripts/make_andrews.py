@@ -46,7 +46,7 @@ Author
 from __future__ import annotations
 from _render import svg_example_path, write_svg  # noqa: E402
 from _svg import fmt_compact  # noqa: E402
-from _style import leveled_colors, os_adaptive_style, os_dark_style  # noqa: E402
+from _style import leveled_colors, os_adaptive_style, os_dark_style, qualitative_sequence  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 
 import argparse
@@ -277,8 +277,19 @@ def build_svg(
     """
     # Per-class hues, remapped for the requested accessibility level. At the
     # ``universal`` default this is the identity, so the shipped SVG is
-    # byte-for-byte unchanged.
-    class_colours = leveled_colors(_CLASS_COLOURS, accessibility)
+    # byte-for-byte unchanged. _CLASS_COLOURS only names the three shipped
+    # species; a caller-supplied class outside that set used to fall back to
+    # flat grey everywhere it appeared (legend, curves, dasharray key) --
+    # assign the qualitative sequence to anything unrecognised instead.
+    _seen_classes: List[str] = []
+    for _lab in labels:
+        if _lab not in _seen_classes:
+            _seen_classes.append(_lab)
+    _fallback_hues = iter(qualitative_sequence(max(len(_seen_classes), 1)))
+    class_colours = leveled_colors(
+        {cls: _CLASS_COLOURS.get(cls) or next(_fallback_hues) for cls in _seen_classes},
+        accessibility,
+    )
     # ---- canvas geometry -------------------------------------------------- #
     # Poster-scale canvas: a big, generous figure so the curve clouds have
     # room to breathe and the per-species ribbons stop piling into a blob.
