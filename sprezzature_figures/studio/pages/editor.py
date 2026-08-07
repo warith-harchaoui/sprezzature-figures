@@ -353,13 +353,32 @@ def build_editor(state: SessionState) -> None:
         refresh_properties()
 
     dark = ui.dark_mode(value=False)
+    _THEME_KEY = "sprezzature-studio-theme"
 
-    def _toggle_dark() -> None:
-        dark.toggle()
+    def _paint_toggle() -> None:
         theme_toggle.set_text("🌛" if dark.value else "🌞")
         theme_toggle.props(
             f"aria-label={'Switch to light theme' if dark.value else 'Switch to dark theme'}"
         )
+
+    def _toggle_dark() -> None:
+        dark.toggle()
+        _paint_toggle()
+        ui.run_javascript(
+            f"localStorage.setItem('{_THEME_KEY}', '{'dark' if dark.value else 'light'}')"
+        )
+
+    async def _restore_theme() -> None:
+        # NiceGUI element creation runs server-side before the browser has a
+        # DOM at all, so an initial ``ui.dark_mode(value=...)`` can't read
+        # localStorage -- restore it right after connect instead, same
+        # storage key + mechanism as the public gallery's theme.js (plain
+        # localStorage, not NiceGUI's cookie-based app.storage, so no
+        # storage_secret / session plumbing needed for one boolean).
+        pref = await ui.run_javascript(f"localStorage.getItem('{_THEME_KEY}')")
+        if pref == "dark":
+            dark.value = True
+            _paint_toggle()
 
     with (
         ui.row()
@@ -374,6 +393,8 @@ def build_editor(state: SessionState) -> None:
                 .props("flat round dense aria-label='Switch to dark theme'")
                 .classes("text-lg")
             )
+
+    ui.timer(0.01, _restore_theme, once=True)
 
     # flex-basis:0 (not a width-% class) so the three panes divide the row by
     # grow ratio *after* the gaps are subtracted -- Quasar's own `.row` class
