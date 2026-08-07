@@ -30,6 +30,7 @@ from sprezzature_figures.studio.ingest import (
     validate_upload_size,
 )
 from sprezzature_figures.studio.state import SessionState
+from sprezzature_figures.studio.ui_strings import t
 
 
 def _load_upload(state: SessionState, filename: str, content: bytes) -> str | None:
@@ -40,7 +41,7 @@ def _load_upload(state: SessionState, filename: str, content: bytes) -> str | No
     """
     suffix = Path(filename).suffix.lower()
     if suffix not in (".csv", ".tsv", ".xlsx", ".json", ".jsonl", ".ndjson"):
-        return f"Unsupported file type {suffix!r}. Upload a .csv, .tsv, .xlsx, .json, or .jsonl file."
+        return t("unsupported_file_type", state.ui_language, suffix=suffix)
 
     with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
         tmp.write(content)
@@ -76,10 +77,14 @@ def _load_upload(state: SessionState, filename: str, content: bytes) -> str | No
             sheet_name = sheet
 
         if df.empty:
-            return "The file has no data rows."
+            return t("file_no_rows", state.ui_language)
 
         state.dataset_profile = profile_dataframe(
-            df, dataset_id=fingerprint[:12], fingerprint=fingerprint, source_name=filename, sheet_name=sheet_name
+            df,
+            dataset_id=fingerprint[:12],
+            fingerprint=fingerprint,
+            source_name=filename,
+            sheet_name=sheet_name,
         )
         state.data = df.to_dict("records")
         state.source_name = filename
@@ -92,30 +97,60 @@ def _load_upload(state: SessionState, filename: str, content: bytes) -> str | No
         tmp_path.unlink(missing_ok=True)
 
 
-def build_data_panel(state: SessionState, *, on_ready: Callable[[FigurePlan], None]) -> None:
+def build_data_panel(
+    state: SessionState, *, on_ready: Callable[[FigurePlan], None]
+) -> Callable[[], None]:
     """Render the import + kind + role-binding controls into the current
     NiceGUI context. `on_ready` is called with a freshly built FigurePlan
-    once the user confirms a kind and its role bindings.
+    once the user confirms a kind and its role bindings. Returns a
+    `refresh_language()` the editor's UI-language toggle calls.
     """
-    status_label = ui.label("No data imported yet.").classes("text-sm text-gray-500")
+    status_label = ui.label(t("no_data_imported", state.ui_language)).classes(
+        "text-sm text-gray-500"
+    )
+    # What status_label should say, tracked separately from its rendered text
+    # so a language toggle can re-format the *same* status (an error's text,
+    # a loaded filename) instead of only ever falling back to "no data yet".
+    status: dict[str, str | None] = {"kind": "none", "text": None}
+
+    def paint_status() -> None:
+        lang = state.ui_language
+        if status["kind"] == "error":
+            status_label.text = t("upload_error", lang, error=status["text"])
+            status_label.classes(replace="text-sm text-red-600")
+        elif status["kind"] == "loaded":
+            status_label.text = t("upload_loaded", lang, filename=status["text"])
+            status_label.classes(replace="text-sm text-green-600")
+        else:
+            status_label.text = t("no_data_imported", lang)
+            status_label.classes(replace="text-sm text-gray-500")
 
     @ui.refreshable
     def binding_form() -> None:
         if state.dataset_profile is None:
             return
+        lang = state.ui_language
         columns = [c.name for c in state.dataset_profile.columns]
-        ui.label(f"{state.source_name}: {state.dataset_profile.row_count} rows, {len(columns)} columns").classes(
-            "text-sm font-medium"
-        )
+        ui.label(
+            t(
+                "dataset_summary",
+                lang,
+                source=state.source_name,
+                rows=state.dataset_profile.row_count,
+                cols=len(columns),
+            )
+        ).classes("text-sm font-medium")
 
         # Deterministic recommendations first (one-click, auto-bound), with the
         # manual kind/role controls below for full control.
         build_recommendation_cards(state, on_select=on_ready)
-        ui.label("Or choose manually").classes("text-xs text-gray-500 mt-2")
+        ui.label(t("choose_manually", lang)).classes("text-xs text-gray-500 mt-2")
 
         stable_kinds = list_kinds(status="stable")
         kind_select = ui.select(
-            stable_kinds, label="Figure kind", value=stable_kinds[0] if stable_kinds else None
+            stable_kinds,
+            label=t("figure_kind_label", lang),
+            value=stable_kinds[0] if stable_kinds else None,
         ).classes("w-full")
 
         role_selects: dict[str, ui.select] = {}
@@ -143,8 +178,10 @@ def build_data_panel(state: SessionState, *, on_ready: Callable[[FigurePlan], No
                 return
             definition = get_figure_definition(kind)
             for role in [*definition.required_roles, *definition.optional_roles]:
-                label = f"{role.label}{'' if role.required else ' (optional)'}"
-                role_selects[role.name] = ui.select(columns, label=label, value=None).classes("w-full")
+                label = f"{role.label}{'' if role.required else t('role_optional_suffix', lang)}"
+                role_selects[role.name] = ui.select(columns, label=label, value=None).classes(
+                    "w-full"
+                )
 
         # Pass the new value straight from the change event instead of having
         # render_roles() re-read kind_select.value itself: relying on the
@@ -157,7 +194,7 @@ def build_data_panel(state: SessionState, *, on_ready: Callable[[FigurePlan], No
 
         def confirm() -> None:
             if not kind_select.value:
-                ui.notify("Choose a figure kind first.", type="warning")
+                ui.notify(t("choose_kind_first", lang), type="warning")
                 return
             definition = get_figure_definition(kind_select.value)
             bindings: dict[str, ColumnBinding] = {}
@@ -171,24 +208,26 @@ def build_data_panel(state: SessionState, *, on_ready: Callable[[FigurePlan], No
                     continue
                 bindings[role.name] = ColumnBinding(columns=[col])
             if missing:
-                ui.notify(f"Missing required roles: {', '.join(missing)}", type="warning")
+                ui.notify(
+                    t("missing_required_roles", lang, roles=", ".join(missing)), type="warning"
+                )
                 return
             plan = FigurePlan(figure_kind=kind_select.value, bindings=bindings)
             on_ready(plan)
 
-        ui.button("Create figure", on_click=confirm).props("color=primary").classes("mt-2")
+        ui.button(t("create_figure", lang), on_click=confirm).props("color=primary").classes("mt-2")
 
     async def handle_upload(e: events.UploadEventArguments) -> None:
         content = await e.file.read()
         error = _load_upload(state, e.file.name, content)
         if error:
-            status_label.text = f"Error: {error}"
-            status_label.classes(replace="text-sm text-red-600")
+            status["kind"], status["text"] = "error", error
+            paint_status()
             ui.notify(error, type="negative")
             uploader.reset()
             return
-        status_label.text = f"Loaded {e.file.name}."
-        status_label.classes(replace="text-sm text-green-600")
+        status["kind"], status["text"] = "loaded", e.file.name
+        paint_status()
         binding_form.refresh()
         # Clear the uploader's file row (and its raw "98.0B / 100.00%" progress
         # line) once the data is in state: the row count below is the durable
@@ -196,8 +235,17 @@ def build_data_panel(state: SessionState, *, on_ready: Callable[[FigurePlan], No
         uploader.reset()
 
     uploader = (
-        ui.upload(on_upload=handle_upload, auto_upload=True, label="Import CSV, XLSX, or JSON")
+        ui.upload(
+            on_upload=handle_upload, auto_upload=True, label=t("import_label", state.ui_language)
+        )
         .props('accept=".csv,.tsv,.xlsx,.json,.jsonl"')
         .classes("w-full")
     )
     binding_form()
+
+    def refresh_language() -> None:
+        paint_status()
+        uploader.props(f"label='{t('import_label', state.ui_language)}'")
+        binding_form.refresh()
+
+    return refresh_language

@@ -23,6 +23,7 @@ from sprezzature_figures.studio.assistant.client import LLMClient, default_clien
 from sprezzature_figures.studio.i18n import DEFAULT_LANGUAGE
 from sprezzature_figures.studio.ralph.engine import RalphMode
 from sprezzature_figures.studio.ralph.history import RalphHistory
+from sprezzature_figures.studio.ui_strings import DEFAULT_UI_LANGUAGE
 
 
 @dataclass
@@ -53,6 +54,10 @@ class SessionState:
     # re-detected from that CSV's column names (see studio/i18n.py) so one
     # dataset never mixes languages across its figures.
     language: str = DEFAULT_LANGUAGE
+    # Studio's own interface language (buttons, labels, notifications) --
+    # a separate, user-toggled setting (see ui_strings.py), never
+    # auto-detected, and never mixed up with ``language`` above.
+    ui_language: str = DEFAULT_UI_LANGUAGE
 
     plan: FigurePlan | None = None
     render: RenderResult | None = None

@@ -16,6 +16,19 @@ from nicegui import ui
 
 from sprezzature_figures.studio.ralph.engine import RalphMode, RalphResult
 from sprezzature_figures.studio.state import SessionState
+from sprezzature_figures.studio.ui_strings import t
+
+_MODE_LABEL_KEYS = {
+    RalphMode.manual: "ralph_mode_manual",
+    RalphMode.assisted: "ralph_mode_assisted",
+    RalphMode.autopilot: "ralph_mode_autopilot",
+}
+
+
+def _mode_options(lang: str) -> dict[str, str]:
+    # Keys stay RalphMode's own English values (what the backend expects);
+    # only the displayed label is localised.
+    return {m.value: t(key, lang) for m, key in _MODE_LABEL_KEYS.items()}
 
 
 def build_chat_panel(
@@ -24,13 +37,13 @@ def build_chat_panel(
     on_send: Callable[[str], Awaitable[RalphResult | None]],
     on_confirm: Callable[[], Awaitable[None]],
     on_cancel_pending: Callable[[], None],
-) -> None:
+) -> Callable[[], None]:
     """Render the chat log, input box, mode selector, and (when Ralph is
-    holding operations back) an accept/cancel prompt.
-    """
-    mode_select = ui.select(
-        {m.value: m.value for m in RalphMode}, value=state.ralph_mode.value, label="Ralph mode"
-    ).classes("w-full")
+    holding operations back) an accept/cancel prompt. Returns a
+    `refresh_language()` the editor's UI-language toggle calls."""
+    mode_select = ui.select(_mode_options(state.ui_language), value=state.ralph_mode.value).classes(
+        "w-full"
+    )
     mode_select.on_value_change(lambda e: setattr(state, "ralph_mode", RalphMode(e.value)))
 
     log_container = ui.column().classes("w-full gap-1 overflow-y-auto").style("max-height: 50vh")
@@ -53,18 +66,17 @@ def build_chat_panel(
         pending_container.clear()
         if not state.last_pending_confirmation:
             return
+        lang = state.ui_language
         with pending_container:
             ui.label(
-                f"Ralph wants to apply {len(state.last_pending_confirmation)} operation(s) "
-                "that change what the data shows. Confirm to proceed:"
+                t("pending_confirmation", lang, n=len(state.last_pending_confirmation))
             ).classes("text-sm text-orange-700")
             for op in state.last_pending_confirmation:
-                ui.label(f"- {op.operation_type}: {getattr(op, 'reason', '') or 'no reason given'}").classes(
-                    "text-xs text-gray-600"
-                )
+                reason = getattr(op, "reason", "") or t("no_reason_given", lang)
+                ui.label(f"- {op.operation_type}: {reason}").classes("text-xs text-gray-600")
             with ui.row():
-                ui.button("Accept", on_click=lambda: _confirm()).props("color=primary")
-                ui.button("Cancel", on_click=lambda: _cancel()).props("flat")
+                ui.button(t("accept", lang), on_click=lambda: _confirm()).props("color=primary")
+                ui.button(t("cancel", lang), on_click=lambda: _cancel()).props("flat")
 
     async def _confirm() -> None:
         await on_confirm()
@@ -75,17 +87,19 @@ def build_chat_panel(
         on_cancel_pending()
         render_pending.refresh()
 
-    message_input = ui.input(placeholder="Ask Ralph to change something...").classes("w-full")
+    message_input = ui.input(placeholder=t("chat_placeholder", state.ui_language)).classes("w-full")
 
     # A "Ralph is working..." row shown only while a request is in flight, so the
     # gap between sending and the model answering (a local model can take many
     # seconds) reads as progress rather than a frozen panel.
     with ui.row().classes("w-full items-center gap-2") as thinking:
         ui.spinner(size="sm")
-        ui.label("Ralph is working...").classes("text-sm text-gray-500")
+        thinking_label = ui.label(t("ralph_working", state.ui_language)).classes(
+            "text-sm text-gray-500"
+        )
     thinking.visible = False
 
-    send_button = ui.button("Send").props("color=primary")
+    send_button = ui.button(t("send", state.ui_language)).props("color=primary")
 
     async def send() -> None:
         text = message_input.value.strip()
@@ -113,3 +127,14 @@ def build_chat_panel(
 
     render_log()
     render_pending()
+
+    def refresh_language() -> None:
+        lang = state.ui_language
+        mode_select.set_options(_mode_options(lang), value=state.ralph_mode.value)
+        placeholder = t("chat_placeholder", lang)
+        message_input.props(f"placeholder='{placeholder}'")
+        thinking_label.text = t("ralph_working", lang)
+        send_button.text = t("send", lang)
+        render_pending.refresh()
+
+    return refresh_language

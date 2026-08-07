@@ -38,6 +38,7 @@ from sprezzature_figures.studio.export import export_project
 from sprezzature_figures.studio.ralph.apply import apply_operations
 from sprezzature_figures.studio.ralph.engine import RalphEngine, RalphResult
 from sprezzature_figures.studio.state import SessionState
+from sprezzature_figures.studio.ui_strings import UI_LANGUAGE_TOGGLE_LABEL, t
 
 logger = logging.getLogger(__name__)
 
@@ -129,6 +130,9 @@ def build_editor(state: SessionState) -> None:
     refresh_canvas = None
     refresh_history = None
     refresh_properties = None
+    refresh_data_lang = None
+    refresh_engine_lang = None
+    refresh_chat_lang = None
 
     def create_initial_render(plan: FigurePlan) -> None:
         if state.project_dir is None:
@@ -151,7 +155,7 @@ def build_editor(state: SessionState) -> None:
                 language=state.language,
             )
         except Exception as exc:  # noqa: BLE001 - surfaced to the user, not raised
-            ui.notify(f"Render failed: {exc}", type="negative")
+            ui.notify(t("render_failed", state.ui_language, error=exc), type="negative")
             return
         _record_iteration(
             state.project_dir,
@@ -168,11 +172,11 @@ def build_editor(state: SessionState) -> None:
         refresh_canvas()
         refresh_history()
         refresh_properties()
-        ui.notify("Figure created.", type="positive")
+        ui.notify(t("figure_created", state.ui_language), type="positive")
 
     async def handle_send(message: str) -> RalphResult | None:
         if state.plan is None or state.project_dir is None:
-            ui.notify("Create a figure first.", type="warning")
+            ui.notify(t("create_figure_first", state.ui_language), type="warning")
             return None
         plan_before = state.plan
         parent = _parent_iteration_id(state.project_dir)
@@ -260,39 +264,39 @@ def build_editor(state: SessionState) -> None:
 
     def handle_cancel() -> None:
         state.last_pending_confirmation = []
-        state.add_chat("assistant", "Cancelled the pending change(s).")
+        state.add_chat("assistant", t("cancelled_pending", state.ui_language))
 
     def handle_undo() -> None:
         if state.project_dir is None:
             return
         record = undo(state.project_dir)
         if record is None:
-            ui.notify("Nothing to undo.", type="info")
+            ui.notify(t("nothing_to_undo", state.ui_language), type="info")
             return
         state.plan = record.plan_after
         state.render = record.render_result
         refresh_canvas()
         refresh_history()
         refresh_properties()
-        ui.notify("Reverted to the previous version.", type="positive")
+        ui.notify(t("reverted_previous", state.ui_language), type="positive")
 
     def handle_redo() -> None:
         if state.project_dir is None:
             return
         record = redo(state.project_dir)
         if record is None:
-            ui.notify("Nothing to redo.", type="info")
+            ui.notify(t("nothing_to_redo", state.ui_language), type="info")
             return
         state.plan = record.plan_after
         state.render = record.render_result
         refresh_canvas()
         refresh_history()
         refresh_properties()
-        ui.notify("Restored the next version.", type="positive")
+        ui.notify(t("restored_next", state.ui_language), type="positive")
 
     async def handle_export() -> None:
         if state.plan is None or state.render is None or state.project_dir is None:
-            ui.notify("Create a figure first.", type="warning")
+            ui.notify(t("create_figure_first", state.ui_language), type="warning")
             return
         try:
             archive = await run.io_bound(
@@ -306,9 +310,9 @@ def build_editor(state: SessionState) -> None:
                 )
             )
         except Exception as exc:  # noqa: BLE001 - surfaced to the user, not raised
-            ui.notify(f"Export failed: {exc}", type="negative")
+            ui.notify(t("export_failed", state.ui_language, error=exc), type="negative")
             return
-        ui.notify(f"Exported to {archive}", type="positive")
+        ui.notify(t("exported_to", state.ui_language, path=archive), type="positive")
 
     async def handle_style_change(option: str, value: Any) -> None:
         """Apply one style change from the property panel as a SetStyleOption,
@@ -335,7 +339,7 @@ def build_editor(state: SessionState) -> None:
                 language=state.language,
             )
         except Exception as exc:  # noqa: BLE001 - surfaced to the user, not raised
-            ui.notify(f"Render failed: {exc}", type="negative")
+            ui.notify(t("render_failed", state.ui_language, error=exc), type="negative")
             return
         _record_iteration(
             state.project_dir,
@@ -354,11 +358,12 @@ def build_editor(state: SessionState) -> None:
 
     dark = ui.dark_mode(value=False)
     _THEME_KEY = "sprezzature-studio-theme"
+    _LANG_KEY = "sprezzature-studio-language"
 
     def _paint_toggle() -> None:
         theme_toggle.set_text("🌛" if dark.value else "🌞")
         theme_toggle.props(
-            f"aria-label={'Switch to light theme' if dark.value else 'Switch to dark theme'}"
+            f"aria-label='{t('switch_to_light', state.ui_language) if dark.value else t('switch_to_dark', state.ui_language)}'"
         )
 
     def _toggle_dark() -> None:
@@ -367,6 +372,30 @@ def build_editor(state: SessionState) -> None:
         ui.run_javascript(
             f"localStorage.setItem('{_THEME_KEY}', '{'dark' if dark.value else 'light'}')"
         )
+
+    def _paint_language_toggle() -> None:
+        lang_toggle.set_text("🇬🇧" if state.ui_language == "fr" else "🇫🇷")
+        lang_toggle.props(f"aria-label='{UI_LANGUAGE_TOGGLE_LABEL[state.ui_language]}'")
+        title_label.text = "Sprezzature Studio"  # brand name, unchanged either language
+        _paint_toggle()  # theme toggle's own aria-label is language-dependent too
+
+    def _refresh_all_language() -> None:
+        for refresher in (
+            refresh_data_lang,
+            refresh_engine_lang,
+            refresh_properties,
+            refresh_history,
+            refresh_canvas,
+            refresh_chat_lang,
+        ):
+            if refresher is not None:
+                refresher()
+        _paint_language_toggle()
+
+    def _toggle_language() -> None:
+        state.ui_language = "en" if state.ui_language == "fr" else "fr"
+        _refresh_all_language()
+        ui.run_javascript(f"localStorage.setItem('{_LANG_KEY}', '{state.ui_language}')")
 
     async def _restore_theme() -> None:
         # NiceGUI element creation runs server-side before the browser has a
@@ -379,15 +408,26 @@ def build_editor(state: SessionState) -> None:
         if pref == "dark":
             dark.value = True
             _paint_toggle()
+        lang_pref = await ui.run_javascript(f"localStorage.getItem('{_LANG_KEY}')")
+        if lang_pref in ("en", "fr") and lang_pref != state.ui_language:
+            state.ui_language = lang_pref
+            _refresh_all_language()
 
     with (
         ui.row()
         .classes("w-full items-center justify-between px-6 py-4 sz-header")
         .style("position: sticky; top: 0; z-index: 10;")
     ):
-        ui.label("Sprezzature Studio").classes("text-lg font-semibold text-neutral-900")
+        title_label = ui.label("Sprezzature Studio").classes(
+            "text-lg font-semibold text-neutral-900"
+        )
         with ui.row().classes("items-center gap-3"):
-            build_engine_status()
+            refresh_engine_lang = build_engine_status(state)
+            lang_toggle = (
+                ui.button("🇫🇷", on_click=_toggle_language)
+                .props(f"flat round dense aria-label='{UI_LANGUAGE_TOGGLE_LABEL['en']}'")
+                .classes("text-lg")
+            )
             theme_toggle = (
                 ui.button("🌞", on_click=_toggle_dark)
                 .props("flat round dense aria-label='Switch to dark theme'")
@@ -410,7 +450,7 @@ def build_editor(state: SessionState) -> None:
             ui.column().classes("h-full overflow-y-auto gap-4").style("flex: 1 1 0%; min-width: 0;")
         ):
             with ui.column().classes("w-full gap-3 sz-card"):
-                build_data_panel(state, on_ready=create_initial_render)
+                refresh_data_lang = build_data_panel(state, on_ready=create_initial_render)
             with ui.column().classes("w-full gap-3 sz-card"):
                 refresh_properties = build_property_panel(state, on_change=handle_style_change)
 
@@ -433,7 +473,7 @@ def build_editor(state: SessionState) -> None:
             .classes("w-full gap-3 sz-card")
             .style("height: 100%; box-sizing: border-box;"),
         ):
-            build_chat_panel(
+            refresh_chat_lang = build_chat_panel(
                 state,
                 on_send=handle_send,
                 on_confirm=handle_confirm,

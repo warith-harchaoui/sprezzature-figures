@@ -17,11 +17,36 @@ from nicegui import ui
 
 from sprezzature_figures.core.figure_plan import StyleOptions
 from sprezzature_figures.studio.state import SessionState
+from sprezzature_figures.studio.ui_strings import t
 
 # Preset font scales, labelled, so the control is a clean discrete choice
-# rather than a free number that re-renders on every keystroke.
-_FONT_SCALES = {0.8: "Small", 1.0: "Normal", 1.2: "Large", 1.4: "Larger", 1.6: "Huge"}
-_LEGEND_POSITIONS = ["top", "bottom", "left", "right", "none"]
+# rather than a free number that re-renders on every keystroke. Keys are
+# translation lookups (ui_strings.py), resolved to display text per language
+# in `_font_scale_options`/`_legend_options` below -- the dict *keys* fed to
+# `ui.select` (0.8, "top", ...) are what StyleOptions actually stores and
+# never change with the UI language, only the displayed label does.
+_FONT_SCALES = {
+    0.8: "font_scale_small",
+    1.0: "font_scale_normal",
+    1.2: "font_scale_large",
+    1.4: "font_scale_larger",
+    1.6: "font_scale_huge",
+}
+_LEGEND_POSITIONS = {
+    "top": "legend_top",
+    "bottom": "legend_bottom",
+    "left": "legend_left",
+    "right": "legend_right",
+    "none": "legend_none",
+}
+
+
+def _font_scale_options(lang: str) -> dict[float, str]:
+    return {scale: t(key, lang) for scale, key in _FONT_SCALES.items()}
+
+
+def _legend_options(lang: str) -> dict[str, str]:
+    return {value: t(key, lang) for value, key in _LEGEND_POSITIONS.items()}
 
 
 def build_property_panel(
@@ -30,7 +55,8 @@ def build_property_panel(
     on_change: Callable[[str, Any], Any],
 ) -> Callable[[], None]:
     """Render the style controls; returns a `refresh()` the editor calls after
-    any plan change so the controls mirror the current `StyleOptions`.
+    any plan change, and after a UI-language toggle, so the controls mirror
+    the current `StyleOptions` and are labelled in the current language.
 
     `on_change(option, value)` is invoked only for genuine user edits;
     programmatic updates during `refresh()` are suppressed so setting a control
@@ -47,22 +73,33 @@ def build_property_panel(
         return handler
 
     with ui.column().classes("w-full gap-2"):
-        ui.label("Style").classes("text-sm font-semibold text-neutral-700")
-        font = ui.select(_FONT_SCALES, label="Text size", on_change=emit("font_scale")).classes("w-full")
-        legend = ui.select(
-            _LEGEND_POSITIONS, label="Legend", on_change=emit("legend_position")
+        heading = ui.label(t("style_heading", state.ui_language)).classes(
+            "text-sm font-semibold text-neutral-700"
+        )
+        font = ui.select(
+            _font_scale_options(state.ui_language), on_change=emit("font_scale")
         ).classes("w-full")
-        grid = ui.switch("Grid", on_change=emit("show_grid"))
-        labels = ui.switch("Value labels", on_change=emit("show_labels"))
+        legend = ui.select(
+            _legend_options(state.ui_language), on_change=emit("legend_position")
+        ).classes("w-full")
+        grid = ui.switch(on_change=emit("show_grid"))
+        labels = ui.switch(on_change=emit("show_labels"))
 
     def refresh() -> None:
+        lang = state.ui_language
         has_figure = state.plan is not None
         style = state.plan.style if has_figure else StyleOptions()
         suppress["active"] = True
         try:
+            heading.text = t("style_heading", lang)
+            font.props(f"label='{t('text_size_label', lang)}'")
+            legend.props(f"label='{t('legend_label', lang)}'")
+            grid.set_text(t("grid_label", lang))
+            labels.set_text(t("value_labels_label", lang))
             # Snap the font scale to the nearest preset so the select has a value.
-            font.value = min(_FONT_SCALES, key=lambda s: abs(s - style.font_scale))
-            legend.value = style.legend_position
+            font_value = min(_FONT_SCALES, key=lambda s: abs(s - style.font_scale))
+            font.set_options(_font_scale_options(lang), value=font_value)
+            legend.set_options(_legend_options(lang), value=style.legend_position)
             grid.value = style.show_grid
             labels.value = style.show_labels
             # Grey the controls out until there is a figure to restyle: editing

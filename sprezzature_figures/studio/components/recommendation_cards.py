@@ -19,6 +19,7 @@ from nicegui import ui
 from sprezzature_figures.core.figure_plan import ColumnBinding, FigurePlan
 from sprezzature_figures.studio.recommendation import assign_columns, infer_goal, rank
 from sprezzature_figures.studio.state import SessionState
+from sprezzature_figures.studio.ui_strings import t
 
 
 def build_recommendation_cards(
@@ -46,7 +47,7 @@ def build_recommendation_cards(
         )
         on_select(plan)
 
-    ui.label("Recommended").classes("text-sm font-semibold text-neutral-700")
+    ui.label(t("recommended", state.ui_language)).classes("text-sm font-semibold text-neutral-700")
     for definition, _score in ranked:
         bindings = assign_columns(definition, state.dataset_profile)
         if bindings is None:  # scored but not fillable (shouldn't happen post-rank)
@@ -54,13 +55,20 @@ def build_recommendation_cards(
         # Show each binding as its human role label ("Category"), not the
         # generator's internal role name ("region"), so the line reads as data
         # mapping rather than as an implementation detail.
-        role_labels = {r.name: r.label for r in (*definition.required_roles, *definition.optional_roles)}
+        role_labels = {
+            r.name: r.label for r in (*definition.required_roles, *definition.optional_roles)
+        }
         with ui.column().classes("w-full gap-1 rounded-lg border p-3"):
             ui.label(definition.label).classes("text-sm font-medium text-neutral-900")
             if definition.description:
                 ui.label(definition.description).classes("text-xs text-gray-500")
-            using = ", ".join(f"{role_labels.get(role, role)} → {col}" for role, col in bindings.items())
-            ui.label(f"Uses {using}").classes("text-xs text-gray-500")
+            using = ", ".join(
+                f"{role_labels.get(role, role)} → {col}" for role, col in bindings.items()
+            )
+            ui.label(t("uses_bindings", state.ui_language, bindings=using)).classes(
+                "text-xs text-gray-500"
+            )
             ui.button(
-                "Use", on_click=lambda k=definition.kind, b=bindings: use(k, b)
+                t("use", state.ui_language),
+                on_click=lambda k=definition.kind, b=bindings: use(k, b),
             ).props("flat dense color=primary")
