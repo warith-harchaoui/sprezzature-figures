@@ -112,7 +112,11 @@ def build_svg(
     """
     _ = accessibility
     rows = data if data else DEMO_DATA
-    features = [f for f in FEATURES if any(r["a"] == f for r in rows)] or sorted({r["a"] for r in rows})
+    seen_features: List[str] = []
+    for r in rows:
+        if r["a"] not in seen_features:
+            seen_features.append(r["a"])
+    features = [f for f in FEATURES if f in seen_features] + [f for f in seen_features if f not in FEATURES]
     lookup: Dict[Tuple[str, str], float] = {(r["a"], r["b"]): float(r["r"]) for r in rows}
 
     plot_x, plot_y = 100.0, 118.0

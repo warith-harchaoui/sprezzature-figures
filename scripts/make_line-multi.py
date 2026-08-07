@@ -49,10 +49,11 @@ DEMO_DATA: List[Dict[str, Any]] = [
 ]
 
 
-def _series_colors(accessibility: str = "universal") -> Dict[str, str]:
+def _series_colors(series: List[str], accessibility: str = "universal") -> Dict[str, str]:
     palette = load_palette(accessibility)
-    hues = [palette.get("Blue", "#007AFF"), palette.get("Orange", "#FF9500")]
-    return {s: hues[i % len(hues)] for i, s in enumerate(PLATFORMS)}
+    hues = [palette.get("Blue", "#007AFF"), palette.get("Orange", "#FF9500"),
+            palette.get("Green", "#34C759"), palette.get("Purple", "#AF52DE")]
+    return {s: hues[i % len(hues)] for i, s in enumerate(series)}
 
 
 def build_svg(
@@ -85,8 +86,12 @@ def build_svg(
         A complete, standalone SVG document.
     """
     rows = data if data else DEMO_DATA
-    series = [s for s in PLATFORMS if any(r["platform"] == s for r in rows)] or sorted({r["platform"] for r in rows})
-    colors = _series_colors(accessibility)
+    seen_platforms: List[str] = []
+    for r in rows:
+        if r["platform"] not in seen_platforms:
+            seen_platforms.append(r["platform"])
+    series = [s for s in PLATFORMS if s in seen_platforms] + [s for s in seen_platforms if s not in PLATFORMS]
+    colors = _series_colors(series, accessibility)
 
     lookup: Dict[tuple, float] = {(r["platform"], float(r["hour"])): float(r["sessions"]) for r in rows}
     hours = sorted({float(r["hour"]) for r in rows})

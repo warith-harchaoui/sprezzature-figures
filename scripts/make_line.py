@@ -49,11 +49,11 @@ DEMO_DATA: List[Dict[str, Any]] = [
 ]
 
 
-def _series_colors(accessibility: str = "universal") -> Dict[str, str]:
+def _series_colors(series: List[str], accessibility: str = "universal") -> Dict[str, str]:
     palette = load_palette(accessibility)
     hues = [palette.get("Blue", "#007AFF"), palette.get("Orange", "#FF9500"),
-            palette.get("Green", "#34C759")]
-    return {s: hues[i % len(hues)] for i, s in enumerate(SERIES)}
+            palette.get("Green", "#34C759"), palette.get("Purple", "#AF52DE")]
+    return {s: hues[i % len(hues)] for i, s in enumerate(series)}
 
 
 def build_svg(
@@ -86,9 +86,13 @@ def build_svg(
         A complete, standalone SVG document.
     """
     rows = data if data else DEMO_DATA
-    series = [s for s in SERIES if any(r["series"] == s for r in rows)] or SERIES
+    seen_series: List[str] = []
+    for r in rows:
+        if r["series"] not in seen_series:
+            seen_series.append(r["series"])
+    series = [s for s in SERIES if s in seen_series] + [s for s in seen_series if s not in SERIES]
     months = sorted({r["month"] for r in rows}, key=lambda m: MONTHS.index(m) if m in MONTHS else 0)
-    colors = _series_colors(accessibility)
+    colors = _series_colors(series, accessibility)
 
     lookup: Dict[tuple, float] = {(r["series"], r["month"]): float(r["value"]) for r in rows}
     all_vals = list(lookup.values())

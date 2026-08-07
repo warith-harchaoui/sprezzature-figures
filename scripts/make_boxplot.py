@@ -108,9 +108,11 @@ def build_svg(
     """
     _ = accessibility
     rows = data if data else DEMO_DATA
-    depts = [d for d in DEPARTMENTS if any(r["department"] == d for r in rows)]
-    if not depts:
-        depts = sorted({r["department"] for r in rows})
+    seen_depts: List[str] = []
+    for r in rows:
+        if r["department"] not in seen_depts:
+            seen_depts.append(r["department"])
+    depts = [d for d in DEPARTMENTS if d in seen_depts] + [d for d in seen_depts if d not in DEPARTMENTS]
     by_dept: Dict[str, List[float]] = {d: [] for d in depts}
     for r in rows:
         if r["department"] in by_dept:

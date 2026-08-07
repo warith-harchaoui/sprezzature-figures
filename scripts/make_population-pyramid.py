@@ -87,7 +87,11 @@ def build_svg(
         A complete, standalone SVG document.
     """
     rows = data if data else DEMO_DATA
-    ages = [a for a in AGE_BANDS if any(r["age"] == a for r in rows)] or sorted({r["age"] for r in rows})
+    seen_ages: List[str] = []
+    for r in rows:
+        if r["age"] not in seen_ages:
+            seen_ages.append(r["age"])
+    ages = [a for a in AGE_BANDS if a in seen_ages] + [a for a in seen_ages if a not in AGE_BANDS]
     colors = _sex_colors(accessibility)
     lookup: Dict[tuple, float] = {(r["age"], r["sex"]): float(r["pct"]) for r in rows}
     max_abs = max(abs(v) for v in lookup.values()) if lookup else 1.0

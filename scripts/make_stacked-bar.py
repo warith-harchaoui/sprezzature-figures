@@ -50,11 +50,11 @@ DEMO_DATA: List[Dict[str, Any]] = [
 ]
 
 
-def _type_colors(accessibility: str = "universal") -> Dict[str, str]:
+def _type_colors(types: List[str], accessibility: str = "universal") -> Dict[str, str]:
     palette = load_palette(accessibility)
     hues = [palette.get("Blue", "#007AFF"), palette.get("Green", "#34C759"),
-            palette.get("Orange", "#FF9500")]
-    return {t: hues[i % len(hues)] for i, t in enumerate(TYPES)}
+            palette.get("Orange", "#FF9500"), palette.get("Purple", "#AF52DE")]
+    return {t: hues[i % len(hues)] for i, t in enumerate(types)}
 
 
 def build_svg(
@@ -88,9 +88,17 @@ def build_svg(
         A complete, standalone SVG document.
     """
     rows = data if data else DEMO_DATA
-    quarters = [q for q in QUARTERS if any(r["quarter"] == q for r in rows)] or sorted({r["quarter"] for r in rows})
-    types = [t for t in TYPES if any(r["type"] == t for r in rows)] or sorted({r["type"] for r in rows})
-    colors = _type_colors(accessibility)
+    seen_quarters: List[str] = []
+    for r in rows:
+        if r["quarter"] not in seen_quarters:
+            seen_quarters.append(r["quarter"])
+    quarters = [q for q in QUARTERS if q in seen_quarters] + [q for q in seen_quarters if q not in QUARTERS]
+    seen_types: List[str] = []
+    for r in rows:
+        if r["type"] not in seen_types:
+            seen_types.append(r["type"])
+    types = [t for t in TYPES if t in seen_types] + [t for t in seen_types if t not in TYPES]
+    colors = _type_colors(types, accessibility)
     lookup: Dict[tuple, float] = {(r["quarter"], r["type"]): float(r["share"]) for r in rows}
 
     plot_x, plot_y = 60.0, 150.0

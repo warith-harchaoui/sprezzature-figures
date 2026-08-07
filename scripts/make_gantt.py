@@ -47,12 +47,12 @@ DEMO_DATA: List[Dict[str, Any]] = [
 ]
 
 
-def _team_colors(accessibility: str = "universal") -> Dict[str, str]:
+def _team_colors(teams: List[str], accessibility: str = "universal") -> Dict[str, str]:
     palette = load_palette(accessibility)
     hues = [palette.get("Blue", "#007AFF"), palette.get("Purple", "#AF52DE"),
             palette.get("Orange", "#FF9500"), palette.get("Green", "#34C759"),
             palette.get("Red", "#FF3B30")]
-    return {t: hues[i % len(hues)] for i, t in enumerate(TEAMS)}
+    return {t: hues[i % len(hues)] for i, t in enumerate(teams)}
 
 
 def build_svg(
@@ -85,8 +85,12 @@ def build_svg(
         A complete, standalone SVG document.
     """
     rows = data if data else DEMO_DATA
-    teams = [t for t in TEAMS if any(r["team"] == t for r in rows)] or sorted({r["team"] for r in rows})
-    colors = _team_colors(accessibility)
+    seen_teams: List[str] = []
+    for r in rows:
+        if r["team"] not in seen_teams:
+            seen_teams.append(r["team"])
+    teams = [t for t in TEAMS if t in seen_teams] + [t for t in seen_teams if t not in TEAMS]
+    colors = _team_colors(teams, accessibility)
     max_end = max(float(r["end"]) for r in rows) if rows else 1.0
 
     plot_x, plot_y = 130.0, 150.0

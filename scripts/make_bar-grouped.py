@@ -51,11 +51,11 @@ DEMO_DATA: List[Dict[str, Any]] = [
 ]
 
 
-def _region_colors(accessibility: str = "universal") -> Dict[str, str]:
+def _region_colors(regions: List[str], accessibility: str = "universal") -> Dict[str, str]:
     palette = load_palette(accessibility)
     hues = [palette.get("Blue", "#007AFF"), palette.get("Orange", "#FF9500"),
             palette.get("Green", "#34C759"), palette.get("Purple", "#AF52DE")]
-    return {r: hues[i % len(hues)] for i, r in enumerate(REGIONS)}
+    return {r: hues[i % len(hues)] for i, r in enumerate(regions)}
 
 
 def build_svg(
@@ -88,9 +88,21 @@ def build_svg(
         A complete, standalone SVG document.
     """
     rows = data if data else DEMO_DATA
-    periods = [p for p in PERIODS if any(r["period"] == p for r in rows)] or sorted({r["period"] for r in rows})
-    regions = [r for r in REGIONS if any(row["region"] == r for row in rows)] or sorted({r["region"] for r in rows})
-    colors = _region_colors(accessibility)
+    seen_periods: List[str] = []
+    for row in rows:
+        if row["period"] not in seen_periods:
+            seen_periods.append(row["period"])
+    periods = [p for p in PERIODS if p in seen_periods] + [p for p in seen_periods if p not in PERIODS]
+    # "region" may carry values outside the built-in demo set (REGIONS is only
+    # the canonical ordering/colour preference, not an allowlist) -- keep the
+    # canonical ones first for stable colours, then append whatever else the
+    # data actually has, so no region silently disappears from the chart.
+    seen_regions: List[str] = []
+    for row in rows:
+        if row["region"] not in seen_regions:
+            seen_regions.append(row["region"])
+    regions = [r for r in REGIONS if r in seen_regions] + [r for r in seen_regions if r not in REGIONS]
+    colors = _region_colors(regions, accessibility)
     lookup: Dict[tuple, float] = {(r["period"], r["region"]): float(r["v"]) for r in rows}
     max_val = max(lookup.values()) if lookup else 1.0
 
