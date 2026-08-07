@@ -362,7 +362,7 @@ def build_svg(
         # (and any raster export, which never runs the transition) settles
         # to the same finished row this whisker/box/cap markup already drew.
         parts.append(
-            f'<g class="row" data-anim tabindex="0" role="img" aria-label="{tip}" '
+            f'<g class="row" data-anim="1" tabindex="0" role="img" aria-label="{tip}" '
             f'style="opacity:0;animation:fp-in .5s ease forwards;'
             f'animation-delay:{i * 70}ms">'
         )
@@ -436,7 +436,7 @@ def build_svg(
         f'(95% CI {lo_p:.2f}–{hi_p:.2f}), {pooled_het}'
     )
     parts.append(
-        f'<g class="row" data-anim tabindex="0" role="img" aria-label="{pooled_tip}" '
+        f'<g class="row" data-anim="1" tabindex="0" role="img" aria-label="{pooled_tip}" '
         f'style="opacity:0;animation:fp-in .5s ease forwards;'
         f'animation-delay:{n_rows * 70}ms">'
     )
