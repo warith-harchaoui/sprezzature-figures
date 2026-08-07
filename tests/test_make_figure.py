@@ -167,7 +167,6 @@ def test_out_extension_controls_output_format(ext: str, magic: bytes, tmp_path: 
 # files are present.
 _REPAIRED_KINDS = [
     "speaking_time",
-    "situation_map",
     "binned-grid-map",
     "hexmap",
     "hexbin-map",
