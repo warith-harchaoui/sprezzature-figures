@@ -540,9 +540,16 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     ]
     for name, _ in legend:
         s = _slug(name)
+        # `svg:hover .rg` above carries a type selector (svg) as well as a
+        # class and a pseudo-class -- specificity (0,2,1). The un-dim rule
+        # needs to beat that, not just match it: `.rg-XXX:hover` alone is
+        # (0,2,0) and silently loses (CSS breaks specificity ties by source
+        # order only when specificity is *equal*), so hovering a region
+        # region dimmed it right along with every other one, no highlight
+        # ever visible. Prefixing the same `svg:hover`/`svg:focus-within`
+        # context raises this rule to (0,3,1), which wins outright.
         style_rows.append(
-            f".rg-{s}:hover, .rg-{s}:focus, "
-            f".rg-{s}:hover .rg-{s}, .rg-{s}:focus .rg-{s} {{ opacity: 1; }}"
+            f"svg:hover .rg-{s}:hover, svg:focus-within .rg-{s}:focus {{ opacity: 1; }}"
         )
     style_rows.extend([
         ".legend-row { cursor: pointer; }",
@@ -687,7 +694,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     parts.append(
         f'<text x="{_MAP_X}" y="{_HEIGHT - 20}" font-size="14" '
         f'fill="{_SUBTLE}">Dots randomly placed within each department, '
-        f'not at real addresses'
+        f'not at real addresses · '
         f'equal-area projection</text>'
     )
 
