@@ -31,6 +31,7 @@ from typing import Any
 
 from sprezzature_figures.core.dataset import DatasetProfile
 from sprezzature_figures.core.figure_plan import FigurePlan
+from sprezzature_figures.core.projects import _slugify
 from sprezzature_figures.core.rendering import RenderResult
 from sprezzature_figures.core.transformations import apply_transformations
 
@@ -81,7 +82,12 @@ def export_project(
     location). Returns the path to the written .sprezzature.zip file.
     """
     exports_dir.mkdir(parents=True, exist_ok=True)
-    safe_name = "".join(ch if ch.isalnum() or ch in "-_" else "-" for ch in project_name).strip("-") or "project"
+    # Same slugifier the project directory itself was named with (core.projects
+    # .create_project) -- previously a separate, looser sanitizer here (kept
+    # underscores, didn't lowercase) so the archive's own name could read
+    # differently from the project directory it lives inside, e.g.
+    # "demo_test-csv.sprezzature.zip" next to ".../demo-test-csv-f4bca939/".
+    safe_name = _slugify(project_name)
 
     with tempfile.TemporaryDirectory(prefix="sprezzature-export-") as tmp:
         root = Path(tmp) / safe_name
