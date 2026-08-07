@@ -102,9 +102,12 @@ def infer_goal(profile: DatasetProfile) -> str | None:
     Conservative on purpose: it only names a goal when the column mix points
     clearly at one, so a wrong guess never buries a well-fitting figure. A
     datetime plus a measure reads as a *trend*; two-plus measures with no
-    category as a *relationship*; a category plus a measure as a *comparison*
-    (the plain bar-chart case). Anything else returns None, so scoring falls
-    back to the readability-only order.
+    category as a *relationship*; two categorical-ish columns where one repeats
+    (a group) and the other doesn't (one row per leaf) plus a measure as a
+    *hierarchy* (parent/name/value-shaped data -- see below); any other
+    category-plus-measure mix as a *comparison* (the plain bar-chart case).
+    Anything else returns None, so scoring falls back to the readability-only
+    order.
     """
     types = [col.semantic_type for col in profile.columns]
     numeric_count = sum(1 for t in types if t in _NUMERIC_TYPES)
@@ -114,6 +117,19 @@ def infer_goal(profile: DatasetProfile) -> str | None:
         return "trend"
     if numeric_count >= 2 and not has_categorical:
         return "relationship"
+    # A "region"+"quarter"+"revenue" comparison and a "parent"+"name"+"value"
+    # hierarchy both look like two categorical-ish columns plus a measure to
+    # the checks above; what tells them apart is cardinality shape, not type.
+    # In a hierarchy, the leaf column (name) has one distinct value per row
+    # while the group column (parent) repeats; in a flat two-way comparison
+    # (region x quarter), both columns repeat. Only fire on that specific
+    # branch/leaf pairing so an ordinary two-category comparison isn't pulled
+    # toward treemap/sunburst.
+    categorical_cols = [col for col in profile.columns if col.semantic_type in _CATEGORICAL_TYPES]
+    if len(categorical_cols) == 2 and numeric_count >= 1 and profile.row_count > 0:
+        uniques = {col.unique_count >= profile.row_count for col in categorical_cols}
+        if uniques == {True, False}:
+            return "hierarchy"
     if has_categorical and numeric_count >= 1:
         return "comparison"
     return None

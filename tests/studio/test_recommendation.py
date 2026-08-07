@@ -55,6 +55,18 @@ def test_bar_is_compatible_with_a_category_and_a_measure() -> None:
     assert "bar" in {d.kind for d in compatible_definitions(profile)}
 
 
+def test_data_blind_hero_generators_are_never_recommended() -> None:
+    # arcdiagram/chord/binned-grid-map/circle-packing accept a `data` kwarg
+    # for dispatcher parity but never thread it into the render (each
+    # module's own docstring says so) -- their role signature alone would
+    # otherwise pass the hard-constraint filter and produce a one-click
+    # "Use" card that silently ignores the dataset it claims to bind.
+    hierarchy = _profile([_cat("parent", unique=3), _cat("name", unique=8), _num("value")], rows=8)
+    kinds = {d.kind for d in compatible_definitions(hierarchy)}
+    assert "circle-packing" not in kinds
+    assert "treemap" in kinds  # a real hierarchy figure stays recommendable
+
+
 def test_column_fits_role_maps_fine_types_onto_coarse_role_types() -> None:
     # A percentage/currency column fills a numeric role; a boolean fills a
     # categorical one.
@@ -149,6 +161,20 @@ def test_infer_goal_reads_the_analytical_goal_off_the_column_shape() -> None:
     assert infer_goal(_profile([_num("hp"), _num("mpg")])) == "relationship"
     # Nothing to measure: no clear goal, so scoring stays readability-only.
     assert infer_goal(_profile([_cat("a"), _cat("b")])) is None
+
+
+def test_infer_goal_tells_hierarchy_from_a_flat_two_way_comparison() -> None:
+    # parent/name/value-shaped data (effectifs.csv): "parent" repeats (a
+    # group, 3 unique values over 8 rows) while "name" is unique per row (a
+    # leaf) -- that branch/leaf cardinality split is the hierarchy signature.
+    hierarchy = _profile([_cat("parent", unique=3), _cat("name", unique=8), _num("value")], rows=8)
+    assert infer_goal(hierarchy) == "hierarchy"
+
+    # region/quarter/revenue (ventes-trimestrielles.csv): both categorical
+    # columns repeat (4 and 2 unique values over 8 rows), so this must stay a
+    # plain comparison, not get pulled toward treemap/sunburst.
+    two_way = _profile([_cat("region", unique=4), _cat("quarter", unique=2), _num("revenue")], rows=8)
+    assert infer_goal(two_way) == "comparison"
 
 
 def test_inferred_goal_floats_the_shape_appropriate_figure_to_the_top() -> None:
