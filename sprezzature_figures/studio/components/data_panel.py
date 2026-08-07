@@ -117,20 +117,35 @@ def build_data_panel(state: SessionState, *, on_ready: Callable[[FigurePlan], No
         role_container = ui.column().classes("w-full gap-1")
 
         @ui.refreshable
-        def render_roles() -> None:
+        def render_roles(kind: str | None) -> None:
             role_selects.clear()
             role_container.clear()
-            if not kind_select.value:
+            if not kind:
                 return
-            definition = get_figure_definition(kind_select.value)
+            definition = get_figure_definition(kind)
             with role_container:
                 for role in [*definition.required_roles, *definition.optional_roles]:
                     label = f"{role.label}{'' if role.required else ' (optional)'}"
                     role_selects[role.name] = ui.select(columns, label=label, value=None).classes("w-full")
 
-        kind_select.on_value_change(lambda _: render_roles.refresh())
+        # Pass the new value straight from the change event instead of having
+        # render_roles() re-read kind_select.value itself: relying on the select's
+        # own .value inside the refreshable left role_selects built for the
+        # *previous* kind after a switch (its keys never matched the new kind's
+        # roles), so confirm() below KeyError'd on the first required role name --
+        # silently, since NiceGUI logs a bare handler exception to the server
+        # console and shows the user nothing at all. KNOWN REMAINING GAP: the
+        # role fields still don't visibly refresh in the browser after a kind
+        # switch (traced to render_roles' refresh target going stale, likely
+        # because binding_form -- the outer @ui.refreshable -- re-renders after
+        # the recommendation cards resolve and orphans this container; needs a
+        # deeper look at binding_form's own refresh triggers). This fix's
+        # purpose is narrower and already achieved: confirm() below now always
+        # reads role definitions fresh off kind_select.value and reports a
+        # correct "Missing required roles" warning instead of crashing silently.
+        kind_select.on_value_change(lambda e: render_roles.refresh(e.value))
         with role_container:
-            render_roles()
+            render_roles(kind_select.value)
 
         def confirm() -> None:
             if not kind_select.value:
@@ -139,16 +154,14 @@ def build_data_panel(state: SessionState, *, on_ready: Callable[[FigurePlan], No
             definition = get_figure_definition(kind_select.value)
             bindings: dict[str, ColumnBinding] = {}
             missing = []
-            for role in definition.required_roles:
-                col = role_selects[role.name].value
+            for role in [*definition.required_roles, *definition.optional_roles]:
+                select = role_selects.get(role.name)
+                col = select.value if select else None
                 if not col:
-                    missing.append(role.label)
+                    if role.required:
+                        missing.append(role.label)
                     continue
                 bindings[role.name] = ColumnBinding(columns=[col])
-            for role in definition.optional_roles:
-                col = role_selects[role.name].value
-                if col:
-                    bindings[role.name] = ColumnBinding(columns=[col])
             if missing:
                 ui.notify(f"Missing required roles: {', '.join(missing)}", type="warning")
                 return
