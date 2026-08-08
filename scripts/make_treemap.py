@@ -32,6 +32,7 @@ from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _style import qualitative_sequence  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
+from _textfit import fit_font_size, text_width, wrap_to_width  # noqa: E402
 
 INK = "#1D1D1F"
 SECONDARY = "#6E6E73"
@@ -186,6 +187,7 @@ def build_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     language: str = "en",
+    value_unit: str | None = None,
 ) -> str:
     """Assemble the full treemap SVG document as a string.
 
@@ -210,6 +212,15 @@ def build_svg(
         Only the title/subtitle default and accessible desc switch;
         ``parent``/``name`` labels and values always render as given in
         `data`. Defaults to ``"en"``.
+    value_unit : str or None, optional
+        Word appended after each leaf's value, in the tooltip and the
+        on-canvas number (e.g. ``"EUR"``, ``"détections"``). ``None`` (the
+        default) falls back to ``"k EUR"`` when `data` is left at
+        :data:`DEMO_DATA` (the illustrative IT-spend story, whose values are
+        already expressed in thousands of euros) and to no unit at all
+        otherwise — a caller passing raw counts (e.g. "4" occurrences) must
+        not have a fabricated "k" (thousands) suffix silently attached, which
+        previously turned a plain count of 4 into a misleading "4k".
 
     Returns
     -------
@@ -220,6 +231,9 @@ def build_svg(
     strings = _strings(language)
     title = strings["title"] if title is None else title
     subtitle = strings["subtitle"] if subtitle is None else subtitle
+    is_demo_data = not data
+    if value_unit is None:
+        value_unit = "k EUR" if is_demo_data else ""
     rows = data if data else DEMO_DATA
     grouped: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
     for row in rows:
@@ -285,23 +299,57 @@ def build_svg(
         leaf_sizes = _normalize(leaf_vals, leaf_area)
         leaf_rects = _squarify(leaf_sizes, crect["x"], crect["y"], crect["dx"], crect["dy"])
         for row, r in zip(leaves, leaf_rects):
-            tip = f"{cat} / {row['name']}: {float(row['value']):,.0f}k EUR"
+            val_txt = f"{float(row['value']):,.0f}"
+            unit_suffix = f" {value_unit}" if value_unit else ""
+            tip = f"{cat} / {row['name']}: {val_txt}{unit_suffix}"
             parts.append(
                 f'<rect class="leaf" tabindex="0" x="{r["x"]:.1f}" y="{r["y"]:.1f}" '
                 f'width="{max(0.0, r["dx"]):.1f}" height="{max(0.0, r["dy"]):.1f}" '
                 f'fill="{color}" fill-opacity="0.82" stroke="{BG}" stroke-width="2">'
                 f'<title>{xml_escape(tip)}</title></rect>'
             )
-            if r["dx"] > 60 and r["dy"] > 34:
-                cxm, cym = r["x"] + r["dx"] / 2, r["y"] + r["dy"] / 2
-                parts.append(
-                    f'<text x="{cxm:.1f}" y="{cym - 4:.1f}" font-size="11" fill="{BG}" '
-                    f'text-anchor="middle">{xml_escape(row["name"])}</text>'
-                )
-                parts.append(
-                    f'<text x="{cxm:.1f}" y="{cym + 11:.1f}" font-size="10" fill="{BG}" '
-                    f'fill-opacity="0.85" text-anchor="middle">{float(row["value"]):,.0f}k</text>'
-                )
+            # Fit the label to the leaf's actual pixel box instead of assuming a
+            # fixed threshold fits any string: a long name (French routinely runs
+            # 20-40% longer than English) previously overran its rectangle and
+            # bled into the neighbouring leaf's label. Shrink the font, wrap to
+            # the box width, then drop lines that still don't fit the box height
+            # — and skip the label entirely once the box is too small for even
+            # one line, rather than emit unreadable overlapping text.
+            pad = 6.0
+            avail_w = r["dx"] - 2 * pad
+            avail_h = r["dy"] - 2 * pad
+            name_size = fit_font_size(row["name"], avail_w, 11.0, min_px=8.0)
+            lines = wrap_to_width(row["name"], avail_w, name_size) if avail_w >= 20 else []
+            line_h = name_size * 1.2
+            value_h = 10.0 * 1.2
+            max_lines = max(1, int((avail_h - value_h) // line_h)) if avail_h > value_h else 0
+            show_value = max_lines >= 1 and avail_h >= value_h
+            if not show_value:
+                max_lines = max(0, int(avail_h // line_h))
+            if len(lines) > max_lines:
+                lines = lines[:max_lines]
+                if lines:
+                    last = lines[-1]
+                    while last and text_width(f"{last}…", name_size) > avail_w:
+                        last = last[:-1]
+                    lines[-1] = f"{last}…" if last else "…"
+            if lines:
+                cxm = r["x"] + r["dx"] / 2
+                n = len(lines)
+                block_h = n * line_h + (value_h if show_value else 0.0)
+                top = r["y"] + r["dy"] / 2 - block_h / 2 + name_size * 0.85
+                for i, ln in enumerate(lines):
+                    parts.append(
+                        f'<text x="{cxm:.1f}" y="{top + i * line_h:.1f}" '
+                        f'font-size="{name_size:.1f}" fill="{BG}" '
+                        f'text-anchor="middle">{xml_escape(ln)}</text>'
+                    )
+                if show_value:
+                    parts.append(
+                        f'<text x="{cxm:.1f}" y="{top + n * line_h + 9:.1f}" font-size="10" '
+                        f'fill="{BG}" fill-opacity="0.85" text-anchor="middle">'
+                        f'{xml_escape(val_txt)}{xml_escape(unit_suffix)}</text>'
+                    )
 
     parts.append(fullscreen_control(width, height, mode))
     parts.append("</svg>")
@@ -319,6 +367,7 @@ def make_treemap(
     mode: str = "self-contained",
     accessibility: str = "universal",
     language: str = "en",
+    value_unit: str | None = None,
 ) -> Path:
     """Render a hand-authored treemap and write the SVG to *out*.
 
@@ -352,7 +401,8 @@ def make_treemap(
     True
     """
     svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
-                     mode=mode, accessibility=accessibility, language=language)
+                     mode=mode, accessibility=accessibility, language=language,
+                     value_unit=value_unit)
     dest = Path(out) if out else svg_example_path(__file__, "treemap")
     return write_svg(dest, svg)
 

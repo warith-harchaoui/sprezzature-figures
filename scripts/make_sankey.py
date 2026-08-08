@@ -486,12 +486,6 @@ def build_svg(
         )
     parts.append("</g>")
 
-    # --- footnote: read the hover affordance ---
-    parts.append(
-        f'<text x="{MARGIN_LEFT}" y="{HEIGHT - 20}" font-size="15" '
-        f'fill="{SUBINK}">Ribbon width ∝ {volume_unit} · hover or focus a '
-        f'flow to trace it</text>'
-    )
 
     parts.append(fullscreen_control(WIDTH, HEIGHT, mode))
     parts.append("</svg>")

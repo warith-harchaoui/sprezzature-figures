@@ -49,13 +49,17 @@ from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _svg import svg_open  # noqa: E402
+from _textfit import text_width  # noqa: E402
 
 # ------------------------------------------------------------------
 # Canvas + house-style tokens
 # ------------------------------------------------------------------
 WIDTH = 1200
 HEIGHT = 980
-PLOT_TOP = 168             # y where the graph area begins (below the title)
+# y where the graph area begins (below the title/subtitle/hint block). Large enough that
+# even a max-radius node (52px, see _radius) sitting at the very top of the layout box
+# clears the hint line at y=134 with margin, instead of visually overlapping it.
+PLOT_TOP = 210
 PLOT_PAD = 92              # inner margin around the layout box
 
 INK = "#1D1D1F"             # primary text
@@ -367,6 +371,11 @@ def build_svg(
     calls: Optional[List[Tuple[str, str]]] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    title: Optional[str] = None,
+    subtitle: Optional[str] = None,
+    desc: Optional[str] = None,
+    legend_title: str = "Owning team",
+    hint: Optional[str] = None,
 ) -> str:
     """Assemble the full node-link network SVG document as a string.
 
@@ -389,6 +398,21 @@ def build_svg(
         (``"universal"``, ``"high-contrast"``, ``"monochrome"``,
         ``"deuteranopia"``, ``"protanopia"`` or ``"tritanopia"``). Defaults to
         ``"universal"``, the colour-vision-safe standard.
+    title, subtitle, desc : str or None, optional
+        Chart text. ``None`` (the default) keeps the illustrative
+        microservice-call-graph story used by the shipped demo/gallery.
+        Previously ``title`` was a documented no-op forcing callers with a
+        different story to patch the rendered SVG's text after the fact
+        (fragile string-replace); it is now honoured directly, along with
+        the subtitle and accessible long description.
+    legend_title : str, optional
+        Heading above the team-colour legend row (default ``"Owning
+        team"``, the shipped demo's language). Pass the caller's own word
+        (e.g. a French ``"Catégorie"``) instead of patching the rendered
+        text.
+    hint : str or None, optional
+        The small usage hint under the subtitle (node-size + hover
+        affordance). ``None`` keeps the shipped demo's English hint.
 
     Returns
     -------
@@ -437,11 +461,11 @@ def build_svg(
         nid: (PLOT_PAD + x, PLOT_TOP + y) for nid, (x, y) in raw.items()
     }
 
-    title_txt = "Auth is a hidden single point of failure"
+    title_txt = title if title is not None else "Auth is a hidden single point of failure"
     subtitle_txt = (
-        "Service-to-service calls in an online-store backend"
+        subtitle if subtitle is not None else "Service-to-service calls in an online-store backend"
     )
-    desc_txt = (
+    desc_txt = desc if desc is not None else (
         "Force-directed node-link diagram of a microservice call graph. Each "
         "node is a service, coloured by owning team and sized by how many "
         "other services call it. Edges join services that call each other. "
@@ -449,6 +473,10 @@ def build_svg(
         "and profile path calls it, so a stall in Auth cascades across the "
         "whole store. Hover or focus any service to highlight only the "
         "services it talks to."
+    )
+    hint_txt = hint if hint is not None else (
+        "Node size ∝ how many services call it · hover or focus a service "
+        "to trace its calls"
     )
 
     parts: List[str] = []
@@ -553,16 +581,55 @@ def build_svg(
     parts.append("</g>")
 
     # --- node labels (own layer so hover fade is independent of nodes) ---
-    parts.append('<g id="labels">')
-    for nid in ids:
+    # Two problems previously slipped through here: (1) a label could sit close
+    # enough to a neighbour's that their text ran together with no gap ("...adver
+    # sTirer de..."), because nothing ever checked one label's box against
+    # another's; (2) a label near the left/right canvas edge, anchored "middle"
+    # on its node, could have its first characters clipped off-canvas. Both are
+    # fixed the same way any label-declutter pass works: measure the actual
+    # rendered width (`_textfit.text_width`, calibrated for the house Roboto
+    # stack — a language-longer French label is measured correctly, not just
+    # assumed to fit like English), clamp the anchor so the box never crosses
+    # the canvas edge, then push a label straight down past any earlier-placed
+    # label it would otherwise overlap.
+    LABEL_SIZE = 18.0
+    label_boxes: List[Dict[str, float]] = []
+    placements: Dict[str, Tuple[float, float, str]] = {}
+    edge_margin = 6.0
+    for nid in sorted(ids, key=lambda n: pos[n][0]):
         x, y = pos[nid]
         r = _radius(indeg[nid], max_indeg)
-        # Place the label just below the node; nudge the big hub label above
-        # so it never collides with the dense centre.
+        w = text_width(label_of[nid], LABEL_SIZE, bold=True)
         below = y + r + 22
+
+        anchor = "middle"
+        lx = x
+        if x - w / 2 < edge_margin:
+            anchor, lx = "start", edge_margin
+        elif x + w / 2 > WIDTH - edge_margin:
+            anchor, lx = "end", WIDTH - edge_margin
+        left = lx if anchor == "start" else (lx - w if anchor == "end" else lx - w / 2)
+
+        guard = 0
+        while guard < 24:
+            collided = False
+            for box in label_boxes:
+                if left < box["right"] and left + w > box["left"] and below < box["bottom"] and below + LABEL_SIZE > box["top"]:
+                    below = box["bottom"] + 4
+                    collided = True
+                    break
+            if not collided:
+                break
+            guard += 1
+        label_boxes.append({"left": left, "right": left + w, "top": below, "bottom": below + LABEL_SIZE})
+        placements[nid] = (lx, below, anchor)
+
+    parts.append('<g id="labels">')
+    for nid in ids:
+        lx, below, anchor = placements[nid]
         parts.append(
-            f'<text class="nlabel l-{nid}" x="{x:.1f}" y="{below:.1f}" '
-            f'text-anchor="middle" font-size="18" font-weight="600" '
+            f'<text class="nlabel l-{nid}" x="{lx:.1f}" y="{below:.1f}" '
+            f'text-anchor="{anchor}" font-size="{LABEL_SIZE:.0f}" font-weight="600" '
             f'fill="{INK}" paint-order="stroke" stroke="{BG}" stroke-width="5" '
             f'stroke-linejoin="round">{escape(label_of[nid])}</text>'
         )
@@ -605,7 +672,7 @@ def build_svg(
     lx = 48
     parts.append(
         f'<text x="{lx}" y="{ly - 30}" font-size="17" font-weight="600" '
-        f'fill="{SUBINK}">Owning team</text>'
+        f'fill="{SUBINK}">{escape(legend_title)}</text>'
     )
     cursor: float = lx
     for team, color in TEAM_COLOR.items():
@@ -621,9 +688,7 @@ def build_svg(
     # --- size + hover hint: sits under the subtitle so it never collides
     #     with the legend row at the bottom of a dense graph. ---
     parts.append(
-        f'<text x="48" y="134" font-size="17" fill="{SUBINK}">'
-        f'Node size ∝ how many services call it · hover or focus a service '
-        f'to trace its calls</text>'
+        f'<text x="48" y="134" font-size="17" fill="{SUBINK}">{escape(hint_txt)}</text>'
     )
 
     parts.append(fullscreen_control(WIDTH, HEIGHT, mode))
@@ -668,7 +733,11 @@ def make_network(
     data: Optional[List[Dict[str, Any]]] = None,
     *,
     out: Optional[Path | str] = None,
-    title: str = "",
+    title: Optional[str] = None,
+    subtitle: Optional[str] = None,
+    desc: Optional[str] = None,
+    legend_title: str = "Owning team",
+    hint: Optional[str] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
 ) -> Path:
@@ -679,11 +748,18 @@ def make_network(
     data : list[dict[str, Any]] or None
         Rows shaped ``{"source", "source_label", "source_team", "target",
         "target_label", "target_team"}`` — one row per directed edge.
-        Defaults to :data:`DEMO_DATA`. ``title`` is accepted for signature
-        parity with the rest of the gallery and is currently a documented
-        no-op (the headline states a fact about the illustrative call graph).
+        Defaults to :data:`DEMO_DATA`.
     out : Path, str, or None
         Output path. Defaults to ``assets/svg-examples/network.svg``.
+    title, subtitle, desc : str or None, optional
+        Chart text. ``None`` keeps the illustrative microservice-call-graph
+        story. Forwarded to :func:`build_svg` (previously ``title`` was
+        accepted but silently dropped, forcing callers with their own story
+        to string-replace the rendered SVG's English text after the fact).
+    legend_title : str, optional
+        Heading above the team-colour legend row (default ``"Owning team"``).
+    hint : str or None, optional
+        The small usage hint under the subtitle. ``None`` keeps the demo's.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
 
@@ -692,10 +768,12 @@ def make_network(
     Path
         Absolute path to the written SVG file.
     """
-    _ = title
     rows = data if data else DEMO_DATA
     services, calls = _rows_to_graph(rows)
-    svg = build_svg(services=services, calls=calls, mode=mode, accessibility=accessibility)
+    svg = build_svg(
+        services=services, calls=calls, mode=mode, accessibility=accessibility,
+        title=title, subtitle=subtitle, desc=desc, legend_title=legend_title, hint=hint,
+    )
     dest = Path(out) if out else svg_example_path(__file__, "network")
     return write_svg(dest, svg)
 
