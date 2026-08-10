@@ -49,6 +49,7 @@ from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
 
 # ------------------------------------------------------------------
@@ -112,11 +113,13 @@ def _allocate_squares(values: List[float], total_squares: int = 100) -> List[int
     return floors
 
 
-def _with_colors(data: List[Dict[str, Any]], accessibility: str) -> List[Dict[str, Any]]:
+def _with_colors(
+    data: List[Dict[str, Any]], accessibility: str, theme: str = "corporate"
+) -> List[Dict[str, Any]]:
     """Attach a colour (cycling through the accessibility palette) and an
     apportioned square count to each row, largest value first.
     """
-    palette_colors = list(load_palette(accessibility).values())
+    palette_colors = list(load_palette(accessibility, theme=theme).values())
     ordered = sorted(data, key=lambda d: float(d["value"]), reverse=True)
     squares = _allocate_squares([float(d["value"]) for d in ordered])
     return [
@@ -146,6 +149,7 @@ def build_svg(
     subtitle: str = "Share of annual household electricity use · one square = 1 %",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full waffle-chart SVG document as a string.
 
@@ -169,13 +173,17 @@ def build_svg(
         ``"tritanopia"``). Defaults to ``"universal"``, the
         colour-vision-safe standard, which leaves the shipped palette
         unchanged.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
     str
         A complete, standalone SVG document.
     """
-    data = _with_colors(data if data is not None else DEMO_DATA, accessibility)
+    data = _with_colors(data if data is not None else DEMO_DATA, accessibility, theme=theme)
 
     # Map each of the 100 grid cells (filled column-by-column, bottom-up
     # so the largest share grows from the floor like a stacked column) to
@@ -189,7 +197,7 @@ def build_svg(
 
     # ---- header ----
     parts: List[str] = []
-    parts.append(svg_open(_WIDTH, _HEIGHT, "wf-title", "wf-desc"))
+    parts.append(svg_open(_WIDTH, _HEIGHT, "wf-title", "wf-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="wf-title">{_xml(title)}</title>')
     leader = data[0]
     desc = (
@@ -377,6 +385,7 @@ def make_waffle(
     subtitle: str = "Share of annual household electricity use · one square = 1 %",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render a waffle chart and write it to *out*.
 
@@ -395,6 +404,8 @@ def make_waffle(
         Interactivity mode for the fullscreen control.
     accessibility : str
         Palette accessibility level.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -407,9 +418,9 @@ def make_waffle(
     >>> p.exists()
     True
     """
-    svg = build_svg(data, title=title, subtitle=subtitle, mode=mode, accessibility=accessibility)
+    svg = build_svg(data, title=title, subtitle=subtitle, mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "waffle")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

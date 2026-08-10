@@ -58,6 +58,7 @@ from typing import Any, Dict, List, Sequence, Tuple
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 
@@ -470,7 +471,9 @@ def _ring_path(ring: Ring, lat0: float, fit: Tuple[float, float, float, float, f
 # ------------------------------------------------------------------
 # Build
 # ------------------------------------------------------------------
-def build_svg(mode: str = "self-contained", accessibility: str = "universal") -> str:
+def build_svg(
+    mode: str = "self-contained", accessibility: str = "universal", theme: str = "corporate"
+) -> str:
     """Assemble the full dot-density-map SVG document as a string.
 
     Parameters
@@ -484,6 +487,10 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         (``"universal"``, ``"high-contrast"``, ``"monochrome"``,
         ``"deuteranopia"``, ``"protanopia"`` or ``"tritanopia"``). Defaults to
         ``"universal"``, the colour-vision-safe standard.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
@@ -492,7 +499,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     """
     global _span_py
 
-    palette = load_palette(accessibility)
+    palette = load_palette(accessibility, theme=theme)
     pop, region_of, legend = _dataset()
     region_color = {name: palette[key] for name, key in legend}
 
@@ -515,7 +522,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
 
     # ---- header ----
     parts: List[str] = []
-    parts.append(svg_open(_WIDTH, _HEIGHT, "dd-title", "dd-desc"))
+    parts.append(svg_open(_WIDTH, _HEIGHT, "dd-title", "dd-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(
         '<title id="dd-title">Where the French actually live — one dot per '
         '25,000 residents</title>'
@@ -710,6 +717,7 @@ def make_dotdensity(
     title: str = "",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the dot-density map and write it to ``out``.
 
@@ -717,11 +725,11 @@ def make_dotdensity(
     ``make-figure dotdensity`` and the Studio work like every other figure. The
     demo geography (French departments) and values are baked into the
     hand-authored SVG, so ``data`` and ``title`` are accepted for dispatcher
-    parity and unused.
+    parity and unused. ``theme`` is forwarded to :func:`build_svg`.
     """
-    svg = build_svg(mode=mode, accessibility=accessibility)
+    svg = build_svg(mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "dotdensity")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

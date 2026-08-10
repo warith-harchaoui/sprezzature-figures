@@ -51,6 +51,7 @@ from typing import Any, Dict, List, Optional
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 
@@ -249,6 +250,7 @@ def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full event-timeline SVG string.
 
@@ -270,6 +272,10 @@ def build_svg(
         colour-vision-safe standard; other levels (``"high-contrast"``,
         ``"monochrome"``, ``"deuteranopia"``, ``"protanopia"``,
         ``"tritanopia"``) remap the hues via the sprezzature-colors engine.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
@@ -277,7 +283,7 @@ def build_svg(
         A complete, standalone SVG document.
     """
     milestones: List[Dict[str, Any]] = list(data) if data else DEMO_DATA
-    palette = load_palette(accessibility)
+    palette = load_palette(accessibility, theme=theme)
     ink = "#1D1D1F"
     secondary = "#6E6E73"
     hairline = "#D2D2D7"
@@ -304,7 +310,7 @@ def build_svg(
     parts: List[str] = []
 
     # --- document + accessibility --------------------------------
-    parts.append(svg_open(width, height, "tl-title", "tl-desc"))
+    parts.append(svg_open(width, height, "tl-title", "tl-desc", font_family=chrome_stack_for_theme(theme)))
     n = len(milestones)
     parts.append(
         '<title id="tl-title">Seven decades of Mars exploration as an '
@@ -706,6 +712,7 @@ def make_timeline(
     title: str = "",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the event timeline and write the SVG to *out*.
 
@@ -721,6 +728,8 @@ def make_timeline(
         the specific takeaway, so this is unused.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -728,9 +737,9 @@ def make_timeline(
         Absolute path to the written SVG file.
     """
     del title
-    svg = build_svg(data, mode=mode, accessibility=accessibility)
+    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "timeline")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

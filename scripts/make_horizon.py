@@ -46,6 +46,7 @@ from _render import svg_example_path, write_svg  # noqa: E402
 from _svg import fmt_compact  # noqa: E402
 from _style import os_dark_style  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
 import argparse
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, cast
@@ -314,6 +315,7 @@ def build_svg(
     data: Dict[str, np.ndarray],
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full horizon-chart SVG document as a string.
 
@@ -338,6 +340,10 @@ def build_svg(
         *darker* than the red top band, inverting the sign convention. The
         tuned ramp is already CVD-/greyscale-safe, so the level is deliberately
         not applied. Defaults to ``"universal"``.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
@@ -405,7 +411,7 @@ def build_svg(
     parts.append(
         f'<svg role="img" aria-label="{title}" '
         f'xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" '
-        f'viewBox="0 0 {width} {height}" font-family="{_FONT}">'
+        f'viewBox="0 0 {width} {height}" font-family="{chrome_stack_for_theme(theme)}">'
     )
     parts.append(
         f"<title>{title}</title>"
@@ -667,6 +673,7 @@ def make_horizon(
     title: str = "",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the horizon chart and write the SVG to *out*.
 
@@ -682,6 +689,8 @@ def make_horizon(
         Output path. Defaults to ``assets/svg-examples/horizon.svg``.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -691,9 +700,9 @@ def make_horizon(
     _ = title
     rows = data if data else DEMO_DATA
     series = _rows_to_series(rows)
-    svg = build_svg(series, mode=mode, accessibility=accessibility)
+    svg = build_svg(series, mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "horizon")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 # --------------------------------------------------------------------------- #
@@ -729,6 +738,12 @@ def _build_parser() -> argparse.ArgumentParser:
         default="universal",
         help="palette accessibility level (default: universal, the CVD-safe standard).",
     )
+    parser.add_argument(
+        "--theme",
+        choices=("corporate", "academic"),
+        default="corporate",
+        help="visual theme: corporate (default, Roboto) or academic (LaTeX-style Latin Modern)",
+    )
     return parser
 
 
@@ -736,8 +751,8 @@ def main(argv: List[str] | None = None) -> int:
     """CLI entry point: build the SVG and write it to disk."""
     args = _build_parser().parse_args(argv)
     data = _sample_fleet_cpu(seed=args.seed)
-    svg = build_svg(data, mode=args.mode, accessibility=args.accessibility)
-    write_svg(args.out, svg)
+    svg = build_svg(data, mode=args.mode, accessibility=args.accessibility, theme=args.theme)
+    write_svg(args.out, svg, theme=args.theme)
     return 0
 
 

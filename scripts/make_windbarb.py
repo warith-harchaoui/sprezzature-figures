@@ -58,6 +58,7 @@ from typing import Any, Dict, List, Optional, Tuple
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 
@@ -426,6 +427,7 @@ def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full wind-barb station-plot SVG document as a string.
 
@@ -445,13 +447,17 @@ def build_svg(
         (``"universal"``, ``"high-contrast"``, ``"monochrome"``,
         ``"deuteranopia"``, ``"protanopia"`` or ``"tritanopia"``). Defaults to
         ``"universal"``, the colour-vision-safe standard.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
     str
         A complete, standalone SVG document.
     """
-    palette = load_palette(accessibility)
+    palette = load_palette(accessibility, theme=theme)
     cold = palette["Blue"]     # post-frontal NW gale (cold airmass)
     warm = palette["Orange"]   # pre-frontal SW flow (warm airmass)
     front_col = palette["Blue"]
@@ -459,7 +465,7 @@ def build_svg(
     fit = _fit()
 
     parts: List[str] = []
-    parts.append(svg_open(_WIDTH, _HEIGHT, "wb-title", "wb-desc"))
+    parts.append(svg_open(_WIDTH, _HEIGHT, "wb-title", "wb-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(
         '<title id="wb-title">A cold front sweeps the Northeast coast — '
         'wind barbs pivot 180° and freshen to a gale behind it</title>'
@@ -891,6 +897,7 @@ def make_windbarb(
     title: str = "",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the wind-barb station plot and write the SVG to *out*.
 
@@ -906,6 +913,8 @@ def make_windbarb(
         specific takeaway, so this is unused.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -913,9 +922,9 @@ def make_windbarb(
         Absolute path to the written SVG file.
     """
     del title
-    svg = build_svg(data, mode=mode, accessibility=accessibility)
+    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "windbarb")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

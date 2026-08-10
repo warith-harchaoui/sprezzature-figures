@@ -64,6 +64,7 @@ from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 
 # The Pareto threshold: the cumulative share that splits the vital few
@@ -233,6 +234,7 @@ def build_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     language: str = "en",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full Pareto-chart SVG string.
 
@@ -264,19 +266,27 @@ def build_svg(
         Chrome-text language, ``"en"`` or ``"fr"`` (see :data:`_STRINGS`).
         Reason labels and counts always render as given in `tickets`.
         Defaults to ``"en"``.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
     str
         A complete, standalone SVG document.
     """
+    # This file's mono literal predates _style.FONT_MONO and is missing the
+    # "ui-monospace" fallback -- keep it exact for corporate (byte-identical
+    # to the pre-theme render) and only swap in the full academic stack.
+    mono_family = "Roboto Mono, monospace" if theme == "corporate" else mono_stack_for_theme(theme)
     strings = _strings(language)
     data = make_data(tickets)
     rows = data["rows"]
     crossing = data["crossing"]
     total = data["total"]
 
-    palette: Dict[str, str] = load_palette(accessibility)
+    palette: Dict[str, str] = load_palette(accessibility, theme=theme)
     # Two hues carry meaning — Blue for the vital-few bars, Orange for the
     # cumulative curve (and its markers, so the crossing dot belongs to the
     # curve). Everything else is one neutral: a single muted grey for the
@@ -329,7 +339,7 @@ def build_svg(
     parts: List[str] = []
 
     # --- SVG root + accessible description ------------------------
-    parts.append(svg_open(width, height, "pa-title", "pa-desc"))
+    parts.append(svg_open(width, height, "pa-title", "pa-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="pa-title">{strings["accessible_title"]}</title>')
     cross_cum = round(crossing["cum"]) if crossing else 0
     cross_count = int(crossing["cum_count"]) if crossing else 0
@@ -548,7 +558,7 @@ def build_svg(
         )
         parts.append(
             f'<text x="{plot_x - 14:.1f}" y="{gy + 6:.1f}" font-size="19" '
-            f'font-family="Roboto Mono, monospace" fill="{ink}" '
+            f'font-family="{mono_family}" fill="{ink}" '
             f'text-anchor="end">{t}%</text>'
         )
         # Right ticks + labels (curve colour).
@@ -559,7 +569,7 @@ def build_svg(
         )
         parts.append(
             f'<text x="{plot_x + plot_w + 14:.1f}" y="{gy + 6:.1f}" '
-            f'font-size="19" font-family="Roboto Mono, monospace" '
+            f'font-size="19" font-family="{mono_family}" '
             f'fill="{line_c}" text-anchor="start">{t}%</text>'
         )
 
@@ -612,6 +622,7 @@ def make_pareto(
     mode: str = "self-contained",
     accessibility: str = "universal",
     language: str = "en",
+    theme: str = "corporate",
 ) -> Path:
     """Render the Pareto chart and write the SVG to *out*.
 
@@ -629,6 +640,8 @@ def make_pareto(
         Chrome-text language, ``"en"`` or ``"fr"``. Defaults to ``"en"``;
         Sprezzature Studio passes the language detected from the imported
         CSV's column names (see :data:`_STRINGS`).
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -637,9 +650,9 @@ def make_pareto(
     """
     _ = title
     rows = data if data else DEMO_DATA
-    svg = build_svg(rows, mode=mode, accessibility=accessibility, language=language)
+    svg = build_svg(rows, mode=mode, accessibility=accessibility, language=language, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "pareto")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

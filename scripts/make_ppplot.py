@@ -66,6 +66,7 @@ from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 
 def _normal_cdf(z: np.ndarray) -> np.ndarray:
@@ -213,6 +214,7 @@ def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full P-P-plot SVG string.
 
@@ -234,14 +236,22 @@ def build_svg(
         ``"monochrome"``, ``"deuteranopia"``, ``"protanopia"`` or
         ``"tritanopia"``). Defaults to ``"universal"``, the colour-vision-safe
         standard, which leaves the shipped palette unchanged.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
     str
         A complete, standalone SVG document.
     """
+    # This file's mono literal predates _style.FONT_MONO and is missing the
+    # "ui-monospace" fallback -- keep it exact for corporate (byte-identical
+    # to the pre-theme render) and only swap in the full academic stack.
+    mono_family = "Roboto Mono, monospace" if theme == "corporate" else mono_stack_for_theme(theme)
     data = data if data else DEMO_DATA
-    palette: Dict[str, str] = load_palette(accessibility)
+    palette: Dict[str, str] = load_palette(accessibility, theme=theme)
 
     # Signed split, blue vs orange (never red-green): a point ABOVE the
     # diagonal (empirical >= theoretical) means the Normal under-states the
@@ -280,7 +290,7 @@ def build_svg(
     parts: List[str] = []
 
     # --- SVG root + accessible description ------------------------
-    parts.append(svg_open(width, height, "pp-title", "pp-desc"))
+    parts.append(svg_open(width, height, "pp-title", "pp-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(
         '<title id="pp-title">Session times aren\'t Normal — the P-P plot '
         'bows off the diagonal</title>'
@@ -403,7 +413,7 @@ def build_svg(
         )
         parts.append(
             f'<text x="{gx:.1f}" y="{ax_bottom + 38:.1f}" font-size="21" '
-            f'font-family="Roboto Mono, monospace" fill="{ink}" '
+            f'font-family="{mono_family}" fill="{ink}" '
             f'text-anchor="middle">{t:.2f}</text>'
         )
         gy = sy(t)
@@ -413,7 +423,7 @@ def build_svg(
         )
         parts.append(
             f'<text x="{plot_x - 18:.1f}" y="{gy + 7:.1f}" font-size="21" '
-            f'font-family="Roboto Mono, monospace" fill="{ink}" '
+            f'font-family="{mono_family}" fill="{ink}" '
             f'text-anchor="end">{t:.2f}</text>'
         )
 
@@ -517,6 +527,7 @@ def make_ppplot(
     title: str = "",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the P-P plot and write the SVG to *out*.
 
@@ -533,6 +544,8 @@ def make_ppplot(
         the diagnostic narrative (unused).
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -540,9 +553,9 @@ def make_ppplot(
         Absolute path to the written SVG file.
     """
     _ = title
-    svg = build_svg(data, mode=mode, accessibility=accessibility)
+    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "ppplot")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

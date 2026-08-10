@@ -48,6 +48,7 @@ from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _svg import point_on_circle, svg_open, xml_escape  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
 
 # ------------------------------------------------------------------
@@ -72,7 +73,7 @@ _BG: str = "#FFFFFF"       # background
 _FOCUS: str = "#0A4DA0"    # focus-ring blue
 
 
-def _palette_hues(accessibility: str = "universal") -> Dict[str, str]:
+def _palette_hues(accessibility: str = "universal", theme: str = "corporate") -> Dict[str, str]:
     """Return the two working hues (calm base + peak accent) as hex.
 
     The base blue carries the quiet, off-peak hours; the warm orange
@@ -90,7 +91,7 @@ def _palette_hues(accessibility: str = "universal") -> Dict[str, str]:
     dict of str to str
         ``{"base": "#RRGGBB", "peak": "#RRGGBB"}``.
     """
-    palette = load_palette(accessibility)
+    palette = load_palette(accessibility, theme=theme)
     fallback = {"Blue": "#007AFF", "Orange": "#FF9500"}
     base = palette.get("Blue") or fallback["Blue"]
     peak = palette.get("Orange") or fallback["Orange"]
@@ -221,6 +222,7 @@ def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full radial-bar SVG document as a string.
 
@@ -238,13 +240,17 @@ def build_svg(
         (``"universal"`` default, plus ``"high-contrast"``, ``"monochrome"``,
         ``"deuteranopia"``, ``"protanopia"`` and ``"tritanopia"``). Wired
         through the ``--accessibility`` CLI flag by :func:`_render.render_cli`.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
     str
         A complete, standalone SVG document.
     """
-    hues = _palette_hues(accessibility)
+    hues = _palette_hues(accessibility, theme=theme)
     data = _trips_from_rows(data)
     n = len(data)                       # 24 hours
     sector_deg = 360.0 / n              # 15° per hour
@@ -267,7 +273,7 @@ def build_svg(
     parts: List[str] = []
 
     # ---- header ----
-    parts.append(svg_open(_WIDTH, _HEIGHT, "rb-title", "rb-desc"))
+    parts.append(svg_open(_WIDTH, _HEIGHT, "rb-title", "rb-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(
         '<title id="rb-title">Bike-share trips by hour of day: two commute '
         'peaks around 8am and 6pm</title>'
@@ -496,6 +502,7 @@ def make_radial_bar(
     title: str = "",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the radial bar (clock-dial) chart and write the SVG to *out*.
 
@@ -511,6 +518,8 @@ def make_radial_bar(
         the takeaway text (unused).
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -518,9 +527,9 @@ def make_radial_bar(
         Absolute path to the written SVG file.
     """
     _ = title
-    svg = build_svg(data, mode=mode, accessibility=accessibility)
+    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "radial-bar")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

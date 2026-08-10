@@ -33,7 +33,8 @@ from typing import Any, Dict, List, Optional, Tuple
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _style import BG, FONT_MONO, GRIDLINE, INK, SECONDARY, load_palette  # noqa: E402
+from _style import BG, GRIDLINE, INK, SECONDARY, load_palette  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
 
 
@@ -93,6 +94,7 @@ def build_svg(
     height: int = 360,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full beeswarm plot SVG document as a string.
 
@@ -108,19 +110,24 @@ def build_svg(
     mode, accessibility : str, optional
         Forwarded to :func:`_interactive.fullscreen_control` /
         :func:`_style.load_palette`.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
     str
         A complete, standalone SVG document.
     """
+    mono_family = mono_stack_for_theme(theme)
     rows = data if data else DEMO_DATA
     seen_groups: List[str] = []
     for r in rows:
         if r["group"] not in seen_groups:
             seen_groups.append(r["group"])
     groups = [g for g in GROUPS if g in seen_groups] + [g for g in seen_groups if g not in GROUPS]
-    palette = load_palette(accessibility)
+    palette = load_palette(accessibility, theme=theme)
     hue_order = [palette.get("Red", "#FF3B30"), palette.get("Blue", "#007AFF"), palette.get("Green", "#34C759")]
     colors = {g: hue_order[i % len(hue_order)] for i, g in enumerate(groups)}
 
@@ -142,7 +149,7 @@ def build_svg(
     ys = _swarm_positions(items, center_y, _RADIUS)
 
     parts: List[str] = []
-    parts.append(svg_open(width, height, "bee-title", "bee-desc"))
+    parts.append(svg_open(width, height, "bee-title", "bee-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="bee-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="bee-desc">Beeswarm of {len(rows)} observations across {len(groups)} groups, '
@@ -185,7 +192,7 @@ def build_svg(
             f'stroke="{GRIDLINE}" stroke-width="1"/>'
         )
         parts.append(
-            f'<text x="{tx:.1f}" y="{axis_y + 20:.1f}" font-size="11" font-family="{FONT_MONO}" '
+            f'<text x="{tx:.1f}" y="{axis_y + 20:.1f}" font-size="11" font-family="{mono_family}" '
             f'fill="{SECONDARY}" text-anchor="middle">{val:.0f}</text>'
         )
     parts.append(
@@ -218,6 +225,7 @@ def make_beeswarm(
     height: int = 360,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render a hand-authored beeswarm plot and write the SVG to *out*.
 
@@ -234,6 +242,8 @@ def make_beeswarm(
         Canvas size in pixels.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -247,9 +257,9 @@ def make_beeswarm(
     True
     """
     svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
-                     mode=mode, accessibility=accessibility)
+                     mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "beeswarm")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

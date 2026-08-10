@@ -32,6 +32,7 @@ from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _style import BG, INK, SECONDARY, qualitative_sequence  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 from _textfit import fit_font_size, text_width, wrap_to_width  # noqa: E402
 
 
@@ -185,6 +186,7 @@ def build_svg(
     accessibility: str = "universal",
     language: str = "en",
     value_unit: str | None = None,
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full treemap SVG document as a string.
 
@@ -218,6 +220,10 @@ def build_svg(
         otherwise — a caller passing raw counts (e.g. "4" occurrences) must
         not have a fabricated "k" (thousands) suffix silently attached, which
         previously turned a plain count of 4 into a misleading "4k".
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
@@ -242,7 +248,7 @@ def build_svg(
     # outside that set used to fall back to flat grey for every rectangle.
     # Keep the fixed house hues where they match (stable colours for the
     # demo data) and assign the qualitative sequence to anything else.
-    palette_cycle = iter(qualitative_sequence(max(len(categories), 1)))
+    palette_cycle = iter(qualitative_sequence(max(len(categories), 1), theme=theme))
     category_colors = {
         cat: CATEGORY_COLORS.get(cat) or next(palette_cycle) for cat in categories
     }
@@ -259,7 +265,7 @@ def build_svg(
     cat_rects = _squarify(cat_sizes, plot_x, plot_y, plot_w, plot_h)
 
     parts: List[str] = []
-    parts.append(svg_open(width, height, "tm-title", "tm-desc"))
+    parts.append(svg_open(width, height, "tm-title", "tm-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="tm-title">{xml_escape(title)}</title>')
     desc = strings["desc_template"].format(n_parents=len(categories), n_children=len(rows))
     parts.append(f'<desc id="tm-desc">{xml_escape(desc)}</desc>')
@@ -365,6 +371,7 @@ def make_treemap(
     accessibility: str = "universal",
     language: str = "en",
     value_unit: str | None = None,
+    theme: str = "corporate",
 ) -> Path:
     """Render a hand-authored treemap and write the SVG to *out*.
 
@@ -385,6 +392,8 @@ def make_treemap(
         Chrome-text language, ``"en"`` or ``"fr"``. Defaults to ``"en"``;
         Sprezzature Studio passes the language detected from the imported
         CSV's column names (see :data:`_STRINGS`).
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -399,9 +408,9 @@ def make_treemap(
     """
     svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
                      mode=mode, accessibility=accessibility, language=language,
-                     value_unit=value_unit)
+                     value_unit=value_unit, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "treemap")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

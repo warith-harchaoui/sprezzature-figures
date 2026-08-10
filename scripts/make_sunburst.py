@@ -36,6 +36,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _style import BG, INK, SECONDARY, load_palette  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
 
 
@@ -132,6 +133,7 @@ def build_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     language: str = "en",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full sunburst SVG document as a string.
 
@@ -154,6 +156,10 @@ def build_svg(
         Only the title/subtitle default, legend header and accessible desc
         switch; ``parent``/``name`` labels and values always render as
         given in `data`. Defaults to ``"en"``.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
@@ -174,7 +180,7 @@ def build_svg(
         grouped[r].sort(key=lambda x: -float(x["value"]))
     total = sum(region_totals.values()) or 1.0
 
-    palette = load_palette(accessibility)
+    palette = load_palette(accessibility, theme=theme)
     hue_order = [palette.get("Blue", "#007AFF"), palette.get("Green", "#34C759"),
                  palette.get("Orange", "#FF9500"), palette.get("Purple", "#AF52DE")]
     region_colors = {r: hue_order[i % len(hue_order)] for i, r in enumerate(regions_sorted)}
@@ -192,7 +198,7 @@ def build_svg(
     ring2_inner, ring2_outer = hole + (r_outer_canvas - hole) * 0.48, r_outer_canvas
 
     parts: List[str] = []
-    parts.append(svg_open(width, height, "sb-title", "sb-desc"))
+    parts.append(svg_open(width, height, "sb-title", "sb-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="sb-title">{xml_escape(title)}</title>')
     desc = strings["desc_template"].format(
         n_parents=len(regions_sorted), n_children=len(rows), total=f"{total:,.1f}"
@@ -281,6 +287,7 @@ def make_sunburst(
     mode: str = "self-contained",
     accessibility: str = "universal",
     language: str = "en",
+    theme: str = "corporate",
 ) -> Path:
     """Render a hand-authored sunburst chart and write the SVG to *out*.
 
@@ -301,6 +308,8 @@ def make_sunburst(
         Chrome-text language, ``"en"`` or ``"fr"``. Defaults to ``"en"``;
         Sprezzature Studio passes the language detected from the imported
         CSV's column names (see :data:`_STRINGS`).
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -314,9 +323,9 @@ def make_sunburst(
     True
     """
     svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
-                     mode=mode, accessibility=accessibility, language=language)
+                     mode=mode, accessibility=accessibility, language=language, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "sunburst")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

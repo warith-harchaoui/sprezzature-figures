@@ -44,6 +44,7 @@ from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
 
 # ------------------------------------------------------------------
@@ -98,6 +99,7 @@ _SET_HUES = ("Blue", "Green", "Orange")
 def _dataset(
     accessibility: str = "universal",
     data: "Optional[List[Dict[str, object]]]" = None,
+    theme: str = "corporate",
 ) -> Dict[str, object]:
     """Reshape row records into the internal three-set / seven-region shape.
 
@@ -110,6 +112,8 @@ def _dataset(
         ``count`` (int). Must name exactly three distinct sets across all
         rows (a Venn diagram's geometry is fixed at three circles). Defaults
         to :data:`DEMO_DATA`.
+    theme : str, optional
+        Forwarded to :func:`_style.load_palette`.
 
     Returns
     -------
@@ -119,7 +123,7 @@ def _dataset(
         (``"A"``, ``"B"``, ``"C"``, ``"AB"``, ``"AC"``, ``"BC"``,
         ``"ABC"``) to its integer count.
     """
-    palette = load_palette(accessibility)
+    palette = load_palette(accessibility, theme=theme)
     rows = list(data) if data else DEMO_DATA
 
     # Discover the three set names in first-seen order across the rows.
@@ -204,6 +208,7 @@ def build_svg(
     data: Optional[List[Dict[str, object]]] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full three-set Venn SVG document as a string.
 
@@ -222,13 +227,17 @@ def build_svg(
         (``"universal"`` default, plus ``"high-contrast"``, ``"monochrome"``,
         ``"deuteranopia"``, ``"protanopia"`` and ``"tritanopia"``). Wired
         through the ``--accessibility`` CLI flag by :func:`_render.render_cli`.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
     str
         A complete, standalone SVG document.
     """
-    shaped = _dataset(accessibility, data)
+    shaped = _dataset(accessibility, data, theme=theme)
     sets: Dict[str, Dict[str, object]] = shaped["sets"]  # type: ignore[assignment]
     regions: Dict[str, int] = shaped["regions"]  # type: ignore[assignment]
     centroids = _region_centroids()
@@ -238,7 +247,7 @@ def build_svg(
 
     # ---- header ----
     parts: List[str] = []
-    parts.append(svg_open(_WIDTH, _HEIGHT, "vn-title", "vn-desc"))
+    parts.append(svg_open(_WIDTH, _HEIGHT, "vn-title", "vn-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(
         '<title id="vn-title">Overlapping skills among data '
         'professionals</title>'
@@ -434,6 +443,7 @@ def make_venn(
     title: str = "",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the three-set Venn diagram and write the SVG to *out*.
 
@@ -450,6 +460,8 @@ def make_venn(
         the specific takeaway, so this is unused.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -457,9 +469,9 @@ def make_venn(
         Absolute path to the written SVG file.
     """
     del title
-    svg = build_svg(data, mode=mode, accessibility=accessibility)
+    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "venn")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

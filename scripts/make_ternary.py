@@ -46,6 +46,7 @@ from typing import Any, Dict, List, Optional, Tuple
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 
@@ -123,7 +124,8 @@ _CLASS_HUES = ("Orange", "Blue", "Purple", "Green", "Teal", "Red")
 
 
 def _dataset(
-    accessibility: str = "universal", data: Optional[List[Dict[str, Any]]] = None
+    accessibility: str = "universal", data: Optional[List[Dict[str, Any]]] = None,
+    theme: str = "corporate",
 ) -> List[Dict[str, Any]]:
     """Group row records into the internal per-class plotting shape.
 
@@ -135,6 +137,8 @@ def _dataset(
     data : list of dict or None
         Rows with keys ``class``, ``sand``, ``silt`` and ``clay``. Defaults
         to :data:`DEMO_DATA`.
+    theme : str, optional
+        Forwarded to :func:`_style.load_palette`.
 
     Returns
     -------
@@ -143,7 +147,7 @@ def _dataset(
         (hex), and ``points`` (list of ``(sand, silt, clay)`` triples
         in percent, each summing to 100).
     """
-    palette = load_palette(accessibility)
+    palette = load_palette(accessibility, theme=theme)
     rows = list(data) if data else DEMO_DATA
     classes: Dict[str, List[Tuple[float, float, float]]] = {}
     for row in rows:
@@ -286,6 +290,7 @@ def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full ternary-plot SVG document as a string.
 
@@ -303,17 +308,21 @@ def build_svg(
         (``"universal"`` default, plus ``"high-contrast"``, ``"monochrome"``,
         ``"deuteranopia"``, ``"protanopia"`` and ``"tritanopia"``). Wired
         through the ``--accessibility`` CLI flag by :func:`_render.render_cli`.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
     str
         A complete, standalone SVG document.
     """
-    grouped = _dataset(accessibility, data)
+    grouped = _dataset(accessibility, data, theme=theme)
 
     # ---- header ----
     parts: List[str] = []
-    parts.append(svg_open(_WIDTH, _HEIGHT, "tn-title", "tn-desc"))
+    parts.append(svg_open(_WIDTH, _HEIGHT, "tn-title", "tn-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(
         '<title id="tn-title">Soil texture as a ternary of sand, silt '
         'and clay</title>'
@@ -477,6 +486,7 @@ def make_ternary(
     title: str = "",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the ternary plot and write the SVG to *out*.
 
@@ -492,6 +502,8 @@ def make_ternary(
         specific takeaway, so this is unused.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -499,9 +511,9 @@ def make_ternary(
         Absolute path to the written SVG file.
     """
     del title
-    svg = build_svg(data, mode=mode, accessibility=accessibility)
+    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "ternary")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

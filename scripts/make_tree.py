@@ -51,10 +51,11 @@ from typing import Any, Dict, List, Optional, Tuple
 from xml.sax.saxutils import escape
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _style import BG, FONT_MONO, INK, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
+from _style import BG, INK, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _svg import svg_open  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
 # ------------------------------------------------------------------
 # Canvas + house-style tokens
@@ -316,6 +317,7 @@ def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full tidy-tree SVG document as a string.
 
@@ -340,6 +342,13 @@ def build_svg(
         colour-vision-safe standard, which reuses the module-level palette so
         the emitted SVG stays unchanged; any other level remaps the family
         hues (branch links and leaf-chip rules).
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        Also remaps the four family hues (branch links, leaf-chip rules)
+        through the theme's palette; the WCAG-tuned family *pills* stay
+        corporate-only, same as they already do for `accessibility`.
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
@@ -348,13 +357,20 @@ def build_svg(
     """
     nodes: List[Node] = _rows_to_nodes(data) if data else NODES
     root_id = _root_id(nodes)
-    geometry = _compute_geometry(nodes)
+    theme_palette = load_palette(theme=theme)
+    family_color_base: Dict[str, str] = {
+        "sup": theme_palette.get("Blue", "#007AFF"),
+        "uns": theme_palette.get("Orange", "#FF9500"),
+        "deep": theme_palette.get("Purple", "#AF52DE"),
+        "rl": theme_palette.get("Green", "#34C759"),
+    }
+    geometry = _compute_geometry(nodes, family_color=family_color_base)
 
     # ``universal`` leaves the baked family colours as shipped (output
     # byte-identical); any other level re-reads the palette at that level and
     # recolours every non-root node by its family.
     if accessibility and accessibility != "universal":
-        pal = load_palette(accessibility)
+        pal = load_palette(accessibility, theme=theme)
         family_color = {
             "sup": pal.get("Blue", "#007AFF"),
             "uns": pal.get("Orange", "#FF9500"),
@@ -385,7 +401,7 @@ def build_svg(
         "branch, reaching individual algorithms such as gradient-boosted trees "
         "and Gaussian processes. Each family is tinted its own color."
     )
-    parts.append(svg_open(WIDTH, HEIGHT, "tree-title", "tree-desc", font_family=FONT))
+    parts.append(svg_open(WIDTH, HEIGHT, "tree-title", "tree-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="tree-title">{escape(title_txt)}</title>')
     parts.append(f'<desc id="tree-desc">{escape(desc_txt)}</desc>')
 
@@ -407,8 +423,8 @@ def build_svg(
     # but each family is also named on its pill and tied to its leaves by the
     # link structure, so identity survives without colour, and the ~4-colour
     # system palette cannot preserve four distinct branch tints anyway.
-    link_series = {f".link.fam-{fam}": hexv for fam, hexv in FAMILY_COLOR.items()}
-    rule_series = {f".fam-rule.fam-{fam}": hexv for fam, hexv in FAMILY_COLOR.items()}
+    link_series = {f".link.fam-{fam}": hexv for fam, hexv in family_color_base.items()}
+    rule_series = {f".fam-rule.fam-{fam}": hexv for fam, hexv in family_color_base.items()}
     pill_series = {f".pill-{fam}": hexv for fam, hexv in FAMILY_PILL.items()}
     contrast_css = (
         os_adaptive_style(link_series, role="stroke")
@@ -711,6 +727,7 @@ def make_tree(
     title: str = "",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the tidy node-link tree and write the SVG to *out*.
 
@@ -726,6 +743,8 @@ def make_tree(
         specific takeaway, so this is unused.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -733,9 +752,9 @@ def make_tree(
         Absolute path to the written SVG file.
     """
     del title
-    svg = build_svg(data, mode=mode, accessibility=accessibility)
+    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "tree")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

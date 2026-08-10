@@ -28,8 +28,9 @@ from typing import Any, Dict, List, Optional
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _style import BG, FONT_MONO, INK, SECONDARY, load_palette  # noqa: E402
+from _style import BG, INK, SECONDARY, load_palette  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
 
 ITEMS = ["Alpha", "Beta", "Gamma", "Delta", "Eps"]
@@ -44,8 +45,10 @@ DEMO_DATA: List[Dict[str, Any]] = [
 ]
 
 
-def _item_colors(items: List[str], accessibility: str = "universal") -> Dict[str, str]:
-    palette = load_palette(accessibility)
+def _item_colors(
+    items: List[str], accessibility: str = "universal", theme: str = "corporate"
+) -> Dict[str, str]:
+    palette = load_palette(accessibility, theme=theme)
     hues = [palette.get(h, d) for h, d in (
         ("Blue", "#007AFF"), ("Orange", "#FF9500"), ("Green", "#34C759"),
         ("Purple", "#AF52DE"), ("Red", "#FF3B30"), ("Teal", "#79DBDC"),
@@ -61,6 +64,7 @@ def build_svg(
     height: int = 520,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full slope chart SVG document as a string.
 
@@ -76,6 +80,10 @@ def build_svg(
     mode, accessibility : str, optional
         Forwarded to :func:`_interactive.fullscreen_control` /
         :func:`_style.load_palette`.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
@@ -93,7 +101,7 @@ def build_svg(
         if r["period"] not in seen_periods:
             seen_periods.append(r["period"])
     periods = [p for p in PERIODS if p in seen_periods] + [p for p in seen_periods if p not in PERIODS]
-    colors = _item_colors(items, accessibility)
+    colors = _item_colors(items, accessibility, theme=theme)
     lookup: Dict[tuple, float] = {(r["item"], r["period"]): float(r["v"]) for r in rows}
     all_vals = list(lookup.values())
     v_min, v_max = min(all_vals), max(all_vals)
@@ -112,7 +120,7 @@ def build_svg(
         return plot_y + plot_h - (v - (v_min - pad)) / ((v_max + pad) - (v_min - pad)) * plot_h
 
     parts: List[str] = []
-    parts.append(svg_open(width, height, "slope-title", "slope-desc"))
+    parts.append(svg_open(width, height, "slope-title", "slope-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="slope-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="slope-desc">Slope chart of {len(items)} items across {n_periods} periods. '
@@ -185,6 +193,7 @@ def make_slope(
     height: int = 520,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render a hand-authored slope chart and write the SVG to *out*.
 
@@ -201,6 +210,8 @@ def make_slope(
         Canvas size in pixels.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -214,9 +225,9 @@ def make_slope(
     True
     """
     svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
-                     mode=mode, accessibility=accessibility)
+                     mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "slope")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

@@ -52,6 +52,7 @@ from _style import forced_color_patterns, leveled_colors, os_adaptive_style, os_
 from _svg import catmull_rom_beziers, fmt_compact, xml_escape  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 # --------------------------------------------------------------------------- #
 # One shared type scale for the whole figure, so nothing drifts.              #
@@ -354,6 +355,7 @@ def build_svg(
     volume: Optional[np.ndarray] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full streamgraph SVG document as a string.
 
@@ -376,6 +378,13 @@ def build_svg(
         Palette accessibility level for the categorical ribbon fills, forwarded
         to :func:`_band_colors`. ``"universal"`` (default) leaves the fills
         unchanged; other levels remap them through the sprezzature-colors engine.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        Only affects chrome/tick fonts -- the hand-picked ribbon hues in
+        :func:`_band_colors` are a bespoke set outside ``_style``'s palette
+        system and are not remapped by theme.
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
@@ -384,6 +393,8 @@ def build_svg(
     """
     if years is None or genres is None or volume is None:
         years, genres, volume = _sample_genre_share()
+    chrome_family = chrome_stack_for_theme(theme)
+    mono_family = mono_stack_for_theme(theme)
     # ---- canvas geometry -------------------------------------------------- #
     # Poster-scale: the river wants width (25 yearly samples) and enough height
     # that even the thin edge bands read as ribbons, not hairlines.
@@ -435,7 +446,7 @@ def build_svg(
     parts.append(
         f'<svg role="img" aria-label="{title}" '
         f'xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" '
-        f'viewBox="0 0 {width} {height}" font-family="{_FONT}">'
+        f'viewBox="0 0 {width} {height}" font-family="{chrome_family}">'
     )
     parts.append(
         f"<title>{title}</title>"
@@ -522,7 +533,7 @@ def build_svg(
         if two_line:
             band_labels.append(
                 f'<text x="{_fmt(cx)}" y="{_fmt(cy + 18)}" text-anchor="middle" '
-                f'font-size="{_FS_VALUE}" font-family="{_MONO}" fill="{ink}" '
+                f'font-size="{_FS_VALUE}" font-family="{mono_family}" fill="{ink}" '
                 f'fill-opacity="0.85">{share_here:.0f}% in {int(years[yi])}</text>'
             )
 
@@ -556,7 +567,7 @@ def build_svg(
         )
         end_labels.append(
             f'<text x="{_fmt(label_x + 22)}" y="{_fmt(ly + 16)}" '
-            f'font-size="{_FS_VALUE}" font-family="{_MONO}" fill="{_SECONDARY}">'
+            f'font-size="{_FS_VALUE}" font-family="{mono_family}" fill="{_SECONDARY}">'
             f"{share_last:.0f}% in 2024</text>"
         )
 
@@ -577,7 +588,7 @@ def build_svg(
         )
         axis_bits.append(
             f'<text x="{_fmt(gx)}" y="{_fmt(axis_y + 28)}" text-anchor="middle" '
-            f'font-size="{_FS_AXIS}" font-family="{_MONO}" fill="{_SECONDARY}">'
+            f'font-size="{_FS_AXIS}" font-family="{mono_family}" fill="{_SECONDARY}">'
             f"{yr}</text>"
         )
     axis_bits.append(
@@ -672,6 +683,7 @@ def make_streamgraph(
     title: str = "",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the streamgraph and write the SVG to *out*.
 
@@ -688,6 +700,8 @@ def make_streamgraph(
         specific takeaway, so this is unused.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -696,9 +710,9 @@ def make_streamgraph(
     """
     del title
     years, genres, volume = _rows_to_matrix(list(data)) if data else _sample_genre_share()
-    svg = build_svg(years, genres, volume, mode=mode, accessibility=accessibility)
+    svg = build_svg(years, genres, volume, mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "streamgraph")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

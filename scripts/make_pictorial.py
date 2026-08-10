@@ -47,6 +47,7 @@ from typing import Any, Dict, List, Optional, Tuple
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import load_palette, os_adaptive_style, os_dark_style, qualitative_sequence  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 
@@ -100,6 +101,7 @@ DEMO_DATA: List[Dict[str, Any]] = [
 def _dataset(
     data: Optional[List[Dict[str, Any]]] = None,
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> List[Dict[str, Any]]:
     """Reshape row records into the colour-annotated, sorted form the SVG needs.
 
@@ -126,10 +128,10 @@ def _dataset(
     """
     rows = data if data else DEMO_DATA
     ordered = sorted(rows, key=lambda r: -float(r["value"]))
-    palette = load_palette(accessibility)
+    palette = load_palette(accessibility, theme=theme)
     fallback_colors = {"Copenhagen": "Green", "Amsterdam": "Teal", "Tokyo": "Blue",
                         "Berlin": "Orange", "Los Angeles": "Red"}
-    hues = qualitative_sequence(len(ordered))
+    hues = qualitative_sequence(len(ordered), theme=theme)
     out: List[Dict[str, Any]] = []
     for i, row in enumerate(ordered):
         label = str(row["label"])
@@ -265,6 +267,7 @@ def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full pictorial-chart SVG document as a string.
 
@@ -282,13 +285,17 @@ def build_svg(
         (``"universal"`` default, plus ``"high-contrast"``, ``"monochrome"``,
         ``"deuteranopia"``, ``"protanopia"`` and ``"tritanopia"``). Wired
         through the ``--accessibility`` CLI flag by :func:`_render.render_cli`.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
     str
         A complete, standalone SVG document.
     """
-    data = _dataset(data, accessibility)
+    data = _dataset(data, accessibility, theme)
 
     # The longest row sets how many icon columns we need; every row draws
     # a full set of ghost icons underneath so the field is visually
@@ -298,7 +305,7 @@ def build_svg(
 
     # ---- header ----
     parts: List[str] = []
-    parts.append(svg_open(_WIDTH, _HEIGHT, "pc-title", "pc-desc"))
+    parts.append(svg_open(_WIDTH, _HEIGHT, "pc-title", "pc-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(
         '<title id="pc-title">Cycling to work, per 100 commuters, '
         'across five cities</title>'
@@ -518,6 +525,7 @@ def make_pictorial(
     title: str = "",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the ISOTYPE pictorial chart and write the SVG to *out*.
 
@@ -534,6 +542,8 @@ def make_pictorial(
         figure's headline is baked into the row narrative (unused).
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -541,9 +551,9 @@ def make_pictorial(
         Absolute path to the written SVG file.
     """
     _ = title
-    svg = build_svg(data, mode=mode, accessibility=accessibility)
+    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "pictorial")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

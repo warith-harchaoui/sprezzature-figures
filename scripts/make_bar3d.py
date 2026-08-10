@@ -50,6 +50,7 @@ from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _svg import fmt_compact  # noqa: E402
 from _style import os_dark_style  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -59,7 +60,6 @@ from typing import Any, Dict, List, Optional, Tuple
 _INK = "#1D1D1F"        # primary text
 _SECONDARY = "#6E6E73"  # subtitle / secondary / axis text
 _BG = "#FFFFFF"         # white ground
-_FONT = "Roboto, system-ui, sans-serif"
 _MONO = "Roboto Mono, ui-monospace, monospace"
 
 # Height ramp endpoints: short bars read a pale teal, tall bars a deep house
@@ -340,6 +340,7 @@ def _bar_faces(
     bar_w: float,
     fill: str,
     value: float,
+    mono_family: str = _MONO,
 ) -> str:
     """Draw one bar as three shaded faces (top, left, right) plus a value cap.
 
@@ -364,6 +365,9 @@ def _bar_faces(
         Base fill colour for the bar (the height-ramp colour).
     value : float
         The measured quantity, rendered as ``$Nk`` on the top cap.
+    mono_family : str, optional
+        Font stack for the value label. Defaults to :data:`_MONO`
+        (corporate); pass the academic stack under ``theme="academic"``.
 
     Returns
     -------
@@ -409,7 +413,7 @@ def _bar_faces(
     label_fill = _INK if _luminance(top_fill) > 0.5 else "#FFFFFF"
     cap_label = (
         f'<text x="{fmt_compact(cx)}" y="{fmt_compact(cy + 4)}" font-size="14" '
-        f'font-family="{_MONO}" font-weight="600" fill="{label_fill}" '
+        f'font-family="{mono_family}" font-weight="600" fill="{label_fill}" '
         f'text-anchor="middle">{value:.0f}</text>'
     )
 
@@ -427,6 +431,7 @@ def build_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     language: str = "en",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full 3D-bar SVG document as a string.
 
@@ -456,6 +461,10 @@ def build_svg(
         compresses the sweep and de-tunes those face shades, so the level is
         deliberately *not* applied. The flag is accepted for a uniform command
         line. Defaults to ``"universal"``.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
@@ -469,6 +478,8 @@ def build_svg(
     # CVD/greyscale-safe (see the parameter note above), so levelling it would
     # only de-tune it.
     _ = accessibility
+    chrome_family = chrome_stack_for_theme(theme)
+    mono_family = mono_stack_for_theme(theme)
     grid = grid if grid is not None else _rows_to_grid(DEMO_DATA)
     strings = _strings(language)
     rows: List[str] = list(grid["rows"])
@@ -504,7 +515,7 @@ def build_svg(
     parts.append(
         f'<svg role="img" aria-label="{title}" '
         f'xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" '
-        f'viewBox="0 0 {width} {height}" font-family="{_FONT}">'
+        f'viewBox="0 0 {width} {height}" font-family="{chrome_family}">'
     )
     # prefers-contrast (additive; the default render is byte-for-byte unchanged
     # because every rule lives inside a media query). This is a PERCEPTUAL figure:
@@ -581,7 +592,7 @@ def build_svg(
         group = _bar_faces(
             c, r, val,
             ox=ox, oy=oy, h_scale=h_scale, bar_w=bar_w,
-            fill=fill, value=val,
+            fill=fill, value=val, mono_family=mono_family,
         )
         # Splice the accessible per-bar tooltip in as the group's first child.
         group = group.replace("<g>", f"<g><title>{label}</title>", 1)
@@ -598,14 +609,14 @@ def build_svg(
         lx, ly = _project(c, n_rows - 1 + 0.72, 0.0, ox=ox, oy=oy, h_scale=h_scale)
         axis.append(
             f'<text x="{fmt_compact(lx + 8)}" y="{fmt_compact(ly + 18)}" font-size="17" '
-            f'font-family="{_MONO}" fill="{_SECONDARY}" text-anchor="start">{cols[c]}</text>'
+            f'font-family="{mono_family}" fill="{_SECONDARY}" text-anchor="start">{cols[c]}</text>'
         )
     # Teams ride the front-left edge (the +row / _V direction, col_max side).
     for r in range(n_rows):
         lx, ly = _project(n_cols - 1 + 0.72, r, 0.0, ox=ox, oy=oy, h_scale=h_scale)
         axis.append(
             f'<text x="{fmt_compact(lx - 8)}" y="{fmt_compact(ly + 18)}" font-size="17" '
-            f'font-family="{_MONO}" fill="{_SECONDARY}" text-anchor="end">{rows[r]}</text>'
+            f'font-family="{mono_family}" fill="{_SECONDARY}" text-anchor="end">{rows[r]}</text>'
         )
     parts.append(f'<g class="axis-labels">{"".join(axis)}</g>')
 
@@ -614,7 +625,7 @@ def build_svg(
     # the sprezzature row of bars or their floor labels.
     lx, ly = 52, 150
     parts.append(
-        f'<text x="{lx}" y="{ly}" font-size="15" font-family="{_MONO}" '
+        f'<text x="{lx}" y="{ly}" font-size="15" font-family="{mono_family}" '
         f'fill="{_SECONDARY}">{strings["legend_low"]}</text>'
     )
     # Gap sized off the actual rendered text instead of a fixed offset tuned
@@ -635,7 +646,7 @@ def build_svg(
         )
     parts.append(
         f'<text x="{swatch_x + n_swatch * swatch_w + 12:.1f}" y="{ly}" '
-        f'font-size="15" font-family="{_MONO}" '
+        f'font-size="15" font-family="{mono_family}" '
         f'fill="{_SECONDARY}">{strings["legend_high"]}</text>'
     )
 
@@ -657,6 +668,7 @@ def make_bar3d(
     mode: str = "self-contained",
     accessibility: str = "universal",
     language: str = "en",
+    theme: str = "corporate",
 ) -> Path:
     """Render the house-styled 3D-bar chart and write the SVG to *out*.
 
@@ -678,6 +690,8 @@ def make_bar3d(
         Chrome-text language, ``"en"`` or ``"fr"``. Defaults to ``"en"``;
         Sprezzature Studio passes the language detected from the imported
         CSV's column names (see :data:`_STRINGS`).
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -693,9 +707,9 @@ def make_bar3d(
     _ = title
     rows = data if data else DEMO_DATA
     grid = _rows_to_grid(rows)
-    svg = build_svg(grid, mode=mode, accessibility=accessibility, language=language)
+    svg = build_svg(grid, mode=mode, accessibility=accessibility, language=language, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "bar3d")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

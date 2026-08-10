@@ -59,6 +59,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _style import leveled_colors, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
 
 
@@ -180,6 +181,7 @@ def build_svg(
     data: Optional[List[Dict[str, float]]] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full Bland-Altman SVG string.
 
@@ -218,13 +220,22 @@ def build_svg(
         colour-vision-safe standard; other levels (``"high-contrast"``,
         ``"monochrome"``, ``"deuteranopia"``, ``"protanopia"``,
         ``"tritanopia"``) remap the hues via the sprezzature-colors engine.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
     str
         A complete, standalone SVG document.
     """
-    palette: Dict[str, str] = load_palette(accessibility)
+    palette: Dict[str, str] = load_palette(accessibility, theme=theme)
+    chrome_family = chrome_stack_for_theme(theme)
+    # This file's mono literal predates the shared MONO_STACK constant and
+    # is missing the "ui-monospace" fallback -- keep it exact for corporate
+    # (byte-identical pre-theme render) and only switch stacks for academic.
+    mono_family = "Roboto Mono, monospace" if theme == "corporate" else mono_stack_for_theme(theme)
     # Colour roles, chosen so each element reads on its own:
     #   points  — a calm neutral, so the reference lines are never
     #             fighting saturated dots for attention;
@@ -280,7 +291,7 @@ def build_svg(
     parts: List[str] = []
 
     # --- SVG root + accessible description ------------------------
-    parts.append(svg_open(width, height, "ba-title", "ba-desc"))
+    parts.append(svg_open(width, height, "ba-title", "ba-desc", font_family=chrome_family))
     parts.append(
         '<title id="ba-title">Bland-Altman plot comparing a wrist '
         'blood-pressure monitor with an arm cuff</title>'
@@ -394,7 +405,7 @@ def build_svg(
         )
         parts.append(
             f'<text x="{gx:.1f}" y="{ax_bottom + 34:.1f}" font-size="20" '
-            f'font-family="Roboto Mono, monospace" fill="{ink}" '
+            f'font-family="{mono_family}" fill="{ink}" '
             f'text-anchor="middle">{t}</text>'
         )
     for t in y_ticks:
@@ -405,7 +416,7 @@ def build_svg(
         )
         parts.append(
             f'<text x="{plot_x - 16:.1f}" y="{gy + 7:.1f}" font-size="20" '
-            f'font-family="Roboto Mono, monospace" fill="{ink}" '
+            f'font-family="{mono_family}" fill="{ink}" '
             f'text-anchor="end">{t:+d}</text>'
         )
 
@@ -512,7 +523,7 @@ def build_svg(
         parts.append(
             f'<text class="{cls}-txt" x="{chip_x + 12:.1f}" y="{ry + 6:.1f}" '
             f'font-size="19" '
-            f'font-family="Roboto Mono, monospace" font-weight="700" '
+            f'font-family="{mono_family}" font-weight="700" '
             f'fill="{col}">{xml_escape(chip)}</text>'
         )
 
@@ -528,6 +539,7 @@ def make_blandaltman(
     title: str = "",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the house-styled Bland-Altman agreement plot and write it to *out*.
 
@@ -543,6 +555,8 @@ def make_blandaltman(
         agreement question and stays fixed regardless of the data supplied.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -556,9 +570,9 @@ def make_blandaltman(
     True
     """
     _ = title
-    svg = build_svg(data, mode=mode, accessibility=accessibility)
+    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "blandaltman")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

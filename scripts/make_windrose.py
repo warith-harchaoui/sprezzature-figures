@@ -46,6 +46,7 @@ from _interactive import fullscreen_control  # noqa: E402
 from _svg import point_on_circle, svg_open, xml_escape  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _style import os_dark_style  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
 
 # ------------------------------------------------------------------
@@ -261,6 +262,7 @@ def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full wind-rose SVG document as a string.
 
@@ -285,6 +287,10 @@ def build_svg(
         *categorical* hues by lightness) breaks its monotonicity — the two
         palest bands invert under ``"monochrome"`` — and de-tunes it, so the
         level is deliberately not applied. Defaults to ``"universal"``.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
@@ -313,7 +319,7 @@ def build_svg(
     parts: List[str] = []
 
     # ---- header ----
-    parts.append(svg_open(_WIDTH, _HEIGHT, "wr-title", "wr-desc"))
+    parts.append(svg_open(_WIDTH, _HEIGHT, "wr-title", "wr-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(
         '<title id="wr-title">Wind rose for Cap Gris-Nez: prevailing '
         'winds blow from the west-south-west</title>'
@@ -540,6 +546,7 @@ def make_windrose(
     title: str = "",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the wind rose and write the SVG to *out*.
 
@@ -555,6 +562,8 @@ def make_windrose(
         specific takeaway, so this is unused.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -562,9 +571,9 @@ def make_windrose(
         Absolute path to the written SVG file.
     """
     del title
-    svg = build_svg(data, mode=mode, accessibility=accessibility)
+    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "windrose")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

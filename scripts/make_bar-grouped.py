@@ -29,8 +29,9 @@ from typing import Any, Dict, List, Optional
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _style import BG, FONT_MONO, GRIDLINE, INK, SECONDARY, corner_radius, cycle_hues, load_palette  # noqa: E402
+from _style import BG, GRIDLINE, INK, SECONDARY, corner_radius, cycle_hues  # noqa: E402
 from _svg import bar_path, svg_open, xml_escape  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 
 PERIODS = ["Q1", "Q2", "Q3", "Q4"]
@@ -84,8 +85,10 @@ def _strings(language: str) -> Dict[str, str]:
     return _STRINGS.get(language, _STRINGS["en"])
 
 
-def _region_colors(regions: List[str], accessibility: str = "universal") -> Dict[str, str]:
-    return cycle_hues(regions, accessibility)
+def _region_colors(
+    regions: List[str], accessibility: str = "universal", theme: str = "corporate"
+) -> Dict[str, str]:
+    return cycle_hues(regions, accessibility, theme=theme)
 
 
 def build_svg(
@@ -97,6 +100,7 @@ def build_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     language: str = "en",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full grouped bar chart SVG document as a string.
 
@@ -119,12 +123,17 @@ def build_svg(
         defaults, the legend heading, axis titles, and the desc/tooltip
         wording switch; period/region names and numeric labels always
         render as given in `data`. Defaults to ``"en"``.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
     str
         A complete, standalone SVG document.
     """
+    mono_family = mono_stack_for_theme(theme)
     strings = _strings(language)
     title = strings["title"] if title is None else title
     subtitle = strings["subtitle"] if subtitle is None else subtitle
@@ -143,7 +152,7 @@ def build_svg(
         if row["region"] not in seen_regions:
             seen_regions.append(row["region"])
     regions = [r for r in REGIONS if r in seen_regions] + [r for r in seen_regions if r not in REGIONS]
-    colors = _region_colors(regions, accessibility)
+    colors = _region_colors(regions, accessibility, theme=theme)
     lookup: Dict[tuple, float] = {(r["period"], r["region"]): float(r["v"]) for r in rows}
     max_val = max(lookup.values()) if lookup else 1.0
 
@@ -173,7 +182,7 @@ def build_svg(
         return plot_y + plot_h - (v / y_domain * plot_h)
 
     parts: List[str] = []
-    parts.append(svg_open(width, height, "bg-title", "bg-desc"))
+    parts.append(svg_open(width, height, "bg-title", "bg-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="bg-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="bg-desc">{strings["desc_template"].format(n_regions=n_regions, n_periods=n_periods, max_val=max_val)}</desc>'
@@ -210,7 +219,7 @@ def build_svg(
             f'stroke="{GRIDLINE}" stroke-width="1"/>'
         )
         parts.append(
-            f'<text x="{plot_x - 10:.1f}" y="{ty + 4:.1f}" font-size="12" font-family="{FONT_MONO}" '
+            f'<text x="{plot_x - 10:.1f}" y="{ty + 4:.1f}" font-size="12" font-family="{mono_family}" '
             f'fill="{SECONDARY}" text-anchor="end">{tick:.0f}</text>'
         )
     axis_units_x = 18.0
@@ -272,6 +281,7 @@ def make_bar_grouped(
     mode: str = "self-contained",
     accessibility: str = "universal",
     language: str = "en",
+    theme: str = "corporate",
 ) -> Path:
     """Render a hand-authored grouped bar chart and write the SVG to *out*.
 
@@ -292,6 +302,8 @@ def make_bar_grouped(
         Chrome-text language, ``"en"`` or ``"fr"``. Defaults to ``"en"``;
         Sprezzature Studio passes the language detected from the imported
         CSV's column names (see :data:`_STRINGS`).
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -305,9 +317,9 @@ def make_bar_grouped(
     True
     """
     svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
-                     mode=mode, accessibility=accessibility, language=language)
+                     mode=mode, accessibility=accessibility, language=language, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "bar-grouped")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

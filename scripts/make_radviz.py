@@ -53,6 +53,7 @@ from _style import forced_color_patterns, os_adaptive_style, os_dark_style
 from _svg import point_on_circle
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 # ------------------------------------------------------------------
 # Canvas + layout constants (all in user-space px).
@@ -469,6 +470,7 @@ def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full RadViz SVG document as a string.
 
@@ -493,6 +495,10 @@ def build_svg(
         ``"monochrome"``, ``"deuteranopia"``, ``"protanopia"`` or
         ``"tritanopia"``). The ``"universal"`` default is the
         colour-vision-safe standard and leaves the shipped palette unchanged.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
@@ -502,7 +508,7 @@ def build_svg(
     """
     # Confirm the house palette is reachable (keeps make ↔ audit in sync);
     # the categorical triple is anchored on the palette's Blue/Orange/Green.
-    palette = _style.load_palette(accessibility)
+    palette = _style.load_palette(accessibility, theme=theme)
     for base in ("Blue", "Orange", "Green"):
         assert palette.get(base), f"house palette must expose {base}"
 
@@ -532,7 +538,7 @@ def build_svg(
 
     header = (
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{WIDTH}" height="{HEIGHT}" '
-        f'viewBox="0 0 {WIDTH} {HEIGHT}" font-family="Roboto, system-ui, sans-serif" '
+        f'viewBox="0 0 {WIDTH} {HEIGHT}" font-family="{chrome_stack_for_theme(theme)}" '
         f'role="img" aria-labelledby="rv-title rv-desc">'
     )
     title_block = (
@@ -582,9 +588,13 @@ def build_svg(
     subtitle_text = (
         f'  <text x="60" y="92" font-size="19" fill="{SUBTLE}">{subtitle}</text>'
     )
+    # "Roboto Mono, monospace" (not the canonical _style.FONT_MONO stack) is
+    # this figure's pre-existing literal -- kept verbatim for the corporate
+    # default so byte identity holds; only academic swaps it for real.
+    caption_mono = "Roboto Mono, monospace" if theme == "corporate" else mono_stack_for_theme(theme)
     caption = (
         f'  <text x="60" y="118" font-size="15" fill="{SUBTLE}" '
-        f'font-family="Roboto Mono, monospace">RadViz spring layout · '
+        f'font-family="{caption_mono}">RadViz spring layout · '
         f"{n_total} kernels · {n_feat} anchors</text>"
     )
 
@@ -617,6 +627,7 @@ def make_radviz(
     title: str = "",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the RadViz projection and write the SVG to *out*.
 
@@ -633,6 +644,8 @@ def make_radviz(
         the takeaway text (unused).
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -640,9 +653,9 @@ def make_radviz(
         Absolute path to the written SVG file.
     """
     _ = title
-    svg = build_svg(data, mode=mode, accessibility=accessibility)
+    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "radviz")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

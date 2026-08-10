@@ -52,6 +52,7 @@ from _style import BG, INK, forced_color_patterns, load_palette, os_adaptive_sty
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _svg import svg_open  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
 # ------------------------------------------------------------------
 # Canvas + house-style tokens
@@ -64,8 +65,6 @@ LEGEND_H = 64              # reserved strip at the bottom for the legend
 
 SUBINK = "#6E6E73"         # secondary text
 EDGE = "#D6D6DB"           # resting edge colour (very light neutral)
-
-FONT = "Roboto, system-ui, sans-serif"
 
 SEED = 20260725            # fixed so the committed SVG is byte-reproducible
 
@@ -139,7 +138,7 @@ _FALLBACK = {
 }
 
 
-def _hex(key: str, accessibility: str = "universal") -> str:
+def _hex(key: str, accessibility: str = "universal", theme: str = "corporate") -> str:
     """Return the brand hex for a palette key, with a curated fallback.
 
     Parameters
@@ -150,8 +149,11 @@ def _hex(key: str, accessibility: str = "universal") -> str:
         Palette accessibility level forwarded to :func:`_style.load_palette`;
         ``"universal"`` (default) reuses the module-level ``PALETTE`` so the
         shipped figure is byte-identical.
+    theme : str, optional
+        Forwarded to :func:`_style.load_palette`. ``"corporate"`` (default)
+        is the only theme that can reuse the cached ``PALETTE``.
     """
-    palette = PALETTE if accessibility == "universal" else load_palette(accessibility)
+    palette = PALETTE if (accessibility == "universal" and theme == "corporate") else load_palette(accessibility, theme=theme)
     return palette.get(key, _FALLBACK[key])
 
 
@@ -413,6 +415,7 @@ def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full force-directed large-graph SVG document.
 
@@ -432,6 +435,10 @@ def build_svg(
         (``"universal"``, ``"high-contrast"``, ``"monochrome"``,
         ``"deuteranopia"``, ``"protanopia"`` or ``"tritanopia"``). The default
         ``"universal"`` is the identity, so the shipped figure is unchanged.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
@@ -450,7 +457,7 @@ def build_svg(
     pos = [(PLOT_PAD + x, PLOT_TOP + y) for x, y in fitted]
 
     labels = [c[0] for c in communities]
-    colors = [_hex(c[1], accessibility) for c in communities]
+    colors = [_hex(c[1], accessibility, theme=theme) for c in communities]
     light = [_lighten(c, 0.55) for c in colors]   # pale fill so overlapping same-colour nodes read as rings
 
     # Cross-community edge count for the subtitle takeaway.
@@ -475,7 +482,7 @@ def build_svg(
     )
 
     parts: List[str] = []
-    parts.append(svg_open(WIDTH, HEIGHT, "sfdp-title", "sfdp-desc", font_family=FONT))
+    parts.append(svg_open(WIDTH, HEIGHT, "sfdp-title", "sfdp-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="sfdp-title">{escape(title_txt)}</title>')
     parts.append(f'<desc id="sfdp-desc">{escape(desc_txt)}</desc>')
 
@@ -655,6 +662,7 @@ def make_sfdp_largegraph(
     title: str = "",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the force-directed large-graph figure and write the SVG to *out*.
 
@@ -673,6 +681,8 @@ def make_sfdp_largegraph(
         the takeaway text (unused).
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -680,9 +690,9 @@ def make_sfdp_largegraph(
         Absolute path to the written SVG file.
     """
     _ = title
-    svg = build_svg(data, mode=mode, accessibility=accessibility)
+    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "sfdp-largegraph")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

@@ -34,6 +34,7 @@ from _style import INK, SECONDARY, load_palette, os_adaptive_style, os_dark_styl
 from _svg import point_on_circle, xml_escape
 from _interactive import fullscreen_control
 from _render import svg_example_path, write_raster_companions, write_svg
+from sprezzature_figures.fonts import chrome_stack_for_theme
 
 # ------------------------------------------------------------------
 # The reading. One illustrative KPI: web-server CPU load at a traffic
@@ -299,6 +300,7 @@ def build_svg(
     animated: bool = True,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full radial gauge as an SVG string.
 
@@ -322,6 +324,10 @@ def build_svg(
         colour-vision-safe standard; other levels (``"high-contrast"``,
         ``"monochrome"``, ``"deuteranopia"``, ``"protanopia"``,
         ``"tritanopia"``) remap the hues via the sprezzature-colors engine.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
@@ -332,7 +338,7 @@ def build_svg(
     disp_title = TITLE if title is None else title
     disp_subtitle = SUBTITLE if subtitle is None else subtitle
     from_val = SETTLE_FROM if settle_from is None else float(settle_from)
-    pal = load_palette(accessibility)
+    pal = load_palette(accessibility, theme=theme)
     val_hex, val_name = _zone_of(val, pal)
 
     # Specific alt text: the takeaway plus the exact reading and its zone, so
@@ -344,7 +350,7 @@ def build_svg(
     )
     parts: List[str] = [
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" '
-        f'viewBox="0 0 {W} {H}" font-family="{FONT}" '
+        f'viewBox="0 0 {W} {H}" font-family="{chrome_stack_for_theme(theme)}" '
         f'role="img" aria-labelledby="gauge-title gauge-desc">',
         f'<title id="gauge-title">{xml_escape(disp_title)}</title>',
         f'<desc id="gauge-desc">{xml_escape(desc_txt)}</desc>',
@@ -455,6 +461,7 @@ def make_gauge(
     animated: bool = True,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the radial KPI gauge and write it to ``out``.
 
@@ -474,6 +481,8 @@ def make_gauge(
         flag / dispatcher convention).
     animated, mode, accessibility : optional
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -489,9 +498,10 @@ def make_gauge(
         animated=animated,
         mode=mode,
         accessibility=accessibility,
+        theme=theme,
     )
     dest = Path(out) if out else svg_example_path(__file__, "gauge")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:
@@ -509,14 +519,24 @@ def main() -> None:
         default="universal",
         help="palette accessibility level (default: universal, the CVD-safe standard)",
     )
+    parser.add_argument(
+        "--theme",
+        choices=("corporate", "academic"),
+        default="corporate",
+        help="visual theme: corporate (default, Roboto) or academic (LaTeX-style Latin Modern)",
+    )
     args = parser.parse_args()
     out_svg = svg_example_path(__file__, "gauge")
-    write_svg(out_svg, build_svg(animated=True, mode=args.mode, accessibility=args.accessibility))
+    write_svg(
+        out_svg,
+        build_svg(animated=True, mode=args.mode, accessibility=args.accessibility, theme=args.theme),
+        theme=args.theme,
+    )
 
     # Static (non-animated) SVG for the raster companions so the PNG is the
     # settled truth, not a mid-animation frame.
     write_raster_companions(
-        build_svg(animated=False, mode="static", accessibility=args.accessibility),
+        build_svg(animated=False, mode="static", accessibility=args.accessibility, theme=args.theme),
         __file__,
         "gauge",
     )

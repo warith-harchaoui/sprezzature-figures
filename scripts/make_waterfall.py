@@ -27,9 +27,10 @@ from typing import Any, Dict, List, Optional
 from xml.sax.saxutils import escape
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _style import BG, FONT_MONO, GRIDLINE, INK, SECONDARY, os_adaptive_style, os_dark_style  # noqa: E402
+from _style import BG, GRIDLINE, INK, SECONDARY, os_adaptive_style, os_dark_style  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Canvas constants
@@ -42,8 +43,6 @@ MARGIN_TOP = 148        # title + subtitle
 MARGIN_BOTTOM = 88      # X-axis labels
 
 BAR_GAP = 0.22          # fraction of bar slot reserved as gap between bars
-
-FONT = "Roboto, system-ui, sans-serif"
 
 # House palette for waterfall semantics
 COLOR_POSITIVE = "#28CD41"    # Green: gains
@@ -100,6 +99,7 @@ def build_svg(
     title: str = "FY-2024 Operating Income Bridge",
     subtitle: str = "Millions of EUR, FY-2023 → FY-2024",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Render the waterfall chart as an SVG string.
 
@@ -118,12 +118,18 @@ def build_svg(
         One-line subtitle displayed beneath the title.
     accessibility : str
         Palette level passed to :func:`_style.load_palette`.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
     str
         A complete, self-contained SVG document.
     """
+    chrome_family = chrome_stack_for_theme(theme)
+    mono_family = mono_stack_for_theme(theme)
     data = data if data is not None else DEMO_DATA
     # ------------------------------------------------------------------
     # Compute running totals so each bar knows where to start
@@ -195,7 +201,7 @@ def build_svg(
         f'<svg role="img" aria-label="{escape(title)}" '
         f'viewBox="0 0 {WIDTH} {HEIGHT}" '
         f'xmlns="http://www.w3.org/2000/svg" '
-        f'font-family="{FONT}" '
+        f'font-family="{chrome_family}" '
         f'style="background:{BG};max-width:100%;height:auto">'
     )
     lines.append(f"<style>{style}</style>")
@@ -243,7 +249,7 @@ def build_svg(
             lines.append(
                 f'<text x="{MARGIN_LEFT - 8}" y="{py + 5:.1f}" '
                 f'font-size="12" fill="{SECONDARY}" text-anchor="end" '
-                f'font-family="{FONT_MONO}">{label_str}</text>'
+                f'font-family="{mono_family}">{label_str}</text>'
             )
 
     # Zero line (drawn over gridlines)
@@ -288,7 +294,7 @@ def build_svg(
         lines.append(
             f'<text x="{x + bar_w / 2:.1f}" y="{label_y:.1f}" '
             f'font-size="11" fill="{INK}" text-anchor="middle" '
-            f'font-family="{FONT_MONO}" font-weight="500">{val_str}</text>'
+            f'font-family="{mono_family}" font-weight="500">{val_str}</text>'
         )
 
         # X-axis label (split on \n for multi-line)
@@ -314,6 +320,7 @@ def make_waterfall(
     subtitle: str = "Millions of EUR, FY-2023 → FY-2024",
     width: int = WIDTH,
     height: int = HEIGHT,
+    theme: str = "corporate",
 ) -> Path:
     """Render a waterfall chart and write the SVG to *out*.
 
@@ -333,6 +340,8 @@ def make_waterfall(
         Ignored (canvas is fixed; kept for API parity with other generators).
     height : int
         Ignored.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -347,9 +356,9 @@ def make_waterfall(
     """
     if data is None:
         data = DEMO_DATA
-    svg = build_svg(data, title=title, subtitle=subtitle)
+    svg = build_svg(data, title=title, subtitle=subtitle, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "waterfall")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

@@ -31,6 +31,7 @@ from _style import CORNERS  # noqa: E402
 from _svg import rounded_rect_path, svg_open, xml_escape  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
 # --- data: a 3-class pet classifier (rows = actual, cols = predicted) ---------
 CLASSES = ["Cat", "Dog", "Fox"]
@@ -110,6 +111,7 @@ def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full confusion-matrix SVG document as a string.
 
@@ -124,6 +126,10 @@ def build_svg(
     accessibility : str, optional
         Accepted for CLI parity but a documented no-op: a single blue ramp
         reads in greyscale/CVD, so it is never re-levelled.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
@@ -151,7 +157,7 @@ def build_svg(
     n_cls_word = f"{n}-class" if n != 1 else "1-class"
 
     parts: List[str] = []
-    parts.append(svg_open(_WIDTH, _HEIGHT, "cm-title", "cm-desc"))
+    parts.append(svg_open(_WIDTH, _HEIGHT, "cm-title", "cm-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(
         f'<title id="cm-title">A {n_cls_word} confusion matrix: the classifier is '
         f'right on the diagonal and confuses {worst_actual} with {worst_pred} most</title>'
@@ -245,6 +251,7 @@ def make_confusion_matrix(
     title: str = "",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the house-styled confusion matrix and write the SVG to *out*.
 
@@ -262,6 +269,8 @@ def make_confusion_matrix(
         narrative <desc> are derived from ``data`` directly.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -275,9 +284,9 @@ def make_confusion_matrix(
     True
     """
     _ = title
-    svg = build_svg(data, mode=mode, accessibility=accessibility)
+    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "confusion-matrix")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 if __name__ == "__main__":

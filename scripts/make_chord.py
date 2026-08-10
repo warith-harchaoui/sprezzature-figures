@@ -52,7 +52,8 @@ from typing import Any, Dict, List, Optional, Tuple
 from xml.sax.saxutils import escape
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _style import BG, FONT_MONO, INK, forced_color_patterns, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
+from _style import BG, INK, forced_color_patterns, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 from _svg import point_on_circle, svg_open  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control, hover_isolate_css  # noqa: E402
@@ -71,8 +72,6 @@ GAP_DEG = 3.4              # angular gap (deg) between adjacent group arcs
 LABEL_PAD = 22             # radial gap between arc and its text label
 
 SUBINK = "#6E6E73"         # secondary text
-
-FONT = "Roboto, system-ui, sans-serif"
 
 
 # ------------------------------------------------------------------
@@ -110,7 +109,7 @@ DEMO_DATA: List[Dict[str, Any]] = [
 ]
 
 # Brand hue per team — origin color travels with the ribbon.
-def _team_color(accessibility: str = "universal") -> Dict[str, str]:
+def _team_color(accessibility: str = "universal", theme: str = "corporate") -> Dict[str, str]:
     """Map each team to its brand hue at a given accessibility level.
 
     Parameters
@@ -118,13 +117,15 @@ def _team_color(accessibility: str = "universal") -> Dict[str, str]:
     accessibility : str, optional
         The palette accessibility level threaded into :func:`load_palette`;
         ``"universal"`` (default) is the colour-vision-safe standard.
+    theme : str, optional
+        Forwarded to :func:`load_palette`. Defaults to ``"corporate"``.
 
     Returns
     -------
     dict of str to str
         ``{team_name: hex}`` for every team.
     """
-    palette = load_palette(accessibility)
+    palette = load_palette(accessibility, theme=theme)
     return {
         "Platform": palette.get("Blue", "#007AFF"),
         "Payments": palette.get("Green", "#34C759"),
@@ -384,7 +385,7 @@ def _compute_layout(team_color: Optional[Dict[str, str]] = None) -> Tuple[Dict[i
 # ------------------------------------------------------------------
 # SVG emission
 # ------------------------------------------------------------------
-def build_svg(mode: str = "self-contained", accessibility: str = "universal") -> str:
+def build_svg(mode: str = "self-contained", accessibility: str = "universal", theme: str = "corporate") -> str:
     """Assemble the full chord-diagram SVG document as a string.
 
     Parameters
@@ -398,13 +399,18 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         colour-vision-safe standard; other levels (``"high-contrast"``,
         ``"monochrome"``, ``"deuteranopia"``, ``"protanopia"``,
         ``"tritanopia"``) remap the hues via the sprezzature-colors engine.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
     str
         A complete, standalone SVG document.
     """
-    team_color = _team_color(accessibility)
+    mono_family = mono_stack_for_theme(theme)
+    team_color = _team_color(accessibility, theme=theme)
     groups, ribbons = _compute_layout(team_color)
     n = len(TEAMS)
 
@@ -423,7 +429,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         "reviews nearly everyone's code but few teams review Platform's."
     )
 
-    parts.append(svg_open(WIDTH, HEIGHT, "chord-title", "chord-desc", font_family=FONT))
+    parts.append(svg_open(WIDTH, HEIGHT, "chord-title", "chord-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="chord-title">{escape(title_txt)}</title>')
     parts.append(f'<desc id="chord-desc">{escape(desc_txt)}</desc>')
 
@@ -539,7 +545,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     )
     parts.append(
         f'<text x="{CX:.1f}" y="{CY + 18:.1f}" text-anchor="middle" '
-        f'font-family="{FONT_MONO}" font-size="38" font-weight="700" '
+        f'font-family="{mono_family}" font-size="38" font-weight="700" '
         f'fill="{team_color["Platform"]}">{inbound} vs {outbound}</text>'
     )
     parts.append(
@@ -571,6 +577,7 @@ def make_chord(
     title: str = "",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the house-styled chord diagram and write the SVG to *out*.
 
@@ -589,6 +596,8 @@ def make_chord(
         Accepted for CLI/dispatcher parity; unused (see ``data``).
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -602,9 +611,9 @@ def make_chord(
     True
     """
     _ = data, title
-    svg = build_svg(mode=mode, accessibility=accessibility)
+    svg = build_svg(mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "chord")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 if __name__ == "__main__":

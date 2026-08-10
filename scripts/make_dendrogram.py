@@ -55,7 +55,8 @@ from typing import Any, Dict, List, Optional, Tuple
 from xml.sax.saxutils import escape
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _style import BG, FONT_MONO, INK, leveled_colors, load_palette, os_dark_style  # noqa: E402
+from _style import BG, INK, leveled_colors, load_palette, os_dark_style  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _svg import svg_open  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
@@ -75,8 +76,6 @@ SUBINK = "#6E6E73"       # secondary text
 # figure and fights the coloured clusters; a soft grey lets the colour lead.
 SPINE = "#A6A6AE"        # neutral merge links above the cut
 GRIDLINE = "#ECECF0"     # hairline neutral
-
-FONT = "Roboto, system-ui, sans-serif"
 
 
 # ------------------------------------------------------------------
@@ -137,20 +136,22 @@ DEMO_DATA: List[Dict[str, Any]] = [
 
 # Flat-cluster hues, assigned left-to-right by the leftmost leaf of each
 # cluster below the cut.
-def _cluster_colors(accessibility: str = "universal") -> List[str]:
+def _cluster_colors(accessibility: str = "universal", theme: str = "corporate") -> List[str]:
     """Return the four flat-cluster hues at a given accessibility level.
 
     Parameters
     ----------
     accessibility : str, optional
         Palette accessibility level forwarded to :func:`_style.load_palette`.
+    theme : str, optional
+        Forwarded to :func:`_style.load_palette`. Defaults to ``"corporate"``.
 
     Returns
     -------
     list of str
         Four hex strings, one per flat cluster (left-to-right by leftmost leaf).
     """
-    palette = load_palette(accessibility)
+    palette = load_palette(accessibility, theme=theme)
     return [
         palette.get("Green", "#34C759"),    # fresh / health
         palette.get("Blue", "#007AFF"),     # household staples
@@ -310,7 +311,7 @@ def _fmt(v: float) -> str:
     return f"{v:.1f}"
 
 
-def build_svg(mode: str = "self-contained", accessibility: str = "universal") -> str:
+def build_svg(mode: str = "self-contained", accessibility: str = "universal", theme: str = "corporate") -> str:
     """Assemble the full dendrogram SVG document as a string.
 
     Parameters
@@ -324,13 +325,18 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         (``"universal"`` default, plus ``"high-contrast"``, ``"monochrome"``,
         ``"deuteranopia"``, ``"protanopia"`` and ``"tritanopia"``). Wired
         through the ``--accessibility`` CLI flag by :func:`_render.render_cli`.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
     str
         A complete, standalone SVG document.
     """
-    cluster_colors = _cluster_colors(accessibility)
+    mono_family = mono_stack_for_theme(theme)
+    cluster_colors = _cluster_colors(accessibility, theme=theme)
     nodes = _build_nodes()
     geometry, max_height = _compute_geometry()
     membership = _flat_clusters()
@@ -356,7 +362,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         "root. Each cluster is set apart by its branch grouping, not by colour "
         "alone, so it reads in greyscale and for colour-blind viewers."
     )
-    parts.append(svg_open(WIDTH, HEIGHT, "dendro-title", "dendro-desc", font_family=FONT))
+    parts.append(svg_open(WIDTH, HEIGHT, "dendro-title", "dendro-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="dendro-title">{escape(title_txt)}</title>')
     parts.append(f'<desc id="dendro-desc">{escape(desc_txt)}</desc>')
 
@@ -429,7 +435,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         # Tick label (mono, like the house axis labels).
         parts.append(
             f'<text x="{axis_x - 10:.1f}" y="{gy + 5:.1f}" text-anchor="end" '
-            f'font-family="{FONT_MONO}" font-size="15" fill="{SUBINK}">'
+            f'font-family="{mono_family}" font-size="15" fill="{SUBINK}">'
             f'{tv:.1f}</text>'
         )
     # Axis title, rotated up the left edge.
@@ -590,7 +596,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         )
         parts.append(
             f'<text x="{legend_x + 28:.1f}" y="{ry + 20:.1f}" '
-            f'font-family="{FONT_MONO}" font-size="13.5" fill="{SUBINK}">'
+            f'font-family="{mono_family}" font-size="13.5" fill="{SUBINK}">'
             f'{size} line{"s" if size != 1 else ""}</text>'
         )
         ry += 62
@@ -615,6 +621,7 @@ def make_dendrogram(
     title: str = "",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the grocery-basket dendrogram SVG and write it to ``out``.
 
@@ -638,6 +645,8 @@ def make_dendrogram(
         title is fixed prose.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -645,9 +654,9 @@ def make_dendrogram(
         Absolute path to the written SVG file.
     """
     _ = data, title  # accepted for dispatcher parity; see docstring
-    svg = build_svg(mode=mode, accessibility=accessibility)
+    svg = build_svg(mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "dendrogram")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

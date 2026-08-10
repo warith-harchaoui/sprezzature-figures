@@ -62,6 +62,7 @@ from _style import (  # noqa: E402
 )
 from _svg import xml_escape  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 
 # --------------------------------------------------------------------------- #
@@ -244,6 +245,7 @@ def build_svg(
     flows: Optional[List[Dict[str, Any]]] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Render the full parallel-sets diagram as an SVG string.
 
@@ -267,6 +269,10 @@ def build_svg(
         ``"monochrome"``, ``"deuteranopia"``, ``"protanopia"`` or
         ``"tritanopia"``). The ``"universal"`` default is the
         colour-vision-safe standard and leaves the shipped palette unchanged.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
@@ -275,8 +281,13 @@ def build_svg(
         hover interaction, native ``<title>`` tooltips, no external
         assets, no JavaScript).
     """
+    chrome_family = chrome_stack_for_theme(theme)
+    # This file's mono literal predates _style.FONT_MONO and is missing the
+    # "ui-monospace" fallback -- keep it exact for corporate (byte-identical
+    # to the pre-theme render) and only swap in the full academic stack.
+    mono_family = "Roboto Mono, monospace" if theme == "corporate" else mono_stack_for_theme(theme)
     flows = flows if flows else FLOWS
-    palette = load_palette(accessibility)
+    palette = load_palette(accessibility, theme=theme)
     ink = "#1D1D1F"
     secondary = "#6E6E73"
     hairline = "#E9E9EB"
@@ -387,18 +398,18 @@ def build_svg(
 
     # -- title block -------------------------------------------------------- #
     parts.append(
-        f'<text x="{margin}" y="72" font-family="Roboto, system-ui, sans-serif" '
+        f'<text x="{margin}" y="72" font-family="{chrome_family}" '
         f'font-size="42" font-weight="600" fill="{ink}">'
         "Who survived the Titanic</text>"
     )
     parts.append(
-        f'<text x="{margin}" y="112" font-family="Roboto, system-ui, sans-serif" '
+        f'<text x="{margin}" y="112" font-family="{chrome_family}" '
         f'font-size="23" fill="{secondary}">'
         "Sex and age decided far more than the fare: women and children lived, "
         "third-class men did not</text>"
     )
     parts.append(
-        f'<text x="{margin}" y="142" font-family="Roboto, system-ui, sans-serif" '
+        f'<text x="{margin}" y="142" font-family="{chrome_family}" '
         f'font-size="16" fill="{secondary}">'
         "1,316 passengers &#183; ribbon width = number of people on that "
         "path &#183; colour = outcome</text>"
@@ -414,7 +425,7 @@ def build_svg(
             cx, anchor = axis_x[i] + bin_w / 2.0, "middle"
         parts.append(
             f'<text x="{cx:.1f}" y="{plot_top - 26:.1f}" '
-            'font-family="Roboto Mono, monospace" font-size="15" '
+            f'font-family="{mono_family}" font-size="15" '
             f'letter-spacing="0.8" fill="{secondary}" text-anchor="{anchor}">'
             f"{xml_escape(axis_title.upper())}</text>"
         )
@@ -505,13 +516,13 @@ def build_svg(
                 tx, anchor = x + bin_w + label_gap, "start"
             parts.append(
                 f'<text x="{tx:.1f}" y="{b["cy"] - 4:.1f}" '
-                'font-family="Roboto, system-ui, sans-serif" font-size="20" '
+                f'font-family="{chrome_family}" font-size="20" '
                 f'font-weight="500" fill="{ink}" text-anchor="{anchor}">'
                 f"{xml_escape(cat)}</text>"
             )
             parts.append(
                 f'<text x="{tx:.1f}" y="{b["cy"] + 19:.1f}" '
-                'font-family="Roboto Mono, monospace" font-size="14" '
+                f'font-family="{mono_family}" font-size="14" '
                 f'fill="{secondary}" text-anchor="{anchor}">{xml_escape(sub)}</text>'
             )
 
@@ -527,7 +538,7 @@ def build_svg(
     lx: float = margin
     parts.append(
         f'<text x="{lx}" y="{legend_y - 30:.1f}" '
-        'font-family="Roboto Mono, monospace" font-size="15" '
+        f'font-family="{mono_family}" font-size="15" '
         f'letter-spacing="0.8" fill="{secondary}">'
         "RIBBON COLOUR = OUTCOME</text>"
     )
@@ -539,7 +550,7 @@ def build_svg(
         )
         parts.append(
             f'<text x="{lx + 33:.1f}" y="{legend_y:.1f}" '
-            'font-family="Roboto, system-ui, sans-serif" font-size="20" '
+            f'font-family="{chrome_family}" font-size="20" '
             f'fill="{ink}">{xml_escape(cat)}</text>'
         )
         lx += 33 + 13.0 * len(cat) + 48
@@ -578,6 +589,7 @@ def make_parallel_sets(
     title: str = "",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the parallel-sets diagram and write the SVG to *out*.
 
@@ -593,6 +605,8 @@ def make_parallel_sets(
         Output path. Defaults to ``assets/svg-examples/parallel-sets.svg``.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -602,9 +616,9 @@ def make_parallel_sets(
     _ = title
     rows = data if data else DEMO_DATA
     flows = _rows_to_flows(rows)
-    svg = build_svg(flows, mode=mode, accessibility=accessibility)
+    svg = build_svg(flows, mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "parallel-sets")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 # --------------------------------------------------------------------------- #

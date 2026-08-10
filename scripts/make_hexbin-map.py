@@ -65,6 +65,7 @@ from _svg import hex_to_rgb as _hex_to_rgb, svg_open  # noqa: E402
 from _svg import xml_escape  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
 
 # ------------------------------------------------------------------
@@ -662,7 +663,7 @@ _CALLOUTS: List[Tuple[str, float, float, str]] = [
 # ------------------------------------------------------------------
 # Build
 # ------------------------------------------------------------------
-def build_svg(mode: str = "self-contained", accessibility: str = "universal") -> str:
+def build_svg(mode: str = "self-contained", accessibility: str = "universal", theme: str = "corporate") -> str:
     """Assemble the full geographic-hexbin-map SVG document as a string.
 
     Parameters
@@ -676,13 +677,17 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         (``"universal"``, ``"high-contrast"``, ``"monochrome"``,
         ``"deuteranopia"``, ``"protanopia"`` or ``"tritanopia"``). Defaults to
         ``"universal"``, the colour-vision-safe standard.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
     str
         A complete, standalone SVG document.
     """
-    palette = load_palette(accessibility)
+    palette = load_palette(accessibility, theme=theme)
     red = palette.get("Red", "#FF3B30")
 
     rings = _load_land_rings()
@@ -711,7 +716,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
 
     # ---- header scaffold ----
     parts: List[str] = []
-    parts.append(svg_open(_WIDTH, _HEIGHT, "hb-title", "hb-desc"))
+    parts.append(svg_open(_WIDTH, _HEIGHT, "hb-title", "hb-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(
         '<title id="hb-title">Three decades of large earthquakes trace the '
         'Ring of Fire</title>'
@@ -953,6 +958,7 @@ def make_hexbin_map(
     title: str = "",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the geographic hexbin map and write it to ``out``.
 
@@ -961,9 +967,9 @@ def make_hexbin_map(
     demo geography and values are baked into the hand-authored SVG, so ``data``
     and ``title`` are accepted for dispatcher parity and unused.
     """
-    svg = build_svg(mode=mode, accessibility=accessibility)
+    svg = build_svg(mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "hexbin-map")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

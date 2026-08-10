@@ -32,6 +32,7 @@ from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _style import BG, INK, SECONDARY, load_palette  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
 
 DEMO_DATA: List[Dict[str, Any]] = [
@@ -67,6 +68,7 @@ def build_svg(
     height: int = 480,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full donut chart SVG document as a string.
 
@@ -82,6 +84,10 @@ def build_svg(
     mode, accessibility : str, optional
         Forwarded to :func:`_interactive.fullscreen_control` /
         :func:`_style.load_palette`.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
@@ -90,7 +96,7 @@ def build_svg(
     """
     rows = sorted(data if data else DEMO_DATA, key=lambda r: -float(r["visits"]))
     total = sum(float(r["visits"]) for r in rows) or 1.0
-    palette = load_palette(accessibility)
+    palette = load_palette(accessibility, theme=theme)
     hue_order = [palette.get(h, d) for h, d in (
         ("Red", "#FF3B30"), ("Orange", "#FF9500"), ("Yellow", "#FFCC00"),
         ("Green", "#28CD41"), ("Teal", "#79DBDC"), ("Blue", "#007AFF"),
@@ -106,7 +112,7 @@ def build_svg(
     r_label = r_outer + 24.0
 
     parts: List[str] = []
-    parts.append(svg_open(width, height, "donut-title", "donut-desc"))
+    parts.append(svg_open(width, height, "donut-title", "donut-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="donut-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="donut-desc">Donut chart of {len(rows)} sources totalling {total:,.0f}. '
@@ -175,6 +181,7 @@ def make_donut(
     height: int = 480,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render a hand-authored donut chart and write the SVG to *out*.
 
@@ -191,6 +198,8 @@ def make_donut(
         Canvas size in pixels.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -204,9 +213,9 @@ def make_donut(
     True
     """
     svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
-                     mode=mode, accessibility=accessibility)
+                     mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "donut")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

@@ -67,7 +67,8 @@ from typing import Any, Dict, List, Optional, Tuple
 from xml.sax.saxutils import escape
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _style import BG, FONT_MONO, INK, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
+from _style import BG, INK, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 from _svg import hex_to_rgb as _hex_to_rgb, svg_open  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control, hover_isolate_css  # noqa: E402
@@ -83,8 +84,6 @@ HEIGHT = 1220
 SUBINK = "#6E6E73"     # secondary text
 HAIRLINE = "#E5E5EA"   # neutral hairline
 LEADER = "#B8B8BE"     # slightly darker hairline for call-out leaders
-
-FONT = "Roboto, system-ui, sans-serif"
 
 # The packed disk is centred in the lower ~78 % of the canvas, clear of
 # the header block. These are resolved after the pack solve (below).
@@ -735,7 +734,7 @@ def _text_color_for(fill: str) -> str:
     return "#FFFFFF" if lum < 0.58 else INK
 
 
-def build_svg(mode: str = "self-contained", accessibility: str = "universal") -> str:
+def build_svg(mode: str = "self-contained", accessibility: str = "universal", theme: str = "corporate") -> str:
     """Assemble the full circle-packing SVG document as a string.
 
     Parameters
@@ -756,6 +755,10 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         ``"tritanopia"``). The ``"universal"`` default is the
         colour-vision-safe standard and leaves the shipped palette (and so
         the emitted SVG) unchanged; any other level remaps every package hue.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
@@ -764,13 +767,14 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         Every mark is drawn once in its final state — no entrance
         animation.
     """
+    mono_family = mono_stack_for_theme(theme)
     root = _layout()
 
-    # ``universal`` reuses the module-level PACKAGE_COLOR verbatim (output
-    # stays byte-identical); any other level re-reads the palette at that
-    # accessibility level and recolours every node by its package.
-    if accessibility and accessibility != "universal":
-        pal = load_palette(accessibility)
+    # ``universal`` + ``corporate`` reuses the module-level PACKAGE_COLOR
+    # verbatim (output stays byte-identical); any other accessibility level
+    # or theme re-reads the palette and recolours every node by its package.
+    if theme != "corporate" or (accessibility and accessibility != "universal"):
+        pal = load_palette(accessibility, theme=theme)
         package_color = {
             "services": pal.get("Blue", "#007AFF"),
             "api": pal.get("Orange", "#FF9500"),
@@ -810,7 +814,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         "core, and tests. The packing is gap-free: bigger balls mean more code."
     )
 
-    parts.append(svg_open(WIDTH, HEIGHT, "cp-title", "cp-desc", font_family=FONT))
+    parts.append(svg_open(WIDTH, HEIGHT, "cp-title", "cp-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="cp-title">{escape(title_txt)}</title>')
     parts.append(f'<desc id="cp-desc">{escape(desc_txt)}</desc>')
 
@@ -931,7 +935,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
                     f'<text x="{cx:.1f}" '
                     f'y="{top + n_name * line_h + loc_fs * 0.15:.1f}" '
                     f'text-anchor="middle" dominant-baseline="central" '
-                    f'font-family="{FONT_MONO}" font-size="{loc_fs:.1f}" '
+                    f'font-family="{mono_family}" font-size="{loc_fs:.1f}" '
                     f'fill="{subcol}" opacity="{sub_opacity}" '
                     f'pointer-events="none">{loc:,}</text>'
                 )
@@ -943,16 +947,16 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     parts.append("</g>")  # #packs
 
     # --- package name labels around the outside on leader lines ---
-    _emit_package_labels(parts, root)
+    _emit_package_labels(parts, root, mono_family)
 
     parts.append("</g>")  # #packing
 
     # --- hero call-out ---
     if hero_geom is not None:
-        _emit_hero_callout(parts, hero_geom)
+        _emit_hero_callout(parts, hero_geom, mono_family)
 
     # --- legend + footnote ---
-    _emit_legend(parts, root)
+    _emit_legend(parts, root, mono_family)
     parts.append(
         f'<text x="{margin_left}" y="{HEIGHT - 26}" font-size="15" '
         f'fill="{SUBINK}">Circle area is proportional to lines of code. '
@@ -964,7 +968,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     return "".join(parts)
 
 
-def _emit_package_labels(parts: List[str], root: Dict[str, Any]) -> None:
+def _emit_package_labels(parts: List[str], root: Dict[str, Any], mono_family: str) -> None:
     """Emit a package name pill just outside each package circle.
 
     The pill sits on the circle's outward radial (pointing away from the
@@ -1008,12 +1012,12 @@ def _emit_package_labels(parts: List[str], root: Dict[str, Any]) -> None:
             f'width="{w:.1f}" height="{h:.1f}" rx="{h / 2:.1f}" fill="{color}"/>'
             f'<text x="{lab_x:.1f}" y="{lab_y:.1f}" text-anchor="middle" '
             f'dominant-baseline="central" font-size="{fs}" font-weight="700" '
-            f'font-family="{FONT_MONO}" fill="#FFFFFF">{escape(label)}</text></g>'
+            f'font-family="{mono_family}" fill="#FFFFFF">{escape(label)}</text></g>'
         )
     parts.append("</g>")
 
 
-def _emit_hero_callout(parts: List[str], hero: Dict[str, Any]) -> None:
+def _emit_hero_callout(parts: List[str], hero: Dict[str, Any], mono_family: str) -> None:
     """Draw a call-out from the biggest module to a captioned pill.
 
     The pill sits in the free space at the upper-left of the packing so it
@@ -1049,7 +1053,7 @@ def _emit_hero_callout(parts: List[str], hero: Dict[str, Any]) -> None:
     # Caption block: a coloured name + two ink lines, right-aligned, no box.
     parts.append(
         f'<text x="{cap_x:.1f}" y="{cap_y:.1f}" text-anchor="end" '
-        f'font-size="24" font-weight="700" font-family="{FONT_MONO}" '
+        f'font-size="24" font-weight="700" font-family="{mono_family}" '
         f'fill="{color}">{escape(line1)}</text>'
     )
     parts.append(
@@ -1060,7 +1064,7 @@ def _emit_hero_callout(parts: List[str], hero: Dict[str, Any]) -> None:
     parts.append("</g>")
 
 
-def _emit_legend(parts: List[str], root: Dict[str, Any]) -> None:
+def _emit_legend(parts: List[str], root: Dict[str, Any], mono_family: str) -> None:
     """Emit the package legend as a swatch column, bottom-left.
 
     Each row: a hue swatch, the package name, and its share of the total
@@ -1093,10 +1097,10 @@ def _emit_legend(parts: List[str], root: Dict[str, Any]) -> None:
         )
         parts.append(
             f'<text x="{lx + 26:.1f}" y="{ry:.1f}" font-size="16" '
-            f'font-family="{FONT_MONO}" fill="{INK}">{escape(str(pkg["label"]))}</text>'
+            f'font-family="{mono_family}" fill="{INK}">{escape(str(pkg["label"]))}</text>'
         )
         parts.append(
-            f'<text x="{lx + 168:.1f}" y="{ry:.1f}" font-family="{FONT_MONO}" '
+            f'<text x="{lx + 168:.1f}" y="{ry:.1f}" font-family="{mono_family}" '
             f'font-size="15" fill="{SUBINK}" text-anchor="end">{share:.0f}%</text>'
         )
         ry += 30
@@ -1115,6 +1119,7 @@ def make_circle_packing(
     title: str = "",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the house-styled circle-packing diagram and write the SVG to *out*.
 
@@ -1134,6 +1139,8 @@ def make_circle_packing(
         Accepted for CLI/dispatcher parity; unused (see ``data``).
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -1147,9 +1154,9 @@ def make_circle_packing(
     True
     """
     _ = data, title
-    svg = build_svg(mode=mode, accessibility=accessibility)
+    svg = build_svg(mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "circle-packing")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 if __name__ == "__main__":

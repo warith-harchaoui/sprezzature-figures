@@ -28,8 +28,9 @@ from typing import Any, Dict, List, Optional
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _style import BG, FONT_MONO, GRIDLINE, INK, SECONDARY, cycle_hues, load_palette  # noqa: E402
+from _style import BG, GRIDLINE, INK, SECONDARY, cycle_hues  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 
 QUARTERS = ["Q1", "Q2", "Q3", "Q4"]
@@ -45,8 +46,10 @@ DEMO_DATA: List[Dict[str, Any]] = [
 ]
 
 
-def _type_colors(types: List[str], accessibility: str = "universal") -> Dict[str, str]:
-    return cycle_hues(types, accessibility, hues=['Blue', 'Green', 'Orange', 'Purple'])
+def _type_colors(
+    types: List[str], accessibility: str = "universal", theme: str = "corporate"
+) -> Dict[str, str]:
+    return cycle_hues(types, accessibility, hues=['Blue', 'Green', 'Orange', 'Purple'], theme=theme)
 
 
 def build_svg(
@@ -57,6 +60,7 @@ def build_svg(
     height: int = 480,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full 100%-stacked bar chart SVG document as a string.
 
@@ -73,12 +77,17 @@ def build_svg(
     mode, accessibility : str, optional
         Forwarded to :func:`_interactive.fullscreen_control` /
         :func:`_style.load_palette`.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
     str
         A complete, standalone SVG document.
     """
+    mono_family = mono_stack_for_theme(theme)
     rows = data if data else DEMO_DATA
     seen_quarters: List[str] = []
     for r in rows:
@@ -90,7 +99,7 @@ def build_svg(
         if r["type"] not in seen_types:
             seen_types.append(r["type"])
     types = [t for t in TYPES if t in seen_types] + [t for t in seen_types if t not in TYPES]
-    colors = _type_colors(types, accessibility)
+    colors = _type_colors(types, accessibility, theme=theme)
     lookup: Dict[tuple, float] = {(r["quarter"], r["type"]): float(r["share"]) for r in rows}
 
     plot_x, plot_y = 60.0, 150.0
@@ -105,7 +114,7 @@ def build_svg(
         return plot_y + plot_h - frac * plot_h
 
     parts: List[str] = []
-    parts.append(svg_open(width, height, "sb-title", "sb-desc"))
+    parts.append(svg_open(width, height, "sb-title", "sb-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="sb-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="sb-desc">100% stacked bar chart of {len(types)} segments across '
@@ -142,7 +151,7 @@ def build_svg(
             f'stroke="{GRIDLINE}" stroke-width="1"/>'
         )
         parts.append(
-            f'<text x="{plot_x - 10:.1f}" y="{ty + 4:.1f}" font-size="11" font-family="{FONT_MONO}" '
+            f'<text x="{plot_x - 10:.1f}" y="{ty + 4:.1f}" font-size="11" font-family="{mono_family}" '
             f'fill="{SECONDARY}" text-anchor="end">{frac * 100:.0f}%</text>'
         )
     parts.append(
@@ -201,6 +210,7 @@ def make_stacked_bar(
     height: int = 480,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render a hand-authored 100%-stacked bar chart and write the SVG to *out*.
 
@@ -217,6 +227,8 @@ def make_stacked_bar(
         Canvas size in pixels.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -230,9 +242,9 @@ def make_stacked_bar(
     True
     """
     svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
-                     mode=mode, accessibility=accessibility)
+                     mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "stacked-bar")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

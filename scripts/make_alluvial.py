@@ -58,6 +58,7 @@ from _style import (  # noqa: E402
     os_adaptive_style,
     os_dark_style,
 )
+from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 from _interactive import fullscreen_control, hover_isolate_css  # noqa: E402
 
 
@@ -233,6 +234,7 @@ def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Render the full alluvial diagram as an SVG string.
 
@@ -252,6 +254,10 @@ def build_svg(
         colour-vision-safe standard; other levels (``"high-contrast"``,
         ``"monochrome"``, ``"deuteranopia"``, ``"protanopia"``,
         ``"tritanopia"``) remap the hues via the sprezzature-colors engine.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
@@ -260,7 +266,12 @@ def build_svg(
         hover interaction, native ``<title>`` tooltips, no external
         assets, no JavaScript).
     """
-    palette = load_palette(accessibility)
+    palette = load_palette(accessibility, theme=theme)
+    chrome_family = chrome_stack_for_theme(theme)
+    # This file's mono literal predates the shared MONO_STACK constant and
+    # is missing the "ui-monospace" fallback -- keep it exact for corporate
+    # (byte-identical pre-theme render) and only switch stacks for academic.
+    mono_family = "Roboto Mono, monospace" if theme == "corporate" else mono_stack_for_theme(theme)
     ink = "#1D1D1F"
     secondary = "#6E6E73"
 
@@ -384,18 +395,18 @@ def build_svg(
 
     # -- title block -------------------------------------------------------- #
     parts.append(
-        f'<text x="{margin}" y="60" font-family="Roboto, system-ui, sans-serif" '
+        f'<text x="{margin}" y="60" font-family="{chrome_family}" '
         f'font-size="38" font-weight="600" fill="{ink}">'
         "Where new sign-ups end up after 90 days</text>"
     )
     parts.append(
-        f'<text x="{margin}" y="98" font-family="Roboto, system-ui, sans-serif" '
+        f'<text x="{margin}" y="98" font-family="{chrome_family}" '
         f'font-size="22" fill="{secondary}">'
         "Referral drives the most retention; free-trial users churn far more "
         "than paying ones</text>"
     )
     parts.append(
-        f'<text x="{margin}" y="128" font-family="Roboto, system-ui, sans-serif" '
+        f'<text x="{margin}" y="128" font-family="{chrome_family}" '
         f'font-size="16" fill="{secondary}">'
         "Illustrative cohort of 1,000 sign-ups &#183; ribbon width = number of "
         "users on that path</text>"
@@ -417,7 +428,7 @@ def build_svg(
             cx, anchor = axis_x[i] + block_w + label_gap, "start"
         parts.append(
             f'<text x="{cx:.1f}" y="{plot_top - 22:.1f}" '
-            'font-family="Roboto Mono, monospace" font-size="15" '
+            f'font-family="{mono_family}" font-size="15" '
             f'letter-spacing="0.6" fill="{secondary}" text-anchor="{anchor}">'
             f"{_esc(axis_title.upper())}</text>"
         )
@@ -521,13 +532,13 @@ def build_svg(
                 anchor = "start"
             parts.append(
                 f'<text x="{tx:.1f}" y="{b["cy"] - 4:.1f}" '
-                'font-family="Roboto, system-ui, sans-serif" font-size="19" '
+                f'font-family="{chrome_family}" font-size="19" '
                 f'font-weight="500" fill="{ink}" text-anchor="{anchor}">'
                 f"{label}</text>"
             )
             parts.append(
                 f'<text x="{tx:.1f}" y="{b["cy"] + 18:.1f}" '
-                'font-family="Roboto Mono, monospace" font-size="14" '
+                f'font-family="{mono_family}" font-size="14" '
                 f'fill="{secondary}" text-anchor="{anchor}">{sub}</text>'
             )
 
@@ -536,7 +547,7 @@ def build_svg(
     lx: float = margin
     parts.append(
         f'<text x="{lx}" y="{legend_y - 30:.1f}" '
-        'font-family="Roboto Mono, monospace" font-size="15" '
+        f'font-family="{mono_family}" font-size="15" '
         f'letter-spacing="0.6" fill="{secondary}">'
         "RIBBON COLOUR = 90-DAY OUTCOME</text>"
     )
@@ -549,7 +560,7 @@ def build_svg(
         )
         parts.append(
             f'<text x="{lx + 30:.1f}" y="{legend_y:.1f}" '
-            'font-family="Roboto, system-ui, sans-serif" font-size="19" '
+            f'font-family="{chrome_family}" font-size="19" '
             f'fill="{ink}">{_esc(cat)}</text>'
         )
         lx += 30 + 13.0 * len(cat) + 40
@@ -574,6 +585,7 @@ def make_alluvial(
     title: str = "",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the house-styled alluvial diagram and write the SVG to *out*.
 
@@ -590,6 +602,8 @@ def make_alluvial(
         subtitle are derived from the data's structure and stay fixed.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -603,9 +617,9 @@ def make_alluvial(
     True
     """
     _ = title
-    svg = build_svg(data, mode=mode, accessibility=accessibility)
+    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "alluvial")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 if __name__ == "__main__":

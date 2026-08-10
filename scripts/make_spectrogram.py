@@ -42,6 +42,7 @@ from _render import svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _style import os_dark_style  # noqa: E402
 from _svg import fmt_compact  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 import argparse
 from pathlib import Path
@@ -62,8 +63,6 @@ _DEFAULT_OUT = (
 _INK = "#1D1D1F"        # primary text
 _SECONDARY = "#6E6E73"  # subtitle / secondary text
 _BG = "#FFFFFF"         # white ground
-_FONT = "Roboto, system-ui, sans-serif"
-_MONO = "Roboto Mono, ui-monospace, monospace"
 
 # Sequential *power* ramp. A perceptually-uniform viridis-style stop list
 # (dark blue → teal → green → yellow) reads loudness monotonically and is
@@ -276,6 +275,7 @@ def build_svg(
     sr: int,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full spectrogram SVG document as a string.
 
@@ -298,6 +298,10 @@ def build_svg(
         lightness through a categorical accessibility level would de-tune the
         ramp and break its monotonic loudness read, so the level is intentionally
         not applied here.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
@@ -308,6 +312,8 @@ def build_svg(
     # perceptual map, already CVD/greyscale-safe (see the docstring). Reference
     # it so linters see the argument used.
     del accessibility
+    font_family = chrome_stack_for_theme(theme)
+    mono_family = mono_stack_for_theme(theme)
     power_db: np.ndarray = stft["power_db"]         # (n_freq, n_frames)
     times: np.ndarray = stft["times"]
     freqs: np.ndarray = stft["freqs"]
@@ -349,7 +355,7 @@ def build_svg(
     parts.append(
         f'<svg role="img" aria-label="{title}" '
         f'xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" '
-        f'viewBox="0 0 {width} {height}" font-family="{_FONT}">'
+        f'viewBox="0 0 {width} {height}" font-family="{font_family}">'
     )
     # OS-adaptive overrides (additive, media-gated so the default light render is
     # byte-for-byte unchanged). This is a PERCEPTUAL figure — loudness rides the
@@ -446,7 +452,7 @@ def build_svg(
         )
         parts.append(
             f'<text x="{fmt_compact(gx, decimals=2)}" y="{fmt_compact(axis_y + 28, decimals=2)}" text-anchor="middle" '
-            f'font-size="15" font-family="{_MONO}" fill="{_SECONDARY}">'
+            f'font-size="15" font-family="{mono_family}" fill="{_SECONDARY}">'
             f"{tsec:.1f}</text>"
         )
     parts.append(
@@ -469,7 +475,7 @@ def build_svg(
         )
         parts.append(
             f'<text x="{fmt_compact(m_left - 13, decimals=2)}" y="{fmt_compact(gy + 5, decimals=2)}" text-anchor="end" '
-            f'font-size="15" font-family="{_MONO}" fill="{_SECONDARY}">'
+            f'font-size="15" font-family="{mono_family}" fill="{_SECONDARY}">'
             f"{fhz // 1000 if fhz else 0}{'k' if fhz else ''}</text>"
         )
     parts.append(
@@ -533,7 +539,7 @@ def build_svg(
         ly = leg_top + (1.0 - frac) * leg_h
         parts.append(
             f'<text x="{fmt_compact(leg_x + leg_w + 9, decimals=2)}" y="{fmt_compact(ly + 5, decimals=2)}" '
-            f'font-size="14" font-family="{_MONO}" fill="{_SECONDARY}">{lbl}</text>'
+            f'font-size="14" font-family="{mono_family}" fill="{_SECONDARY}">{lbl}</text>'
         )
     parts.append(
         f'<text x="{fmt_compact(leg_x + leg_w / 2, decimals=2)}" y="{fmt_compact(leg_top - 14, decimals=2)}" '
@@ -586,6 +592,12 @@ def _build_parser() -> argparse.ArgumentParser:
             "already CVD- and greyscale-safe, so a categorical level is not applied)"
         ),
     )
+    parser.add_argument(
+        "--theme",
+        choices=("corporate", "academic"),
+        default="corporate",
+        help="visual theme: corporate (default, Roboto) or academic (LaTeX-style Latin Modern)",
+    )
     return parser
 
 
@@ -597,6 +609,7 @@ def make_spectrogram(
     seed: int = 3,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Synthesise the clip, compute its STFT, and write the spectrogram SVG.
 
@@ -615,6 +628,8 @@ def make_spectrogram(
         Seed for the reproducible noise floor and tap bursts.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -624,9 +639,9 @@ def make_spectrogram(
     del title
     signal, sr = _synthesise_clip(data, seed=seed)
     stft = _stft_db(signal, sr)
-    svg = build_svg(stft, sr, mode, accessibility=accessibility)
+    svg = build_svg(stft, sr, mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "spectrogram")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main(argv: List[str] | None = None) -> int:
@@ -634,8 +649,8 @@ def main(argv: List[str] | None = None) -> int:
     args = _build_parser().parse_args(argv)
     signal, sr = _synthesise_clip(seed=args.seed)
     stft = _stft_db(signal, sr)
-    svg = build_svg(stft, sr, args.mode, accessibility=args.accessibility)
-    write_svg(args.out, svg)
+    svg = build_svg(stft, sr, args.mode, accessibility=args.accessibility, theme=args.theme)
+    write_svg(args.out, svg, theme=args.theme)
     return 0
 
 

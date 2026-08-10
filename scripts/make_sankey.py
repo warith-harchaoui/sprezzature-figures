@@ -52,10 +52,11 @@ from typing import Any, Dict, List, Tuple
 from xml.sax.saxutils import escape
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _style import BG, FONT_MONO, GRIDLINE, INK, forced_color_patterns, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
+from _style import BG, INK, forced_color_patterns, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _svg import svg_open  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 # ------------------------------------------------------------------
 # Canvas + house-style tokens
@@ -72,8 +73,6 @@ SUBINK = "#6E6E73"       # secondary text
 NODE_WIDTH = 24          # px width of each node bar
 NODE_PAD = 40            # vertical gap between stacked nodes in a layer
 LABEL_GAP = 14           # gap between a node bar and its text label
-
-FONT = "Roboto, system-ui, sans-serif"
 
 _DEFAULT_STAGE_NAMES = ("Channel", "Engagement", "Intent", "Outcome")
 _NEUTRAL_RIBBON = "#AEAEB2"
@@ -293,6 +292,7 @@ def build_svg(
     volume_unit: str = "visitors",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full Sankey SVG document as a string.
 
@@ -321,18 +321,23 @@ def build_svg(
         Palette accessibility level (``"universal"``, ``"high-contrast"``,
         ``"monochrome"``, ``"deuteranopia"``, ``"protanopia"`` or
         ``"tritanopia"``).
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
     str
         A complete, standalone SVG document.
     """
+    mono_family = mono_stack_for_theme(theme)
     data = data if data is not None else DEMO_DATA
     nodes, links = _nodes_and_links(data)
     dominant = _root_dominance(nodes, links)
     roots = [n for n, _l, layer in nodes if layer == 0]
 
-    palette = load_palette(accessibility)
+    palette = load_palette(accessibility, theme=theme)
     palette_colors = list(palette.values())
     root_color = {root: palette_colors[i % len(palette_colors)] for i, root in enumerate(roots)}
 
@@ -358,7 +363,7 @@ def build_svg(
     parts: List[str] = []
 
     # --- header: accessible role + title + description ---
-    parts.append(svg_open(WIDTH, HEIGHT, "sankey-title", "sankey-desc", font_family=FONT))
+    parts.append(svg_open(WIDTH, HEIGHT, "sankey-title", "sankey-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="sankey-title">{escape(title)}</title>')
     parts.append(f'<desc id="sankey-desc">{escape(desc)}</desc>')
 
@@ -475,7 +480,7 @@ def build_svg(
             f'<text x="{lx:.1f}" y="{cy:.1f}" text-anchor="{anchor}">'
             f'<tspan x="{lx:.1f}" dy="-0.35em" font-size="19" '
             f'font-weight="600" fill="{INK}">{escape(label)}</tspan>'
-            f'<tspan x="{lx:.1f}" dy="1.25em" font-family="{FONT_MONO}" '
+            f'<tspan x="{lx:.1f}" dy="1.25em" font-family="{mono_family}" '
             f'font-weight="400" fill="{SUBINK}" font-size="15">'
             f'{escape(vol_txt)}</tspan></text>'
         )
@@ -498,6 +503,7 @@ def make_sankey(
     volume_unit: str = "visitors",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render a Sankey diagram and write it to *out*.
 
@@ -520,6 +526,8 @@ def make_sankey(
         Interactivity mode for the fullscreen control.
     accessibility : str
         Palette accessibility level.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -541,9 +549,10 @@ def make_sankey(
         volume_unit=volume_unit,
         mode=mode,
         accessibility=accessibility,
+        theme=theme,
     )
     dest = Path(out) if out else svg_example_path(__file__, "sankey")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

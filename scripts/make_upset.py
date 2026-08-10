@@ -50,6 +50,7 @@ from typing import Dict, List, Optional, Tuple
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 
@@ -156,6 +157,7 @@ def build_svg(
     data: Optional[List[Dict[str, object]]] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full UpSet-plot SVG document as a string.
 
@@ -173,6 +175,10 @@ def build_svg(
         (``"universal"``, ``"high-contrast"``, ``"monochrome"``,
         ``"deuteranopia"``, ``"protanopia"`` or ``"tritanopia"``). Defaults to
         ``"universal"``, the colour-vision-safe standard.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
@@ -180,7 +186,7 @@ def build_svg(
         A complete, standalone SVG document.
     """
     sets, combinations = _reshape(data)
-    palette = load_palette(accessibility)
+    palette = load_palette(accessibility, theme=theme)
     bar_color = palette.get("Blue", "#007AFF")   # intersection-size bars
     dot_color = palette.get("Purple", "#AF52DE")  # active matrix dots + set bars
 
@@ -243,7 +249,7 @@ def build_svg(
     parts: List[str] = []
 
     # ---- header ----
-    parts.append(svg_open(width, height, "up-title", "up-desc"))
+    parts.append(svg_open(width, height, "up-title", "up-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(
         '<title id="up-title">How many users each combination of '
         'contact channels reaches</title>'
@@ -455,6 +461,7 @@ def make_upset(
     title: str = "",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the UpSet plot and write the SVG to *out*.
 
@@ -470,6 +477,8 @@ def make_upset(
         specific takeaway, so this is unused.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -477,9 +486,9 @@ def make_upset(
         Absolute path to the written SVG file.
     """
     del title
-    svg = build_svg(data, mode=mode, accessibility=accessibility)
+    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "upset")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

@@ -69,6 +69,7 @@ from _style import BG, FONT_MONO, INK, forced_color_patterns, load_palette, os_a
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _svg import svg_open  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 # ------------------------------------------------------------------
 # Canvas + house-style tokens
@@ -86,8 +87,6 @@ CENTER_Y = 660.0
 SUBINK = "#6E6E73"       # secondary text
 HAIRLINE = "#E5E5EA"     # neutral hairline
 LEADER = "#C7C7CC"       # slightly darker hairline for label leaders
-
-FONT = "Roboto, system-ui, sans-serif"
 
 # Radius (in pixels) of each generation ring, indexed by depth. Ring 1
 # is pushed well clear of the root pill so the two never collide; the
@@ -174,7 +173,7 @@ def _rows_to_nodes(rows: List[Dict[str, Any]]) -> List[Node]:
     ]
 
 # Each top-level pillar owns a hue; the subtree inherits it.
-def _pillar_color(accessibility: str = "universal") -> Dict[str, str]:
+def _pillar_color(accessibility: str = "universal", theme: str = "corporate") -> Dict[str, str]:
     """Map each top-level pillar to its hue at a given accessibility level.
 
     Parameters
@@ -182,13 +181,15 @@ def _pillar_color(accessibility: str = "universal") -> Dict[str, str]:
     accessibility : str, optional
         The palette accessibility level threaded into :func:`load_palette`;
         ``"universal"`` (default) is the colour-vision-safe standard.
+    theme : str, optional
+        Forwarded to :func:`load_palette`.
 
     Returns
     -------
     dict of str to str
         ``{pillar_id: hex}`` for every top-level pillar.
     """
-    palette = load_palette(accessibility)
+    palette = load_palette(accessibility, theme=theme)
     return {
         "ingest": palette.get("Blue", "#007AFF"),
         "transform": palette.get("Orange", "#FF9500"),
@@ -408,6 +409,7 @@ def build_svg(
     nodes: List[Node] = NODES,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full radial-tree SVG document as a string.
 
@@ -426,6 +428,10 @@ def build_svg(
         colour-vision-safe standard; other levels (``"high-contrast"``,
         ``"monochrome"``, ``"deuteranopia"``, ``"protanopia"``,
         ``"tritanopia"``) remap the hues via the sprezzature-colors engine.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
@@ -434,7 +440,8 @@ def build_svg(
         isolation. Every mark is drawn once in its final state — there is
         no entrance animation.
     """
-    pillar_color = _pillar_color(accessibility)
+    mono_family = mono_stack_for_theme(theme)
+    pillar_color = _pillar_color(accessibility, theme=theme)
     geometry = _compute_geometry(pillar_color, nodes)
     parent = _parent_of(nodes)
     kids = _children_of(nodes)
@@ -458,7 +465,7 @@ def build_svg(
         "arc between rings."
     )
 
-    parts.append(svg_open(WIDTH, HEIGHT, "rt-title", "rt-desc", font_family=FONT))
+    parts.append(svg_open(WIDTH, HEIGHT, "rt-title", "rt-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="rt-title">{escape(title_txt)}</title>')
     parts.append(f'<desc id="rt-desc">{escape(desc_txt)}</desc>')
 
@@ -577,7 +584,7 @@ def build_svg(
     parts.append("</g>")  # #tree
 
     # --- pillar legend (bottom-left) ---
-    _emit_legend(parts, pillar_color, nodes)
+    _emit_legend(parts, pillar_color, nodes, mono_family=mono_family)
 
     # --- footnote: read the affordances ---
     parts.append(
@@ -732,6 +739,7 @@ def _emit_legend(
     parts: List[str],
     pillar_color: Optional[Dict[str, str]] = None,
     nodes: List[Node] = NODES,
+    mono_family: str = FONT_MONO,
 ) -> None:
     """Emit the pillar legend as a small swatch column, bottom-left.
 
@@ -745,6 +753,10 @@ def _emit_legend(
     nodes : list of Node, optional
         ``(id, label, parent)`` tuples used to count each pillar's subtree
         size; defaults to the module-level :data:`NODES`.
+    mono_family : str, optional
+        Tick/numeric-label font stack. Defaults to :data:`_style.FONT_MONO`
+        (the corporate stack); pass :func:`sprezzature_figures.fonts.mono_stack_for_theme`'s
+        result for the academic theme.
     """
     if pillar_color is None:
         pillar_color = PILLAR_COLOR
@@ -782,7 +794,7 @@ def _emit_legend(
             f'{escape(names[pid])}</text>'
         )
         parts.append(
-            f'<text x="{lx + 150:.1f}" y="{ry:.1f}" font-family="{FONT_MONO}" '
+            f'<text x="{lx + 150:.1f}" y="{ry:.1f}" font-family="{mono_family}" '
             f'font-size="14" fill="{SUBINK}">{size} node{"s" if size != 1 else ""}</text>'
         )
         ry += 31
@@ -796,6 +808,7 @@ def make_radial_tree(
     title: str = "",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the radial tree and write the SVG to *out*.
 
@@ -812,6 +825,8 @@ def make_radial_tree(
         the takeaway text (unused).
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -821,9 +836,9 @@ def make_radial_tree(
     _ = title
     rows = data if data else DEMO_DATA
     nodes = _rows_to_nodes(rows)
-    svg = build_svg(nodes, mode=mode, accessibility=accessibility)
+    svg = build_svg(nodes, mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "radial-tree")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

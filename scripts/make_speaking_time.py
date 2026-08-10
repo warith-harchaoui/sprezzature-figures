@@ -29,6 +29,7 @@ from _interactive import fullscreen_control
 from _render import svg_example_path, write_raster_companions, write_svg
 from _style import load_palette, os_adaptive_style, os_dark_style, qualitative_sequence
 from _svg import point_on_circle, xml_escape
+from sprezzature_figures.fonts import chrome_stack_for_theme
 
 # ------------------------------------------------------------------
 # Illustrative diarisation output — a 40-minute round-table. Talk-time
@@ -45,7 +46,7 @@ DEMO_DATA: List[Dict[str, Any]] = [
     {"name": "Karim Haddad", "seconds": 336},    # 05:36 · 14 %
 ]
 
-def _slice_colors(accessibility: str = "universal", n: int = 4) -> List[str]:
+def _slice_colors(accessibility: str = "universal", n: int = 4, theme: str = "corporate") -> List[str]:
     """Return ``n`` donut-slice hues at a given accessibility level.
 
     The first four match the house Blue/Orange/Green/Purple set (so the
@@ -59,17 +60,19 @@ def _slice_colors(accessibility: str = "universal", n: int = 4) -> List[str]:
         Palette accessibility level forwarded to :func:`_style.load_palette`.
     n : int, optional
         Number of slice colours to return (one per speaker). Default 4.
+    theme : str, optional
+        Forwarded to :func:`_style.load_palette` / :func:`_style.qualitative_sequence`.
 
     Returns
     -------
     list of str
         ``n`` hex strings, one per speaker slice (in speaker order).
     """
-    pal = load_palette(accessibility)
+    pal = load_palette(accessibility, theme=theme)
     base = [pal["Blue"], pal["Orange"], pal["Green"], pal["Purple"]]
     if n <= len(base):
         return base[:n]
-    return (base + qualitative_sequence(n))[:n]
+    return (base + qualitative_sequence(n, theme=theme))[:n]
 
 
 SLICE_COLORS = _slice_colors()
@@ -77,7 +80,6 @@ SLICE_COLORS = _slice_colors()
 INK = "#1D1D1F"
 SECONDARY = "#6E6E73"
 LEADER = "#C7C7CC"
-FONT = "Roboto, system-ui, sans-serif"
 
 # Geometry — deliberately large.
 W, H = 1120, 760
@@ -147,6 +149,7 @@ def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full speaking-time donut as an SVG string.
 
@@ -164,9 +167,13 @@ def build_svg(
         (``"universal"`` default, plus ``"high-contrast"``, ``"monochrome"``,
         ``"deuteranopia"``, ``"protanopia"`` and ``"tritanopia"``). Wired
         through the ``--accessibility`` CLI flag by :func:`main`.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
     """
     speakers = data if data else DEMO_DATA
-    slice_colors = _slice_colors(accessibility, n=len(speakers))
+    slice_colors = _slice_colors(accessibility, n=len(speakers), theme=theme)
     total = sum(int(s["seconds"]) for s in speakers)
 
     # Accessible name + description. Every slice is also labelled outside
@@ -190,7 +197,7 @@ def build_svg(
 
     parts: List[str] = [
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" '
-        f'viewBox="0 0 {W} {H}" font-family="{FONT}" role="img" '
+        f'viewBox="0 0 {W} {H}" font-family="{chrome_stack_for_theme(theme)}" role="img" '
         f'aria-labelledby="st-title st-desc">',
         f'<title id="st-title">{xml_escape(a11y_title)}</title>',
         f'<desc id="st-desc">{xml_escape(a11y_desc)}</desc>',
@@ -280,6 +287,7 @@ def make_speaking_time(
     title: str = "",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the speaking-time donut and write it to ``out``.
 
@@ -299,11 +307,13 @@ def make_speaking_time(
         by design (unused).
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
     """
     _ = title
-    svg = build_svg(data, mode=mode, accessibility=accessibility)
+    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "speaking_time")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:
@@ -321,10 +331,16 @@ def main() -> None:
         default="universal",
         help="palette accessibility level (default: universal, the CVD-safe standard)",
     )
+    parser.add_argument(
+        "--theme",
+        choices=("corporate", "academic"),
+        default="corporate",
+        help="visual theme: corporate (default, Roboto) or academic (LaTeX-style Latin Modern)",
+    )
     args = parser.parse_args()
-    svg = build_svg(mode=args.mode, accessibility=args.accessibility)
+    svg = build_svg(mode=args.mode, accessibility=args.accessibility, theme=args.theme)
     out_svg = svg_example_path(__file__, "speaking_time")
-    write_svg(out_svg, svg)
+    write_svg(out_svg, svg, theme=args.theme)
     write_raster_companions(svg, __file__, "speaking_time")
 
 

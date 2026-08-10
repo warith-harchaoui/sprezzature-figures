@@ -28,8 +28,9 @@ from typing import Any, Dict, List, Optional
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _style import BG, FONT_MONO, GRIDLINE, INK, SECONDARY, cycle_hues, load_palette  # noqa: E402
+from _style import BG, GRIDLINE, INK, SECONDARY, cycle_hues  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 
 MONTHS = ["Jan", "Apr", "Jul", "Oct"]
@@ -59,8 +60,10 @@ DEMO_DATA: List[Dict[str, Any]] = [
 ]
 
 
-def _city_colors(cities: List[str], accessibility: str = "universal") -> Dict[str, str]:
-    return cycle_hues(cities, accessibility, hues=['Blue', 'Purple', 'Green', 'Orange', 'Red'])
+def _city_colors(
+    cities: List[str], accessibility: str = "universal", theme: str = "corporate"
+) -> Dict[str, str]:
+    return cycle_hues(cities, accessibility, hues=['Blue', 'Purple', 'Green', 'Orange', 'Red'], theme=theme)
 
 
 def build_svg(
@@ -71,6 +74,7 @@ def build_svg(
     height: int = 519,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full column-range chart SVG document as a string.
 
@@ -86,12 +90,17 @@ def build_svg(
     mode, accessibility : str, optional
         Forwarded to :func:`_interactive.fullscreen_control` /
         :func:`_style.load_palette`.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
     str
         A complete, standalone SVG document.
     """
+    mono_family = mono_stack_for_theme(theme)
     rows = data if data else DEMO_DATA
     seen_cities: List[str] = []
     for r in rows:
@@ -99,7 +108,7 @@ def build_svg(
             seen_cities.append(r["city"])
     cities = [c for c in CITIES if c in seen_cities] + [c for c in seen_cities if c not in CITIES]
     months = sorted({r["month"] for r in rows}, key=lambda m: MONTHS.index(m) if m in MONTHS else 0)
-    colors = _city_colors(cities, accessibility)
+    colors = _city_colors(cities, accessibility, theme=theme)
 
     lookup: Dict[tuple, tuple] = {(r["city"], r["month"]): (float(r["low"]), float(r["high"])) for r in rows}
     lows = [v[0] for v in lookup.values()]
@@ -120,7 +129,7 @@ def build_svg(
         return plot_y + plot_h - (v - y0) / (y1 - y0) * plot_h
 
     parts: List[str] = []
-    parts.append(svg_open(width, height, "cr-title", "cr-desc"))
+    parts.append(svg_open(width, height, "cr-title", "cr-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="cr-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="cr-desc">Floating-bar range chart of {len(cities)} cities across '
@@ -166,7 +175,7 @@ def build_svg(
             f'stroke="{GRIDLINE}" stroke-width="1"/>'
         )
         parts.append(
-            f'<text x="{plot_x - 10:.1f}" y="{ty + 4:.1f}" font-size="11" font-family="{FONT_MONO}" '
+            f'<text x="{plot_x - 10:.1f}" y="{ty + 4:.1f}" font-size="11" font-family="{mono_family}" '
             f'fill="{SECONDARY}" text-anchor="end">{val:.0f}</text>'
         )
     parts.append(
@@ -224,6 +233,7 @@ def make_columnrange(
     height: int = 519,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render a hand-authored column-range chart and write the SVG to *out*.
 
@@ -240,6 +250,8 @@ def make_columnrange(
         Canvas size in pixels.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -253,9 +265,9 @@ def make_columnrange(
     True
     """
     svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
-                     mode=mode, accessibility=accessibility)
+                     mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "columnrange")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

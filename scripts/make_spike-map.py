@@ -56,6 +56,7 @@ from typing import Any, Dict, List, Optional, Tuple
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 
@@ -425,6 +426,7 @@ def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full spike-map SVG document as a string.
 
@@ -447,6 +449,10 @@ def build_svg(
         ``"tritanopia"``). Defaults to ``"universal"``, the
         colour-vision-safe standard, which leaves the shipped palette
         unchanged.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
@@ -461,7 +467,7 @@ def build_svg(
         for r in rows
     ]
 
-    palette = load_palette(accessibility)
+    palette = load_palette(accessibility, theme=theme)
     spike_color = palette[_SPIKE_KEY]
 
     rings = _load_land_rings()
@@ -481,7 +487,7 @@ def build_svg(
 
     # ---- header scaffold ----
     parts: List[str] = []
-    parts.append(svg_open(_WIDTH, _HEIGHT, "sm-title", "sm-desc"))
+    parts.append(svg_open(_WIDTH, _HEIGHT, "sm-title", "sm-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(
         '<title id="sm-title">The world\'s tallest skyline of people stands '
         'over Asia — spike height is metropolitan population</title>'
@@ -773,6 +779,7 @@ def make_spike_map(
     title: str = "",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the spike map and write it to ``out``.
 
@@ -792,11 +799,13 @@ def make_spike_map(
         specific takeaway, so this is unused.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
     """
     del title
-    svg = build_svg(data, mode=mode, accessibility=accessibility)
+    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "spike-map")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

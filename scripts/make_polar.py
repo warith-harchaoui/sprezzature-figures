@@ -43,6 +43,7 @@ from _render import svg_example_path, write_svg  # noqa: E402
 from _style import CORNERS, leveled_colors, os_adaptive_style, os_dark_style  # noqa: E402
 from _svg import fmt_compact, svg_open  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
 import argparse
 import math
@@ -174,6 +175,7 @@ def build_svg(
     counts: np.ndarray,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full polar-plot SVG document as a string.
 
@@ -191,6 +193,10 @@ def build_svg(
         categorical set of two, collected into a ``{name: hex}`` map and wrapped
         with :func:`_style.leveled_colors`. ``"universal"`` (default) is the
         identity, so the shipped SVG is byte-for-byte unchanged.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
@@ -248,7 +254,7 @@ def build_svg(
         "rise to a sharp morning peak near 8 a.m., dip at midday, then climb to "
         "the day's tallest peak near 6 p.m. before falling into the night."
     )
-    parts.append(svg_open(width, height, "polar-title", "polar-desc", font_family=_FONT))
+    parts.append(svg_open(width, height, "polar-title", "polar-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="polar-title">{title}</title>')
     parts.append(f'<desc id="polar-desc">{aria}</desc>')
     # OS-adaptive override (additive; the default render is byte-identical
@@ -451,6 +457,12 @@ def _build_parser() -> argparse.ArgumentParser:
         default="universal",
         help="palette accessibility level (default: universal, the CVD-safe standard)",
     )
+    parser.add_argument(
+        "--theme",
+        choices=("corporate", "academic"),
+        default="corporate",
+        help="visual theme: corporate (default, Roboto) or academic (LaTeX-style Latin Modern)",
+    )
     return parser
 
 
@@ -461,6 +473,7 @@ def make_polar(
     title: str = "",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the polar (clock) plot and write the SVG to *out*.
 
@@ -476,6 +489,8 @@ def make_polar(
         the takeaway text (unused).
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -484,17 +499,17 @@ def make_polar(
     """
     _ = title
     counts = _counts_from_rows(data)
-    svg = build_svg(counts, mode, accessibility=accessibility)
+    svg = build_svg(counts, mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "polar")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main(argv: List[str] | None = None) -> int:
     """CLI entry point: build the SVG and write it to disk."""
     args = _build_parser().parse_args(argv)
     counts = _sample_hourly_trips(seed=args.seed)
-    svg = build_svg(counts, args.mode, accessibility=args.accessibility)
-    write_svg(args.out, svg)
+    svg = build_svg(counts, args.mode, accessibility=args.accessibility, theme=args.theme)
+    write_svg(args.out, svg, theme=args.theme)
     return 0
 
 

@@ -31,7 +31,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
-from _style import BG, FONT_MONO, GRIDLINE, INK, SECONDARY  # noqa: E402
+from _style import BG, GRIDLINE, INK, SECONDARY  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 COLOR_REF = "#C7C7CC"
 COLOR_ROC = "#007AFF"
@@ -80,6 +81,7 @@ def build_svg(
     accessibility: str = "universal",
     x_label: str = "False positive rate",
     y_label: str = "True positive rate",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full ROC curve SVG document as a string.
 
@@ -99,6 +101,10 @@ def build_svg(
         Axis titles. No log-scale option on either axis: both are rates
         bounded to [0, 1] and the curve always passes through exactly
         (0, 0), which a log axis cannot represent (log(0) is undefined).
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
@@ -106,6 +112,7 @@ def build_svg(
         A complete, standalone SVG document.
     """
     _ = accessibility
+    mono_family = mono_stack_for_theme(theme)
     rows = data if data else DEMO_DATA
     points, auc = _roc_curve(rows)
     title = f"ROC Curve — AUC {auc:.2f}"
@@ -123,7 +130,7 @@ def build_svg(
         return plot_y + plot_h - v * plot_h
 
     parts: List[str] = []
-    parts.append(svg_open(width, height, "roc-title", "roc-desc"))
+    parts.append(svg_open(width, height, "roc-title", "roc-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="roc-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="roc-desc">ROC curve over {len(rows)} scored observations, area under '
@@ -144,11 +151,11 @@ def build_svg(
         parts.append(f'<line x1="{plot_x:.1f}" y1="{ty:.1f}" x2="{plot_x + plot_w:.1f}" y2="{ty:.1f}" stroke="{GRIDLINE}" stroke-width="1"/>')
         parts.append(f'<line x1="{tx:.1f}" y1="{plot_y:.1f}" x2="{tx:.1f}" y2="{plot_y + plot_h:.1f}" stroke="{GRIDLINE}" stroke-width="1"/>')
         parts.append(
-            f'<text x="{plot_x - 10:.1f}" y="{ty + 4:.1f}" font-size="11" font-family="{FONT_MONO}" '
+            f'<text x="{plot_x - 10:.1f}" y="{ty + 4:.1f}" font-size="11" font-family="{mono_family}" '
             f'fill="{SECONDARY}" text-anchor="end">{val:.1f}</text>'
         )
         parts.append(
-            f'<text x="{tx:.1f}" y="{plot_y + plot_h + 20:.1f}" font-size="11" font-family="{FONT_MONO}" '
+            f'<text x="{tx:.1f}" y="{plot_y + plot_h + 20:.1f}" font-size="11" font-family="{mono_family}" '
             f'fill="{SECONDARY}" text-anchor="middle">{val:.1f}</text>'
         )
     parts.append(
@@ -191,6 +198,7 @@ def make_roc_curve(
     accessibility: str = "universal",
     x_label: str = "False positive rate",
     y_label: str = "True positive rate",
+    theme: str = "corporate",
 ) -> Path:
     """Render a hand-authored ROC curve and write the SVG to *out*.
 
@@ -211,6 +219,8 @@ def make_roc_curve(
         Forwarded to :func:`build_svg`.
     x_label, y_label : str, optional
         Axis titles. Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -225,9 +235,9 @@ def make_roc_curve(
     """
     _ = title
     svg = build_svg(data, width=width, height=height, mode=mode, accessibility=accessibility,
-                     x_label=x_label, y_label=y_label)
+                     x_label=x_label, y_label=y_label, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "roc-curve")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

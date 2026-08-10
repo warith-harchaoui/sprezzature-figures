@@ -59,6 +59,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _style import leveled_colors, load_palette, os_dark_style  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
 
 
@@ -190,6 +191,7 @@ def build_svg(
     data: Optional[List[Dict[str, float]]] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full calibration-curve SVG string.
 
@@ -236,13 +238,17 @@ def build_svg(
         ``"high-contrast"``, ``"monochrome"``, ``"deuteranopia"``,
         ``"protanopia"`` and ``"tritanopia"``). Wired through the
         ``--accessibility`` CLI flag by :func:`_render.render_cli`.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
     str
         A complete, standalone SVG document.
     """
-    palette: Dict[str, str] = load_palette(accessibility)
+    palette: Dict[str, str] = load_palette(accessibility, theme=theme)
     over = palette.get("Red", "#FF3B30")      # model over-states the probability
     under = palette.get("Blue", "#007AFF")    # model under-states the probability
     curve = palette.get("Purple", "#AF52DE")  # the reliability curve itself
@@ -301,7 +307,7 @@ def build_svg(
     parts: List[str] = []
 
     # --- SVG root + accessible description ------------------------
-    parts.append(svg_open(width, height, "cal-title", "cal-desc"))
+    parts.append(svg_open(width, height, "cal-title", "cal-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(
         '<title id="cal-title">The churn model is overconfident: its '
         'high-risk calls miss the diagonal</title>'
@@ -698,6 +704,7 @@ def make_calibration(
     title: str = "",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the house-styled calibration curve and write the SVG to *out*.
 
@@ -714,6 +721,8 @@ def make_calibration(
         overconfidence finding and stays fixed.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -727,9 +736,9 @@ def make_calibration(
     True
     """
     _ = title
-    svg = build_svg(data, mode=mode, accessibility=accessibility)
+    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "calibration")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 if __name__ == "__main__":

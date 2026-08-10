@@ -59,7 +59,8 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _labels import label_cell  # noqa: E402
-from _style import BG, FONT_MONO, INK, leveled_colors, load_palette, os_dark_style  # noqa: E402
+from _style import BG, INK, leveled_colors, load_palette, os_dark_style  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _svg import svg_open  # noqa: E402
@@ -71,8 +72,6 @@ WIDTH = 1280
 HEIGHT = 1040
 SUBINK = "#6E6E73"         # secondary text
 AXIS = "#D2D2D7"           # axis + gridline grey (light, unobtrusive)
-
-FONT = "Roboto, system-ui, sans-serif"
 
 # Plot frame in canvas pixels. Generous left/bottom gutters hold the axis
 # titles; top gutter holds title + subtitle + legend; right gutter gives
@@ -113,7 +112,7 @@ _CLUSTER_PARAMS: Dict[str, Tuple[float, float, float, float, int]] = {
     "Power users": (208.0, 6.0, 22.0, 0.55, 30),
 }
 
-def _segment_colors(accessibility: str = "universal") -> Dict[str, str]:
+def _segment_colors(accessibility: str = "universal", theme: str = "corporate") -> Dict[str, str]:
     """Return the per-segment hue map at a given accessibility level.
 
     Parameters
@@ -121,13 +120,15 @@ def _segment_colors(accessibility: str = "universal") -> Dict[str, str]:
     accessibility : str, optional
         Palette accessibility level forwarded to :func:`_style.load_palette`;
         ``"universal"`` (default) is the identity.
+    theme : str, optional
+        Forwarded to :func:`_style.load_palette`. Defaults to ``"corporate"``.
 
     Returns
     -------
     dict of str to str
         ``{segment_name: "#RRGGBB"}``.
     """
-    palette = load_palette(accessibility)
+    palette = load_palette(accessibility, theme=theme)
     return {
         "Occasional":  palette.get("Blue", "#007AFF"),
         "Regular":     palette.get("Orange", "#FF9500"),
@@ -377,7 +378,9 @@ def _label_anchor(hull_px: List[Tuple[float, float]]) -> Tuple[float, float]:
 # ------------------------------------------------------------------
 # SVG emission
 # ------------------------------------------------------------------
-def build_svg(seed: int = 11, mode: str = "self-contained", accessibility: str = "universal") -> str:
+def build_svg(
+    seed: int = 11, mode: str = "self-contained", accessibility: str = "universal", theme: str = "corporate"
+) -> str:
     """Assemble the full convex-hull SVG document as a string.
 
     Parameters
@@ -394,13 +397,18 @@ def build_svg(seed: int = 11, mode: str = "self-contained", accessibility: str =
         (``"universal"``, ``"high-contrast"``, ``"monochrome"``,
         ``"deuteranopia"``, ``"protanopia"`` or ``"tritanopia"``). The default
         ``"universal"`` is the identity, so the shipped figure is unchanged.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
     str
         A complete, standalone SVG document.
     """
-    segment_color = _segment_colors(accessibility)
+    mono_family = mono_stack_for_theme(theme)
+    segment_color = _segment_colors(accessibility, theme=theme)
     data = make_data(seed=seed)
 
     title_txt = "Three customer segments carve out distinct territory"
@@ -420,7 +428,7 @@ def build_svg(seed: int = 11, mode: str = "self-contained", accessibility: str =
     )
 
     parts: List[str] = []
-    parts.append(svg_open(WIDTH, HEIGHT, "ch-title", "ch-desc", font_family=FONT))
+    parts.append(svg_open(WIDTH, HEIGHT, "ch-title", "ch-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="ch-title">{escape(title_txt)}</title>')
     parts.append(f'<desc id="ch-desc">{escape(desc_txt)}</desc>')
 
@@ -501,7 +509,7 @@ def build_svg(seed: int = 11, mode: str = "self-contained", accessibility: str =
         )
         parts.append(
             f'<text x="{px:.1f}" y="{PLOT_Y1 + 30:.1f}" text-anchor="middle" '
-            f'font-size="15" font-family="{FONT_MONO}" fill="{SUBINK}">${xt}</text>'
+            f'font-size="15" font-family="{mono_family}" fill="{SUBINK}">${xt}</text>'
         )
 
     # Y gridlines + labels (weekly active days).
@@ -514,7 +522,7 @@ def build_svg(seed: int = 11, mode: str = "self-contained", accessibility: str =
         )
         parts.append(
             f'<text x="{PLOT_X0 - 16:.1f}" y="{py + 5:.1f}" text-anchor="end" '
-            f'font-size="15" font-family="{FONT_MONO}" fill="{SUBINK}">{yt}</text>'
+            f'font-size="15" font-family="{mono_family}" fill="{SUBINK}">{yt}</text>'
         )
 
     # Emphasised baseline + left spine (slightly darker than the grid).
@@ -638,6 +646,7 @@ def make_convex_hull(
     seed: int = 11,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the convex-hull-over-clusters SVG and write it to ``out``.
 
@@ -665,6 +674,8 @@ def make_convex_hull(
         :data:`DEMO_DATA` was generated from).
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -672,9 +683,9 @@ def make_convex_hull(
         Absolute path to the written SVG file.
     """
     _ = data, title  # accepted for dispatcher parity; see docstring
-    svg = build_svg(seed=seed, mode=mode, accessibility=accessibility)
+    svg = build_svg(seed=seed, mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "convex-hull")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

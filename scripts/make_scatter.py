@@ -27,8 +27,9 @@ from typing import Any, Dict, List, Optional
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _style import BG, FONT_MONO, GRIDLINE, INK, SECONDARY, cycle_hues, load_palette  # noqa: E402
+from _style import BG, GRIDLINE, INK, SECONDARY, cycle_hues  # noqa: E402
 from _svg import fmt_number, svg_open, xml_escape  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 
 SEGMENTS = ["Economy", "Midsize", "Premium"]
@@ -56,8 +57,10 @@ def _make_demo_data() -> List[Dict[str, Any]]:
 DEMO_DATA: List[Dict[str, Any]] = _make_demo_data()
 
 
-def _segment_colors(segments: List[str], accessibility: str = "universal") -> Dict[str, str]:
-    return cycle_hues(segments, accessibility)
+def _segment_colors(
+    segments: List[str], accessibility: str = "universal", theme: str = "corporate"
+) -> Dict[str, str]:
+    return cycle_hues(segments, accessibility, theme=theme)
 
 
 def build_svg(
@@ -72,6 +75,7 @@ def build_svg(
     y_label: str = "Fuel economy (mpg)",
     diagonal: bool = False,
     square: bool = False,
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full scatter plot SVG document as a string.
 
@@ -87,12 +91,17 @@ def build_svg(
     mode, accessibility : str, optional
         Forwarded to :func:`_interactive.fullscreen_control` /
         :func:`_style.load_palette`.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
     str
         A complete, standalone SVG document.
     """
+    mono_family = mono_stack_for_theme(theme)
     rows = data if data else DEMO_DATA
     seen_segments: List[str] = []
     for r in rows:
@@ -100,7 +109,7 @@ def build_svg(
         if seg is not None and seg not in seen_segments:
             seen_segments.append(seg)
     segments = [s for s in SEGMENTS if s in seen_segments] + [s for s in seen_segments if s not in SEGMENTS]
-    colors = _segment_colors(segments, accessibility)
+    colors = _segment_colors(segments, accessibility, theme=theme)
     has_weight = any("weight" in r and r["weight"] is not None for r in rows)
 
     xs = [float(r["horsepower"]) for r in rows]
@@ -147,7 +156,7 @@ def build_svg(
         return r_min + (r_max - r_min) * math.sqrt(max(w, 0.0) / w_max)
 
     parts: List[str] = []
-    parts.append(svg_open(width, height, "sc-title", "sc-desc"))
+    parts.append(svg_open(width, height, "sc-title", "sc-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="sc-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="sc-desc">Scatter plot of {len(rows)} points. Horizontal axis is the '
@@ -181,7 +190,7 @@ def build_svg(
             f'stroke="{GRIDLINE}" stroke-width="1"/>'
         )
         parts.append(
-            f'<text x="{plot_x - 10:.1f}" y="{ty + 4:.1f}" font-size="11" font-family="{FONT_MONO}" '
+            f'<text x="{plot_x - 10:.1f}" y="{ty + 4:.1f}" font-size="11" font-family="{mono_family}" '
             f'fill="{SECONDARY}" text-anchor="end">{fmt_number(val)}</text>'
         )
     parts.append(
@@ -203,7 +212,7 @@ def build_svg(
             f'<line x1="{tx:.1f}" y1="{axis_y:.1f}" x2="{tx:.1f}" y2="{axis_y + 6:.1f}" stroke="{INK}" stroke-width="1"/>'
         )
         parts.append(
-            f'<text x="{tx:.1f}" y="{axis_y + 20:.1f}" font-size="11" font-family="{FONT_MONO}" '
+            f'<text x="{tx:.1f}" y="{axis_y + 20:.1f}" font-size="11" font-family="{mono_family}" '
             f'fill="{SECONDARY}" text-anchor="middle">{fmt_number(val)}</text>'
         )
     parts.append(
@@ -259,7 +268,7 @@ def build_svg(
                 parts.append(f'<circle cx="{leg_x + r_max:.1f}" cy="{cy:.1f}" r="{r:.1f}" fill="none" stroke="{SECONDARY}" stroke-width="1"/>')
                 parts.append(
                     f'<text x="{leg_x + r_max * 2 + 10:.1f}" y="{cy + 4:.1f}" font-size="12" '
-                    f'font-family="{FONT_MONO}" fill="{SECONDARY}">{val:.0f}</text>'
+                    f'font-family="{mono_family}" fill="{SECONDARY}">{val:.0f}</text>'
                 )
                 cursor_y = cy + r + 8
 
@@ -282,6 +291,7 @@ def make_scatter(
     y_label: str = "Fuel economy (mpg)",
     diagonal: bool = False,
     square: bool = False,
+    theme: str = "corporate",
 ) -> Path:
     """Render a hand-authored scatter plot and write the SVG to *out*.
 
@@ -298,6 +308,8 @@ def make_scatter(
         Canvas size in pixels.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -312,9 +324,9 @@ def make_scatter(
     """
     svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
                      mode=mode, accessibility=accessibility, x_label=x_label, y_label=y_label,
-                     diagonal=diagonal, square=square)
+                     diagonal=diagonal, square=square, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "scatter")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

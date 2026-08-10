@@ -60,10 +60,11 @@ from typing import Any, Dict, List, Optional, Tuple
 from xml.sax.saxutils import escape
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _style import BG, FONT_MONO, INK, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
+from _style import BG, INK, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _svg import svg_open  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 # ------------------------------------------------------------------
 # Canvas + house-style tokens
@@ -87,8 +88,6 @@ CENTRE_PULL = 0.52
 
 SUBINK = "#6E6E73"           # secondary text
 
-FONT = "Roboto, system-ui, sans-serif"
-
 
 # ------------------------------------------------------------------
 # The story: the internal module-dependency
@@ -110,7 +109,7 @@ SUBSYSTEMS: List[Tuple[str, List[str]]] = [
 
 # Brand hue per subsystem — the leaf colour and one end of every edge's
 # gradient.
-def _subsys_color(accessibility: str = "universal") -> Dict[str, str]:
+def _subsys_color(accessibility: str = "universal", theme: str = "corporate") -> Dict[str, str]:
     """Map each subsystem to its brand hue at a given accessibility level.
 
     Parameters
@@ -118,13 +117,15 @@ def _subsys_color(accessibility: str = "universal") -> Dict[str, str]:
     accessibility : str, optional
         The palette accessibility level threaded into :func:`load_palette`;
         ``"universal"`` (default) is the colour-vision-safe standard.
+    theme : str, optional
+        Forwarded to :func:`load_palette`. Defaults to ``"corporate"``.
 
     Returns
     -------
     dict of str to str
         ``{subsystem_name: hex}`` for every subsystem.
     """
-    palette = load_palette(accessibility)
+    palette = load_palette(accessibility, theme=theme)
     return {
         "Web UI":  palette.get("Blue", "#007AFF"),
         "API":     palette.get("Teal", "#5AC8FA"),
@@ -404,7 +405,7 @@ def _edge_control_points(
 # ------------------------------------------------------------------
 # SVG emission
 # ------------------------------------------------------------------
-def build_svg(mode: str = "self-contained", accessibility: str = "universal") -> str:
+def build_svg(mode: str = "self-contained", accessibility: str = "universal", theme: str = "corporate") -> str:
     """Assemble the full edge-bundling SVG document as a string.
 
     Parameters
@@ -418,13 +419,18 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         colour-vision-safe standard; other levels (``"high-contrast"``,
         ``"monochrome"``, ``"deuteranopia"``, ``"protanopia"``,
         ``"tritanopia"``) remap the hues via the sprezzature-colors engine.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
     str
         A complete, standalone SVG document.
     """
-    subsys_color = _subsys_color(accessibility)
+    mono_family = mono_stack_for_theme(theme)
+    subsys_color = _subsys_color(accessibility, theme=theme)
     leaves, parents = _compute_layout(subsys_color)
 
     title_txt = "Every subsystem reaches into Auth, and Billing burrows into Data"
@@ -445,7 +451,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     # Count edges per source subsystem so a source's cables draw thickest
     # first (thin threads layer cleanly on top).
     parts: List[str] = []
-    parts.append(svg_open(WIDTH, HEIGHT, "eb-title", "eb-desc", font_family=FONT))
+    parts.append(svg_open(WIDTH, HEIGHT, "eb-title", "eb-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="eb-title">{escape(title_txt)}</title>')
     parts.append(f'<desc id="eb-desc">{escape(desc_txt)}</desc>')
 
@@ -631,7 +637,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     )
     parts.append(
         f'<text x="{bx + 24}" y="{by + 76}" '
-        f'font-family="{FONT_MONO}" font-size="40" font-weight="700" '
+        f'font-family="{mono_family}" font-size="40" font-weight="700" '
         f'fill="{subsys_color["Auth"]}">Auth · {auth_in}</text>'
     )
     parts.append(
@@ -659,6 +665,7 @@ def make_edge_bundling(
     title: str = "",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the module-dependency edge-bundling SVG and write it to ``out``.
 
@@ -682,6 +689,8 @@ def make_edge_bundling(
         title is fixed prose.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -689,9 +698,9 @@ def make_edge_bundling(
         Absolute path to the written SVG file.
     """
     _ = data, title  # accepted for dispatcher parity; see docstring
-    svg = build_svg(mode=mode, accessibility=accessibility)
+    svg = build_svg(mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "edge-bundling")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

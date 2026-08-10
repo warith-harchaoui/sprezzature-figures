@@ -61,11 +61,12 @@ from typing import Any, Dict, List, Optional, Tuple
 from xml.sax.saxutils import escape
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _style import BG, FONT_MONO, INK, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
+from _style import BG, INK, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _svg import point_on_circle, svg_open  # noqa: E402
 from _labels import best_text_colour  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 # ------------------------------------------------------------------
 # Canvas + house-style tokens
@@ -110,7 +111,7 @@ _PARTY_FALLBACK: Dict[str, str] = {
 }
 
 
-def _parties(accessibility: str = "universal") -> List[Tuple[str, str, int, str]]:
+def _parties(accessibility: str = "universal", theme: str = "corporate") -> List[Tuple[str, str, int, str]]:
     """Return the party rows with hues resolved at an accessibility level.
 
     Parameters
@@ -118,13 +119,15 @@ def _parties(accessibility: str = "universal") -> List[Tuple[str, str, int, str]
     accessibility : str, optional
         Palette accessibility level forwarded to :func:`_style.load_palette`;
         ``"universal"`` (default) is the identity.
+    theme : str, optional
+        Forwarded to :func:`_style.load_palette`. Defaults to ``"corporate"``.
 
     Returns
     -------
     list of tuple
         ``(party name, short label, seat count, hex hue)`` in seating order.
     """
-    palette = load_palette(accessibility)
+    palette = load_palette(accessibility, theme=theme)
     return [
         (name, lab, seats, palette.get(base, _PARTY_FALLBACK[base]))
         for name, lab, seats, base in _PARTY_ROWS
@@ -410,6 +413,7 @@ def build_svg(
     parties: Optional[List[Tuple[str, str, int, str]]] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full hemicycle SVG document as a string.
 
@@ -429,13 +433,18 @@ def build_svg(
         (``"universal"``, ``"high-contrast"``, ``"monochrome"``,
         ``"deuteranopia"``, ``"protanopia"`` or ``"tritanopia"``). The default
         ``"universal"`` is the identity, so the shipped figure is unchanged.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
     str
         A complete, standalone SVG document.
     """
-    parties = parties if parties else _parties(accessibility)
+    mono_family = mono_stack_for_theme(theme)
+    parties = parties if parties else _parties(accessibility, theme)
     total_seats = sum(p[2] for p in parties)
     majority = total_seats // 2 + 1
     positions, assignment = _seat_positions_and_parties(parties, total_seats)
@@ -460,7 +469,7 @@ def build_svg(
         f"no party can govern alone and a coalition is required."
     )
 
-    parts.append(svg_open(WIDTH, HEIGHT, "parl-title", "parl-desc", font_family=FONT))
+    parts.append(svg_open(WIDTH, HEIGHT, "parl-title", "parl-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="parl-title">{escape(title_txt)}</title>')
     parts.append(f'<desc id="parl-desc">{escape(desc_txt)}</desc>')
 
@@ -536,7 +545,7 @@ def build_svg(
     )
     parts.append(
         f'<text x="{lx:.1f}" y="{ly - 20:.1f}" text-anchor="middle" '
-        f'font-family="{FONT_MONO}" font-size="15" font-weight="600" '
+        f'font-family="{mono_family}" font-size="15" font-weight="600" '
         f'fill="{BG}">{escape(lbl)}</text>'
     )
 
@@ -587,7 +596,7 @@ def build_svg(
         )
         parts.append(
             f'<text x="{wx:.1f}" y="{wy + 5:.1f}" text-anchor="middle" '
-            f'font-family="{FONT_MONO}" font-size="15" font-weight="700" '
+            f'font-family="{mono_family}" font-size="15" font-weight="700" '
             f'fill="{txt_fill}">{escape(wtext)}</text>'
         )
 
@@ -607,7 +616,7 @@ def build_svg(
     )
     parts.append(
         f'<text x="{CX:.1f}" y="{hub_cy + 12:.1f}" text-anchor="middle" '
-        f'font-family="{FONT_MONO}" font-size="60" font-weight="700" '
+        f'font-family="{mono_family}" font-size="60" font-weight="700" '
         f'fill="{lead_hue}">{lead_seats}</text>'
     )
     parts.append(
@@ -646,7 +655,7 @@ def build_svg(
         # hue, so pale hues like yellow never drop below text contrast).
         name_px = 0.58 * 18.0 * len(name)
         parts.append(
-            f'<text x="{tx + name_px + 10:.1f}" y="6" font-family="{FONT_MONO}" '
+            f'<text x="{tx + name_px + 10:.1f}" y="6" font-family="{mono_family}" '
             f'font-size="18" font-weight="700" fill="{INK}">{seats}</text>'
         )
         cursor += w + chip_gap
@@ -689,6 +698,7 @@ def make_parliament(
     title: str = "",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the parliament hemicycle and write the SVG to *out*.
 
@@ -704,6 +714,8 @@ def make_parliament(
         Output path. Defaults to ``assets/svg-examples/parliament.svg``.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -714,9 +726,9 @@ def make_parliament(
     if not data:
         # No data supplied: match main()/the shipped CLI exactly (build_svg
         # resolves _parties(accessibility) itself).
-        svg = build_svg(None, mode=mode, accessibility=accessibility)
+        svg = build_svg(None, mode=mode, accessibility=accessibility, theme=theme)
     else:
-        palette = load_palette(accessibility)
+        palette = load_palette(accessibility, theme=theme)
         resolved = [
             (
                 str(r["party"]), str(r["label"]), int(r["seats"]),
@@ -724,9 +736,9 @@ def make_parliament(
             )
             for r in data
         ]
-        svg = build_svg(resolved, mode=mode, accessibility=accessibility)
+        svg = build_svg(resolved, mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "parliament")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:
