@@ -204,6 +204,13 @@ pour un SVG autonome) ; les licences sont embarquées dans `assets/fonts/`
 (Roboto : OFL, Latin Modern : GUST Font License, toutes deux autorisant
 la redistribution groupée).
 
+`theme="academic"` bascule aussi les rampes de couleurs séquentielles
+(cartes de chaleur, densité hexbin, cartes de clusters, etc.) vers
+[viridis](https://bids.github.io/colormap/), la palette perceptuellement
+uniforme et sûre pour la vision des couleurs recommandée pour les figures
+scientifiques ; `"corporate"` conserve la rampe propre à chaque graphique,
+inchangée.
+
 ---
 
 ## Architecture

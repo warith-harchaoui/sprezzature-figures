@@ -203,6 +203,12 @@ Both fonts are embedded (self-contained SVGs need no external font
 loading); licenses are vendored in `assets/fonts/` (Roboto: OFL, Latin
 Modern: GUST Font License, both permit bundling).
 
+`theme="academic"` also switches sequential colour ramps (heatmaps, hexbin
+density, cluster maps, and similar) to [viridis](https://bids.github.io/colormap/),
+the perceptually-uniform, colour-vision-deficiency-safe colormap
+recommended for scientific figures; `"corporate"` keeps each chart's own
+tuned single-hue ramp unchanged.
+
 ---
 
 ## Architecture

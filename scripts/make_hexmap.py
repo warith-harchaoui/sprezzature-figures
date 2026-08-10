@@ -45,7 +45,7 @@ from typing import Any, Dict, List, Optional, Tuple
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import load_palette, os_dark_style  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
-from _svg import svg_open, xml_escape  # noqa: E402
+from _svg import svg_open, viridis, xml_escape  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
@@ -96,7 +96,9 @@ def _rgb_to_hex(rgb: Tuple[float, float, float]) -> str:
     return f"#{r:02X}{g:02X}{b:02X}"
 
 
-def _ramp(t: float, top: str, *, light: Tuple[int, int, int] = (234, 240, 250)) -> str:
+def _ramp(
+    t: float, top: str, *, light: Tuple[int, int, int] = (234, 240, 250), theme: str = "corporate"
+) -> str:
     """Interpolate a sequential single-hue ramp at position ``t`` in [0, 1].
 
     A pale tint at ``t = 0`` deepens to the saturated house Blue at
@@ -111,12 +113,18 @@ def _ramp(t: float, top: str, *, light: Tuple[int, int, int] = (234, 240, 250)) 
         The darkest hex at ``t = 1`` (the palette's Blue).
     light : tuple of int, optional
         The lightest colour at ``t = 0``.
+    theme : str, optional
+        ``"academic"`` swaps to the shared viridis colormap
+        (:func:`_svg.viridis`), ignoring `top`/`light`; the default
+        (``"corporate"``) keeps this tuned single-hue ramp unchanged.
 
     Returns
     -------
     str
         A ``#RRGGBB`` hex string.
     """
+    if theme == "academic":
+        return viridis(t)
     t = max(0.0, min(1.0, t))
     t = t ** 0.72  # gentle gamma so mid densities separate
     r1, g1, b1 = light
@@ -451,7 +459,7 @@ def build_svg(
         if cnt <= 0:
             fill = _EMPTY
         else:
-            fill = _ramp(cnt / max_count, blue)
+            fill = _ramp(cnt / max_count, blue, theme=theme)
         d = _hex_path(c["px"], c["py"], r * 0.985)  # tiny gap => white casing
         label = (
             f'{cnt} trip{"" if cnt == 1 else "s"}'
@@ -480,7 +488,7 @@ def build_svg(
     n_seg = 8
     for i in range(n_seg):
         t = 1.0 - i / (n_seg - 1)          # top swatch = darkest
-        col = _ramp(t, blue)
+        col = _ramp(t, blue, theme=theme)
         parts.append(
             f'<rect class="legend-swatch" x="0" y="{i * seg_h:.1f}" '
             f'width="{bar_w}" height="{seg_h:.1f}" fill="{col}"/>'

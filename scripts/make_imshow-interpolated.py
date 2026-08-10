@@ -42,7 +42,7 @@ Author
 from __future__ import annotations
 from _render import svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
-from _svg import fmt_compact  # noqa: E402
+from _svg import VIRIDIS_STOPS, color_ramp, fmt_compact, viridis  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
 import argparse
@@ -179,8 +179,13 @@ def _bilinear_upsample(field: np.ndarray, factor: int = 26) -> np.ndarray:
 # --------------------------------------------------------------------------- #
 # Colour ramp                                                                  #
 # --------------------------------------------------------------------------- #
-def _ramp_hex(t: float, stops: Sequence[Tuple[float, str]] = _BLUE_RAMP) -> str:
+def _ramp_hex(t: float, stops: Sequence[Tuple[float, str]] = _BLUE_RAMP, theme: str = "corporate") -> str:
     """Sample a multi-stop sRGB colour ramp at position ``t`` in ``[0, 1]``.
+
+    Thin wrapper around the shared :func:`_svg.color_ramp`.
+    ``theme="academic"`` swaps to the shared viridis colormap
+    (:func:`_svg.viridis`), ignoring `stops`; the default (``"corporate"``)
+    keeps `stops` (the tuned blue ramp) unchanged.
 
     Parameters
     ----------
@@ -188,23 +193,17 @@ def _ramp_hex(t: float, stops: Sequence[Tuple[float, str]] = _BLUE_RAMP) -> str:
         Position along the ramp, clamped to ``[0, 1]``.
     stops : sequence of (float, str)
         Ordered ``(position, "#RRGGBB")`` anchor stops.
+    theme : str, optional
+        Visual theme; see above.
 
     Returns
     -------
     str
         The interpolated colour as ``#RRGGBB``.
     """
-    t = min(1.0, max(0.0, t))
-    for (lo_t, lo_c), (hi_t, hi_c) in zip(stops, stops[1:]):
-        if lo_t <= t <= hi_t:
-            local = (t - lo_t) / (hi_t - lo_t) if hi_t > lo_t else 0.0
-            ar, ag, ab = int(lo_c[1:3], 16), int(lo_c[3:5], 16), int(lo_c[5:7], 16)
-            br, bg, bb = int(hi_c[1:3], 16), int(hi_c[3:5], 16), int(hi_c[5:7], 16)
-            r = round(ar + (br - ar) * local)
-            g = round(ag + (bg - ag) * local)
-            b = round(ab + (bb - ab) * local)
-            return f"#{r:02X}{g:02X}{b:02X}"
-    return stops[-1][1]
+    if theme == "academic":
+        return viridis(t)
+    return color_ramp(t, stops)
 
 
 # --------------------------------------------------------------------------- #
@@ -328,7 +327,7 @@ def build_svg(
     # Ground behind the cells (shows through the rounded clip corners).
     parts.append(
         f'<rect x="{fmt_compact(m_left, decimals=2)}" y="{fmt_compact(m_top, decimals=2)}" width="{fmt_compact(plot_w, decimals=2)}" '
-        f'height="{fmt_compact(plot_h, decimals=2)}" fill="{_BLUE_RAMP[0][1]}"/>'
+        f'height="{fmt_compact(plot_h, decimals=2)}" fill="{_ramp_hex(0.0, theme=theme)}"/>'
     )
     # Row j = 0 is the southern edge; draw it at the bottom of the plot so
     # north points up, as a field map reads.
@@ -337,7 +336,7 @@ def build_svg(
         row = fine[j]
         for i in range(fine_c):
             norm = (float(row[i]) - v_lo) / span
-            colour = _ramp_hex(norm)
+            colour = _ramp_hex(norm, theme=theme)
             x = m_left + i * cell_w
             parts.append(
                 f'<rect x="{fmt_compact(x, decimals=2)}" y="{fmt_compact(y, decimals=2)}" '
@@ -440,7 +439,7 @@ def build_svg(
     leg_h = plot_h - 20
     grad_id = "value-ramp"
     parts.append(f'<defs><linearGradient id="{grad_id}" x1="0" y1="1" x2="0" y2="0">')
-    for pos, col in _BLUE_RAMP:
+    for pos, col in (VIRIDIS_STOPS if theme == "academic" else _BLUE_RAMP):
         parts.append(f'<stop offset="{fmt_compact(pos * 100, decimals=2)}%" stop-color="{col}"/>')
     parts.append("</linearGradient></defs>")
     # A hairline light-neutral border keeps the ramp crisp on white — no hard
