@@ -27,14 +27,9 @@ from typing import Any, Dict, List, Optional
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _style import load_palette  # noqa: E402
-from _svg import svg_open, xml_escape  # noqa: E402
+from _style import BG, FONT_MONO, GRIDLINE, INK, SECONDARY, cycle_hues, load_palette  # noqa: E402
+from _svg import fmt_number, svg_open, xml_escape  # noqa: E402
 
-INK = "#1D1D1F"
-SECONDARY = "#6E6E73"
-BG = "#FFFFFF"
-GRIDLINE = "#E5E5EA"
-FONT_MONO = "Roboto Mono, ui-monospace, monospace"
 
 SEGMENTS = ["Economy", "Midsize", "Premium"]
 
@@ -62,10 +57,7 @@ DEMO_DATA: List[Dict[str, Any]] = _make_demo_data()
 
 
 def _segment_colors(segments: List[str], accessibility: str = "universal") -> Dict[str, str]:
-    palette = load_palette(accessibility)
-    hues = [palette.get("Blue", "#007AFF"), palette.get("Orange", "#FF9500"),
-            palette.get("Green", "#34C759"), palette.get("Purple", "#AF52DE")]
-    return {s: hues[i % len(hues)] for i, s in enumerate(segments)}
+    return cycle_hues(segments, accessibility)
 
 
 def build_svg(
@@ -76,6 +68,10 @@ def build_svg(
     height: int = 519,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    x_label: str = "Horsepower",
+    y_label: str = "Fuel economy (mpg)",
+    diagonal: bool = False,
+    square: bool = False,
 ) -> str:
     """Assemble the full scatter plot SVG document as a string.
 
@@ -114,12 +110,26 @@ def build_svg(
     x_pad, y_pad = (x_max - x_min) * 0.08, (y_max - y_min) * 0.10
     x0, x1 = x_min - x_pad, x_max + x_pad
     y0, y1 = y_min - y_pad, y_max + y_pad
+    # Do not pad an axis below zero when all its values are non-negative (distances,
+    # counts, magnitudes): a negative axis floor would be meaningless.
+    if x_min >= 0:
+        x0 = max(0.0, x0)
+    if y_min >= 0:
+        y0 = max(0.0, y0)
+    if square:
+        # One shared domain so both axes carry the same units, and (with a square plot
+        # area below) the same resolution, making the y = x line a true 45-degree diagonal.
+        lo, hi = min(x0, y0), max(x1, y1)
+        x0 = y0 = lo
+        x1 = y1 = hi
 
     right_margin = 176.0 if (has_weight or len(segments) > 1) else 40.0
     plot_x, plot_y = 60.0, 118.0
     bottom_reserved = 70.0
     plot_w = width - plot_x - right_margin
     plot_h = height - plot_y - bottom_reserved
+    if square:
+        plot_w = plot_h = min(plot_w, plot_h)  # equal pixels per unit on both axes
 
     def x_for(v: float) -> float:
         return plot_x + (v - x0) / (x1 - x0) * plot_w
@@ -172,11 +182,11 @@ def build_svg(
         )
         parts.append(
             f'<text x="{plot_x - 10:.1f}" y="{ty + 4:.1f}" font-size="11" font-family="{FONT_MONO}" '
-            f'fill="{SECONDARY}" text-anchor="end">{val:.0f}</text>'
+            f'fill="{SECONDARY}" text-anchor="end">{fmt_number(val)}</text>'
         )
     parts.append(
         f'<text x="18" y="{plot_y + plot_h / 2:.1f}" font-size="13" fill="{INK}" '
-        f'text-anchor="middle" transform="rotate(-90 18 {plot_y + plot_h / 2:.1f})">Fuel economy (mpg)</text>'
+        f'text-anchor="middle" transform="rotate(-90 18 {plot_y + plot_h / 2:.1f})">{xml_escape(y_label)}</text>'
     )
 
     # ---- x-axis ----
@@ -194,12 +204,21 @@ def build_svg(
         )
         parts.append(
             f'<text x="{tx:.1f}" y="{axis_y + 20:.1f}" font-size="11" font-family="{FONT_MONO}" '
-            f'fill="{SECONDARY}" text-anchor="middle">{val:.0f}</text>'
+            f'fill="{SECONDARY}" text-anchor="middle">{fmt_number(val)}</text>'
         )
     parts.append(
         f'<text x="{plot_x + plot_w / 2:.1f}" y="{axis_y + 42:.1f}" font-size="13" '
-        f'fill="{INK}" text-anchor="middle">Horsepower</text>'
+        f'fill="{INK}" text-anchor="middle">{xml_escape(x_label)}</text>'
     )
+
+    # ---- optional y = x reference line (identity: points on it are unchanged) ----
+    if diagonal:
+        lo, hi = max(x0, y0), min(x1, y1)
+        if hi > lo:
+            parts.append(
+                f'<line x1="{x_for(lo):.1f}" y1="{y_for(lo):.1f}" x2="{x_for(hi):.1f}" y2="{y_for(hi):.1f}" '
+                f'stroke="{SECONDARY}" stroke-width="1.3" stroke-dasharray="5 4" opacity="0.8"/>'
+            )
 
     # ---- points, largest-first so small ones never hide under big ones ----
     ordered = sorted(rows, key=lambda r: -(float(r.get("weight") or 0)))
@@ -259,6 +278,10 @@ def make_scatter(
     height: int = 519,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    x_label: str = "Horsepower",
+    y_label: str = "Fuel economy (mpg)",
+    diagonal: bool = False,
+    square: bool = False,
 ) -> Path:
     """Render a hand-authored scatter plot and write the SVG to *out*.
 
@@ -288,12 +311,14 @@ def make_scatter(
     True
     """
     svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
-                     mode=mode, accessibility=accessibility)
+                     mode=mode, accessibility=accessibility, x_label=x_label, y_label=y_label,
+                     diagonal=diagonal, square=square)
     dest = Path(out) if out else svg_example_path(__file__, "scatter")
     return write_svg(dest, svg)
 
 
 def main() -> None:
+    """CLI entry point: build the SVG and write it to disk."""
     render_cli(__file__, "scatter", build_svg, description="Generate a scatter plot.")
 
 

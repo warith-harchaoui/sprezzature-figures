@@ -75,4 +75,5 @@ class DatasetProfile(BaseModel):
     warnings: list[DataWarning] = Field(default_factory=list)
 
     def column(self, name: str) -> ColumnProfile | None:
+        """Return the profile for column `name`, or `None` if not present."""
         return next((c for c in self.columns if c.name == name), None)

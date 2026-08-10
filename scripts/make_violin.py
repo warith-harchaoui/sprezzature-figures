@@ -33,14 +33,9 @@ from typing import Any, Dict, List, Optional
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _style import load_palette  # noqa: E402
+from _style import BG, FONT_MONO, GRIDLINE, INK, SECONDARY, cycle_hues, load_palette  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
 
-INK = "#1D1D1F"
-SECONDARY = "#6E6E73"
-BG = "#FFFFFF"
-GRIDLINE = "#E5E5EA"
-FONT_MONO = "Roboto Mono, ui-monospace, monospace"
 
 GROUPS = ["A", "B", "C"]
 
@@ -78,10 +73,7 @@ def _gaussian_kde(samples: List[float], x_eval: List[float], bandwidth: float) -
 
 
 def _group_colors(groups: List[str], accessibility: str = "universal") -> Dict[str, str]:
-    palette = load_palette(accessibility)
-    hues = [palette.get("Blue", "#007AFF"), palette.get("Orange", "#FF9500"),
-            palette.get("Green", "#34C759"), palette.get("Purple", "#AF52DE")]
-    return {g: hues[i % len(hues)] for i, g in enumerate(groups)}
+    return cycle_hues(groups, accessibility)
 
 
 def build_svg(
@@ -265,6 +257,7 @@ def make_violin(
 
 
 def main() -> None:
+    """CLI entry point: build the SVG and write it to disk."""
     render_cli(__file__, "violin", build_svg, description="Generate a violin plot.")
 
 

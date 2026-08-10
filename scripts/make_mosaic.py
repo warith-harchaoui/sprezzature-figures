@@ -33,7 +33,6 @@ Author
 
 from __future__ import annotations
 
-import argparse
 import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -46,8 +45,8 @@ from _style import (  # noqa: E402
     os_adaptive_style,
     os_dark_style,
 )
-from _render import svg_example_path, write_svg  # noqa: E402
-from _svg import svg_open  # noqa: E402
+from _render import render_cli, svg_example_path, write_svg  # noqa: E402
+from _svg import fmt_compact, svg_open  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 
 
@@ -114,9 +113,6 @@ def method_colors(accessibility: str = "universal") -> Dict[str, str]:
 # --------------------------------------------------------------------------- #
 # Geometry helpers                                                              #
 # --------------------------------------------------------------------------- #
-def _fmt(value: float) -> str:
-    """Format a float compactly (trim trailing zeros) for SVG coordinates."""
-    return f"{value:.2f}".rstrip("0").rstrip(".")
 
 
 def _method_slug(method: str) -> str:
@@ -341,26 +337,26 @@ def render_svg(
     parts.append(f'<rect width="{width}" height="{height}" fill="#FFFFFF"/>')
 
     # Title + subtitle.
-    parts.append(f'<text x="{_fmt(plot_x)}" y="66" font-size="34" font-weight="700" fill="{ink}">{escape(TITLE)}</text>')
-    parts.append(f'<text x="{_fmt(plot_x)}" y="102" font-size="20" fill="{muted}">{escape(SUBTITLE)}</text>')
+    parts.append(f'<text x="{fmt_compact(plot_x, decimals=2)}" y="66" font-size="34" font-weight="700" fill="{ink}">{escape(TITLE)}</text>')
+    parts.append(f'<text x="{fmt_compact(plot_x, decimals=2)}" y="102" font-size="20" fill="{muted}">{escape(SUBTITLE)}</text>')
 
     # Left axis label (vertical) — within-device composition axis.
     axis_cx = plot_x - 62.0
     axis_cy = plot_y + plot_h / 2.0
     parts.append(
-        f'<text x="{_fmt(axis_cx)}" y="{_fmt(axis_cy)}" font-size="18" fill="{muted}" '
-        f'text-anchor="middle" transform="rotate(-90 {_fmt(axis_cx)} {_fmt(axis_cy)})">Share within device</text>'
+        f'<text x="{fmt_compact(axis_cx, decimals=2)}" y="{fmt_compact(axis_cy, decimals=2)}" font-size="18" fill="{muted}" '
+        f'text-anchor="middle" transform="rotate(-90 {fmt_compact(axis_cx, decimals=2)} {fmt_compact(axis_cy, decimals=2)})">Share within device</text>'
     )
 
     # Vertical percentage ticks on the left (0 / 25 / 50 / 75 / 100 %).
     for pct in (0, 25, 50, 75, 100):
         ty = plot_y + plot_h * (pct / 100.0)
         parts.append(
-            f'<text x="{_fmt(plot_x - 18)}" y="{_fmt(ty + 6)}" font-size="15" fill="{muted}" '
+            f'<text x="{fmt_compact(plot_x - 18, decimals=2)}" y="{fmt_compact(ty + 6, decimals=2)}" font-size="15" fill="{muted}" '
             f'text-anchor="end" font-family="Roboto Mono, monospace">{pct}%</text>'
         )
         parts.append(
-            f'<line x1="{_fmt(plot_x - 12)}" y1="{_fmt(ty)}" x2="{_fmt(plot_x)}" y2="{_fmt(ty)}" '
+            f'<line x1="{fmt_compact(plot_x - 12, decimals=2)}" y1="{fmt_compact(ty, decimals=2)}" x2="{fmt_compact(plot_x, decimals=2)}" y2="{fmt_compact(ty, decimals=2)}" '
             f'stroke="{hairline}" stroke-width="1.5"/>'
         )
 
@@ -373,8 +369,8 @@ def render_svg(
         )
         parts.append(
             f'<rect class="tile tile-{_method_slug(t["method"])}" tabindex="0" '
-            f'x="{_fmt(t["x"])}" y="{_fmt(t["y"])}" '
-            f'width="{_fmt(t["w"])}" height="{_fmt(t["h"])}" rx="{_fmt(rx)}" '
+            f'x="{fmt_compact(t["x"], decimals=2)}" y="{fmt_compact(t["y"], decimals=2)}" '
+            f'width="{fmt_compact(t["w"], decimals=2)}" height="{fmt_compact(t["h"], decimals=2)}" rx="{fmt_compact(rx, decimals=2)}" '
             f'fill="{t["color"]}" stroke="#FFFFFF" stroke-width="3">'
             f'<title>{escape(label)}</title></rect>'
         )
@@ -384,7 +380,7 @@ def render_svg(
             ly = t["y"] + t["h"] / 2.0 + 6.0
             txt_fill = "#FFFFFF" if t["method"] != "Card" else ink
             parts.append(
-                f'<text x="{_fmt(lx)}" y="{_fmt(ly)}" font-size="17" fill="{txt_fill}" '
+                f'<text x="{fmt_compact(lx, decimals=2)}" y="{fmt_compact(ly, decimals=2)}" font-size="17" fill="{txt_fill}" '
                 f'text-anchor="middle" font-family="Roboto Mono, monospace" '
                 f'pointer-events="none">{t["pct"]:.0f}%</text>'
             )
@@ -395,17 +391,17 @@ def render_svg(
         col = [t for t in tiles if t["device"] == dev["name"]]
         cx = col[0]["x"] + col[0]["w"] / 2.0
         parts.append(
-            f'<text x="{_fmt(cx)}" y="{_fmt(plot_y - 44)}" font-size="20" font-weight="700" '
+            f'<text x="{fmt_compact(cx, decimals=2)}" y="{fmt_compact(plot_y - 44, decimals=2)}" font-size="20" font-weight="700" '
             f'fill="{ink}" text-anchor="middle">{escape(dev["name"])}</text>'
         )
         parts.append(
-            f'<text x="{_fmt(cx)}" y="{_fmt(plot_y - 20)}" font-size="15" fill="{muted}" '
+            f'<text x="{fmt_compact(cx, decimals=2)}" y="{fmt_compact(plot_y - 20, decimals=2)}" font-size="15" fill="{muted}" '
             f'text-anchor="middle" font-family="Roboto Mono, monospace">{dev["share"] * 100:.0f}% of orders</text>'
         )
 
     # Bottom axis label — the columns encode order share by width.
     parts.append(
-        f'<text x="{_fmt(plot_x + plot_w / 2)}" y="{_fmt(plot_y + plot_h + 54)}" font-size="18" '
+        f'<text x="{fmt_compact(plot_x + plot_w / 2, decimals=2)}" y="{fmt_compact(plot_y + plot_h + 54, decimals=2)}" font-size="18" '
         f'fill="{muted}" text-anchor="middle">Column width = share of all orders</text>'
     )
 
@@ -414,17 +410,17 @@ def render_svg(
     legend_y = plot_y + 12.0
     colors = method_colors(accessibility)
     parts.append(
-        f'<text x="{_fmt(legend_x)}" y="{_fmt(legend_y - 20)}" font-size="18" font-weight="700" '
+        f'<text x="{fmt_compact(legend_x, decimals=2)}" y="{fmt_compact(legend_y - 20, decimals=2)}" font-size="18" font-weight="700" '
         f'fill="{ink}">Payment method</text>'
     )
     for i, method in enumerate(METHODS):
         row_y = legend_y + i * 42.0
         parts.append(
-            f'<rect x="{_fmt(legend_x)}" y="{_fmt(row_y)}" width="22" height="22" rx="5" '
+            f'<rect x="{fmt_compact(legend_x, decimals=2)}" y="{fmt_compact(row_y, decimals=2)}" width="22" height="22" rx="5" '
             f'fill="{colors[method]}"/>'
         )
         parts.append(
-            f'<text x="{_fmt(legend_x + 34)}" y="{_fmt(row_y + 17)}" font-size="17" '
+            f'<text x="{fmt_compact(legend_x + 34, decimals=2)}" y="{fmt_compact(row_y + 17, decimals=2)}" font-size="17" '
             f'fill="{ink}">{escape(method)}</text>'
         )
 
@@ -503,47 +499,10 @@ def make_mosaic(
 # --------------------------------------------------------------------------- #
 # CLI                                                                           #
 # --------------------------------------------------------------------------- #
-def main(argv: List[str] | None = None) -> int:
-    """Write the mosaic SVG to disk.
-
-    Parameters
-    ----------
-    argv : list of str, optional
-        Command-line arguments; defaults to ``sys.argv[1:]``.
-
-    Returns
-    -------
-    int
-        Process exit code (``0`` on success).
-    """
-    default_out = Path(__file__).resolve().parent.parent / "assets" / "svg-examples" / "mosaic.svg"
-    parser = argparse.ArgumentParser(description="Render the mosaic / Marimekko example SVG.")
-    parser.add_argument("--out", default=str(default_out), help="Output SVG path.")
-    parser.add_argument(
-        "--mode",
-        choices=("self-contained", "external", "static"),
-        default="self-contained",
-        help="Interactivity mode for the shared fullscreen control.",
-    )
-    parser.add_argument(
-        "--accessibility",
-        choices=(
-            "universal",
-            "high-contrast",
-            "monochrome",
-            "deuteranopia",
-            "protanopia",
-            "tritanopia",
-        ),
-        default="universal",
-        help="Palette accessibility level (default: universal, the CVD-safe standard).",
-    )
-    args = parser.parse_args(argv)
-
-    out_path = Path(args.out)
-    write_svg(out_path, render_svg(mode=args.mode, accessibility=args.accessibility))
-    return 0
+def main() -> None:
+    """Write the mosaic SVG to disk."""
+    render_cli(__file__, "mosaic", render_svg, description="Render the mosaic / Marimekko example SVG.")
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    main()

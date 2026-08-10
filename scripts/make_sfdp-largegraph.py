@@ -48,7 +48,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from xml.sax.saxutils import escape
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _style import forced_color_patterns, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
+from _style import BG, INK, forced_color_patterns, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _svg import svg_open  # noqa: E402
@@ -62,9 +62,7 @@ PLOT_TOP = 150             # y where the graph area begins (below the title)
 PLOT_PAD = 64              # inner margin around the layout box
 LEGEND_H = 64              # reserved strip at the bottom for the legend
 
-INK = "#1D1D1F"            # primary text
 SUBINK = "#6E6E73"         # secondary text
-BG = "#FFFFFF"
 EDGE = "#D6D6DB"           # resting edge colour (very light neutral)
 
 FONT = "Roboto, system-ui, sans-serif"

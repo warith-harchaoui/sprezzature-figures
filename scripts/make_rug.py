@@ -33,7 +33,7 @@ Author
 
 from __future__ import annotations
 from _render import svg_example_path, write_svg  # noqa: E402
-from _style import leveled_colors, os_adaptive_style, os_dark_style  # noqa: E402
+from _style import BG, INK, SECONDARY, leveled_colors, os_adaptive_style, os_dark_style  # noqa: E402
 from _svg import svg_open  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 
@@ -48,9 +48,6 @@ from typing import Any, Dict, List, Optional, Tuple
 # House-style tokens (kept local so the module is import-light; they
 # mirror the house-style color/typography constants).
 # ------------------------------------------------------------------
-INK = "#1D1D1F"        # primary text
-SECONDARY = "#6E6E73"  # subtitle / supporting text
-BG = "#FFFFFF"         # white background
 BLUE = "#007AFF"       # density fill / stroke (Apple system blue)
 GRID = "#E5E5EA"       # hairline gridlines
 FONT = "Roboto, system-ui, sans-serif"

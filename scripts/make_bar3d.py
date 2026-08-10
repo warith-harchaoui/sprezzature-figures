@@ -47,21 +47,12 @@ Author
 
 from __future__ import annotations
 from _interactive import fullscreen_control  # noqa: E402
-from _render import svg_example_path, write_svg  # noqa: E402
+from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _svg import fmt_compact  # noqa: E402
 from _style import os_dark_style  # noqa: E402
 
-import argparse
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
-
-# Repo-relative default output — the one SVG artifact this figure ships.
-_DEFAULT_OUT = (
-    Path(__file__).resolve().parent.parent
-    / "assets"
-    / "svg-examples"
-    / "bar3d.svg"
-)
 
 # House-style tokens (mirrors the house-style constants, kept literal so this
 # generator needs no import of the dataviz tier at build time).
@@ -432,7 +423,7 @@ def _bar_faces(
 # Full document                                                                #
 # --------------------------------------------------------------------------- #
 def build_svg(
-    grid: Dict[str, Any],
+    grid: Optional[Dict[str, Any]] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
     language: str = "en",
@@ -441,8 +432,9 @@ def build_svg(
 
     Parameters
     ----------
-    grid : dict
+    grid : dict or None
         The table from :func:`_sample_grid` — ``rows``, ``cols``, ``z``.
+        Defaults to :data:`DEMO_DATA`, reshaped via :func:`_rows_to_grid`.
     language : str, optional
         Chrome-text language, ``"en"`` or ``"fr"`` (see :data:`_STRINGS`).
         Only the title/subtitle/desc/legend switch; row, column and value
@@ -477,6 +469,7 @@ def build_svg(
     # CVD/greyscale-safe (see the parameter note above), so levelling it would
     # only de-tune it.
     _ = accessibility
+    grid = grid if grid is not None else _rows_to_grid(DEMO_DATA)
     strings = _strings(language)
     rows: List[str] = list(grid["rows"])
     cols: List[str] = list(grid["cols"])
@@ -656,54 +649,6 @@ def build_svg(
 # --------------------------------------------------------------------------- #
 # CLI                                                                          #
 # --------------------------------------------------------------------------- #
-def _build_parser() -> argparse.ArgumentParser:
-    """Return the argparse parser for the script."""
-    parser = argparse.ArgumentParser(
-        prog="make_bar3d",
-        description="Write the house-style 3D-bar-chart SVG example.",
-    )
-    parser.add_argument(
-        "--out",
-        type=Path,
-        default=_DEFAULT_OUT,
-        help="Destination SVG path (default: the shipped example).",
-    )
-    parser.add_argument(
-        "--mode",
-        choices=("self-contained", "external", "static"),
-        default="self-contained",
-        help="interactivity mode of the emitted SVG (default: self-contained)",
-    )
-    parser.add_argument(
-        "--accessibility",
-        choices=(
-            "universal", "high-contrast", "monochrome",
-            "deuteranopia", "protanopia", "tritanopia",
-        ),
-        default="universal",
-        help=(
-            "palette accessibility level (default: universal). No-op here: the "
-            "sequential teal->blue height ramp is already CVD/greyscale-safe."
-        ),
-    )
-    parser.add_argument(
-        "--language",
-        choices=("en", "fr"),
-        default="en",
-        help="chrome-text language for title/subtitle/legend (default: en).",
-    )
-    return parser
-
-
-def main(argv: List[str] | None = None) -> int:
-    """CLI entry point: build the SVG and write it to disk."""
-    args = _build_parser().parse_args(argv)
-    grid = _sample_grid()
-    svg = build_svg(grid, mode=args.mode, accessibility=args.accessibility, language=args.language)
-    write_svg(args.out, svg)
-    return 0
-
-
 def make_bar3d(
     data: Optional[List[Dict[str, Any]]] = None,
     *,
@@ -753,5 +698,10 @@ def make_bar3d(
     return write_svg(dest, svg)
 
 
+def main() -> None:
+    """CLI entry point: build the SVG and write it to disk."""
+    render_cli(__file__, "bar3d", build_svg, description="Write the house-style 3D-bar-chart SVG example.")
+
+
 if __name__ == "__main__":
-    raise SystemExit(main())
+    main()

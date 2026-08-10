@@ -45,15 +45,14 @@ Author
 
 from __future__ import annotations
 
-import argparse
 import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 from xml.sax.saxutils import escape
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
-from _render import svg_example_path, write_svg  # noqa: E402
+from _style import BG, FONT_MONO, INK, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
+from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _svg import svg_open  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 
@@ -67,13 +66,10 @@ MARGIN_RIGHT = 40
 MARGIN_TOP = 176         # room for title + two-line subtitle + column headers
 MARGIN_BOTTOM = 72       # room for the hover-affordance footnote
 
-INK = "#1D1D1F"          # primary text
 SUBINK = "#6E6E73"       # secondary text
 HAIRLINE = "#E5E5EA"     # neutral hairline
-BG = "#FFFFFF"
 
 FONT = "Roboto, system-ui, sans-serif"
-FONT_MONO = "Roboto Mono, ui-monospace, monospace"
 
 NODE_H = 48              # card height
 ROW_GAP = 26             # vertical gap between leaf rows
@@ -744,30 +740,7 @@ def make_tree(
 
 def main() -> None:
     """Write the tidy-tree SVG to the skill's example asset folder."""
-    parser = argparse.ArgumentParser(description="Render the tidy-tree SVG.")
-    parser.add_argument(
-        "--mode",
-        choices=("self-contained", "external", "static"),
-        default="self-contained",
-        help="Interactivity mode for the fullscreen control.",
-    )
-    parser.add_argument(
-        "--accessibility",
-        choices=(
-            "universal",
-            "high-contrast",
-            "monochrome",
-            "deuteranopia",
-            "protanopia",
-            "tritanopia",
-        ),
-        default="universal",
-        help="Palette accessibility level (default: universal, the CVD-safe standard).",
-    )
-    parser.add_argument("--out", default=None, help="Output path (defaults to the example asset).")
-    args = parser.parse_args()
-    out = Path(args.out) if args.out else svg_example_path(__file__, "tree")
-    write_svg(out, build_svg(mode=args.mode, accessibility=args.accessibility))
+    render_cli(__file__, "tree", build_svg, description="Render the tidy-tree SVG.")
 
 
 if __name__ == "__main__":

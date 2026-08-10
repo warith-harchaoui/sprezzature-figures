@@ -16,6 +16,12 @@ byte-for-byte identical to the inline code it replaces:
 * :func:`fmt_compact` — the ``f"{v:.1f}".rstrip("0").rstrip(".")``
   path-data float formatter that the streamgraph, difference-chart and
   bollinger generators each carried as a private ``_fmt``.
+* :func:`fmt_number` — the adaptive axis-tick/tooltip label formatter
+  (whole numbers plain, magnitude sets decimal precision otherwise) that
+  a dozen-plus generators each carried as a private ``_fmt``, with tiny,
+  behavior-neutral drift between copies. Not the same job as
+  :func:`fmt_compact`: that one is for path-data coordinates (always one
+  decimal, trimmed); this one is for text a reader looks at.
 * :func:`catmull_rom_beziers` — the Catmull-Rom → cubic-Bézier ``C``
   command run those same three generators carried as a private
   ``_catmull_rom``. The caller passes its own formatter so the emitted
@@ -173,19 +179,24 @@ def point_on_circle(cx: float, cy: float, r: float, theta_rad: float) -> Tuple[f
     return cx + r * math.cos(theta_rad), cy + r * math.sin(theta_rad)
 
 
-def fmt_compact(v: float) -> str:
-    """Format a float compactly for SVG path data: one decimal, no trailing zero.
+def fmt_compact(v: float, decimals: int = 1) -> str:
+    """Format a float compactly for SVG path data: fixed decimals, no trailing zero.
 
-    Rounds to a single decimal place, then strips a trailing ``0`` and a
+    Rounds to `decimals` places, then strips trailing ``0``s and a
     now-dangling ``.`` so ``12.0`` prints as ``12`` and ``12.30`` as
-    ``12.3``. This is byte-identical to the private ``_fmt`` the
-    streamgraph, difference-chart and bollinger generators each carried,
-    and the callers pass it straight into :func:`catmull_rom_beziers`.
+    ``12.3``. The default (`decimals=1`) is byte-identical to the private
+    ``_fmt`` the streamgraph, difference-chart and bollinger generators
+    each carried, and the callers pass it straight into
+    :func:`catmull_rom_beziers`. `decimals=2` is byte-identical to a
+    second private ``_fmt`` shape (icicle, imshow-interpolated, mosaic,
+    spectrogram) that wanted the same trim behavior at finer precision.
 
     Parameters
     ----------
     v : float
         A pixel coordinate (or any path-data number).
+    decimals : int, optional
+        Decimal places to round to before trimming. Defaults to ``1``.
 
     Returns
     -------
@@ -198,10 +209,60 @@ def fmt_compact(v: float) -> str:
     '12'
     >>> fmt_compact(12.34)
     '12.3'
+    >>> fmt_compact(12.345, decimals=2)
+    '12.34'
     """
-    # ``:.1f`` first (so 12.34 -> "12.3"), then drop a trailing zero and the
-    # orphaned dot it leaves behind ("12.0" -> "12", "12" stays "12").
-    return f"{v:.1f}".rstrip("0").rstrip(".")
+    # Round to `decimals` first (so 12.345 -> "12.34" at decimals=2), then
+    # drop trailing zeros and the orphaned dot they leave behind
+    # ("12.00" -> "12", "12" stays "12").
+    return f"{v:.{decimals}f}".rstrip("0").rstrip(".")
+
+
+def fmt_number(v: float) -> str:
+    """Format a float as an adaptive axis-tick / tooltip label.
+
+    Whole numbers (of any magnitude) print with no decimals; otherwise
+    precision scales down with magnitude, so a tick label stays readable
+    across a chart's full data range without a caller having to reason
+    about it. This reconciles the three near-identical ``_fmt`` helpers
+    that ``make_bar.py``, ``make_scatter.py`` and ``make_line-multi.py``
+    each hand-rolled — their branch orders differed but every one reduced
+    to this same behavior once the redundant checks were collapsed, so
+    adopting this changes no rendered output.
+
+    Parameters
+    ----------
+    v : float
+        The value to label (an axis tick, a tooltip number, ...).
+
+    Returns
+    -------
+    str
+        ``"0"`` for zero; ``"{v:.0f}"`` for any integral value or any
+        value ``>= 10``; ``"{v:.1f}"`` for ``1 <= |v| < 10``;
+        ``"{v:.2f}"`` for ``0.01 <= |v| < 1``; ``f"{v:g}"`` below that.
+
+    Examples
+    --------
+    >>> fmt_number(0)
+    '0'
+    >>> fmt_number(12.3)
+    '12'
+    >>> fmt_number(4.5)
+    '4.5'
+    >>> fmt_number(0.031)
+    '0.03'
+    """
+    if v == 0:
+        return "0"
+    av = abs(v)
+    if av == int(av) or av >= 10:
+        return f"{v:.0f}"
+    if av >= 1:
+        return f"{v:.1f}"
+    if av >= 0.01:
+        return f"{v:.2f}"
+    return f"{v:g}"
 
 
 def rounded_rect_path(

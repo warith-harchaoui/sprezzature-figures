@@ -59,7 +59,7 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _labels import label_cell  # noqa: E402
-from _style import leveled_colors, load_palette, os_dark_style  # noqa: E402
+from _style import BG, FONT_MONO, INK, leveled_colors, load_palette, os_dark_style  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _svg import svg_open  # noqa: E402
@@ -69,13 +69,10 @@ from _svg import svg_open  # noqa: E402
 # ------------------------------------------------------------------
 WIDTH = 1280
 HEIGHT = 1040
-INK = "#1D1D1F"            # primary text
 SUBINK = "#6E6E73"         # secondary text
-BG = "#FFFFFF"
 AXIS = "#D2D2D7"           # axis + gridline grey (light, unobtrusive)
 
 FONT = "Roboto, system-ui, sans-serif"
-FONT_MONO = "Roboto Mono, ui-monospace, monospace"
 
 # Plot frame in canvas pixels. Generous left/bottom gutters hold the axis
 # titles; top gutter holds title + subtitle + legend; right gutter gives

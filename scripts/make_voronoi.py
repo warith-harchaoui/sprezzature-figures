@@ -50,7 +50,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _style import forced_color_patterns, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
+from _style import BG, FONT_MONO, INK, forced_color_patterns, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _svg import hex_to_rgb, svg_open, xml_escape  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
@@ -60,13 +60,10 @@ from _interactive import fullscreen_control  # noqa: E402
 # ------------------------------------------------------------------
 WIDTH = 1360
 HEIGHT = 1080
-INK = "#1D1D1F"            # primary text
 SUBINK = "#6E6E73"         # secondary text
-BG = "#FFFFFF"
 HAIRLINE = "#FFFFFF"       # cell borders: white hairlines read as tile gaps
 
 FONT = "Roboto, system-ui, sans-serif"
-FONT_MONO = "Roboto Mono, ui-monospace, monospace"
 
 # The map lives inside this rectangle (below the title / legend band and
 # above the footer hint). The Voronoi tessellation is clipped to it.

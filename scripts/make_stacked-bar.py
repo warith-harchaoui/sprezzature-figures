@@ -28,14 +28,9 @@ from typing import Any, Dict, List, Optional
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _style import load_palette  # noqa: E402
+from _style import BG, FONT_MONO, GRIDLINE, INK, SECONDARY, cycle_hues, load_palette  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
 
-INK = "#1D1D1F"
-SECONDARY = "#6E6E73"
-BG = "#FFFFFF"
-GRIDLINE = "#E5E5EA"
-FONT_MONO = "Roboto Mono, ui-monospace, monospace"
 
 QUARTERS = ["Q1", "Q2", "Q3", "Q4"]
 TYPES = ["New", "Renewal", "Expansion"]
@@ -51,10 +46,7 @@ DEMO_DATA: List[Dict[str, Any]] = [
 
 
 def _type_colors(types: List[str], accessibility: str = "universal") -> Dict[str, str]:
-    palette = load_palette(accessibility)
-    hues = [palette.get("Blue", "#007AFF"), palette.get("Green", "#34C759"),
-            palette.get("Orange", "#FF9500"), palette.get("Purple", "#AF52DE")]
-    return {t: hues[i % len(hues)] for i, t in enumerate(types)}
+    return cycle_hues(types, accessibility, hues=['Blue', 'Green', 'Orange', 'Purple'])
 
 
 def build_svg(
@@ -244,6 +236,7 @@ def make_stacked_bar(
 
 
 def main() -> None:
+    """CLI entry point: build the SVG and write it to disk."""
     render_cli(__file__, "stacked-bar", build_svg, description="Generate a 100%-normalised stacked bar chart.")
 
 

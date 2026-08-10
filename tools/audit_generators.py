@@ -183,6 +183,26 @@ def try_render(fn: Any, demo_data: list, out_path: Path, timeout: int) -> tuple[
 
 
 def audit_one(path: Path, *, render: bool, timeout: int, tmp_dir: Path) -> dict[str, Any]:
+    """Audit one `make_*.py` script against the `make_<kind>` contract.
+
+    Parameters
+    ----------
+    path : Path
+        The generator script to audit.
+    render : bool
+        If `True`, actually call the generator against `DEMO_DATA` and
+        check the render succeeds (else the render step is skipped).
+    timeout : int
+        Seconds allowed for the render attempt.
+    tmp_dir : Path
+        Scratch directory for the render attempt's output file.
+
+    Returns
+    -------
+    dict
+        The audit entry: contract checks, `status`
+        (`stable`/`experimental`/`legacy`/`unavailable`) and any `errors`.
+    """
     kind = derive_kind(path)
     expected_callable = expected_callable_name(kind)
     reachable = dispatcher_reachable(kind, path)
@@ -280,12 +300,25 @@ def audit_one(path: Path, *, render: bool, timeout: int, tmp_dir: Path) -> dict[
 
 
 def run_audit(*, render: bool, timeout: int) -> list[dict[str, Any]]:
+    """Run :func:`audit_one` over every discovered `make_*.py` script.
+
+    Parameters
+    ----------
+    render, timeout
+        Forwarded to :func:`audit_one`.
+
+    Returns
+    -------
+    list of dict
+        One audit entry per script, in :func:`discover_scripts` order.
+    """
     with tempfile.TemporaryDirectory(prefix="sprezzature-audit-") as tmp:
         tmp_dir = Path(tmp)
         return [audit_one(p, render=render, timeout=timeout, tmp_dir=tmp_dir) for p in discover_scripts()]
 
 
 def summarize(entries: list[dict[str, Any]]) -> dict[str, int]:
+    """Count audit `entries` by their `status` value."""
     counts: dict[str, int] = {"stable": 0, "experimental": 0, "legacy": 0, "unavailable": 0}
     for e in entries:
         counts[e["status"]] = counts.get(e["status"], 0) + 1
@@ -293,6 +326,7 @@ def summarize(entries: list[dict[str, Any]]) -> dict[str, int]:
 
 
 def to_markdown(entries: list[dict[str, Any]], counts: dict[str, int]) -> str:
+    """Render `entries`/`counts` (from :func:`run_audit`/:func:`summarize`) as a Markdown report."""
     lines = [
         "# Generator audit",
         "",
@@ -324,6 +358,7 @@ def to_markdown(entries: list[dict[str, Any]], counts: dict[str, int]) -> str:
 
 
 def main(argv: list[str] | None = None) -> int:
+    """CLI entry point: run the audit and write `generator_audit.json`/`GENERATOR_AUDIT.md`."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--render", action="store_true", help="Also attempt to render each contract-complete generator."

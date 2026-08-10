@@ -45,7 +45,6 @@ Author
 
 from __future__ import annotations
 
-import argparse
 import math
 import sys
 from pathlib import Path
@@ -54,7 +53,7 @@ from typing import Any, Dict, List
 # The house-style palette and the shared XML escaper live in scripts/.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _labels import label_cell, readable_on_white  # noqa: E402
-from _render import svg_example_path, write_svg  # noqa: E402
+from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
@@ -542,22 +541,7 @@ def make_dumbbell(
 
 def main() -> None:
     """Write the dumbbell-plot SVG to the canonical assets path (or --out)."""
-    parser = argparse.ArgumentParser(description="Render the dumbbell-plot SVG.")
-    parser.add_argument("--out", default=None, help="output SVG path (default: the skill's svg-examples/dumbbell.svg)")
-    parser.add_argument(
-        "--mode",
-        choices=("self-contained", "external", "static"),
-        default="self-contained",
-        help="interactivity mode of the emitted SVG (default: self-contained)",
-    )
-    parser.add_argument(
-        "--accessibility",
-        choices=("universal", "high-contrast", "monochrome", "deuteranopia", "protanopia", "tritanopia"),
-        default="universal",
-        help="palette accessibility level (default: universal, the CVD-safe standard)",
-    )
-    args = parser.parse_args()
-    make_dumbbell(out=args.out, mode=args.mode, accessibility=args.accessibility)
+    render_cli(__file__, "dumbbell", build_svg, description="Render the dumbbell-plot SVG.")
 
 
 if __name__ == "__main__":

@@ -25,14 +25,9 @@ from typing import Any, Dict, List, Optional
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _style import corner_radius, load_palette  # noqa: E402
-from _svg import bar_path, svg_open, xml_escape  # noqa: E402
+from _style import BG, FONT_MONO, GRIDLINE, INK, SECONDARY, corner_radius, cycle_hues, load_palette  # noqa: E402
+from _svg import bar_path, fmt_number, svg_open, xml_escape  # noqa: E402
 
-INK = "#1D1D1F"
-SECONDARY = "#6E6E73"
-BG = "#FFFFFF"
-GRIDLINE = "#E5E5EA"
-FONT_MONO = "Roboto Mono, ui-monospace, monospace"
 
 CATEGORIES = ["North", "South", "East", "West"]
 
@@ -76,10 +71,7 @@ def _strings(language: str) -> Dict[str, str]:
 
 
 def _category_colors(accessibility: str = "universal") -> Dict[str, str]:
-    palette = load_palette(accessibility)
-    hues = [palette.get("Blue", "#007AFF"), palette.get("Orange", "#FF9500"),
-            palette.get("Green", "#34C759"), palette.get("Purple", "#AF52DE")]
-    return {cat: hues[i % len(hues)] for i, cat in enumerate(CATEGORIES)}
+    return cycle_hues(CATEGORIES, accessibility)
 
 
 def build_svg(
@@ -91,6 +83,8 @@ def build_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     language: str = "en",
+    x_label: Optional[str] = None,
+    y_label: Optional[str] = None,
 ) -> str:
     """Assemble the full grouped bar chart SVG document as a string.
 
@@ -122,6 +116,8 @@ def build_svg(
     strings = _strings(language)
     title = strings["title"] if title is None else title
     subtitle = strings["subtitle"] if subtitle is None else subtitle
+    y_label = strings["axis_value"] if y_label is None else y_label
+    x_label = strings["axis_category"] if x_label is None else x_label
     rows = data if data else DEMO_DATA
     colors = _category_colors(accessibility)
     ordered = sorted(rows, key=lambda r: -float(r["value"]))
@@ -138,7 +134,7 @@ def build_svg(
     # margin and sat on top of the rotated axis title. Widen it to the
     # actual widest tick (mono font, flat per-char estimate) plus room for
     # the rotated title, instead of a fixed constant.
-    max_tick_chars = max((len(f"{t:.0f}") for t in y_ticks), default=1)
+    max_tick_chars = max((len(fmt_number(t)) for t in y_ticks), default=1)
     tick_label_w = max_tick_chars * 12 * 0.62
     plot_x = max(64.0, 10 + tick_label_w + 24)
     right_margin, bottom_reserved = 32.0, 70.0
@@ -191,7 +187,7 @@ def build_svg(
         )
         parts.append(
             f'<text x="{plot_x - 10:.1f}" y="{ty + 4:.1f}" font-size="12" '
-            f'font-family="{FONT_MONO}" fill="{SECONDARY}" text-anchor="end">{tick:.0f}</text>'
+            f'font-family="{FONT_MONO}" fill="{SECONDARY}" text-anchor="end">{fmt_number(tick)}</text>'
         )
     # plot_x above already widened to clear the widest tick label plus this
     # title's own room, so a fixed 14px inset from the canvas edge is enough
@@ -201,7 +197,7 @@ def build_svg(
     parts.append(
         f'<text x="{axis_value_x:.1f}" y="{axis_value_y:.1f}" font-size="14" fill="{INK}" '
         f'text-anchor="middle" transform="rotate(-90 {axis_value_x:.1f} {axis_value_y:.1f})">'
-        f'{xml_escape(strings["axis_value"])}</text>'
+        f'{xml_escape(y_label)}</text>'
     )
 
     for i, row in enumerate(ordered):
@@ -234,7 +230,7 @@ def build_svg(
         )
     parts.append(
         f'<text x="{plot_x + plot_w / 2:.1f}" y="{axis_y + 44:.1f}" font-size="14" '
-        f'fill="{INK}" text-anchor="middle">{xml_escape(strings["axis_category"])}</text>'
+        f'fill="{INK}" text-anchor="middle">{xml_escape(x_label)}</text>'
     )
 
     parts.append(fullscreen_control(width, height, mode))
@@ -253,6 +249,8 @@ def make_bar(
     mode: str = "self-contained",
     accessibility: str = "universal",
     language: str = "en",
+    x_label: Optional[str] = None,
+    y_label: Optional[str] = None,
 ) -> Path:
     """Render a hand-authored grouped bar chart and write the SVG to *out*.
 
@@ -286,12 +284,14 @@ def make_bar(
     True
     """
     svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
-                     mode=mode, accessibility=accessibility, language=language)
+                     mode=mode, accessibility=accessibility, language=language,
+                     x_label=x_label, y_label=y_label)
     dest = Path(out) if out else svg_example_path(__file__, "bar")
     return write_svg(dest, svg)
 
 
 def main() -> None:
+    """CLI entry point: build the SVG and write it to disk."""
     render_cli(__file__, "bar", build_svg, description="Generate a grouped bar chart.")
 
 

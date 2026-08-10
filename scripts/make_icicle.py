@@ -38,14 +38,13 @@ Author
 
 from __future__ import annotations
 
-import argparse
 import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _svg import svg_open, xml_escape  # noqa: E402
-from _render import write_svg  # noqa: E402
+from _svg import fmt_compact, svg_open, xml_escape  # noqa: E402
+from _render import render_cli, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _style import os_dark_style  # noqa: E402
 
@@ -239,9 +238,6 @@ def readable_ink(fill: str) -> str:
 # --------------------------------------------------------------------------- #
 # Formatting helpers                                                            #
 # --------------------------------------------------------------------------- #
-def _fmt(value: float) -> str:
-    """Format a float compactly (trim trailing zeros) for SVG coordinates."""
-    return f"{value:.2f}".rstrip("0").rstrip(".")
 
 
 def _clip_label(name: str, width_px: float) -> str:
@@ -383,18 +379,18 @@ def render_svg(
 
     # Title + subtitle.
     parts.append(
-        f'<text x="{_fmt(plot_x)}" y="72" font-size="38" font-weight="700" '
+        f'<text x="{fmt_compact(plot_x, decimals=2)}" y="72" font-size="38" font-weight="700" '
         f'fill="{ink}">{xml_escape(TITLE)}</text>'
     )
     parts.append(
-        f'<text x="{_fmt(plot_x)}" y="110" font-size="18" fill="{muted}">{xml_escape(SUBTITLE)}</text>'
+        f'<text x="{fmt_compact(plot_x, decimals=2)}" y="110" font-size="18" fill="{muted}">{xml_escape(SUBTITLE)}</text>'
     )
 
     # Time axis (top): a light ruler in milliseconds and percent, so a reader can
     # convert any bar width to a duration without a legend.
     axis_y = plot_y - 30.0
     parts.append(
-        f'<text x="{_fmt(plot_x)}" y="{_fmt(plot_y - 78)}" font-size="15" fill="{muted}" '
+        f'<text x="{fmt_compact(plot_x, decimals=2)}" y="{fmt_compact(plot_y - 78, decimals=2)}" font-size="15" fill="{muted}" '
         f'font-family="Roboto Mono, monospace">Time into request (bar width = milliseconds)</text>'
     )
     for ms in (0, 120, 240, 360, 480):
@@ -402,16 +398,16 @@ def render_svg(
         pct = ms / total_ms * 100.0
         anchor = "start" if ms == 0 else ("end" if ms == 480 else "middle")
         parts.append(
-            f'<line x1="{_fmt(tx)}" y1="{_fmt(axis_y)}" x2="{_fmt(tx)}" '
-            f'y2="{_fmt(plot_y + (max_depth + 1) * (row_h + row_gap))}" '
+            f'<line x1="{fmt_compact(tx, decimals=2)}" y1="{fmt_compact(axis_y, decimals=2)}" x2="{fmt_compact(tx, decimals=2)}" '
+            f'y2="{fmt_compact(plot_y + (max_depth + 1) * (row_h + row_gap), decimals=2)}" '
             f'stroke="{hairline}" stroke-width="1"/>'
         )
         parts.append(
-            f'<text x="{_fmt(tx)}" y="{_fmt(axis_y - 8)}" font-size="15" fill="{muted}" '
+            f'<text x="{fmt_compact(tx, decimals=2)}" y="{fmt_compact(axis_y - 8, decimals=2)}" font-size="15" fill="{muted}" '
             f'text-anchor="{anchor}" font-family="Roboto Mono, monospace">{ms} ms</text>'
         )
         parts.append(
-            f'<text x="{_fmt(tx)}" y="{_fmt(axis_y - 26)}" font-size="13" fill="#9A9AA0" '
+            f'<text x="{fmt_compact(tx, decimals=2)}" y="{fmt_compact(axis_y - 26, decimals=2)}" font-size="13" fill="#9A9AA0" '
             f'text-anchor="{anchor}" font-family="Roboto Mono, monospace">{pct:.0f}%</text>'
         )
 
@@ -420,7 +416,7 @@ def render_svg(
     for d in range(max_depth + 1):
         ry = plot_y + d * (row_h + row_gap) + row_h / 2.0 + 5.0
         parts.append(
-            f'<text x="{_fmt(plot_x - 16)}" y="{_fmt(ry)}" font-size="14" fill="{muted}" '
+            f'<text x="{fmt_compact(plot_x - 16, decimals=2)}" y="{fmt_compact(ry, decimals=2)}" font-size="14" fill="{muted}" '
             f'text-anchor="end" font-family="Roboto Mono, monospace">L{d}</text>'
         )
 
@@ -435,8 +431,8 @@ def render_svg(
         pct = r["ms"] / total_ms * 100.0
         tip = f'{r["name"]}  -  {r["ms"]} ms  ({pct:.0f}% of request, depth {r["depth"]})'
         parts.append(
-            f'<rect class="bar" tabindex="0" x="{_fmt(x)}" y="{_fmt(y)}" '
-            f'width="{_fmt(max(w - 2.0, 1.0))}" height="{_fmt(row_h)}" rx="{_fmt(rx)}" '
+            f'<rect class="bar" tabindex="0" x="{fmt_compact(x, decimals=2)}" y="{fmt_compact(y, decimals=2)}" '
+            f'width="{fmt_compact(max(w - 2.0, 1.0), decimals=2)}" height="{fmt_compact(row_h, decimals=2)}" rx="{fmt_compact(rx, decimals=2)}" '
             f'fill="{fill}" stroke="#FFFFFF" stroke-width="2">'
             f'<title>{xml_escape(tip)}</title></rect>'
         )
@@ -448,18 +444,18 @@ def render_svg(
             two_line = w >= 92.0
             if two_line:
                 parts.append(
-                    f'<text x="{_fmt(cx)}" y="{_fmt(y + row_h / 2.0 - 3)}" font-size="17" '
+                    f'<text x="{fmt_compact(cx, decimals=2)}" y="{fmt_compact(y + row_h / 2.0 - 3, decimals=2)}" font-size="17" '
                     f'font-weight="600" fill="{txt}" text-anchor="middle" '
                     f'pointer-events="none">{xml_escape(label)}</text>'
                 )
                 parts.append(
-                    f'<text x="{_fmt(cx)}" y="{_fmt(y + row_h / 2.0 + 19)}" font-size="14" '
+                    f'<text x="{fmt_compact(cx, decimals=2)}" y="{fmt_compact(y + row_h / 2.0 + 19, decimals=2)}" font-size="14" '
                     f'fill="{txt}" text-anchor="middle" font-family="Roboto Mono, monospace" '
                     f'opacity="0.85" pointer-events="none">{r["ms"]} ms</text>'
                 )
             else:
                 parts.append(
-                    f'<text x="{_fmt(cx)}" y="{_fmt(y + row_h / 2.0 + 5)}" font-size="15" '
+                    f'<text x="{fmt_compact(cx, decimals=2)}" y="{fmt_compact(y + row_h / 2.0 + 5, decimals=2)}" font-size="15" '
                     f'font-weight="600" fill="{txt}" text-anchor="middle" '
                     f'pointer-events="none">{xml_escape(label)}</text>'
                 )
@@ -473,14 +469,14 @@ def render_svg(
         hx = plot_x + (hot["x_ms"] + hot["w_ms"] / 2.0) * px_per_ms
         hy = plot_y + hot["depth"] * (row_h + row_gap)
         parts.append(
-            f'<line x1="{_fmt(hx)}" y1="{_fmt(hy + row_h)}" x2="{_fmt(hx)}" y2="{_fmt(ann_y - 22)}" '
+            f'<line x1="{fmt_compact(hx, decimals=2)}" y1="{fmt_compact(hy + row_h, decimals=2)}" x2="{fmt_compact(hx, decimals=2)}" y2="{fmt_compact(ann_y - 22, decimals=2)}" '
             f'stroke="{muted}" stroke-width="1.5" stroke-dasharray="3 4"/>'
         )
         parts.append(
-            f'<circle cx="{_fmt(hx)}" cy="{_fmt(ann_y - 22)}" r="3.5" fill="{muted}"/>'
+            f'<circle cx="{fmt_compact(hx, decimals=2)}" cy="{fmt_compact(ann_y - 22, decimals=2)}" r="3.5" fill="{muted}"/>'
         )
         parts.append(
-            f'<text x="{_fmt(hx)}" y="{_fmt(ann_y)}" font-size="17" font-weight="600" fill="{ink}" '
+            f'<text x="{fmt_compact(hx, decimals=2)}" y="{fmt_compact(ann_y, decimals=2)}" font-size="17" font-weight="600" fill="{ink}" '
             f'text-anchor="middle">run_sql = 214 ms (45%) - a single un-cached query holds a lock</text>'
         )
     else:
@@ -492,17 +488,17 @@ def render_svg(
     legend_y = ann_y + 40.0
     lx = plot_x
     parts.append(
-        f'<text x="{_fmt(lx)}" y="{_fmt(legend_y)}" font-size="15" font-weight="700" '
+        f'<text x="{fmt_compact(lx, decimals=2)}" y="{fmt_compact(legend_y, decimals=2)}" font-size="15" font-weight="700" '
         f'fill="{ink}">Colour</text>'
     )
 
     # Blue root swatch.
     parts.append(
-        f'<rect x="{_fmt(lx + 74)}" y="{_fmt(legend_y - 14)}" width="24" height="16" '
+        f'<rect x="{fmt_compact(lx + 74, decimals=2)}" y="{fmt_compact(legend_y - 14, decimals=2)}" width="24" height="16" '
         f'rx="4" fill="{ROOT_FILL}"/>'
     )
     parts.append(
-        f'<text x="{_fmt(lx + 106)}" y="{_fmt(legend_y)}" font-size="15" fill="{muted}">'
+        f'<text x="{fmt_compact(lx + 106, decimals=2)}" y="{fmt_compact(legend_y, decimals=2)}" font-size="15" fill="{muted}">'
         f'request root</text>'
     )
 
@@ -510,22 +506,22 @@ def render_svg(
     ramp_x = lx + 236.0
     for i, hexc in enumerate(DEPTH_RAMP):
         parts.append(
-            f'<rect x="{_fmt(ramp_x + i * 26)}" y="{_fmt(legend_y - 14)}" width="24" height="16" '
+            f'<rect x="{fmt_compact(ramp_x + i * 26, decimals=2)}" y="{fmt_compact(legend_y - 14, decimals=2)}" width="24" height="16" '
             f'rx="4" fill="{hexc}"/>'
         )
     parts.append(
-        f'<text x="{_fmt(ramp_x + len(DEPTH_RAMP) * 26 + 12)}" y="{_fmt(legend_y)}" '
+        f'<text x="{fmt_compact(ramp_x + len(DEPTH_RAMP) * 26 + 12, decimals=2)}" y="{fmt_compact(legend_y, decimals=2)}" '
         f'font-size="15" fill="{muted}">warm = critical path (deeper is hotter)</text>'
     )
 
     # Off-path grey swatch + label.
     grey_x = ramp_x + len(DEPTH_RAMP) * 26 + 320.0
     parts.append(
-        f'<rect x="{_fmt(grey_x)}" y="{_fmt(legend_y - 14)}" '
+        f'<rect x="{fmt_compact(grey_x, decimals=2)}" y="{fmt_compact(legend_y - 14, decimals=2)}" '
         f'width="24" height="16" rx="4" fill="#8790A6"/>'
     )
     parts.append(
-        f'<text x="{_fmt(grey_x + 32)}" y="{_fmt(legend_y)}" '
+        f'<text x="{fmt_compact(grey_x + 32, decimals=2)}" y="{fmt_compact(legend_y, decimals=2)}" '
         f'font-size="15" fill="{muted}">grey = off the hot path</text>'
     )
 
@@ -610,47 +606,10 @@ def make_icicle(
 # --------------------------------------------------------------------------- #
 # CLI                                                                           #
 # --------------------------------------------------------------------------- #
-def main(argv: Optional[List[str]] = None) -> int:
-    """Write the icicle SVG to disk.
-
-    Parameters
-    ----------
-    argv : list of str, optional
-        Command-line arguments; defaults to ``sys.argv[1:]``.
-
-    Returns
-    -------
-    int
-        Process exit code (``0`` on success).
-    """
-    default_out = Path(__file__).resolve().parent.parent / "assets" / "svg-examples" / "icicle.svg"
-    parser = argparse.ArgumentParser(description="Render the icicle / flame-graph example SVG.")
-    parser.add_argument("--out", default=str(default_out), help="Output SVG path.")
-    parser.add_argument(
-        "--mode",
-        choices=("self-contained", "external", "static"),
-        default="self-contained",
-        help="Interactivity mode for the fullscreen control (default: self-contained).",
-    )
-    parser.add_argument(
-        "--accessibility",
-        choices=(
-            "universal", "high-contrast", "monochrome",
-            "deuteranopia", "protanopia", "tritanopia",
-        ),
-        default="universal",
-        help=(
-            "palette accessibility level (accepted for CLI parity but a no-op "
-            "here: the depth ramps are a tuned sequential map, already CVD- and "
-            "greyscale-safe, so a categorical level is not applied)"
-        ),
-    )
-    args = parser.parse_args(argv)
-
-    out_path = Path(args.out)
-    write_svg(out_path, render_svg(mode=args.mode, accessibility=args.accessibility))
-    return 0
+def main() -> None:
+    """Write the icicle SVG to disk."""
+    render_cli(__file__, "icicle", render_svg, description="Render the icicle / flame-graph example SVG.")
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    main()

@@ -61,7 +61,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from xml.sax.saxutils import escape
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
+from _style import BG, FONT_MONO, INK, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _svg import point_on_circle, svg_open  # noqa: E402
 from _labels import best_text_colour  # noqa: E402
@@ -80,13 +80,10 @@ N_ROWS = 10           # concentric seat rows
 SEAT_PITCH = 33.0     # target centre-to-centre spacing between seats
 SEAT_R = 12.4         # seat-dot radius
 
-INK = "#1D1D1F"       # primary text
 SUBINK = "#6E6E73"    # secondary text
 HAIR = "#D2D2D7"      # hairlines / soft rules
-BG = "#FFFFFF"
 
 FONT = "Roboto, system-ui, sans-serif"
-FONT_MONO = "Roboto Mono, ui-monospace, monospace"
 
 
 # ------------------------------------------------------------------

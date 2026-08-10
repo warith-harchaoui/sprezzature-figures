@@ -32,14 +32,10 @@ from typing import Any, Dict, List, Optional
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import svg_example_path, write_svg  # noqa: E402
-from _style import corner_radius  # noqa: E402
-from _svg import bar_path, svg_open, xml_escape  # noqa: E402
+from _scale import log_position, log_ticks  # noqa: E402
+from _style import BG, FONT_MONO, GRIDLINE, INK, SECONDARY, corner_radius  # noqa: E402
+from _svg import bar_path, fmt_number, svg_open, xml_escape  # noqa: E402
 
-INK = "#1D1D1F"
-SECONDARY = "#6E6E73"
-BG = "#FFFFFF"
-GRIDLINE = "#E5E5EA"
-FONT_MONO = "Roboto Mono, ui-monospace, monospace"
 COLOR_BAR = "#007AFF"
 
 
@@ -102,6 +98,9 @@ def build_svg(
     bin_count: int = 20,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    x_label: str = "Exam score",
+    y_label: str = "Number of students",
+    log_y: bool = False,
 ) -> str:
     """Assemble the full histogram SVG document as a string.
 
@@ -122,6 +121,14 @@ def build_svg(
     accessibility : str, optional
         Accepted for CLI parity but a documented no-op: every bar is the
         single house blue — there is no categorical encoding to re-level.
+    x_label, y_label : str, optional
+        Axis titles.
+    log_y : bool, optional
+        Use a logarithmic count axis — useful when one or two bins dwarf
+        the rest (a power-law-shaped distribution) and a linear axis would
+        flatten every other bin to a sliver. The x-axis stays linear: bins
+        are equal-width in score, not in pixels, so a log x-axis would mean
+        re-binning geometrically, a different feature from an axis toggle.
 
     Returns
     -------
@@ -145,21 +152,30 @@ def build_svg(
     bar_gap = min(2.0, bin_w * 0.06)
     bar_w = max(1.0, bin_w - bar_gap)
 
-    # "Nice" 5-tick y-scale, computed up front: the headroom tick above
-    # max_count sets the actual plotted domain, so y_for must scale against
-    # it (not max_count) or that top gridline lands above the plot area.
-    y_step = _nice_step(max_count / 4.0)
-    y_ticks = []
-    t = 0.0
-    while t <= max_count + 1e-9:
-        y_ticks.append(t)
-        t += y_step
-    if not y_ticks or y_ticks[-1] < max_count:
-        y_ticks.append(y_ticks[-1] + y_step if y_ticks else y_step)
-    y_domain = y_ticks[-1] or 1.0
+    if log_y:
+        pos_counts = [c for c in counts if c > 0]
+        min_pos = min(pos_counts) if pos_counts else 1.0
+        y_ticks = log_ticks(min_pos, max_count)
+        y_lo, y_hi = y_ticks[0], y_ticks[-1]
 
-    def y_for(count: float) -> float:
-        return plot_y + plot_h - (count / y_domain * plot_h)
+        def y_for(count: float) -> float:
+            return log_position(count, y_lo, y_hi, plot_y + plot_h, plot_y)
+    else:
+        # "Nice" 5-tick y-scale, computed up front: the headroom tick above
+        # max_count sets the actual plotted domain, so y_for must scale against
+        # it (not max_count) or that top gridline lands above the plot area.
+        y_step = _nice_step(max_count / 4.0)
+        y_ticks = []
+        t = 0.0
+        while t <= max_count + 1e-9:
+            y_ticks.append(t)
+            t += y_step
+        if not y_ticks or y_ticks[-1] < max_count:
+            y_ticks.append(y_ticks[-1] + y_step if y_ticks else y_step)
+        y_domain = y_ticks[-1] or 1.0
+
+        def y_for(count: float) -> float:
+            return plot_y + plot_h - (count / y_domain * plot_h)
 
     peak_idx = counts.index(max_count) if counts else 0
 
@@ -201,12 +217,12 @@ def build_svg(
         )
         parts.append(
             f'<text x="{plot_x - 10:.1f}" y="{ty + 4:.1f}" font-size="12" '
-            f'font-family="{FONT_MONO}" fill="{SECONDARY}" text-anchor="end">{tick:.0f}</text>'
+            f'font-family="{FONT_MONO}" fill="{SECONDARY}" text-anchor="end">{fmt_number(tick)}</text>'
         )
     parts.append(
         f'<text x="24" y="{plot_y + plot_h / 2:.1f}" font-size="14" fill="{INK}" '
         f'text-anchor="middle" transform="rotate(-90 24 {plot_y + plot_h / 2:.1f})">'
-        f'Number of students</text>'
+        f'{xml_escape(y_label)}</text>'
     )
 
     # ---- bars: round the free (top) end only, capped per the bar family -
@@ -241,7 +257,7 @@ def build_svg(
         )
     parts.append(
         f'<text x="{plot_x + plot_w / 2:.1f}" y="{axis_y + 46:.1f}" font-size="14" '
-        f'fill="{INK}" text-anchor="middle">Exam score</text>'
+        f'fill="{INK}" text-anchor="middle">{xml_escape(x_label)}</text>'
     )
 
     parts.append(fullscreen_control(width, height, mode))
@@ -260,6 +276,9 @@ def make_histogram(
     bin_count: int = 20,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    x_label: str = "Exam score",
+    y_label: str = "Number of students",
+    log_y: bool = False,
 ) -> Path:
     """Render a hand-authored histogram and write the SVG to *out*.
 
@@ -277,6 +296,10 @@ def make_histogram(
         Approximate number of bins. Default 20.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    x_label, y_label : str, optional
+        Axis titles. Forwarded to :func:`build_svg`.
+    log_y : bool, optional
+        Use a logarithmic count axis. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -292,6 +315,7 @@ def make_histogram(
     svg = build_svg(
         data, title=title, subtitle=subtitle, width=width, height=height,
         bin_count=bin_count, mode=mode, accessibility=accessibility,
+        x_label=x_label, y_label=y_label, log_y=log_y,
     )
     dest = Path(out) if out else svg_example_path(__file__, "histogram")
     return write_svg(dest, svg)
@@ -311,9 +335,13 @@ if __name__ == "__main__":
         choices=("universal", "high-contrast", "monochrome", "deuteranopia", "protanopia", "tritanopia"),
         default="universal",
     )
+    p.add_argument("--x-label", default="Exam score")
+    p.add_argument("--y-label", default="Number of students")
+    p.add_argument("--log-y", action="store_true", help="use a logarithmic count axis")
     args = p.parse_args()
     make_histogram(
         out=args.out, title=args.title, subtitle=args.subtitle,
         width=args.width, height=args.height, bin_count=args.bin_count,
         mode=args.mode, accessibility=args.accessibility,
+        x_label=args.x_label, y_label=args.y_label, log_y=args.log_y,
     )

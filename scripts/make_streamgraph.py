@@ -38,7 +38,6 @@ Author
 
 from __future__ import annotations
 
-import argparse
 from pathlib import Path
 from typing import Dict, List, Optional, Sequence, Tuple
 
@@ -51,7 +50,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _labels import best_text_colour  # noqa: E402
 from _style import forced_color_patterns, leveled_colors, os_adaptive_style, os_dark_style  # noqa: E402
 from _svg import catmull_rom_beziers, fmt_compact, xml_escape  # noqa: E402
-from _render import svg_example_path, write_svg  # noqa: E402
+from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 
 # --------------------------------------------------------------------------- #
@@ -64,14 +63,6 @@ _FS_LABEL = 18       # band name + legend name (primary label size)
 _FS_VALUE = 13.5     # share value under a label (mono)
 _FS_AXIS = 14        # year ticks (mono)
 _FS_AXIS_TITLE = 16  # "Year"
-
-# Repo-relative default output — the one SVG artifact this figure ships.
-_DEFAULT_OUT = (
-    Path(__file__).resolve().parent.parent
-    / "assets"
-    / "svg-examples"
-    / "streamgraph.svg"
-)
 
 # House-style tokens (mirrors the house-style constants, kept literal so this
 # generator needs no import of the dataviz tier at build time).
@@ -358,9 +349,9 @@ def _ribbon_path(
 # SVG assembly                                                                 #
 # --------------------------------------------------------------------------- #
 def build_svg(
-    years: np.ndarray,
-    genres: List[str],
-    volume: np.ndarray,
+    years: Optional[np.ndarray] = None,
+    genres: Optional[List[str]] = None,
+    volume: Optional[np.ndarray] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
 ) -> str:
@@ -368,11 +359,12 @@ def build_svg(
 
     Parameters
     ----------
-    years : numpy.ndarray
-        Sample years (x-axis).
-    genres : list of str
+    years : numpy.ndarray or None
+        Sample years (x-axis). `years`, `genres` and `volume` are supplied
+        together or not at all; defaults to :func:`_sample_genre_share`.
+    genres : list of str or None
         Genre labels, bottom-to-top stacking order.
-    volume : numpy.ndarray
+    volume : numpy.ndarray or None
         ``(n_genres, n_years)`` streaming volume (billions of streams) per
         genre-year. Band thickness is this quantity; per-year shares for the
         labels are derived from the column totals.
@@ -390,6 +382,8 @@ def build_svg(
     str
         A complete, self-contained SVG document.
     """
+    if years is None or genres is None or volume is None:
+        years, genres, volume = _sample_genre_share()
     # ---- canvas geometry -------------------------------------------------- #
     # Poster-scale: the river wants width (25 yearly samples) and enough height
     # that even the thin edge bands read as ribbons, not hairlines.
@@ -671,36 +665,6 @@ def _genre_tip(genre: str, years: np.ndarray, series: np.ndarray) -> str:
 # --------------------------------------------------------------------------- #
 # CLI                                                                          #
 # --------------------------------------------------------------------------- #
-def _build_parser() -> argparse.ArgumentParser:
-    """Return the argparse parser for the script."""
-    parser = argparse.ArgumentParser(
-        prog="make_streamgraph",
-        description="Write the house-style streamgraph (themeRiver) SVG example.",
-    )
-    parser.add_argument(
-        "--out",
-        type=Path,
-        default=_DEFAULT_OUT,
-        help="Destination SVG path (default: the shipped example).",
-    )
-    parser.add_argument(
-        "--mode",
-        choices=("self-contained", "external", "static"),
-        default="self-contained",
-        help="interactivity mode of the emitted SVG (default: self-contained)",
-    )
-    parser.add_argument(
-        "--accessibility",
-        choices=(
-            "universal", "high-contrast", "monochrome",
-            "deuteranopia", "protanopia", "tritanopia",
-        ),
-        default="universal",
-        help="palette accessibility level (default: universal, the CVD-safe standard)",
-    )
-    return parser
-
-
 def make_streamgraph(
     data: Optional[List[Dict[str, object]]] = None,
     *,
@@ -737,14 +701,10 @@ def make_streamgraph(
     return write_svg(dest, svg)
 
 
-def main(argv: List[str] | None = None) -> int:
+def main() -> None:
     """CLI entry point: build the SVG and write it to disk."""
-    args = _build_parser().parse_args(argv)
-    years, genres, volume = _sample_genre_share()
-    svg = build_svg(years, genres, volume, mode=args.mode, accessibility=args.accessibility)
-    write_svg(args.out, svg)
-    return 0
+    render_cli(__file__, "streamgraph", build_svg, description="Write the house-style streamgraph (themeRiver) SVG example.")
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    main()

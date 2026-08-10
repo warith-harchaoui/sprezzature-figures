@@ -48,7 +48,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import load_palette, os_dark_style  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
-from _render import svg_example_path, write_svg  # noqa: E402
+from _render import svg_example_path, write_raster_companions, write_svg  # noqa: E402
 
 
 # ------------------------------------------------------------------
@@ -570,9 +570,6 @@ def make_liquid_gauge(
 
 def main() -> None:
     """Write the liquid-gauge SVG (and PNG companions) into the skill."""
-    here = Path(__file__).resolve().parent
-    out_svg = here.parent / "assets" / "svg-examples" / "liquid-gauge.svg"
-    out_svg.parent.mkdir(parents=True, exist_ok=True)
     parser = argparse.ArgumentParser(description="Render the liquid-gauge SVG (and PNG companions).")
     parser.add_argument(
         "--mode",
@@ -587,29 +584,20 @@ def main() -> None:
         help="palette accessibility level (default: universal, the CVD-safe standard)",
     )
     args = parser.parse_args()
-    out_svg.write_text(
-        build_svg(animated=True, mode=args.mode, accessibility=args.accessibility),
-        encoding="utf-8",
-    )
+    out_svg = svg_example_path(__file__, "liquid-gauge")
+    write_svg(out_svg, build_svg(animated=True, mode=args.mode, accessibility=args.accessibility))
 
     # Static (non-animated) SVG for the raster companions so the PNG is the
-    # settled truth, not a mid-drift frame.
+    # settled truth, not a mid-drift frame. Best-effort: a missing/broken
+    # rasteriser must not stop the primary SVG from having been written.
     try:
-        import resvg_py  # only needed for the PNG companions
-
-        png = resvg_py.svg_to_bytes(
-            svg_string=build_svg(animated=False, mode="static", accessibility=args.accessibility), zoom=2.0
+        write_raster_companions(
+            build_svg(animated=False, mode="static", accessibility=args.accessibility),
+            __file__,
+            "liquid-gauge",
         )
-        for dest in (
-            here.parent / "assets" / "figures-gallery" / "liquid-gauge.png",
-            here.parents[1] / "web" / "img" / "figures" / "liquid-gauge.png",
-        ):
-            dest.parent.mkdir(parents=True, exist_ok=True)
-            dest.write_bytes(png)
     except Exception:  # noqa: BLE001 — PNG companions are best-effort
         pass
-
-    print(f"wrote {out_svg}")
 
 
 if __name__ == "__main__":

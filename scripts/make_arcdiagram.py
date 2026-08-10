@@ -52,7 +52,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from xml.sax.saxutils import escape
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
+from _style import BG, FONT_MONO, INK, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control, hover_isolate_css  # noqa: E402
 from _svg import svg_open  # noqa: E402
@@ -70,13 +70,10 @@ NODE_R = 11               # node dot radius
 LABEL_DY = 30             # node label baseline below the line
 LABEL_ROT = 30            # label rotation (deg) below the baseline
 
-INK = "#1D1D1F"           # primary text
 SUBINK = "#6E6E73"        # secondary text
 HAIR = "#D2D2D7"          # the baseline rule
-BG = "#FFFFFF"
 
 FONT = "Roboto, system-ui, sans-serif"
-FONT_MONO = "Roboto Mono, ui-monospace, monospace"
 
 
 # ------------------------------------------------------------------

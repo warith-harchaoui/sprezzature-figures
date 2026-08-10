@@ -41,7 +41,6 @@ Author
 
 from __future__ import annotations
 
-import argparse
 import html
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -51,7 +50,7 @@ from typing import Any, Dict, List, Optional, Tuple
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _render import svg_example_path, write_svg  # noqa: E402
+from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _style import (  # noqa: E402
     forced_color_patterns,
     leveled_colors,
@@ -563,50 +562,9 @@ def build_svg(
 # --------------------------------------------------------------------------- #
 # 4. CLI                                                                      #
 # --------------------------------------------------------------------------- #
-def _default_out() -> Path:
-    """Return the canonical output path under ``assets/svg-examples``."""
-    return svg_example_path(__file__, "alluvial")
-
-
-def main(argv: Optional[List[str]] = None) -> int:
-    """CLI entry point — build the SVG and write it to disk.
-
-    Parameters
-    ----------
-    argv : list of str, optional
-        Argument vector for testing; defaults to ``sys.argv``.
-
-    Returns
-    -------
-    int
-        Process exit code (``0`` on success).
-    """
-    parser = argparse.ArgumentParser(
-        prog="make_alluvial",
-        description="Render a house-styled alluvial / parallel-sets diagram as SVG.",
-    )
-    parser.add_argument(
-        "--out",
-        type=Path,
-        default=_default_out(),
-        help="Output SVG path (default: assets/svg-examples/alluvial.svg).",
-    )
-    parser.add_argument(
-        "--mode",
-        choices=("self-contained", "external", "static"),
-        default="self-contained",
-        help="Interactivity mode for the fullscreen control (default: self-contained).",
-    )
-    parser.add_argument(
-        "--accessibility",
-        choices=("universal", "high-contrast", "monochrome", "deuteranopia", "protanopia", "tritanopia"),
-        default="universal",
-        help="Palette accessibility level (default: universal, the CVD-safe standard).",
-    )
-    args = parser.parse_args(argv)
-
-    write_svg(args.out, build_svg(mode=args.mode, accessibility=args.accessibility))
-    return 0
+def main() -> None:
+    """CLI entry point — build the SVG and write it to disk."""
+    render_cli(__file__, "alluvial", build_svg, description="Render a house-styled alluvial / parallel-sets diagram as SVG.")
 
 
 def make_alluvial(
@@ -651,4 +609,4 @@ def make_alluvial(
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    main()

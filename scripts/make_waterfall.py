@@ -21,15 +21,14 @@ Author
 
 from __future__ import annotations
 
-import argparse
 import sys
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 from xml.sax.saxutils import escape
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _style import os_adaptive_style, os_dark_style  # noqa: E402
-from _render import svg_example_path, write_svg  # noqa: E402
+from _style import BG, FONT_MONO, GRIDLINE, INK, SECONDARY, os_adaptive_style, os_dark_style  # noqa: E402
+from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 
 # ---------------------------------------------------------------------------
@@ -44,12 +43,7 @@ MARGIN_BOTTOM = 88      # X-axis labels
 
 BAR_GAP = 0.22          # fraction of bar slot reserved as gap between bars
 
-INK = "#1D1D1F"
-SECONDARY = "#6E6E73"
-BG = "#FFFFFF"
-GRIDLINE = "#E5E5EA"
 FONT = "Roboto, system-ui, sans-serif"
-FONT_MONO = "Roboto Mono, ui-monospace, monospace"
 
 # House palette for waterfall semantics
 COLOR_POSITIVE = "#28CD41"    # Green: gains
@@ -101,7 +95,7 @@ def _y_axis_ticks(y_min: float, y_max: float, n: int = 6) -> List[float]:
 
 
 def build_svg(
-    data: List[Dict[str, Any]],
+    data: Optional[List[Dict[str, Any]]] = None,
     *,
     title: str = "FY-2024 Operating Income Bridge",
     subtitle: str = "Millions of EUR, FY-2023 → FY-2024",
@@ -111,12 +105,13 @@ def build_svg(
 
     Parameters
     ----------
-    data : list[dict[str, Any]]
+    data : list[dict[str, Any]] or None
         Rows with keys ``label`` (str), ``value`` (float) and an
         optional ``kind`` ("positive" | "negative" | "total"). When
         ``kind`` is omitted it is inferred from the sign of ``value``
         ("positive" if ``value >= 0`` else "negative"); "total" is
-        never inferred and must be stated explicitly.
+        never inferred and must be stated explicitly. Defaults to
+        :data:`DEMO_DATA`.
     title : str
         Chart headline.
     subtitle : str
@@ -129,6 +124,7 @@ def build_svg(
     str
         A complete, self-contained SVG document.
     """
+    data = data if data is not None else DEMO_DATA
     # ------------------------------------------------------------------
     # Compute running totals so each bar knows where to start
     # ------------------------------------------------------------------
@@ -356,11 +352,10 @@ def make_waterfall(
     return write_svg(dest, svg)
 
 
+def main() -> None:
+    """CLI entry point: build the SVG and write it to disk."""
+    render_cli(__file__, "waterfall", build_svg, description="Generate a waterfall (bridge) chart.")
+
+
 if __name__ == "__main__":
-    p = argparse.ArgumentParser(description="Generate a waterfall (bridge) chart.")
-    p.add_argument("--out", default=None, help="Output SVG path.")
-    p.add_argument("--title", default="FY-2024 Operating Income Bridge")
-    p.add_argument("--subtitle", default="Millions of EUR, FY-2023 → FY-2024")
-    args = p.parse_args()
-    result = make_waterfall(out=args.out, title=args.title, subtitle=args.subtitle)
-    print(result)
+    main()

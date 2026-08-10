@@ -72,6 +72,7 @@ def atomic_write_bytes(path: Path, data: bytes) -> Path:
 
 
 def atomic_write_text(path: Path, text: str, *, encoding: str = "utf-8") -> Path:
+    """Write `text` to `path` atomically; see :func:`atomic_write_bytes`."""
     return atomic_write_bytes(path, text.encode(encoding))
 
 

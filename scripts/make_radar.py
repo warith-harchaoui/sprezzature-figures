@@ -42,7 +42,6 @@ Author
 
 from __future__ import annotations
 
-import argparse
 import math
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -53,7 +52,7 @@ import sys
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _svg import fmt_compact, point_on_circle, svg_open, xml_escape  # noqa: E402
-from _render import svg_example_path, write_svg  # noqa: E402
+from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _style import (  # noqa: E402
     forced_color_patterns,
     leveled_colors,
@@ -62,13 +61,6 @@ from _style import (  # noqa: E402
     qualitative_sequence,
 )
 
-# Repo-relative default output — the one SVG artifact this figure ships.
-_DEFAULT_OUT = (
-    Path(__file__).resolve().parent.parent
-    / "assets"
-    / "svg-examples"
-    / "radar.svg"
-)
 
 # House-style tokens (mirrors the house-style constants, kept literal so this
 # generator needs no import of the dataviz tier at build time).
@@ -216,7 +208,7 @@ def _polar_to_xy(cx: float, cy: float, r: float, theta_deg: float) -> Tuple[floa
 # SVG assembly                                                                 #
 # --------------------------------------------------------------------------- #
 def build_svg(
-    data: Dict[str, Any],
+    data: Optional[Dict[str, Any]] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
 ) -> str:
@@ -224,9 +216,10 @@ def build_svg(
 
     Parameters
     ----------
-    data : dict
+    data : dict or None
         The dataset from :func:`_sample_scores`: ``axes`` (list of str) and
-        ``series`` (list of ``{"name", "values"}`` records).
+        ``series`` (list of ``{"name", "values"}`` records). Defaults to
+        :data:`DEMO_DATA`, reshaped via :func:`_rows_to_radar_data`.
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`
         (``"self-contained"``, ``"external"`` or ``"static"``). Controls
@@ -246,6 +239,7 @@ def build_svg(
     str
         A complete, self-contained SVG document.
     """
+    data = data if data is not None else _rows_to_radar_data(DEMO_DATA)
     axes: List[str] = list(data["axes"])           # type: ignore[arg-type]
     series: List[Dict[str, Any]] = list(data["series"])
     n = len(axes)
@@ -470,36 +464,6 @@ def build_svg(
 # --------------------------------------------------------------------------- #
 # CLI                                                                          #
 # --------------------------------------------------------------------------- #
-def _build_parser() -> argparse.ArgumentParser:
-    """Return the argparse parser for the script."""
-    parser = argparse.ArgumentParser(
-        prog="make_radar",
-        description="Write the house-style radar (spider) chart SVG example.",
-    )
-    parser.add_argument(
-        "--out",
-        type=Path,
-        default=_DEFAULT_OUT,
-        help="Destination SVG path (default: the shipped example).",
-    )
-    parser.add_argument(
-        "--mode",
-        choices=("self-contained", "external", "static"),
-        default="self-contained",
-        help="interactivity mode of the emitted SVG (default: self-contained)",
-    )
-    parser.add_argument(
-        "--accessibility",
-        choices=(
-            "universal", "high-contrast", "monochrome",
-            "deuteranopia", "protanopia", "tritanopia",
-        ),
-        default="universal",
-        help="palette accessibility level (default: universal, the CVD-safe standard)",
-    )
-    return parser
-
-
 def make_radar(
     data: Optional[List[Dict[str, Any]]] = None,
     *,
@@ -536,13 +500,10 @@ def make_radar(
     return write_svg(dest, svg)
 
 
-def main(argv: List[str] | None = None) -> int:
+def main() -> None:
     """CLI entry point: build the SVG and write it to disk."""
-    args = _build_parser().parse_args(argv)
-    svg = build_svg(_sample_scores(), mode=args.mode, accessibility=args.accessibility)
-    write_svg(args.out, svg)
-    return 0
+    render_cli(__file__, "radar", build_svg, description="Write the house-style radar (spider) chart SVG example.")
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    main()

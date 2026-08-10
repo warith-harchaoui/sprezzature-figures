@@ -36,20 +36,17 @@ from typing import Any, Dict, List, Optional, Tuple
 from xml.sax.saxutils import escape
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
+from _scale import log_position, log_ticks  # noqa: E402
+from _style import BG, FONT_MONO, GRIDLINE, INK, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _svg import svg_open  # noqa: E402
+from _svg import fmt_number, svg_open  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 
 WIDTH = 860
 HEIGHT = 560
-INK = "#1D1D1F"
 SUBINK = "#6E6E73"
-GRIDLINE = "#E5E5EA"
-BG = "#FFFFFF"
 
 FONT = "Roboto, system-ui, sans-serif"
-FONT_MONO = "Roboto Mono, ui-monospace, monospace"
 
 REGION_ORDER: List[str] = ["Asia", "Europe", "Africa"]
 
@@ -126,6 +123,9 @@ def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    x_label: str = "GDP per capita (thousands of dollars)",
+    y_label: str = "Life expectancy (years)",
+    log_x: bool = False,
 ) -> str:
     """Assemble the full bubble-chart SVG document as a string.
 
@@ -139,6 +139,13 @@ def build_svg(
         Interactivity mode passed to :func:`_interactive.fullscreen_control`.
     accessibility : str, optional
         Palette accessibility level passed to :func:`_style.load_palette`.
+    x_label, y_label : str, optional
+        Axis titles.
+    log_x : bool, optional
+        Use a logarithmic GDP axis — the classic Gapminder convention,
+        since income is the measure most likely to span orders of
+        magnitude. No `log_y`: life expectancy is bounded to a narrow
+        range and isn't a log-scale candidate.
 
     Returns
     -------
@@ -165,7 +172,12 @@ def build_svg(
     x0, x1 = gdp_min - gdp_pad, gdp_max + gdp_pad
     y0, y1 = life_min - life_pad, life_max + life_pad
 
+    gdp_pos = [g for g in gdps if g > 0]
+    xlog_min = min(gdp_pos) if gdp_pos else 1.0
+
     def x_for(gdp: float) -> float:
+        if log_x and gdp > 0 and gdp_max > xlog_min:
+            return log_position(gdp, xlog_min, gdp_max, plot_x, plot_x + plot_w)
         return plot_x + (gdp - x0) / (x1 - x0) * plot_w
 
     def y_for(life: float) -> float:
@@ -227,30 +239,36 @@ def build_svg(
     parts.append(
         f'<text x="20" y="{plot_y + plot_h / 2:.1f}" font-size="13" fill="{INK}" '
         f'text-anchor="middle" transform="rotate(-90 20 {plot_y + plot_h / 2:.1f})">'
-        f'Life expectancy (years)</text>'
+        f'{escape(y_label)}</text>'
     )
 
     # ---- x-axis ticks + labels ----
-    x_ticks = 5
     axis_y = plot_y + plot_h
     parts.append(
         f'<line x1="{plot_x:.1f}" y1="{axis_y:.1f}" x2="{plot_x + plot_w:.1f}" y2="{axis_y:.1f}" '
         f'stroke="{INK}" stroke-width="1.2"/>'
     )
-    for i in range(x_ticks + 1):
-        gdp_val = x0 + (x1 - x0) * i / x_ticks
+    if log_x:
+        gdp_ticks = [d for d in log_ticks(xlog_min, gdp_max) if x0 <= d <= x1]
+    else:
+        gdp_ticks = [x0 + (x1 - x0) * i / 5 for i in range(6)]
+    for gdp_val in gdp_ticks:
         tx = x_for(gdp_val)
         parts.append(
             f'<line x1="{tx:.1f}" y1="{axis_y:.1f}" x2="{tx:.1f}" y2="{axis_y + 6:.1f}" '
             f'stroke="{INK}" stroke-width="1"/>'
         )
+        # fmt_number only for log ticks (decade values can be fractional);
+        # the linear branch keeps its original :.0f} so the default render
+        # is unchanged.
+        tick_label = fmt_number(gdp_val) if log_x else f"{gdp_val:.0f}"
         parts.append(
             f'<text x="{tx:.1f}" y="{axis_y + 20:.1f}" font-size="11" font-family="{FONT_MONO}" '
-            f'fill="{SUBINK}" text-anchor="middle">{gdp_val:.0f}</text>'
+            f'fill="{SUBINK}" text-anchor="middle">{tick_label}</text>'
         )
     parts.append(
         f'<text x="{plot_x + plot_w / 2:.1f}" y="{axis_y + 42:.1f}" font-size="13" '
-        f'fill="{INK}" text-anchor="middle">GDP per capita (thousands of dollars)</text>'
+        f'fill="{INK}" text-anchor="middle">{escape(x_label)}</text>'
     )
 
     # ---- bubbles, largest-first so small ones never hide under big ones ----
@@ -328,6 +346,9 @@ def make_bubble(
     title: str = "",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    x_label: str = "GDP per capita (thousands of dollars)",
+    y_label: str = "Life expectancy (years)",
+    log_x: bool = False,
 ) -> Path:
     """Render the house-styled Gapminder-style bubble chart and write it to *out*.
 
@@ -343,6 +364,10 @@ def make_bubble(
         Accepted for CLI/dispatcher parity; this figure's title stays fixed.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    x_label, y_label : str, optional
+        Axis titles. Forwarded to :func:`build_svg`.
+    log_x : bool, optional
+        Use a logarithmic GDP axis. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -356,7 +381,8 @@ def make_bubble(
     True
     """
     _ = title
-    svg = build_svg(data, mode=mode, accessibility=accessibility)
+    svg = build_svg(data, mode=mode, accessibility=accessibility,
+                     x_label=x_label, y_label=y_label, log_x=log_x)
     dest = Path(out) if out else svg_example_path(__file__, "bubble")
     return write_svg(dest, svg)
 

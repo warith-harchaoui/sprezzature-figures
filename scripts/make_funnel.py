@@ -20,15 +20,15 @@ Author
 
 from __future__ import annotations
 
-import argparse
 import sys
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 from xml.sax.saxutils import escape
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _render import svg_example_path, write_svg  # noqa: E402
+from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
+from _style import BG, FONT_MONO, INK, SECONDARY  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Canvas constants
@@ -42,11 +42,7 @@ MARGIN_V = 120    # top and bottom margin
 # edge by this much so its labels never spill past the viewBox.
 LABEL_GUTTER = 160
 
-INK = "#1D1D1F"
-SECONDARY = "#6E6E73"
-BG = "#FFFFFF"
 FONT = "Roboto, system-ui, sans-serif"
-FONT_MONO = "Roboto Mono, ui-monospace, monospace"
 
 # House palette — six distinct hues, darker at the top to guide the eye
 STAGE_COLORS = [
@@ -74,7 +70,7 @@ DEMO_DATA: List[Dict[str, Any]] = [
 
 
 def build_svg(
-    data: List[Dict[str, Any]],
+    data: Optional[List[Dict[str, Any]]] = None,
     *,
     title: str = "Product-Led Growth Funnel — Q3 2024",
     subtitle: str = "Count of users reaching each conversion stage",
@@ -83,9 +79,9 @@ def build_svg(
 
     Parameters
     ----------
-    data : list[dict[str, Any]]
+    data : list[dict[str, Any]] or None
         Rows with keys ``stage`` (str) and ``count`` (int or float).
-        Must have at least two rows.
+        Must have at least two rows. Defaults to :data:`DEMO_DATA`.
     title : str
         Chart headline.
     subtitle : str
@@ -96,6 +92,7 @@ def build_svg(
     str
         A complete, self-contained SVG document.
     """
+    data = data if data is not None else DEMO_DATA
     counts = [float(row["count"]) for row in data]
     max_count = max(counts)
     n = len(data)
@@ -240,11 +237,10 @@ def make_funnel(
     return write_svg(dest, svg)
 
 
+def main() -> None:
+    """CLI entry point: build the SVG and write it to disk."""
+    render_cli(__file__, "funnel", build_svg, description="Generate a conversion funnel chart.")
+
+
 if __name__ == "__main__":
-    p = argparse.ArgumentParser(description="Generate a conversion funnel chart.")
-    p.add_argument("--out", default=None)
-    p.add_argument("--title", default="Product-Led Growth Funnel — Q3 2024")
-    p.add_argument("--subtitle", default="Count of users reaching each conversion stage")
-    args = p.parse_args()
-    result = make_funnel(out=args.out, title=args.title, subtitle=args.subtitle)
-    print(result)
+    main()

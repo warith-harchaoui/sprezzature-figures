@@ -65,7 +65,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from xml.sax.saxutils import escape
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _style import forced_color_patterns, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
+from _style import BG, FONT_MONO, INK, forced_color_patterns, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _svg import svg_open  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
@@ -83,14 +83,11 @@ CENTER_X = WIDTH / 2.0
 # labels never collides with the title / subtitle.
 CENTER_Y = 660.0
 
-INK = "#1D1D1F"          # primary text
 SUBINK = "#6E6E73"       # secondary text
 HAIRLINE = "#E5E5EA"     # neutral hairline
 LEADER = "#C7C7CC"       # slightly darker hairline for label leaders
-BG = "#FFFFFF"
 
 FONT = "Roboto, system-ui, sans-serif"
-FONT_MONO = "Roboto Mono, ui-monospace, monospace"
 
 # Radius (in pixels) of each generation ring, indexed by depth. Ring 1
 # is pushed well clear of the root pill so the two never collide; the
