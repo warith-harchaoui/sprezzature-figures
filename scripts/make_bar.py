@@ -71,8 +71,8 @@ def _strings(language: str) -> Dict[str, str]:
     return _STRINGS.get(language, _STRINGS["en"])
 
 
-def _category_colors(accessibility: str = "universal") -> Dict[str, str]:
-    return cycle_hues(CATEGORIES, accessibility)
+def _category_colors(accessibility: str = "universal", theme: str = "corporate") -> Dict[str, str]:
+    return cycle_hues(CATEGORIES, accessibility, theme=theme)
 
 
 def build_svg(
@@ -126,7 +126,7 @@ def build_svg(
     y_label = strings["axis_value"] if y_label is None else y_label
     x_label = strings["axis_category"] if x_label is None else x_label
     rows = data if data else DEMO_DATA
-    colors = _category_colors(accessibility)
+    colors = _category_colors(accessibility, theme)
     ordered = sorted(rows, key=lambda r: -float(r["value"]))
     total = sum(float(r["value"]) for r in rows) or 1.0
     max_val = max(float(r["value"]) for r in rows) if rows else 1.0
