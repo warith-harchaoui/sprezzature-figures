@@ -41,7 +41,8 @@ from __future__ import annotations
 from _render import svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _style import os_dark_style  # noqa: E402
-from _svg import fmt_compact  # noqa: E402
+from _svg import color_ramp, fmt_compact  # noqa: E402
+from _svg import VIRIDIS_STOPS as _VIRIDIS  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 import argparse
@@ -67,18 +68,8 @@ _BG = "#FFFFFF"         # white ground
 # Sequential *power* ramp. A perceptually-uniform viridis-style stop list
 # (dark blue → teal → green → yellow) reads loudness monotonically and is
 # colour-vision-deficiency safe — it never leans on a red/green contrast.
-# Anchor stops sampled from the canonical viridis colormap.
-_VIRIDIS: Sequence[Tuple[float, str]] = (
-    (0.00, "#440154"),
-    (0.15, "#472D7B"),
-    (0.30, "#3B528B"),
-    (0.45, "#2C728E"),
-    (0.60, "#21908C"),
-    (0.72, "#27AD81"),
-    (0.85, "#5DC863"),
-    (0.93, "#AADC32"),
-    (1.00, "#FDE725"),
-)
+# _VIRIDIS is the shared canonical stop list (see _svg.VIRIDIS_STOPS) --
+# this generator was the first to use it, before it was extracted.
 
 
 # --------------------------------------------------------------------------- #
@@ -234,11 +225,11 @@ def _stft_db(
     return {"power_db": power_db, "times": times, "freqs": freqs}
 
 
-# --------------------------------------------------------------------------- #
-# Colour ramp                                                                  #
-# --------------------------------------------------------------------------- #
 def _ramp_hex(t: float, stops: Sequence[Tuple[float, str]] = _VIRIDIS) -> str:
     """Sample a multi-stop sRGB colour ramp at position ``t`` in ``[0, 1]``.
+
+    Thin wrapper around the shared :func:`_svg.color_ramp` (this module's
+    own copy is what that shared helper was extracted from).
 
     Parameters
     ----------
@@ -252,17 +243,7 @@ def _ramp_hex(t: float, stops: Sequence[Tuple[float, str]] = _VIRIDIS) -> str:
     str
         The interpolated colour as ``#RRGGBB``.
     """
-    t = min(1.0, max(0.0, t))
-    for (lo_t, lo_c), (hi_t, hi_c) in zip(stops, stops[1:]):
-        if lo_t <= t <= hi_t:
-            local = (t - lo_t) / (hi_t - lo_t) if hi_t > lo_t else 0.0
-            ar, ag, ab = int(lo_c[1:3], 16), int(lo_c[3:5], 16), int(lo_c[5:7], 16)
-            br, bg, bb = int(hi_c[1:3], 16), int(hi_c[3:5], 16), int(hi_c[5:7], 16)
-            r = round(ar + (br - ar) * local)
-            g = round(ag + (bg - ag) * local)
-            b = round(ab + (bb - ab) * local)
-            return f"#{r:02X}{g:02X}{b:02X}"
-    return stops[-1][1]
+    return color_ramp(t, stops)
 
 
 # --------------------------------------------------------------------------- #

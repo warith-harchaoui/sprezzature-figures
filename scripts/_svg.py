@@ -444,6 +444,98 @@ def svg_open(
     return tag
 
 
+#: Canonical viridis anchor stops (position in ``[0, 1]``, ``#RRGGBB``),
+#: sampled from the reference colormap: dark purple -> teal -> green ->
+#: yellow. Perceptually uniform and colour-vision-deficiency safe by
+#: construction (it never relies on a red/green contrast), the standard
+#: recommended sequential colormap for scientific figures. Lifted verbatim
+#: from ``make_spectrogram.py``'s original ``_VIRIDIS``, the first generator
+#: to use it (see that module's history) -- this is now the shared source,
+#: and that module imports it rather than keeping its own copy.
+VIRIDIS_STOPS: Tuple[Tuple[float, str], ...] = (
+    (0.00, "#440154"),
+    (0.15, "#472D7B"),
+    (0.30, "#3B528B"),
+    (0.45, "#2C728E"),
+    (0.60, "#21908C"),
+    (0.72, "#27AD81"),
+    (0.85, "#5DC863"),
+    (0.93, "#AADC32"),
+    (1.00, "#FDE725"),
+)
+
+
+def color_ramp(t: float, stops: Sequence[Tuple[float, str]]) -> str:
+    """Sample a multi-stop sRGB colour ramp at position ``t`` in ``[0, 1]``.
+
+    Linear per-channel interpolation between the two anchor stops that
+    bracket ``t``; ``t`` is clamped to ``[0, 1]`` first, so out-of-range
+    inputs saturate to the first/last stop rather than raising.
+
+    Parameters
+    ----------
+    t : float
+        Position along the ramp.
+    stops : sequence of (float, str)
+        Ordered ``(position, "#RRGGBB")`` anchor stops; ``position`` must be
+        non-decreasing.
+
+    Returns
+    -------
+    str
+        The interpolated colour as ``#RRGGBB``.
+
+    Examples
+    --------
+    >>> color_ramp(0.0, VIRIDIS_STOPS)
+    '#440154'
+    >>> color_ramp(1.0, VIRIDIS_STOPS)
+    '#FDE725'
+    """
+    t = min(1.0, max(0.0, t))
+    for (lo_t, lo_c), (hi_t, hi_c) in zip(stops, stops[1:]):
+        if lo_t <= t <= hi_t:
+            local = (t - lo_t) / (hi_t - lo_t) if hi_t > lo_t else 0.0
+            ar, ag, ab = hex_to_rgb(lo_c)
+            br, bg, bb = hex_to_rgb(hi_c)
+            r = round(ar + (br - ar) * local)
+            g = round(ag + (bg - ag) * local)
+            b = round(ab + (bb - ab) * local)
+            return f"#{r:02X}{g:02X}{b:02X}"
+    return stops[-1][1]
+
+
+def viridis(t: float) -> str:
+    """Sample the canonical viridis colormap at position ``t`` in ``[0, 1]``.
+
+    Convenience wrapper around :func:`color_ramp` with :data:`VIRIDIS_STOPS`
+    -- the academic theme's sequential ramp (see
+    :func:`sprezzature_figures.fonts.chrome_stack_for_theme` for the same
+    theme axis applied to fonts). Corporate-theme generators keep their own
+    tuned single-hue ramp unchanged; pass ``theme="academic"`` through to
+    swap to this one.
+
+    Parameters
+    ----------
+    t : float
+        Position along the ramp (e.g. a normalised data value), clamped to
+        ``[0, 1]``.
+
+    Returns
+    -------
+    str
+        The interpolated colour as ``#RRGGBB``.
+
+    Examples
+    --------
+    >>> viridis(0.0)
+    '#440154'
+    >>> viridis(1.0)
+    '#FDE725'
+    """
+    return color_ramp(t, VIRIDIS_STOPS)
+
+
 def hex_to_rgb(hexv: str) -> Tuple[int, int, int]:
     """Convert a ``#RRGGBB`` string to an ``(r, g, b)`` integer triple.
 

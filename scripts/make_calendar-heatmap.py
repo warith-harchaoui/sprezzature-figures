@@ -29,7 +29,7 @@ from typing import Any, Dict, List, Optional, Tuple
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _svg import svg_open, xml_escape  # noqa: E402
+from _svg import svg_open, viridis, xml_escape  # noqa: E402
 from _style import BG, INK, SECONDARY  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
@@ -45,8 +45,15 @@ _RAMP: Tuple[Tuple[float, str], ...] = (
 )
 
 
-def _ramp_hex(t: float) -> str:
-    """Sample the house blue ramp at position ``t`` in ``[0, 1]``."""
+def _ramp_hex(t: float, theme: str = "corporate") -> str:
+    """Sample the sequential ramp at position ``t`` in ``[0, 1]``.
+
+    ``theme="academic"`` swaps to the shared viridis colormap
+    (:func:`_svg.viridis`); the default (``"corporate"``) keeps this
+    generator's own tuned blue ramp, unchanged.
+    """
+    if theme == "academic":
+        return viridis(t)
     t = min(1.0, max(0.0, t))
     for (lo_t, lo_c), (hi_t, hi_c) in zip(_RAMP, _RAMP[1:]):
         if lo_t <= t <= hi_t:
@@ -171,7 +178,7 @@ def build_svg(
             tip = f"Week {week + 1}, {day}: {count:.0f} events"
             parts.append(
                 f'<rect class="cell" tabindex="0" x="{x:.1f}" y="{y:.1f}" width="{w:.1f}" height="{h:.1f}" '
-                f'fill="{_ramp_hex(t)}" stroke="{BG}" stroke-width="1">'
+                f'fill="{_ramp_hex(t, theme)}" stroke="{BG}" stroke-width="1">'
                 f'<title>{xml_escape(tip)}</title></rect>'
             )
 
@@ -181,7 +188,7 @@ def build_svg(
     swatch_x = plot_x + 34.0
     for i in range(5):
         t = i / 4.0
-        parts.append(f'<rect x="{swatch_x + i * 16:.1f}" y="{ly - 11:.1f}" width="12" height="12" fill="{_ramp_hex(t)}"/>')
+        parts.append(f'<rect x="{swatch_x + i * 16:.1f}" y="{ly - 11:.1f}" width="12" height="12" fill="{_ramp_hex(t, theme)}"/>')
     parts.append(f'<text x="{swatch_x + 5 * 16 + 8:.1f}" y="{ly:.1f}" font-size="11" fill="{SECONDARY}">More</text>')
 
     parts.append(fullscreen_control(width, height, mode))

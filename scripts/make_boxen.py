@@ -41,6 +41,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 import _style
+from _svg import viridis  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
@@ -256,9 +257,17 @@ _BLUE_RAMP: List[str] = [
 ]
 
 
-def _ramp_color(depth: int) -> str:
-    """Return the fill for a box at nesting ``depth`` (1 = innermost)."""
+def _ramp_color(depth: int, theme: str = "corporate") -> str:
+    """Return the fill for a box at nesting ``depth`` (1 = innermost).
+
+    ``theme="academic"`` swaps to the shared viridis colormap
+    (:func:`_svg.viridis`), sampled at the same depth-derived position so
+    the innermost (most emphasised) box still lands at viridis's darkest
+    anchor; the default (``"corporate"``) keeps :data:`_BLUE_RAMP` unchanged.
+    """
     idx = min(depth - 1, len(_BLUE_RAMP) - 1)
+    if theme == "academic":
+        return viridis(idx / (len(_BLUE_RAMP) - 1))
     return _BLUE_RAMP[idx]
 
 
@@ -292,6 +301,7 @@ def _boxen_group(
     half_width: float,
     flip_label: bool = False,
     mono_family: str = "Roboto Mono, monospace",
+    theme: str = "corporate",
 ) -> Tuple[str, Dict[str, float]]:
     """Render one category's nested-box stack as an SVG ``<g>``.
 
@@ -310,6 +320,8 @@ def _boxen_group(
         Park the p99 label in the gutter to the *left* of the stack
         instead of the right — used for the last category so its label
         never runs off the right edge of the canvas.
+    theme : str, optional
+        Forwarded to :func:`_ramp_color`.
 
     Returns
     -------
@@ -351,7 +363,7 @@ def _boxen_group(
         parts.append(
             f'    <rect class="lv" x="{cx - hw:.1f}" y="{top_y:.1f}" '
             f'width="{2 * hw:.1f}" height="{h:.1f}" rx="3" '
-            f'fill="{_ramp_color(depth)}" stroke="{WHITE}" stroke-width="1.4">'
+            f'fill="{_ramp_color(depth, theme)}" stroke="{WHITE}" stroke-width="1.4">'
             f"<title>{tip}</title></rect>"
         )
 
@@ -551,6 +563,7 @@ def build_svg(
             half_width=half_width,
             flip_label=(i == n_cat - 1),
             mono_family=mono_family,
+            theme=theme,
         )
         groups.append(markup)
         all_stats.append(stats)

@@ -61,7 +61,7 @@ from typing import Any, Dict, List, Optional, Tuple
 # without the dataviz tier).
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import load_palette, os_dark_style  # noqa: E402
-from _svg import hex_to_rgb as _hex_to_rgb, svg_open  # noqa: E402
+from _svg import hex_to_rgb as _hex_to_rgb, svg_open, viridis  # noqa: E402
 from _svg import xml_escape  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
@@ -118,7 +118,9 @@ def _rgb_to_hex(rgb: Tuple[float, float, float]) -> str:
     return f"#{r:02X}{g:02X}{b:02X}"
 
 
-def _ramp(t: float, top: str, *, light: Tuple[int, int, int] = (255, 244, 214)) -> str:
+def _ramp(
+    t: float, top: str, *, light: Tuple[int, int, int] = (255, 244, 214), theme: str = "corporate"
+) -> str:
     """Interpolate a warm sequential single-hue ramp at position ``t`` in [0, 1].
 
     A pale straw at ``t = 0`` warms through amber to the saturated house Red
@@ -135,12 +137,18 @@ def _ramp(t: float, top: str, *, light: Tuple[int, int, int] = (255, 244, 214)) 
         The darkest hex at ``t = 1`` (the palette's Red).
     light : tuple of int, optional
         The lightest colour at ``t = 0``.
+    theme : str, optional
+        ``"academic"`` swaps to the shared viridis colormap
+        (:func:`_svg.viridis`), ignoring `top`/`light`; the default
+        (``"corporate"``) keeps this tuned single-hue ramp unchanged.
 
     Returns
     -------
     str
         A ``#RRGGBB`` hex string.
     """
+    if theme == "academic":
+        return viridis(t)
     t = max(0.0, min(1.0, t))
     t = t ** 0.68  # gentle gamma so the sparse tail separates from empty land
     # A three-stop ramp: straw -> orange -> Red, so the mid range reads as a
@@ -837,7 +845,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
             # only faint empty *land* cells earn a whisper of grounding.
             continue
         t = min(cnt, ramp_max) / ramp_max
-        fill = _ramp(t, red)
+        fill = _ramp(t, red, theme=theme)
         d = _hex_path(c["px"], c["py"], r_draw)
         label = f'{cnt} quake{"" if cnt == 1 else "s"}'
         parts.append(
@@ -862,7 +870,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
     parts.append('</g>')
 
     # ---- sequential legend + stat callout (bottom band) ----
-    parts.extend(_legend_and_stat(red, ramp_max, true_max, total, active))
+    parts.extend(_legend_and_stat(red, ramp_max, true_max, total, active, theme=theme))
 
     # ---- footnote / method note ----
     parts.append(
@@ -883,6 +891,7 @@ def _legend_and_stat(
     true_max: int,
     total: int,
     active: int,
+    theme: str = "corporate",
 ) -> List[str]:
     """Return the horizontal legend ramp plus a headline stat, bottom-left.
 
@@ -898,6 +907,8 @@ def _legend_and_stat(
         Total events in the catalogue.
     active : int
         Number of non-empty hexagons.
+    theme : str, optional
+        Forwarded to :func:`_ramp`.
 
     Returns
     -------
@@ -932,7 +943,7 @@ def _legend_and_stat(
     )
     for i in range(n_seg):
         t = i / (n_seg - 1)
-        col = _ramp(t, red)
+        col = _ramp(t, red, theme=theme)
         out.append(
             f'<rect class="legend-swatch" x="{ramp_x + i * seg_w:.1f}" '
             f'y="{ramp_y:.1f}" width="{seg_w:.1f}" height="{bar_h:.1f}" '
