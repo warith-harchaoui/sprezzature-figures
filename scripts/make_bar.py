@@ -25,8 +25,9 @@ from typing import Any, Dict, List, Optional
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _style import BG, FONT_MONO, GRIDLINE, INK, SECONDARY, corner_radius, cycle_hues, load_palette  # noqa: E402
+from _style import BG, GRIDLINE, INK, SECONDARY, corner_radius, cycle_hues, load_palette  # noqa: E402
 from _svg import bar_path, fmt_number, svg_open, xml_escape  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 
 CATEGORIES = ["North", "South", "East", "West"]
@@ -85,6 +86,7 @@ def build_svg(
     language: str = "en",
     x_label: Optional[str] = None,
     y_label: Optional[str] = None,
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full grouped bar chart SVG document as a string.
 
@@ -107,12 +109,17 @@ def build_svg(
         defaults, axis titles, and the desc/tooltip wording switch; category
         names and numeric labels always render as given in `data`. Defaults
         to ``"en"``.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
     str
         A complete, standalone SVG document.
     """
+    mono_family = mono_stack_for_theme(theme)
     strings = _strings(language)
     title = strings["title"] if title is None else title
     subtitle = strings["subtitle"] if subtitle is None else subtitle
@@ -148,7 +155,7 @@ def build_svg(
         return plot_y + plot_h - (v / y_domain * plot_h)
 
     parts: List[str] = []
-    parts.append(svg_open(width, height, "bar-title", "bar-desc"))
+    parts.append(svg_open(width, height, "bar-title", "bar-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="bar-title">{xml_escape(title)}</title>')
     top = ordered[0] if ordered else None
     peak_desc = (
@@ -187,7 +194,7 @@ def build_svg(
         )
         parts.append(
             f'<text x="{plot_x - 10:.1f}" y="{ty + 4:.1f}" font-size="12" '
-            f'font-family="{FONT_MONO}" fill="{SECONDARY}" text-anchor="end">{fmt_number(tick)}</text>'
+            f'font-family="{mono_family}" fill="{SECONDARY}" text-anchor="end">{fmt_number(tick)}</text>'
         )
     # plot_x above already widened to clear the widest tick label plus this
     # title's own room, so a fixed 14px inset from the canvas edge is enough
@@ -251,6 +258,7 @@ def make_bar(
     language: str = "en",
     x_label: Optional[str] = None,
     y_label: Optional[str] = None,
+    theme: str = "corporate",
 ) -> Path:
     """Render a hand-authored grouped bar chart and write the SVG to *out*.
 
@@ -271,6 +279,8 @@ def make_bar(
         Chrome-text language, ``"en"`` or ``"fr"``. Defaults to ``"en"``;
         Sprezzature Studio passes the language detected from the imported
         CSV's column names (see :data:`_STRINGS`).
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -285,9 +295,9 @@ def make_bar(
     """
     svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
                      mode=mode, accessibility=accessibility, language=language,
-                     x_label=x_label, y_label=y_label)
+                     x_label=x_label, y_label=y_label, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "bar")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

@@ -103,7 +103,7 @@ def svg_example_path(script_file: str, figure_id: str) -> Path:
     )
 
 
-def write_svg(out: Path, svg: str, *, embed_fonts: bool = True) -> Path:
+def write_svg(out: Path, svg: str, *, embed_fonts: bool = True, theme: str = "corporate") -> Path:
     """Write ``svg`` to ``out`` (creating parents) and echo ``wrote <out>``.
 
     This is the identical three-line tail every generator carried: ensure the
@@ -115,10 +115,10 @@ def write_svg(out: Path, svg: str, *, embed_fonts: bool = True) -> Path:
     Also the shared choke point for font embedding: every generator hand-writes
     its SVG via ``_svg.svg_open(embed_fonts=True)``, which already carries an
     embedded ``@font-face`` block. When ``embed_fonts`` is true (the default)
-    and the string does not already carry one, this splices the bundled
-    Roboto/Roboto Mono ``@font-face`` block in right after the opening
-    ``<svg ...>`` tag, so the raster/PDF export stays font-independent even
-    for a caller that built its own SVG string by hand.
+    and the string does not already carry one, this splices `theme`'s
+    ``@font-face`` block in right after the opening ``<svg ...>`` tag, so the
+    raster/PDF export stays font-independent even for a caller that built its
+    own SVG string by hand.
 
     Parameters
     ----------
@@ -131,6 +131,14 @@ def write_svg(out: Path, svg: str, *, embed_fonts: bool = True) -> Path:
         Splice in the embedded font block if the document doesn't already
         have one (default ``True``). Pass ``False`` to skip (e.g. a caller
         writing a non-SVG file that happens to reuse this helper).
+    theme : str, optional
+        Which face set to embed: ``"corporate"`` (default, Roboto — the
+        embedded set is byte-identical to the pre-theme default) or
+        ``"academic"`` (Latin Modern). Only matters if the SVG text itself
+        was built with the matching font-family (see
+        :func:`sprezzature_figures.fonts.chrome_stack_for_theme` /
+        ``mono_stack_for_theme``) — this only controls which faces get
+        embedded, not what the SVG's own markup asks for.
 
     Returns
     -------
@@ -143,11 +151,12 @@ def write_svg(out: Path, svg: str, *, embed_fonts: bool = True) -> Path:
     >>> # prints: wrote /tmp/venn.svg
     """
     if embed_fonts and "@font-face" not in svg and svg.lstrip().startswith("<svg"):
-        from sprezzature_figures.fonts import DEFAULT_SVG_FACES, svg_font_defs
+        from sprezzature_figures.fonts import svg_faces_for_theme, svg_font_defs
 
-        if DEFAULT_SVG_FACES:
+        faces = svg_faces_for_theme(theme)
+        if faces:
             insert_at = svg.index(">") + 1
-            svg = svg[:insert_at] + svg_font_defs(DEFAULT_SVG_FACES) + svg[insert_at:]
+            svg = svg[:insert_at] + svg_font_defs(faces) + svg[insert_at:]
     # ``parents=True`` mirrors the inline ``mkdir(parents=True, exist_ok=True)``
     # so a fresh checkout (no assets/ yet) still succeeds.
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -365,11 +374,18 @@ def render_cli(
         default="en",
         help="chrome-text language for title/subtitle/legend (default: en).",
     )
+    params = inspect.signature(build_svg).parameters
+    if "theme" in params:
+        parser.add_argument(
+            "--theme",
+            choices=("corporate", "academic"),
+            default="corporate",
+            help="visual theme: corporate (default, Roboto) or academic (LaTeX-style Latin Modern)",
+        )
     # Build lazily (after parsing) so ``--help`` never runs the figure code.
     # Every flag below — fixed trio and optional alike — is passed only to
     # generators whose ``build_svg`` declares the matching parameter, so this
     # helper keeps working unchanged for generators that accept none of them.
-    params = inspect.signature(build_svg).parameters
     for name, (flag, type_, help_text) in _OPTIONAL_FLAGS.items():
         if name not in params:
             continue
@@ -389,6 +405,10 @@ def render_cli(
         kwargs["accessibility"] = args.accessibility
     if "language" in params:
         kwargs["language"] = args.language
+    theme = "corporate"
+    if "theme" in params:
+        theme = args.theme
+        kwargs["theme"] = theme
     for name in _OPTIONAL_FLAGS:
         if name not in params:
             continue
@@ -398,7 +418,7 @@ def render_cli(
         # None. Flags default to False, which is build_svg's default too.
         if value is not None:
             kwargs[name] = value
-    write_svg(args.out, build_svg(**kwargs))
+    write_svg(args.out, build_svg(**kwargs), theme=theme)
 
 
 if __name__ == "__main__":  # pragma: no cover - smoke check, not a generator

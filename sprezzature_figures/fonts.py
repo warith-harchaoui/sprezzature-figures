@@ -1,14 +1,20 @@
 """
-fonts — the project's single Roboto source: Roboto, Roboto Serif and Roboto
-Mono, bundled as variable TTF/WOFF2 files so every figure and the Studio web
-app render the house typography identically regardless of what is (or is
-not) installed on the host machine. No more hoping ``"Roboto, sans-serif"``
-resolves to the real thing -- the font is registered / embedded directly.
+fonts — the project's typeface sources: Roboto/Roboto Serif/Roboto Mono (the
+default **corporate** theme) and Latin Modern Roman/Mono (the **academic**
+theme, a LaTeX-native face -- GUST e-foundry's free extension of Donald
+Knuth's Computer Modern), bundled as TTF/WOFF2 files so every figure and the
+Studio web app render the house typography identically regardless of what is
+(or is not) installed on the host machine. No more hoping
+``"Roboto, sans-serif"`` resolves to the real thing -- the font is
+registered / embedded directly.
 
 Font files live under ``assets/fonts/`` in the source tree and ship in the
 wheel as the sibling package ``sprezzature_figures_fonts`` (same pattern as
-``scripts/`` -> ``sprezzature_figures_scripts``). Source: the OFL-licensed
-Google Fonts repository (see the ``OFL-*.txt`` files alongside the fonts).
+``scripts/`` -> ``sprezzature_figures_scripts``). Sources: the OFL-licensed
+Google Fonts repository for Roboto (see the ``OFL-*.txt`` files), and GUST
+e-foundry's Latin Modern under the GUST Font License / LPPL (see
+``GUST-FONT-LICENSE-LatinModern.txt``) -- both permit bundling and
+redistribution.
 
 This module is deliberately **stdlib-only** at import time (only
 ``base64``/``functools``/``pathlib``) so ``scripts/_svg.py`` -- which must
@@ -39,12 +45,19 @@ FONTS_DIR = next(
     _pkg_parent / "assets" / "fonts",
 )
 
-# CSS font stacks every generator / the web app should use -- Roboto first,
-# a close system fallback second (only exercised in the vanishingly rare
-# case the bundled font file itself failed to load).
+# CSS font stacks every generator / the web app should use -- the bundled
+# face first, a close system fallback second (only exercised in the
+# vanishingly rare case the bundled font file itself failed to load).
 SANS_STACK = "Roboto, system-ui, sans-serif"
 SERIF_STACK = "Roboto Serif, Georgia, serif"
 MONO_STACK = "Roboto Mono, ui-monospace, monospace"
+
+# The academic theme's stacks (see :data:`THEMES`) -- Latin Modern is a
+# LaTeX-native face, so a chart set in it reads as a journal figure rather
+# than a product-UI chart. No sans stack: academic mode has no sans use
+# (titles/body use the serif; ticks/values use the mono), unlike corporate.
+ACADEMIC_SERIF_STACK = "LM Roman, Latin Modern Roman, Georgia, serif"
+ACADEMIC_MONO_STACK = "LM Mono, Latin Modern Mono, ui-monospace, monospace"
 
 # key -> (ttf filename, woff2 filename, CSS font-family, font-style, font-weight range)
 _FACES: dict[str, dict[str, str]] = {
@@ -72,13 +85,67 @@ _FACES: dict[str, dict[str, str]] = {
         "ttf": "RobotoMono-Italic-Variable.ttf", "woff2": "RobotoMono-Italic-Variable.woff2",
         "family": "Roboto Mono", "style": "italic", "weight": "100 900",
     },
+    # Latin Modern is static (no variable-font axis), so bold/italic are
+    # separate files rather than a weight range on one face.
+    "academic_serif": {
+        "ttf": "LatinModernRoman-Regular.ttf", "woff2": "LatinModernRoman-Regular.woff2",
+        "family": "LM Roman", "style": "normal", "weight": "400",
+    },
+    "academic_serif_bold": {
+        "ttf": "LatinModernRoman-Bold.ttf", "woff2": "LatinModernRoman-Bold.woff2",
+        "family": "LM Roman", "style": "normal", "weight": "700",
+    },
+    "academic_serif_italic": {
+        "ttf": "LatinModernRoman-Italic.ttf", "woff2": "LatinModernRoman-Italic.woff2",
+        "family": "LM Roman", "style": "italic", "weight": "400",
+    },
+    "academic_mono": {
+        "ttf": "LatinModernMono-Regular.ttf", "woff2": "LatinModernMono-Regular.woff2",
+        "family": "LM Mono", "style": "normal", "weight": "400",
+    },
 }
 
-# The two faces figures actually set as font-family (see _svg.py svg_open());
+# The faces figures actually set as font-family (see _svg.py svg_open());
 # Roboto Serif is a publication/editorial option (references/publication-
-# presets.md) that no generator currently uses, so it is registered for
-# matplotlib/the web app but never embedded into every generated SVG.
+# presets.md) that no generator currently uses under the corporate theme, so
+# it is registered for matplotlib/the web app but not embedded by default.
 DEFAULT_SVG_FACES: tuple[str, ...] = ("sans", "mono")
+
+#: theme name -> (embedded SVG faces, chrome-text stack, tick/value-label
+#: stack). ``THEMES["corporate"]`` reproduces :data:`DEFAULT_SVG_FACES` /
+#: :data:`SANS_STACK` / :data:`MONO_STACK` exactly, so selecting it is a
+#: no-op relative to today's default render. See :func:`svg_faces_for_theme`.
+THEMES: dict[str, dict[str, object]] = {
+    "corporate": {
+        "faces": ("sans", "mono"),
+        "chrome_stack": SANS_STACK,
+        "mono_stack": MONO_STACK,
+    },
+    "academic": {
+        "faces": ("academic_serif", "academic_serif_bold", "academic_serif_italic", "academic_mono"),
+        "chrome_stack": ACADEMIC_SERIF_STACK,
+        "mono_stack": ACADEMIC_MONO_STACK,
+    },
+}
+
+
+def svg_faces_for_theme(theme: str) -> tuple[str, ...]:
+    """The :data:`_FACES` keys to embed for `theme` (``"corporate"`` or ``"academic"``).
+
+    Unknown theme names fall back to ``"corporate"`` rather than raising, so
+    a typo degrades to the current default look instead of crashing a render.
+    """
+    return tuple(THEMES.get(theme, THEMES["corporate"])["faces"])  # type: ignore[return-value]
+
+
+def chrome_stack_for_theme(theme: str) -> str:
+    """The CSS font-family stack for title/body chrome text under `theme`."""
+    return str(THEMES.get(theme, THEMES["corporate"])["chrome_stack"])
+
+
+def mono_stack_for_theme(theme: str) -> str:
+    """The CSS font-family stack for tick/numeric-label text under `theme`."""
+    return str(THEMES.get(theme, THEMES["corporate"])["mono_stack"])
 
 
 def font_path(key: str, *, woff2: bool = False) -> Path:
