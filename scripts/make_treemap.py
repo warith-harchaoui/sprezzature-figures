@@ -30,13 +30,10 @@ from typing import Any, Dict, List, Optional
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _style import qualitative_sequence  # noqa: E402
+from _style import BG, INK, SECONDARY, qualitative_sequence  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
 from _textfit import fit_font_size, text_width, wrap_to_width  # noqa: E402
 
-INK = "#1D1D1F"
-SECONDARY = "#6E6E73"
-BG = "#FFFFFF"
 
 CATEGORY_COLORS: Dict[str, str] = {
     "Infrastructure": "#007AFF",
@@ -408,6 +405,7 @@ def make_treemap(
 
 
 def main() -> None:
+    """CLI entry point: build the SVG and write it to disk."""
     render_cli(__file__, "treemap", build_svg, description="Generate a treemap figure.")
 
 

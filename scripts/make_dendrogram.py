@@ -55,7 +55,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from xml.sax.saxutils import escape
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _style import leveled_colors, load_palette, os_dark_style  # noqa: E402
+from _style import BG, FONT_MONO, INK, leveled_colors, load_palette, os_dark_style  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _svg import svg_open  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
@@ -70,16 +70,13 @@ MARGIN_RIGHT = 268       # room for the cluster legend on the right
 MARGIN_TOP = 168         # room for title + subtitle
 MARGIN_BOTTOM = 210      # room for the leaf labels + baseline breathing space
 
-INK = "#1D1D1F"          # primary text / cluster labels
 SUBINK = "#6E6E73"       # secondary text
 # The tree "spine" above the cut is neutral, but a full-ink black cages the
 # figure and fights the coloured clusters; a soft grey lets the colour lead.
 SPINE = "#A6A6AE"        # neutral merge links above the cut
 GRIDLINE = "#ECECF0"     # hairline neutral
-BG = "#FFFFFF"
 
 FONT = "Roboto, system-ui, sans-serif"
-FONT_MONO = "Roboto Mono, ui-monospace, monospace"
 
 
 # ------------------------------------------------------------------

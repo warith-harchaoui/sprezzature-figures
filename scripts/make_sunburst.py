@@ -35,12 +35,9 @@ from typing import Any, Dict, List, Optional, Tuple
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _style import load_palette  # noqa: E402
+from _style import BG, INK, SECONDARY, load_palette  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
 
-INK = "#1D1D1F"
-SECONDARY = "#6E6E73"
-BG = "#FFFFFF"
 
 REGIONS = ["Americas", "Asia Pacific", "Europe", "Middle East & Africa"]
 
@@ -323,6 +320,7 @@ def make_sunburst(
 
 
 def main() -> None:
+    """CLI entry point: build the SVG and write it to disk."""
     render_cli(__file__, "sunburst", build_svg, description="Generate a sunburst radial hierarchy chart.")
 
 

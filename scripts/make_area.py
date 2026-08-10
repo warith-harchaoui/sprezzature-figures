@@ -26,14 +26,10 @@ from typing import Any, Dict, List, Optional
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _style import load_palette  # noqa: E402
-from _svg import svg_open, xml_escape  # noqa: E402
+from _scale import log_position, log_ticks  # noqa: E402
+from _style import BG, FONT_MONO, GRIDLINE, INK, SECONDARY, cycle_hues, load_palette  # noqa: E402
+from _svg import fmt_number, svg_open, xml_escape  # noqa: E402
 
-INK = "#1D1D1F"
-SECONDARY = "#6E6E73"
-BG = "#FFFFFF"
-GRIDLINE = "#E5E5EA"
-FONT_MONO = "Roboto Mono, ui-monospace, monospace"
 
 MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 CHANNELS = ["Direct", "Organic search", "Paid search", "Social"]
@@ -51,10 +47,7 @@ DEMO_DATA: List[Dict[str, Any]] = [
 
 
 def _channel_colors(channels: List[str], accessibility: str = "universal") -> Dict[str, str]:
-    palette = load_palette(accessibility)
-    hues = [palette.get("Purple", "#AF52DE"), palette.get("Blue", "#007AFF"),
-            palette.get("Orange", "#FF9500"), palette.get("Green", "#34C759")]
-    return {ch: hues[i % len(hues)] for i, ch in enumerate(channels)}
+    return cycle_hues(channels, accessibility, hues=['Purple', 'Blue', 'Orange', 'Green'])
 
 
 def build_svg(
@@ -65,6 +58,9 @@ def build_svg(
     height: int = 519,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    x_label: str = "Month",
+    y_label: str = "Visits (thousands)",
+    log_y: bool = False,
 ) -> str:
     """Assemble the full stacked-area chart SVG document as a string.
 
@@ -80,6 +76,14 @@ def build_svg(
     mode, accessibility : str, optional
         Forwarded to :func:`_interactive.fullscreen_control` /
         :func:`_style.load_palette`.
+    x_label, y_label : str, optional
+        Axis titles.
+    log_y : bool, optional
+        Use a logarithmic total-visits axis. The x-axis (month) is ordinal,
+        not a numeric quantity, so it has no log form. Note that on a
+        stacked chart, log spacing distorts each band's apparent thickness
+        relative to its actual share — this is meant for reading the
+        *total*'s growth, not for comparing band sizes by eye.
 
     Returns
     -------
@@ -119,8 +123,18 @@ def build_svg(
     def x_for(i: int) -> float:
         return plot_x + i * step
 
-    def y_for(v: float) -> float:
-        return plot_y + plot_h - (v / max_total * plot_h if max_total else 0.0)
+    if log_y:
+        pos_totals = [v for v in totals.values() if v > 0]
+        min_pos = min(pos_totals) if pos_totals else 1.0
+        y_ticks = log_ticks(min_pos, max_total)
+        y_lo, y_hi = y_ticks[0], y_ticks[-1]
+
+        def y_for(v: float) -> float:
+            return log_position(v, y_lo, y_hi, plot_y + plot_h, plot_y)
+    else:
+
+        def y_for(v: float) -> float:
+            return plot_y + plot_h - (v / max_total * plot_h if max_total else 0.0)
 
     parts: List[str] = []
     parts.append(svg_open(width, height, "area-title", "area-desc"))
@@ -166,22 +180,30 @@ def build_svg(
             cursor += 18 + 7.2 * len(ch) + 22
 
     # ---- y-axis gridlines ----
-    y_step = max_total / 4.0
-    for i in range(5):
-        val = i * y_step
+    if log_y:
+        y_gridline_vals = y_ticks
+    else:
+        y_step = max_total / 4.0
+        y_gridline_vals = [i * y_step for i in range(5)]
+    for val in y_gridline_vals:
         ty = y_for(val)
         parts.append(
             f'<line x1="{plot_x:.1f}" y1="{ty:.1f}" x2="{plot_x + plot_w:.1f}" y2="{ty:.1f}" '
             f'stroke="{GRIDLINE}" stroke-width="1"/>'
         )
+        # fmt_number only for log ticks (decade values can be fractional,
+        # e.g. 0.1 -- a plain :.0f} would truncate them to "0"); the linear
+        # branch keeps its original :.0f} so the default (non-log) render
+        # is unchanged.
+        tick_label = fmt_number(val) if log_y else f"{val:.0f}"
         parts.append(
             f'<text x="{plot_x - 10:.1f}" y="{ty + 4:.1f}" font-size="11" font-family="{FONT_MONO}" '
-            f'fill="{SECONDARY}" text-anchor="end">{val:.0f}</text>'
+            f'fill="{SECONDARY}" text-anchor="end">{tick_label}</text>'
         )
     parts.append(
         f'<text x="18" y="{plot_y + plot_h / 2:.1f}" font-size="13" fill="{INK}" '
         f'text-anchor="middle" transform="rotate(-90 18 {plot_y + plot_h / 2:.1f})">'
-        f'Visits (thousands)</text>'
+        f'{xml_escape(y_label)}</text>'
     )
 
     # ---- stacked bands (bottom-to-top) ----
@@ -214,7 +236,7 @@ def build_svg(
         )
     parts.append(
         f'<text x="{plot_x + plot_w / 2:.1f}" y="{axis_y + 42:.1f}" font-size="13" '
-        f'fill="{INK}" text-anchor="middle">Month</text>'
+        f'fill="{INK}" text-anchor="middle">{xml_escape(x_label)}</text>'
     )
 
     parts.append(fullscreen_control(width, height, mode))
@@ -232,6 +254,9 @@ def make_area(
     height: int = 519,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    x_label: str = "Month",
+    y_label: str = "Visits (thousands)",
+    log_y: bool = False,
 ) -> Path:
     """Render a hand-authored stacked area chart and write the SVG to *out*.
 
@@ -248,6 +273,10 @@ def make_area(
         Canvas size in pixels.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    x_label, y_label : str, optional
+        Axis titles. Forwarded to :func:`build_svg`.
+    log_y : bool, optional
+        Use a logarithmic total-visits axis. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -261,12 +290,14 @@ def make_area(
     True
     """
     svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
-                     mode=mode, accessibility=accessibility)
+                     mode=mode, accessibility=accessibility, x_label=x_label,
+                     y_label=y_label, log_y=log_y)
     dest = Path(out) if out else svg_example_path(__file__, "area")
     return write_svg(dest, svg)
 
 
 def main() -> None:
+    """CLI entry point: build the SVG and write it to disk."""
     render_cli(__file__, "area", build_svg, description="Generate a stacked area chart.")
 
 

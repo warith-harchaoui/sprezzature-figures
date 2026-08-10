@@ -43,7 +43,6 @@ Author
 
 from __future__ import annotations
 
-import argparse
 import math
 import random
 from pathlib import Path
@@ -52,7 +51,7 @@ from typing import Any, Dict, List, Optional, Tuple
 import _style
 from _style import forced_color_patterns, os_adaptive_style, os_dark_style
 from _svg import point_on_circle
-from _render import svg_example_path, write_svg  # noqa: E402
+from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 
 # ------------------------------------------------------------------
@@ -648,30 +647,7 @@ def make_radviz(
 
 def main() -> None:
     """Build the SVG and write it to the skill's asset directory."""
-    parser = argparse.ArgumentParser(description="Render the RadViz SVG.")
-    parser.add_argument(
-        "--mode",
-        choices=("self-contained", "external", "static"),
-        default="self-contained",
-        help="Interactivity mode for the fullscreen control.",
-    )
-    parser.add_argument(
-        "--accessibility",
-        choices=(
-            "universal",
-            "high-contrast",
-            "monochrome",
-            "deuteranopia",
-            "protanopia",
-            "tritanopia",
-        ),
-        default="universal",
-        help="Palette accessibility level (default: universal, the CVD-safe standard).",
-    )
-    parser.add_argument("--out", default=None, help="Output path (defaults to the example asset).")
-    args = parser.parse_args()
-    out = Path(args.out) if args.out else svg_example_path(__file__, "radviz")
-    write_svg(out, build_svg(None, args.mode, args.accessibility))
+    render_cli(__file__, "radviz", build_svg, description="Render the RadViz SVG.")
 
 
 if __name__ == "__main__":

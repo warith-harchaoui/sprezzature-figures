@@ -28,14 +28,10 @@ from typing import Any, Dict, List, Optional
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _style import load_palette  # noqa: E402
-from _svg import svg_open, xml_escape  # noqa: E402
+from _style import BG, FONT_MONO, GRIDLINE, INK, SECONDARY, cycle_hues, load_palette  # noqa: E402
+from _scale import log_position, log_ticks  # noqa: E402
+from _svg import fmt_number, svg_open, xml_escape  # noqa: E402
 
-INK = "#1D1D1F"
-SECONDARY = "#6E6E73"
-BG = "#FFFFFF"
-GRIDLINE = "#E5E5EA"
-FONT_MONO = "Roboto Mono, ui-monospace, monospace"
 
 PLATFORMS = ["Desktop", "Mobile"]
 
@@ -50,10 +46,7 @@ DEMO_DATA: List[Dict[str, Any]] = [
 
 
 def _series_colors(series: List[str], accessibility: str = "universal") -> Dict[str, str]:
-    palette = load_palette(accessibility)
-    hues = [palette.get("Blue", "#007AFF"), palette.get("Orange", "#FF9500"),
-            palette.get("Green", "#34C759"), palette.get("Purple", "#AF52DE")]
-    return {s: hues[i % len(hues)] for i, s in enumerate(series)}
+    return cycle_hues(series, accessibility)
 
 
 def build_svg(
@@ -64,6 +57,10 @@ def build_svg(
     height: int = 480,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    x_label: str = "Hour of Day",
+    y_label: str = "Sessions",
+    log_x: bool = False,
+    log_y: bool = False,
 ) -> str:
     """Assemble the full multi-series (continuous-axis) line chart SVG document as a string.
 
@@ -94,10 +91,15 @@ def build_svg(
     colors = _series_colors(series, accessibility)
 
     lookup: Dict[tuple, float] = {(r["platform"], float(r["hour"])): float(r["sessions"]) for r in rows}
+
     hours = sorted({float(r["hour"]) for r in rows})
     all_vals = list(lookup.values())
     max_val = max(all_vals) if all_vals else 1.0
+    pos_vals = [v for v in all_vals if v > 0]
+    min_pos = min(pos_vals) if pos_vals else 1.0
     x_min, x_max = min(hours), max(hours)
+    x_pos = [h for h in hours if h > 0]
+    xlog_min = min(x_pos) if x_pos else 1.0
 
     plot_x, plot_y = 60.0, 150.0
     right_margin, bottom_reserved = 30.0, 60.0
@@ -105,14 +107,24 @@ def build_svg(
     plot_h = height - plot_y - bottom_reserved
 
     def x_for(h: float) -> float:
+        if log_x and h > 0 and x_max > xlog_min:
+            return log_position(h, xlog_min, x_max, plot_x, plot_x + plot_w)
         return plot_x + (h - x_min) / ((x_max - x_min) or 1.0) * plot_w
 
-    y_step = max_val / 4.0
-    y_ticks = [i * y_step for i in range(5)]
-    y_domain = y_ticks[-1] or 1.0
+    # y scale + ticks: linear (0..max, 5 ticks) or logarithmic (decade ticks spanning the data)
+    if log_y:
+        y_ticks = log_ticks(min_pos, max_val)
+        y_lo, y_hi = y_ticks[0], y_ticks[-1]
 
-    def y_for(v: float) -> float:
-        return plot_y + plot_h - (v / y_domain * plot_h)
+        def y_for(v: float) -> float:
+            return log_position(v, y_lo, y_hi, plot_y + plot_h, plot_y)
+    else:
+        y_step = max_val / 4.0
+        y_ticks = [i * y_step for i in range(5)]
+        y_domain = y_ticks[-1] or 1.0
+
+        def y_for(v: float) -> float:
+            return plot_y + plot_h - (v / y_domain * plot_h)
 
     parts: List[str] = []
     parts.append(svg_open(width, height, "lm-title", "lm-desc"))
@@ -163,11 +175,11 @@ def build_svg(
         )
         parts.append(
             f'<text x="{plot_x - 10:.1f}" y="{ty + 4:.1f}" font-size="11" font-family="{FONT_MONO}" '
-            f'fill="{SECONDARY}" text-anchor="end">{tick:.0f}</text>'
+            f'fill="{SECONDARY}" text-anchor="end">{fmt_number(tick)}</text>'
         )
     parts.append(
         f'<text x="18" y="{plot_y + plot_h / 2:.1f}" font-size="13" fill="{INK}" '
-        f'text-anchor="middle" transform="rotate(-90 18 {plot_y + plot_h / 2:.1f})">Sessions</text>'
+        f'text-anchor="middle" transform="rotate(-90 18 {plot_y + plot_h / 2:.1f})">{xml_escape(y_label)}</text>'
     )
 
     # ---- lines + points ----
@@ -179,7 +191,7 @@ def build_svg(
         for h in hours:
             v = lookup.get((s, h), 0.0)
             cx, cy = x_for(h), y_for(v)
-            tip = f"{s}, {h:.0f}:00: {v:.0f} sessions"
+            tip = f"{s}, {x_label} {fmt_number(h)}: {fmt_number(v)}"
             parts.append(
                 f'<circle class="pt" tabindex="0" cx="{cx:.1f}" cy="{cy:.1f}" r="3.5" '
                 f'fill="{colors[s]}" stroke="{BG}" stroke-width="1.5">'
@@ -193,16 +205,23 @@ def build_svg(
         f'<line x1="{plot_x:.1f}" y1="{axis_y:.1f}" x2="{plot_x + plot_w:.1f}" y2="{axis_y:.1f}" '
         f'stroke="{INK}" stroke-width="1.2"/>'
     )
-    for h in hours:
-        if int(h) % 3 != 0:
-            continue
+    # x ticks: decade ticks (log), the classic every-3rd-hour rule for small integer axes
+    # (keeps the demo unchanged), or ~8 evenly-spaced samples for a wide continuous range.
+    if log_x:
+        xticks = [d for d in log_ticks(xlog_min, x_max) if x_min * 0.9999 <= d <= x_max * 1.0000001]
+    elif x_max <= 24 and all(float(h).is_integer() for h in hours):
+        xticks = [h for h in hours if int(h) % 3 == 0]
+    else:
+        step = max(1, len(hours) // 8)
+        xticks = hours[::step]
+    for h in xticks:
         parts.append(
             f'<text x="{x_for(h):.1f}" y="{axis_y + 20:.1f}" font-size="11" font-family="{FONT_MONO}" '
-            f'fill="{SECONDARY}" text-anchor="middle">{h:.0f}</text>'
+            f'fill="{SECONDARY}" text-anchor="middle">{fmt_number(h)}</text>'
         )
     parts.append(
         f'<text x="{plot_x + plot_w / 2:.1f}" y="{axis_y + 42:.1f}" font-size="13" '
-        f'fill="{INK}" text-anchor="middle">Hour of Day</text>'
+        f'fill="{INK}" text-anchor="middle">{xml_escape(x_label)}</text>'
     )
 
     parts.append(fullscreen_control(width, height, mode))
@@ -220,6 +239,10 @@ def make_line_multi(
     height: int = 480,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    x_label: str = "Hour of Day",
+    y_label: str = "Sessions",
+    log_x: bool = False,
+    log_y: bool = False,
 ) -> Path:
     """Render a hand-authored multi-series (continuous-axis) line chart and write the SVG to *out*.
 
@@ -249,12 +272,14 @@ def make_line_multi(
     True
     """
     svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
-                     mode=mode, accessibility=accessibility)
+                     mode=mode, accessibility=accessibility, x_label=x_label, y_label=y_label,
+                     log_x=log_x, log_y=log_y)
     dest = Path(out) if out else svg_example_path(__file__, "line-multi")
     return write_svg(dest, svg)
 
 
 def main() -> None:
+    """CLI entry point: build the SVG and write it to disk."""
     render_cli(__file__, "line-multi", build_svg, description="Generate a multi-series line chart over a continuous axis.")
 
 

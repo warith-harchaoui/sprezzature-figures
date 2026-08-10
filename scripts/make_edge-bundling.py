@@ -60,7 +60,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from xml.sax.saxutils import escape
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
+from _style import BG, FONT_MONO, INK, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _svg import svg_open  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
@@ -85,12 +85,9 @@ GROUP_GAP_DEG = 8.0          # angular gap between subsystem groups
 # defining mark of the technique — while keeping the centre readable.
 CENTRE_PULL = 0.52
 
-INK = "#1D1D1F"              # primary text
 SUBINK = "#6E6E73"           # secondary text
-BG = "#FFFFFF"
 
 FONT = "Roboto, system-ui, sans-serif"
-FONT_MONO = "Roboto Mono, ui-monospace, monospace"
 
 
 # ------------------------------------------------------------------

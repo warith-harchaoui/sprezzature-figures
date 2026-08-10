@@ -1067,11 +1067,13 @@ def parse_figures_md() -> dict[str, dict[str, str]]:
 
 
 def load_audit() -> dict[str, dict[str, Any]]:
+    """Load `generator_audit.json` (from `tools/audit_generators.py`), keyed by kind."""
     data = json.loads(AUDIT_JSON.read_text(encoding="utf-8"))
     return {entry["kind"]: entry for entry in data["generators"]}
 
 
 def default_aliases(kind: str) -> list[str]:
+    """Underscore/space spelling variants of `kind`, for fuzzy lookup (e.g. `"bar-grouped"` -> `["bar grouped", "bar_grouped"]`)."""
     aliases = {kind.replace("-", "_"), kind.replace("-", " ")}
     aliases.discard(kind)
     return sorted(aliases)
@@ -1107,6 +1109,23 @@ HAND_LIMITS: dict[str, dict[str, int]] = {
 
 
 def build_entry(kind: str, md_row: dict[str, str] | None, audit_entry: dict[str, Any]) -> dict[str, Any]:
+    """Assemble one catalog entry for `kind` from its `FIGURES.md` row and audit result.
+
+    Parameters
+    ----------
+    kind : str
+        The figure kind (e.g. `"bar"`, `"bar-grouped"`).
+    md_row : dict or None
+        The parsed `FIGURES.md` row for `kind`, if one exists.
+    audit_entry : dict
+        This kind's entry from :func:`load_audit`.
+
+    Returns
+    -------
+    dict
+        The catalog entry, merging `md_row`, `audit_entry`,
+        :data:`HAND_ROLES` and :data:`HAND_LIMITS` for `kind`.
+    """
     entry: dict[str, Any] = {
         "kind": kind,
         "label": kind.replace("-", " ").replace("_", " ").title(),
@@ -1138,6 +1157,7 @@ def build_entry(kind: str, md_row: dict[str, str] | None, audit_entry: dict[str,
 
 
 def main() -> int:
+    """CLI entry point: regenerate the figures catalog JSON from `FIGURES.md` + the generator audit."""
     md_rows = parse_figures_md()
     audit = load_audit()
 

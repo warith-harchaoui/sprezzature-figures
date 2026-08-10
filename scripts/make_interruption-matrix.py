@@ -27,13 +27,12 @@ Author
 
 from __future__ import annotations
 
-import argparse
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
 from _interactive import fullscreen_control
-from _render import svg_example_path, write_svg
-from _style import leveled_colors, os_adaptive_style, os_dark_style
+from _render import render_cli, svg_example_path, write_svg
+from _style import INK, SECONDARY, leveled_colors, os_adaptive_style, os_dark_style
 from _svg import xml_escape
 
 # ------------------------------------------------------------------
@@ -51,8 +50,6 @@ DEMO_DATA: List[Dict[str, Any]] = [
     {"interrupter": "Elad Gil", "interrupted": "Sarah Guo", "count": 2},
 ]
 
-INK = "#1D1D1F"
-SECONDARY = "#6E6E73"
 HAIRLINE = "#ECECEC"
 IDLE = "#F5F5F7"
 ZERO = "#FBFBFD"
@@ -418,23 +415,7 @@ def make_interruption_matrix(
 
 def main() -> None:
     """Render the interruption matrix to SVG from the command line."""
-    parser = argparse.ArgumentParser(description="Render the 'Qui coupe qui ?' interruption matrix.")
-    parser.add_argument("--out", default=None, help="output SVG path (default: svg-examples/interruption-matrix.svg)")
-    parser.add_argument(
-        "--mode",
-        choices=("self-contained", "external", "static"),
-        default="self-contained",
-        help="interactivity mode of the emitted SVG (default: self-contained)",
-    )
-    parser.add_argument(
-        "--accessibility",
-        choices=("universal", "high-contrast", "monochrome", "deuteranopia", "protanopia", "tritanopia"),
-        default="universal",
-        help="palette accessibility level (default: universal, the CVD-safe standard)",
-    )
-    args = parser.parse_args()
-    result = make_interruption_matrix(out=args.out, mode=args.mode, accessibility=args.accessibility)
-    print(result)
+    render_cli(__file__, "interruption-matrix", build_svg, description="Render the 'Qui coupe qui ?' interruption matrix.")
 
 
 if __name__ == "__main__":

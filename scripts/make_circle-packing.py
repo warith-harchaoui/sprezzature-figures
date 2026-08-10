@@ -67,9 +67,9 @@ from typing import Any, Dict, List, Optional, Tuple
 from xml.sax.saxutils import escape
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
+from _style import BG, FONT_MONO, INK, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _svg import hex_to_rgb as _hex_to_rgb, svg_open  # noqa: E402
-from _render import svg_example_path, write_svg  # noqa: E402
+from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control, hover_isolate_css  # noqa: E402
 
 # ------------------------------------------------------------------
@@ -80,14 +80,11 @@ from _interactive import fullscreen_control, hover_isolate_css  # noqa: E402
 WIDTH = 1500
 HEIGHT = 1220
 
-INK = "#1D1D1F"        # primary text
 SUBINK = "#6E6E73"     # secondary text
 HAIRLINE = "#E5E5EA"   # neutral hairline
 LEADER = "#B8B8BE"     # slightly darker hairline for call-out leaders
-BG = "#FFFFFF"
 
 FONT = "Roboto, system-ui, sans-serif"
-FONT_MONO = "Roboto Mono, ui-monospace, monospace"
 
 # The packed disk is centred in the lower ~78 % of the canvas, clear of
 # the header block. These are resolved after the pack solve (below).
@@ -1108,35 +1105,7 @@ def _emit_legend(parts: List[str], root: Dict[str, Any]) -> None:
 
 def main() -> None:
     """Write the circle-packing SVG to the skill's example asset folder."""
-    import argparse
-
-    parser = argparse.ArgumentParser(
-        prog="make_circle-packing",
-        description="Render a house-styled hierarchical circle-packing diagram as SVG.",
-    )
-    parser.add_argument(
-        "--mode",
-        choices=("self-contained", "external", "static"),
-        default="self-contained",
-        help="Fullscreen-control wiring (default: self-contained).",
-    )
-    parser.add_argument(
-        "--accessibility",
-        choices=(
-            "universal",
-            "high-contrast",
-            "monochrome",
-            "deuteranopia",
-            "protanopia",
-            "tritanopia",
-        ),
-        default="universal",
-        help="Palette accessibility level (default: universal, the CVD-safe standard).",
-    )
-    args = parser.parse_args()
-
-    out = svg_example_path(__file__, "circle-packing")
-    write_svg(out, build_svg(mode=args.mode, accessibility=args.accessibility))
+    render_cli(__file__, "circle-packing", build_svg, description="Render a house-styled hierarchical circle-packing diagram as SVG.")
 
 
 def make_circle_packing(

@@ -52,6 +52,7 @@ from __future__ import annotations
 from _render import svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _style import forced_color_patterns, leveled_colors, os_adaptive_style, os_dark_style  # noqa: E402
+from _svg import fmt_compact  # noqa: E402
 
 import argparse
 import json
@@ -366,12 +367,6 @@ def _lerp_hex(a: str, b: str, t: float) -> str:
 # --------------------------------------------------------------------------- #
 # SVG assembly                                                                 #
 # --------------------------------------------------------------------------- #
-def _fmt(v: float) -> str:
-    """Format a float compactly for SVG (1 decimal, no trailing .0)."""
-    s = f"{v:.1f}"
-    if s.endswith(".0"):
-        s = s[:-2]
-    return s
 
 
 def _radius_for(t: float) -> float:
@@ -487,7 +482,7 @@ def _cloud_svg(
         out.append(
             f'<circle id="p{k}" data-i="{k}" '
             f'class="pt3d-{_class_slug(str(records[k]["label"]))}" '
-            f'cx="{_fmt(px[k])}" cy="{_fmt(py[k])}" r="{r:.2f}" '
+            f'cx="{fmt_compact(px[k])}" cy="{fmt_compact(py[k])}" r="{r:.2f}" '
             f'fill="{fill}" fill-opacity="{opacity:.2f}" '
             f'stroke="#FFFFFF" stroke-opacity="0.85" stroke-width="1.3">'
             f"<title>{tip}</title></circle>"
@@ -543,8 +538,8 @@ def _axis_frame_svg(
             f'<line class="axis-arm" '
             f'data-a="{corner[0]},{corner[1]},{corner[2]}" '
             f'data-b="{arm[0]},{arm[1]},{arm[2]}" '
-            f'x1="{_fmt(px[0])}" y1="{_fmt(py[0])}" '
-            f'x2="{_fmt(px[j])}" y2="{_fmt(py[j])}" '
+            f'x1="{fmt_compact(px[0])}" y1="{fmt_compact(py[0])}" '
+            f'x2="{fmt_compact(px[j])}" y2="{fmt_compact(py[j])}" '
             f'stroke="{grey}" stroke-width="2.0" stroke-linecap="round"/>'
         )
         # Side-aware label placement at the arm tip, nudged radially outward
@@ -564,7 +559,7 @@ def _axis_frame_svg(
         out.append(
             f'<text class="axis-label" '
             f'data-tip="{arm[0]},{arm[1]},{arm[2]}" data-gap="{gap}" '
-            f'x="{_fmt(lx)}" y="{_fmt(ly)}" font-size="16" '
+            f'x="{fmt_compact(lx)}" y="{fmt_compact(ly)}" font-size="16" '
             f'font-family="{_MONO}" fill="{_SECONDARY}" '
             f'text-anchor="{anchor}" dominant-baseline="middle">{name}</text>'
         )
@@ -592,9 +587,9 @@ def _legend_svg(x: float, y: float, class_colors: Dict[str, str]) -> str:
     for name, colour in class_colors.items():
         rows.append(
             f'<circle class="pt3d-{_class_slug(name)}" '
-            f'cx="{_fmt(x + 8)}" cy="{_fmt(y + dy)}" r="8" '
+            f'cx="{fmt_compact(x + 8)}" cy="{fmt_compact(y + dy)}" r="8" '
             f'fill="{colour}"/>'
-            f'<text x="{_fmt(x + 24)}" y="{_fmt(y + dy + 5)}" font-size="17" '
+            f'<text x="{fmt_compact(x + 24)}" y="{fmt_compact(y + dy + 5)}" font-size="17" '
             f'fill="{_INK}">{name}</text>'
         )
         dy += 32.0
@@ -1266,10 +1261,10 @@ def build_svg(
     parts.append(
         f'<g id="hint" opacity="0.92" pointer-events="none" '
         f'style="transition:opacity .45s ease">'
-        f'<rect x="{_fmt(hint_x)}" y="{_fmt(hint_y)}" '
-        f'width="{_fmt(hint_w)}" height="30" rx="15" '
+        f'<rect x="{fmt_compact(hint_x)}" y="{fmt_compact(hint_y)}" '
+        f'width="{fmt_compact(hint_w)}" height="30" rx="15" '
         f'fill="{_INK}" fill-opacity="0.82"/>'
-        f'<text x="{_fmt(hint_x + hint_w / 2.0)}" y="{_fmt(hint_y + 20)}" '
+        f'<text x="{fmt_compact(hint_x + hint_w / 2.0)}" y="{fmt_compact(hint_y + 20)}" '
         f'font-size="15" font-family="{_FONT}" fill="#FFFFFF" '
         f'text-anchor="middle">{hint}</text>'
         f"</g>"

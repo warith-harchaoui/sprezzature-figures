@@ -16,6 +16,20 @@ from sprezzature_figures.core.figure_plan import FigurePlan
 
 
 def generate_alt_text(plan: FigurePlan, dataset: DatasetProfile | None = None) -> str:
+    """Build a deterministic `alt` string from `plan` (and `dataset`, if given).
+
+    Parameters
+    ----------
+    plan : FigurePlan
+        The figure's kind, title/subtitle, bindings and intent.
+    dataset : DatasetProfile or None, optional
+        When given, appends a row-count/source sentence.
+
+    Returns
+    -------
+    str
+        A short, human-readable description suitable for an `alt` attribute.
+    """
     # First sentence: what the figure is.
     headline = [f"{plan.figure_kind.replace('-', ' ').title()} chart"]
     if plan.title:

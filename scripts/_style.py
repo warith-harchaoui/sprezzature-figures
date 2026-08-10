@@ -28,6 +28,20 @@ from typing import Any, Dict, List, Optional, Tuple
 
 
 # ------------------------------------------------------------------
+# House chrome — the ink/paper/gridline/mono-font quartet every generator's
+# title, axis and tick text is drawn in. ~65 generators each re-declared
+# these five names as bare module-level constants (confirmed byte-identical
+# by grep before centralizing here); import them instead of re-typing the
+# hex codes so a house-style change is one edit, not sixty-five.
+# ------------------------------------------------------------------
+INK = "#1D1D1F"
+SECONDARY = "#6E6E73"
+BG = "#FFFFFF"
+GRIDLINE = "#E5E5EA"
+FONT_MONO = "Roboto Mono, ui-monospace, monospace"
+
+
+# ------------------------------------------------------------------
 # Built-in curated fallback — the Apple-inspired 8 + 4 neutrals.
 # The canonical source is sprezzature-colors/references/palette.csv, which
 # projects each hex onto four semantic axes: **Emotion**, **Concepts**,
@@ -225,6 +239,58 @@ def leveled_colors(colors: Dict[str, str], accessibility: str = "universal") -> 
     if not accessibility or accessibility == "universal":
         return dict(colors)
     return _apply_accessibility_level(colors, accessibility)
+
+
+#: Default categorical cycle order for :func:`cycle_hues` — the four hues
+#: every ``_category_colors``/``_series_colors``/``_segment_colors`` copy
+#: picked, in this order, before this helper existed.
+_DEFAULT_CYCLE = ("Blue", "Orange", "Green", "Purple")
+
+
+def cycle_hues(
+    keys: List[str], accessibility: str = "universal", hues: Optional[List[str]] = None
+) -> Dict[str, str]:
+    """Assign each of `keys` a hue, cycling through a small qualitative set.
+
+    Generalizes the ``_category_colors``/``_series_colors``/``_segment_colors``
+    pattern that ~14 generators each hand-rolled: look up a handful of named
+    hues from the accessibility-leveled palette, then hand them out to
+    `keys` in order, wrapping around once the hue list is exhausted. Callers
+    keep their own thin wrapper (its name and signature vary by figure, e.g.
+    ``_category_colors(accessibility)``) that just delegates its body here.
+
+    Parameters
+    ----------
+    keys : list of str
+        The categories/series to color, in the order they should receive
+        hues (typically a chart's fixed category list, not the row order,
+        so the mapping is stable across `data` inputs).
+    accessibility : str, optional
+        Forwarded to :func:`load_palette`. Defaults to ``"universal"``.
+    hues : list of str, optional
+        Palette hue *names* to cycle through, e.g. ``["Blue", "Red"]``.
+        Defaults to :data:`_DEFAULT_CYCLE` (``Blue, Orange, Green, Purple``),
+        matching every pre-existing caller's hard-coded order.
+
+    Returns
+    -------
+    dict of str to str
+        ``{key: hex}``, one entry per `keys`, hues repeating past the 4th.
+
+    Examples
+    --------
+    >>> colors = cycle_hues(["North", "South", "East", "West", "Central"])
+    >>> len(colors)
+    5
+    >>> colors["North"] == colors["Central"]  # wraps after 4 hues
+    True
+    """
+    palette = load_palette(accessibility)
+    order = hues or list(_DEFAULT_CYCLE)
+    picked = [palette.get(name, _FALLBACK_PALETTE.get(name, "#007AFF")) for name in order]
+    if not picked:
+        picked = ["#007AFF"]
+    return {key: picked[i % len(picked)] for i, key in enumerate(keys)}
 
 
 def os_adaptive_style(

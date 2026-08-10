@@ -57,7 +57,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
+from _style import BG, FONT_MONO, INK, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _svg import svg_open, xml_escape as escape  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
@@ -72,14 +72,11 @@ MARGIN_RIGHT = 64
 MARGIN_TOP = 210         # room for title + subtitle + row band label
 MARGIN_BOTTOM = 104      # room for the footnote + total headcount strip
 
-INK = "#1D1D1F"          # primary text
 SUBINK = "#6E6E73"       # secondary text
 HAIRLINE = "#E5E5EA"     # neutral hairline
 CARD_BG = "#FFFFFF"      # team-card fill
-BG = "#FFFFFF"
 
 FONT = "Roboto, system-ui, sans-serif"
-FONT_MONO = "Roboto Mono, ui-monospace, monospace"
 
 # Box geometry. Cards are tall enough to carry a large role line plus a
 # comfortable headcount caption so every label reads at a glance.

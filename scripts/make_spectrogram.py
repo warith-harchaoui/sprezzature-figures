@@ -41,6 +41,7 @@ from __future__ import annotations
 from _render import svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _style import os_dark_style  # noqa: E402
+from _svg import fmt_compact  # noqa: E402
 
 import argparse
 from pathlib import Path
@@ -268,9 +269,6 @@ def _ramp_hex(t: float, stops: Sequence[Tuple[float, str]] = _VIRIDIS) -> str:
 # --------------------------------------------------------------------------- #
 # SVG assembly                                                                 #
 # --------------------------------------------------------------------------- #
-def _fmt(v: float) -> str:
-    """Format a float compactly for SVG (2 decimals, trimmed)."""
-    return f"{v:.2f}".rstrip("0").rstrip(".")
 
 
 def build_svg(
@@ -405,14 +403,14 @@ def build_svg(
 
     # ---- heatmap cells (clipped to the plot rectangle) -------------------- #
     parts.append(
-        f'<clipPath id="plot-clip"><rect x="{_fmt(m_left)}" y="{_fmt(m_top)}" '
-        f'width="{_fmt(plot_w)}" height="{_fmt(plot_h)}" rx="6"/></clipPath>'
+        f'<clipPath id="plot-clip"><rect x="{fmt_compact(m_left, decimals=2)}" y="{fmt_compact(m_top, decimals=2)}" '
+        f'width="{fmt_compact(plot_w, decimals=2)}" height="{fmt_compact(plot_h, decimals=2)}" rx="6"/></clipPath>'
     )
     parts.append('<g clip-path="url(#plot-clip)" shape-rendering="crispEdges">')
     # Rounded frame ground behind the cells (shows through the clip corners).
     parts.append(
-        f'<rect x="{_fmt(m_left)}" y="{_fmt(m_top)}" width="{_fmt(plot_w)}" '
-        f'height="{_fmt(plot_h)}" fill="{_VIRIDIS[0][1]}"/>'
+        f'<rect x="{fmt_compact(m_left, decimals=2)}" y="{fmt_compact(m_top, decimals=2)}" width="{fmt_compact(plot_w, decimals=2)}" '
+        f'height="{fmt_compact(plot_h, decimals=2)}" fill="{_VIRIDIS[0][1]}"/>'
     )
     # Row j = 0 is the lowest frequency; draw it at the bottom of the plot.
     for j in range(n_freq):
@@ -423,16 +421,16 @@ def build_svg(
             colour = _ramp_hex(norm)
             x = m_left + i * cell_w
             parts.append(
-                f'<rect x="{_fmt(x)}" y="{_fmt(y)}" '
-                f'width="{_fmt(cell_w + 0.6)}" height="{_fmt(cell_h + 0.6)}" '
+                f'<rect x="{fmt_compact(x, decimals=2)}" y="{fmt_compact(y, decimals=2)}" '
+                f'width="{fmt_compact(cell_w + 0.6, decimals=2)}" height="{fmt_compact(cell_h + 0.6, decimals=2)}" '
                 f'fill="{colour}"/>'
             )
     parts.append("</g>")
 
     # ---- plot border ------------------------------------------------------ #
     parts.append(
-        f'<rect x="{_fmt(m_left)}" y="{_fmt(m_top)}" width="{_fmt(plot_w)}" '
-        f'height="{_fmt(plot_h)}" rx="6" fill="none" stroke="{_INK}" '
+        f'<rect x="{fmt_compact(m_left, decimals=2)}" y="{fmt_compact(m_top, decimals=2)}" width="{fmt_compact(plot_w, decimals=2)}" '
+        f'height="{fmt_compact(plot_h, decimals=2)}" rx="6" fill="none" stroke="{_INK}" '
         f'stroke-width="1.4"/>'
     )
 
@@ -443,16 +441,16 @@ def build_svg(
             continue
         gx = x_px(float(tsec))
         parts.append(
-            f'<line x1="{_fmt(gx)}" y1="{_fmt(axis_y)}" x2="{_fmt(gx)}" '
-            f'y2="{_fmt(axis_y + 7)}" stroke="{_INK}" stroke-width="1.2"/>'
+            f'<line x1="{fmt_compact(gx, decimals=2)}" y1="{fmt_compact(axis_y, decimals=2)}" x2="{fmt_compact(gx, decimals=2)}" '
+            f'y2="{fmt_compact(axis_y + 7, decimals=2)}" stroke="{_INK}" stroke-width="1.2"/>'
         )
         parts.append(
-            f'<text x="{_fmt(gx)}" y="{_fmt(axis_y + 28)}" text-anchor="middle" '
+            f'<text x="{fmt_compact(gx, decimals=2)}" y="{fmt_compact(axis_y + 28, decimals=2)}" text-anchor="middle" '
             f'font-size="15" font-family="{_MONO}" fill="{_SECONDARY}">'
             f"{tsec:.1f}</text>"
         )
     parts.append(
-        f'<text x="{_fmt(m_left + plot_w / 2)}" y="{_fmt(axis_y + 62)}" '
+        f'<text x="{fmt_compact(m_left + plot_w / 2, decimals=2)}" y="{fmt_compact(axis_y + 62, decimals=2)}" '
         f'text-anchor="middle" font-size="17" fill="{_INK}">Time (seconds)</text>'
     )
 
@@ -466,18 +464,18 @@ def build_svg(
             continue
         gy = y_px(float(fhz))
         parts.append(
-            f'<line x1="{_fmt(m_left - 7)}" y1="{_fmt(gy)}" x2="{_fmt(m_left)}" '
-            f'y2="{_fmt(gy)}" stroke="{_INK}" stroke-width="1.2"/>'
+            f'<line x1="{fmt_compact(m_left - 7, decimals=2)}" y1="{fmt_compact(gy, decimals=2)}" x2="{fmt_compact(m_left, decimals=2)}" '
+            f'y2="{fmt_compact(gy, decimals=2)}" stroke="{_INK}" stroke-width="1.2"/>'
         )
         parts.append(
-            f'<text x="{_fmt(m_left - 13)}" y="{_fmt(gy + 5)}" text-anchor="end" '
+            f'<text x="{fmt_compact(m_left - 13, decimals=2)}" y="{fmt_compact(gy + 5, decimals=2)}" text-anchor="end" '
             f'font-size="15" font-family="{_MONO}" fill="{_SECONDARY}">'
             f"{fhz // 1000 if fhz else 0}{'k' if fhz else ''}</text>"
         )
     parts.append(
-        f'<text x="30" y="{_fmt(m_top + plot_h / 2)}" text-anchor="middle" '
+        f'<text x="30" y="{fmt_compact(m_top + plot_h / 2, decimals=2)}" text-anchor="middle" '
         f'font-size="17" fill="{_INK}" '
-        f'transform="rotate(-90 30 {_fmt(m_top + plot_h / 2)})">Frequency (Hz)</text>'
+        f'transform="rotate(-90 30 {fmt_compact(m_top + plot_h / 2, decimals=2)})">Frequency (Hz)</text>'
     )
 
     # ---- annotations on the features ------------------------------------- #
@@ -498,11 +496,11 @@ def build_svg(
         else:  # middle
             rx = cx - w / 2
         parts.append(
-            f'<rect x="{_fmt(rx)}" y="{_fmt(cy - h + pad_y)}" width="{_fmt(w)}" '
-            f'height="{_fmt(h)}" rx="7" fill="#1D1D1F" fill-opacity="0.42"/>'
+            f'<rect x="{fmt_compact(rx, decimals=2)}" y="{fmt_compact(cy - h + pad_y, decimals=2)}" width="{fmt_compact(w, decimals=2)}" '
+            f'height="{fmt_compact(h, decimals=2)}" rx="7" fill="#1D1D1F" fill-opacity="0.42"/>'
         )
         parts.append(
-            f'<text x="{_fmt(cx)}" y="{_fmt(cy)}" text-anchor="{anchor}" '
+            f'<text x="{fmt_compact(cx, decimals=2)}" y="{fmt_compact(cy, decimals=2)}" text-anchor="{anchor}" '
             f'font-size="15" font-weight="600" fill="#FFFFFF">{text}</text>'
         )
 
@@ -521,28 +519,28 @@ def build_svg(
     grad_id = "power-ramp"
     parts.append(f'<defs><linearGradient id="{grad_id}" x1="0" y1="1" x2="0" y2="0">')
     for pos, col in _VIRIDIS:
-        parts.append(f'<stop offset="{_fmt(pos * 100)}%" stop-color="{col}"/>')
+        parts.append(f'<stop offset="{fmt_compact(pos * 100, decimals=2)}%" stop-color="{col}"/>')
     parts.append("</linearGradient></defs>")
     # No dark ring around the swatch — a hairline light-neutral border keeps
     # the ramp crisp on white without a hard black outline.
     parts.append(
-        f'<rect x="{_fmt(leg_x)}" y="{_fmt(leg_top)}" width="{leg_w}" '
-        f'height="{_fmt(leg_h)}" rx="5" fill="url(#{grad_id})" '
+        f'<rect x="{fmt_compact(leg_x, decimals=2)}" y="{fmt_compact(leg_top, decimals=2)}" width="{leg_w}" '
+        f'height="{fmt_compact(leg_h, decimals=2)}" rx="5" fill="url(#{grad_id})" '
         f'stroke="#D2D2D7" stroke-width="1"/>'
     )
     # Legend tick labels: 0 dB (loud) at the top, floor at the bottom.
     for frac, lbl in ((1.0, "0"), (0.5, f"{int(db_lo / 2)}"), (0.0, f"{int(db_lo)}")):
         ly = leg_top + (1.0 - frac) * leg_h
         parts.append(
-            f'<text x="{_fmt(leg_x + leg_w + 9)}" y="{_fmt(ly + 5)}" '
+            f'<text x="{fmt_compact(leg_x + leg_w + 9, decimals=2)}" y="{fmt_compact(ly + 5, decimals=2)}" '
             f'font-size="14" font-family="{_MONO}" fill="{_SECONDARY}">{lbl}</text>'
         )
     parts.append(
-        f'<text x="{_fmt(leg_x + leg_w / 2)}" y="{_fmt(leg_top - 14)}" '
+        f'<text x="{fmt_compact(leg_x + leg_w / 2, decimals=2)}" y="{fmt_compact(leg_top - 14, decimals=2)}" '
         f'text-anchor="middle" font-size="15" fill="{_INK}">Power</text>'
     )
     parts.append(
-        f'<text x="{_fmt(leg_x + leg_w / 2)}" y="{_fmt(leg_top + leg_h + 24)}" '
+        f'<text x="{fmt_compact(leg_x + leg_w / 2, decimals=2)}" y="{fmt_compact(leg_top + leg_h + 24, decimals=2)}" '
         f'text-anchor="middle" font-size="13" fill="{_SECONDARY}">dB</text>'
     )
 

@@ -68,6 +68,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _render import write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
+from _svg import fmt_compact  # noqa: E402
 
 # Repo-relative default output — the one SVG artifact this figure ships.
 _DEFAULT_OUT = (
@@ -360,12 +361,6 @@ def _lighten(hexv: str, t: float) -> str:
 # --------------------------------------------------------------------------- #
 # Fit helpers                                                                 #
 # --------------------------------------------------------------------------- #
-def _fmt(v: float) -> str:
-    """Format a float compactly for SVG (1 decimal, no trailing .0)."""
-    s = f"{v:.1f}"
-    if s.endswith(".0"):
-        s = s[:-2]
-    return s
 
 
 def _project_positions(
@@ -853,9 +848,9 @@ def build_svg(
             f'aria-label="{word}, {cluster}">'
             f'<title>{word} — {cluster}</title>'
             # WHITE halo for separation in dense areas (no dark grounding ring).
-            f'<circle class="pt-halo c-{ci}" cx="{_fmt(px)}" cy="{_fmt(py)}" '
+            f'<circle class="pt-halo c-{ci}" cx="{fmt_compact(px)}" cy="{fmt_compact(py)}" '
             f'r="8.5" fill="{_BG}"/>'
-            f'<circle class="pt-core" cx="{_fmt(px)}" cy="{_fmt(py)}" r="6.4" '
+            f'<circle class="pt-core" cx="{fmt_compact(px)}" cy="{fmt_compact(py)}" r="6.4" '
             f'fill="{fills[ci]}" stroke="{colors[ci]}" stroke-width="1.6"/>'
             f'</g>'
         )
@@ -884,13 +879,13 @@ def build_svg(
         ly = min(_VIEW_H - _LEGEND_H - pill_h, max(_M_TOP - 8, ly))
         parts.append(
             f'<g class="rep-label rl-{ci}">'
-            f'<rect x="{_fmt(lx)}" y="{_fmt(ly)}" width="{_fmt(pill_w)}" '
+            f'<rect x="{fmt_compact(lx)}" y="{fmt_compact(ly)}" width="{fmt_compact(pill_w)}" '
             f'height="{pill_h}" rx="{pill_h / 2:.1f}" fill="{_BG}" '
             f'fill-opacity="0.90" stroke="{colors[ci]}" stroke-opacity="0.45" '
             f'stroke-width="1.2"/>'
-            f'<circle cx="{_fmt(lx + 15)}" cy="{_fmt(ly + pill_h / 2)}" r="5" '
+            f'<circle cx="{fmt_compact(lx + 15)}" cy="{fmt_compact(ly + pill_h / 2)}" r="5" '
             f'fill="{colors[ci]}"/>'
-            f'<text x="{_fmt(lx + 27)}" y="{_fmt(ly + pill_h / 2 + 5)}" '
+            f'<text x="{fmt_compact(lx + 27)}" y="{fmt_compact(ly + pill_h / 2 + 5)}" '
             f'font-size="16" font-weight="600" fill="{_INK}">{word}</text>'
             f'</g>'
         )

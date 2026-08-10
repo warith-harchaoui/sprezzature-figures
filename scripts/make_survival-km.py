@@ -33,14 +33,9 @@ from typing import Any, Dict, List, Optional, Tuple
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _style import load_palette  # noqa: E402
+from _style import BG, FONT_MONO, GRIDLINE, INK, SECONDARY, cycle_hues, load_palette  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
 
-INK = "#1D1D1F"
-SECONDARY = "#6E6E73"
-BG = "#FFFFFF"
-GRIDLINE = "#E5E5EA"
-FONT_MONO = "Roboto Mono, ui-monospace, monospace"
 
 ARMS = ["Treatment", "Control"]
 FOLLOW_UP_MAX = 60.0
@@ -99,10 +94,7 @@ def _survival_at(curve: List[Tuple[float, float, float, float]], t: float) -> fl
 
 
 def _arm_colors(arms: List[str], accessibility: str = "universal") -> Dict[str, str]:
-    palette = load_palette(accessibility)
-    hues = [palette.get("Blue", "#007AFF"), palette.get("Orange", "#FF9500"),
-            palette.get("Green", "#34C759"), palette.get("Purple", "#AF52DE")]
-    return {a: hues[i % len(hues)] for i, a in enumerate(arms)}
+    return cycle_hues(arms, accessibility)
 
 
 def build_svg(
@@ -308,6 +300,7 @@ def make_survival_km(
 
 
 def main() -> None:
+    """CLI entry point: build the SVG and write it to disk."""
     render_cli(__file__, "survival-km", build_svg, description="Generate a Kaplan-Meier survival curve.")
 
 

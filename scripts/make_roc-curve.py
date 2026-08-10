@@ -31,12 +31,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
+from _style import BG, FONT_MONO, GRIDLINE, INK, SECONDARY  # noqa: E402
 
-INK = "#1D1D1F"
-SECONDARY = "#6E6E73"
-BG = "#FFFFFF"
-GRIDLINE = "#E5E5EA"
-FONT_MONO = "Roboto Mono, ui-monospace, monospace"
 COLOR_REF = "#C7C7CC"
 COLOR_ROC = "#007AFF"
 
@@ -82,6 +78,8 @@ def build_svg(
     height: int = 520,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    x_label: str = "False positive rate",
+    y_label: str = "True positive rate",
 ) -> str:
     """Assemble the full ROC curve SVG document as a string.
 
@@ -97,6 +95,10 @@ def build_svg(
     accessibility : str, optional
         Accepted for CLI parity but a documented no-op: a single house-
         blue ROC curve, no categorical hues to re-level.
+    x_label, y_label : str, optional
+        Axis titles. No log-scale option on either axis: both are rates
+        bounded to [0, 1] and the curve always passes through exactly
+        (0, 0), which a log axis cannot represent (log(0) is undefined).
 
     Returns
     -------
@@ -151,11 +153,11 @@ def build_svg(
         )
     parts.append(
         f'<text x="20" y="{plot_y + plot_h / 2:.1f}" font-size="13" fill="{INK}" '
-        f'text-anchor="middle" transform="rotate(-90 20 {plot_y + plot_h / 2:.1f})">True positive rate</text>'
+        f'text-anchor="middle" transform="rotate(-90 20 {plot_y + plot_h / 2:.1f})">{xml_escape(y_label)}</text>'
     )
     parts.append(
         f'<text x="{plot_x + plot_w / 2:.1f}" y="{plot_y + plot_h + 42:.1f}" font-size="13" '
-        f'fill="{INK}" text-anchor="middle">False positive rate</text>'
+        f'fill="{INK}" text-anchor="middle">{xml_escape(x_label)}</text>'
     )
 
     # ---- diagonal reference ----
@@ -187,6 +189,8 @@ def make_roc_curve(
     height: int = 520,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    x_label: str = "False positive rate",
+    y_label: str = "True positive rate",
 ) -> Path:
     """Render a hand-authored ROC curve and write the SVG to *out*.
 
@@ -205,6 +209,8 @@ def make_roc_curve(
         Canvas size in pixels.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    x_label, y_label : str, optional
+        Axis titles. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -218,12 +224,14 @@ def make_roc_curve(
     True
     """
     _ = title
-    svg = build_svg(data, width=width, height=height, mode=mode, accessibility=accessibility)
+    svg = build_svg(data, width=width, height=height, mode=mode, accessibility=accessibility,
+                     x_label=x_label, y_label=y_label)
     dest = Path(out) if out else svg_example_path(__file__, "roc-curve")
     return write_svg(dest, svg)
 
 
 def main() -> None:
+    """CLI entry point: build the SVG and write it to disk."""
     render_cli(__file__, "roc-curve", build_svg, description="Generate a ROC curve.")
 
 

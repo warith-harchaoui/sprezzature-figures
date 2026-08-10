@@ -34,10 +34,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
+from _style import BG, INK, SECONDARY  # noqa: E402
 
-INK = "#1D1D1F"
-SECONDARY = "#6E6E73"
-BG = "#FFFFFF"
 
 _RAMP: Tuple[Tuple[float, str], ...] = (
     (0.00, "#EAF3FF"), (0.25, "#9CC7FF"), (0.55, "#3E9BFF"),
@@ -289,6 +287,7 @@ def make_hexbin(
 
 
 def main() -> None:
+    """CLI entry point: build the SVG and write it to disk."""
     render_cli(__file__, "hexbin", build_svg, description="Generate a hexagonal binning plot.")
 
 

@@ -46,7 +46,6 @@ Author
 
 from __future__ import annotations
 
-import argparse
 import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -54,7 +53,7 @@ from typing import Any, Dict, List, Optional, Tuple
 # _style / _svg are sibling modules — pull the house palette and the
 # shared XML-escape so make <-> audit brand tokens never drift.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _render import svg_example_path, write_svg  # noqa: E402
+from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _style import (  # noqa: E402
     forced_color_patterns,
     load_palette,
@@ -611,58 +610,10 @@ def make_parallel_sets(
 # --------------------------------------------------------------------------- #
 # 4. CLI                                                                      #
 # --------------------------------------------------------------------------- #
-def _default_out() -> Path:
-    """Return the canonical output path under ``assets/svg-examples``."""
-    return svg_example_path(__file__, "parallel-sets")
-
-
-def main(argv: Optional[List[str]] = None) -> int:
-    """CLI entry point — build the SVG and write it to disk.
-
-    Parameters
-    ----------
-    argv : list of str, optional
-        Argument vector for testing; defaults to ``sys.argv``.
-
-    Returns
-    -------
-    int
-        Process exit code (``0`` on success).
-    """
-    parser = argparse.ArgumentParser(
-        prog="make_parallel-sets",
-        description="Render a house-styled parallel-sets / parcats diagram as SVG.",
-    )
-    parser.add_argument(
-        "--out",
-        type=Path,
-        default=_default_out(),
-        help="Output SVG path (default: assets/svg-examples/parallel-sets.svg).",
-    )
-    parser.add_argument(
-        "--mode",
-        choices=("self-contained", "external", "static"),
-        default="self-contained",
-        help="Fullscreen-control wiring (default: self-contained).",
-    )
-    parser.add_argument(
-        "--accessibility",
-        choices=(
-            "universal",
-            "high-contrast",
-            "monochrome",
-            "deuteranopia",
-            "protanopia",
-            "tritanopia",
-        ),
-        default="universal",
-        help="Palette accessibility level (default: universal, the CVD-safe standard).",
-    )
-    args = parser.parse_args(argv)
-
-    write_svg(args.out, build_svg(mode=args.mode, accessibility=args.accessibility))
-    return 0
+def main() -> None:
+    """CLI entry point — build the SVG and write it to disk."""
+    render_cli(__file__, "parallel-sets", build_svg, description="Render a house-styled parallel-sets / parcats diagram as SVG.")
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    main()

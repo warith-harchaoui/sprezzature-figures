@@ -157,6 +157,58 @@ def write_svg(out: Path, svg: str, *, embed_fonts: bool = True) -> Path:
     return out
 
 
+def write_raster_companions(
+    svg: str,
+    script_file: str,
+    figure_id: str,
+    *,
+    zoom: float = 2.0,
+) -> None:
+    """Rasterise `svg` to PNG and copy it into the gallery + web asset dirs.
+
+    Three animated generators (gauge, liquid-gauge, speaking-time) each
+    render a *settled* (non-animated) SVG separately from the one they
+    write via :func:`write_svg` — an animated SVG makes a poor static
+    thumbnail — then hand-rolled the same rasterise-and-copy-to-two-places
+    epilogue. This is that epilogue, factored out; call it after
+    :func:`write_svg` has already written the primary (possibly animated)
+    SVG.
+
+    Parameters
+    ----------
+    svg : str
+        The (typically static/settled) SVG document to rasterise. Often a
+        second ``build_svg(..., animated=False)`` call, not the same string
+        passed to :func:`write_svg`.
+    script_file : str
+        The calling generator's ``__file__``, used the same way
+        :func:`svg_example_path` uses it to locate the skill root.
+    figure_id : str
+        The figure's short identifier; becomes ``<figure_id>.png`` in each
+        destination directory.
+    zoom : float, optional
+        Rasterisation supersampling factor (default ``2.0``, matching every
+        pre-existing caller) — independent of :func:`_render_scale`, since
+        this is a fixed gallery-thumbnail quality choice, not the
+        environment-driven render-time override.
+
+    Returns
+    -------
+    None
+        The PNG is written to both destinations as a side effect.
+    """
+    import resvg_py
+
+    png = resvg_py.svg_to_bytes(svg_string=svg, zoom=zoom)
+    skill_root = Path(script_file).resolve().parent.parent
+    for dest in (
+        skill_root / "assets" / "figures-gallery" / f"{figure_id}.png",
+        skill_root.parent / "web" / "img" / "figures" / f"{figure_id}.png",
+    ):
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        dest.write_bytes(png)
+
+
 def _svg_to_png_bytes(svg: str) -> bytes:
     """Rasterise a complete SVG document to PNG bytes at :func:`_render_scale`.
 
@@ -224,6 +276,25 @@ def _svg_to_html(svg: str) -> str:
     )
 
 
+#: Extra ``build_svg`` parameters :func:`render_cli` will expose as flags
+#: *when the target generator declares them* — each entry is
+#: ``name -> (flag, type, help)``. This is what lets a bespoke-argparse
+#: generator move onto :func:`render_cli` without losing a flag it used to
+#: define by hand, and lets any generator gain, say, ``--log-y`` for free
+#: just by adding a ``log_y: bool = False`` parameter to its ``build_svg``.
+_OPTIONAL_FLAGS: dict = {
+    "width": ("--width", int, "canvas width in pixels"),
+    "height": ("--height", int, "canvas height in pixels"),
+    "title": ("--title", str, "chart title (default: the generator's own)"),
+    "subtitle": ("--subtitle", str, "chart subtitle (default: the generator's own)"),
+    "seed": ("--seed", int, "random seed, for generators with a stochastic demo layout"),
+    "x_label": ("--x-label", str, "x-axis title (default: the generator's own)"),
+    "y_label": ("--y-label", str, "y-axis title (default: the generator's own)"),
+    "log_x": ("--log-x", "flag", "use a logarithmic x-axis"),
+    "log_y": ("--log-y", "flag", "use a logarithmic y-axis"),
+}
+
+
 def render_cli(
     script_file: str,
     figure_id: str,
@@ -231,13 +302,18 @@ def render_cli(
     *,
     description: str,
 ) -> None:
-    """Run the standard ``--out`` command line for an SVG generator.
+    """Run the standard command line for an SVG generator.
 
-    Wraps the argparse boilerplate the ``--out``-exposing generators shared:
-    a single optional ``--out`` argument that defaults to the canonical
-    :func:`svg_example_path`, followed by a :func:`write_svg` of
-    ``build_svg()``'s result. The default path and the ``wrote <path>`` output
-    are unchanged from the inline version, so behaviour is preserved.
+    Wraps the argparse boilerplate the generators shared: a single optional
+    ``--out`` argument that defaults to the canonical :func:`svg_example_path`,
+    the fixed ``--mode``/``--accessibility``/``--language`` trio, and — new —
+    any of :data:`_OPTIONAL_FLAGS` that the target `build_svg` happens to
+    declare, followed by a :func:`write_svg` of ``build_svg()``'s result. A
+    generator gains a flag automatically by adding the matching keyword
+    parameter to its ``build_svg``; nothing else here needs to change. The
+    default path and the ``wrote <path>`` output are unchanged from the
+    inline version, so behaviour is preserved for every generator that has
+    not adopted any of the optional parameters.
 
     Parameters
     ----------
@@ -248,8 +324,10 @@ def render_cli(
         The figure's short identifier; sets both the default file name and the
         wording of the ``--out`` help text.
     build_svg : callable
-        Zero-argument function returning the complete SVG document string. It is
-        called only after arguments parse, so ``--help`` stays cheap.
+        Function returning the complete SVG document string, called with
+        only the keyword arguments its own signature accepts (see
+        :data:`_OPTIONAL_FLAGS`). Called only after arguments parse, so
+        ``--help`` stays cheap.
     description : str
         One-line description shown at the top of ``--help``.
 
@@ -287,12 +365,23 @@ def render_cli(
         default="en",
         help="chrome-text language for title/subtitle/legend (default: en).",
     )
-    args = parser.parse_args()
     # Build lazily (after parsing) so ``--help`` never runs the figure code.
-    # Pass ``mode`` / ``accessibility`` / ``language`` only to generators
-    # whose ``build_svg`` accepts them, so this helper keeps working for
-    # figures that have not adopted these arguments yet.
+    # Every flag below — fixed trio and optional alike — is passed only to
+    # generators whose ``build_svg`` declares the matching parameter, so this
+    # helper keeps working unchanged for generators that accept none of them.
     params = inspect.signature(build_svg).parameters
+    for name, (flag, type_, help_text) in _OPTIONAL_FLAGS.items():
+        if name not in params:
+            continue
+        if type_ == "flag":
+            parser.add_argument(flag, action="store_true", help=help_text)
+        else:
+            default = params[name].default
+            parser.add_argument(
+                flag, type=type_, default=None,
+                help=f"{help_text} (default: {default!r})",
+            )
+    args = parser.parse_args()
     kwargs = {}
     if "mode" in params:
         kwargs["mode"] = args.mode
@@ -300,6 +389,15 @@ def render_cli(
         kwargs["accessibility"] = args.accessibility
     if "language" in params:
         kwargs["language"] = args.language
+    for name in _OPTIONAL_FLAGS:
+        if name not in params:
+            continue
+        value = getattr(args, name)
+        # A ``None`` optional value means "not passed on the CLI" -- fall
+        # through to build_svg's own default rather than overriding it with
+        # None. Flags default to False, which is build_svg's default too.
+        if value is not None:
+            kwargs[name] = value
     write_svg(args.out, build_svg(**kwargs))
 
 

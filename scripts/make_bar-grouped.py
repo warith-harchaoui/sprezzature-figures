@@ -29,14 +29,9 @@ from typing import Any, Dict, List, Optional
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _style import corner_radius, load_palette  # noqa: E402
+from _style import BG, FONT_MONO, GRIDLINE, INK, SECONDARY, corner_radius, cycle_hues, load_palette  # noqa: E402
 from _svg import bar_path, svg_open, xml_escape  # noqa: E402
 
-INK = "#1D1D1F"
-SECONDARY = "#6E6E73"
-BG = "#FFFFFF"
-GRIDLINE = "#E5E5EA"
-FONT_MONO = "Roboto Mono, ui-monospace, monospace"
 
 PERIODS = ["Q1", "Q2", "Q3", "Q4"]
 REGIONS = ["North", "South", "East"]
@@ -90,10 +85,7 @@ def _strings(language: str) -> Dict[str, str]:
 
 
 def _region_colors(regions: List[str], accessibility: str = "universal") -> Dict[str, str]:
-    palette = load_palette(accessibility)
-    hues = [palette.get("Blue", "#007AFF"), palette.get("Orange", "#FF9500"),
-            palette.get("Green", "#34C759"), palette.get("Purple", "#AF52DE")]
-    return {r: hues[i % len(hues)] for i, r in enumerate(regions)}
+    return cycle_hues(regions, accessibility)
 
 
 def build_svg(
@@ -319,6 +311,7 @@ def make_bar_grouped(
 
 
 def main() -> None:
+    """CLI entry point: build the SVG and write it to disk."""
     render_cli(__file__, "bar-grouped", build_svg, description="Generate a grouped (clustered) bar chart.")
 
 

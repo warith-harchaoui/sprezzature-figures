@@ -30,10 +30,10 @@ import math
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-from _style import load_palette, os_adaptive_style, os_dark_style
+from _style import INK, SECONDARY, load_palette, os_adaptive_style, os_dark_style
 from _svg import point_on_circle, xml_escape
 from _interactive import fullscreen_control
-from _render import svg_example_path, write_svg
+from _render import svg_example_path, write_raster_companions, write_svg
 
 # ------------------------------------------------------------------
 # The reading. One illustrative KPI: web-server CPU load at a traffic
@@ -67,8 +67,6 @@ ZONES: List[Tuple[float, str, str]] = [
 
 PAL = load_palette()
 
-INK = "#1D1D1F"
-SECONDARY = "#6E6E73"
 TICK = "#C7C7CC"
 TRACK = "#ECECEF"      # faint full-arc groove behind the coloured zones
 FONT = "Roboto, system-ui, sans-serif"
@@ -498,8 +496,6 @@ def make_gauge(
 
 def main() -> None:
     """Render the gauge to SVG (and companion PNGs)."""
-    import resvg_py  # only needed for the PNG companions
-
     parser = argparse.ArgumentParser(description="Render the gauge SVG (and PNG companions).")
     parser.add_argument(
         "--mode",
@@ -514,25 +510,16 @@ def main() -> None:
         help="palette accessibility level (default: universal, the CVD-safe standard)",
     )
     args = parser.parse_args()
-    svg = build_svg(animated=True, mode=args.mode, accessibility=args.accessibility)
-    here = Path(__file__).resolve().parent
-    out_svg = here.parent / "assets" / "svg-examples" / "gauge.svg"
-    out_svg.parent.mkdir(parents=True, exist_ok=True)
-    out_svg.write_text(svg, encoding="utf-8")
+    out_svg = svg_example_path(__file__, "gauge")
+    write_svg(out_svg, build_svg(animated=True, mode=args.mode, accessibility=args.accessibility))
 
     # Static (non-animated) SVG for the raster companions so the PNG is the
     # settled truth, not a mid-animation frame.
-    png = resvg_py.svg_to_bytes(
-        svg_string=build_svg(animated=False, mode="static", accessibility=args.accessibility), zoom=2.0
+    write_raster_companions(
+        build_svg(animated=False, mode="static", accessibility=args.accessibility),
+        __file__,
+        "gauge",
     )
-    for dest in (
-        here.parent / "assets" / "figures-gallery" / "gauge.png",
-        here.parents[1] / "web" / "img" / "figures" / "gauge.png",
-    ):
-        dest.parent.mkdir(parents=True, exist_ok=True)
-        dest.write_bytes(png)
-
-    print(f"wrote {out_svg}")
 
 
 if __name__ == "__main__":

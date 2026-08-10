@@ -46,15 +46,14 @@ Author
 
 from __future__ import annotations
 
-import argparse
 import sys
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
 from xml.sax.saxutils import escape
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _style import forced_color_patterns, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
-from _render import svg_example_path, write_svg  # noqa: E402
+from _style import BG, FONT_MONO, GRIDLINE, INK, forced_color_patterns, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
+from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _svg import svg_open  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 
@@ -68,17 +67,13 @@ MARGIN_RIGHT = 44
 MARGIN_TOP = 168         # room for title + subtitle + stage headers
 MARGIN_BOTTOM = 56
 
-INK = "#1D1D1F"          # primary text
 SUBINK = "#6E6E73"       # secondary text
-GRIDLINE = "#E5E5EA"     # hairline neutral
-BG = "#FFFFFF"
 
 NODE_WIDTH = 24          # px width of each node bar
 NODE_PAD = 40            # vertical gap between stacked nodes in a layer
 LABEL_GAP = 14           # gap between a node bar and its text label
 
 FONT = "Roboto, system-ui, sans-serif"
-FONT_MONO = "Roboto Mono, ui-monospace, monospace"
 
 _DEFAULT_STAGE_NAMES = ("Channel", "Engagement", "Intent", "Outcome")
 _NEUTRAL_RIBBON = "#AEAEB2"
@@ -553,29 +548,7 @@ def make_sankey(
 
 def main() -> None:
     """Write the Sankey SVG to the skill's example asset folder."""
-    parser = argparse.ArgumentParser(description="Render the Sankey diagram SVG.")
-    parser.add_argument(
-        "--mode",
-        choices=("self-contained", "external", "static"),
-        default="self-contained",
-        help="Interactivity mode for the fullscreen control.",
-    )
-    parser.add_argument(
-        "--accessibility",
-        choices=(
-            "universal",
-            "high-contrast",
-            "monochrome",
-            "deuteranopia",
-            "protanopia",
-            "tritanopia",
-        ),
-        default="universal",
-        help="Palette accessibility level (default: universal, the CVD-safe standard).",
-    )
-    parser.add_argument("--out", default=None, help="Output path (defaults to the example asset).")
-    args = parser.parse_args()
-    make_sankey(out=args.out, mode=args.mode, accessibility=args.accessibility)
+    render_cli(__file__, "sankey", build_svg, description="Render the Sankey diagram SVG.")
 
 
 if __name__ == "__main__":

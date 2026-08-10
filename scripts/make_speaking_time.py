@@ -26,7 +26,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from _interactive import fullscreen_control
-from _render import svg_example_path, write_svg
+from _render import svg_example_path, write_raster_companions, write_svg
 from _style import load_palette, os_adaptive_style, os_dark_style, qualitative_sequence
 from _svg import point_on_circle, xml_escape
 
@@ -308,8 +308,6 @@ def make_speaking_time(
 
 def main() -> None:
     """Render the speaking-time donut to SVG (and a companion PNG)."""
-    import resvg_py  # only needed for the PNG companion
-
     parser = argparse.ArgumentParser(description="Render the speaking-time SVG (and a PNG companion).")
     parser.add_argument(
         "--mode",
@@ -325,20 +323,9 @@ def main() -> None:
     )
     args = parser.parse_args()
     svg = build_svg(mode=args.mode, accessibility=args.accessibility)
-    here = Path(__file__).resolve().parent
-    out_svg = here.parent / "assets" / "svg-examples" / "speaking_time.svg"
-    out_svg.parent.mkdir(parents=True, exist_ok=True)
-    out_svg.write_text(svg, encoding="utf-8")
-
-    png = resvg_py.svg_to_bytes(svg_string=svg, zoom=2.0)
-    for dest in (
-        here.parent / "assets" / "figures-gallery" / "speaking_time.png",
-        here.parents[1] / "web" / "img" / "figures" / "speaking_time.png",
-    ):
-        dest.parent.mkdir(parents=True, exist_ok=True)
-        dest.write_bytes(png)
-
-    print(f"wrote {out_svg}")
+    out_svg = svg_example_path(__file__, "speaking_time")
+    write_svg(out_svg, svg)
+    write_raster_companions(svg, __file__, "speaking_time")
 
 
 if __name__ == "__main__":

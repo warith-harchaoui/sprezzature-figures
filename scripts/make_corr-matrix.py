@@ -29,11 +29,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
+from _style import BG, FONT_MONO, INK, SECONDARY  # noqa: E402
 
-INK = "#1D1D1F"
-SECONDARY = "#6E6E73"
-BG = "#FFFFFF"
-FONT_MONO = "Roboto Mono, ui-monospace, monospace"
 
 FEATURES = ["mpg", "hp", "wt", "accel", "disp"]
 
@@ -241,6 +238,7 @@ def make_corr_matrix(
 
 
 def main() -> None:
+    """CLI entry point: build the SVG and write it to disk."""
     render_cli(__file__, "corr-matrix", build_svg, description="Generate a correlation matrix heatmap.")
 
 

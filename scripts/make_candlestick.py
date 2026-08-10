@@ -30,13 +30,10 @@ from typing import Any, Dict, List, Optional
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _svg import svg_open, xml_escape  # noqa: E402
+from _scale import log_position, log_ticks  # noqa: E402
+from _svg import fmt_number, svg_open, xml_escape  # noqa: E402
+from _style import BG, FONT_MONO, GRIDLINE, INK, SECONDARY  # noqa: E402
 
-INK = "#1D1D1F"
-SECONDARY = "#6E6E73"
-BG = "#FFFFFF"
-GRIDLINE = "#E5E5EA"
-FONT_MONO = "Roboto Mono, ui-monospace, monospace"
 COLOR_UP = "#28CD41"
 COLOR_DOWN = "#FF3B30"
 
@@ -70,6 +67,9 @@ def build_svg(
     height: int = 480,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    x_label: str = "Day",
+    y_label: str = "Price",
+    log_y: bool = False,
 ) -> str:
     """Assemble the full candlestick chart SVG document as a string.
 
@@ -87,6 +87,13 @@ def build_svg(
     accessibility : str, optional
         Accepted for CLI parity but a documented no-op: up/down is a
         fixed two-colour semantic (green/red), not a re-levelled palette.
+    x_label, y_label : str, optional
+        Axis titles.
+    log_y : bool, optional
+        Use a logarithmic price axis — the standard convention for
+        long-running price series, where equal on-screen distances read
+        as equal percentage moves. The x-axis (day) is an ordinal index,
+        not a numeric quantity, so it has no log form.
 
     Returns
     -------
@@ -109,8 +116,18 @@ def build_svg(
     bin_w = plot_w / n if n else plot_w
     body_w = max(3.0, bin_w * 0.5)
 
-    def y_for(v: float) -> float:
-        return plot_y + plot_h - (v - (v_min - pad)) / ((v_max + pad) - (v_min - pad)) * plot_h
+    if log_y:
+        pos_lows = [v for v in lows if v > 0]
+        min_pos = min(pos_lows) if pos_lows else 1.0
+        y_ticks_log = log_ticks(min_pos, v_max)
+        y_lo, y_hi = y_ticks_log[0], y_ticks_log[-1]
+
+        def y_for(v: float) -> float:
+            return log_position(v, y_lo, y_hi, plot_y + plot_h, plot_y)
+    else:
+
+        def y_for(v: float) -> float:
+            return plot_y + plot_h - (v - (v_min - pad)) / ((v_max + pad) - (v_min - pad)) * plot_h
 
     parts: List[str] = []
     parts.append(svg_open(width, height, "candle-title", "candle-desc"))
@@ -135,21 +152,27 @@ def build_svg(
     parts.append(f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>')
 
     # ---- y-axis gridlines ----
-    y_ticks = 6
-    for i in range(y_ticks + 1):
-        val = (v_min - pad) + ((v_max + pad) - (v_min - pad)) * i / y_ticks
+    if log_y:
+        y_gridline_vals = y_ticks_log
+    else:
+        y_gridline_vals = [(v_min - pad) + ((v_max + pad) - (v_min - pad)) * i / 6 for i in range(7)]
+    for val in y_gridline_vals:
         ty = y_for(val)
         parts.append(
             f'<line x1="{plot_x:.1f}" y1="{ty:.1f}" x2="{plot_x + plot_w:.1f}" y2="{ty:.1f}" '
             f'stroke="{GRIDLINE}" stroke-width="1"/>'
         )
+        # fmt_number only for log ticks (decade values can be fractional);
+        # the linear branch keeps its original :.0f} so the default render
+        # is unchanged.
+        tick_label = fmt_number(val) if log_y else f"{val:.0f}"
         parts.append(
             f'<text x="{plot_x - 10:.1f}" y="{ty + 4:.1f}" font-size="11" font-family="{FONT_MONO}" '
-            f'fill="{SECONDARY}" text-anchor="end">{val:.0f}</text>'
+            f'fill="{SECONDARY}" text-anchor="end">{tick_label}</text>'
         )
     parts.append(
         f'<text x="18" y="{plot_y + plot_h / 2:.1f}" font-size="13" fill="{INK}" '
-        f'text-anchor="middle" transform="rotate(-90 18 {plot_y + plot_h / 2:.1f})">Price</text>'
+        f'text-anchor="middle" transform="rotate(-90 18 {plot_y + plot_h / 2:.1f})">{xml_escape(y_label)}</text>'
     )
 
     # ---- candles ----
@@ -192,7 +215,7 @@ def build_svg(
         )
     parts.append(
         f'<text x="{plot_x + plot_w / 2:.1f}" y="{axis_y + 42:.1f}" font-size="13" '
-        f'fill="{INK}" text-anchor="middle">Day</text>'
+        f'fill="{INK}" text-anchor="middle">{xml_escape(x_label)}</text>'
     )
 
     parts.append(fullscreen_control(width, height, mode))
@@ -210,6 +233,9 @@ def make_candlestick(
     height: int = 480,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    x_label: str = "Day",
+    y_label: str = "Price",
+    log_y: bool = False,
 ) -> Path:
     """Render a hand-authored candlestick chart and write the SVG to *out*.
 
@@ -227,6 +253,10 @@ def make_candlestick(
         Canvas size in pixels.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    x_label, y_label : str, optional
+        Axis titles. Forwarded to :func:`build_svg`.
+    log_y : bool, optional
+        Use a logarithmic price axis. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -240,12 +270,14 @@ def make_candlestick(
     True
     """
     svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
-                     mode=mode, accessibility=accessibility)
+                     mode=mode, accessibility=accessibility, x_label=x_label,
+                     y_label=y_label, log_y=log_y)
     dest = Path(out) if out else svg_example_path(__file__, "candlestick")
     return write_svg(dest, svg)
 
 
 def main() -> None:
+    """CLI entry point: build the SVG and write it to disk."""
     render_cli(__file__, "candlestick", build_svg, description="Generate an OHLC candlestick chart.")
 
 

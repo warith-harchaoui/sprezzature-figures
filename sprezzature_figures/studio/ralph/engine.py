@@ -1,15 +1,15 @@
 """
 RalphEngine: the interactive loop from plan §11.1.
 
-    demande utilisateur
-    -> interprétation structurée (assistant.edit.propose_edit)
+    user request
+    -> structured interpretation (assistant.edit.propose_edit)
     -> validation (core.validate_operation, already applied inside propose_edit)
-    -> modification du FigurePlan (apply_operation)
-    -> rendu (core.render_figure_to_project)
-    -> inspection du rendu (ralph.critic.request_critique)
-    -> critique structurée (VisualCritique)
-    -> éventuelle réparation sûre (ralph.repair.apply_safe_repairs)
-    -> nouveau rendu
+    -> FigurePlan modification (apply_operation)
+    -> render (core.render_figure_to_project)
+    -> render inspection (ralph.critic.request_critique)
+    -> structured critique (VisualCritique)
+    -> optional safe repair (ralph.repair.apply_safe_repairs)
+    -> new render
 
 Ralph never touches the rendered image directly -- every change goes
 through a FigureOperation applied to the FigurePlan, then a fresh render
