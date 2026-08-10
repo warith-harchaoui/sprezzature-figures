@@ -69,6 +69,36 @@ _FALLBACK_PALETTE: Dict[str, str] = {
 }
 
 
+# ------------------------------------------------------------------
+# Academic-theme palette — Okabe & Ito (2002), the categorical palette Bang
+# Wong's 2011 Nature Methods editorial made the de facto standard for
+# scientific figures: colour-vision-deficiency-safe *by construction* (no
+# pure red/green pairing), not merely re-leveled into safety on request the
+# way the corporate palette is via :func:`_apply_accessibility_level`. Same
+# key set as :data:`_FALLBACK_PALETTE` so every existing
+# ``cycle_hues(keys, accessibility)`` call resolves unchanged once `theme`
+# is threaded through -- no caller needs its own hue-name list to change.
+# Neutrals (Gray/Brown/Black/White) are theme-agnostic and match corporate;
+# Okabe-Ito itself defines only the 7 chromatic hues + black. Two corporate
+# slots (Mint, Teal) have no distinct Okabe-Ito counterpart and share Green/
+# Sky Blue respectively rather than inventing an unvetted seventh hue.
+# ------------------------------------------------------------------
+_ACADEMIC_PALETTE: Dict[str, str] = {
+    "Red":    "#D55E00",  # vermilion -- Okabe-Ito's red substitute (pure red excluded by design)
+    "Orange": "#E69F00",
+    "Yellow": "#F0E442",
+    "Green":  "#009E73",  # bluish green
+    "Mint":   "#009E73",  # no distinct Okabe-Ito equivalent; shares Green
+    "Teal":   "#56B4E9",  # sky blue
+    "Blue":   "#0072B2",
+    "Purple": "#CC79A7",  # reddish purple
+    "Gray":   "#8E8E93",
+    "Brown":  "#A2845E",
+    "Black":  "#000000",
+    "White":  "#FFFFFF",
+}
+
+
 #: Emotion → hex fallback, mirroring the ``Emotion`` column of the
 #: sprezzature-colors CSV. Anger / Sadness / Joy etc. Source:
 #: <https://harchaoui.org/warith/colors/>.
@@ -166,8 +196,8 @@ def _apply_accessibility_level(palette: Dict[str, str], level: str) -> Dict[str,
         return palette
 
 
-def load_palette(accessibility: str = "universal") -> Dict[str, str]:
-    """Read the canonical palette, at a chosen accessibility level.
+def load_palette(accessibility: str = "universal", theme: str = "corporate") -> Dict[str, str]:
+    """Read the canonical palette, at a chosen accessibility level and theme.
 
     Parameters
     ----------
@@ -178,6 +208,16 @@ def load_palette(accessibility: str = "universal") -> Dict[str, str]:
         ``"deuteranopia"``, ``"protanopia"`` and ``"tritanopia"``; they are
         applied by the sprezzature-colors engine when it is co-installed. See
         ``sprezzature-colors/references/accessibility-levels.md`` for the model.
+        Applies on top of either theme's base palette -- academic's
+        ``universal`` default is already CVD-safe by construction (Okabe-Ito),
+        but the engine still runs for e.g. ``"monochrome"`` grayscale output.
+    theme : str, optional
+        ``"corporate"`` (default) reads the sprezzature-colors CSV / Apple-
+        system :data:`_FALLBACK_PALETTE`, unchanged from before this
+        parameter existed. ``"academic"`` returns :data:`_ACADEMIC_PALETTE`
+        (Okabe-Ito) directly, ignoring any co-installed brand CSV -- Okabe-Ito
+        is a fixed, citable scientific standard, not a brand palette meant to
+        be swapped per project.
 
     Returns
     -------
@@ -186,19 +226,22 @@ def load_palette(accessibility: str = "universal") -> Dict[str, str]:
         values; values are the level-appropriate hex. Order follows the CSV; the
         fallback follows the order in ``_FALLBACK_PALETTE``.
     """
-    csv_path = _sibling_palette_csv()
-    if csv_path is None:
-        palette = dict(_FALLBACK_PALETTE)
+    if theme == "academic":
+        palette = dict(_ACADEMIC_PALETTE)
     else:
-        palette = {}
-        with csv_path.open("r", encoding="utf-8", newline="") as fh:
-            reader = csv.DictReader(fh)
-            for row in reader:
-                name = (row.get("Base") or row.get("name") or "").strip()
-                hexv = (row.get("Hexcode") or row.get("Hex") or row.get("hex") or "").strip()
-                if name and hexv.startswith("#") and len(hexv) in (4, 7):
-                    palette[name] = hexv.upper()
-        palette = palette or dict(_FALLBACK_PALETTE)
+        csv_path = _sibling_palette_csv()
+        if csv_path is None:
+            palette = dict(_FALLBACK_PALETTE)
+        else:
+            palette = {}
+            with csv_path.open("r", encoding="utf-8", newline="") as fh:
+                reader = csv.DictReader(fh)
+                for row in reader:
+                    name = (row.get("Base") or row.get("name") or "").strip()
+                    hexv = (row.get("Hexcode") or row.get("Hex") or row.get("hex") or "").strip()
+                    if name and hexv.startswith("#") and len(hexv) in (4, 7):
+                        palette[name] = hexv.upper()
+            palette = palette or dict(_FALLBACK_PALETTE)
 
     # ``universal`` is the identity, so the default path never touches the engine
     # and stays byte-for-byte what it always produced.
@@ -248,7 +291,8 @@ _DEFAULT_CYCLE = ("Blue", "Orange", "Green", "Purple")
 
 
 def cycle_hues(
-    keys: List[str], accessibility: str = "universal", hues: Optional[List[str]] = None
+    keys: List[str], accessibility: str = "universal", hues: Optional[List[str]] = None,
+    theme: str = "corporate",
 ) -> Dict[str, str]:
     """Assign each of `keys` a hue, cycling through a small qualitative set.
 
@@ -270,7 +314,11 @@ def cycle_hues(
     hues : list of str, optional
         Palette hue *names* to cycle through, e.g. ``["Blue", "Red"]``.
         Defaults to :data:`_DEFAULT_CYCLE` (``Blue, Orange, Green, Purple``),
-        matching every pre-existing caller's hard-coded order.
+        matching every pre-existing caller's hard-coded order. Names are
+        shared across themes (see :data:`_ACADEMIC_PALETTE`), so a caller's
+        existing `hues` list needs no change to theme correctly.
+    theme : str, optional
+        Forwarded to :func:`load_palette`. Defaults to ``"corporate"``.
 
     Returns
     -------
@@ -285,9 +333,10 @@ def cycle_hues(
     >>> colors["North"] == colors["Central"]  # wraps after 4 hues
     True
     """
-    palette = load_palette(accessibility)
+    palette = load_palette(accessibility, theme=theme)
+    fallback = _ACADEMIC_PALETTE if theme == "academic" else _FALLBACK_PALETTE
     order = hues or list(_DEFAULT_CYCLE)
-    picked = [palette.get(name, _FALLBACK_PALETTE.get(name, "#007AFF")) for name in order]
+    picked = [palette.get(name, fallback.get(name, "#007AFF")) for name in order]
     if not picked:
         picked = ["#007AFF"]
     return {key: picked[i % len(picked)] for i, key in enumerate(keys)}
@@ -641,7 +690,7 @@ def psychology_for(base: str) -> Dict[str, List[str]]:
 # ------------------------------------------------------------------
 # Categorical sequences for chart encodings
 # ------------------------------------------------------------------
-def qualitative_sequence(n: int = 8) -> List[str]:
+def qualitative_sequence(n: int = 8, theme: str = "corporate") -> List[str]:
     """Return the first ``n`` curated saturated hues.
 
     Parameters
@@ -649,15 +698,29 @@ def qualitative_sequence(n: int = 8) -> List[str]:
     n : int, optional
         How many colors to return (default 8). Cycles the base list
         when ``n`` exceeds the palette size.
+    theme : str, optional
+        Forwarded to :func:`load_palette`. Defaults to ``"corporate"``.
+        Academic's palette has only 7 distinct chromatic hues (two corporate
+        slots, Mint and Teal, share one Okabe-Ito hue each with Green/Blue's
+        neighbours — see :data:`_ACADEMIC_PALETTE`); duplicates are dropped
+        here so a caller never sees the same hex twice in a row.
 
     Returns
     -------
     list of str
         ``n`` hex strings, brand-order.
     """
-    base = list(load_palette().values())
-    # Skip the neutrals for a qualitative encoding.
-    saturated = [h for h in base if h.upper() not in {"#000000", "#FFFFFF", "#8E8E93", "#A2845E"}]
+    base = list(load_palette(theme=theme).values())
+    # Skip the neutrals for a qualitative encoding, and de-duplicate (the
+    # academic palette reuses one hex across two corporate-only hue slots).
+    seen: set = set()
+    saturated: List[str] = []
+    for h in base:
+        hu = h.upper()
+        if hu in {"#000000", "#FFFFFF", "#8E8E93", "#A2845E"} or hu in seen:
+            continue
+        seen.add(hu)
+        saturated.append(h)
     if n <= len(saturated):
         return saturated[:n]
     out: List[str] = []
