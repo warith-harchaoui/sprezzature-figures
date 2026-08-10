@@ -33,8 +33,9 @@ from typing import Any, Dict, List, Optional, Tuple
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _style import BG, FONT_MONO, GRIDLINE, INK, SECONDARY, cycle_hues, load_palette  # noqa: E402
+from _style import BG, GRIDLINE, INK, SECONDARY, cycle_hues  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 
 ARMS = ["Treatment", "Control"]
@@ -93,8 +94,10 @@ def _survival_at(curve: List[Tuple[float, float, float, float]], t: float) -> fl
     return s
 
 
-def _arm_colors(arms: List[str], accessibility: str = "universal") -> Dict[str, str]:
-    return cycle_hues(arms, accessibility)
+def _arm_colors(
+    arms: List[str], accessibility: str = "universal", theme: str = "corporate"
+) -> Dict[str, str]:
+    return cycle_hues(arms, accessibility, theme=theme)
 
 
 def build_svg(
@@ -105,6 +108,7 @@ def build_svg(
     height: int = 480,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full Kaplan-Meier survival curve SVG document as a string.
 
@@ -121,19 +125,24 @@ def build_svg(
     mode, accessibility : str, optional
         Forwarded to :func:`_interactive.fullscreen_control` /
         :func:`_style.load_palette`.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
     str
         A complete, standalone SVG document.
     """
+    mono_family = mono_stack_for_theme(theme)
     rows = data if data else DEMO_DATA
     seen_arms: List[str] = []
     for r in rows:
         if r["arm"] not in seen_arms:
             seen_arms.append(r["arm"])
     arms = [a for a in ARMS if a in seen_arms] + [a for a in seen_arms if a not in ARMS]
-    colors = _arm_colors(arms, accessibility)
+    colors = _arm_colors(arms, accessibility, theme=theme)
     t_max = max(float(r["t"]) for r in rows) if rows else 1.0
 
     plot_x, plot_y = 60.0, 150.0
@@ -148,7 +157,7 @@ def build_svg(
         return plot_y + plot_h - v * plot_h
 
     parts: List[str] = []
-    parts.append(svg_open(width, height, "km-title", "km-desc"))
+    parts.append(svg_open(width, height, "km-title", "km-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="km-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="km-desc">Kaplan-Meier survival curves for {len(arms)} arms over '
@@ -178,7 +187,7 @@ def build_svg(
             f'stroke="{GRIDLINE}" stroke-width="1"/>'
         )
         parts.append(
-            f'<text x="{plot_x - 10:.1f}" y="{ty + 4:.1f}" font-size="11" font-family="{FONT_MONO}" '
+            f'<text x="{plot_x - 10:.1f}" y="{ty + 4:.1f}" font-size="11" font-family="{mono_family}" '
             f'fill="{SECONDARY}" text-anchor="end">{frac * 100:.0f}%</text>'
         )
     parts.append(
@@ -241,7 +250,7 @@ def build_svg(
         val = t_max * i / x_ticks
         tx = x_for(val)
         parts.append(
-            f'<text x="{tx:.1f}" y="{axis_y + 20:.1f}" font-size="11" font-family="{FONT_MONO}" '
+            f'<text x="{tx:.1f}" y="{axis_y + 20:.1f}" font-size="11" font-family="{mono_family}" '
             f'fill="{SECONDARY}" text-anchor="middle">{val:.0f}</text>'
         )
     parts.append(
@@ -264,6 +273,7 @@ def make_survival_km(
     height: int = 480,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render a hand-authored Kaplan-Meier survival curve and write the SVG to *out*.
 
@@ -281,6 +291,8 @@ def make_survival_km(
         Canvas size in pixels.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -294,9 +306,9 @@ def make_survival_km(
     True
     """
     svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
-                     mode=mode, accessibility=accessibility)
+                     mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "survival-km")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

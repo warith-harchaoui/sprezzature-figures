@@ -27,7 +27,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
-from _style import BG, FONT_MONO, GRIDLINE, INK, SECONDARY  # noqa: E402
+from _style import BG, GRIDLINE, INK, SECONDARY  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 COLOR_STEM = "#C7C7CC"
 COLOR_DOT = "#007AFF"
@@ -74,6 +75,7 @@ def build_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     language: str = "en",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full lollipop chart SVG document as a string.
 
@@ -95,6 +97,10 @@ def build_svg(
         Chrome-text language, ``"en"`` or ``"fr"`` (see :data:`_STRINGS`).
         Only this generator's own fixed labels switch; category names and
         values always render exactly as given. Defaults to ``"en"``.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
@@ -102,6 +108,7 @@ def build_svg(
         A complete, standalone SVG document.
     """
     _ = accessibility
+    mono_family = mono_stack_for_theme(theme)
     strings = _strings(language)
     rows = sorted(data if data else DEMO_DATA, key=lambda r: -float(r["v"]))
     max_v = max(float(r["v"]) for r in rows) if rows else 1.0
@@ -118,7 +125,7 @@ def build_svg(
         return plot_x + v / max_v * plot_w * 0.92
 
     parts: List[str] = []
-    parts.append(svg_open(width, height, "lp-title", "lp-desc"))
+    parts.append(svg_open(width, height, "lp-title", "lp-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="lp-title">{xml_escape(title)}</title>')
     top = rows[0] if rows else None
     peak_desc = strings["leads_at"].format(name=top["c"], value=top["v"]) if top else ""
@@ -150,7 +157,7 @@ def build_svg(
             f'stroke="{GRIDLINE}" stroke-width="1"/>'
         )
         parts.append(
-            f'<text x="{tx:.1f}" y="{plot_y + plot_h + 20:.1f}" font-size="11" font-family="{FONT_MONO}" '
+            f'<text x="{tx:.1f}" y="{plot_y + plot_h + 20:.1f}" font-size="11" font-family="{mono_family}" '
             f'fill="{SECONDARY}" text-anchor="middle">{val:.0f}</text>'
         )
     parts.append(
@@ -197,6 +204,7 @@ def make_lollipop(
     mode: str = "self-contained",
     accessibility: str = "universal",
     language: str = "en",
+    theme: str = "corporate",
 ) -> Path:
     """Render a hand-authored lollipop chart and write the SVG to *out*.
 
@@ -213,6 +221,8 @@ def make_lollipop(
         Canvas size in pixels.
     mode, accessibility, language : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -226,9 +236,9 @@ def make_lollipop(
     True
     """
     svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
-                     mode=mode, accessibility=accessibility, language=language)
+                     mode=mode, accessibility=accessibility, language=language, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "lollipop")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

@@ -65,6 +65,7 @@ from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 
 def make_data(n: int = 160, seed: int = 11) -> List[Dict[str, float]]:
@@ -186,6 +187,7 @@ def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full residual-plot SVG string.
 
@@ -204,13 +206,17 @@ def build_svg(
         (``"universal"``, ``"high-contrast"``, ``"monochrome"``,
         ``"deuteranopia"``, ``"protanopia"`` or ``"tritanopia"``). Defaults to
         ``"universal"``, the colour-vision-safe standard.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
     str
         A complete, standalone SVG document.
     """
-    palette: Dict[str, str] = load_palette(accessibility)
+    palette: Dict[str, str] = load_palette(accessibility, theme=theme)
     over = palette.get("Blue", "#007AFF")     # residual > 0: model under-predicts
     under = palette.get("Orange", "#FF9500")  # residual < 0: model over-predicts
     trend = palette.get("Red", "#FF3B30")     # the LOESS structure line
@@ -255,7 +261,11 @@ def build_svg(
     parts: List[str] = []
 
     # --- SVG root + accessible description ------------------------
-    parts.append(svg_open(width, height, "rs-title", "rs-desc"))
+    # "Roboto Mono, monospace" (not the canonical _style.FONT_MONO stack) is
+    # this figure's pre-existing tick-label literal -- kept verbatim for the
+    # corporate default so byte identity holds; only academic swaps it.
+    tick_mono = "Roboto Mono, monospace" if theme == "corporate" else mono_stack_for_theme(theme)
+    parts.append(svg_open(width, height, "rs-title", "rs-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(
         '<title id="rs-title">The residuals still curve — a straight line '
         'under-fits home prices</title>'
@@ -349,7 +359,7 @@ def build_svg(
         )
         parts.append(
             f'<text x="{gx:.1f}" y="{ax_bottom + 28:.1f}" font-size="17" '
-            f'font-family="Roboto Mono, monospace" fill="{ink}" '
+            f'font-family="{tick_mono}" fill="{ink}" '
             f'text-anchor="middle">{t}</text>'
         )
     for t in y_ticks:
@@ -361,7 +371,7 @@ def build_svg(
         label = f"+{t}" if t > 0 else f"{t}"
         parts.append(
             f'<text x="{plot_x - 14:.1f}" y="{gy + 6:.1f}" font-size="17" '
-            f'font-family="Roboto Mono, monospace" fill="{ink}" '
+            f'font-family="{tick_mono}" fill="{ink}" '
             f'text-anchor="end">{label}</text>'
         )
 
@@ -464,6 +474,7 @@ def make_residual(
     title: str = "",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the residual-vs-fitted diagnostic plot and write the SVG to *out*.
 
@@ -479,6 +490,8 @@ def make_residual(
         the diagnostic narrative (unused).
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -486,9 +499,9 @@ def make_residual(
         Absolute path to the written SVG file.
     """
     _ = title
-    svg = build_svg(data, mode=mode, accessibility=accessibility)
+    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "residual")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

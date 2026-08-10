@@ -52,10 +52,11 @@ from typing import Any, Dict, List, Optional, Tuple
 from xml.sax.saxutils import escape
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _style import BG, FONT_MONO, INK, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
+from _style import BG, INK, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control, hover_isolate_css  # noqa: E402
 from _svg import svg_open  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
 # ------------------------------------------------------------------
 # Canvas + house-style tokens — poster-scale so the arcs read big.
@@ -72,8 +73,6 @@ LABEL_ROT = 30            # label rotation (deg) below the baseline
 
 SUBINK = "#6E6E73"        # secondary text
 HAIR = "#D2D2D7"          # the baseline rule
-
-FONT = "Roboto, system-ui, sans-serif"
 
 
 # ------------------------------------------------------------------
@@ -139,7 +138,7 @@ DEMO_DATA: List[Dict[str, Any]] = [
 
 # Brand hue per group — the arc's origin group colours it. Built from the
 # palette at render time so the accessibility level can remap the hues.
-def _group_color(accessibility: str = "universal") -> Dict[str, str]:
+def _group_color(accessibility: str = "universal", theme: str = "corporate") -> Dict[str, str]:
     """Return the group → hex mapping at a given accessibility level.
 
     Parameters
@@ -147,13 +146,15 @@ def _group_color(accessibility: str = "universal") -> Dict[str, str]:
     accessibility : str, optional
         Palette accessibility level threaded into :func:`_style.load_palette`.
         ``"universal"`` (default) is the colour-vision-safe standard.
+    theme : str, optional
+        Forwarded to :func:`_style.load_palette`. Defaults to ``"corporate"``.
 
     Returns
     -------
     dict of str to str
         Mapping ``{group_name: hex}`` for the Vision, Language and bridge groups.
     """
-    palette = load_palette(accessibility)
+    palette = load_palette(accessibility, theme=theme)
     return {
         GROUP_VISION: palette.get("Blue", "#007AFF"),
         GROUP_LANGUAGE: palette.get("Orange", "#FF9500"),
@@ -217,7 +218,9 @@ def _arc_path(x0: float, x1: float) -> Tuple[str, float]:
 # ------------------------------------------------------------------
 # SVG emission
 # ------------------------------------------------------------------
-def build_svg(mode: str = "self-contained", accessibility: str = "universal") -> str:
+def build_svg(
+    mode: str = "self-contained", accessibility: str = "universal", theme: str = "corporate"
+) -> str:
     """Assemble the full arc-diagram SVG document as a string.
 
     Parameters
@@ -231,13 +234,17 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         (``"universal"``, ``"high-contrast"``, ``"monochrome"``,
         ``"deuteranopia"``, ``"protanopia"`` or ``"tritanopia"``). Defaults to
         ``"universal"``, the colour-vision-safe standard.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
     str
         A complete, standalone SVG document.
     """
-    GROUP_COLOR = _group_color(accessibility)
+    GROUP_COLOR = _group_color(accessibility, theme=theme)
     pos = _node_positions()
     node_group = {name: grp for name, grp in NODES}
 
@@ -266,7 +273,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         "bridge linking the two communities."
     )
 
-    parts.append(svg_open(WIDTH, HEIGHT, "arc-title", "arc-desc", font_family=FONT))
+    parts.append(svg_open(WIDTH, HEIGHT, "arc-title", "arc-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="arc-title">{escape(title_txt)}</title>')
     parts.append(f'<desc id="arc-desc">{escape(desc_txt)}</desc>')
 
@@ -486,6 +493,7 @@ def make_arcdiagram(
     title: str = "",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the house-styled arc diagram and write the SVG to *out*.
 
@@ -505,6 +513,8 @@ def make_arcdiagram(
         Accepted for CLI/dispatcher parity; unused (see ``data``).
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -518,9 +528,9 @@ def make_arcdiagram(
     True
     """
     _ = data, title
-    svg = build_svg(mode=mode, accessibility=accessibility)
+    svg = build_svg(mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "arcdiagram")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 if __name__ == "__main__":

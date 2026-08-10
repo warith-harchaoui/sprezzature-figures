@@ -46,6 +46,7 @@ from typing import Any, Dict, List, Tuple
 # without the dataviz tier).
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import load_palette, os_dark_style  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 from _svg import hex_to_rgb as _hex_to_rgb, svg_open  # noqa: E402
 from _svg import xml_escape  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
@@ -407,7 +408,7 @@ def _north_arrow(cx: float, cy: float, *, r: float = 26.0) -> str:
     return "".join(parts)
 
 
-def _scale_bar(x0: float, y0: float, cell_px: float) -> str:
+def _scale_bar(x0: float, y0: float, cell_px: float, mono_family: str = "Roboto Mono, monospace") -> str:
     """Return a labelled distance scale bar with its left edge at ``(x0, y0)``.
 
     The bar is an integer number of grid cells wide so it doubles as a "read
@@ -456,12 +457,12 @@ def _scale_bar(x0: float, y0: float, cell_px: float) -> str:
     parts.append(
         f'<text x="{x0:.1f}" y="{y0 - 6:.1f}" text-anchor="middle" '
         f'font-size="14" fill="{_INK}" '
-        f'font-family="Roboto Mono, monospace">0</text>'
+        f'font-family="{mono_family}">0</text>'
     )
     parts.append(
         f'<text x="{x0 + bar_len:.1f}" y="{y0 - 6:.1f}" text-anchor="middle" '
         f'font-size="14" fill="{_INK}" '
-        f'font-family="Roboto Mono, monospace">'
+        f'font-family="{mono_family}">'
         f'{seg_total_m / 1000:.0f} km</text>'
     )
     parts.append(
@@ -476,7 +477,9 @@ def _scale_bar(x0: float, y0: float, cell_px: float) -> str:
 # ------------------------------------------------------------------
 # SVG assembly
 # ------------------------------------------------------------------
-def build_svg(mode: str = "self-contained", accessibility: str = "universal") -> str:
+def build_svg(
+    mode: str = "self-contained", accessibility: str = "universal", theme: str = "corporate"
+) -> str:
     """Assemble the full binned-grid-map SVG document as a string.
 
     Parameters
@@ -491,14 +494,23 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         ``"high-contrast"``, ``"monochrome"``, ``"deuteranopia"``,
         ``"protanopia"`` and ``"tritanopia"``). Wired through the
         ``--accessibility`` CLI flag by :func:`_render.render_cli`.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
     str
         A complete, standalone SVG document.
     """
-    palette = load_palette(accessibility)
+    palette = load_palette(accessibility, theme=theme)
     red = palette.get("Red", "#FF3B30")
+    chrome_family = chrome_stack_for_theme(theme)
+    # This file's mono literal predates the shared MONO_STACK constant and
+    # is missing the "ui-monospace" fallback -- keep it exact for corporate
+    # (byte-identical pre-theme render) and only switch stacks for academic.
+    mono_family = "Roboto Mono, monospace" if theme == "corporate" else mono_stack_for_theme(theme)
 
     rng = random.Random(_SEED)
     points = _sample_points(2600, rng)
@@ -515,7 +527,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
 
     # ---- header ----
     parts: List[str] = []
-    parts.append(svg_open(_WIDTH, _HEIGHT, "bg-title", "bg-desc"))
+    parts.append(svg_open(_WIDTH, _HEIGHT, "bg-title", "bg-desc", font_family=chrome_family))
     parts.append(
         '<title id="bg-title">Night-time incidents concentrate in the '
         'downtown core of Riverbend</title>'
@@ -669,11 +681,11 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     # End labels on the ramp (labels sit outside the swatches, in ink).
     parts.append(
         f'<text x="{bar_w + 14:.1f}" y="12" font-size="18" fill="{_INK}" '
-        f'font-family="Roboto Mono, monospace">{max_count}</text>'
+        f'font-family="{mono_family}">{max_count}</text>'
     )
     parts.append(
         f'<text x="{bar_w + 14:.1f}" y="{n_seg * seg_h:.1f}" font-size="18" '
-        f'fill="{_SUBTLE}" font-family="Roboto Mono, monospace" '
+        f'fill="{_SUBTLE}" font-family="{mono_family}" '
         f'dominant-baseline="ideographic">1</text>'
     )
     # An "empty" swatch below the ramp for zero-count land cells.
@@ -715,7 +727,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     na_x, na_y = _to_px([(0.905, 0.115)])[0]
     parts.append(_north_arrow(na_x, na_y, r=24.0))
     sb_x, sb_y = _to_px([(0.665, 0.955)])[0]
-    parts.append(_scale_bar(sb_x, sb_y, cell_px))
+    parts.append(_scale_bar(sb_x, sb_y, cell_px, mono_family=mono_family))
 
     parts.append(fullscreen_control(_WIDTH, _HEIGHT, mode))
     parts.append('</svg>')
@@ -729,6 +741,7 @@ def make_binned_grid_map(
     title: str = "",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the binned-grid map and write it to ``out``.
 
@@ -738,11 +751,12 @@ def make_binned_grid_map(
     view), but the demo geography, city boundary/river/park layout, event
     sampling and cartographic furniture are baked into the hand-authored
     SVG's fixed random seed, so ``data`` and ``title`` are accepted for
-    dispatcher parity and not threaded into the render.
+    dispatcher parity and not threaded into the render. ``theme`` is
+    forwarded to :func:`build_svg`.
     """
-    svg = build_svg(mode=mode, accessibility=accessibility)
+    svg = build_svg(mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "binned-grid-map")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

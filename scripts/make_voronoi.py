@@ -50,10 +50,11 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _style import BG, FONT_MONO, INK, forced_color_patterns, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
+from _style import BG, INK, forced_color_patterns, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _svg import hex_to_rgb, svg_open, xml_escape  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 # ------------------------------------------------------------------
 # Canvas + house-style tokens
@@ -62,8 +63,6 @@ WIDTH = 1360
 HEIGHT = 1080
 SUBINK = "#6E6E73"         # secondary text
 HAIRLINE = "#FFFFFF"       # cell borders: white hairlines read as tile gaps
-
-FONT = "Roboto, system-ui, sans-serif"
 
 # The map lives inside this rectangle (below the title / legend band and
 # above the footer hint). The Voronoi tessellation is clipped to it.
@@ -151,7 +150,9 @@ _FALLBACK_HUES = ("Teal", "Red", "Yellow", "Mint", "Indigo")
 # as filled territories (no red/green ambiguity; the neutral Gray reads as
 # "unbranded" for the independents).
 def _chain_color(
-    accessibility: str = "universal", chain_order: Optional[List[str]] = None
+    accessibility: str = "universal",
+    chain_order: Optional[List[str]] = None,
+    theme: str = "corporate",
 ) -> Dict[str, str]:
     """Map each chain to its territory hue at a given accessibility level.
 
@@ -165,6 +166,8 @@ def _chain_color(
         the shipped five (Greenleaf/Meridian/Cedar & Co/Aster/Independent)
         is assigned the next hue from :data:`_FALLBACK_HUES`, cycling if
         there are more than five novel chains.
+    theme : str, optional
+        Forwarded to :func:`load_palette`.
 
     Returns
     -------
@@ -172,7 +175,7 @@ def _chain_color(
         ``{chain_name: hex}`` for every chain in ``chain_order`` (or the
         shipped five when ``chain_order`` is ``None``).
     """
-    palette = load_palette(accessibility)
+    palette = load_palette(accessibility, theme=theme)
     known = {
         "Greenleaf": palette.get("Green", "#34C759"),
         "Meridian": palette.get("Blue", "#007AFF"),
@@ -502,6 +505,7 @@ def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full Voronoi catchment-map SVG document as a string.
 
@@ -521,12 +525,17 @@ def build_svg(
         colour-vision-safe standard; other levels (``"high-contrast"``,
         ``"monochrome"``, ``"deuteranopia"``, ``"protanopia"``,
         ``"tritanopia"``) remap the hues via the sprezzature-colors engine.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
     str
         A complete, standalone SVG document.
     """
+    mono_family = mono_stack_for_theme(theme)
     rows = list(data) if data else DEMO_DATA
     city: List[Tuple[float, float, str, str]] = [
         (float(r["x"]), float(r["y"]), str(r["chain"]), str(r.get("name") or ""))
@@ -536,7 +545,7 @@ def build_svg(
     for _x, _y, chain, _name in city:
         if chain not in chain_order:
             chain_order.append(chain)
-    chain_color = _chain_color(accessibility, chain_order)
+    chain_color = _chain_color(accessibility, chain_order, theme=theme)
     seeds: List[Point] = [_to_canvas(gx, gy) for gx, gy, _, _ in city]
     chains = [chain for _, _, chain, _ in city]
     cells = _voronoi_cells(seeds, (MAP_X0, MAP_Y0, MAP_X1, MAP_Y1))
@@ -570,7 +579,7 @@ def build_svg(
     )
 
     parts: List[str] = []
-    parts.append(svg_open(WIDTH, HEIGHT, "vor-title", "vor-desc", font_family=FONT))
+    parts.append(svg_open(WIDTH, HEIGHT, "vor-title", "vor-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="vor-title">{xml_escape(title_txt)}</title>')
     parts.append(f'<desc id="vor-desc">{xml_escape(desc_txt)}</desc>')
 
@@ -684,7 +693,7 @@ def build_svg(
         )
         parts.append(
             f'<text x="{cursor + 26:.1f}" y="{ly + 21:.1f}" text-anchor="start" '
-            f'font-size="14" fill="{SUBINK}" font-family="{FONT_MONO}">'
+            f'font-size="14" fill="{SUBINK}" font-family="{mono_family}">'
             f'{xml_escape(meta)}</text>'
         )
         cursor += 26 + max(10.6 * len(label), 9.0 * len(meta)) + 46
@@ -827,6 +836,7 @@ def make_voronoi(
     title: str = "",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the Voronoi catchment map and write the SVG to *out*.
 
@@ -842,6 +852,8 @@ def make_voronoi(
         specific takeaway, so this is unused.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -849,9 +861,9 @@ def make_voronoi(
         Absolute path to the written SVG file.
     """
     del title
-    svg = build_svg(data, mode=mode, accessibility=accessibility)
+    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "voronoi")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

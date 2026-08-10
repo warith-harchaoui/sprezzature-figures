@@ -51,10 +51,11 @@ from typing import Any, Dict, List, Optional, Tuple
 from xml.sax.saxutils import escape
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _style import BG, FONT_MONO, INK, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
+from _style import BG, INK, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _svg import svg_open  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 # ------------------------------------------------------------------
 # Canvas + house-style tokens
@@ -143,20 +144,22 @@ def _label_ink(fill: str) -> str:
 # Blue and purple are nudged darker so white labels clear WCAG AA (~4.8:1
 # instead of ~4.0). Green and orange stay bright and take ink labels, which
 # also keeps their legend swatches lively and distinct.
-def _family_color(accessibility: str = "universal") -> Dict[str, str]:
+def _family_color(accessibility: str = "universal", theme: str = "corporate") -> Dict[str, str]:
     """Return the per-family fill colours at a given accessibility level.
 
     Parameters
     ----------
     accessibility : str, optional
         Palette accessibility level forwarded to :func:`_style.load_palette`.
+    theme : str, optional
+        Forwarded to :func:`_style.load_palette`. Defaults to ``"corporate"``.
 
     Returns
     -------
     dict of str to str
         ``{family_name: "#RRGGBB"}`` for the four language families.
     """
-    palette = load_palette(accessibility)
+    palette = load_palette(accessibility, theme=theme)
     return {
         "Web & scripting": _darken(palette.get("Blue", "#007AFF"), 0.10),
         "Data & scientific": palette.get("Green", "#34C759"),
@@ -173,13 +176,15 @@ _FAMILY_HUE_ORDER = ["Blue", "Green", "Orange", "Purple", "Teal", "Pink", "Yello
 _DARKEN_HUES = {"Blue", "Purple"}
 
 
-def _family_color_for(families: List[str], accessibility: str = "universal") -> Dict[str, str]:
+def _family_color_for(
+    families: List[str], accessibility: str = "universal", theme: str = "corporate"
+) -> Dict[str, str]:
     """Return a generic ``{family: hex}`` map by cycling house hues in order.
 
     Used when :func:`build_svg` is given a custom ``languages`` list whose
     family names are not the four the default story names.
     """
-    palette = load_palette(accessibility)
+    palette = load_palette(accessibility, theme=theme)
     out: Dict[str, str] = {}
     for i, fam in enumerate(families):
         hue_name = _FAMILY_HUE_ORDER[i % len(_FAMILY_HUE_ORDER)]
@@ -374,6 +379,7 @@ def build_svg(
     languages: Optional[List[Tuple[str, float, str]]] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full packed-bubble SVG document as a string.
 
@@ -394,16 +400,24 @@ def build_svg(
         (``"universal"`` default, plus ``"high-contrast"``, ``"monochrome"``,
         ``"deuteranopia"``, ``"protanopia"`` and ``"tritanopia"``). Wired
         through the ``--accessibility`` CLI flag by :func:`_render.render_cli`.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
     str
         A complete, standalone SVG document.
     """
+    mono_family = mono_stack_for_theme(theme)
     languages = languages if languages else LANGUAGES
     is_default = languages == LANGUAGES
     family_order = FAMILY_ORDER if is_default else list(dict.fromkeys(fam for _, _, fam in languages))
-    family_color = _family_color(accessibility) if is_default else _family_color_for(family_order, accessibility)
+    family_color = (
+        _family_color(accessibility, theme) if is_default
+        else _family_color_for(family_order, accessibility, theme)
+    )
     family_label = _family_label(family_color)
     share_max = max(share for _, share, _ in languages)
 
@@ -439,7 +453,7 @@ def build_svg(
     )
 
     parts: List[str] = []
-    parts.append(svg_open(WIDTH, HEIGHT, "pb-title", "pb-desc", font_family=FONT))
+    parts.append(svg_open(WIDTH, HEIGHT, "pb-title", "pb-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="pb-title">{escape(title_txt)}</title>')
     parts.append(f'<desc id="pb-desc">{escape(desc_txt)}</desc>')
 
@@ -516,7 +530,7 @@ def build_svg(
             parts.append(
                 f'<text x="{x:.1f}" y="{y + fs * 0.98:.1f}" text-anchor="middle" '
                 f'font-size="{fs * 0.82:.1f}" fill="{label_ink}" '
-                f'font-family="{FONT_MONO}" opacity="0.92">'
+                f'font-family="{mono_family}" opacity="0.92">'
                 f'{escape(_fmt_share(share))}</text>'
             )
         else:
@@ -531,7 +545,7 @@ def build_svg(
             parts.append(
                 f'<text x="{x:.1f}" y="{y + fs * 1.08:.1f}" text-anchor="middle" '
                 f'font-size="{fs * 0.8:.1f}" fill="{label_ink}" '
-                f'font-family="{FONT_MONO}" opacity="0.92">'
+                f'font-family="{mono_family}" opacity="0.92">'
                 f'{escape(_fmt_share(share))}</text>'
             )
         parts.append("</g>")
@@ -581,6 +595,7 @@ def make_packed_bubble(
     title: str = "",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the packed-bubble chart and write the SVG to *out*.
 
@@ -596,6 +611,8 @@ def make_packed_bubble(
         Output path. Defaults to ``assets/svg-examples/packed-bubble.svg``.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -605,9 +622,9 @@ def make_packed_bubble(
     _ = title
     rows = data if data else DEMO_DATA
     languages = [(str(r["name"]), float(r["share"]), str(r["family"])) for r in rows]
-    svg = build_svg(languages, mode=mode, accessibility=accessibility)
+    svg = build_svg(languages, mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "packed-bubble")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

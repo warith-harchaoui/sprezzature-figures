@@ -31,6 +31,7 @@ from gapminder_i18n import COUNTRIES_FR, HISTORY_FR, LABELS_FR, REGIONS_FR
 from _interactive import fullscreen_control
 from _render import write_svg
 from _style import forced_color_patterns, leveled_colors, os_adaptive_style, os_dark_style
+from sprezzature_figures.fonts import chrome_stack_for_theme
 
 # English interface strings, mirroring LABELS_FR so the builder is fully bilingual.
 LABELS_EN = {
@@ -258,6 +259,7 @@ def main(
     *,
     rows: "list[dict[str, Any]] | None" = None,
     out: "Path | str | None" = None,
+    theme: str = "corporate",
 ) -> Path:
     """Build the animated SVG (``lang`` = 'en' or 'fr') and write it to disk.
 
@@ -281,6 +283,12 @@ def main(
     out : Path, str, or None
         Output path. Defaults to :data:`OUT` (or its ``.fr.svg`` sibling for
         ``lang="fr"``).
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`. The
+        region colours are a fixed, non-palette set (see ``accessibility``
+        above) and do not change with ``theme``.
 
     Returns
     -------
@@ -339,7 +347,7 @@ def main(
 
     svg = [
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" '
-        f'font-family="Roboto, system-ui, sans-serif" role="img" aria-labelledby="gm-t gm-d">',
+        f'font-family="{chrome_stack_for_theme(theme)}" role="img" aria-labelledby="gm-t gm-d">',
         f'<title id="gm-t">{lab["title_a11y"]}, {years[0]} to {years[-1]}</title>',
         f'<desc id="gm-d">{lab["desc"]}</desc>',
         f'<rect width="{W}" height="{H}" fill="#FFFFFF"/>',
@@ -532,7 +540,7 @@ def main(
         svg.append(_fc)
     svg.append('</svg>')
     print(f"{len(data)} entities, {n} snapshots ({lang})")
-    return write_svg(out_path, "\n".join(svg) + "\n")
+    return write_svg(out_path, "\n".join(svg) + "\n", theme=theme)
 
 
 def make_gapminder(
@@ -543,6 +551,7 @@ def make_gapminder(
     lang: str = "en",
     mode: str = "external",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the animated Gapminder tribute bubble chart and write it to ``out``.
 
@@ -568,6 +577,8 @@ def make_gapminder(
         talk); accepted for dispatcher parity.
     lang, mode, accessibility : str
         Forwarded to :func:`main`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`main`.
 
     Returns
     -------
@@ -576,7 +587,7 @@ def make_gapminder(
     """
     _ = title  # accepted for dispatcher parity; see docstring
     rows = data if data else DEMO_DATA
-    return main(lang, mode=mode, accessibility=accessibility, rows=rows, out=out)
+    return main(lang, mode=mode, accessibility=accessibility, rows=rows, out=out, theme=theme)
 
 
 def write_fr_csv() -> None:
@@ -606,6 +617,12 @@ if __name__ == "__main__":
                  "deuteranopia", "protanopia", "tritanopia"],
         help="colour-vision level for the region palette (default: universal, "
              "the identity that keeps the shipped SVG byte-identical)")
+    parser.add_argument(
+        "--theme",
+        choices=("corporate", "academic"),
+        default="corporate",
+        help="visual theme: corporate (default, Roboto) or academic (LaTeX-style Latin Modern)",
+    )
     args = parser.parse_args()
 
     # Prefer the real vendored dataset when present; otherwise fall back to
@@ -616,8 +633,8 @@ if __name__ == "__main__":
     if _rows is None:
         print(f"note: {CSV} not found; rendering from the synthetic DEMO_DATA")
 
-    main("en", accessibility=args.accessibility, rows=_rows)
+    main("en", accessibility=args.accessibility, rows=_rows, theme=args.theme)
     if not args.en_only:
-        main("fr", accessibility=args.accessibility, rows=_rows)
+        main("fr", accessibility=args.accessibility, rows=_rows, theme=args.theme)
         if CSV.exists():
             write_fr_csv()

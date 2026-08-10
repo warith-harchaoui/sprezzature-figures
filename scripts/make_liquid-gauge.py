@@ -49,6 +49,7 @@ from _style import load_palette, os_dark_style  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _render import svg_example_path, write_raster_companions, write_svg  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
 
 # ------------------------------------------------------------------
@@ -90,7 +91,7 @@ _RING: str = "#D6DAE2"     # thin vessel wall
 _TICK: str = "#C2C7D0"     # scale ticks on the right rim
 
 
-def _liquid_hues(accessibility: str = "universal") -> Tuple[str, str, str]:
+def _liquid_hues(accessibility: str = "universal", theme: str = "corporate") -> Tuple[str, str, str]:
     """Return the three water tones (back crest, sprezzature crest, deep body).
 
     A single calm blue reads as water; two shifted crest bands plus a
@@ -103,13 +104,15 @@ def _liquid_hues(accessibility: str = "universal") -> Tuple[str, str, str]:
     ----------
     accessibility : str, optional
         Palette accessibility level forwarded to :func:`_style.load_palette`.
+    theme : str, optional
+        Forwarded to :func:`_style.load_palette`. Defaults to ``"corporate"``.
 
     Returns
     -------
     tuple of str
         ``(back_crest, front_crest, body)`` as ``#RRGGBB`` hex.
     """
-    palette = load_palette(accessibility)
+    palette = load_palette(accessibility, theme=theme)
     blue = palette.get("Blue") or "#007AFF"
     teal = palette.get("Teal") or "#5AC8FA"
     # Back crest = the base blue; sprezzature crest = the lighter teal catching
@@ -248,6 +251,7 @@ def build_svg(
     animated: bool = True,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full liquid-fill gauge as an SVG string.
 
@@ -273,13 +277,17 @@ def build_svg(
         (``"universal"`` default, plus ``"high-contrast"``, ``"monochrome"``,
         ``"deuteranopia"``, ``"protanopia"`` and ``"tritanopia"``). Wired
         through the ``--accessibility`` CLI flag by :func:`main`.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
     str
         A complete, standalone SVG document.
     """
-    back_crest, front_crest, body = _liquid_hues(accessibility)
+    back_crest, front_crest, body = _liquid_hues(accessibility, theme=theme)
 
     frac = value / 100.0
     surface_y = _y_for_fraction(frac)
@@ -305,7 +313,7 @@ def build_svg(
     parts: List[str] = []
 
     # ---- header ----
-    parts.append(svg_open(_WIDTH, _HEIGHT, "lg-title", "lg-desc"))
+    parts.append(svg_open(_WIDTH, _HEIGHT, "lg-title", "lg-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(
         f'<title id="lg-title">Reservoir fill level: {_fmt_pct(value)} percent of usable '
         f'capacity, just below the seasonal normal of {_fmt_pct(median)} percent</title>'
@@ -487,7 +495,7 @@ def build_svg(
     # ---- status chip: names how the level compares to normal (pure fill) ----
     delta = value - median
     below = delta < 0
-    chip_palette = load_palette(accessibility)
+    chip_palette = load_palette(accessibility, theme=theme)
     chip_hex = (chip_palette.get("Orange") or "#FF9500") if below else (
         chip_palette.get("Green") or "#34C759"
     )
@@ -538,6 +546,7 @@ def make_liquid_gauge(
     animated: bool = True,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the liquid-fill gauge and write the SVG to *out*.
 
@@ -552,6 +561,8 @@ def make_liquid_gauge(
         Output path. Defaults to ``assets/svg-examples/liquid-gauge.svg``.
     animated, mode, accessibility
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -563,9 +574,9 @@ def make_liquid_gauge(
     row = rows[0] if rows else {}
     value = float(row.get("value", _VALUE))
     median = float(row.get("median", _MEDIAN))
-    svg = build_svg(value=value, median=median, animated=animated, mode=mode, accessibility=accessibility)
+    svg = build_svg(value=value, median=median, animated=animated, mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "liquid-gauge")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:
@@ -583,16 +594,26 @@ def main() -> None:
         default="universal",
         help="palette accessibility level (default: universal, the CVD-safe standard)",
     )
+    parser.add_argument(
+        "--theme",
+        choices=("corporate", "academic"),
+        default="corporate",
+        help="visual theme: corporate (default, Roboto) or academic (LaTeX-style Latin Modern)",
+    )
     args = parser.parse_args()
     out_svg = svg_example_path(__file__, "liquid-gauge")
-    write_svg(out_svg, build_svg(animated=True, mode=args.mode, accessibility=args.accessibility))
+    write_svg(
+        out_svg,
+        build_svg(animated=True, mode=args.mode, accessibility=args.accessibility, theme=args.theme),
+        theme=args.theme,
+    )
 
     # Static (non-animated) SVG for the raster companions so the PNG is the
     # settled truth, not a mid-drift frame. Best-effort: a missing/broken
     # rasteriser must not stop the primary SVG from having been written.
     try:
         write_raster_companions(
-            build_svg(animated=False, mode="static", accessibility=args.accessibility),
+            build_svg(animated=False, mode="static", accessibility=args.accessibility, theme=args.theme),
             __file__,
             "liquid-gauge",
         )

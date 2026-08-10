@@ -32,7 +32,8 @@ from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _scale import log_position, log_ticks  # noqa: E402
 from _svg import fmt_number, svg_open, xml_escape  # noqa: E402
-from _style import BG, FONT_MONO, GRIDLINE, INK, SECONDARY  # noqa: E402
+from _style import BG, GRIDLINE, INK, SECONDARY  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 COLOR_UP = "#28CD41"
 COLOR_DOWN = "#FF3B30"
@@ -70,6 +71,7 @@ def build_svg(
     x_label: str = "Day",
     y_label: str = "Price",
     log_y: bool = False,
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full candlestick chart SVG document as a string.
 
@@ -94,6 +96,10 @@ def build_svg(
         long-running price series, where equal on-screen distances read
         as equal percentage moves. The x-axis (day) is an ordinal index,
         not a numeric quantity, so it has no log form.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
@@ -101,6 +107,7 @@ def build_svg(
         A complete, standalone SVG document.
     """
     _ = accessibility
+    mono_family = mono_stack_for_theme(theme)
     rows = data if data else DEMO_DATA
     days = [r["day"] for r in rows]
     lows = [float(r["low"]) for r in rows]
@@ -130,7 +137,7 @@ def build_svg(
             return plot_y + plot_h - (v - (v_min - pad)) / ((v_max + pad) - (v_min - pad)) * plot_h
 
     parts: List[str] = []
-    parts.append(svg_open(width, height, "candle-title", "candle-desc"))
+    parts.append(svg_open(width, height, "candle-title", "candle-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="candle-title">{xml_escape(title)}</title>')
     n_up = sum(1 for r in rows if r["up"])
     parts.append(
@@ -167,7 +174,7 @@ def build_svg(
         # is unchanged.
         tick_label = fmt_number(val) if log_y else f"{val:.0f}"
         parts.append(
-            f'<text x="{plot_x - 10:.1f}" y="{ty + 4:.1f}" font-size="11" font-family="{FONT_MONO}" '
+            f'<text x="{plot_x - 10:.1f}" y="{ty + 4:.1f}" font-size="11" font-family="{mono_family}" '
             f'fill="{SECONDARY}" text-anchor="end">{tick_label}</text>'
         )
     parts.append(
@@ -210,7 +217,7 @@ def build_svg(
             continue
         tx = plot_x + i * bin_w + bin_w / 2
         parts.append(
-            f'<text x="{tx:.1f}" y="{axis_y + 20:.1f}" font-size="11" font-family="{FONT_MONO}" '
+            f'<text x="{tx:.1f}" y="{axis_y + 20:.1f}" font-size="11" font-family="{mono_family}" '
             f'fill="{SECONDARY}" text-anchor="middle">{d}</text>'
         )
     parts.append(
@@ -236,6 +243,7 @@ def make_candlestick(
     x_label: str = "Day",
     y_label: str = "Price",
     log_y: bool = False,
+    theme: str = "corporate",
 ) -> Path:
     """Render a hand-authored candlestick chart and write the SVG to *out*.
 
@@ -257,6 +265,8 @@ def make_candlestick(
         Axis titles. Forwarded to :func:`build_svg`.
     log_y : bool, optional
         Use a logarithmic price axis. Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -271,9 +281,9 @@ def make_candlestick(
     """
     svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
                      mode=mode, accessibility=accessibility, x_label=x_label,
-                     y_label=y_label, log_y=log_y)
+                     y_label=y_label, log_y=log_y, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "candlestick")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

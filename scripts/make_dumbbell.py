@@ -57,6 +57,7 @@ from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
 
 # ------------------------------------------------------------------
@@ -140,6 +141,7 @@ def build_svg(
     value_suffix: str = "",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full dumbbell-plot SVG string.
 
@@ -165,6 +167,10 @@ def build_svg(
         (``"self-contained"`` / ``"external"`` / ``"static"``).
     accessibility : str, optional
         Palette accessibility level passed to :func:`_style.load_palette`.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
@@ -172,7 +178,7 @@ def build_svg(
         A complete, standalone SVG document.
     """
     data = data if data is not None else DEMO_DATA
-    palette: Dict[str, str] = load_palette(accessibility)
+    palette: Dict[str, str] = load_palette(accessibility, theme=theme)
     # Purple for group A, Teal for group B: two distinct hues, neither
     # red-vs-green (CVD-safe), each carrying an explicit legend label so
     # the encoding never rides on colour alone.
@@ -246,7 +252,7 @@ def build_svg(
     parts: List[str] = []
 
     # --- SVG root + accessible description ------------------------
-    parts.append(svg_open(width, height, "db-title", "db-desc"))
+    parts.append(svg_open(width, height, "db-title", "db-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="db-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="db-desc">Dumbbell plot comparing {xml_escape(group_a_label)} '
@@ -487,6 +493,7 @@ def make_dumbbell(
     value_suffix: str = "",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render a dumbbell plot and write it to *out*.
 
@@ -511,6 +518,8 @@ def make_dumbbell(
         Interactivity mode for the fullscreen control.
     accessibility : str
         Palette accessibility level.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -534,9 +543,10 @@ def make_dumbbell(
         value_suffix=value_suffix,
         mode=mode,
         accessibility=accessibility,
+        theme=theme,
     )
     dest = Path(out) if out else svg_example_path(__file__, "dumbbell")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

@@ -48,6 +48,7 @@ from _render import svg_example_path, write_svg  # noqa: E402
 from _svg import fmt_compact  # noqa: E402
 from _style import leveled_colors, os_adaptive_style, os_dark_style, qualitative_sequence  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 import argparse
 from pathlib import Path
@@ -247,6 +248,7 @@ def build_svg(
     labels: List[str],
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full Andrews-curves SVG document as a string.
 
@@ -269,12 +271,18 @@ def build_svg(
         shipped colours unchanged). Other levels (``"monochrome"``,
         ``"deuteranopia"``, ...) remap the three species colours through the
         sprezzature-colors engine so the classes stay distinct for that viewer.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
     str
         A complete, self-contained SVG document.
     """
+    chrome_family = chrome_stack_for_theme(theme)
+    mono_family = mono_stack_for_theme(theme)
     # Per-class hues, remapped for the requested accessibility level. At the
     # ``universal`` default this is the identity, so the shipped SVG is
     # byte-for-byte unchanged. _CLASS_COLOURS only names the three shipped
@@ -285,7 +293,7 @@ def build_svg(
     for _lab in labels:
         if _lab not in _seen_classes:
             _seen_classes.append(_lab)
-    _fallback_hues = iter(qualitative_sequence(max(len(_seen_classes), 1)))
+    _fallback_hues = iter(qualitative_sequence(max(len(_seen_classes), 1), theme=theme))
     class_colours = leveled_colors(
         {cls: _CLASS_COLOURS.get(cls) or next(_fallback_hues) for cls in _seen_classes},
         accessibility,
@@ -340,7 +348,7 @@ def build_svg(
     parts.append(
         f'<svg role="img" aria-label="{title}" '
         f'xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" '
-        f'viewBox="0 0 {width} {height}" font-family="{_FONT}">'
+        f'viewBox="0 0 {width} {height}" font-family="{chrome_family}">'
     )
     parts.append(
         f"<title>{title}</title>"
@@ -473,7 +481,7 @@ def build_svg(
         gx = x_px(tv)
         parts.append(
             f'<text x="{fmt_compact(gx)}" y="{fmt_compact(axis_y + 30)}" text-anchor="middle" '
-            f'font-size="15" font-family="{_MONO}" fill="{_SECONDARY}">'
+            f'font-size="15" font-family="{mono_family}" fill="{_SECONDARY}">'
             f"{lab}</text>"
         )
     parts.append(
@@ -523,7 +531,7 @@ def build_svg(
         parts.append(
             f'<text x="{fmt_compact(lx)}" '
             f'y="{fmt_compact(cap_y + 26 + i * 24)}" '
-            f'font-size="14" font-family="{_MONO}" fill="{_SECONDARY}">'
+            f'font-size="14" font-family="{mono_family}" fill="{_SECONDARY}">'
             f"x{i + 1} = {name}</text>"
         )
 
@@ -588,6 +596,7 @@ def make_andrews(
     title: str = "",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the house-styled Andrews-curves figure and write the SVG to *out*.
 
@@ -605,6 +614,8 @@ def make_andrews(
         from the class structure of the data and stays fixed.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -620,9 +631,9 @@ def make_andrews(
     _ = title
     rows = data if data else DEMO_DATA
     x_raw, labels = _rows_to_matrix(rows)
-    svg = build_svg(x_raw, labels, mode=mode, accessibility=accessibility)
+    svg = build_svg(x_raw, labels, mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "andrews")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 if __name__ == "__main__":

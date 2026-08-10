@@ -43,6 +43,7 @@ from typing import Any, Dict, List, Optional
 # The house-style palette lives alongside this file, in _style.py.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
@@ -163,6 +164,7 @@ def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full KPI bullet-graph SVG string.
 
@@ -182,15 +184,25 @@ def build_svg(
         (``"universal"``, ``"high-contrast"``, ``"monochrome"``,
         ``"deuteranopia"``, ``"protanopia"`` or ``"tritanopia"``). The default
         ``"universal"`` is the identity, so the shipped figure is unchanged.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
     str
         A complete, standalone SVG document.
     """
-    palette = load_palette(accessibility)
+    palette = load_palette(accessibility, theme=theme)
     ink = "#1D1D1F"
     secondary = "#6E6E73"
+    chrome_family = chrome_stack_for_theme(theme)
+    # These two literals predate the shared SANS_STACK/MONO_STACK constants
+    # and are each missing a fallback segment -- keep them exact for
+    # corporate (byte-identical pre-theme render), switch for academic.
+    mono_family = "Roboto Mono, monospace" if theme == "corporate" else mono_stack_for_theme(theme)
+    unit_family = "Roboto, sans-serif" if theme == "corporate" else chrome_family
     green = palette.get("Green", "#34C759")
     red = palette.get("Red", "#FF3B30")
     orange = palette.get("Orange", "#FF9500")
@@ -234,7 +246,7 @@ def build_svg(
     n_beat = sum(1 for k in kpis if _beats(k))
 
     # --- document + accessibility --------------------------------
-    parts.append(svg_open(width, height, "bl-title", "bl-desc"))
+    parts.append(svg_open(width, height, "bl-title", "bl-desc", font_family=chrome_family))
     parts.append(
         '<title id="bl-title">Q3 growth scorecard as five bullet graphs</title>'
     )
@@ -415,9 +427,9 @@ def build_svg(
             delta_word = "on target" if beats else "over target"
         parts.append(
             f'<text x="{val_x:.1f}" y="{band_mid - 4:.1f}" font-size="27" '
-            f'font-weight="700" font-family="Roboto Mono, monospace" '
+            f'font-weight="700" font-family="{mono_family}" '
             f'fill="{ink}">{_fmt(value)}<tspan font-size="17" '
-            f'font-family="Roboto, sans-serif" fill="{secondary}"> {xml_escape(unit)}</tspan></text>'
+            f'font-family="{unit_family}" fill="{secondary}"> {xml_escape(unit)}</tspan></text>'
         )
         delta_cls = "bu-beat" if beats else "bu-miss"
         parts.append(
@@ -476,6 +488,7 @@ def make_bullet(
     title: str = "",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the house-styled KPI bullet-graph panel and write it to *out*.
 
@@ -492,6 +505,8 @@ def make_bullet(
         many rows beat target and stays fixed to the demo narrative.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -505,9 +520,9 @@ def make_bullet(
     True
     """
     _ = title
-    svg = build_svg(data, mode=mode, accessibility=accessibility)
+    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "bullet")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 if __name__ == "__main__":

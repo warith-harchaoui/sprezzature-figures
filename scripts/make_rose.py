@@ -59,6 +59,7 @@ from _style import forced_color_patterns, load_palette, os_adaptive_style, os_da
 from _svg import point_on_circle, svg_open, xml_escape  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
 
 # ------------------------------------------------------------------
@@ -94,7 +95,7 @@ _MONTHS: List[str] = [
 _TURN_IDX: int = 9  # January 1855
 
 
-def _causes(accessibility: str = "universal") -> List[Dict[str, object]]:
+def _causes(accessibility: str = "universal", theme: str = "corporate") -> List[Dict[str, object]]:
     """Return the three ordered causes of death with their colours.
 
     The order is the stacking order, innermost first: preventable
@@ -111,6 +112,8 @@ def _causes(accessibility: str = "universal") -> List[Dict[str, object]]:
         Palette accessibility level forwarded to
         :func:`_style.load_palette` so the band hues honour the caller's
         colour-vision request. Defaults to ``"universal"``.
+    theme : str, optional
+        Forwarded to :func:`_style.load_palette`.
 
     Returns
     -------
@@ -118,7 +121,7 @@ def _causes(accessibility: str = "universal") -> List[Dict[str, object]]:
         One dict per cause with ``key`` (str, stable slug), ``label``
         (str, human name) and ``color`` (hex), innermost band first.
     """
-    palette = load_palette(accessibility)
+    palette = load_palette(accessibility, theme=theme)
     fallback = {"Teal": "#5AC8FA", "Red": "#FF3B30", "Gray": "#8E8E93"}
 
     def _hue(name: str) -> str:
@@ -293,6 +296,7 @@ def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full Nightingale-rose SVG document as a string.
 
@@ -310,13 +314,17 @@ def build_svg(
         (``"universal"`` default, plus ``"high-contrast"``, ``"monochrome"``,
         ``"deuteranopia"``, ``"protanopia"`` and ``"tritanopia"``). Wired
         through the ``--accessibility`` CLI flag by :func:`_render.render_cli`.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
     str
         A complete, standalone SVG document.
     """
-    causes = _causes(accessibility)
+    causes = _causes(accessibility, theme=theme)
     grid = _grid_from_rows(data if data else DEMO_DATA, causes)
     n_month = len(_MONTHS)
     sector_deg = 360.0 / n_month     # 30° per month
@@ -337,7 +345,7 @@ def build_svg(
 
     # ---- header + accessibility ----
     peak_idx = totals.index(max(totals))
-    parts.append(svg_open(_WIDTH, _HEIGHT, "rose-title", "rose-desc"))
+    parts.append(svg_open(_WIDTH, _HEIGHT, "rose-title", "rose-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(
         '<title id="rose-title">Nightingale rose: preventable disease, not '
         'battle, killed most soldiers in the Crimean War</title>'
@@ -607,6 +615,7 @@ def make_rose(
     title: str = "",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the Nightingale rose (coxcomb) and write the SVG to *out*.
 
@@ -624,6 +633,8 @@ def make_rose(
         the historical narrative (unused).
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -631,9 +642,9 @@ def make_rose(
         Absolute path to the written SVG file.
     """
     _ = title
-    svg = build_svg(data, mode=mode, accessibility=accessibility)
+    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "rose")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

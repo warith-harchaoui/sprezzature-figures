@@ -53,6 +53,7 @@ from typing import Any, Callable
 from gapminder_i18n import COUNTRIES_FR, HISTORY_FR, REGIONS_FR
 from _render import write_svg  # noqa: E402
 from _style import forced_color_patterns, leveled_colors, os_adaptive_style, os_dark_style
+from sprezzature_figures.fonts import chrome_stack_for_theme
 
 # Import the pieces that are identical across the whole tribute family, so the
 # three charts stay in lockstep and the originals stay the single source.
@@ -480,6 +481,7 @@ def build(
     *,
     rows: "list[dict[str, Any]] | None" = None,
     out: "Path | str | None" = None,
+    theme: str = "corporate",
 ) -> Path:
     """Build one variant's animated SVG (``lang`` = 'en' or 'fr') and write it.
 
@@ -504,6 +506,12 @@ def build(
     out : Path, str, or None
         Output path. Defaults to ``SVG_DIR / var.out_name`` (or its
         ``.fr.svg`` sibling for ``lang="fr"``).
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`. The
+        region colours are a fixed, non-palette set (see ``accessibility``
+        above) and do not change with ``theme``.
 
     Returns
     -------
@@ -562,7 +570,7 @@ def build(
 
     svg = [
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" '
-        f'font-family="Roboto, system-ui, sans-serif" role="img" aria-labelledby="gm-t gm-d">',
+        f'font-family="{chrome_stack_for_theme(theme)}" role="img" aria-labelledby="gm-t gm-d">',
         f'<title id="gm-t">{lab["title_a11y"]}, {years[0]} to {years[-1]}</title>',
         f'<desc id="gm-d">{lab["desc"]}</desc>',
         f'<rect width="{W}" height="{H}" fill="#FFFFFF"/>',
@@ -745,7 +753,7 @@ def build(
         svg.append(_fc)
     svg.append('</svg>')
     print(f"{len(data)} entities, {n} snapshots ({lang})")
-    return write_svg(out_path, "\n".join(svg) + "\n")
+    return write_svg(out_path, "\n".join(svg) + "\n", theme=theme)
 
 
 def write_fr_csv(var: Variant) -> None:
@@ -772,6 +780,7 @@ def make_gapminder_variants(
     lang: str = "en",
     mode: str = "external",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render one Gapminder-variant tribute chart and write it to ``out``.
 
@@ -796,6 +805,8 @@ def make_gapminder_variants(
         of the two charts in :data:`VARIANTS` to render.
     lang, mode, accessibility : str
         Forwarded to :func:`build`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build`.
 
     Returns
     -------
@@ -805,10 +816,10 @@ def make_gapminder_variants(
     _ = title  # accepted for dispatcher parity; see docstring
     var = VARIANTS.get(variant, FERTILITY)
     rows = data if data else _DEMO_DATA_BY_VARIANT.get(var.key, DEMO_DATA_FERTILITY)
-    return build(var, lang, mode=mode, accessibility=accessibility, rows=rows, out=out)
+    return build(var, lang, mode=mode, accessibility=accessibility, rows=rows, out=out, theme=theme)
 
 
-def main(accessibility: str = "universal") -> None:
+def main(accessibility: str = "universal", theme: str = "corporate") -> None:
     """Build all four SVGs (2 variants × EN/FR) and both French CSVs.
 
     Parameters
@@ -816,6 +827,8 @@ def main(accessibility: str = "universal") -> None:
     accessibility : str, optional
         Colour-vision level threaded to :func:`build` for the region palette.
         ``'universal'`` (the default) keeps the shipped SVGs byte-identical.
+    theme : str, optional
+        Visual theme threaded to :func:`build`. Forwarded unchanged.
     """
     en_only = "--en-only" in sys.argv
     fr_written: set[str] = set()
@@ -830,9 +843,9 @@ def main(accessibility: str = "universal") -> None:
         )
         if var_rows is None:
             print(f"note: {csv_path} not found; rendering from the synthetic DEMO_DATA")
-        build(var, "en", accessibility=accessibility, rows=var_rows)
+        build(var, "en", accessibility=accessibility, rows=var_rows, theme=theme)
         if not en_only:
-            build(var, "fr", accessibility=accessibility, rows=var_rows)
+            build(var, "fr", accessibility=accessibility, rows=var_rows, theme=theme)
             # Variants can share a dataset (income×survival reuses survival×income);
             # write each French CSV once so they don't clobber each other.
             if var.csv_name not in fr_written and csv_path.exists():
@@ -852,6 +865,12 @@ if __name__ == "__main__":
                  "deuteranopia", "protanopia", "tritanopia"],
         help="colour-vision level for the region palette (default: universal, "
              "the identity that keeps the shipped SVGs byte-identical)")
+    parser.add_argument(
+        "--theme",
+        choices=("corporate", "academic"),
+        default="corporate",
+        help="visual theme: corporate (default, Roboto) or academic (LaTeX-style Latin Modern)",
+    )
     args = parser.parse_args()
 
-    main(accessibility=args.accessibility)
+    main(accessibility=args.accessibility, theme=args.theme)

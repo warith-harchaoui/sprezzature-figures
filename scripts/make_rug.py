@@ -36,6 +36,7 @@ from _render import svg_example_path, write_svg  # noqa: E402
 from _style import BG, INK, SECONDARY, leveled_colors, os_adaptive_style, os_dark_style  # noqa: E402
 from _svg import svg_open  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 import argparse
 import math
@@ -50,8 +51,6 @@ from typing import Any, Dict, List, Optional, Tuple
 # ------------------------------------------------------------------
 BLUE = "#007AFF"       # density fill / stroke (Apple system blue)
 GRID = "#E5E5EA"       # hairline gridlines
-FONT = "Roboto, system-ui, sans-serif"
-MONO = "Roboto Mono, ui-monospace, monospace"
 
 # Canvas geometry. Poster-scale (~1.8x the old 640x380) so the figure
 # reads big and generous rather than cramped.
@@ -167,6 +166,7 @@ def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full rug-plot SVG document as a string.
 
@@ -184,6 +184,10 @@ def build_svg(
         (density fill / stroke and rug ticks) is a categorical set of one,
         wrapped with :func:`_style.leveled_colors`. ``"universal"`` (default) is
         the identity, so the shipped SVG is byte-for-byte unchanged.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
@@ -193,6 +197,7 @@ def build_svg(
     # The series colour is a single categorical hue; level it so the figure
     # answers to the accessibility argument.
     blue = leveled_colors({"series": BLUE}, accessibility)["series"]
+    mono_family = mono_stack_for_theme(theme)
 
     samples = _values_from_rows(data)
     lo, hi = 40.0, 560.0           # display window (ms)
@@ -211,7 +216,7 @@ def build_svg(
         pts.append((px, py))
 
     parts: List[str] = []
-    parts.append(svg_open(W, H, "rug-title", "rug-desc", font_family=FONT))
+    parts.append(svg_open(W, H, "rug-title", "rug-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(
         '<title id="rug-title">Rug plot of checkout API response times</title>'
     )
@@ -305,7 +310,7 @@ def build_svg(
         px = _sx(float(t), lo, hi)
         parts.append(
             f'<text x="{px:.1f}" y="{label_y}" font-size="18" '
-            f'font-family="{MONO}" fill="{SECONDARY}" '
+            f'font-family="{mono_family}" fill="{SECONDARY}" '
             f'text-anchor="middle">{t}</text>'
         )
     parts.append(
@@ -357,6 +362,7 @@ def make_rug(
     title: str = "",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the rug (+ KDE) plot and write the SVG to *out*.
 
@@ -372,6 +378,8 @@ def make_rug(
         the takeaway text (unused).
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -379,9 +387,9 @@ def make_rug(
         Absolute path to the written SVG file.
     """
     _ = title
-    svg = build_svg(data, mode=mode, accessibility=accessibility)
+    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "rug")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:
@@ -402,9 +410,19 @@ def main() -> None:
         default="universal",
         help="palette accessibility level (default: universal, the CVD-safe standard)",
     )
+    parser.add_argument(
+        "--theme",
+        choices=("corporate", "academic"),
+        default="corporate",
+        help="visual theme: corporate (default, Roboto) or academic (LaTeX-style Latin Modern)",
+    )
     args = parser.parse_args()
     out = _out_path()
-    write_svg(out, build_svg(mode=args.mode, accessibility=args.accessibility) + "\n")
+    write_svg(
+        out,
+        build_svg(mode=args.mode, accessibility=args.accessibility, theme=args.theme) + "\n",
+        theme=args.theme,
+    )
 
 
 # Keep a reference to satisfy the "types imported" style; harmless.

@@ -65,6 +65,7 @@ from _style import (  # noqa: E402
     os_dark_style,
 )
 from _svg import svg_open, xml_escape  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
 
 def make_data(n: int = 120, seed: int = 7) -> List[Dict[str, float]]:
@@ -153,6 +154,7 @@ def build_svg(
     data: "List[Dict[str, float]] | None" = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full joint-plot SVG string.
 
@@ -175,13 +177,17 @@ def build_svg(
         (``"universal"``, ``"high-contrast"``, ``"monochrome"``,
         ``"deuteranopia"``, ``"protanopia"`` or ``"tritanopia"``). Defaults to
         ``"universal"``, the colour-vision-safe standard.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
     str
         A complete, standalone SVG document.
     """
-    palette: Dict[str, str] = load_palette(accessibility)
+    palette: Dict[str, str] = load_palette(accessibility, theme=theme)
     accent = palette.get("Blue", "#007AFF")       # central scatter
     trend = palette.get("Orange", "#FF9500")      # fitted trend line
     # Each marginal carries its OWN hue so the eye tells the two distributions
@@ -251,7 +257,7 @@ def build_svg(
     parts: List[str] = []
 
     # --- SVG root + accessible description ------------------------
-    parts.append(svg_open(width, height, "jp-title", "jp-desc"))
+    parts.append(svg_open(width, height, "jp-title", "jp-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(
         '<title id="jp-title">A good night\'s sleep sharpens reaction '
         'time</title>'
@@ -498,6 +504,7 @@ def make_jointplot(
     subtitle: str = "",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the joint plot and write the SVG to *out*.
 
@@ -513,6 +520,8 @@ def make_jointplot(
         Output path. Defaults to ``assets/svg-examples/jointplot.svg``.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -521,9 +530,9 @@ def make_jointplot(
     """
     _ = title, subtitle
     rows = data if data else DEMO_DATA
-    svg = build_svg(rows, mode=mode, accessibility=accessibility)
+    svg = build_svg(rows, mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "jointplot")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

@@ -22,9 +22,10 @@ from typing import Dict, List, Optional, Tuple
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _svg import svg_open, xml_escape  # noqa: E402
+from _svg import svg_open  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
 _WIDTH = 900
 _HEIGHT = 680
@@ -111,6 +112,7 @@ def build_svg(
     data: Optional[List[Dict[str, float]]] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full 3-D surface SVG document as a string.
 
@@ -123,6 +125,10 @@ def build_svg(
         Forwarded to :func:`_interactive.fullscreen_control` /
         palette selection (accessibility is a documented no-op here — see
         below).
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
     """
     _ = accessibility  # single blue height ramp reads in greyscale / CVD
     xx, yy, zz = _rows_to_grid(list(data)) if data else _sample()
@@ -155,7 +161,7 @@ def build_svg(
     quads.sort(key=lambda q: q[0])
 
     parts: List[str] = []
-    parts.append(svg_open(_WIDTH, _HEIGHT, "s3d-title", "s3d-desc"))
+    parts.append(svg_open(_WIDTH, _HEIGHT, "s3d-title", "s3d-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(
         '<title id="s3d-title">A 3-D surface with a single central peak, shaded '
         'by height</title>'
@@ -220,6 +226,7 @@ def make_surface3d(
     title: str = "",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the 3-D surface and write the SVG to *out*.
 
@@ -235,6 +242,8 @@ def make_surface3d(
         so this is unused.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -242,9 +251,9 @@ def make_surface3d(
         Absolute path to the written SVG file.
     """
     del title
-    svg = build_svg(data, mode=mode, accessibility=accessibility)
+    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "surface3d")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

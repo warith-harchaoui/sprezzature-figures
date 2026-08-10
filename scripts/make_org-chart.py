@@ -61,6 +61,7 @@ from _style import BG, FONT_MONO, INK, load_palette, os_adaptive_style, os_dark_
 from _interactive import fullscreen_control  # noqa: E402
 from _svg import svg_open, xml_escape as escape  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
 # ------------------------------------------------------------------
 # Canvas + house-style tokens
@@ -148,7 +149,8 @@ _DIV_HUE_ORDER = ["Blue", "Orange", "Purple", "Green", "Teal", "Pink", "Yellow",
 
 
 def _division_colors(
-    accessibility: str = "universal", division_ids: Optional[List[str]] = None
+    accessibility: str = "universal", division_ids: Optional[List[str]] = None,
+    theme: str = "corporate",
 ) -> Dict[str, str]:
     """Return the per-division hue map at a given accessibility level.
 
@@ -161,13 +163,15 @@ def _division_colors(
         When given (a custom hierarchy's direct-children-of-root ids),
         colours are assigned generically by cycling :data:`_DIV_HUE_ORDER`
         in declaration order instead of the four fixed story divisions.
+    theme : str, optional
+        Forwarded to :func:`_style.load_palette`. Defaults to ``"corporate"``.
 
     Returns
     -------
     dict of str to str
         ``{division_key: "#RRGGBB"}``.
     """
-    palette = load_palette(accessibility)
+    palette = load_palette(accessibility, theme=theme)
     if division_ids is not None:
         return {
             did: palette.get(_DIV_HUE_ORDER[i % len(_DIV_HUE_ORDER)], "#8E8E93")
@@ -321,6 +325,7 @@ def _compute_geometry(
     nodes: List[Node] = NODES,
     root_id: str = "ceo",
     division_ids: Optional[List[str]] = None,
+    theme: str = "corporate",
 ) -> Dict[str, dict]:
     """Place every node with a top-down tidy tree layout.
 
@@ -405,7 +410,7 @@ def _compute_geometry(
         band = plot_bottom - plot_top - BOX_H
         row_y = {d: plot_top + d * band / max_depth for d in range(max_depth + 1)}
 
-    division_color = _division_colors(accessibility, division_ids)
+    division_color = _division_colors(accessibility, division_ids, theme=theme)
     geometry: Dict[str, dict] = {}
     for node_id, _role, _hc, _p in nodes:
         d = depth[node_id]
@@ -615,6 +620,7 @@ def build_svg(
     nodes: Optional[List[Node]] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full org-chart SVG document as a string.
 
@@ -638,6 +644,10 @@ def build_svg(
         (``"universal"``, ``"high-contrast"``, ``"monochrome"``,
         ``"deuteranopia"``, ``"protanopia"`` or ``"tritanopia"``). The default
         ``"universal"`` is the identity, so the shipped figure is unchanged.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
@@ -654,7 +664,8 @@ def build_svg(
     division_ids = kids.get(root_id, [])
 
     geometry = _compute_geometry(
-        accessibility, nodes, root_id, division_ids=None if is_default else division_ids
+        accessibility, nodes, root_id, division_ids=None if is_default else division_ids,
+        theme=theme,
     )
 
     total = sub_hc[root_id]
@@ -698,7 +709,7 @@ def build_svg(
             f"headcount; team cards below print their own size."
             + (f" {largest_name}, at {largest_pct}% of the company, is the largest division." if largest_div else "")
         )
-    parts.append(svg_open(WIDTH, HEIGHT, "org-title", "org-desc", font_family=FONT))
+    parts.append(svg_open(WIDTH, HEIGHT, "org-title", "org-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="org-title">{escape(title_txt)}</title>')
     parts.append(f'<desc id="org-desc">{escape(desc_txt)}</desc>')
 
@@ -713,7 +724,7 @@ def build_svg(
     # labels, and headcounts, not by colour. The helper forces `fill` for the
     # classed selectors; the wires need their stroke forced too, hence the
     # extra ``.wire{stroke:CanvasText}`` rule.
-    division_color = _division_colors(accessibility, None if is_default else division_ids)
+    division_color = _division_colors(accessibility, None if is_default else division_ids, theme=theme)
     os_media = os_adaptive_style(
         {f".div-{did}": division_color[did] for did in division_ids},
         role="both",
@@ -852,6 +863,7 @@ def make_org_chart(
     title: str = "",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the org chart and write the SVG to *out*.
 
@@ -871,6 +883,8 @@ def make_org_chart(
         Output path. Defaults to ``assets/svg-examples/org-chart.svg``.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -883,9 +897,9 @@ def make_org_chart(
         (str(r["id"]), str(r["role"]), int(r["headcount"]), r.get("parent"))
         for r in rows
     ]
-    svg = build_svg(nodes, mode=mode, accessibility=accessibility)
+    svg = build_svg(nodes, mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "org-chart")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

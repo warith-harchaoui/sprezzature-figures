@@ -57,6 +57,7 @@ from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
 
 # ------------------------------------------------------------------
@@ -245,6 +246,7 @@ def build_svg(
     peaks: Optional[List[Tuple[str, float, float, str]]] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full Manhattan-plot SVG document as a string.
 
@@ -267,6 +269,10 @@ def build_svg(
         colour-vision-safe standard; other levels (``"high-contrast"``,
         ``"monochrome"``, ``"deuteranopia"``, ``"protanopia"``,
         ``"tritanopia"``) remap the hues via the sprezzature-colors engine.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
@@ -274,7 +280,7 @@ def build_svg(
         A complete, standalone SVG document.
     """
     peaks = peaks if peaks else _PEAKS
-    palette = load_palette(accessibility)
+    palette = load_palette(accessibility, theme=theme)
     odd_hex, even_hex = _alternating_tints(palette)
     hit_hex = palette.get("Red", "#FF3B30")  # genome-wide-significant peaks
 
@@ -284,7 +290,7 @@ def build_svg(
     parts: List[str] = []
 
     # ---- header / accessibility ----
-    parts.append(svg_open(_WIDTH, _HEIGHT, "mh-title", "mh-desc"))
+    parts.append(svg_open(_WIDTH, _HEIGHT, "mh-title", "mh-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(
         '<title id="mh-title">Manhattan plot of a genome-wide association '
         'study for adult height</title>'
@@ -552,6 +558,7 @@ def make_manhattan(
     title: str = "",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the Manhattan plot and write the SVG to *out*.
 
@@ -567,6 +574,8 @@ def make_manhattan(
         Output path. Defaults to ``assets/svg-examples/manhattan.svg``.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -579,9 +588,9 @@ def make_manhattan(
         (str(r["chromosome"]), float(r["position_fraction"]), float(r["neg_log10p"]), str(r["gene"]))
         for r in rows
     ]
-    svg = build_svg(peaks, mode=mode, accessibility=accessibility)
+    svg = build_svg(peaks, mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "manhattan")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

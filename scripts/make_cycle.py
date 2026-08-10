@@ -62,6 +62,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import forced_color_patterns, leveled_colors, os_adaptive_style, os_dark_style  # noqa: E402
 from _svg import point_on_circle, svg_open, xml_escape  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 
 
@@ -252,7 +253,7 @@ DEMO_DATA: List[Dict[str, Any]] = [
 ]
 
 
-def build_svg(mode: str = "self-contained", accessibility: str = "universal") -> str:
+def build_svg(mode: str = "self-contained", accessibility: str = "universal", theme: str = "corporate") -> str:
     """Assemble the full cycle-wheel SVG document as a string.
 
     Parameters
@@ -266,6 +267,10 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
         (``"universal"`` default, plus ``"high-contrast"``, ``"monochrome"``,
         ``"deuteranopia"``, ``"protanopia"`` and ``"tritanopia"``). Wired
         through the ``--accessibility`` CLI flag by :func:`_render.render_cli`.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
@@ -292,7 +297,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal") ->
     parts: List[str] = []
 
     # ---- header + accessibility ----
-    parts.append(svg_open(_WIDTH, _HEIGHT, "cycle-title", "cycle-desc"))
+    parts.append(svg_open(_WIDTH, _HEIGHT, "cycle-title", "cycle-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(
         '<title id="cycle-title">The winter-wheat year: one field spends most '
         'of its turn in the slow winter tillering stage</title>'
@@ -552,6 +557,7 @@ def make_cycle(
     title: str = "",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the winter-wheat cycle-wheel SVG and write it to ``out``.
 
@@ -575,6 +581,8 @@ def make_cycle(
         title is fixed prose.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -582,9 +590,9 @@ def make_cycle(
         Absolute path to the written SVG file.
     """
     _ = data, title  # accepted for dispatcher parity; see docstring
-    svg = build_svg(mode=mode, accessibility=accessibility)
+    svg = build_svg(mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "cycle")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

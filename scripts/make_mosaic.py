@@ -48,6 +48,7 @@ from _style import (  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _svg import fmt_compact, svg_open  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
 
 # --------------------------------------------------------------------------- #
@@ -82,7 +83,7 @@ SUBTITLE = "Share of online-store checkouts by device and payment method"
 # --------------------------------------------------------------------------- #
 # Palette                                                                       #
 # --------------------------------------------------------------------------- #
-def method_colors(accessibility: str = "universal") -> Dict[str, str]:
+def method_colors(accessibility: str = "universal", theme: str = "corporate") -> Dict[str, str]:
     """Map each payment method to a house-palette hex.
 
     Wallet (the story's hero) takes the brand Blue; the rest read as a calm,
@@ -95,13 +96,15 @@ def method_colors(accessibility: str = "universal") -> Dict[str, str]:
         (``"universal"``, ``"high-contrast"``, ``"monochrome"``,
         ``"deuteranopia"``, ``"protanopia"`` or ``"tritanopia"``). Defaults
         to ``"universal"``, the colour-vision-safe standard.
+    theme : str, optional
+        Forwarded to :func:`load_palette`. Defaults to ``"corporate"``.
 
     Returns
     -------
     dict of str to str
         ``{method_name: "#RRGGBB"}`` for every entry in :data:`METHODS`.
     """
-    pal = load_palette(accessibility)
+    pal = load_palette(accessibility, theme=theme)
     return {
         "Wallet":            pal.get("Blue", "#007AFF"),
         "Card":              pal.get("Teal", "#5AC8FA"),
@@ -154,6 +157,7 @@ def build_tiles(
     accessibility: str = "universal",
     devices: Optional[List[Dict[str, Any]]] = None,
     composition: Optional[Dict[str, Dict[str, float]]] = None,
+    theme: str = "corporate",
 ) -> List[Dict[str, Any]]:
     """Compute one rect record per (device, method) mosaic tile.
 
@@ -173,6 +177,8 @@ def build_tiles(
     devices, composition : optional
         Override :data:`DEVICES` / :data:`COMPOSITION`; see
         :func:`render_svg`.
+    theme : str, optional
+        Forwarded to :func:`method_colors`. Defaults to ``"corporate"``.
 
     Returns
     -------
@@ -183,7 +189,7 @@ def build_tiles(
     """
     devices = devices if devices else DEVICES
     composition = composition if composition else COMPOSITION
-    colors = method_colors(accessibility)
+    colors = method_colors(accessibility, theme=theme)
     n_gaps = len(devices) - 1
     inner_w = plot_w - gap * n_gaps  # width available to the columns themselves
     total_share = sum(d["share"] for d in devices)
@@ -221,6 +227,7 @@ def render_svg(
     composition: Optional[Dict[str, Dict[str, float]]] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full mosaic SVG document as a string.
 
@@ -248,6 +255,10 @@ def render_svg(
         ``"tritanopia"``). Defaults to ``"universal"``, the
         colour-vision-safe standard, which leaves the shipped palette
         unchanged.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
@@ -270,11 +281,11 @@ def render_svg(
     composition = composition if composition else COMPOSITION
     tiles = build_tiles(
         plot_x, plot_y, plot_w, plot_h, gap, accessibility,
-        devices=devices, composition=composition,
+        devices=devices, composition=composition, theme=theme,
     )
 
     parts: List[str] = []
-    parts.append(svg_open(width, height, "mosaic-t", "mosaic-d"))
+    parts.append(svg_open(width, height, "mosaic-t", "mosaic-d", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="mosaic-t">{escape(TITLE)}</title>')
     parts.append(
         '<desc id="mosaic-d">Marimekko mosaic: column widths are each device\'s share of all '
@@ -468,6 +479,7 @@ def make_mosaic(
     title: str = "",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the mosaic / Marimekko chart and write the SVG to *out*.
 
@@ -482,6 +494,8 @@ def make_mosaic(
         Output path. Defaults to ``assets/svg-examples/mosaic.svg``.
     mode, accessibility : str
         Forwarded to :func:`render_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`render_svg`.
 
     Returns
     -------
@@ -491,9 +505,9 @@ def make_mosaic(
     _ = title
     rows = data if data else DEMO_DATA
     devices, composition = _rows_to_mosaic(rows)
-    svg = render_svg(devices=devices, composition=composition, mode=mode, accessibility=accessibility)
+    svg = render_svg(devices=devices, composition=composition, mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "mosaic")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 # --------------------------------------------------------------------------- #

@@ -56,6 +56,7 @@ from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
 
 # ------------------------------------------------------------------
@@ -84,7 +85,7 @@ _FOCUS: str = "#0A4DA0"    # focus-ring blue
 # ------------------------------------------------------------------
 # Semantic groups (the three review themes)
 # ------------------------------------------------------------------
-def _groups(accessibility: str = "universal") -> Dict[str, Dict[str, str]]:
+def _groups(accessibility: str = "universal", theme: str = "corporate") -> Dict[str, Dict[str, str]]:
     """Return the three review themes with colour *and* a sign glyph.
 
     Colour alone cannot carry the theme: praise Green and complaint Red
@@ -101,6 +102,8 @@ def _groups(accessibility: str = "universal") -> Dict[str, Dict[str, str]]:
     accessibility : str, optional
         The palette accessibility level threaded into :func:`load_palette`;
         ``"universal"`` (default) is the colour-vision-safe standard.
+    theme : str, optional
+        Forwarded to :func:`load_palette`.
 
     Returns
     -------
@@ -108,7 +111,7 @@ def _groups(accessibility: str = "universal") -> Dict[str, Dict[str, str]]:
         Mapping ``{group_key: {"label": str, "color": hex, "glyph": str}}``.
         ``glyph`` is the prefix shown before each word and on the legend.
     """
-    palette = load_palette(accessibility)
+    palette = load_palette(accessibility, theme=theme)
     return {
         "praise": {"label": "What buyers praise (+)", "color": palette["Green"], "glyph": "+"},
         "gripe": {"label": "What buyers complain about (−)", "color": palette["Red"], "glyph": "−"},
@@ -400,6 +403,7 @@ def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full word-cloud SVG document as a string.
 
@@ -420,13 +424,17 @@ def build_svg(
         colour-vision-safe standard; other levels (``"high-contrast"``,
         ``"monochrome"``, ``"deuteranopia"``, ``"protanopia"``,
         ``"tritanopia"``) remap the hues via the sprezzature-colors engine.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
     str
         A complete, standalone SVG document.
     """
-    groups = _groups(accessibility)
+    groups = _groups(accessibility, theme=theme)
     placed = _place_words(data)
     total_reviews = 2412  # the corpus size quoted in the subtitle (shipped demo)
 
@@ -446,7 +454,7 @@ def build_svg(
     parts: List[str] = []
 
     # ---- header ----
-    parts.append(svg_open(_WIDTH, _HEIGHT, "wc-title", "wc-desc"))
+    parts.append(svg_open(_WIDTH, _HEIGHT, "wc-title", "wc-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(
         '<title id="wc-title">Word cloud of coffee-grinder reviews: '
         'buyers love how quietly it grinds, and the one gripe is '
@@ -605,6 +613,7 @@ def make_wordcloud(
     title: str = "",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the word cloud and write the SVG to *out*.
 
@@ -620,6 +629,8 @@ def make_wordcloud(
         specific takeaway, so this is unused.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -627,9 +638,9 @@ def make_wordcloud(
         Absolute path to the written SVG file.
     """
     del title
-    svg = build_svg(data, mode=mode, accessibility=accessibility)
+    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "wordcloud")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

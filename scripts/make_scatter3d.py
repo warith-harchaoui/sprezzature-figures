@@ -53,6 +53,7 @@ from _render import svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _style import forced_color_patterns, leveled_colors, os_adaptive_style, os_dark_style  # noqa: E402
 from _svg import fmt_compact  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 import argparse
 import json
@@ -74,7 +75,6 @@ _DEFAULT_OUT = (
 _INK = "#1D1D1F"        # primary text
 _SECONDARY = "#6E6E73"  # subtitle / secondary text
 _BG = "#FFFFFF"         # white ground
-_FONT = "Roboto, system-ui, sans-serif"
 _MONO = "Roboto Mono, ui-monospace, monospace"
 
 # Three qualitative hues from the Apple-system palette — one per cultivar.
@@ -498,6 +498,7 @@ def _axis_frame_svg(
     plot_h: float,
     cx: float,
     cy: float,
+    mono_family: str = _MONO,
 ) -> str:
     """Draw the 3D axis gizmo — three labelled arms from one corner.
 
@@ -560,7 +561,7 @@ def _axis_frame_svg(
             f'<text class="axis-label" '
             f'data-tip="{arm[0]},{arm[1]},{arm[2]}" data-gap="{gap}" '
             f'x="{fmt_compact(lx)}" y="{fmt_compact(ly)}" font-size="16" '
-            f'font-family="{_MONO}" fill="{_SECONDARY}" '
+            f'font-family="{mono_family}" fill="{_SECONDARY}" '
             f'text-anchor="{anchor}" dominant-baseline="middle">{name}</text>'
         )
     out.append("</g>")
@@ -611,6 +612,7 @@ def _script_svg(
     vb_w: float,
     vb_h: float,
     class_colors: Dict[str, str],
+    theme: str = "corporate",
 ) -> str:
     """Emit the ``<script>`` that makes the still figure interactive.
 
@@ -797,11 +799,11 @@ function ensureTip() {
   t1.setAttribute('x', '12'); t1.setAttribute('y', '22');
   t1.setAttribute('fill', '#FFFFFF'); t1.setAttribute('font-size', '16');
   t1.setAttribute('font-weight', '700');
-  t1.setAttribute('font-family', 'Roboto, system-ui, sans-serif');
+  t1.setAttribute('font-family', '__FONT__');
   var t2 = document.createElementNS(NS, 'text');
   t2.setAttribute('x', '12'); t2.setAttribute('y', '44');
   t2.setAttribute('fill', '#F5F5F7'); t2.setAttribute('font-size', '14');
-  t2.setAttribute('font-family', 'Roboto Mono, ui-monospace, monospace');
+  t2.setAttribute('font-family', '__MONO__');
   tip.appendChild(rect); tip.appendChild(t1); tip.appendChild(t2);
   svg.appendChild(tip);
   tip._rect = rect; tip._t1 = t1; tip._t2 = t2;
@@ -1070,7 +1072,11 @@ svg.addEventListener('pointerup', function (e) {
 // first frame — matches the server-rendered still
 render();
 """
-    js = js.replace("__CFG__", data)
+    js = (
+        js.replace("__CFG__", data)
+        .replace("__FONT__", chrome_stack_for_theme(theme))
+        .replace("__MONO__", mono_stack_for_theme(theme))
+    )
     return f'<script type="text/javascript"><![CDATA[{js}]]></script>'
 
 
@@ -1081,6 +1087,7 @@ def build_svg(
     labels: List[str],
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full 3D-scatter SVG document as a string.
 
@@ -1107,12 +1114,20 @@ def build_svg(
         (``"high-contrast"``, ``"monochrome"``, ``"deuteranopia"``,
         ``"protanopia"``, ``"tritanopia"``) remap the class colours so the
         still, the legend and the interactive re-projection all agree.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        Applies to both the static SVG chrome and the embedded interactive
+        script's tooltip. See
+        :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
     str
         A complete, self-contained SVG document.
     """
+    font_family = chrome_stack_for_theme(theme)
+    mono_family = mono_stack_for_theme(theme)
     class_colors = _class_colors(accessibility)
     # A caller-supplied cultivar name outside the curated three (see
     # DEMO_DATA/_BASE_CLASS_COLORS) is assigned a colour from the house
@@ -1144,6 +1159,7 @@ def build_svg(
     axes = _axis_frame_svg(
         elev_deg=elev, azim_deg=azim,
         plot_w=plot_w, plot_h=plot_h, cx=cx, cy=cy,
+        mono_family=mono_family,
     )
     cloud = _cloud_svg(
         records,
@@ -1156,6 +1172,7 @@ def build_svg(
         plot_w=plot_w, plot_h=plot_h, cx=cx, cy=cy,
         vb_w=width, vb_h=height,
         class_colors=class_colors,
+        theme=theme,
     )
 
     parts: List[str] = []
@@ -1176,7 +1193,7 @@ def build_svg(
         f'viewBox="0 0 {width} {height}" '
         f'preserveAspectRatio="xMidYMid meet" '
         f'style="max-width:100%;height:auto;touch-action:none" '
-        f'font-family="{_FONT}">'
+        f'font-family="{font_family}">'
     )
     parts.append(
         f"<title>{title}</title>"
@@ -1245,7 +1262,7 @@ def build_svg(
     # ---- depth cue caption ------------------------------------------------ #
     ly = height - 20
     parts.append(
-        f'<text x="56" y="{ly}" font-size="15" font-family="{_MONO}" '
+        f'<text x="56" y="{ly}" font-size="15" font-family="{mono_family}" '
         f'fill="{_SECONDARY}">nearer points draw larger and darker</text>'
     )
 
@@ -1265,7 +1282,7 @@ def build_svg(
         f'width="{fmt_compact(hint_w)}" height="30" rx="15" '
         f'fill="{_INK}" fill-opacity="0.82"/>'
         f'<text x="{fmt_compact(hint_x + hint_w / 2.0)}" y="{fmt_compact(hint_y + 20)}" '
-        f'font-size="15" font-family="{_FONT}" fill="#FFFFFF" '
+        f'font-size="15" font-family="{font_family}" fill="#FFFFFF" '
         f'text-anchor="middle">{hint}</text>'
         f"</g>"
     )
@@ -1285,6 +1302,7 @@ def make_scatter3d(
     title: str = "",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the interactive 3D scatter and write the SVG to *out*.
 
@@ -1301,6 +1319,8 @@ def make_scatter3d(
         the takeaway text (unused).
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -1309,9 +1329,9 @@ def make_scatter3d(
     """
     _ = title
     xs, ys, zs, labels = _rows_to_clusters(data if data else DEMO_DATA)
-    svg = build_svg(xs, ys, zs, labels, mode=mode, accessibility=accessibility)
+    svg = build_svg(xs, ys, zs, labels, mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "scatter3d")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 # --------------------------------------------------------------------------- #
@@ -1347,6 +1367,12 @@ def _build_parser() -> argparse.ArgumentParser:
         default="universal",
         help="palette accessibility level (default: universal, the CVD-safe standard)",
     )
+    parser.add_argument(
+        "--theme",
+        choices=("corporate", "academic"),
+        default="corporate",
+        help="visual theme: corporate (default, Roboto) or academic (LaTeX-style Latin Modern)",
+    )
     return parser
 
 
@@ -1354,8 +1380,8 @@ def main(argv: List[str] | None = None) -> int:
     """CLI entry point: build the SVG and write it to disk."""
     args = _build_parser().parse_args(argv)
     xs, ys, zs, labels = _sample_clusters(seed=args.seed)
-    svg = build_svg(xs, ys, zs, labels, mode=args.mode, accessibility=args.accessibility)
-    write_svg(args.out, svg)
+    svg = build_svg(xs, ys, zs, labels, mode=args.mode, accessibility=args.accessibility, theme=args.theme)
+    write_svg(args.out, svg, theme=args.theme)
     return 0
 
 

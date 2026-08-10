@@ -43,6 +43,7 @@ from __future__ import annotations
 from _render import svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _svg import fmt_compact  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
 import argparse
 from pathlib import Path
@@ -215,6 +216,7 @@ def build_svg(
     grid: Dict[str, np.ndarray],
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full interpolated-heatmap SVG document as a string.
 
@@ -241,6 +243,10 @@ def build_svg(
         light→dark sweep collapses toward mid-greys), so the level is
         deliberately *not* applied. The flag is accepted for a uniform command
         line. Defaults to ``"universal"``.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
@@ -292,7 +298,7 @@ def build_svg(
     parts.append(
         f'<svg role="img" aria-label="{title}" '
         f'xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" '
-        f'viewBox="0 0 {width} {height}" font-family="{_FONT}">'
+        f'viewBox="0 0 {width} {height}" font-family="{chrome_stack_for_theme(theme)}">'
     )
     parts.append(
         f"<title>{title}</title>"
@@ -513,6 +519,7 @@ def make_imshow_interpolated(
     title: str = "",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the interpolated-heatmap figure and write it to ``out``.
 
@@ -527,13 +534,13 @@ def make_imshow_interpolated(
         regular grid (one row per measurement cell). Defaults to
         :data:`DEMO_DATA`. ``title`` is accepted for signature parity with
         the other generators and is unused (the headline is baked into the
-        hand-authored SVG).
+        hand-authored SVG). ``theme`` is forwarded to :func:`build_svg`.
     """
     rows = data if data else DEMO_DATA
     grid = _rows_to_grid(rows)
-    svg = build_svg(grid, mode=mode, accessibility=accessibility)
+    svg = build_svg(grid, mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "imshow-interpolated")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 # --------------------------------------------------------------------------- #
@@ -572,6 +579,12 @@ def _build_parser() -> argparse.ArgumentParser:
             "sequential blue ramp is already CVD/greyscale-safe."
         ),
     )
+    parser.add_argument(
+        "--theme",
+        choices=("corporate", "academic"),
+        default="corporate",
+        help="visual theme: corporate (default, Roboto) or academic (LaTeX-style Latin Modern)",
+    )
     return parser
 
 
@@ -579,8 +592,8 @@ def main(argv: List[str] | None = None) -> int:
     """CLI entry point: synthesise the survey, interpolate it, write the SVG."""
     args = _build_parser().parse_args(argv)
     grid = _survey_grid(seed=args.seed)
-    svg = build_svg(grid, mode=args.mode, accessibility=args.accessibility)
-    write_svg(args.out, svg)
+    svg = build_svg(grid, mode=args.mode, accessibility=args.accessibility, theme=args.theme)
+    write_svg(args.out, svg, theme=args.theme)
     return 0
 
 

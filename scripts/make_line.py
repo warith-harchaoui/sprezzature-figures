@@ -27,8 +27,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _scale import log_position, log_ticks  # noqa: E402
-from _style import BG, FONT_MONO, GRIDLINE, INK, SECONDARY, cycle_hues, load_palette  # noqa: E402
+from _style import BG, GRIDLINE, INK, SECONDARY, cycle_hues  # noqa: E402
 from _svg import fmt_number, svg_open, xml_escape  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 
 MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
@@ -75,8 +76,10 @@ def _strings(language: str) -> Dict[str, str]:
     return _STRINGS.get(language, _STRINGS["en"])
 
 
-def _series_colors(series: List[str], accessibility: str = "universal") -> Dict[str, str]:
-    return cycle_hues(series, accessibility)
+def _series_colors(
+    series: List[str], accessibility: str = "universal", theme: str = "corporate"
+) -> Dict[str, str]:
+    return cycle_hues(series, accessibility, theme=theme)
 
 
 def build_svg(
@@ -91,6 +94,7 @@ def build_svg(
     x_label: Optional[str] = None,
     y_label: Optional[str] = None,
     log_y: bool = False,
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full multi-series line chart SVG document as a string.
 
@@ -120,12 +124,17 @@ def build_svg(
     log_y : bool, optional
         Use a logarithmic value axis. The x-axis (month) is ordinal, not a
         numeric quantity, so it has no log form.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
     str
         A complete, standalone SVG document.
     """
+    mono_family = mono_stack_for_theme(theme)
     strings = _strings(language)
     y_label = strings["y_axis"] if y_label is None else y_label
     x_label = strings["x_axis"] if x_label is None else x_label
@@ -147,7 +156,7 @@ def build_svg(
     # the CSV's already-chronological row order.
     months_seen = list(dict.fromkeys(r["month"] for r in rows))
     months = sorted(months_seen, key=MONTHS.index) if all(m in MONTHS for m in months_seen) else months_seen
-    colors = _series_colors(series, accessibility)
+    colors = _series_colors(series, accessibility, theme=theme)
 
     lookup: Dict[tuple, float] = {(r.get("series") or "Value", r["month"]): float(r["value"]) for r in rows}
     all_vals = list(lookup.values())
@@ -195,7 +204,7 @@ def build_svg(
             return plot_y + plot_h - (v / y_domain * plot_h)
 
     parts: List[str] = []
-    parts.append(svg_open(width, height, "line-title", "line-desc"))
+    parts.append(svg_open(width, height, "line-title", "line-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="line-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="line-desc">'
@@ -256,7 +265,7 @@ def build_svg(
         # is unchanged.
         tick_label = fmt_number(tick) if log_y else f"{tick:.0f}"
         parts.append(
-            f'<text x="{plot_x - 10:.1f}" y="{ty + 4:.1f}" font-size="11" font-family="{FONT_MONO}" '
+            f'<text x="{plot_x - 10:.1f}" y="{ty + 4:.1f}" font-size="11" font-family="{mono_family}" '
             f'fill="{SECONDARY}" text-anchor="end">{tick_label}</text>'
         )
     parts.append(
@@ -291,13 +300,13 @@ def build_svg(
         tx, ty = x_for(i), axis_y + 20
         if rotate_ticks:
             parts.append(
-                f'<text x="{tx:.1f}" y="{ty:.1f}" font-size="11" font-family="{FONT_MONO}" '
+                f'<text x="{tx:.1f}" y="{ty:.1f}" font-size="11" font-family="{mono_family}" '
                 f'fill="{SECONDARY}" text-anchor="end" '
                 f'transform="rotate(-45 {tx:.1f} {ty:.1f})">{xml_escape(m)}</text>'
             )
         else:
             parts.append(
-                f'<text x="{tx:.1f}" y="{ty:.1f}" font-size="11" font-family="{FONT_MONO}" '
+                f'<text x="{tx:.1f}" y="{ty:.1f}" font-size="11" font-family="{mono_family}" '
                 f'fill="{SECONDARY}" text-anchor="middle">{xml_escape(m)}</text>'
             )
     axis_title_y = axis_y + (76 if rotate_ticks else 42)
@@ -325,6 +334,7 @@ def make_line(
     x_label: Optional[str] = None,
     y_label: Optional[str] = None,
     log_y: bool = False,
+    theme: str = "corporate",
 ) -> Path:
     """Render a hand-authored multi-series line chart and write the SVG to *out*.
 
@@ -345,6 +355,8 @@ def make_line(
         Axis titles. Forwarded to :func:`build_svg`.
     log_y : bool, optional
         Use a logarithmic value axis. Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -359,9 +371,9 @@ def make_line(
     """
     svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
                      mode=mode, accessibility=accessibility, language=language,
-                     x_label=x_label, y_label=y_label, log_y=log_y)
+                     x_label=x_label, y_label=y_label, log_y=log_y, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "line")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

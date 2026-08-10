@@ -29,8 +29,9 @@ from typing import Any, Dict, List, Optional
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _style import BG, FONT_MONO, GRIDLINE, INK, SECONDARY, corner_radius, load_palette  # noqa: E402
+from _style import BG, INK, SECONDARY, corner_radius, load_palette  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 
 AGE_BANDS = ["75+", "60-74", "45-59", "30-44", "15-29", "0-14"]
@@ -46,8 +47,8 @@ DEMO_DATA: List[Dict[str, Any]] = [
 ]
 
 
-def _sex_colors(accessibility: str = "universal") -> Dict[str, str]:
-    palette = load_palette(accessibility)
+def _sex_colors(accessibility: str = "universal", theme: str = "corporate") -> Dict[str, str]:
+    palette = load_palette(accessibility, theme=theme)
     return {"Male": palette.get("Blue", "#007AFF"), "Female": palette.get("Orange", "#FF9500")}
 
 
@@ -59,6 +60,7 @@ def build_svg(
     height: int = 480,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full population pyramid SVG document as a string.
 
@@ -75,19 +77,24 @@ def build_svg(
     mode, accessibility : str, optional
         Forwarded to :func:`_interactive.fullscreen_control` /
         :func:`_style.load_palette`.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
     str
         A complete, standalone SVG document.
     """
+    mono_family = mono_stack_for_theme(theme)
     rows = data if data else DEMO_DATA
     seen_ages: List[str] = []
     for r in rows:
         if r["age"] not in seen_ages:
             seen_ages.append(r["age"])
     ages = [a for a in AGE_BANDS if a in seen_ages] + [a for a in seen_ages if a not in AGE_BANDS]
-    colors = _sex_colors(accessibility)
+    colors = _sex_colors(accessibility, theme)
     lookup: Dict[tuple, float] = {(r["age"], r["sex"]): float(r["pct"]) for r in rows}
     max_abs = max(abs(v) for v in lookup.values()) if lookup else 1.0
 
@@ -105,7 +112,7 @@ def build_svg(
         return abs(v) / max_abs * half_w * 0.86
 
     parts: List[str] = []
-    parts.append(svg_open(width, height, "pp-title", "pp-desc"))
+    parts.append(svg_open(width, height, "pp-title", "pp-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="pp-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="pp-desc">Population pyramid across {n} age bands. Hover or focus a '
@@ -167,7 +174,7 @@ def build_svg(
             label_x = x0 - 6 if sign < 0 else x0 + length + 6
             anchor = "end" if sign < 0 else "start"
             parts.append(
-                f'<text x="{label_x:.1f}" y="{cy + 4:.1f}" font-size="10" font-family="{FONT_MONO}" '
+                f'<text x="{label_x:.1f}" y="{cy + 4:.1f}" font-size="10" font-family="{mono_family}" '
                 f'fill="{SECONDARY}" text-anchor="{anchor}">{abs(v):.0f}%</text>'
             )
 
@@ -186,6 +193,7 @@ def make_population_pyramid(
     height: int = 480,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render a hand-authored population pyramid and write the SVG to *out*.
 
@@ -203,6 +211,8 @@ def make_population_pyramid(
         Canvas size in pixels.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -216,9 +226,9 @@ def make_population_pyramid(
     True
     """
     svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
-                     mode=mode, accessibility=accessibility)
+                     mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "population-pyramid")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

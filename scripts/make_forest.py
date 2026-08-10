@@ -59,6 +59,7 @@ from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _svg import svg_open  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
 
 # ------------------------------------------------------------------
@@ -134,6 +135,7 @@ def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full forest-plot SVG string.
 
@@ -154,6 +156,10 @@ def build_svg(
         (``"universal"``, ``"high-contrast"``, ``"monochrome"``,
         ``"deuteranopia"``, ``"protanopia"`` or ``"tritanopia"``). Defaults to
         ``"universal"``, the colour-vision-safe standard.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
@@ -161,7 +167,7 @@ def build_svg(
         A complete, standalone SVG document.
     """
     rows: List[Dict[str, Any]] = data if data else STUDIES
-    palette: Dict[str, str] = load_palette(accessibility)
+    palette: Dict[str, str] = load_palette(accessibility, theme=theme)
     blue = palette.get("Blue", "#007AFF")
     green = palette.get("Green", "#34C759")
     orange = palette.get("Orange", "#FF9500")
@@ -249,7 +255,7 @@ def build_svg(
         pooled_het = str(POOLED["het"])
 
     # --- SVG root + accessible description ------------------------
-    parts.append(svg_open(width, height, "fp-title", "fp-desc"))
+    parts.append(svg_open(width, height, "fp-title", "fp-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(
         '<title id="fp-title">Forest plot: home blood-pressure telemonitoring '
         'raises the odds of reaching target</title>'
@@ -511,6 +517,7 @@ def make_forest(
     title: str = "",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the meta-analysis forest plot and write it to ``out``.
 
@@ -529,6 +536,8 @@ def make_forest(
         title is fixed prose.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -536,9 +545,9 @@ def make_forest(
         Absolute path to the written SVG file.
     """
     _ = title  # accepted for dispatcher parity; see docstring
-    svg = build_svg(data, mode=mode, accessibility=accessibility)
+    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "forest")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

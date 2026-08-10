@@ -56,6 +56,7 @@ from _svg import catmull_rom_beziers, fmt_compact  # noqa: E402
 from _render import svg_example_path, write_svg  # noqa: E402
 from _style import leveled_colors, os_adaptive_style, os_dark_style  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 #: Month labels, Jan -> Dec, matching :func:`_sample_revenue`'s 12 values.
 MONTHS: List[str] = [
@@ -76,8 +77,6 @@ _DEFAULT_OUT = (
 _INK = "#1D1D1F"        # primary text
 _SECONDARY = "#6E6E73"  # subtitle / secondary text
 _BG = "#FFFFFF"         # white ground
-_FONT = "Roboto, system-ui, sans-serif"
-_MONO = "Roboto Mono, ui-monospace, monospace"
 
 # Bicolour gap fill, drawn from the Apple-system palette, following the house
 # blue-vs-red convention for a signed quantity (never red-vs-green, which
@@ -281,6 +280,7 @@ def build_svg(
     data: Dict[str, np.ndarray],
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full difference-chart SVG document as a string.
 
@@ -302,6 +302,10 @@ def build_svg(
         byte-for-byte unchanged). Other levels remap those hues through the
         sprezzature-colors engine so surplus stays distinct from shortfall for that
         viewer.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
@@ -325,6 +329,7 @@ def build_svg(
     _BELOW_HUE_C = _diff_colours["below"]
     _ACTUAL_LINE_C = _diff_colours["actual"]
     _PLAN_LINE_C = _diff_colours["plan"]
+    _mono_family = mono_stack_for_theme(theme)
 
     plan = data["plan"]
     actual = data["actual"]
@@ -373,7 +378,7 @@ def build_svg(
     parts.append(
         f'<svg role="img" aria-label="{title}" '
         f'xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" '
-        f'viewBox="0 0 {width} {height}" font-family="{_FONT}">'
+        f'viewBox="0 0 {width} {height}" font-family="{chrome_stack_for_theme(theme)}">'
     )
     parts.append(
         f"<title>{title}</title>"
@@ -412,7 +417,7 @@ def build_svg(
         )
         ax_labels.append(
             f'<text x="{_fmt(m_left - 16)}" y="{_fmt(gy + 5)}" text-anchor="end" '
-            f'font-size="15" font-family="{_MONO}" fill="{_SECONDARY}">'
+            f'font-size="15" font-family="{_mono_family}" fill="{_SECONDARY}">'
             f"${v / 1000:.2f}M</text>"
         )
         v += step
@@ -507,7 +512,7 @@ def build_svg(
         gx = x_of(float(m))
         axis_bits.append(
             f'<text x="{_fmt(gx)}" y="{_fmt(axis_y + 28)}" text-anchor="middle" '
-            f'font-size="15" font-family="{_MONO}" fill="{_SECONDARY}">'
+            f'font-size="15" font-family="{_mono_family}" fill="{_SECONDARY}">'
             f"{month_labels[i]}</text>"
         )
 
@@ -536,7 +541,7 @@ def build_svg(
     )
     end_labels.append(
         f'<text x="{_fmt(lbl_x)}" y="{_fmt(ay + 17)}" font-size="14" '
-        f'font-family="{_MONO}" fill="{_SECONDARY}">'
+        f'font-family="{_mono_family}" fill="{_SECONDARY}">'
         f"${actual[-1] / 1000:.2f}M</text>"
     )
     end_labels.append(
@@ -550,7 +555,7 @@ def build_svg(
     )
     end_labels.append(
         f'<text x="{_fmt(lbl_x)}" y="{_fmt(py_ + 17)}" font-size="14" '
-        f'font-family="{_MONO}" fill="{_SECONDARY}">'
+        f'font-family="{_mono_family}" fill="{_SECONDARY}">'
         f"${plan[-1] / 1000:.2f}M</text>"
     )
 
@@ -638,6 +643,7 @@ def make_difference_chart(
     title: str = "",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the actual-vs-plan difference chart and write it to ``out``.
 
@@ -657,6 +663,8 @@ def make_difference_chart(
         title is fixed prose.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -666,9 +674,9 @@ def make_difference_chart(
     _ = title  # accepted for dispatcher parity; see docstring
     rows = data if data else DEMO_DATA
     series = _rows_to_series(rows)
-    svg = build_svg(series, mode=mode, accessibility=accessibility)
+    svg = build_svg(series, mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "difference-chart")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 # --------------------------------------------------------------------------- #
@@ -708,6 +716,12 @@ def _build_parser() -> argparse.ArgumentParser:
         default="universal",
         help="Palette accessibility level (default: universal, the CVD-safe standard).",
     )
+    parser.add_argument(
+        "--theme",
+        choices=("corporate", "academic"),
+        default="corporate",
+        help="visual theme: corporate (default, Roboto) or academic (LaTeX-style Latin Modern)",
+    )
     return parser
 
 
@@ -715,8 +729,8 @@ def main(argv: List[str] | None = None) -> int:
     """CLI entry point: build the SVG and write it to disk."""
     args = _build_parser().parse_args(argv)
     data = _sample_revenue(seed=args.seed)
-    svg = build_svg(data, mode=args.mode, accessibility=args.accessibility)
-    write_svg(args.out, svg)
+    svg = build_svg(data, mode=args.mode, accessibility=args.accessibility, theme=args.theme)
+    write_svg(args.out, svg, theme=args.theme)
     return 0
 
 

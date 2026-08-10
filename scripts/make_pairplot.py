@@ -57,6 +57,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _style import qualitative_sequence, os_adaptive_style, os_dark_style  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
 
 
@@ -298,7 +299,10 @@ def _legend_glyph(shape: str, cx: float, cy: float, r: float, fill: str, cls: st
     return _marker(shape, cx, cy, r, fill, cls)
 
 
-def build_svg(rows: "List[Dict[str, Any]] | None" = None, mode: str = "self-contained") -> str:
+def build_svg(
+    rows: "List[Dict[str, Any]] | None" = None, mode: str = "self-contained",
+    theme: str = "corporate",
+) -> str:
     """Assemble the full SPLOM SVG string.
 
     Lays out an N×N grid of cells inside a plotting area. Off-diagonal cells are
@@ -323,6 +327,10 @@ def build_svg(rows: "List[Dict[str, Any]] | None" = None, mode: str = "self-cont
         fullscreen button plus wiring script; the other modes ship no button.
         The button starts ``display:none`` and never affects a raster, so
         thumbnails are unchanged.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
@@ -333,7 +341,9 @@ def build_svg(rows: "List[Dict[str, Any]] | None" = None, mode: str = "self-cont
     variables = VARIABLES
     n = len(variables)
     chem_names = list(dict.fromkeys(r["chemistry"] for r in rows))
-    colors = [COLORS[i % len(COLORS)] for i in range(len(chem_names))]
+    _palette = qualitative_sequence(8, theme=theme)
+    _colors = [_palette[5], _palette[1], _palette[6]]  # Blue, Orange, Purple
+    colors = [_colors[i % len(_colors)] for i in range(len(chem_names))]
     shapes = [SHAPES[i % len(SHAPES)] for i in range(len(chem_names))]
 
     # --- per-variable scales (shared across the whole row/column) ----
@@ -383,7 +393,7 @@ def build_svg(rows: "List[Dict[str, Any]] | None" = None, mode: str = "self-cont
     parts: List[str] = []
 
     # --- SVG root + accessible title/description ---------------------
-    parts.append(svg_open(width, height, "pp-title", "pp-desc"))
+    parts.append(svg_open(width, height, "pp-title", "pp-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(
         '<title id="pp-title">Pair plot of four battery-cell properties by '
         'chemistry</title>'
@@ -646,6 +656,7 @@ def make_pairplot(
     title: str = "",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the pair plot (SPLOM) and write the SVG to *out*.
 
@@ -663,6 +674,8 @@ def make_pairplot(
         Output path. Defaults to ``assets/svg-examples/pairplot.svg``.
     mode : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -671,9 +684,9 @@ def make_pairplot(
     """
     _ = title, accessibility
     rows = data if data else DEMO_DATA
-    svg = build_svg(rows, mode=mode)
+    svg = build_svg(rows, mode=mode, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "pairplot")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

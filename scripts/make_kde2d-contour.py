@@ -36,6 +36,7 @@ from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
 from _style import BG, INK, SECONDARY  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
 COLOR_POINT = "#C7C7CC"
 COLOR_CONTOUR = "#007AFF"
@@ -133,6 +134,7 @@ def build_svg(
     height: int = 520,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full 2-D KDE contour plot SVG document as a string.
 
@@ -149,6 +151,10 @@ def build_svg(
     accessibility : str, optional
         Accepted for CLI parity but a documented no-op: a single house-
         blue contour stroke, no categorical hues to re-level.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
@@ -185,7 +191,7 @@ def build_svg(
         return plot_y + plot_h - (v - y_lo) / (y_hi - y_lo) * plot_h
 
     parts: List[str] = []
-    parts.append(svg_open(width, height, "kdec-title", "kdec-desc"))
+    parts.append(svg_open(width, height, "kdec-title", "kdec-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="kdec-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="kdec-desc">2-D kernel density contours of {len(rows)} points at '
@@ -253,6 +259,7 @@ def make_kde2d_contour(
     height: int = 520,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render a hand-authored 2-D KDE contour plot and write the SVG to *out*.
 
@@ -270,6 +277,8 @@ def make_kde2d_contour(
         Canvas size in pixels.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -283,9 +292,9 @@ def make_kde2d_contour(
     True
     """
     svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
-                     mode=mode, accessibility=accessibility)
+                     mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "kde2d-contour")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

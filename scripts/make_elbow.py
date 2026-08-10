@@ -55,8 +55,9 @@ from xml.sax.saxutils import escape
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _style import BG, FONT_MONO, INK, load_palette, os_dark_style  # noqa: E402
+from _style import BG, INK, load_palette, os_dark_style  # noqa: E402
 from _svg import catmull_rom_beziers, fmt_compact, svg_open  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 # ------------------------------------------------------------------
 # Canvas + house-style tokens
@@ -74,8 +75,6 @@ PLOT_H = PB - PT
 
 SUBINK = "#6E6E73"    # secondary text
 HAIR = "#E5E5EA"      # gridlines
-
-FONT = "Roboto, system-ui, sans-serif"
 
 
 # ------------------------------------------------------------------
@@ -189,6 +188,7 @@ def build_svg(
     abstain_reason: str | None = None,
     detection_rate: float | None = None,
     null_p_value: float | None = None,
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full elbow-detection SVG document as a string.
 
@@ -229,12 +229,17 @@ def build_svg(
     null_p_value : float, optional
         P-value of the elbow under a no-knee null model. When given,
         appended as an extra line in the Kneedle inset card.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
     str
         A complete, standalone SVG document.
     """
+    mono_family = mono_stack_for_theme(theme)
     strings = _strings(language)
     rows = data if data else DEMO_DATA
     ks = [float(r["k"]) for r in rows]
@@ -256,7 +261,7 @@ def build_svg(
         """Map a y value to a pixel y coordinate (0 at the baseline)."""
         return PB - (v / y_max) * PLOT_H
 
-    palette = load_palette(accessibility)
+    palette = load_palette(accessibility, theme=theme)
     curve_hue = palette.get("Blue", "#007AFF")
     curve_deep = palette.get("Indigo", "#0051A8")
     accent = palette.get("Red", "#FF3B30")
@@ -292,7 +297,7 @@ def build_svg(
         )
 
     p: list[str] = []
-    p.append(svg_open(WIDTH, HEIGHT, "elb-title", "elb-desc", font_family=FONT))
+    p.append(svg_open(WIDTH, HEIGHT, "elb-title", "elb-desc", font_family=chrome_stack_for_theme(theme)))
     p.append(f'<title id="elb-title">{escape(title_txt)}</title>')
     p.append(f'<desc id="elb-desc">{escape(desc_txt)}</desc>')
 
@@ -331,7 +336,7 @@ def build_svg(
         )
         p.append(
             f'<text x="{PL - 14:.1f}" y="{gy + 5:.1f}" text-anchor="end" '
-            f'font-family="{FONT_MONO}" font-size="14" fill="{SUBINK}">'
+            f'font-family="{mono_family}" font-size="14" fill="{SUBINK}">'
             f'{tv:,}</text>'
         )
 
@@ -417,7 +422,7 @@ def build_svg(
         )
         p.append(
             f'<text x="{px:.1f}" y="{py + 5:.1f}" text-anchor="middle" '
-            f'font-family="{FONT_MONO}" font-size="16" font-weight="700" '
+            f'font-family="{mono_family}" font-size="16" font-weight="700" '
             f'fill="{BG}">{escape(call_txt)}</text>'
         )
     else:
@@ -432,7 +437,7 @@ def build_svg(
     for k in ks:
         p.append(
             f'<text x="{sx(k):.1f}" y="{PB + 28:.1f}" text-anchor="middle" '
-            f'font-family="{FONT_MONO}" font-size="15" fill="{INK}">{fmt_compact(k)}</text>'
+            f'font-family="{mono_family}" font-size="15" fill="{INK}">{fmt_compact(k)}</text>'
         )
     p.append(
         f'<text x="{(PL + PR) / 2:.1f}" y="{PB + 62:.1f}" text-anchor="middle" '
@@ -448,7 +453,7 @@ def build_svg(
     # --- inset: the Kneedle difference curve (the "how"), clear case only ---
     if is_clear:
         _emit_inset(
-            p, diff, elbow_i, curve_hue, accent, strings,
+            p, diff, elbow_i, curve_hue, accent, strings, mono_family,
             detection_rate=detection_rate, null_p_value=null_p_value,
         )
 
@@ -516,6 +521,7 @@ def _emit_inset(
     curve: str,
     accent: str,
     strings: dict[str, str],
+    mono_family: str,
     *,
     detection_rate: float | None = None,
     null_p_value: float | None = None,
@@ -541,6 +547,9 @@ def _emit_inset(
         The curve and marker hues, matched to the main panel.
     strings : dict
         Chrome-text strings for the active language.
+    mono_family : str
+        Monospace font stack for the numeric read-out, from
+        :func:`sprezzature_figures.fonts.mono_stack_for_theme`.
     detection_rate : float, optional
         Fraction of bootstrap resamples agreeing on this elbow (0-1).
     null_p_value : float, optional
@@ -621,7 +630,7 @@ def _emit_inset(
         if null_p_value is not None:
             parts.append(f'{strings["null_p"]}: {null_p_value:.3g}')
         p.append(
-            f'<text x="{mx0:.1f}" y="{ey0:.1f}" font-family="{FONT_MONO}" '
+            f'<text x="{mx0:.1f}" y="{ey0:.1f}" font-family="{mono_family}" '
             f'font-size="12" fill="{SUBINK}">{escape("  ·  ".join(parts))}</text>'
         )
 
@@ -641,6 +650,7 @@ def make_elbow(
     abstain_reason: str | None = None,
     detection_rate: float | None = None,
     null_p_value: float | None = None,
+    theme: str = "corporate",
 ) -> Path:
     """Render an elbow/knee (Kneedle) SVG and write it to ``out``.
 
@@ -676,6 +686,8 @@ def make_elbow(
         Forwarded to :func:`build_svg`.
     null_p_value : float, optional
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -695,9 +707,10 @@ def make_elbow(
         abstain_reason=abstain_reason,
         detection_rate=detection_rate,
         null_p_value=null_p_value,
+        theme=theme,
     )
     dest = Path(out) if out else svg_example_path(__file__, "elbow")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

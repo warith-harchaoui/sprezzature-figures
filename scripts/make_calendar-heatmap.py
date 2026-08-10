@@ -31,6 +31,7 @@ from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
 from _style import BG, INK, SECONDARY  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
 
 DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
@@ -82,6 +83,7 @@ def build_svg(
     height: int = 300,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full calendar heatmap SVG document as a string.
 
@@ -100,6 +102,10 @@ def build_svg(
         Accepted for CLI parity but a documented no-op: the ramp is a
         single mono-hue blue scale, already colour-vision-deficiency-safe
         by construction (magnitude reads by lightness alone).
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
@@ -122,7 +128,7 @@ def build_svg(
     gap = min(cell_w, cell_h) * 0.14
 
     parts: List[str] = []
-    parts.append(svg_open(width, height, "cal-title", "cal-desc"))
+    parts.append(svg_open(width, height, "cal-title", "cal-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="cal-title">{xml_escape(title)}</title>')
     total = sum(lookup.values())
     parts.append(
@@ -193,6 +199,7 @@ def make_calendar_heatmap(
     height: int = 300,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render a hand-authored calendar heatmap and write the SVG to *out*.
 
@@ -210,6 +217,8 @@ def make_calendar_heatmap(
         Canvas size in pixels.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -223,9 +232,9 @@ def make_calendar_heatmap(
     True
     """
     svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
-                     mode=mode, accessibility=accessibility)
+                     mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "calendar-heatmap")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

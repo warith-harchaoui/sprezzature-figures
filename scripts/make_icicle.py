@@ -47,6 +47,7 @@ from _svg import fmt_compact, svg_open, xml_escape  # noqa: E402
 from _render import render_cli, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _style import os_dark_style  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
 
 # --------------------------------------------------------------------------- #
@@ -265,6 +266,7 @@ def render_svg(
     tree: Optional[Dict[str, Any]] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full icicle / flame-graph SVG document as a string.
 
@@ -293,6 +295,10 @@ def render_svg(
         ramps to identical greys (erasing the hot-path distinction — the whole
         point of the graph). It is already colour-vision- and greyscale-safe by
         construction, so the categorical level is intentionally not applied.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
@@ -323,7 +329,7 @@ def render_svg(
     max_depth = max(r["depth"] for r in rects)
 
     parts: List[str] = []
-    parts.append(svg_open(width, height, "ice-t", "ice-d"))
+    parts.append(svg_open(width, height, "ice-t", "ice-d", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="ice-t">{xml_escape(TITLE)}</title>')
     parts.append(
         '<desc id="ice-d">Icicle / flame graph of one GET /api/checkout request totalling 480 '
@@ -573,6 +579,7 @@ def make_icicle(
     title: str = "",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the icicle / flame-graph figure and write the SVG to *out*.
 
@@ -588,6 +595,8 @@ def make_icicle(
         Output path. Defaults to ``assets/svg-examples/icicle.svg``.
     mode, accessibility : str
         Forwarded to :func:`render_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`render_svg`.
 
     Returns
     -------
@@ -597,10 +606,10 @@ def make_icicle(
     _ = title
     rows = data if data else DEMO_DATA
     tree = _rows_to_tree(rows) or TREE
-    svg = render_svg(tree, mode=mode, accessibility=accessibility)
+    svg = render_svg(tree, mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(__file__).resolve().parent.parent / "assets" / "svg-examples" / "icicle.svg"
     dest = Path(out) if out else dest
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 # --------------------------------------------------------------------------- #

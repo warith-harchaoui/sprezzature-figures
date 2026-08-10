@@ -34,6 +34,7 @@ from _interactive import fullscreen_control
 from _render import render_cli, svg_example_path, write_svg
 from _style import INK, SECONDARY, leveled_colors, os_adaptive_style, os_dark_style
 from _svg import xml_escape
+from sprezzature_figures.fonts import chrome_stack_for_theme
 
 # ------------------------------------------------------------------
 #  — the "No Priors" episode with Andrej Karpathy
@@ -188,6 +189,7 @@ def build_svg(
     data: List[Dict[str, Any]] | None = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full "Qui coupe qui ?" interruption matrix as an SVG string.
 
@@ -205,6 +207,10 @@ def build_svg(
         Palette accessibility level passed to :func:`_style.load_palette`
         (``"universal"`` default, plus ``"high-contrast"``, ``"monochrome"``,
         ``"deuteranopia"``, ``"protanopia"``, ``"tritanopia"``).
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
     """
     rows = data if data else DEMO_DATA
     order, m, made, got = _aggregate(rows)
@@ -253,7 +259,7 @@ def build_svg(
 
     p: List[str] = [
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" '
-        f'viewBox="0 0 {w} {h}" font-family="{FONT}" role="img" '
+        f'viewBox="0 0 {w} {h}" font-family="{chrome_stack_for_theme(theme)}" role="img" '
         f'aria-labelledby="im-title im-desc">',
         f'<title id="im-title">{xml_escape(TITLE)}</title>',
         f'<desc id="im-desc">{a11y_desc}</desc>',
@@ -398,6 +404,7 @@ def make_interruption_matrix(
     title: str = "",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the interruption matrix and write it to ``out``.
 
@@ -406,11 +413,11 @@ def make_interruption_matrix(
     figure. ``data`` is directed pairs
     ``{"interrupter", "interrupted", "count"}``; omit it for the built-in demo.
     ``title`` is accepted for signature parity and unused (the headline is baked
-    into the figure).
+    into the figure). ``theme`` is forwarded to :func:`build_svg`.
     """
-    svg = build_svg(data=data, mode=mode, accessibility=accessibility)
+    svg = build_svg(data=data, mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "interruption-matrix")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

@@ -33,8 +33,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import svg_example_path, write_svg  # noqa: E402
 from _scale import log_position, log_ticks  # noqa: E402
-from _style import BG, FONT_MONO, GRIDLINE, INK, SECONDARY, corner_radius  # noqa: E402
+from _style import BG, GRIDLINE, INK, SECONDARY, corner_radius  # noqa: E402
 from _svg import bar_path, fmt_number, svg_open, xml_escape  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 COLOR_BAR = "#007AFF"
 
@@ -101,6 +102,7 @@ def build_svg(
     x_label: str = "Exam score",
     y_label: str = "Number of students",
     log_y: bool = False,
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full histogram SVG document as a string.
 
@@ -129,6 +131,10 @@ def build_svg(
         flatten every other bin to a sliver. The x-axis stays linear: bins
         are equal-width in score, not in pixels, so a log x-axis would mean
         re-binning geometrically, a different feature from an axis toggle.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
@@ -136,6 +142,7 @@ def build_svg(
         A complete, standalone SVG document.
     """
     _ = accessibility  # single-series bars; no categorical hues to re-level
+    mono_family = mono_stack_for_theme(theme)
     rows = data if data else DEMO_DATA
     values = [float(r["score"]) for r in rows]
     edges, counts = _bin_scores(values, bin_count)
@@ -180,7 +187,7 @@ def build_svg(
     peak_idx = counts.index(max_count) if counts else 0
 
     parts: List[str] = []
-    parts.append(svg_open(width, height, "hist-title", "hist-desc"))
+    parts.append(svg_open(width, height, "hist-title", "hist-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="hist-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="hist-desc">Histogram of {total} observations across {n_bins} bins '
@@ -217,7 +224,7 @@ def build_svg(
         )
         parts.append(
             f'<text x="{plot_x - 10:.1f}" y="{ty + 4:.1f}" font-size="12" '
-            f'font-family="{FONT_MONO}" fill="{SECONDARY}" text-anchor="end">{fmt_number(tick)}</text>'
+            f'font-family="{mono_family}" fill="{SECONDARY}" text-anchor="end">{fmt_number(tick)}</text>'
         )
     parts.append(
         f'<text x="24" y="{plot_y + plot_h / 2:.1f}" font-size="14" fill="{INK}" '
@@ -252,7 +259,7 @@ def build_svg(
         tx = plot_x + i * bin_w
         parts.append(f'<line x1="{tx:.1f}" y1="{axis_y:.1f}" x2="{tx:.1f}" y2="{axis_y + 6:.1f}" stroke="{INK}" stroke-width="1"/>')
         parts.append(
-            f'<text x="{tx:.1f}" y="{axis_y + 22:.1f}" font-size="11" font-family="{FONT_MONO}" '
+            f'<text x="{tx:.1f}" y="{axis_y + 22:.1f}" font-size="11" font-family="{mono_family}" '
             f'fill="{SECONDARY}" text-anchor="middle">{_fmt_edge(edge)}</text>'
         )
     parts.append(
@@ -279,6 +286,7 @@ def make_histogram(
     x_label: str = "Exam score",
     y_label: str = "Number of students",
     log_y: bool = False,
+    theme: str = "corporate",
 ) -> Path:
     """Render a hand-authored histogram and write the SVG to *out*.
 
@@ -300,6 +308,8 @@ def make_histogram(
         Axis titles. Forwarded to :func:`build_svg`.
     log_y : bool, optional
         Use a logarithmic count axis. Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -315,10 +325,10 @@ def make_histogram(
     svg = build_svg(
         data, title=title, subtitle=subtitle, width=width, height=height,
         bin_count=bin_count, mode=mode, accessibility=accessibility,
-        x_label=x_label, y_label=y_label, log_y=log_y,
+        x_label=x_label, y_label=y_label, log_y=log_y, theme=theme,
     )
     dest = Path(out) if out else svg_example_path(__file__, "histogram")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 if __name__ == "__main__":

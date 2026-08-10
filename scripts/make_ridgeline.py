@@ -39,6 +39,7 @@ from _interactive import fullscreen_control  # noqa: E402
 from _render import svg_example_path, write_svg  # noqa: E402
 from _svg import fmt_compact  # noqa: E402
 from _style import leveled_colors, os_adaptive_style, os_dark_style  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 import argparse
 from pathlib import Path
@@ -59,8 +60,6 @@ _DEFAULT_OUT = (
 _INK = "#1D1D1F"        # primary text
 _SECONDARY = "#6E6E73"  # subtitle / secondary text
 _BG = "#FFFFFF"         # white ground
-_FONT = "Roboto, system-ui, sans-serif"
-_MONO = "Roboto Mono, ui-monospace, monospace"
 
 
 # --------------------------------------------------------------------------- #
@@ -283,6 +282,7 @@ def build_svg(
     data: Dict[str, np.ndarray],
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full ridgeline SVG document as a string.
 
@@ -303,12 +303,18 @@ def build_svg(
         (a category), so the ramp's anchor hues are remapped through
         :func:`_style.leveled_colors`. Defaults to ``"universal"``, which leaves
         the colours (and the emitted bytes) unchanged.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
     str
         A complete, self-contained SVG document.
     """
+    font_family = chrome_stack_for_theme(theme)
+    mono_family = mono_stack_for_theme(theme)
     # ---- canvas geometry -------------------------------------------------- #
     # Poster-scale canvas: tall enough that every month gets a roomy lane with
     # clear air above its peak — no ridge pokes into the one above it.
@@ -355,7 +361,7 @@ def build_svg(
     parts.append(
         f'<svg role="img" aria-label="{title}" '
         f'xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" '
-        f'viewBox="0 0 {width} {height}" font-family="{_FONT}">'
+        f'viewBox="0 0 {width} {height}" font-family="{font_family}">'
     )
     parts.append(
         f"<title>{title}</title>"
@@ -475,7 +481,7 @@ def build_svg(
         gx = x_px(float(t))
         parts.append(
             f'<text x="{fmt_compact(gx)}" y="{fmt_compact(axis_y + 26)}" text-anchor="middle" '
-            f'font-size="16" font-family="{_MONO}" fill="{_SECONDARY}">'
+            f'font-size="16" font-family="{mono_family}" fill="{_SECONDARY}">'
             f"{int(t)}</text>"
         )
     parts.append(
@@ -499,6 +505,7 @@ def make_ridgeline(
     seed: int = 7,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the ridgeline (joyplot) and write the SVG to *out*.
 
@@ -517,6 +524,8 @@ def make_ridgeline(
         Random seed for the per-ridge Gaussian samples. Default 7.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -526,9 +535,9 @@ def make_ridgeline(
     _ = title
     rows = data if data else DEMO_DATA
     samples = _samples_from_rows(rows, seed=seed)
-    svg = build_svg(samples, mode=mode, accessibility=accessibility)
+    svg = build_svg(samples, mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "ridgeline")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 # --------------------------------------------------------------------------- #
@@ -564,6 +573,12 @@ def _build_parser() -> argparse.ArgumentParser:
         default="universal",
         help="palette accessibility level (default: universal, the CVD-safe standard)",
     )
+    parser.add_argument(
+        "--theme",
+        choices=("corporate", "academic"),
+        default="corporate",
+        help="visual theme: corporate (default, Roboto) or academic (LaTeX-style Latin Modern)",
+    )
     return parser
 
 
@@ -571,8 +586,8 @@ def main(argv: List[str] | None = None) -> int:
     """CLI entry point: build the SVG and write it to disk."""
     args = _build_parser().parse_args(argv)
     data = _sample_monthly_highs(seed=args.seed)
-    svg = build_svg(data, mode=args.mode, accessibility=args.accessibility)
-    write_svg(args.out, svg)
+    svg = build_svg(data, mode=args.mode, accessibility=args.accessibility, theme=args.theme)
+    write_svg(args.out, svg, theme=args.theme)
     return 0
 
 

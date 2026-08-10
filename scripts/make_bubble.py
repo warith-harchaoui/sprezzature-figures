@@ -37,16 +37,15 @@ from xml.sax.saxutils import escape
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _scale import log_position, log_ticks  # noqa: E402
-from _style import BG, FONT_MONO, GRIDLINE, INK, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
+from _style import BG, GRIDLINE, INK, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _svg import fmt_number, svg_open  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 WIDTH = 860
 HEIGHT = 560
 SUBINK = "#6E6E73"
-
-FONT = "Roboto, system-ui, sans-serif"
 
 REGION_ORDER: List[str] = ["Asia", "Europe", "Africa"]
 
@@ -86,20 +85,22 @@ PLACES: List[Tuple[str, float, float, float, str]] = [
 ]
 
 
-def _region_color(accessibility: str = "universal") -> Dict[str, str]:
+def _region_color(accessibility: str = "universal", theme: str = "corporate") -> Dict[str, str]:
     """Return the per-region fill colour at a given accessibility level.
 
     Parameters
     ----------
     accessibility : str, optional
         Palette accessibility level forwarded to :func:`_style.load_palette`.
+    theme : str, optional
+        Forwarded to :func:`_style.load_palette`. Defaults to ``"corporate"``.
 
     Returns
     -------
     dict of str to str
         ``{region_name: "#RRGGBB"}`` for the three regions.
     """
-    palette = load_palette(accessibility)
+    palette = load_palette(accessibility, theme=theme)
     return {
         "Asia": palette.get("Blue", "#007AFF"),
         "Europe": palette.get("Orange", "#FF9500"),
@@ -126,6 +127,7 @@ def build_svg(
     x_label: str = "GDP per capita (thousands of dollars)",
     y_label: str = "Life expectancy (years)",
     log_x: bool = False,
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full bubble-chart SVG document as a string.
 
@@ -146,13 +148,18 @@ def build_svg(
         since income is the measure most likely to span orders of
         magnitude. No `log_y`: life expectancy is bounded to a narrow
         range and isn't a log-scale candidate.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
     str
         A complete, standalone SVG document.
     """
-    region_color = _region_color(accessibility)
+    region_color = _region_color(accessibility, theme=theme)
+    mono_family = mono_stack_for_theme(theme)
     places = data if data else DEMO_DATA
 
     gdps = [float(p["gdp"]) for p in places]
@@ -200,7 +207,7 @@ def build_svg(
     )
 
     parts: List[str] = []
-    parts.append(svg_open(WIDTH, HEIGHT, "bub-title", "bub-desc", font_family=FONT))
+    parts.append(svg_open(WIDTH, HEIGHT, "bub-title", "bub-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="bub-title">{escape(title_txt)}</title>')
     parts.append(f'<desc id="bub-desc">{escape(desc_txt)}</desc>')
 
@@ -234,7 +241,7 @@ def build_svg(
         )
         parts.append(
             f'<text x="{plot_x - 10:.1f}" y="{ty + 4:.1f}" font-size="11" '
-            f'font-family="{FONT_MONO}" fill="{SUBINK}" text-anchor="end">{life_val:.0f}</text>'
+            f'font-family="{mono_family}" fill="{SUBINK}" text-anchor="end">{life_val:.0f}</text>'
         )
     parts.append(
         f'<text x="20" y="{plot_y + plot_h / 2:.1f}" font-size="13" fill="{INK}" '
@@ -263,7 +270,7 @@ def build_svg(
         # is unchanged.
         tick_label = fmt_number(gdp_val) if log_x else f"{gdp_val:.0f}"
         parts.append(
-            f'<text x="{tx:.1f}" y="{axis_y + 20:.1f}" font-size="11" font-family="{FONT_MONO}" '
+            f'<text x="{tx:.1f}" y="{axis_y + 20:.1f}" font-size="11" font-family="{mono_family}" '
             f'fill="{SUBINK}" text-anchor="middle">{tick_label}</text>'
         )
     parts.append(
@@ -325,7 +332,7 @@ def build_svg(
         )
         parts.append(
             f'<text x="{leg_x + r_max * 2 + 10:.1f}" y="{cy + 4:.1f}" font-size="12" '
-            f'font-family="{FONT_MONO}" fill="{SUBINK}">{val:.0f}</text>'
+            f'font-family="{mono_family}" fill="{SUBINK}">{val:.0f}</text>'
         )
         cursor_y = cy + r + 8
 
@@ -349,6 +356,7 @@ def make_bubble(
     x_label: str = "GDP per capita (thousands of dollars)",
     y_label: str = "Life expectancy (years)",
     log_x: bool = False,
+    theme: str = "corporate",
 ) -> Path:
     """Render the house-styled Gapminder-style bubble chart and write it to *out*.
 
@@ -368,6 +376,8 @@ def make_bubble(
         Axis titles. Forwarded to :func:`build_svg`.
     log_x : bool, optional
         Use a logarithmic GDP axis. Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -382,9 +392,9 @@ def make_bubble(
     """
     _ = title
     svg = build_svg(data, mode=mode, accessibility=accessibility,
-                     x_label=x_label, y_label=y_label, log_x=log_x)
+                     x_label=x_label, y_label=y_label, log_x=log_x, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "bubble")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 if __name__ == "__main__":

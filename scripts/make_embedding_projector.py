@@ -69,6 +69,7 @@ from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _render import write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _svg import fmt_compact  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
 # Repo-relative default output — the one SVG artifact this figure ships.
 _DEFAULT_OUT = (
@@ -679,6 +680,7 @@ def build_svg(
     seed: int = _SEED,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full embedding-projector SVG document as a string.
 
@@ -706,6 +708,10 @@ def build_svg(
         colour-vision-safe standard, which reuses the module-level palette so
         the emitted SVG stays unchanged; any other level remaps the cluster
         colours.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
@@ -716,9 +722,13 @@ def build_svg(
     neighbours = _nearest_neighbours(records, _K)
     n = len(records)
 
-    # ``universal`` reuses the module-level _PALETTE (output byte-identical);
-    # any other level re-reads the palette at that accessibility level.
-    palette = None if accessibility == "universal" else load_palette(accessibility)
+    # ``universal`` + corporate reuses the module-level _PALETTE (output
+    # byte-identical); any other accessibility level, or the academic theme,
+    # re-reads the palette instead.
+    palette = (
+        None if accessibility == "universal" and theme == "corporate"
+        else load_palette(accessibility, theme=theme)
+    )
     colors = [_hex(key, palette) for _name, key in _CLUSTERS]
     fills = [_lighten(c, 0.30) for c in colors]  # slightly washed dot fill
 
@@ -763,7 +773,7 @@ def build_svg(
         f'viewBox="0 0 {_VIEW_W} {_VIEW_H}" '
         f'preserveAspectRatio="xMidYMid meet" '
         f'style="max-width:100%;height:auto;touch-action:manipulation" '
-        f'font-family="{_FONT}">'
+        f'font-family="{chrome_stack_for_theme(theme)}">'
     )
     parts.append(f'<title id="ep-title">{escape(title_txt)}</title>')
     parts.append(f'<desc id="ep-desc">{escape(desc_txt)}</desc>')
@@ -936,6 +946,7 @@ def make_embedding_projector(
     seed: int = _SEED,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the embedding-projector SVG and write it to ``out``.
 
@@ -964,6 +975,8 @@ def make_embedding_projector(
         :data:`DEMO_DATA` was generated from.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -971,9 +984,9 @@ def make_embedding_projector(
         Absolute path to the written SVG file.
     """
     _ = data, title  # accepted for dispatcher parity; see docstring
-    svg = build_svg(seed=seed, mode=mode, accessibility=accessibility)
+    svg = build_svg(seed=seed, mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else _DEFAULT_OUT
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -1010,14 +1023,20 @@ def _build_parser() -> argparse.ArgumentParser:
         default="universal",
         help="Palette accessibility level (default: universal, the CVD-safe standard).",
     )
+    parser.add_argument(
+        "--theme",
+        choices=("corporate", "academic"),
+        default="corporate",
+        help="visual theme: corporate (default, Roboto) or academic (LaTeX-style Latin Modern)",
+    )
     return parser
 
 
 def main(argv: List[str] | None = None) -> int:
     """CLI entry point: build the SVG and write it to disk."""
     args = _build_parser().parse_args(argv)
-    svg = build_svg(seed=args.seed, mode=args.mode, accessibility=args.accessibility)
-    write_svg(args.out, svg)
+    svg = build_svg(seed=args.seed, mode=args.mode, accessibility=args.accessibility, theme=args.theme)
+    write_svg(args.out, svg, theme=args.theme)
     return 0
 
 

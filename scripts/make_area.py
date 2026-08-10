@@ -27,8 +27,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _scale import log_position, log_ticks  # noqa: E402
-from _style import BG, FONT_MONO, GRIDLINE, INK, SECONDARY, cycle_hues, load_palette  # noqa: E402
+from _style import BG, GRIDLINE, INK, SECONDARY, cycle_hues  # noqa: E402
 from _svg import fmt_number, svg_open, xml_escape  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 
 MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
@@ -46,8 +47,10 @@ DEMO_DATA: List[Dict[str, Any]] = [
 ]
 
 
-def _channel_colors(channels: List[str], accessibility: str = "universal") -> Dict[str, str]:
-    return cycle_hues(channels, accessibility, hues=['Purple', 'Blue', 'Orange', 'Green'])
+def _channel_colors(
+    channels: List[str], accessibility: str = "universal", theme: str = "corporate"
+) -> Dict[str, str]:
+    return cycle_hues(channels, accessibility, hues=['Purple', 'Blue', 'Orange', 'Green'], theme=theme)
 
 
 def build_svg(
@@ -61,6 +64,7 @@ def build_svg(
     x_label: str = "Month",
     y_label: str = "Visits (thousands)",
     log_y: bool = False,
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full stacked-area chart SVG document as a string.
 
@@ -84,12 +88,17 @@ def build_svg(
         stacked chart, log spacing distorts each band's apparent thickness
         relative to its actual share — this is meant for reading the
         *total*'s growth, not for comparing band sizes by eye.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
     str
         A complete, standalone SVG document.
     """
+    mono_family = mono_stack_for_theme(theme)
     rows = data if data else DEMO_DATA
     # "channel" is an optional role (see catalog): rows may omit it entirely
     # (single unnamed series) or carry values outside the built-in demo set.
@@ -100,7 +109,7 @@ def build_svg(
             seen.append(ch)
     channels = [c for c in CHANNELS if c in seen] + [c for c in seen if c not in CHANNELS]
     months = sorted({r["month"] for r in rows}, key=lambda m: MONTHS.index(m) if m in MONTHS else 0)
-    colors = _channel_colors(channels, accessibility)
+    colors = _channel_colors(channels, accessibility, theme=theme)
 
     lookup: Dict[tuple, float] = {(r["month"], r.get("channel", "")): float(r["visits"]) for r in rows}
     # Cumulative stack, bottom-to-top in channel order, per month.
@@ -137,7 +146,7 @@ def build_svg(
             return plot_y + plot_h - (v / max_total * plot_h if max_total else 0.0)
 
     parts: List[str] = []
-    parts.append(svg_open(width, height, "area-title", "area-desc"))
+    parts.append(svg_open(width, height, "area-title", "area-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="area-title">{xml_escape(title)}</title>')
     top_channel = channels[-1] if len(channels) > 1 else ""
     stack_note = f" {xml_escape(top_channel)} sits on top of the stack." if top_channel else ""
@@ -197,7 +206,7 @@ def build_svg(
         # is unchanged.
         tick_label = fmt_number(val) if log_y else f"{val:.0f}"
         parts.append(
-            f'<text x="{plot_x - 10:.1f}" y="{ty + 4:.1f}" font-size="11" font-family="{FONT_MONO}" '
+            f'<text x="{plot_x - 10:.1f}" y="{ty + 4:.1f}" font-size="11" font-family="{mono_family}" '
             f'fill="{SECONDARY}" text-anchor="end">{tick_label}</text>'
         )
     parts.append(
@@ -231,7 +240,7 @@ def build_svg(
     )
     for i, m in enumerate(months):
         parts.append(
-            f'<text x="{x_for(i):.1f}" y="{axis_y + 20:.1f}" font-size="11" font-family="{FONT_MONO}" '
+            f'<text x="{x_for(i):.1f}" y="{axis_y + 20:.1f}" font-size="11" font-family="{mono_family}" '
             f'fill="{SECONDARY}" text-anchor="middle">{xml_escape(m)}</text>'
         )
     parts.append(
@@ -257,6 +266,7 @@ def make_area(
     x_label: str = "Month",
     y_label: str = "Visits (thousands)",
     log_y: bool = False,
+    theme: str = "corporate",
 ) -> Path:
     """Render a hand-authored stacked area chart and write the SVG to *out*.
 
@@ -277,6 +287,8 @@ def make_area(
         Axis titles. Forwarded to :func:`build_svg`.
     log_y : bool, optional
         Use a logarithmic total-visits axis. Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -291,9 +303,9 @@ def make_area(
     """
     svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
                      mode=mode, accessibility=accessibility, x_label=x_label,
-                     y_label=y_label, log_y=log_y)
+                     y_label=y_label, log_y=log_y, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "area")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

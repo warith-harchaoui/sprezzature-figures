@@ -42,6 +42,7 @@ from _render import svg_example_path, write_svg  # noqa: E402
 from _svg import fmt_compact  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _style import leveled_colors, os_dark_style  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 import argparse
 from pathlib import Path
@@ -62,8 +63,6 @@ _DEFAULT_OUT = (
 _INK = "#1D1D1F"        # primary text
 _SECONDARY = "#6E6E73"  # subtitle / secondary text
 _BG = "#FFFFFF"         # white ground
-_FONT = "Roboto, system-ui, sans-serif"
-_MONO = "Roboto Mono, ui-monospace, monospace"
 
 # Depth ramp endpoints: near lines read a deep house blue, far lines fade
 # toward a pale teal so the lattice has an unambiguous front-to-back cue on
@@ -484,6 +483,7 @@ def build_svg(
     animate: bool = True,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full 3D-wireframe SVG document as a string.
 
@@ -505,6 +505,10 @@ def build_svg(
         other levels re-tint near/far (e.g. to a grey ramp under
         ``"monochrome"``) while keeping the near-dark / far-pale ordering, so
         the depth cue still reads.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
@@ -512,6 +516,7 @@ def build_svg(
         A complete, self-contained SVG document.
     """
     near, far = _depth_ramp(accessibility)
+    mono_family = mono_stack_for_theme(theme)
     # ---- canvas geometry -------------------------------------------------- #
     # Poster-scale canvas: the figure should read big and generous, with the
     # lattice claiming most of the frame rather than floating in whitespace.
@@ -562,7 +567,7 @@ def build_svg(
     parts.append(
         f'<svg role="img" aria-label="{title}" '
         f'xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" '
-        f'viewBox="0 0 {width} {height}" font-family="{_FONT}">'
+        f'viewBox="0 0 {width} {height}" font-family="{chrome_stack_for_theme(theme)}">'
     )
     parts.append(f"<title>{title}</title><desc>{desc}</desc>")
     # OS-adaptive style (additive; media-gated so the default light render is
@@ -611,7 +616,7 @@ def build_svg(
     # ---- depth legend (near -> far) --------------------------------------- #
     lx, ly = 56, height - 34
     parts.append(
-        f'<text x="{lx}" y="{ly}" font-size="15" font-family="{_MONO}" '
+        f'<text x="{lx}" y="{ly}" font-size="15" font-family="{mono_family}" '
         f'fill="{_SECONDARY}">nearer</text>'
     )
     # A gradient swatch drawn as stacked tick columns near->far.
@@ -627,7 +632,7 @@ def build_svg(
         )
     parts.append(
         f'<text x="{swatch_x + n_ticks * tick_w + 12:.1f}" y="{ly}" '
-        f'font-size="15" font-family="{_MONO}" fill="{_SECONDARY}">farther</text>'
+        f'font-size="15" font-family="{mono_family}" fill="{_SECONDARY}">farther</text>'
     )
 
     parts.append(fullscreen_control(width, height, mode))
@@ -673,6 +678,12 @@ def _build_parser() -> argparse.ArgumentParser:
         default="universal",
         help="palette accessibility level (default: universal, the CVD-safe standard).",
     )
+    parser.add_argument(
+        "--theme",
+        choices=("corporate", "academic"),
+        default="corporate",
+        help="visual theme: corporate (default, Roboto) or academic (LaTeX-style Latin Modern)",
+    )
     return parser
 
 
@@ -684,6 +695,7 @@ def make_wireframe3d(
     animate: bool = True,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the 3-D wireframe surface and write the SVG to *out*.
 
@@ -701,6 +713,8 @@ def make_wireframe3d(
         so this is unused.
     animate, mode, accessibility
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -709,9 +723,9 @@ def make_wireframe3d(
     """
     del title
     xx, yy, zz = _rows_to_grid(list(data)) if data else _sample_surface()
-    svg = build_svg(xx, yy, zz, animate=animate, mode=mode, accessibility=accessibility)
+    svg = build_svg(xx, yy, zz, animate=animate, mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "wireframe3d")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main(argv: List[str] | None = None) -> int:
@@ -721,9 +735,9 @@ def main(argv: List[str] | None = None) -> int:
     svg = build_svg(
         xx, yy, zz,
         animate=not args.no_animate, mode=args.mode,
-        accessibility=args.accessibility,
+        accessibility=args.accessibility, theme=args.theme,
     )
-    write_svg(args.out, svg)
+    write_svg(args.out, svg, theme=args.theme)
     return 0
 
 

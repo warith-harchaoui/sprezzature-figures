@@ -60,6 +60,7 @@ from _style import (  # noqa: E402
     os_dark_style,
     qualitative_sequence,
 )
+from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 
 # House-style tokens (mirrors the house-style constants, kept literal so this
@@ -211,6 +212,7 @@ def build_svg(
     data: Optional[Dict[str, Any]] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full radar-chart SVG document as a string.
 
@@ -233,6 +235,10 @@ def build_svg(
         are remapped through :func:`_style.leveled_colors`. Defaults to
         ``"universal"``, which leaves the colours (and the emitted bytes)
         unchanged.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
@@ -248,8 +254,9 @@ def build_svg(
     # level; ``universal`` is the identity, so the default stays byte-identical.
     # A caller-supplied series name outside the curated three falls back to
     # the house qualitative sequence, so custom data never KeyErrors here.
+    mono_family = mono_stack_for_theme(theme)
     series_colors = leveled_colors(_SERIES_COLORS, accessibility)
-    fallback_hues = qualitative_sequence(max(len(series), 1))
+    fallback_hues = qualitative_sequence(max(len(series), 1), theme=theme)
     palette = [
         series_colors.get(str(s["name"]), fallback_hues[i % len(fallback_hues)])
         for i, s in enumerate(series)
@@ -286,7 +293,7 @@ def build_svg(
         "and ease of use; Cosmos reaches furthest on global reach and price. "
         "The three profiles cross, so no single database dominates."
     )
-    parts.append(svg_open(width, height, "radar-title", "radar-desc", font_family=_FONT))
+    parts.append(svg_open(width, height, "radar-title", "radar-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="radar-title">{xml_escape(title)}</title>')
     parts.append(f'<desc id="radar-desc">{xml_escape(aria)}</desc>')
     parts.append(f'<rect width="{width}" height="{height}" rx="22" fill="{_BG}"/>')
@@ -355,7 +362,7 @@ def build_svg(
         lx, ly = _polar_to_xy(cx, cy, rr, 0.0)
         parts.append(
             f'<text x="{fmt_compact(lx + 10)}" y="{fmt_compact(ly + 5)}" font-size="15" '
-            f'font-family="{_MONO}" fill="{_SECONDARY}">{int(ring_val)}</text>'
+            f'font-family="{mono_family}" fill="{_SECONDARY}">{int(ring_val)}</text>'
         )
 
     # ---- spokes + axis labels --------------------------------------------- #
@@ -471,6 +478,7 @@ def make_radar(
     title: str = "",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the radar (spider) chart and write the SVG to *out*.
 
@@ -486,6 +494,8 @@ def make_radar(
         the takeaway text (unused).
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -495,9 +505,9 @@ def make_radar(
     _ = title
     rows = data if data else DEMO_DATA
     radar_data = _rows_to_radar_data(rows)
-    svg = build_svg(radar_data, mode=mode, accessibility=accessibility)
+    svg = build_svg(radar_data, mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "radar")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

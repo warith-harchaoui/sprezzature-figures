@@ -45,11 +45,12 @@ from typing import Any, Dict, List, Optional, Tuple
 from xml.sax.saxutils import escape
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _style import BG, FONT_MONO, INK, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
+from _style import BG, INK, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _svg import svg_open  # noqa: E402
 from _textfit import text_width  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
 # ------------------------------------------------------------------
 # Canvas + house-style tokens
@@ -130,7 +131,7 @@ CALLS: List[Tuple[str, str]] = [
 
 # Team → brand hue. Built from the palette at render time so the accessibility
 # level can remap the hues.
-def _team_color(accessibility: str = "universal") -> Dict[str, str]:
+def _team_color(accessibility: str = "universal", theme: str = "corporate") -> Dict[str, str]:
     """Return the team → hex mapping at a given accessibility level.
 
     Parameters
@@ -138,13 +139,15 @@ def _team_color(accessibility: str = "universal") -> Dict[str, str]:
     accessibility : str, optional
         Palette accessibility level threaded into :func:`_style.load_palette`.
         ``"universal"`` (default) is the colour-vision-safe standard.
+    theme : str, optional
+        Forwarded to :func:`_style.load_palette`. Defaults to ``"corporate"``.
 
     Returns
     -------
     dict of str to str
         Mapping ``{team_name: hex}`` for each of the five service teams.
     """
-    palette = load_palette(accessibility)
+    palette = load_palette(accessibility, theme=theme)
     return {
         "Platform": palette.get("Blue", "#007AFF"),
         "Storefront": palette.get("Teal", "#5AC8FA"),
@@ -160,13 +163,15 @@ def _team_color(accessibility: str = "universal") -> Dict[str, str]:
 _TEAM_HUE_ORDER = ["Blue", "Teal", "Orange", "Green", "Purple", "Pink", "Yellow", "Indigo", "Gray"]
 
 
-def _team_colors_for(teams: List[str], accessibility: str = "universal") -> Dict[str, str]:
+def _team_colors_for(
+    teams: List[str], accessibility: str = "universal", theme: str = "corporate"
+) -> Dict[str, str]:
     """Return a generic ``{team: hex}`` map by cycling house hues in order.
 
     Used when :func:`build_svg` is given a custom ``services`` list whose
     team names are not the five the default microservice story names.
     """
-    palette = load_palette(accessibility)
+    palette = load_palette(accessibility, theme=theme)
     return {
         team: palette.get(_TEAM_HUE_ORDER[i % len(_TEAM_HUE_ORDER)], "#8E8E93")
         for i, team in enumerate(teams)
@@ -373,6 +378,7 @@ def build_svg(
     desc: Optional[str] = None,
     legend_title: str = "Owning team",
     hint: Optional[str] = None,
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full node-link network SVG document as a string.
 
@@ -410,6 +416,10 @@ def build_svg(
     hint : str or None, optional
         The small usage hint under the subtitle (node-size + hover
         affordance). ``None`` keeps the shipped demo's English hint.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
@@ -420,13 +430,13 @@ def build_svg(
     calls = calls if calls else CALLS
     is_default_services = services == SERVICES
     if is_default_services:
-        TEAM_COLOR = _team_color(accessibility)
+        TEAM_COLOR = _team_color(accessibility, theme)
     else:
         team_order: List[str] = []
         for s in services:
             if s[2] not in team_order:
                 team_order.append(s[2])
-        TEAM_COLOR = _team_colors_for(team_order, accessibility)
+        TEAM_COLOR = _team_colors_for(team_order, accessibility, theme)
     ids = [s[0] for s in services]
     label_of = {s[0]: s[1] for s in services}
     team_of = {s[0]: s[2] for s in services}
@@ -477,7 +487,7 @@ def build_svg(
     )
 
     parts: List[str] = []
-    parts.append(svg_open(WIDTH, HEIGHT, "net-title", "net-desc", font_family=FONT))
+    parts.append(svg_open(WIDTH, HEIGHT, "net-title", "net-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="net-title">{escape(title_txt)}</title>')
     parts.append(f'<desc id="net-desc">{escape(desc_txt)}</desc>')
 
@@ -737,6 +747,7 @@ def make_network(
     hint: Optional[str] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the node-link network and write the SVG to *out*.
 
@@ -759,6 +770,8 @@ def make_network(
         The small usage hint under the subtitle. ``None`` keeps the demo's.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -770,9 +783,10 @@ def make_network(
     svg = build_svg(
         services=services, calls=calls, mode=mode, accessibility=accessibility,
         title=title, subtitle=subtitle, desc=desc, legend_title=legend_title, hint=hint,
+        theme=theme,
     )
     dest = Path(out) if out else svg_example_path(__file__, "network")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

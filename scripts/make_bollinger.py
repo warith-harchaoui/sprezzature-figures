@@ -56,6 +56,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _svg import catmull_rom_beziers, fmt_compact  # noqa: E402
 from _render import svg_example_path, write_svg  # noqa: E402
 from _style import leveled_colors, os_adaptive_style, os_dark_style  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 
 # Repo-relative default output — the one SVG artifact this figure ships.
@@ -283,6 +284,7 @@ def build_svg(
     n_sigma: float = 2.0,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full Bollinger-band SVG document as a string.
 
@@ -308,12 +310,18 @@ def build_svg(
         so the shipped SVG is byte-for-byte unchanged). Other levels remap
         those hues through the sprezzature-colors engine so the roles stay distinct
         for that viewer.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
     str
         A complete, self-contained SVG document.
     """
+    chrome_family = chrome_stack_for_theme(theme)
+    mono_family = mono_stack_for_theme(theme)
     # Categorical role hues, remapped for the requested accessibility level.
     # These shadow the module-level constants inside this function's scope, so
     # every f-string below picks up the levelled colour; ``universal`` is the
@@ -401,7 +409,7 @@ def build_svg(
     parts.append(
         f'<svg role="img" aria-label="{title}" '
         f'xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" '
-        f'viewBox="0 0 {width} {height}" font-family="{_FONT}">'
+        f'viewBox="0 0 {width} {height}" font-family="{chrome_family}">'
     )
     parts.append(
         f"<title>{title}</title>"
@@ -442,7 +450,7 @@ def build_svg(
         )
         ax_labels.append(
             f'<text x="{_fmt(m_left - 16)}" y="{_fmt(gy + 5)}" text-anchor="end" '
-            f'font-size="15" font-family="{_MONO}" fill="{_SECONDARY}">'
+            f'font-size="15" font-family="{mono_family}" fill="{_SECONDARY}">'
             f"${v:.0f}</text>"
         )
         v += step
@@ -557,7 +565,7 @@ def build_svg(
         gx = x_of(day)
         axis_bits.append(
             f'<text x="{_fmt(gx)}" y="{_fmt(axis_y + 28)}" text-anchor="middle" '
-            f'font-size="14" font-family="{_MONO}" fill="{_SECONDARY}">{lab}</text>'
+            f'font-size="14" font-family="{mono_family}" fill="{_SECONDARY}">{lab}</text>'
         )
 
     # ---- end-of-line labels (right gutter, side-aware, no clipping) -------- #
@@ -607,7 +615,7 @@ def build_svg(
         )
         end_labels.append(
             f'<text x="{_fmt(lbl_x)}" y="{_fmt(ly + 16)}" font-size="13" '
-            f'font-family="{_MONO}" fill="{_SECONDARY}">${value:.2f}</text>'
+            f'font-family="{mono_family}" fill="{_SECONDARY}">${value:.2f}</text>'
         )
 
     for r in rows:
@@ -786,6 +794,7 @@ def make_bollinger(
     n_sigma: float = 2.0,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the house-styled Bollinger-band chart and write the SVG to *out*.
 
@@ -806,6 +815,8 @@ def make_bollinger(
         Band half-width in standard deviations (default 2.0).
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -821,9 +832,9 @@ def make_bollinger(
     _ = title
     rows = data if data else DEMO_DATA
     price_data = _rows_to_close(rows)
-    svg = build_svg(price_data, window=window, n_sigma=n_sigma, mode=mode, accessibility=accessibility)
+    svg = build_svg(price_data, window=window, n_sigma=n_sigma, mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "bollinger")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 if __name__ == "__main__":

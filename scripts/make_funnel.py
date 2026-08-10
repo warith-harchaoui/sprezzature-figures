@@ -28,7 +28,8 @@ from xml.sax.saxutils import escape
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
-from _style import BG, FONT_MONO, INK, SECONDARY  # noqa: E402
+from _style import BG, INK, SECONDARY  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Canvas constants
@@ -41,8 +42,6 @@ MARGIN_V = 120    # top and bottom margin
 # the left, count on the right). The widest trapezoid stops short of the canvas
 # edge by this much so its labels never spill past the viewBox.
 LABEL_GUTTER = 160
-
-FONT = "Roboto, system-ui, sans-serif"
 
 # House palette — six distinct hues, darker at the top to guide the eye
 STAGE_COLORS = [
@@ -74,6 +73,7 @@ def build_svg(
     *,
     title: str = "Product-Led Growth Funnel — Q3 2024",
     subtitle: str = "Count of users reaching each conversion stage",
+    theme: str = "corporate",
 ) -> str:
     """Render the funnel chart as an SVG string.
 
@@ -86,12 +86,18 @@ def build_svg(
         Chart headline.
     subtitle : str
         One-line subtitle displayed beneath the title.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
     str
         A complete, self-contained SVG document.
     """
+    chrome_family = chrome_stack_for_theme(theme)
+    mono_family = mono_stack_for_theme(theme)
     data = data if data is not None else DEMO_DATA
     counts = [float(row["count"]) for row in data]
     max_count = max(counts)
@@ -110,7 +116,7 @@ def build_svg(
         f'<svg role="img" aria-label="{escape(title)}" '
         f'viewBox="0 0 {WIDTH} {HEIGHT}" '
         f'xmlns="http://www.w3.org/2000/svg" '
-        f'font-family="{FONT}" '
+        f'font-family="{chrome_family}" '
         f'style="background:{BG};max-width:100%;height:auto">'
     )
     lines.append(f'<desc>{escape(subtitle)}</desc>')
@@ -183,7 +189,7 @@ def build_svg(
         lines.append(
             f'<text x="{cx + half_top + 10:.1f}" y="{label_y:.1f}" '
             f'font-size="13" fill="{INK}" text-anchor="start" '
-            f'font-family="{FONT_MONO}">{escape(count_txt)}</text>'
+            f'font-family="{mono_family}">{escape(count_txt)}</text>'
         )
 
     lines.append(fs_ctrl)
@@ -199,6 +205,7 @@ def make_funnel(
     subtitle: str = "Count of users reaching each conversion stage",
     width: int = WIDTH,
     height: int = HEIGHT,
+    theme: str = "corporate",
 ) -> Path:
     """Render a conversion funnel chart and write the SVG to *out*.
 
@@ -218,6 +225,8 @@ def make_funnel(
         Ignored (fixed canvas; kept for API parity).
     height : int
         Ignored.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -232,9 +241,9 @@ def make_funnel(
     """
     if data is None:
         data = DEMO_DATA
-    svg = build_svg(data, title=title, subtitle=subtitle)
+    svg = build_svg(data, title=title, subtitle=subtitle, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "funnel")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

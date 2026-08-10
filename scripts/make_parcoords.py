@@ -30,6 +30,7 @@ from _style import load_palette  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 # --- axes: (key, title-with-unit, domain low, high) ---------------------------
 AXES: List[Tuple[str, str, float, float]] = [
@@ -87,6 +88,7 @@ def build_svg(
     rows: Optional[List[Dict[str, Any]]] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full parallel-coordinates SVG string.
 
@@ -100,13 +102,21 @@ def build_svg(
         appearance rather than the three story-specific class hues.
     mode, accessibility : str
         Canvas interactivity mode / palette accessibility level.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
     str
         A complete, standalone SVG document.
     """
-    pal = load_palette(accessibility)
+    # This file's mono literal predates _style.FONT_MONO and is missing the
+    # "ui-monospace" fallback -- keep it exact for corporate (byte-identical
+    # to the pre-theme render) and only swap in the full academic stack.
+    mono_family = "Roboto Mono, monospace" if theme == "corporate" else mono_stack_for_theme(theme)
+    pal = load_palette(accessibility, theme=theme)
     if rows:
         grouped: Dict[str, List[Dict[str, float]]] = {}
         for r in rows:
@@ -135,7 +145,7 @@ def build_svg(
         return _AX_BOT - t * (_AX_BOT - _AX_TOP)
 
     parts: List[str] = []
-    parts.append(svg_open(_WIDTH, _HEIGHT, "pc-title", "pc-desc"))
+    parts.append(svg_open(_WIDTH, _HEIGHT, "pc-title", "pc-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(
         '<title id="pc-title">Car classes separate cleanly across four metrics: '
         'compacts light and economical, SUVs heavy and powerful</title>'
@@ -182,12 +192,12 @@ def build_svg(
         )
         parts.append(
             f'<text x="{x:.1f}" y="{_AX_TOP - 4:.1f}" font-size="12.5" '
-            f'font-family="Roboto Mono, monospace" fill="{_SUBTLE}" text-anchor="middle">'
+            f'font-family="{mono_family}" fill="{_SUBTLE}" text-anchor="middle">'
             f'{_fmt(hi)}</text>'
         )
         parts.append(
             f'<text x="{x:.1f}" y="{_AX_BOT + 20:.1f}" font-size="12.5" '
-            f'font-family="Roboto Mono, monospace" fill="{_SUBTLE}" text-anchor="middle">'
+            f'font-family="{mono_family}" fill="{_SUBTLE}" text-anchor="middle">'
             f'{_fmt(lo)}</text>'
         )
 
@@ -224,6 +234,7 @@ def make_parcoords(
     title: str = "",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the parallel-coordinates plot and write the SVG to *out*.
 
@@ -239,6 +250,8 @@ def make_parcoords(
         Output path. Defaults to ``assets/svg-examples/parcoords.svg``.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -247,9 +260,9 @@ def make_parcoords(
     """
     _ = title
     rows = data if data else DEMO_DATA
-    svg = build_svg(rows, mode=mode, accessibility=accessibility)
+    svg = build_svg(rows, mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "parcoords")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

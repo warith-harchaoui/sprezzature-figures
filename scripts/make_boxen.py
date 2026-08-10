@@ -43,6 +43,7 @@ from typing import Any, Dict, List, Optional, Tuple
 import _style
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 # ------------------------------------------------------------------
 # Canvas + layout constants (all in user-space px).
@@ -290,6 +291,7 @@ def _boxen_group(
     cx: float,
     half_width: float,
     flip_label: bool = False,
+    mono_family: str = "Roboto Mono, monospace",
 ) -> Tuple[str, Dict[str, float]]:
     """Render one category's nested-box stack as an SVG ``<g>``.
 
@@ -400,7 +402,7 @@ def _boxen_group(
     )
     parts.append(
         f'    <text x="{text_x:.1f}" y="{p99_y + 4.6:.1f}" font-size="14.5" '
-        f'text-anchor="{anchor}" fill="{INK}" font-family="Roboto Mono, monospace">'
+        f'text-anchor="{anchor}" fill="{INK}" font-family="{mono_family}">'
         f'<tspan fill="{SUBTLE}">p99</tspan> {_fmt_ms(stats["p99"])}</text>'
     )
 
@@ -413,7 +415,7 @@ def _boxen_group(
     return "\n".join(parts), stats
 
 
-def _y_axis() -> str:
+def _y_axis(mono_family: str = "Roboto Mono, monospace") -> str:
     """Render the y-axis: domain line, latency ticks, gridlines, title."""
     parts: List[str] = ['  <g class="yaxis" aria-hidden="true">']
     # Horizontal gridlines + labels every 150 ms.
@@ -426,7 +428,7 @@ def _y_axis() -> str:
         )
         parts.append(
             f'    <text x="{PLOT_LEFT - 16:.1f}" y="{yy + 5:.1f}" font-size="15" '
-            f'fill="{SUBTLE}" text-anchor="end" font-family="Roboto Mono, monospace">{tick:.0f}</text>'
+            f'fill="{SUBTLE}" text-anchor="end" font-family="{mono_family}">{tick:.0f}</text>'
         )
         tick += 150.0
     # Axis title, rotated.
@@ -474,6 +476,7 @@ def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full boxen-plot SVG document as a string.
 
@@ -501,6 +504,10 @@ def build_svg(
         so the categorical level is deliberately *not* applied here; the flag is
         accepted for a uniform command line and only gates the palette-reachable
         assertion below. Defaults to ``"universal"``.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
@@ -508,10 +515,15 @@ def build_svg(
         A complete, self-contained SVG (fonts + colors inline), ready to
         write to disk or embed.
     """
+    chrome_family = chrome_stack_for_theme(theme)
+    # This file's mono literal predates the shared MONO_STACK constant and
+    # is missing the "ui-monospace" fallback -- keep it exact for corporate
+    # (byte-identical pre-theme render) and only switch stacks for academic.
+    mono_family = "Roboto Mono, monospace" if theme == "corporate" else mono_stack_for_theme(theme)
     # Confirm the house palette is reachable at the requested level (keeps
     # make ↔ audit in sync); the blue value ramp is a sequential perceptual map,
     # already CVD/greyscale-safe, so it is intentionally left at its own tuning.
-    palette = _style.load_palette(accessibility)
+    palette = _style.load_palette(accessibility, theme=theme)
     assert palette.get("Blue", "#007AFF"), "house palette must expose Blue"
 
     # Three service tiers. Free is the noisiest (largest sigma → longest
@@ -538,6 +550,7 @@ def build_svg(
             cx=cx,
             half_width=half_width,
             flip_label=(i == n_cat - 1),
+            mono_family=mono_family,
         )
         groups.append(markup)
         all_stats.append(stats)
@@ -555,7 +568,7 @@ def build_svg(
 
     header = (
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{WIDTH}" height="{HEIGHT}" '
-        f'viewBox="0 0 {WIDTH} {HEIGHT}" font-family="Roboto, system-ui, sans-serif" '
+        f'viewBox="0 0 {WIDTH} {HEIGHT}" font-family="{chrome_family}" '
         f'role="img" aria-labelledby="bx-title bx-desc">'
     )
     title_block = (
@@ -607,7 +620,7 @@ def build_svg(
     )
     caption = (
         f'  <text x="{PLOT_LEFT}" y="99" font-size="14" fill="{SUBTLE}" '
-        f'font-family="Roboto Mono, monospace">Letter-value plot · '
+        f'font-family="{mono_family}">Letter-value plot · '
         f"{n_each:,} requests per tier</text>"
     )
 
@@ -620,7 +633,7 @@ def build_svg(
             title_text,
             subtitle_text,
             caption,
-            _y_axis(),
+            _y_axis(mono_family=mono_family),
             '  <g role="list">',
             *groups,
             "  </g>",
@@ -649,6 +662,7 @@ def make_boxen(
     title: str = "",
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render the house-styled boxen (letter-value) plot and write it to *out*.
 
@@ -666,6 +680,8 @@ def make_boxen(
         the tails of the supplied categories and stays fixed.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -679,9 +695,9 @@ def make_boxen(
     True
     """
     _ = title
-    svg = build_svg(data, mode=mode, accessibility=accessibility)
+    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "boxen")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 if __name__ == "__main__":

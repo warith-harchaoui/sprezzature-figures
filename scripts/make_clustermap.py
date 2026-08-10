@@ -37,6 +37,7 @@ from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
 from _style import BG, INK, SECONDARY  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
 DENDRO_COLOR = "#8E8E93"
 
@@ -155,6 +156,7 @@ def build_svg(
     height: int = 560,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full clustermap SVG document as a string.
 
@@ -173,6 +175,10 @@ def build_svg(
         Accepted for CLI parity but a documented no-op: the ramp is a
         single mono-hue blue scale, already colour-vision-deficiency-safe
         by construction (magnitude reads by lightness alone).
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
@@ -208,7 +214,7 @@ def build_svg(
     cell_h = grid_h / len(row_order)
 
     parts: List[str] = []
-    parts.append(svg_open(width, height, "cm-title", "cm-desc"))
+    parts.append(svg_open(width, height, "cm-title", "cm-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="cm-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="cm-desc">Clustermap of {len(row_order)} rows and {len(col_order)} columns, '
@@ -323,6 +329,7 @@ def make_clustermap(
     height: int = 560,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render a hand-authored clustermap and write the SVG to *out*.
 
@@ -339,6 +346,8 @@ def make_clustermap(
         Canvas size in pixels.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -352,9 +361,9 @@ def make_clustermap(
     True
     """
     svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
-                     mode=mode, accessibility=accessibility)
+                     mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "clustermap")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:

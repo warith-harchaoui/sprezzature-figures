@@ -29,7 +29,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
-from _style import BG, FONT_MONO, INK, SECONDARY  # noqa: E402
+from _style import BG, INK, SECONDARY  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 
 FEATURES = ["mpg", "hp", "wt", "accel", "disp"]
@@ -83,6 +84,7 @@ def build_svg(
     height: int = 460,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full correlation matrix SVG document as a string.
 
@@ -101,6 +103,10 @@ def build_svg(
         Accepted for CLI parity but a documented no-op: the ramp is a
         fixed red-white-blue diverging semantic (negative/positive
         correlation), not a re-levelled categorical palette.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
 
     Returns
     -------
@@ -108,6 +114,7 @@ def build_svg(
         A complete, standalone SVG document.
     """
     _ = accessibility
+    mono_family = mono_stack_for_theme(theme)
     rows = data if data else DEMO_DATA
     seen_features: List[str] = []
     for r in rows:
@@ -124,7 +131,7 @@ def build_svg(
     cell = min(grid_w / n, grid_h / n)
 
     parts: List[str] = []
-    parts.append(svg_open(width, height, "cm2-title", "cm2-desc"))
+    parts.append(svg_open(width, height, "cm2-title", "cm2-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="cm2-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="cm2-desc">Correlation matrix of {n} features. Hover or focus a cell '
@@ -148,14 +155,14 @@ def build_svg(
     for ci, f in enumerate(features):
         tx = plot_x + ci * cell + cell / 2
         parts.append(
-            f'<text x="{tx:.1f}" y="{plot_y - 10:.1f}" font-size="11" font-family="{FONT_MONO}" '
+            f'<text x="{tx:.1f}" y="{plot_y - 10:.1f}" font-size="11" font-family="{mono_family}" '
             f'fill="{SECONDARY}" text-anchor="middle">{xml_escape(f)}</text>'
         )
     # ---- row labels (left) ----
     for ri, f in enumerate(features):
         ty = plot_y + ri * cell + cell / 2 + 4
         parts.append(
-            f'<text x="{plot_x - 10:.1f}" y="{ty:.1f}" font-size="11" font-family="{FONT_MONO}" '
+            f'<text x="{plot_x - 10:.1f}" y="{ty:.1f}" font-size="11" font-family="{mono_family}" '
             f'fill="{SECONDARY}" text-anchor="end">{xml_escape(f)}</text>'
         )
 
@@ -174,7 +181,7 @@ def build_svg(
             )
             parts.append(
                 f'<text x="{x + cell / 2:.1f}" y="{y + cell / 2 + 4:.1f}" font-size="12" '
-                f'font-family="{FONT_MONO}" fill="{text_color}" text-anchor="middle">{r:.2f}</text>'
+                f'font-family="{mono_family}" fill="{text_color}" text-anchor="middle">{r:.2f}</text>'
             )
 
     # ---- legend ----
@@ -203,6 +210,7 @@ def make_corr_matrix(
     height: int = 460,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    theme: str = "corporate",
 ) -> Path:
     """Render a hand-authored correlation matrix and write the SVG to *out*.
 
@@ -219,6 +227,8 @@ def make_corr_matrix(
         Canvas size in pixels.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
+    theme : str, optional
+        Visual theme. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -232,9 +242,9 @@ def make_corr_matrix(
     True
     """
     svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
-                     mode=mode, accessibility=accessibility)
+                     mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "corr-matrix")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:
