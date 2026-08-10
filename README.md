@@ -175,6 +175,36 @@ Quick overview:
 
 ---
 
+## Visual themes
+
+Every chart supports a `theme` parameter, independent of `accessibility`
+(the CVD-safe palette engine — the two compose freely):
+
+- **`"corporate"`** (default) — Roboto for chrome text (title/subtitle/axis
+  labels), Roboto Mono for tick/numeric labels, and the Apple-system-derived
+  categorical palette. Byte-identical to every render from before `theme`
+  existed.
+- **`"academic"`** — Latin Modern Roman/Mono (the free, LaTeX-native
+  extension of Computer Modern) for a journal-figure look, and the
+  [Okabe-Ito](https://jfly.uni-koeln.de/color/) categorical palette (Okabe &
+  Ito, 2002) — colour-vision-deficiency-safe by construction, the standard
+  recommended for scientific figures since Wong's 2011 *Nature Methods*
+  editorial.
+
+```python
+make_figure("bar", data, out="revenue.svg", theme="academic")
+```
+
+```bash
+make-figure bar --out revenue.svg --theme academic
+```
+
+Both fonts are embedded (self-contained SVGs need no external font
+loading); licenses are vendored in `assets/fonts/` (Roboto: OFL, Latin
+Modern: GUST Font License, both permit bundling).
+
+---
+
 ## Architecture
 
 ```

@@ -173,6 +173,39 @@ départage rarement ; c'est le but qui rend le classement décisif.
 
 ---
 
+## Thèmes visuels
+
+Chaque graphique accepte un paramètre `theme`, indépendant de
+`accessibility` (le moteur de palettes sûres pour la vision des couleurs —
+les deux se combinent librement) :
+
+- **`"corporate"`** (par défaut) — Roboto pour le texte d'habillage
+  (titre, sous-titre, libellés d'axes), Roboto Mono pour les graduations et
+  valeurs numériques, ainsi que la palette catégorielle dérivée du style
+  Apple. Rendu identique au bit près à tout ce qui existait avant `theme`.
+- **`"academic"`** — Latin Modern Roman/Mono (l'extension libre et
+  native LaTeX de Computer Modern) pour un rendu façon figure de revue
+  scientifique, avec la palette catégorielle
+  [Okabe-Ito](https://jfly.uni-koeln.de/color/) (Okabe & Ito, 2002) —
+  sûre pour la vision des couleurs par construction, la référence
+  recommandée pour les figures scientifiques depuis l'éditorial de Wong
+  dans *Nature Methods* en 2011.
+
+```python
+make_figure("bar", data, out="revenue.svg", theme="academic")
+```
+
+```bash
+make-figure bar --out revenue.svg --theme academic
+```
+
+Les deux polices sont intégrées au SVG (aucun chargement externe requis
+pour un SVG autonome) ; les licences sont embarquées dans `assets/fonts/`
+(Roboto : OFL, Latin Modern : GUST Font License, toutes deux autorisant
+la redistribution groupée).
+
+---
+
 ## Architecture
 
 ```

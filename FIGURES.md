@@ -19,6 +19,11 @@ Only `status="stable"` kinds are render-verified end to end today; run
 `make-figure --list --status stable` or see `docs/studio/GENERATOR_AUDIT.md`
 for the current per-chart status.
 
+Every kind also accepts `theme="corporate"` (default, Roboto + the
+Apple-derived palette) or `theme="academic"` (Latin Modern + the
+colour-vision-deficiency-safe Okabe-Ito palette); see
+[README.md#visual-themes](README.md#visual-themes).
+
 ## Full Catalogue
 
 | Kind | Script | Category | When to use |
