@@ -221,9 +221,13 @@ def _size_for(count: int, lo: int, hi: int) -> float:
 #: margins never bite.
 _CHAR_ASPECT: float = 0.56
 
-#: The cap-height-ish fraction of the font size a lowercase word paints,
-#: plus a whisker of leading. Keeps the vertical boxes tight but safe.
-_GLYPH_HEIGHT_FRAC: float = 0.78
+#: The ascender-to-descender fraction of the font size a word paints, plus
+#: a whisker of leading. Must cover the *tallest* case -- a word combining
+#: an ascender (b/d/f/h/i/k/l/t) and a descender (g/j/p/q/y) in the same
+#: string, e.g. "grind" -- not just cap-height, or two such words stacked
+#: vertically graze each other (found via the Ralph Eyeball Loop: "grind"'s
+#: descender was touching "+ quiet" directly below it at 0.78).
+_GLYPH_HEIGHT_FRAC: float = 1.0
 
 #: Breathing room, in pixels, added around every box so neighbours never
 #: kiss. Small enough to keep the cloud dense.

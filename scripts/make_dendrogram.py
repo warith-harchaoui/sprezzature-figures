@@ -456,8 +456,14 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
         f'stroke="{INK}" stroke-width="1.8" stroke-dasharray="7 5" '
         f'opacity="0.55"/>'
     )
+    # Centred in the gap between the "Household staples" (m3) and "Treats"
+    # (m5) risers -- the widest span at the cut height with no riser
+    # crossing it. Anchoring at plot_right instead (the obvious first
+    # choice) puts the label right where the outlier "Frozen ready-meals"
+    # leaf's riser runs floor-to-root, striking through the text.
+    cut_label_x = (geometry["m3"]["x"] + geometry["m5"]["x"]) / 2.0
     parts.append(
-        f'<text x="{plot_right + 12:.1f}" y="{y_cut - 12:.1f}" text-anchor="end" '
+        f'<text x="{cut_label_x:.1f}" y="{y_cut - 12:.1f}" text-anchor="middle" '
         f'font-size="16" font-style="italic" fill="{SUBINK}">'
         f'cut @ {CUT_HEIGHT:.2f} → 3 clusters</text>'
     )

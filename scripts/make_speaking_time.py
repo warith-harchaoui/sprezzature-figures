@@ -22,14 +22,16 @@ from __future__ import annotations
 
 import argparse
 import math
+import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from _interactive import fullscreen_control
-from _render import svg_example_path, write_raster_companions, write_svg
-from _style import load_palette, os_adaptive_style, os_dark_style, qualitative_sequence
-from _svg import point_on_circle, xml_escape
-from sprezzature_figures.fonts import chrome_stack_for_theme
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _interactive import fullscreen_control  # noqa: E402
+from _render import svg_example_path, write_raster_companions, write_svg  # noqa: E402
+from _style import load_palette, os_adaptive_style, os_dark_style, qualitative_sequence  # noqa: E402
+from _svg import point_on_circle, xml_escape  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
 # ------------------------------------------------------------------
 # Illustrative diarisation output — a 40-minute round-table. Talk-time

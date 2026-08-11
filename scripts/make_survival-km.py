@@ -43,14 +43,40 @@ FOLLOW_UP_MAX = 60.0
 
 
 def _make_demo_data() -> List[Dict[str, Any]]:
+    """Synthesise two-arm survival data with both kinds of censoring.
+
+    Every real KM dataset has two independent censoring mechanisms, and the
+    demo carries both so the "censoring ticks" the subtitle promises are
+    actually visible rather than only existing in principle:
+
+    - **Administrative** censoring: a subject who is still event-free when
+      the study ends (``t >= FOLLOW_UP_MAX``) is censored at that boundary.
+      Every censored subject landing at the exact same follow-up-max instant
+      piles every tick on top of the curve's own terminal point, at the very
+      edge of the plot -- indistinguishable from "the line stopped here".
+    - **Loss to follow-up**: a subject who withdraws, moves away, or is
+      otherwise lost to observation *before* either their event or the study
+      end -- independent of the event process, the textbook mechanism KM is
+      built to handle. Scattered through the middle of the timeline, these
+      are what make a censoring tick actually read as a tick.
+    """
     rng = random.Random(37)
     mean_survival = {"Treatment": 42.0, "Control": 24.0}
+    # Probability a subject is lost to follow-up (independent of their event
+    # time) rather than observed all the way to their event or study end.
+    loss_to_follow_up = 0.12
     rows: List[Dict[str, Any]] = []
     for arm in ARMS:
         for _ in range(45):
             t = rng.expovariate(1.0 / mean_survival[arm])
             if t >= FOLLOW_UP_MAX:
                 rows.append({"arm": arm, "t": round(FOLLOW_UP_MAX, 1), "event": False})
+            elif rng.random() < loss_to_follow_up:
+                # Withdrawn at a uniformly random point before their would-be
+                # event, so censoring ticks land mid-timeline, not just at
+                # the boundary.
+                t_censor = rng.uniform(0.0, t)
+                rows.append({"arm": arm, "t": round(t_censor, 1), "event": False})
             else:
                 rows.append({"arm": arm, "t": round(t, 1), "event": True})
     return rows

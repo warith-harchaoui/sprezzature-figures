@@ -437,10 +437,12 @@ def build_svg(
     # A white keyline lifts each dot off its neighbours and the gridlines — a
     # bright keyline, never a dark ring.
     r_dot = 7.0
+    dot_px: List[Tuple[float, float]] = []
     for d in data:
         s = float(d["sleep"])
         r = float(d["rt"])
         cx, cy = sx(s), sy(r)
+        dot_px.append((cx, cy))
         tip = f"{s:.1f} h slept, {int(r)} ms reaction time"
         parts.append(
             f'<g class="pt" tabindex="0" role="img" '
@@ -471,12 +473,22 @@ def build_svg(
         f'<line class="jp-trend" x1="{x0p:.1f}" y1="{y0p:.1f}" x2="{x1p:.1f}" '
         f'y2="{y1p:.1f}" stroke="{trend}" stroke-width="4" stroke-linecap="round"/>'
     )
-    # Name the trend on the line itself, so the reader needs no legend. Sit it on
-    # the sparser right stretch of the descending line (fewer points above it
-    # there) and carry a white halo (paint-order: stroke) so it stays legible
-    # even where it grazes the cloud.
-    tl_x = x0p + (x1p - x0p) * 0.72
-    tl_y = y0p + (y1p - y0p) * 0.72 - 15
+    # Name the trend on the line itself, so the reader needs no legend. A fixed
+    # position along the line can land the label directly on a data point when
+    # the cloud is dense there (a real "text overlaps data" defect caught by
+    # visual review), so instead probe a handful of candidate positions along
+    # the line's sparser second half and keep the one with the most clearance
+    # from the nearest dot -- the white halo (paint-order: stroke) still
+    # covers the rare close call, but this keeps close calls rare.
+    best_t, best_clearance = 0.72, -1.0
+    for t in (0.55, 0.62, 0.69, 0.76, 0.83, 0.90):
+        cand_x = x0p + (x1p - x0p) * t
+        cand_y = y0p + (y1p - y0p) * t - 15
+        clearance = min(math.hypot(cand_x - px, cand_y - py) for px, py in dot_px)
+        if clearance > best_clearance:
+            best_t, best_clearance = t, clearance
+    tl_x = x0p + (x1p - x0p) * best_t
+    tl_y = y0p + (y1p - y0p) * best_t - 15
     ang = math.degrees(math.atan2(y1p - y0p, x1p - x0p))
     parts.append(
         f'<text x="{tl_x:.1f}" y="{tl_y:.1f}" font-size="17" '

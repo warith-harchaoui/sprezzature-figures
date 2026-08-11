@@ -621,7 +621,7 @@ def build_svg(
         f'<text x="{_MAP_X + 4:.1f}" y="{_HEIGHT - 22}" font-size="14" '
         f'fill="{_SUBTLE}">Staff points from the wind · pennant = 50 kt, '
         f'full barb = 10 kt, half barb = 5 kt'
-        f'analysis, US Northeast seaboard</text>'
+        f' · Surface analysis, US Northeast seaboard</text>'
     )
 
     parts.append(fullscreen_control(_WIDTH, _HEIGHT, mode))

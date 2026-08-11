@@ -614,7 +614,7 @@ def build_svg(
             f'<g class="clabel cl-{c}">'
             f'<rect x="{lxp - pill_w / 2:.1f}" y="{lyp - pill_h / 2:.1f}" '
             f'width="{pill_w:.1f}" height="{pill_h}" rx="{pill_h / 2:.1f}" '
-            f'fill="{BG}" fill-opacity="0.92"/>'
+            f'fill="{BG}"/>'
             f'<circle class="sfdp-dot-{c}" cx="{lxp - pill_w / 2 + 20:.1f}" '
             f'cy="{lyp:.1f}" r="9" fill="{colors[c]}"/>'
             f'<text x="{lxp - pill_w / 2 + 37:.1f}" y="{lyp + 9:.1f}" '

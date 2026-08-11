@@ -452,14 +452,28 @@ def build_svg(
     # columns cluster tightly; a min-gap sweep pushes their labels apart
     # and a thin leader line ties each pushed label back to its column.
     label_y = baseline_y + 30      # first text line of a callout
-    min_gap = 96.0                 # minimum horizontal pitch between anchors
+    # The gap between two adjacent anchors must clear half of each label's
+    # own rendered width, or a long name (e.g. "United Kingdom") still
+    # collides with its neighbour even after the sweep -- a fixed 96px
+    # pitch was wide enough for short names but not that one. Estimate each
+    # label's width from its character count at the callout's font-size/
+    # weight (18px, 600 -- the same 0.6-per-char ratio make_bar.py's tick
+    # width estimate uses), floored at 96 for visual breathing room between
+    # short labels.
+    name_font_size = 18.0
+    char_w_ratio = 0.6  # avg glyph width as a fraction of font-size, bold sans
+    label_widths = [len(str(col["name"])) * name_font_size * char_w_ratio for col in cols]
     anchors = [float(col["cx"]) for col in cols]
-    # Left-to-right sweep: never let a label start closer than min_gap to
-    # the one before it. Clamp within the plot so nothing clips the edges.
+    # Left-to-right sweep: never let a label start closer than the two
+    # neighbouring labels' half-widths (plus a small margin) to the one
+    # before it. Clamp within the plot so nothing clips the edges.
     placed: List[float] = []
-    for ax in anchors:
-        target = ax if not placed else max(ax, placed[-1] + min_gap)
-        placed.append(target)
+    for i, ax in enumerate(anchors):
+        if not placed:
+            placed.append(ax)
+            continue
+        gap = max(96.0, (label_widths[i - 1] + label_widths[i]) / 2.0 + 12.0)
+        placed.append(max(ax, placed[-1] + gap))
     # If the sweep pushed the last label past the right edge, slide the
     # whole run left so it stays inside the canvas.
     overflow = placed[-1] - (m_left + plot_w)

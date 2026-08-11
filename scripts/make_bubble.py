@@ -100,11 +100,18 @@ def _region_color(accessibility: str = "universal", theme: str = "corporate") ->
     dict of str to str
         ``{region_name: "#RRGGBB"}`` for the three regions.
     """
+    # Blue/Orange/Green (the usual 3-hue cycle) puts Orange and Green within
+    # ~15 luma points of each other once the bubbles' 0.72 fill-opacity blends
+    # them toward white -- a Ralph Eyeball Loop grayscale pass caught them
+    # reading as the same grey. Brown replaces Green here: it keeps the
+    # deuteranopia/protanopia-safe property (no red/green pair) while sitting
+    # ~20-26 luma points from both Blue and Orange post-opacity, so all three
+    # regions stay legible in greyscale, not just in colour.
     palette = load_palette(accessibility, theme=theme)
     return {
         "Asia": palette.get("Blue", "#007AFF"),
         "Europe": palette.get("Orange", "#FF9500"),
-        "Africa": palette.get("Green", "#34C759"),
+        "Africa": palette.get("Brown", "#A2845E"),
     }
 
 

@@ -113,12 +113,24 @@ AXES: List[Tuple[str, List[str]]] = [
     ("Outcome", ["Survived", "Died"]),
 ]
 
-# The outcome variable that colours every ribbon. Blue = lived, a warm
+# The outcome variable that colours every ribbon. Blue = lived, a deep
 # red = died: the pairing is separated in hue AND lightness, so the split
 # survives a grayscale print and every common colour-vision deficiency
 # (red-green blindness reads blue vs red cleanly), and it is reinforced by
 # the legend labels, never colour alone.
+#
+# The shared palette's own "Red" (#FF3B30) was measured to fall only ~6
+# luminance levels from "Blue" (#007AFF) under standard grayscale
+# conversion (106 vs 100 out of 255) -- the two ribbon colours collapse to
+# nearly the same gray, and this chart has no per-ribbon text label to
+# fall back on (unlike a legend swatch, a mid-diagram ribbon is bare
+# colour). _DIED_RED is a deeper shade of the same hue family (~65 out of
+# 255, a 40+ point gap) that keeps the "red = died" convention while
+# actually surviving a grayscale render, found and fixed in a Ralph
+# Eyeball Loop pass; the shared palette's Red is unchanged everywhere
+# else, this override is local to this one figure's outcome encoding.
 OUTCOME_AXIS = 3
+_DIED_RED = "#8B0000"
 OUTCOME_COLOR: Dict[str, str] = {
     "Survived": "Blue",
     "Died": "Red",
@@ -357,7 +369,7 @@ def build_svg(
     # untouched. Blue/Red are always present in the palette.
     outcome_series = {
         ".rib-survived": palette.get("Blue", secondary),
-        ".rib-died": palette.get("Red", secondary),
+        ".rib-died": _DIED_RED,
     }
     # Under Windows High Contrast / forced-colors the ~4-colour system palette
     # cannot preserve the two meaning hues, and colour is the sole key that lets a
@@ -470,7 +482,7 @@ def build_svg(
             left_off[a_cat] += h
             right_off[b_cat] += h
 
-            color = palette.get(OUTCOME_COLOR[outcome], secondary)
+            color = _DIED_RED if outcome == "Died" else palette.get(OUTCOME_COLOR[outcome], secondary)
             d = _ribbon_path(x0, x1, a_top, a_top + h, b_top, b_top + h)
             pct = 100.0 * count / total
             tip = (
@@ -500,7 +512,7 @@ def build_svg(
         for cat in cats:
             b = stacks[i][cat]
             blk_h = b["y1"] - b["y0"]
-            fill = palette.get(BIN_COLOR.get(cat, ""), secondary)
+            fill = _DIED_RED if cat == "Died" else palette.get(BIN_COLOR.get(cat, ""), secondary)
             parts.append(
                 f'<rect x="{x:.1f}" y="{b["y0"]:.1f}" width="{bin_w}" '
                 f'height="{blk_h:.1f}" rx="7" fill="{fill}">'
@@ -543,7 +555,7 @@ def build_svg(
         "RIBBON COLOUR = OUTCOME</text>"
     )
     for cat in AXES[OUTCOME_AXIS][1]:
-        color = palette.get(OUTCOME_COLOR[cat], secondary)
+        color = _DIED_RED if cat == "Died" else palette.get(OUTCOME_COLOR[cat], secondary)
         parts.append(
             f'<rect x="{lx:.1f}" y="{legend_y - 18:.1f}" width="22" height="22" '
             f'rx="6" fill="{color}"/>'

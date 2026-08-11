@@ -38,15 +38,18 @@ Author
 """
 
 from __future__ import annotations
+
+import argparse
+import sys
+from pathlib import Path
+from typing import Dict, List, Optional, Tuple
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _render import svg_example_path, write_svg  # noqa: E402
 from _svg import fmt_compact  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _style import leveled_colors, os_dark_style  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
-
-import argparse
-from pathlib import Path
-from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 

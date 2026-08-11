@@ -148,6 +148,14 @@ def build_svg(
     )
     for i, age in enumerate(ages):
         cy = plot_y + i * row_h + row_h / 2 + 4
+        # A background-colour backplate masks the axis line behind the
+        # label -- text glyphs alone don't fully cover their own bounding
+        # box (the gap around a hyphen, inter-character spacing), so the
+        # line was showing through "60-74"-style labels (found via the
+        # Ralph Eyeball Loop).
+        parts.append(
+            f'<rect x="{plot_x - 26:.1f}" y="{cy - 12:.1f}" width="52" height="16" fill="{BG}"/>'
+        )
         parts.append(f'<text x="{plot_x:.1f}" y="{cy:.1f}" font-size="12" fill="{INK}" text-anchor="middle">{xml_escape(age)}</text>')
 
     # ---- bars ----

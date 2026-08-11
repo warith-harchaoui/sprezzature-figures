@@ -88,6 +88,19 @@ _SERIES_COLORS: Dict[str, str] = {
     "Cosmos": "#AF52DE",
 }
 
+# Ralph Eyeball Loop finding: Blue (#007AFF) and Purple (#AF52DE) are close
+# enough in perceptual luminance that a plain grayscale conversion of the
+# *default* (universal) render collapses them into two nearly-identical dark
+# grey outlines -- verified by screenshotting the rendered SVG through a CSS
+# grayscale filter, not just assumed from the hex values. ``accessibility=
+# "monochrome"`` already remaps the hues to genuinely separable greys
+# (#6D6D6D/#8F8F8F/#1B1B1B), but that is an opt-in level; the default render
+# itself needs a colour-independent channel too, since most viewers never
+# pass that flag and a screenshot/printout can still land in grayscale.
+# Solid/dashed/dotted outlines are a redundant channel on top of hue, so the
+# series stay separable by pattern alone regardless of colour rendering.
+_DASH_PATTERNS: Tuple[str, ...] = ("", "16,8", "3,5")
+
 
 # --------------------------------------------------------------------------- #
 #                                                             #
@@ -405,6 +418,8 @@ def build_svg(
         color = palette[s_idx]
         name = str(subject["name"])
         values: List[float] = [float(v) for v in subject["values"]]  # type: ignore[union-attr]
+        dash = _DASH_PATTERNS[s_idx % len(_DASH_PATTERNS)]
+        dash_attr = f' stroke-dasharray="{dash}"' if dash else ""
 
         verts: List[Tuple[float, float]] = [
             _polar_to_xy(cx, cy, r_px(values[i]), _spoke_angle_deg(i, n))
@@ -414,7 +429,7 @@ def build_svg(
         parts.append(
             f'<polygon class="rad-{s_idx}" points="{pts}" fill="{color}" '
             f'fill-opacity="0.07" stroke="{color}" stroke-width="3.6" '
-            f'stroke-linejoin="round"/>'
+            f'stroke-linejoin="round"{dash_attr}/>'
         )
         # Vertex dots, each with a thin white keyline so a dot from one series
         # stays crisp even where it lands atop another series' outline. Native
@@ -429,11 +444,15 @@ def build_svg(
 
     # ---- legend (bottom, centred) ----------------------------------------- #
     # One coloured disk + name per series. Disks match the series colour with no
-    # dark ring — the swatch reads as the same ink as the polygon outline.
+    # dark ring — the swatch reads as the same ink as the polygon outline. A
+    # short line in the series' own dasharray sits behind each disk so the
+    # legend teaches the pattern-to-name mapping too, not just colour-to-name
+    # (see _DASH_PATTERNS: colour alone collapses under grayscale).
     legend_y = height - 52.0
     # Measure a rough total width to centre the row.
     gap = 56.0
     disk_r = 9.0
+    swatch_line_half = 22.0  # half-length of the dash-pattern line behind each disk
     label_gap = 16.0
     char_w = 12.5  # rough advance for the 22px legend label
     entry_widths = [disk_r * 2 + label_gap + len(str(s["name"])) * char_w for s in series]
@@ -442,17 +461,24 @@ def build_svg(
     for s_idx, subject in enumerate(series):
         color = palette[s_idx]
         name = str(subject["name"])
+        dash = _DASH_PATTERNS[s_idx % len(_DASH_PATTERNS)]
+        dash_attr = f' stroke-dasharray="{dash}"' if dash else ""
         cxs = x + disk_r
+        parts.append(
+            f'<line x1="{fmt_compact(cxs - swatch_line_half)}" y1="{fmt_compact(legend_y)}" '
+            f'x2="{fmt_compact(cxs + swatch_line_half)}" y2="{fmt_compact(legend_y)}" '
+            f'stroke="{color}" stroke-width="3.6"{dash_attr}/>'
+        )
         parts.append(
             f'<circle class="rad-{s_idx}" cx="{fmt_compact(cxs)}" '
             f'cy="{fmt_compact(legend_y)}" r="{disk_r}" fill="{color}"/>'
         )
         parts.append(
-            f'<text x="{fmt_compact(cxs + disk_r + label_gap)}" y="{fmt_compact(legend_y + 8)}" '
+            f'<text x="{fmt_compact(cxs + swatch_line_half + label_gap)}" y="{fmt_compact(legend_y + 8)}" '
             f'font-size="22" font-weight="600" fill="{_INK}">'
             f"{xml_escape(name)}</text>"
         )
-        x += entry_widths[s_idx] + gap
+        x += entry_widths[s_idx] + gap + (swatch_line_half - disk_r) * 2
 
     # ---- scale caption ---------------------------------------------------- #
     parts.append(

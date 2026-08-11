@@ -542,6 +542,18 @@ def build_svg(
         geom[k]["left"] = left  # type: ignore[index]
         geom[k]["side"] = side  # type: ignore[index]
 
+    # Per-milestone render spec, computed once and consumed by two separate
+    # painting passes below (stems, then dots+cards). Two-level stacking
+    # (see the greedy stacker above) only guards against same-*level*
+    # horizontal collisions; when two milestones land at nearly the same x
+    # and land on different levels of the *same* side (e.g. two 2021
+    # missions), the farther card's straight vertical stem otherwise cuts
+    # across the nearer card sitting between it and the spine, since SVG
+    # paints in document order and the farther milestone's iteration comes
+    # after the nearer one's already-drawn card. Painting every stem first,
+    # then every card, guarantees a card always sits visually on top of any
+    # stem crossing it, regardless of iteration order.
+    specs: List[Dict[str, Any]] = []
     for i, m in enumerate(milestones):
         year = int(m["year"])  # type: ignore[arg-type]
         name = str(m["name"])
@@ -567,16 +579,30 @@ def build_svg(
             cy0 = spine_y + stem_len
             card_edge_y = cy0
 
-        # --- connector stem: spine dot -> card edge ---------------
-        # The stem runs straight down the milestone's x to the near edge
-        # of its card, so the eye traces year -> event with no ambiguity.
+        specs.append({
+            "year": year, "name": name, "blurb": blurb, "slug": slug,
+            "color": color, "planned": planned, "mx": mx, "lines": lines,
+            "card_h": card_h, "cx0": cx0, "cy0": cy0, "card_edge_y": card_edge_y,
+        })
+
+    # --- pass 1: every connector stem, spine dot -> card edge ------------
+    # Straight down the milestone's x to the near edge of its card, so the
+    # eye traces year -> event with no ambiguity.
+    for s in specs:
         parts.append(
-            f'<line class="era-stroke era-{slug}" x1="{mx:.1f}" y1="{spine_y}" '
-            f'x2="{mx:.1f}" '
-            f'y2="{card_edge_y:.1f}" stroke="{color}" stroke-width="2.2" '
-            + ('stroke-dasharray="2 5" ' if planned else "")
+            f'<line class="era-stroke era-{s["slug"]}" x1="{s["mx"]:.1f}" y1="{spine_y}" '
+            f'x2="{s["mx"]:.1f}" '
+            f'y2="{s["card_edge_y"]:.1f}" stroke="{s["color"]}" stroke-width="2.2" '
+            + ('stroke-dasharray="2 5" ' if s["planned"] else "")
             + 'stroke-linecap="round"/>'
         )
+
+    # --- pass 2: every spine dot + callout card, painted over the stems --
+    for s in specs:
+        year, name, blurb = s["year"], s["name"], s["blurb"]
+        slug, color, planned = s["slug"], s["color"], s["planned"]
+        mx, lines, card_h = s["mx"], s["lines"], s["card_h"]
+        cx0, cy0 = s["cx0"], s["cy0"]
 
         # Wrap the group so hover/focus lifts the whole callout, and a
         # single <title> serves the accessible tooltip.

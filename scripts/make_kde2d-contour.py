@@ -34,9 +34,9 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _svg import svg_open, xml_escape  # noqa: E402
-from _style import BG, INK, SECONDARY  # noqa: E402
-from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
+from _svg import fmt_number, svg_open, xml_escape  # noqa: E402
+from _style import BG, GRIDLINE, INK, SECONDARY  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 COLOR_POINT = "#C7C7CC"
 COLOR_CONTOUR = "#007AFF"
@@ -203,6 +203,35 @@ def build_svg(
         f'letter-spacing="-0.3">{xml_escape(title)}</text>'
     )
     parts.append(f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>')
+
+    # ---- gridlines + tick labels ----
+    # Without these the reader can see the density shape but has no scale
+    # reference at all (a real "hard to read" gap caught by visual review) --
+    # 5 evenly spaced ticks per axis, drawn behind the data.
+    mono_family = mono_stack_for_theme(theme)
+    n_ticks = 5
+    x_ticks = [x_lo + (x_hi - x_lo) * i / (n_ticks - 1) for i in range(n_ticks)]
+    y_ticks = [y_lo + (y_hi - y_lo) * i / (n_ticks - 1) for i in range(n_ticks)]
+    for xt in x_ticks:
+        tx = x_for(xt)
+        parts.append(
+            f'<line x1="{tx:.1f}" y1="{plot_y:.1f}" x2="{tx:.1f}" y2="{plot_y + plot_h:.1f}" '
+            f'stroke="{GRIDLINE}" stroke-width="1"/>'
+        )
+        parts.append(
+            f'<text x="{tx:.1f}" y="{plot_y + plot_h + 18:.1f}" font-size="11" '
+            f'font-family="{mono_family}" fill="{SECONDARY}" text-anchor="middle">{fmt_number(xt)}</text>'
+        )
+    for yt in y_ticks:
+        ty = y_for(yt)
+        parts.append(
+            f'<line x1="{plot_x:.1f}" y1="{ty:.1f}" x2="{plot_x + plot_w:.1f}" y2="{ty:.1f}" '
+            f'stroke="{GRIDLINE}" stroke-width="1"/>'
+        )
+        parts.append(
+            f'<text x="{plot_x - 8:.1f}" y="{ty + 4:.1f}" font-size="11" '
+            f'font-family="{mono_family}" fill="{SECONDARY}" text-anchor="end">{fmt_number(yt)}</text>'
+        )
 
     # ---- raw scatter (faint) ----
     for x, y in samples:

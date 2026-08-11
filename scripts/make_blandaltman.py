@@ -442,9 +442,14 @@ def build_svg(
         f'y2="{zy:.1f}" stroke="#B8B8BD" stroke-width="1.6" '
         f'stroke-dasharray="2 5"/>'
     )
+    # A white halo (paint-order: stroke, house pattern -- see make_jointplot.py's
+    # trend-line label) keeps the caption legible where the scattered cloud
+    # happens to graze it, rather than relying on this one dataset's particular
+    # point positions never landing there.
     parts.append(
         f'<text x="{plot_x + 6:.1f}" y="{zy + 22:.1f}" font-size="18" '
-        f'font-style="italic" fill="#9A9AA0">0 = perfect agreement</text>'
+        f'font-style="italic" fill="#9A9AA0" stroke="#FFFFFF" stroke-width="3.5" '
+        f'paint-order="stroke">0 = perfect agreement</text>'
     )
 
     # --- the difference scatter ----------------------------------

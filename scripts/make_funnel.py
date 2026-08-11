@@ -114,6 +114,7 @@ def build_svg(
     lines: List[str] = []
     lines.append(
         f'<svg role="img" aria-label="{escape(title)}" '
+        f'width="{WIDTH}" height="{HEIGHT}" '
         f'viewBox="0 0 {WIDTH} {HEIGHT}" '
         f'xmlns="http://www.w3.org/2000/svg" '
         f'font-family="{chrome_family}" '

@@ -104,12 +104,18 @@ AXES: List[Tuple[str, List[str]]] = [
 ]
 
 # Category → palette base name. Outcome colours carry meaning
-# (green = kept, blue = neutral downgrade, gray = churn) and are the
+# (green = kept, brown = neutral downgrade, gray = churn) and are the
 # ones a reader tracks; channels/plans get quieter neutral fills so the
 # eye follows the outcome colour through the whole diagram.
+# Brown (not the more obvious Blue) is a deliberate grayscale-legibility
+# fix: Blue (#007AFF, relative luminance ~106) and Gray (#808080, ~128)
+# sit only ~22 apart and collapse into the same shade of gray once
+# desaturated -- caught by the grayscale pass of the Ralph Eyeball Loop.
+# Brown (#A52A2A, ~68) reads as a distinct, muted tone and separates
+# cleanly from both Green (~160) and Gray (~128) in grayscale.
 OUTCOME_COLOR: Dict[str, str] = {
     "Retained": "Green",
-    "Downgraded": "Blue",
+    "Downgraded": "Brown",
     "Churned": "Gray",
 }
 

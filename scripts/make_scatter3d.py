@@ -49,15 +49,18 @@ Author
 """
 
 from __future__ import annotations
+
+import argparse
+import json
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _render import svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _style import forced_color_patterns, leveled_colors, os_adaptive_style, os_dark_style  # noqa: E402
 from _svg import fmt_compact  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
-
-import argparse
-import json
-from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
@@ -1144,7 +1147,11 @@ def build_svg(
     # Poster-scale canvas: the figure is meant to read from across a room, so
     # the cloud gets a generous plot box rather than a cramped 640x480 panel.
     width, height = 1040, 780
-    m_top = 132
+    # 132 put the +z axis label ("proline" in the demo) within ~1px of the
+    # subtitle's descender line at the default elev/azim -- the 18px
+    # subtitle font (larger than most figures' 14px) needs more clearance
+    # than the house 40px subtitle-to-plot gap gives here.
+    m_top = 156
     m_bottom = 48
     plot_w = width
     plot_h = height - m_top - m_bottom

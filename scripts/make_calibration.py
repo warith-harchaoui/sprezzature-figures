@@ -415,21 +415,13 @@ def build_svg(
             f'y2="{gy:.1f}" stroke="#EEEEEE" stroke-width="1.4"/>'
         )
 
-    # --- 45-degree "perfect calibration" line + caption ----------
+    # --- 45-degree "perfect calibration" line ---------------------
+    # The caption itself is emitted later, after the reliability points,
+    # so it paints on top of them -- see the note there for why.
     parts.append(
         f'<line x1="{sx(0.0):.1f}" y1="{sy(0.0):.1f}" x2="{sx(1.0):.1f}" '
         f'y2="{sy(1.0):.1f}" stroke="#8E8E93" stroke-width="1.6" '
         f'stroke-dasharray="6 4"/>'
-    )
-    # Caption rides ON the diagonal, rotated -45 degrees so it runs
-    # parallel to the line; a small offset lifts it just clear of the
-    # dashes. It sits in the upper-left stretch, away from the points.
-    cap_x, cap_y = sx(0.34), sy(0.34)
-    parts.append(
-        f'<text x="{cap_x:.1f}" y="{cap_y - 12:.1f}" font-size="20" '
-        f'fill="{secondary}" text-anchor="middle" '
-        f'transform="rotate(-45 {cap_x:.1f} {cap_y - 12:.1f})">'
-        f'Perfect calibration</text>'
     )
 
     # --- top-view axes (L-shaped, ink) with ticks + labels -------
@@ -543,6 +535,27 @@ def build_svg(
             f'fill-opacity="0.95" stroke="#FFFFFF" stroke-width="1.4"/>'
         )
         parts.append("</g>")
+
+    # --- "perfect calibration" caption, on top of the points ------
+    # Rides ON the diagonal, rotated -45 degrees so it runs parallel to
+    # the line, with a small offset lifting it clear of the dashes. Bin
+    # points sit near this same diagonal by construction (a well-calibrated
+    # bin lands close to "perfect"), so a fixed spot can't dodge every
+    # dataset -- a Ralph Eyeball Loop pass caught a bin marker sitting
+    # squarely on top of the label. A white halo alone doesn't rescue text
+    # a marker fully covers, so the caption is emitted here, after the
+    # points loop, so document order puts it on top of every marker
+    # regardless of where a given dataset's bins land; the halo (house
+    # pattern, see make_jointplot.py's trend-line label) then keeps it
+    # legible against both the ribbon and any marker beneath it.
+    cap_x, cap_y = sx(0.34), sy(0.34)
+    parts.append(
+        f'<text x="{cap_x:.1f}" y="{cap_y - 12:.1f}" font-size="20" '
+        f'fill="{secondary}" stroke="#FFFFFF" stroke-width="4" paint-order="stroke" '
+        f'text-anchor="middle" '
+        f'transform="rotate(-45 {cap_x:.1f} {cap_y - 12:.1f})">'
+        f'Perfect calibration</text>'
+    )
 
     # --- direct on-plot annotations (over / under sides) ---------
     # The curve sags BELOW the diagonal at the confident end

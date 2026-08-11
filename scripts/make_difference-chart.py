@@ -458,6 +458,19 @@ def build_svg(
     )
     defs.append(f'<clipPath id="clipAbove"><path d="{clip_above}"/></clipPath>')
     defs.append(f'<clipPath id="clipBelow"><path d="{clip_below}"/></clipPath>')
+    # The shortfall band gets a diagonal-hatch texture (not just its own hue)
+    # so it stays distinct from the surplus band in grayscale and for
+    # achromatopsia — blue and red land at nearly the same luminance, so hue
+    # alone collapses the two regions to one flat gray under that filter.
+    # Surplus stays a plain fill; only the "problem" region needs the extra
+    # cue, so the chart doesn't get busier than it has to.
+    defs.append(
+        f'<pattern id="shortfallHatch" width="8" height="8" patternUnits="userSpaceOnUse" '
+        f'patternTransform="rotate(45)">'
+        f'<rect width="8" height="8" fill="{_BELOW_HUE_C}"/>'
+        f'<line x1="0" y1="0" x2="0" y2="8" stroke="#FFFFFF" stroke-width="3" stroke-opacity="0.55"/>'
+        f'</pattern>'
+    )
 
     # The full inter-curve band (actual on top edge, plan on bottom edge),
     # filled once per colour and revealed through the two half-plane clips.
@@ -469,7 +482,7 @@ def build_svg(
         f'fill-opacity="0.82" clip-path="url(#clipAbove)"/>'
     )
     band_group.append(
-        f'<path class="diff-below" d="{band}" fill="{_BELOW_HUE_C}" '
+        f'<path class="diff-below" d="{band}" fill="url(#shortfallHatch)" '
         f'fill-opacity="0.82" clip-path="url(#clipBelow)"/>'
     )
     band_group.append("</g>")
@@ -577,7 +590,7 @@ def build_svg(
     lx2 = lx + 250
     legend.append(
         f'<rect class="diff-below" x="{_fmt(lx2)}" y="{_fmt(ly - sh + 2)}" '
-        f'width="{_fmt(sw)}" height="{_fmt(sh)}" rx="3" fill="{_BELOW_HUE_C}" '
+        f'width="{_fmt(sw)}" height="{_fmt(sh)}" rx="3" fill="url(#shortfallHatch)" '
         f'fill-opacity="0.82"/>'
     )
     legend.append(

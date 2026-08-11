@@ -128,6 +128,18 @@ def _parties(accessibility: str = "universal", theme: str = "corporate") -> List
         ``(party name, short label, seat count, hex hue)`` in seating order.
     """
     palette = load_palette(accessibility, theme=theme)
+    if theme == "corporate":
+        # Found via the Ralph Eyeball Loop's grayscale pass: the house
+        # Red/Blue/Purple sit within ~12 luminance points of each other
+        # (of 255), so with five parties on one chart, Social Democrats,
+        # Christian Centre and National Right become indistinguishable
+        # once desaturated. Darken Blue and lighten Purple *for this chart
+        # only* (a local override, not a change to the shared palette other
+        # figures draw from) so all five blocs stay legible in grayscale,
+        # keeping each hue's family (still unambiguously blue / purple).
+        palette = dict(palette)
+        palette["Blue"] = "#0040A0"
+        palette["Purple"] = "#B968DD"
     return [
         (name, lab, seats, palette.get(base, _PARTY_FALLBACK[base]))
         for name, lab, seats, base in _PARTY_ROWS
