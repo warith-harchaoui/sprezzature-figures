@@ -69,7 +69,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
-from _svg import svg_open, xml_escape  # noqa: E402
+from _svg import hex_to_rgb, svg_open, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
 
@@ -475,9 +475,23 @@ def build_svg(
         f'fill="{marker_c}" stroke="#FFFFFF" stroke-width="2.5"/>'
     )
     parts.append("</g>")
+    # A halo (paint-order: stroke) keeps this legible where the callout sits
+    # close to the rising curve just past the marker -- a real "text grazes
+    # the line" overlap caught by visual review at some cutoff values. The
+    # halo is tinted to match the actual backdrop there (the `band` plot
+    # background under the model curve's own 13%-opacity fill), not flat
+    # white/grey, so it blends in rather than leaving a visible ring.
+    band_r, band_g, band_b = hex_to_rgb(band)
+    model_r, model_g, model_b = hex_to_rgb(model_c)
+    halo = "#{:02X}{:02X}{:02X}".format(
+        round(band_r * 0.87 + model_r * 0.13),
+        round(band_g * 0.87 + model_g * 0.13),
+        round(band_b * 0.87 + model_b * 0.13),
+    )
     parts.append(
         f'<text x="{mx + 20:.1f}" y="{my - 14:.1f}" font-size="22" '
-        f'font-weight="700" fill="{marker_c}">Top {round(opx * 100)}% → '
+        f'font-weight="700" fill="{marker_c}" stroke="{halo}" stroke-width="4" '
+        f'paint-order="stroke">Top {round(opx * 100)}% → '
         f'{op_pct}% of churners</text>'
     )
     parts.append(

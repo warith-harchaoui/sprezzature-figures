@@ -125,13 +125,19 @@ def _team_color(accessibility: str = "universal", theme: str = "corporate") -> D
     dict of str to str
         ``{team_name: hex}`` for every team.
     """
+    # Teal put Data within ~8 luma points of Growth's Orange once the arcs'
+    # 0.82 fill-opacity blends both toward white -- a Ralph Eyeball Loop
+    # grayscale pass caught the two arcs (and their ribbons) reading as the
+    # same grey. Yellow replaces Teal: it keeps five hue-distinct, CVD-safe
+    # (no red/green pair) team colours while sitting ~27 luma points clear
+    # of its nearest neighbour post-opacity, instead of ~8.
     palette = load_palette(accessibility, theme=theme)
     return {
         "Platform": palette.get("Blue", "#007AFF"),
         "Payments": palette.get("Green", "#34C759"),
         "Growth": palette.get("Orange", "#FF9500"),
         "Mobile": palette.get("Purple", "#AF52DE"),
-        "Data": palette.get("Teal", "#5AC8FA"),
+        "Data": palette.get("Yellow", "#FFCC00"),
     }
 
 

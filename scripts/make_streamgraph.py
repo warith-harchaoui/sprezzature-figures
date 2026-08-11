@@ -465,11 +465,7 @@ def build_svg(
         f'<text x="{_fmt(m_left)}" y="98" font-size="{_FS_SUB}" '
         f'fill="{_SECONDARY}">'
         f"Share of recorded-music streaming by genre, band thickness = share of "
-        f"listening that year</text>"
-    )
-    parts.append(
-        f'<text x="{_fmt(m_left)}" y="121" font-size="{_FS_SUB}" '
-        f'fill="{_SECONDARY}">, 2000&#8211;2024</text>'
+        f"listening that year, {int(years[0])}&#8211;{int(years[-1])}</text>"
     )
 
     # ---- faint decade gridlines (behind the river) ------------------------ #
@@ -568,7 +564,7 @@ def build_svg(
         end_labels.append(
             f'<text x="{_fmt(label_x + 22)}" y="{_fmt(ly + 16)}" '
             f'font-size="{_FS_VALUE}" font-family="{mono_family}" fill="{_SECONDARY}">'
-            f"{share_last:.0f}% in 2024</text>"
+            f"{share_last:.0f}% in {int(years[last])}</text>"
         )
 
     # ---- x-axis line + year tick labels ----------------------------------- #

@@ -199,9 +199,21 @@ def build_svg(
             f'<line x1="{cx:.1f}" y1="{y_high:.1f}" x2="{cx:.1f}" y2="{y_low:.1f}" '
             f'stroke="{color}" stroke-width="1.5"/>'
         )
+        # Fill vs. hollow is a redundant channel on top of the red/down
+        # green/up hue -- a Ralph Eyeball Loop deuteranopia check found the
+        # two hues collapse to the same olive under red-green colour-vision
+        # deficiency, and this chart's accessibility= is a documented no-op
+        # (see build_svg's docstring), so hue alone cannot be the only
+        # signal. Down candles stay solid-filled; up candles render hollow
+        # (white body, coloured outline) -- the same "hollow candle" style
+        # real trading platforms offer as their colourblind-friendly mode,
+        # so the fix reads as a legitimate alternative convention, not a
+        # visual regression.
+        body_fill = BG if r["up"] else color
         parts.append(
             f'<rect x="{cx - body_w / 2:.1f}" y="{body_top:.1f}" width="{body_w:.1f}" '
-            f'height="{max(1.5, body_bottom - body_top):.1f}" fill="{color}"/>'
+            f'height="{max(1.5, body_bottom - body_top):.1f}" fill="{body_fill}" '
+            f'stroke="{color}" stroke-width="1.5"/>'
         )
         parts.append("</g>")
 

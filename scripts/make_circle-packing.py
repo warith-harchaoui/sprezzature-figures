@@ -679,9 +679,12 @@ def _fit_label(name: str, loc: int, radius: float) -> Optional[Tuple[float, floa
     Returns ``(name_font, loc_font, name_lines)`` when the module name
     (plus its line count on a final row) fits inside the circle, else
     ``None`` — in which case the circle stays clean and relies on its
-    ``<title>`` tooltip. A name too wide for one line is broken on its
-    underscore (``test_payments`` → ``test`` / ``payments``) so even a
-    long name lands inside a mid-size circle.
+    ``<title>`` tooltip. A name too wide for one line is broken into two:
+    on its underscore when it has one (``test_payments`` → ``test`` /
+    ``payments``), else at the naive character midpoint (``notifications``
+    → ``notifi`` / ``cations``) — a long single word with no underscore
+    still gets a two-line label rather than silently falling back to an
+    empty circle.
 
     Parameters
     ----------
@@ -707,7 +710,8 @@ def _fit_label(name: str, loc: int, radius: float) -> Optional[Tuple[float, floa
     if fs >= 9.0 and width_of(short, fs) <= room:
         return (fs, max(fs * 0.72, 9.0), [short])
 
-    # Otherwise try to wrap on the underscore into two balanced lines.
+    # Otherwise try to wrap on the underscore into two balanced lines (a
+    # semantic break, preferred over just shrinking the font further).
     if "_" in short:
         head, _, tail = short.partition("_")
         lines = [head, tail]
@@ -715,10 +719,20 @@ def _fit_label(name: str, loc: int, radius: float) -> Optional[Tuple[float, floa
         if fs2 >= 9.0 and max(width_of(lines[0], fs2), width_of(lines[1], fs2)) <= room:
             return (fs2, max(fs2 * 0.70, 9.0), lines)
 
-    # Last resort: a smaller single line.
+    # Next: a smaller single line.
     fs3 = min(radius * 0.30, 14.0)
     if fs3 >= 8.5 and width_of(short, fs3) <= radius * 1.85:
         return (fs3, max(fs3 * 0.72, 8.5), [short])
+
+    # Final fallback: a long single word with no underscore (e.g.
+    # "notifications") that is still too wide even at the smallest single
+    # line -- wrap it at the naive character midpoint. Two lines of it
+    # reads better than silently dropping to an empty, label-less circle.
+    mid = len(short) // 2
+    lines = [short[:mid], short[mid:]]
+    fs4 = min(radius * 0.34, 17.0)
+    if fs4 >= 9.0 and max(width_of(lines[0], fs4), width_of(lines[1], fs4)) <= room:
+        return (fs4, max(fs4 * 0.70, 9.0), lines)
 
     return None
 

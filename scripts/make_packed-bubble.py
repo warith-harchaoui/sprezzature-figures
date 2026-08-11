@@ -434,11 +434,35 @@ def build_svg(
     off_y = PACK_CY - mean_y
     centres = [(x + off_x, y + off_y) for x, y in centres]
 
-    title_txt = "JavaScript and Python still anchor the working web"
-    subtitle_txt = (
-        "Share of professional developers using each language, by family "
-        ""
+    # Fit the pack to the safe frame (below the legend row, above the
+    # footer hint). The relaxation in _pack has no built-in bound, so a
+    # dataset whose largest shares cluster together (e.g. the default demo:
+    # JavaScript/HTML-CSS/Python/SQL are all near R_MAX) can settle with a
+    # disk overlapping the footer text. Scaling the whole configuration
+    # uniformly around the frame centre is a similarity transform, so it
+    # preserves the non-overlapping packing while guaranteeing every disk
+    # stays inside the frame -- for the demo data and for arbitrary custom
+    # `languages` alike. A no-op (fit_scale == 1.0) whenever the pack
+    # already fits, which is the common case.
+    safe_top, safe_bottom = 200.0, HEIGHT - 70.0
+    safe_left, safe_right = 40.0, WIDTH - 40.0
+    reach_up = max((PACK_CY - (y - r) for (x, y), r in zip(centres, radii)), default=0.0)
+    reach_down = max(((y + r) - PACK_CY for (x, y), r in zip(centres, radii)), default=0.0)
+    reach_left = max((PACK_CX - (x - r) for (x, y), r in zip(centres, radii)), default=0.0)
+    reach_right = max(((x + r) - PACK_CX for (x, y), r in zip(centres, radii)), default=0.0)
+    fit_scale = min(
+        1.0,
+        (PACK_CY - safe_top) / reach_up if reach_up > 0 else 1.0,
+        (safe_bottom - PACK_CY) / reach_down if reach_down > 0 else 1.0,
+        (PACK_CX - safe_left) / reach_left if reach_left > 0 else 1.0,
+        (safe_right - PACK_CX) / reach_right if reach_right > 0 else 1.0,
     )
+    if fit_scale < 1.0:
+        centres = [(PACK_CX + (x - PACK_CX) * fit_scale, PACK_CY + (y - PACK_CY) * fit_scale) for x, y in centres]
+        radii = [r * fit_scale for r in radii]
+
+    title_txt = "JavaScript and Python still anchor the working web"
+    subtitle_txt = "Share of professional developers using each language, by family"
     desc_txt = (
         "Packed-bubble chart of programming languages. Each bubble is a "
         "language, labelled with its name and share, so it reads without "

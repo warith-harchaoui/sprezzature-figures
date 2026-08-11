@@ -277,6 +277,56 @@ def _nearest_neighbours(records: List[Dict[str, Any]], k: int) -> List[List[int]
     return neighbours
 
 
+def _dodge_pill(
+    lx: float, ly: float, w: float, h: float,
+    placed: List[Tuple[float, float, float, float]],
+    *, y_min: float, y_max: float,
+) -> Tuple[float, float]:
+    """Nudge a label pill vertically until it clears every already-placed one.
+
+    Mirrors the hover-pill dodge logic in this module's own JS
+    (``collides``/the nudge loop in ``makePill``): the *static* always-on
+    representative labels were placed independently by each point's own
+    quadrant, with no check against labels already placed for an earlier
+    point in the same cluster — two nearby representative points could
+    (and did) land pills that overlap. This applies the same "try further
+    down, then further up, clamped to canvas" search to that static pass.
+
+    Parameters
+    ----------
+    lx, ly : float
+        The pill's initially-computed top-left corner.
+    w, h : float
+        The pill's width/height (fixed once computed by the caller).
+    placed : list of (float, float, float, float)
+        ``(x, y, w, h)`` boxes of every pill already placed this render.
+    y_min, y_max : float
+        Vertical canvas bounds the pill's top edge must stay within.
+
+    Returns
+    -------
+    tuple of float
+        The (possibly adjusted) ``(lx, ly)``.
+    """
+    def collides(x: float, y: float) -> bool:
+        for bx, by, bw, bh in placed:
+            if x < bx + bw + 3 and x + w + 3 > bx and y < by + bh + 2 and y + h + 2 > by:
+                return True
+        return False
+
+    if not collides(lx, ly):
+        return lx, ly
+    base = ly
+    for step in range(1, 7):
+        down = base + step * (h + 4)
+        if down + h <= y_max and not collides(lx, down):
+            return lx, down
+        up = base - step * (h + 4)
+        if up >= y_min and not collides(lx, up):
+            return lx, up
+    return lx, ly
+
+
 # --------------------------------------------------------------------------- #
 # Representative always-on labels                                             #
 # --------------------------------------------------------------------------- #
@@ -872,6 +922,7 @@ def build_svg(
     # pointer-events:none so an always-on label pill never steals the hover
     # from a dot beneath it — the dots must always own the pointer.
     parts.append('<g id="rep-labels" pointer-events="none">')
+    _placed_pills: List[Tuple[float, float, float, float]] = []
     for i in sorted(rep):
         r = records[i]
         ci = int(r["ci"])
@@ -887,6 +938,15 @@ def build_svg(
         ly = py + 10 if py < mid_y else py - pill_h - 8
         lx = min(_VIEW_W - _M_RIGHT - pill_w, max(_M_LEFT, lx))
         ly = min(_VIEW_H - _LEGEND_H - pill_h, max(_M_TOP - 8, ly))
+        # Two representative points can land pills that overlap when their
+        # quadrant-based placements happen to coincide (e.g. two nearby
+        # points in the same cluster) -- dodge against every pill already
+        # placed this render, same search the hover pills use in JS.
+        lx, ly = _dodge_pill(
+            lx, ly, pill_w, pill_h, _placed_pills,
+            y_min=_M_TOP - 8, y_max=_VIEW_H - _LEGEND_H - pill_h,
+        )
+        _placed_pills.append((lx, ly, pill_w, pill_h))
         parts.append(
             f'<g class="rep-label rl-{ci}">'
             f'<rect x="{fmt_compact(lx)}" y="{fmt_compact(ly)}" width="{fmt_compact(pill_w)}" '

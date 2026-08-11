@@ -755,10 +755,18 @@ def build_svg(
             pill_h = 34.0
             if anchor == "end":
                 rx0 = tx - pill_w
-                text_x = tx - pill_w / 2
+                # Clamp so a "left"-side pill for a point close to the
+                # plot's left edge (e.g. the earliest year, when the x
+                # domain starts only a little before it) never crosses the
+                # axis into the plot itself.
+                rx0 = max(rx0, plot_x + 8.0)
+                text_x = rx0 + pill_w / 2
             else:
                 rx0 = tx
-                text_x = tx + pill_w / 2
+                # Same clamp, mirrored, for a "right"-side pill near the
+                # plot's right edge.
+                rx0 = min(rx0, plot_x + plot_w - pill_w - 8.0)
+                text_x = rx0 + pill_w / 2
             parts.append(
                 f'<rect x="{rx0:.1f}" y="{cy - pill_h / 2:.1f}" '
                 f'width="{pill_w:.1f}" height="{pill_h:.1f}" rx="17" '

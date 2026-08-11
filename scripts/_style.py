@@ -286,8 +286,15 @@ def leveled_colors(colors: Dict[str, str], accessibility: str = "universal") -> 
 
 #: Default categorical cycle order for :func:`cycle_hues` — the four hues
 #: every ``_category_colors``/``_series_colors``/``_segment_colors`` copy
-#: picked, in this order, before this helper existed.
-_DEFAULT_CYCLE = ("Blue", "Orange", "Green", "Purple")
+#: picked, before this helper existed, reordered once: the original
+#: (Blue, Orange, Green, Purple) put Orange (#FF9500, relative luminance
+#: ~160.7) directly next to Green (#34C759, ~159.8) -- a ~1-point gap that
+#: several Ralph Eyeball Loop passes independently found collapsing to the
+#: same grey under grayscale/achromatopsia simulation. Swapping Green and
+#: Purple keeps the same four hues (no caller's semantics change) but
+#: spaces every adjacent pair (including the wrap) at least ~48 luminance
+#: points apart: Blue(105.7)-Orange(160.7)-Purple(111.8)-Green(159.8)-wrap.
+_DEFAULT_CYCLE = ("Blue", "Orange", "Purple", "Green")
 
 
 def cycle_hues(
@@ -313,8 +320,9 @@ def cycle_hues(
         Forwarded to :func:`load_palette`. Defaults to ``"universal"``.
     hues : list of str, optional
         Palette hue *names* to cycle through, e.g. ``["Blue", "Red"]``.
-        Defaults to :data:`_DEFAULT_CYCLE` (``Blue, Orange, Green, Purple``),
-        matching every pre-existing caller's hard-coded order. Names are
+        Defaults to :data:`_DEFAULT_CYCLE` (``Blue, Orange, Purple, Green``),
+        chosen for grayscale/CVD luminance separation between adjacent
+        hues (see that constant's own comment). Names are
         shared across themes (see :data:`_ACADEMIC_PALETTE`), so a caller's
         existing `hues` list needs no change to theme correctly.
     theme : str, optional

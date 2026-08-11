@@ -83,6 +83,11 @@ def _rows_to_matrix(rows: List[Dict[str, Any]]) -> tuple[List[str], List[List[in
     return classes, matrix
 
 # --- geometry + house-style constants -----------------------------------------
+# Floors, not fixed sizes: build_svg() grows width/height from these to fit
+# however many classes `data` actually has (the grid itself always scales
+# with `n`; a canvas that didn't would clip the last row/column for any `n`
+# large enough to outgrow the floor -- including the 3-class demo, which
+# used to clip by 16px against a literal `_HEIGHT = 640`).
 _WIDTH = 820
 _HEIGHT = 640
 _CELL = 150.0          # cell size
@@ -156,8 +161,15 @@ def build_svg(
     worst_count, worst_actual, worst_pred = worst
     n_cls_word = f"{n}-class" if n != 1 else "1-class"
 
+    # Grid size follows `n` directly (it's always an n x n square, so one
+    # formula gives both edges); grow the canvas from the module floors so
+    # the last row/column never clips, whatever `n` a caller's data has.
+    grid_w = grid_h = n * _CELL + (n - 1) * _GAP
+    width = max(_WIDTH, _GRID_X + grid_w + 90.0)
+    height = max(_HEIGHT, _GRID_Y + grid_h + 40.0)
+
     parts: List[str] = []
-    parts.append(svg_open(_WIDTH, _HEIGHT, "cm-title", "cm-desc", font_family=chrome_stack_for_theme(theme)))
+    parts.append(svg_open(width, height, "cm-title", "cm-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(
         f'<title id="cm-title">A {n_cls_word} confusion matrix: the classifier is '
         f'right on the diagonal and confuses {worst_actual} with {worst_pred} most</title>'
@@ -170,7 +182,7 @@ def build_svg(
         f'diagonal ({diag_str}) shows most predictions are correct; the largest '
         f'error is {worst_count} {worst_actual} predicted as {worst_pred}.</desc>'
     )
-    parts.append(f'<rect width="{_WIDTH}" height="{_HEIGHT}" fill="{_BG}"/>')
+    parts.append(f'<rect width="{width}" height="{height}" fill="{_BG}"/>')
 
     # Title + subtitle (top-left, house style).
     parts.append(
@@ -181,8 +193,6 @@ def build_svg(
         f'<text x="40" y="84" font-size="14" fill="{_SUBTLE}">'
         f'Actual vs predicted class over {total} test images · diagonal = correct</text>'
     )
-
-    grid_w = n * _CELL + (n - 1) * _GAP
 
     # Column axis label ("Predicted"), centred above the grid.
     parts.append(
@@ -233,7 +243,7 @@ def build_svg(
                 f'{count}</text>'
             )
 
-    parts.append(fullscreen_control(_WIDTH, _HEIGHT, mode))
+    parts.append(fullscreen_control(width, height, mode))
     parts.append("</svg>")
     return "\n".join(parts)
 

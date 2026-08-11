@@ -128,7 +128,12 @@ def build_svg(
             seen_groups.append(r["group"])
     groups = [g for g in GROUPS if g in seen_groups] + [g for g in seen_groups if g not in GROUPS]
     palette = load_palette(accessibility, theme=theme)
-    hue_order = [palette.get("Red", "#FF3B30"), palette.get("Blue", "#007AFF"), palette.get("Green", "#34C759")]
+    # Brown/Blue/Green (not Red/Blue/Green): a grayscale-legibility fix. Red
+    # (#FF3B30, relative luminance ~100) and Blue (#007AFF, ~106) are only
+    # ~6 apart and collapse to the same shade once desaturated -- easy to
+    # miss here since the dot cloud interleaves all three groups. Brown
+    # (~68) separates cleanly from both Blue (~106) and Green (~160).
+    hue_order = [palette.get("Brown", "#A52A2A"), palette.get("Blue", "#007AFF"), palette.get("Green", "#34C759")]
     colors = {g: hue_order[i % len(hue_order)] for i, g in enumerate(groups)}
 
     values = [float(r["value"]) for r in rows]

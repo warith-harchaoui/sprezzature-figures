@@ -645,7 +645,7 @@ def _graticule_paths() -> List[str]:
 #: continental interiors, well clear of the hot arcs and the belt call-outs.
 _GEO_LABELS: List[Tuple[str, float, float]] = [
     ("PACIFIC OCEAN", -155.0, 6.0),
-    ("ATLANTIC", -30.0, 36.0),
+    ("ATLANTIC", -45.0, 28.0),
     ("INDIAN OCEAN", 76.0, -30.0),
     ("N. AMERICA", -102.0, 44.0),
     ("S. AMERICA", -58.0, -12.0),
@@ -876,8 +876,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
     parts.append(
         f'<text x="{_MAP_X + 6:.1f}" y="{_HEIGHT - 20}" font-size="14" '
         f'fill="{_SUBTLE}">One hexagon ≈ 250,000 km² · colour = earthquake '
-        f'count per hexagon'
-        f'subduction arcs · Equal Earth (equal-area) projection</text>'
+        f'count per hexagon · Equal Earth (equal-area) projection</text>'
     )
 
     parts.append(fullscreen_control(_WIDTH, _HEIGHT, mode))

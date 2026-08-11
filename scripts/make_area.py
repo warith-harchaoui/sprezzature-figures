@@ -50,7 +50,14 @@ DEMO_DATA: List[Dict[str, Any]] = [
 def _channel_colors(
     channels: List[str], accessibility: str = "universal", theme: str = "corporate"
 ) -> Dict[str, str]:
-    return cycle_hues(channels, accessibility, hues=['Purple', 'Blue', 'Orange', 'Green'], theme=theme)
+    # Brown/Blue/Yellow/Green (not the more obvious Purple/Blue/Orange/Green):
+    # a grayscale-legibility fix. The original two adjacent stack pairs
+    # (Purple #AF52DE ~lum 112 vs Blue #007AFF ~lum 106, and Orange #FF9500
+    # ~lum 161 vs Green #28CD41 ~lum 160) collapse to the same shade once
+    # desaturated -- caught by the grayscale pass of the Ralph Eyeball Loop.
+    # This set's adjacent-band luminance gaps are all >=38, so every band
+    # boundary stays visible in grayscale.
+    return cycle_hues(channels, accessibility, hues=['Brown', 'Blue', 'Yellow', 'Green'], theme=theme)
 
 
 def build_svg(

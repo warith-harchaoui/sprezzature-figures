@@ -25,7 +25,7 @@ from typing import Any, Dict, List, Optional
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _style import BG, GRIDLINE, INK, SECONDARY, corner_radius, cycle_hues, load_palette  # noqa: E402
+from _style import BG, GRIDLINE, INK, SECONDARY, corner_radius, cycle_hues  # noqa: E402
 from _svg import bar_path, fmt_number, svg_open, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
@@ -72,7 +72,13 @@ def _strings(language: str) -> Dict[str, str]:
 
 
 def _category_colors(accessibility: str = "universal", theme: str = "corporate") -> Dict[str, str]:
-    return cycle_hues(CATEGORIES, accessibility, theme=theme)
+    # Explicit hues (not cycle_hues' default Blue/Orange/Green/Purple order):
+    # a grayscale-legibility fix. Orange (#FF9500, relative luminance ~161)
+    # and Green (#28CD41, ~160) -- positions 2 and 3 of the default cycle,
+    # the South/East bars here -- collapse to the same shade once
+    # desaturated. Blue/Brown/Green/Yellow spread luminance ~106/68/160/200,
+    # so every bar stays distinguishable in grayscale.
+    return cycle_hues(CATEGORIES, accessibility, hues=['Blue', 'Brown', 'Green', 'Yellow'], theme=theme)
 
 
 def build_svg(

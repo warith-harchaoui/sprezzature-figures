@@ -38,18 +38,21 @@ Author
 """
 
 from __future__ import annotations
+
+import argparse
+import sys
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Sequence, Tuple
+
+import numpy as np
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _render import svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _style import os_dark_style  # noqa: E402
 from _svg import color_ramp, fmt_compact  # noqa: E402
 from _svg import VIRIDIS_STOPS as _VIRIDIS  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
-
-import argparse
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Sequence, Tuple
-
-import numpy as np
 
 # Repo-relative default output — the one SVG artifact this figure ships.
 _DEFAULT_OUT = (

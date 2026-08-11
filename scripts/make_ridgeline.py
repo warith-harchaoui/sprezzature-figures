@@ -354,10 +354,7 @@ def build_svg(
 
     # ---- header ----------------------------------------------------------- #
     title = "The whole distribution marches with the seasons, not just the mean"
-    subtitle = (
-        "Daily-high temperature by month, one colour-coded lane each — "
-        ""
-    )
+    subtitle = "Daily-high temperature by month, one colour-coded lane each"
     parts.append(
         f'<svg role="img" aria-label="{title}" '
         f'xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" '

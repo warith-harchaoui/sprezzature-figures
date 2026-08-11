@@ -512,23 +512,30 @@ def build_svg(
         nv = int(crossing["n_vital"])
         cc = int(crossing["cum_count"])
         # Stack both call-out lines *above* the marker so neither sits on the
-        # 80 % reference rule (the crossing is just above it). A short leader
-        # connects the text to the emphasised dot.
-        note_x = cx + 22
+        # 80 % reference rule (the crossing is just above it). The callout
+        # leans *left* of the marker (text-anchor="end"), not right: the
+        # cumulative curve keeps climbing past the crossing point toward
+        # 100 %, so text placed to the right gets cut through by the rising
+        # line a few categories later (found via the Ralph Eyeball Loop --
+        # a right-leaning callout on a monotonically rising curve always
+        # eventually collides with it). To the left, the curve has already
+        # passed through lower points, so the callout's vertical band stays
+        # clear. A short leader connects the text to the emphasised dot.
+        note_x = cx - 22
         parts.append(
-            f'<line x1="{cx:.1f}" y1="{cy:.1f}" x2="{note_x - 6:.1f}" '
+            f'<line x1="{cx:.1f}" y1="{cy:.1f}" x2="{note_x + 6:.1f}" '
             f'y2="{cy - 44:.1f}" stroke="{secondary}" stroke-width="1.4" '
             f'stroke-dasharray="3 4"/>'
         )
         line1 = strings["crossing_line1"].format(n_vital=nv, cum=round(crossing["cum"]))
         parts.append(
             f'<text x="{note_x:.1f}" y="{cy - 44:.1f}" font-size="22" '
-            f'font-weight="700" fill="{ink}">{xml_escape(line1)}</text>'
+            f'font-weight="700" fill="{ink}" text-anchor="end">{xml_escape(line1)}</text>'
         )
         line2 = strings["crossing_line2"].format(cc=cc, total=total)
         parts.append(
             f'<text x="{note_x:.1f}" y="{cy - 18:.1f}" font-size="20" '
-            f'fill="{secondary}">{xml_escape(line2)}</text>'
+            f'fill="{secondary}" text-anchor="end">{xml_escape(line2)}</text>'
         )
 
     # --- axes: left (bar shares) + right (cumulative) ------------

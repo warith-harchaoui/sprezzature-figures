@@ -214,6 +214,13 @@ def build_svg(
     dendro_top, dendro_left = 72.0, 40.0
     grid_x = dendro_left + 56.0
     grid_y = 134.0
+    # Reserve a label gutter, sized to the actual tick text, between each
+    # dendrogram and its axis labels -- without it, a merge whose height
+    # maps close to the axis runs its bracket line straight through the
+    # row/column label text (measured, not a fixed guess, since callers can
+    # pass arbitrary label text via `data`).
+    row_label_gutter = max((len(str(r)) for r in row_order), default=1) * 10 * 0.62 + 10.0
+    col_label_gutter = 16.0
     right_margin, bottom_margin = 30.0, 40.0
     grid_w = width - grid_x - right_margin
     grid_h = height - grid_y - bottom_margin
@@ -242,7 +249,7 @@ def build_svg(
     parts.append(f'<text x="20" y="54" font-size="12" fill="{SECONDARY}">{xml_escape(subtitle)}</text>')
 
     # ---- column dendrogram (above the grid) ----
-    col_dendro_h = grid_y - dendro_top - 4.0
+    col_dendro_h = grid_y - dendro_top - 4.0 - col_label_gutter
 
     def cx_for(pos: float) -> float:
         return grid_x + pos * cell_w
@@ -261,7 +268,7 @@ def build_svg(
         )
 
     # ---- row dendrogram (left of the grid) ----
-    row_dendro_w = grid_x - dendro_left - 4.0
+    row_dendro_w = grid_x - dendro_left - 4.0 - row_label_gutter
 
     def cy_for(pos: float) -> float:
         return grid_y + pos * cell_h

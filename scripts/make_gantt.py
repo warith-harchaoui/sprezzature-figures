@@ -46,7 +46,29 @@ DEMO_DATA: List[Dict[str, Any]] = [
 def _team_colors(
     teams: List[str], accessibility: str = "universal", theme: str = "corporate"
 ) -> Dict[str, str]:
-    return cycle_hues(teams, accessibility, hues=['Blue', 'Purple', 'Orange', 'Green', 'Red'], theme=theme)
+    """Assign each team a hue, one per legend/bar colour.
+
+    ``Teal`` stands in for the more common ``Green`` here: at up to 5 teams
+    the default cycle order also draws ``Orange``, and ``Orange``/``Green``
+    are near-identical in grayscale (~1/255 luminance apart, caught by a
+    grayscale render check) -- ``Teal`` keeps the same 5-hue cycle length
+    but reads distinctly from ``Orange`` once colour is removed.
+
+    Parameters
+    ----------
+    teams : list of str
+        Team names, in the order they should receive hues.
+    accessibility : str, optional
+        Forwarded to :func:`_style.cycle_hues`. Defaults to ``"universal"``.
+    theme : str, optional
+        Forwarded to :func:`_style.cycle_hues`. Defaults to ``"corporate"``.
+
+    Returns
+    -------
+    dict of str to str
+        ``{team: hex_color}`` for every entry in `teams`.
+    """
+    return cycle_hues(teams, accessibility, hues=['Blue', 'Purple', 'Orange', 'Teal', 'Red'], theme=theme)
 
 
 def build_svg(

@@ -129,14 +129,19 @@ def _causes(accessibility: str = "universal", theme: str = "corporate") -> List[
 
     # The three bands are given three well-separated lightness levels, not
     # just three hues: a mid teal for disease, a dark red for wounds, and a
-    # light grey for all other causes. The palette's mid grey read at almost
-    # the same greyscale luminance as red, so the two minor bands merged for
-    # colour-blind and greyscale viewers; a light grey pulls "other" clear of
-    # both, so the stack's three bands stay legible without colour.
+    # dark neutral grey for all other causes. Ralph Eyeball Loop finding: a
+    # *light* grey (the original choice here) reads at almost the same
+    # greyscale luminance as the mid teal (both ~0.7), so those two bands
+    # merged for greyscale/colour-blind viewers even though it correctly
+    # avoided the red collision the comment used to describe. Verified by
+    # screenshotting the render through a CSS grayscale filter, not just
+    # computed: teal and light grey were visually identical swatches. A dark
+    # neutral grey clears *both* other bands (~0.16 from red, ~0.48 from
+    # teal in perceptual luminance) instead of just one.
     return [
         {"key": "disease", "label": "Preventable disease", "color": _hue("Teal")},
         {"key": "wounds", "label": "Wounds in battle", "color": _hue("Red")},
-        {"key": "other", "label": "All other causes", "color": "#C7C7CC"},
+        {"key": "other", "label": "All other causes", "color": "#3A3A3C"},
     ]
 
 

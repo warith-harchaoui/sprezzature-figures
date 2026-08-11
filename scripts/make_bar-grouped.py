@@ -88,7 +88,13 @@ def _strings(language: str) -> Dict[str, str]:
 def _region_colors(
     regions: List[str], accessibility: str = "universal", theme: str = "corporate"
 ) -> Dict[str, str]:
-    return cycle_hues(regions, accessibility, theme=theme)
+    # Explicit hues (not cycle_hues' default Blue/Orange/Green/Purple order):
+    # a grayscale-legibility fix. Orange (#FF9500, relative luminance ~161)
+    # and Green (#28CD41, ~160) -- positions 2 and 3 of the default cycle,
+    # adjacent bars in every group here -- collapse to the same shade once
+    # desaturated. Blue/Brown/Yellow spread luminance ~106/68/200, so every
+    # bar in a group stays distinguishable in grayscale.
+    return cycle_hues(regions, accessibility, hues=['Blue', 'Brown', 'Yellow'], theme=theme)
 
 
 def build_svg(

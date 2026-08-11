@@ -124,7 +124,13 @@ def build_svg(
     max_mag = max(mags) or 1.0
 
     plot_x, plot_y = 40.0, 118.0
-    right_margin, bottom_reserved = 40.0, 40.0
+    right_margin = 40.0
+    # 64px (not a plain 40px caption margin): the bottom row's arrowheads can
+    # extend a full tri_max past their own row centre (a vertex can rotate to
+    # point straight down), so a narrower margin let the bottom row's largest
+    # arrows overlap the magnitude legend directly beneath the grid (found
+    # via the Ralph Eyeball Loop).
+    bottom_reserved = 64.0
     plot_w = width - plot_x - right_margin
     plot_h = height - plot_y - bottom_reserved
     n_cols = len(set(xs))

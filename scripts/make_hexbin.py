@@ -33,9 +33,9 @@ from typing import Any, Dict, List, Optional, Tuple
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _svg import svg_open, viridis, xml_escape  # noqa: E402
-from _style import BG, INK, SECONDARY  # noqa: E402
-from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
+from _svg import fmt_number, svg_open, viridis, xml_escape  # noqa: E402
+from _style import BG, GRIDLINE, INK, SECONDARY  # noqa: E402
+from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 
 _RAMP: Tuple[Tuple[float, str], ...] = (
@@ -156,13 +156,18 @@ def build_svg(
         A complete, standalone SVG document.
     """
     _ = accessibility
+    mono_family = mono_stack_for_theme(theme)
     rows = data if data else DEMO_DATA
     points = [(float(r["x"]), float(r["y"])) for r in rows]
     x_min, x_max = min(p[0] for p in points), max(p[0] for p in points)
     y_min, y_max = min(p[1] for p in points), max(p[1] for p in points)
 
     plot_x, plot_y = 60.0, 118.0
-    right_margin, bottom_reserved = 30.0, 60.0
+    # bottom_reserved fits, top to bottom: x tick labels, the "x" axis title,
+    # a gap, then the legend row -- widened from 60 when tick labels were
+    # added (a fixed-height legend offset from the canvas bottom would
+    # otherwise collide with the axis title once ticks pushed it down).
+    right_margin, bottom_reserved = 30.0, 92.0
     plot_w = width - plot_x - right_margin
     plot_h = height - plot_y - bottom_reserved
 
@@ -205,6 +210,27 @@ def build_svg(
     )
     parts.append(f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>')
 
+    # ---- y-axis gridlines + tick labels (drawn first so hex cells sit on top) ----
+    y_ticks = 5
+    for i in range(y_ticks + 1):
+        val = y_min + (y_max - y_min) * i / y_ticks
+        ty = y_for(val)
+        parts.append(
+            f'<line x1="{plot_x:.1f}" y1="{ty:.1f}" x2="{plot_x + plot_w:.1f}" y2="{ty:.1f}" '
+            f'stroke="{GRIDLINE}" stroke-width="1"/>'
+        )
+        parts.append(
+            f'<text x="{plot_x - 10:.1f}" y="{ty + 4:.1f}" font-size="11" font-family="{mono_family}" '
+            f'fill="{SECONDARY}" text-anchor="end">{fmt_number(val)}</text>'
+        )
+
+    # ---- hex cells, clipped to the plot rectangle so no cell bleeds into the
+    # margin (a hex centred near an edge still has corners past plot_x/plot_y) ----
+    parts.append(
+        f'<clipPath id="hex-clip"><rect x="{plot_x:.1f}" y="{plot_y:.1f}" '
+        f'width="{plot_w:.1f}" height="{plot_h:.1f}"/></clipPath>'
+    )
+    parts.append('<g clip-path="url(#hex-clip)">')
     for (q, r), count in counts.items():
         hx, hy = _hex_center(q, r, hex_size)
         cx, cy = x_for(x_min + hx), y_for(y_min + hy)
@@ -216,6 +242,7 @@ def build_svg(
             f'<path class="hex" tabindex="0" d="{d}" fill="{_ramp_hex(t, theme)}">'
             f'<title>{xml_escape(tip)}</title></path>'
         )
+    parts.append('</g>')
 
     # ---- axes ----
     axis_y = plot_y + plot_h
@@ -227,8 +254,20 @@ def build_svg(
         f'<line x1="{plot_x:.1f}" y1="{plot_y:.1f}" x2="{plot_x:.1f}" y2="{axis_y:.1f}" '
         f'stroke="{INK}" stroke-width="1.2"/>'
     )
+    x_ticks = 5
+    for i in range(x_ticks + 1):
+        val = x_min + (x_max - x_min) * i / x_ticks
+        tx = x_for(val)
+        parts.append(
+            f'<line x1="{tx:.1f}" y1="{axis_y:.1f}" x2="{tx:.1f}" y2="{axis_y + 6:.1f}" '
+            f'stroke="{INK}" stroke-width="1"/>'
+        )
+        parts.append(
+            f'<text x="{tx:.1f}" y="{axis_y + 20:.1f}" font-size="11" font-family="{mono_family}" '
+            f'fill="{SECONDARY}" text-anchor="middle">{fmt_number(val)}</text>'
+        )
     parts.append(
-        f'<text x="{plot_x + plot_w / 2:.1f}" y="{axis_y + 30:.1f}" font-size="13" '
+        f'<text x="{plot_x + plot_w / 2:.1f}" y="{axis_y + 42:.1f}" font-size="13" '
         f'fill="{INK}" text-anchor="middle">x</text>'
     )
     parts.append(
@@ -237,7 +276,7 @@ def build_svg(
     )
 
     # ---- legend ----
-    ly = height - 12.0
+    ly = axis_y + 66.0
     lx0 = plot_x
     parts.append(f'<text x="{lx0:.1f}" y="{ly:.1f}" font-size="11" fill="{SECONDARY}">0</text>')
     swatch_x = lx0 + 18.0

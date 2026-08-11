@@ -127,6 +127,40 @@ def _fmt(value: float) -> str:
     return f"{value:.1f}"
 
 
+#: Spelled-out counts for the headline ("Two of five", not "2 of 5") --
+#: covers any realistic KPI-panel size; a count past this falls back to
+#: digits rather than raising.
+_NUMBER_WORDS: Dict[int, str] = {
+    0: "zero", 1: "one", 2: "two", 3: "three", 4: "four", 5: "five",
+    6: "six", 7: "seven", 8: "eight", 9: "nine", 10: "ten",
+}
+
+
+def _spelled(n: int) -> str:
+    """Spell out ``n`` (0-10) in words; digits for anything larger."""
+    return _NUMBER_WORDS.get(n, str(n))
+
+
+def _join_and(names: List[str]) -> str:
+    """Join KPI names AP-style: ``"a"``, ``"a and b"``, ``"a, b and c"``.
+
+    Parameters
+    ----------
+    names : list of str
+        KPI names, in display order. May be empty.
+
+    Returns
+    -------
+    str
+        The joined phrase, or ``""`` for an empty list.
+    """
+    if not names:
+        return ""
+    if len(names) == 1:
+        return names[0]
+    return f"{', '.join(names[:-1])} and {names[-1]}"
+
+
 def _band_hex(palette: Dict[str, str]) -> List[str]:
     """Return the three qualitative-band fills, poor → good.
 
@@ -243,7 +277,9 @@ def build_svg(
         v, t, hi = float(k["value"]), float(k["target"]), bool(k["higher"])
         return v >= t if hi else v <= t
 
-    n_beat = sum(1 for k in kpis if _beats(k))
+    beating = [str(k["name"]) for k in kpis if _beats(k)]
+    trailing = [str(k["name"]) for k in kpis if not _beats(k)]
+    n_beat = len(beating)
 
     # --- document + accessibility --------------------------------
     parts.append(svg_open(width, height, "bl-title", "bl-desc", font_family=chrome_family))
@@ -255,7 +291,7 @@ def build_svg(
         f'graphs. Each row has three shaded qualitative bands (poor, '
         f'satisfactory, good), a dark measure bar for the value reached, and an '
         f'orange tick for the target. {n_beat} of {n} metrics met or beat their '
-        f'target this quarter; trial signups and p95 latency fell short.</desc>'
+        f'target this quarter; {xml_escape(_join_and(trailing))} fell short.</desc>'
     )
 
     # OS-adaptive overrides (additive; the default render is byte-for-byte
@@ -290,14 +326,29 @@ def build_svg(
     parts.append(f'<rect width="{width}" height="{height}" fill="#FFFFFF"/>')
 
     # --- title + subtitle (the takeaway) -------------------------
+    # Both driven by the same `beating`/`trailing` split the per-row bars
+    # use below, so the headline can never drift out of sync with what the
+    # reader actually sees (a Ralph Eyeball Loop pass caught the previous
+    # hardcoded "Three of five ... Revenue, activation and churn beat plan"
+    # naming churn as a winner when it was over target -- i.e. missing).
+    headline = f'{_spelled(n_beat).capitalize()} of {_spelled(n)} targets cleared in Q3'
+    if beating and trailing:
+        subtitle = (
+            f'{_join_and(beating)} beat plan; {_join_and(trailing)} still trail the goal'
+        )
+    elif beating:
+        subtitle = f'{_join_and(beating)} beat plan -- every target cleared'
+    elif trailing:
+        subtitle = f'{_join_and(trailing)} trail the goal -- no target cleared'
+    else:
+        subtitle = ''
     parts.append(
         f'<text x="{m_left}" y="66" font-size="34" font-weight="700" '
-        f'fill="{ink}">Three of five targets cleared in Q3</text>'
+        f'fill="{ink}">{xml_escape(headline)}</text>'
     )
     parts.append(
         f'<text x="{m_left}" y="104" font-size="20" fill="{secondary}">'
-        f'Revenue, activation and churn beat plan; trial signups and API '
-        f'latency still trail the goal</text>'
+        f'{xml_escape(subtitle)}</text>'
     )
 
     # --- shared legend (its own line under the subtitle) ---------
