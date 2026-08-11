@@ -37,6 +37,8 @@ from _interactive import fullscreen_control  # noqa: E402
 from _render import svg_example_path, write_svg  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
 
+from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
+
 INK = "#1D1D1F"
 SECONDARY = "#6E6E73"
 BG = "#FFFFFF"
@@ -125,6 +127,12 @@ def build_svg(
     height: int = 400,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    x_label: str = "Hour of day",
+    y_label: str = "",
+    legend_label: str = "Activity",
+    show_cell_labels: bool = True,
+    square: bool = False,
+    theme: str = "corporate",
 ) -> str:
     """Assemble the full row x column heatmap SVG document as a string.
 
@@ -144,6 +152,13 @@ def build_svg(
         Accepted for CLI parity but a documented no-op: the single blue
         sequential ramp already encodes magnitude by lightness alone, so it
         is CVD- and greyscale-safe without a categorical re-levelling.
+    theme : str, optional
+        Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
+        the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
+        See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`. The
+        sequential blue ramp itself is not re-themed (no categorical hues to
+        swap), matching the same deferral as other generators' sequential
+        ramps.
 
     Returns
     -------
@@ -151,6 +166,7 @@ def build_svg(
         A complete, standalone SVG document.
     """
     _ = accessibility  # see docstring: the sequential ramp needs no re-levelling
+    mono_family = mono_stack_for_theme(theme)
     rows = data if data else DEMO_DATA
     days, hours, lookup = _prepare_grid(rows)
     n_r, n_c = len(days), len(hours)
@@ -174,9 +190,26 @@ def build_svg(
     grid_h = max(1.0, height - grid_y - bottom_reserved)
     cell_w = grid_w / n_c if n_c else grid_w
     cell_h = grid_h / n_r if n_r else grid_h
+    if square and n_c and n_r:
+        cell = min(cell_w, cell_h)  # equal cells so an N x N matrix reads square
+        cell_w = cell_h = cell
+        grid_w, grid_h = cell * n_c, cell * n_r
+
+    def _fmt(v: float) -> str:
+        """Adaptive numeric label: decimals for fractional data, integers otherwise."""
+        if v == 0:
+            return "0"
+        av = abs(v)
+        if av >= 10 or av == int(av):
+            return f"{v:.0f}"
+        if av >= 1:
+            return f"{v:.1f}"
+        return f"{v:.2f}"
 
     parts: List[str] = []
-    parts.append(svg_open(width, height, "hm-title", "hm-desc"))
+    parts.append(
+        svg_open(width, height, "hm-title", "hm-desc", font_family=chrome_stack_for_theme(theme))
+    )
     parts.append(f'<title id="hm-title">{xml_escape(title)}</title>')
     peak_desc = ""
     if peak_key[0] is not None:
@@ -212,10 +245,11 @@ def build_svg(
     span = (vmax - vmin) or 1.0
     for i, day in enumerate(days):
         y = grid_y + i * cell_h
-        parts.append(
-            f'<text x="{grid_x - 14:.1f}" y="{y + cell_h / 2 + 5:.1f}" font-size="13" '
-            f'fill="{INK}" text-anchor="end">{xml_escape(str(day))}</text>'
-        )
+        if show_cell_labels:
+            parts.append(
+                f'<text x="{grid_x - 14:.1f}" y="{y + cell_h / 2 + 5:.1f}" font-size="13" '
+                f'fill="{INK}" text-anchor="end">{xml_escape(str(day))}</text>'
+            )
         for j, hour in enumerate(hours):
             x = grid_x + j * cell_w
             v = lookup.get((day, hour))
@@ -239,18 +273,26 @@ def build_svg(
 
     # ---- x-axis (hour) — a tick every 3rd column so labels never crowd ----
     axis_y = grid_y + grid_h
-    for j, hour in enumerate(hours):
-        if j % 3 != 0:
-            continue
-        tx = grid_x + j * cell_w + cell_w / 2
+    if show_cell_labels:
+        for j, hour in enumerate(hours):
+            if j % 3 != 0:
+                continue
+            tx = grid_x + j * cell_w + cell_w / 2
+            parts.append(
+                f'<text x="{tx:.1f}" y="{axis_y + 20:.1f}" font-size="12" '
+                f'font-family="{mono_family}" fill="{SECONDARY}" text-anchor="middle">{hour}</text>'
+            )
+    if x_label:
         parts.append(
-            f'<text x="{tx:.1f}" y="{axis_y + 20:.1f}" font-size="12" '
-            f'font-family="{FONT_MONO}" fill="{SECONDARY}" text-anchor="middle">{hour}</text>'
+            f'<text x="{grid_x + grid_w / 2:.1f}" y="{axis_y + (46 if show_cell_labels else 24):.1f}" '
+            f'font-size="14" fill="{INK}" text-anchor="middle">{xml_escape(x_label)}</text>'
         )
-    parts.append(
-        f'<text x="{grid_x + grid_w / 2:.1f}" y="{axis_y + 46:.1f}" font-size="14" '
-        f'fill="{INK}" text-anchor="middle">Hour of day</text>'
-    )
+    if y_label:
+        yc = grid_y + grid_h / 2
+        parts.append(
+            f'<text x="{grid_x - 30:.1f}" y="{yc:.1f}" font-size="14" fill="{INK}" '
+            f'text-anchor="middle" transform="rotate(-90 {grid_x - 30:.1f} {yc:.1f})">{xml_escape(y_label)}</text>'
+        )
 
     # ---- colour legend (vertical ramp, right of the grid) ------------------
     leg_x = grid_x + grid_w + legend_gap
@@ -274,11 +316,11 @@ def build_svg(
         )
         parts.append(
             f'<text x="{leg_x + legend_w + 11:.1f}" y="{ly + 4:.1f}" font-size="12" '
-            f'font-family="{FONT_MONO}" fill="{SECONDARY}">{val:.0f}</text>'
+            f'font-family="{mono_family}" fill="{SECONDARY}">{_fmt(val)}</text>'
         )
     parts.append(
         f'<text x="{leg_x + legend_w / 2:.1f}" y="{leg_top - 12:.1f}" font-size="13" '
-        f'fill="{INK}" text-anchor="middle">Activity</text>'
+        f'fill="{INK}" text-anchor="middle">{xml_escape(legend_label)}</text>'
     )
 
     parts.append(fullscreen_control(width, height, mode))
@@ -296,6 +338,12 @@ def make_heatmap(
     height: int = 400,
     mode: str = "self-contained",
     accessibility: str = "universal",
+    x_label: str = "Hour of day",
+    y_label: str = "",
+    legend_label: str = "Activity",
+    show_cell_labels: bool = True,
+    square: bool = False,
+    theme: str = "corporate",
 ) -> Path:
     """Render a hand-authored row x column heatmap and write the SVG to *out*.
 
@@ -310,7 +358,7 @@ def make_heatmap(
         Chart text.
     width, height : int
         Canvas size in pixels.
-    mode, accessibility : str
+    mode, accessibility, theme : str
         Forwarded to :func:`build_svg`.
 
     Returns
@@ -326,10 +374,12 @@ def make_heatmap(
     """
     svg = build_svg(
         data, title=title, subtitle=subtitle, width=width, height=height,
-        mode=mode, accessibility=accessibility,
+        mode=mode, accessibility=accessibility, x_label=x_label, y_label=y_label,
+        legend_label=legend_label, show_cell_labels=show_cell_labels, square=square,
+        theme=theme,
     )
     dest = Path(out) if out else svg_example_path(__file__, "heatmap")
-    return write_svg(dest, svg)
+    return write_svg(dest, svg, theme=theme)
 
 
 if __name__ == "__main__":
@@ -345,8 +395,15 @@ if __name__ == "__main__":
         choices=("universal", "high-contrast", "monochrome", "deuteranopia", "protanopia", "tritanopia"),
         default="universal",
     )
+    p.add_argument(
+        "--theme",
+        choices=("corporate", "academic"),
+        default="corporate",
+        help="visual theme: corporate (default, Roboto) or academic (LaTeX-style Latin Modern)",
+    )
     args = p.parse_args()
     make_heatmap(
         out=args.out, title=args.title, subtitle=args.subtitle,
         width=args.width, height=args.height, mode=args.mode, accessibility=args.accessibility,
+        theme=args.theme,
     )

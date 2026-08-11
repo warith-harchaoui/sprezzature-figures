@@ -115,7 +115,7 @@ sprezzature-studio = "sprezzature_figures.studio.cli:main"
 sprezzature-figures-mcp = "sprezzature_figures.mcp:main"
 
 [project.urls]
-Homepage = "https://harchaoui.org/warith/sprezzature/"
+Homepage = "https://sprezzature.ai/"
 Repository = "https://github.com/warith-harchaoui/sprezzature-figures"
 Issues = "https://github.com/warith-harchaoui/sprezzature-figures/issues"
 Changelog = "https://github.com/warith-harchaoui/sprezzature-figures/blob/main/CHANGELOG.md"

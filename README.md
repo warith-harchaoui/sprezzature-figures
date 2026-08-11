@@ -5,11 +5,11 @@
 [![Python ≥3.10](https://img.shields.io/badge/python-%3E%3D3.10-blue)](https://www.python.org/)
 [![License: BSD-3-Clause](https://img.shields.io/badge/license-BSD--3--Clause-green)](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/LICENSE)
 
-[![logo](https://raw.githubusercontent.com/warith-harchaoui/sprezzature-figures/main/assets/logo.png)](https://harchaoui.org/warith/sprezzature/)
+[![logo](https://raw.githubusercontent.com/warith-harchaoui/sprezzature-figures/main/assets/logo.png)](https://sprezzature.ai/)
 
 Publication-quality chart types, all hand-authored SVG callable as a Python library or a CLI command.
 
-Part of the [sprezzature](https://harchaoui.org/warith/sprezzature/) suite.
+Part of the [sprezzature](https://sprezzature.ai/) suite.
 
 ---
 
@@ -375,4 +375,4 @@ BSD 3-Clause. See [LICENSE](https://github.com/warith-harchaoui/sprezzature-figu
 
 ## Author
 
-Warith Harchaoui · warith.harchaoui@gmail.com · [harchaoui.org/warith/sprezzature](https://harchaoui.org/warith/sprezzature/)
+Warith Harchaoui · warith.harchaoui@gmail.com · [harchaoui.org/warith/sprezzature](https://sprezzature.ai/)

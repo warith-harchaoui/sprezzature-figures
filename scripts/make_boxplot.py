@@ -27,11 +27,15 @@ from typing import Any, Dict, List, Optional
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _svg import svg_open, xml_escape  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY  # noqa: E402
+from _scale import log_position, log_ticks  # noqa: E402
+from _svg import svg_open, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 COLOR_BOX = "#007AFF"
+
+# House palette for grouped boxes (side-by-side boxes within each category).
+GROUP_COLORS = ["#007AFF", "#FF9500", "#34C759", "#AF52DE", "#FF2D55", "#5AC8FA"]
 
 DEPARTMENTS = ["Engineering", "Sales", "Marketing", "Support"]
 
@@ -81,8 +85,16 @@ def build_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    x_label: str = "Department",
+    y_label: str = "Salary (thousands EUR)",
+    log_y: bool = False,
 ) -> str:
     """Assemble the full box plot SVG document as a string.
+
+    When rows carry an optional ``group`` key in addition to ``department``
+    (category) and ``salary`` (value), the boxes are drawn grouped: one colored
+    box per group side by side within each category, with a legend. Without a
+    ``group`` key the behaviour is the original single-box-per-category plot.
 
     Parameters
     ----------
@@ -111,39 +123,95 @@ def build_svg(
     _ = accessibility
     mono_family = mono_stack_for_theme(theme)
     rows = data if data else DEMO_DATA
+    grouped = any("group" in r for r in rows)
+
+    # Categories (x positions) in first-appearance order, honouring the curated
+    # DEPARTMENTS order for the demo data.
     seen_depts: List[str] = []
     for r in rows:
-        if r["department"] not in seen_depts:
-            seen_depts.append(r["department"])
-    depts = [d for d in DEPARTMENTS if d in seen_depts] + [d for d in seen_depts if d not in DEPARTMENTS]
-    by_dept: Dict[str, List[float]] = {d: [] for d in depts}
+        if str(r["department"]) not in seen_depts:
+            seen_depts.append(str(r["department"]))
+    depts = [d for d in DEPARTMENTS if d in seen_depts] + [
+        d for d in seen_depts if d not in DEPARTMENTS
+    ]
+    # Groups (colored boxes within a category) in first-appearance order.
+    groups: List[Optional[str]]
+    if grouped:
+        groups = []
+        for r in rows:
+            g = str(r.get("group", ""))
+            if g not in groups:
+                groups.append(g)
+    else:
+        groups = [None]
+
+    buckets: Dict[tuple, List[float]] = {(d, g): [] for d in depts for g in groups}
     for r in rows:
-        if r["department"] in by_dept:
-            by_dept[r["department"]].append(float(r["salary"]))
-    stats = {d: _five_number_summary(v) for d, v in by_dept.items()}
+        d = str(r["department"])
+        g = str(r.get("group", "")) if grouped else None
+        if (d, g) in buckets:
+            buckets[(d, g)].append(float(r["salary"]))
+    stats = {key: _five_number_summary(v) for key, v in buckets.items() if v}
 
-    all_vals = [v for vals in by_dept.values() for v in vals]
+    all_vals = [v for vals in buckets.values() for v in vals]
     y_min, y_max = min(all_vals), max(all_vals)
-    pad = (y_max - y_min) * 0.08
-    y0, y1 = y_min - pad, y_max + pad
+    if log_y:
+        pos = [v for v in all_vals if v > 0]
+        lo_pos = min(pos) if pos else 1e-3
+        ticks = log_ticks(lo_pos, y_max)
+        if len(ticks) > 5:  # cap to ~4 decades so the boxes stay the focus
+            ticks = ticks[-5:]
+        y_tick_vals = ticks
+        y0, y1 = ticks[0], ticks[-1]
+    else:
+        pad = ((y_max - y_min) or 1.0) * 0.08
+        y0, y1 = y_min - pad, y_max + pad
+        if y_min >= 0:  # a non-negative quantity never dips below zero on the axis
+            y0 = max(0.0, y0)
+        y_tick_vals = [y0 + (y1 - y0) * i / 6 for i in range(7)]
 
-    plot_x, plot_y = 60.0, 118.0
+    def _fmt(v: float) -> str:
+        """Tick / tooltip format adapted to the value range (small values keep decimals)."""
+        if log_y:
+            return f"{v:g}"
+        span = y1 - y0
+        if span >= 100:
+            return f"{v:.0f}"
+        if span >= 10:
+            return f"{v:.1f}"
+        if span >= 1:
+            return f"{v:.2f}"
+        return f"{v:.3f}"
+
+    plot_x, plot_y = 64.0, 118.0
+    if grouped:  # reserve a legend row under the subtitle
+        plot_y = 142.0
     right_margin, bottom_reserved = 30.0, 70.0
     plot_w = width - plot_x - right_margin
     plot_h = height - plot_y - bottom_reserved
     n = len(depts)
     bin_w = plot_w / n if n else plot_w
-    box_w = max(20.0, bin_w * 0.4)
+    ng = len(groups)
+    inner = bin_w * (0.72 if grouped else 0.4)
+    box_w = max(10.0, inner / ng)
+    colors = GROUP_COLORS if grouped else [COLOR_BOX]
 
     def y_for(v: float) -> float:
+        if log_y:
+            return log_position(max(v, y0), y0, y1, plot_y + plot_h, plot_y)
         return plot_y + plot_h - (v - y0) / (y1 - y0) * plot_h
+
+    def cx_for(i: int, j: int) -> float:
+        """Center x of category ``i``, group ``j`` (side-by-side within the bin)."""
+        base = plot_x + i * bin_w + bin_w / 2
+        return base + (j - (ng - 1) / 2.0) * box_w
 
     parts: List[str] = []
     parts.append(svg_open(width, height, "bp-title", "bp-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="bp-title">{xml_escape(title)}</title>')
     parts.append(
-        f'<desc id="bp-desc">Box plot of {n} departments. Range {y_min:.0f} to {y_max:.0f}. '
-        f'Hover or focus a box for its exact median and quartiles.</desc>'
+        f'<desc id="bp-desc">Box plot of {n} categories. Range {_fmt(y_min)} to '
+        f'{_fmt(y_max)}. Hover or focus a box for its exact median and quartiles.</desc>'
     )
 
     parts.append(
@@ -161,10 +229,23 @@ def build_svg(
     )
     parts.append(f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>')
 
+    # ---- legend (grouped only) ----
+    if grouped:
+        lx, ly = 64.0, 96.0
+        for j, gname in enumerate(groups):
+            parts.append(
+                f'<rect x="{lx:.1f}" y="{ly - 10:.1f}" width="13" height="13" rx="2.5" '
+                f'fill="{colors[j % len(colors)]}" fill-opacity="0.85"/>'
+            )
+            label = xml_escape(str(gname))
+            parts.append(
+                f'<text x="{lx + 19:.1f}" y="{ly + 1:.1f}" font-size="12.5" '
+                f'fill="{INK}">{label}</text>'
+            )
+            lx += 19 + 8.2 * len(str(gname)) + 26
+
     # ---- y-axis gridlines ----
-    y_ticks = 6
-    for i in range(y_ticks + 1):
-        val = y0 + (y1 - y0) * i / y_ticks
+    for val in y_tick_vals:
         ty = y_for(val)
         parts.append(
             f'<line x1="{plot_x:.1f}" y1="{ty:.1f}" x2="{plot_x + plot_w:.1f}" y2="{ty:.1f}" '
@@ -172,44 +253,52 @@ def build_svg(
         )
         parts.append(
             f'<text x="{plot_x - 10:.1f}" y="{ty + 4:.1f}" font-size="11" font-family="{mono_family}" '
-            f'fill="{SECONDARY}" text-anchor="end">{val:.0f}</text>'
+            f'fill="{SECONDARY}" text-anchor="end">{_fmt(val)}</text>'
         )
     parts.append(
         f'<text x="18" y="{plot_y + plot_h / 2:.1f}" font-size="13" fill="{INK}" '
-        f'text-anchor="middle" transform="rotate(-90 18 {plot_y + plot_h / 2:.1f})">Salary (thousands EUR)</text>'
+        f'text-anchor="middle" transform="rotate(-90 18 {plot_y + plot_h / 2:.1f})">'
+        f'{xml_escape(y_label)}</text>'
     )
 
     # ---- boxes ----
+    cap = max(4.0, box_w * 0.32)  # whisker cap half-width
     for i, d in enumerate(depts):
-        s = stats[d]
-        cx = plot_x + i * bin_w + bin_w / 2
-        x_left = cx - box_w / 2
-        y_q1, y_q3 = y_for(s["q1"]), y_for(s["q3"])
-        y_med = y_for(s["med"])
-        y_whisk_lo, y_whisk_hi = y_for(s["whisker_lo"]), y_for(s["whisker_hi"])
+        for j, gname in enumerate(groups):
+            s = stats.get((d, gname))
+            if not s:
+                continue
+            color = colors[j % len(colors)]
+            cx = cx_for(i, j)
+            x_left = cx - box_w / 2
+            y_q1, y_q3 = y_for(s["q1"]), y_for(s["q3"])
+            y_med = y_for(s["med"])
+            y_whisk_lo, y_whisk_hi = y_for(s["whisker_lo"]), y_for(s["whisker_hi"])
 
-        parts.append(f'<line x1="{cx:.1f}" y1="{y_whisk_hi:.1f}" x2="{cx:.1f}" y2="{y_q3:.1f}" stroke="{INK}" stroke-width="1.2"/>')
-        parts.append(f'<line x1="{cx:.1f}" y1="{y_q1:.1f}" x2="{cx:.1f}" y2="{y_whisk_lo:.1f}" stroke="{INK}" stroke-width="1.2"/>')
-        parts.append(f'<line x1="{x_left + box_w * 0.25:.1f}" y1="{y_whisk_hi:.1f}" x2="{x_left + box_w * 0.75:.1f}" y2="{y_whisk_hi:.1f}" stroke="{INK}" stroke-width="1.2"/>')
-        parts.append(f'<line x1="{x_left + box_w * 0.25:.1f}" y1="{y_whisk_lo:.1f}" x2="{x_left + box_w * 0.75:.1f}" y2="{y_whisk_lo:.1f}" stroke="{INK}" stroke-width="1.2"/>')
+            parts.append(f'<line x1="{cx:.1f}" y1="{y_whisk_hi:.1f}" x2="{cx:.1f}" y2="{y_q3:.1f}" stroke="{INK}" stroke-width="1.2"/>')
+            parts.append(f'<line x1="{cx:.1f}" y1="{y_q1:.1f}" x2="{cx:.1f}" y2="{y_whisk_lo:.1f}" stroke="{INK}" stroke-width="1.2"/>')
+            parts.append(f'<line x1="{cx - cap:.1f}" y1="{y_whisk_hi:.1f}" x2="{cx + cap:.1f}" y2="{y_whisk_hi:.1f}" stroke="{INK}" stroke-width="1.2"/>')
+            parts.append(f'<line x1="{cx - cap:.1f}" y1="{y_whisk_lo:.1f}" x2="{cx + cap:.1f}" y2="{y_whisk_lo:.1f}" stroke="{INK}" stroke-width="1.2"/>')
 
-        tip = (
-            f"{d}: median {s['med']:.0f}, Q1 {s['q1']:.0f}, Q3 {s['q3']:.0f}, "
-            f"whiskers {s['whisker_lo']:.0f}-{s['whisker_hi']:.0f}, n={s['n']}"
-        )
-        parts.append(
-            f'<rect class="box" tabindex="0" x="{x_left:.1f}" y="{y_q3:.1f}" '
-            f'width="{box_w:.1f}" height="{max(1.0, y_q1 - y_q3):.1f}" '
-            f'fill="{COLOR_BOX}" fill-opacity="0.85"><title>{xml_escape(tip)}</title></rect>'
-        )
-        parts.append(
-            f'<line x1="{x_left:.1f}" y1="{y_med:.1f}" x2="{x_left + box_w:.1f}" y2="{y_med:.1f}" '
-            f'stroke="{BG}" stroke-width="2"/>'
-        )
-        for o in s["outliers"]:
-            parts.append(
-                f'<circle cx="{cx:.1f}" cy="{y_for(o):.1f}" r="3" fill="none" stroke="{COLOR_BOX}" stroke-width="1.2"/>'
+            gtxt = f"{gname}, " if grouped else ""
+            tip = (
+                f"{gtxt}{d}: median {_fmt(s['med'])}, Q1 {_fmt(s['q1'])}, "
+                f"Q3 {_fmt(s['q3'])}, whiskers {_fmt(s['whisker_lo'])}-"
+                f"{_fmt(s['whisker_hi'])}, n={s['n']}"
             )
+            parts.append(
+                f'<rect class="box" tabindex="0" x="{x_left:.1f}" y="{y_q3:.1f}" '
+                f'width="{box_w:.1f}" height="{max(1.0, y_q1 - y_q3):.1f}" '
+                f'fill="{color}" fill-opacity="0.85"><title>{xml_escape(tip)}</title></rect>'
+            )
+            parts.append(
+                f'<line x1="{x_left:.1f}" y1="{y_med:.1f}" x2="{x_left + box_w:.1f}" y2="{y_med:.1f}" '
+                f'stroke="{BG}" stroke-width="2"/>'
+            )
+            for o in s["outliers"]:
+                parts.append(
+                    f'<circle cx="{cx:.1f}" cy="{y_for(o):.1f}" r="2.5" fill="none" stroke="{color}" stroke-width="1.2"/>'
+                )
 
     # ---- x-axis ----
     axis_y = plot_y + plot_h
@@ -225,7 +314,7 @@ def build_svg(
         )
     parts.append(
         f'<text x="{plot_x + plot_w / 2:.1f}" y="{axis_y + 44:.1f}" font-size="13" '
-        f'fill="{INK}" text-anchor="middle">Department</text>'
+        f'fill="{INK}" text-anchor="middle">{xml_escape(x_label)}</text>'
     )
 
     parts.append(fullscreen_control(width, height, mode))
@@ -244,6 +333,9 @@ def make_boxplot(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    x_label: str = "Department",
+    y_label: str = "Salary (thousands EUR)",
+    log_y: bool = False,
 ) -> Path:
     """Render a hand-authored box plot and write the SVG to *out*.
 
@@ -275,7 +367,8 @@ def make_boxplot(
     True
     """
     svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
-                     mode=mode, accessibility=accessibility, theme=theme)
+                     mode=mode, accessibility=accessibility, theme=theme,
+                     x_label=x_label, y_label=y_label, log_y=log_y)
     dest = Path(out) if out else svg_example_path(__file__, "boxplot")
     return write_svg(dest, svg, theme=theme)
 
