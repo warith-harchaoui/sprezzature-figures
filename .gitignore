@@ -15,6 +15,7 @@ build/
 !assets/paysage.svg
 
 .private/
+sideprojects/
 # Coverage reports
 .coverage
 .coverage.*

@@ -2,7 +2,7 @@
 
 ## Place de sprezzature-figures dans l'écosystème
 
-`sprezzature-figures` est le module de visualisation de données de la suite [sprezzature](https://harchaoui.org/warith/sprezzature/), un ensemble de paquets Python pour produire du contenu web de qualité publication.
+`sprezzature-figures` est le module de visualisation de données de la suite [sprezzature](https://sprezzature.ai/), un ensemble de paquets Python pour produire du contenu web de qualité publication.
 
 ```
 suite sprezzature

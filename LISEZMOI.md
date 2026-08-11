@@ -5,11 +5,11 @@
 [![Python ≥3.10](https://img.shields.io/badge/python-%3E%3D3.10-blue)](https://www.python.org/)
 [![Licence : BSD-3-Clause](https://img.shields.io/badge/licence-BSD--3--Clause-green)](LICENSE)
 
-[![logo](assets/logo.png)](https://harchaoui.org/warith/sprezzature/)
+[![logo](assets/logo.png)](https://sprezzature.ai/)
 
 124 types de graphiques de qualité publication, presque tous en SVG écrit à la main (aucun Vega), avec une poignée de générateurs matplotlib pour des sorties statistiques (inférence causale, explicabilité), utilisables comme bibliothèque Python ou en ligne de commande.
 
-Fait partie de la suite [sprezzature](https://harchaoui.org/warith/sprezzature/).
+Fait partie de la suite [sprezzature](https://sprezzature.ai/).
 
 ---
 
@@ -354,4 +354,4 @@ BSD 3-Clause. Voir [LICENSE](LICENSE).
 
 ## Auteur
 
-Warith Harchaoui · warith.harchaoui@gmail.com · [harchaoui.org/warith/sprezzature](https://harchaoui.org/warith/sprezzature/)
+Warith Harchaoui · warith.harchaoui@gmail.com · [harchaoui.org/warith/sprezzature](https://sprezzature.ai/)

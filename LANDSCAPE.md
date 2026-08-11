@@ -1,6 +1,6 @@
 # Landscape
 
-`sprezzature-figures` is the data-visualisation skill of the [sprezzature](https://harchaoui.org/warith/sprezzature/) suite, a set of Python packages for building publication-quality web content.
+`sprezzature-figures` is the data-visualisation skill of the [sprezzature](https://sprezzature.ai/) suite, a set of Python packages for building publication-quality web content.
 
 ## How it fits in the ecosystem
 
