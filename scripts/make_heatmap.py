@@ -234,7 +234,7 @@ def build_svg(
         style_rows.append(f"svg:has(.hour-{j}:hover) .hour-{j}{{opacity:1;}}")
     style_rows.append("@media (prefers-reduced-motion: reduce){.cell{transition:none;}}")
     style_rows.append(".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}")
-    style_rows.append(".hit:hover~.tip,.hit:focus~.tip{opacity:1}")
+    style_rows.append(".hit:hover+.tip,.hit:focus+.tip{opacity:1}")
     style_rows.append("@media (prefers-reduced-motion:reduce){.tip{transition:none}}")
     parts.append("<style>\n" + "\n".join(style_rows) + "\n</style>")
 

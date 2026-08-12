@@ -336,7 +336,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
         f".arc:focus {{ stroke: {_FOCUS}; stroke-width: 3; }}",
         f".label-hit:focus {{ outline: 3px solid {_FOCUS}; outline-offset: 2px; }}",
         ".tip { opacity: 0; pointer-events: none; transition: opacity .12s ease; }",
-        ".hit:hover~.tip, .hit:focus~.tip { opacity: 1; }",
+        ".hit:hover+.tip, .hit:focus+.tip { opacity: 1; }",
         "@media (prefers-reduced-motion: reduce) { .tip { transition: none; } }",
         # Marching-ants flow on the directional arrow, ON only when the reader
         # has not asked for reduced motion. A raster export freezes frame 0.

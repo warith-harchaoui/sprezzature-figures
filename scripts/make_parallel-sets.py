@@ -389,7 +389,7 @@ def build_svg(
         ".flows .ribbon:hover{opacity:.96;}"
         ".flows .ribbon:focus{opacity:.96;outline:none;}"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
         "@media (prefers-reduced-motion: reduce){.ribbon{transition:none;}.tip{transition:none}}"
         + os_adaptive_style(
             outcome_series,

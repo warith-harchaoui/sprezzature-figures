@@ -497,7 +497,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
         f"{hover_rules}"
         ".flow:focus,.arc-hit:focus{outline:none}"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
         "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
         + adaptive
         + fc_style

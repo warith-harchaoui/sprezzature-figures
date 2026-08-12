@@ -328,7 +328,7 @@ def render_svg(
         ".tile:hover,.tile:focus{filter:brightness(1.06);transform:scale(1.015);outline:none;}"
         ".tile:focus{stroke:#1D1D1F;stroke-width:2;}"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
         "@media (prefers-reduced-motion: reduce){.tile{transition:none;}.tile:hover,.tile:focus{transform:none;}.tip{transition:none}}"
         + os_adaptive_style(tile_series, role="fill")
         + fcp_style

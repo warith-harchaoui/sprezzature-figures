@@ -444,7 +444,7 @@ def build_svg(
         + contrast_block
         + os_dark_style(extra='[stroke="#1D1D1F"]{stroke:#F2F2F7;}')
         + ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        + ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        + ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
         + "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
         + "</style>"
     )

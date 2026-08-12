@@ -136,7 +136,7 @@ def build_svg(
         "svg:hover .band-group,svg:focus-within .band-group{opacity:.45;}"
         + "".join(f'svg:has(.b{i}:hover,.b{i}:focus) .b{i}{{opacity:1;}}' for i in range(len(services)))
         + ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
         + "@media (prefers-reduced-motion: reduce){.band-group{transition:none;}"
         ".tip{transition:none}}"
         "</style>"

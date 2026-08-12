@@ -124,7 +124,7 @@ def build_svg(
         ".wedge:hover,.wedge:focus{opacity:.75;outline:none;}"
         "@media (prefers-reduced-motion: reduce){.wedge{transition:none;}}"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
         "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
         "</style>"
     )

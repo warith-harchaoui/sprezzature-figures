@@ -280,7 +280,7 @@ def build_svg(
         ".row:hover .dot,.row:focus .dot{stroke:#1D1D1F;stroke-width:2}",
         ".row:focus{outline:none}",
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}",
-        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}",
+        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}",
         "@media (prefers-reduced-motion:reduce){.tip{transition:none}}",
     ]
     women_series = {".mk-women": women_col}

@@ -440,7 +440,7 @@ def build_svg(
         ".seg{transition:opacity .18s ease}",
         ".dot:focus{outline:none}",
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}",
-        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}",
+        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}",
         "@media (prefers-reduced-motion: reduce){.tip{transition:none}}",
     ]
     for _seg, slug in seg_slug.items():

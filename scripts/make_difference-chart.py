@@ -636,7 +636,7 @@ def build_svg(
     diff_series = {".diff-above": _ABOVE_HUE_C, ".diff-below": _BELOW_HUE_C}
     style_block = (
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
         "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
     )
     style_block += os_adaptive_style(diff_series, role="fill")

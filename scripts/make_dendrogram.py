@@ -395,7 +395,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
         "#tree .cluster:hover .branch,#tree .cluster:focus-within .branch{opacity:1}"
         ".leaf-hit:focus{outline:none}"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
         "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
         + adaptive
         # Additive dark mode: flip paper + ink and darken the hairline gridlines

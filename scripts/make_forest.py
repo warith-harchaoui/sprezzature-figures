@@ -300,7 +300,7 @@ def build_svg(
         "[data-anim]{opacity:1 !important;animation:none !important}"
         "}",
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}",
-        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}",
+        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}",
         "@media (prefers-reduced-motion:reduce){.tip{transition:none}}",
     ]
     glyph_series = {".box-sig": green, ".box-cross": blue, ".diamond": orange}

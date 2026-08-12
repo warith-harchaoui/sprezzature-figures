@@ -357,7 +357,7 @@ def render_svg(
         ".bar:hover,.bar:focus{filter:brightness(1.07);transform:scaleY(1.04);outline:none;}"
         ".bar:focus{stroke:#1D1D1F;stroke-width:2.5;}"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
         "@media (prefers-reduced-motion: reduce){.bar{transition:none;}"
         ".bar:hover,.bar:focus{transform:none;}.tip{transition:none}}"
         "@media (prefers-contrast: more){"

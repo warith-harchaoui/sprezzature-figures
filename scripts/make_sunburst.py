@@ -210,7 +210,7 @@ def build_svg(
         ".arc{transition:opacity .15s ease;cursor:default;}"
         ".arc:hover,.arc:focus{opacity:.72;outline:none;}"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
         "@media (prefers-reduced-motion: reduce){.arc{transition:none;}"
         ".tip{transition:none}}"
         "</style>"

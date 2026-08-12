@@ -549,7 +549,7 @@ def build_svg(
             extra=".paper{fill:#0B0B0C;}[stroke=\"#D2D2D7\"]{stroke:#3A3A3C;}",
         )
         + ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        + ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        + ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
         + "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
         + "</style>"
     )

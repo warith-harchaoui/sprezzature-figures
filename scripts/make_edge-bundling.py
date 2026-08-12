@@ -485,7 +485,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
         "#leaves .leaf:hover .leaf-dot,#leaves .leaf:focus .leaf-dot{r:9}"
         ".edge:focus,.leaf:focus{outline:none}"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
         "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
         + os_adaptive_style(subsys_series, role="fill", forced=True)
         # Additive dark mode: flip paper + the two ink tiers (data hues untouched).

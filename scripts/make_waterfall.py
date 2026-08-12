@@ -197,7 +197,7 @@ def build_svg(
     style = (
         os_adaptive_style({}) + "\n" + os_dark_style() + "\n"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
         "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
     )
     fs_ctrl = fullscreen_control(WIDTH, HEIGHT)

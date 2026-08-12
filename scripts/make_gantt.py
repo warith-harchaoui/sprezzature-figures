@@ -139,7 +139,7 @@ def build_svg(
         ".task:hover,.task:focus{filter:brightness(1.08);outline:none;}"
         "@media (prefers-reduced-motion: reduce){.task{transition:none;}}"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
         "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
         "</style>"
     )
