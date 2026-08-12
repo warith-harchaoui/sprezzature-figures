@@ -57,7 +57,7 @@ from typing import Any, Dict, List, Optional, Tuple
 # without the dataviz tier).
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
-from _svg import svg_open, xml_escape  # noqa: E402
+from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
@@ -488,7 +488,9 @@ def build_svg(
         "transform-origin: center; }",
         ".stn:hover, .stn:focus { transform: scale(1.16); }",
         ".stn:focus { outline: none; }",
-        "@media (prefers-reduced-motion: reduce) { .stn { transition: none; } }",
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}",
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}",
+        "@media (prefers-reduced-motion: reduce) { .stn { transition: none; } .tip{transition:none} }",
     ]
     # OS-adaptive overrides (additive; the default render stays byte-identical
     # because every rule below lives inside a media query). The two airmasses —
@@ -598,11 +600,22 @@ def build_svg(
         # here — position, staff direction and the airmass call-outs already
         # separate the two sectors).
         air_cls = "warm" if col == warm else "cold"
+        stn_tip = (
+            f'{_xml(name)}: {rounded} kt from {_dir_name(dir_from)} '
+            f'({int(dir_from)}°)'
+        )
         parts.append(
-            f'<g class="stn air-{air_cls}" tabindex="0" role="listitem">'
-            f'<title>{_xml(name)}: {rounded} kt from {_dir_name(dir_from)} '
-            f'({int(dir_from)}°)</title>'
-            f'{_barb_glyph(cx, cy, dir_from, speed, col)}'
+            f'<g class="stn air-{air_cls}" tabindex="0" role="listitem" '
+            f'aria-label="{stn_tip}">'
+            f'<circle class="hit" cx="{cx:.1f}" cy="{cy:.1f}" r="18" '
+            f'fill="transparent"/>'
+            + tooltip_bubble(
+                cx, cy - 22,
+                [name, f"{rounded} kt from {_dir_name(dir_from)}", f"{int(dir_from)}°"],
+                anchor="middle", canvas_w=_WIDTH, canvas_h=_HEIGHT,
+                ink=_INK, secondary=_SUBTLE, border="#E5E5EA",
+            )
+            + f'{_barb_glyph(cx, cy, dir_from, speed, col)}'
             f'</g>'
         )
         if name in _LABELLED:

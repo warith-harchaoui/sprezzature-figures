@@ -60,9 +60,9 @@ from typing import Any, Dict, List, Optional, Tuple
 from xml.sax.saxutils import escape
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _style import BG, INK, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
+from _style import BG, GRIDLINE, INK, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _svg import svg_open  # noqa: E402
+from _svg import svg_open, tooltip_bubble  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
@@ -484,6 +484,9 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
         # can see which leaf they landed on.
         "#leaves .leaf:hover .leaf-dot,#leaves .leaf:focus .leaf-dot{r:9}"
         ".edge:focus,.leaf:focus{outline:none}"
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
         + os_adaptive_style(subsys_series, role="fill", forced=True)
         # Additive dark mode: flip paper + the two ink tiers (data hues untouched).
         + os_dark_style()
@@ -550,11 +553,18 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
         gid = grad_ids[(su, sv)]
         tip = f"{u} ({su}) → {v} ({sv})"
         parts.append(
-            f'<path class="edge" tabindex="0" role="img" '
+            f'<path class="edge hit" tabindex="0" role="img" '
             f'aria-label="{escape(tip)}" d="{d}" '
             f'stroke="url(#{gid})" stroke-width="2.6" stroke-opacity="0.68" '
             f'stroke-linecap="round">'
             f'<title>{escape(tip)}</title></path>'
+        )
+        emx, emy = pts[len(pts) // 2]
+        parts.append(
+            tooltip_bubble(
+                emx, emy, [f"{u} → {v}", f"{su} to {sv}"],
+                canvas_w=WIDTH, canvas_h=HEIGHT, ink=INK, secondary=SUBINK, border=GRIDLINE,
+            )
         )
     parts.append("</g>")
 
@@ -589,7 +599,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
             f"depends on {outdeg[mod]}"
         )
         parts.append(
-            f'<g class="leaf" tabindex="0" role="img" aria-label="{escape(tip)}">'
+            f'<g class="leaf hit" tabindex="0" role="img" aria-label="{escape(tip)}">'
             f'<title>{escape(tip)}</title>'
             f'<circle class="leaf-dot leaf-{_slug(str(lf["subsys"]))}" '
             f'cx="{lf["x"]:.2f}" cy="{lf["y"]:.2f}" '
@@ -600,6 +610,13 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
             f'transform="rotate({rot:.2f} {lx:.2f} {ly:.2f})">'
             f'{escape(mod)}</text>'
             f'</g>'
+        )
+        parts.append(
+            tooltip_bubble(
+                lf["x"], lf["y"] - r_dot - 10,
+                [f"{mod} ({lf['subsys']})", f"depended on by {indeg[mod]}", f"depends on {outdeg[mod]}"],
+                canvas_w=WIDTH, canvas_h=HEIGHT, ink=INK, secondary=SUBINK, border=GRIDLINE,
+            )
         )
     parts.append("</g>")
 

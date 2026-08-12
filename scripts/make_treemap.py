@@ -30,8 +30,8 @@ from typing import Any, Dict, List, Optional
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _style import BG, INK, SECONDARY, qualitative_sequence  # noqa: E402
-from _svg import svg_open, xml_escape  # noqa: E402
+from _style import BG, GRIDLINE, INK, SECONDARY, qualitative_sequence  # noqa: E402
+from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 from _textfit import fit_font_size, text_width, wrap_to_width  # noqa: E402
 
@@ -274,7 +274,10 @@ def build_svg(
         "<style>"
         ".leaf{transition:opacity .15s ease;cursor:default;}"
         ".leaf:hover,.leaf:focus{opacity:.72;outline:none;}"
-        "@media (prefers-reduced-motion: reduce){.leaf{transition:none;}}"
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        "@media (prefers-reduced-motion: reduce){.leaf{transition:none;}"
+        ".tip{transition:none}}"
         "</style>"
     )
 
@@ -301,15 +304,25 @@ def build_svg(
         leaf_area = crect["dx"] * crect["dy"]
         leaf_sizes = _normalize(leaf_vals, leaf_area)
         leaf_rects = _squarify(leaf_sizes, crect["x"], crect["y"], crect["dx"], crect["dy"])
+        cat_total = sum(leaf_vals) or 1.0
         for row, r in zip(leaves, leaf_rects):
             val_txt = f"{float(row['value']):,.0f}"
             unit_suffix = f" {value_unit}" if value_unit else ""
+            share = float(row["value"]) / cat_total * 100.0
             tip = f"{cat} / {row['name']}: {val_txt}{unit_suffix}"
             parts.append(
-                f'<rect class="leaf" tabindex="0" x="{r["x"]:.1f}" y="{r["y"]:.1f}" '
+                f'<rect class="leaf hit" tabindex="0" x="{r["x"]:.1f}" y="{r["y"]:.1f}" '
                 f'width="{max(0.0, r["dx"]):.1f}" height="{max(0.0, r["dy"]):.1f}" '
-                f'fill="{color}" fill-opacity="0.82" stroke="{BG}" stroke-width="2">'
-                f'<title>{xml_escape(tip)}</title></rect>'
+                f'fill="{color}" fill-opacity="0.82" stroke="{BG}" stroke-width="2" '
+                f'role="img" aria-label="{xml_escape(tip)}"/>'
+            )
+            parts.append(
+                tooltip_bubble(
+                    r["x"] + max(0.0, r["dx"]) / 2.0, r["y"] - 4,
+                    [row["name"], f"{val_txt}{unit_suffix}", f"{share:.1f}% of {cat}"],
+                    anchor="middle", canvas_w=width, canvas_h=height,
+                    ink=INK, secondary=SECONDARY, border=GRIDLINE,
+                )
             )
             # Fit the label to the leaf's actual pixel box instead of assuming a
             # fixed threshold fits any string: a long name (French routinely runs

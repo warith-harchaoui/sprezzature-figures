@@ -43,7 +43,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _render import svg_example_path, write_svg  # noqa: E402
-from _svg import fmt_compact  # noqa: E402
+from _svg import fmt_compact, tooltip_bubble  # noqa: E402
 from _style import os_dark_style  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
@@ -443,6 +443,9 @@ def build_svg(
         "<style>"
         + contrast_block
         + os_dark_style(extra='[stroke="#1D1D1F"]{stroke:#F2F2F7;}')
+        + ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        + ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        + "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
         + "</style>"
     )
     parts.append(f'<rect width="{width}" height="{height}" rx="18" fill="{_BG}"/>')
@@ -528,9 +531,19 @@ def build_svg(
         )
         # Transparent hit-rect over the whole slot carries the native tooltip.
         reveal_group.append(
-            f'<rect x="{fmt_compact(m_left)}" y="{fmt_compact(slot_top)}" '
+            f'<rect class="hit" tabindex="0" x="{fmt_compact(m_left)}" y="{fmt_compact(slot_top)}" '
             f'width="{fmt_compact(plot_w)}" height="{fmt_compact(slot_h)}" '
             f'fill="transparent"><title>{tip}</title></rect>'
+        )
+        reveal_group.append(
+            tooltip_bubble(
+                x_of(float(peak_hour)), slot_top - 10,
+                [label.split("  ")[0],
+                 f"+{peak_up:.0f} / {peak_dn:.0f} pts vs {float(np.mean(data[label])):.0f}% mean",
+                 f"biggest swing at {peak_hour:02d}:00"],
+                anchor="middle", canvas_w=width, canvas_h=height,
+                ink=_INK, secondary=_SECONDARY, border="#D8D8DD",
+            )
         )
 
     reveal_group.append("</g>")

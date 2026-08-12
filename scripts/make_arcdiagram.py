@@ -55,7 +55,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import BG, INK, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control, hover_isolate_css  # noqa: E402
-from _svg import svg_open  # noqa: E402
+from _svg import svg_open, tooltip_bubble  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
 # ------------------------------------------------------------------
@@ -320,6 +320,9 @@ def build_svg(
         + adaptive_nodes
         + forced_block
         + os_dark_style()
+        + ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        + ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        + "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
         + "</style>"
     )
 
@@ -354,7 +357,7 @@ def build_svg(
         key=lambda item: abs(pos[item[1][0]] - pos[item[1][1]]),
     )
     for _order_i, (_idx, (a, b, w)) in enumerate(ordered):
-        d, _ry = _arc_path(pos[a], pos[b])
+        d, ry = _arc_path(pos[a], pos[b])
         # The arc takes the colour of the bridge node when it touches one,
         # else the shared group's colour (both endpoints in one group).
         grp_a, grp_b = node_group[a], node_group[b]
@@ -371,11 +374,20 @@ def build_svg(
         # per-group hook without changing the default paint.
         arc_grp = GROUP_BRIDGE if is_bridge else grp_a
         parts.append(
-            f'<path class="arc arc-{_idx} arc-{arc_grp.lower()}" tabindex="0" role="img" '
+            f'<path class="arc arc-{_idx} arc-{arc_grp.lower()} hit" tabindex="0" role="img" '
             f'aria-label="{escape(tip)}" d="{d}" '
             f'stroke="{color}" stroke-width="{stroke_w:.2f}" '
             f'stroke-opacity="{opacity}">'
             f'<title>{escape(tip)}</title></path>'
+        )
+        arc_peak_x = (pos[a] + pos[b]) / 2.0
+        arc_peak_y = BASELINE_Y - ry
+        parts.append(
+            tooltip_bubble(
+                arc_peak_x, arc_peak_y - 10,
+                [f"{a} & {b}", f"{w} joint paper{'s' if w != 1 else ''}"],
+                canvas_w=WIDTH, canvas_h=HEIGHT, ink=INK, secondary=SUBINK, border=HAIR,
+            )
         )
     parts.append("</g>")
 
@@ -393,10 +405,17 @@ def build_svg(
         }[grp]
         tip = f"{name} — {role}, {deg} co-author{'s' if deg != 1 else ''}"
         parts.append(
-            f'<circle class="node node-{grp.lower()}" tabindex="0" role="img" '
+            f'<circle class="node node-{grp.lower()} hit" tabindex="0" role="img" '
             f'aria-label="{escape(tip)}" cx="{x:.2f}" cy="{BASELINE_Y}" '
             f'r="{r}" fill="{color}" stroke="{BG}" stroke-width="3">'
             f'<title>{escape(tip)}</title></circle>'
+        )
+        parts.append(
+            tooltip_bubble(
+                x, BASELINE_Y - r - 8,
+                [name, role, f"{deg} co-author{'s' if deg != 1 else ''}"],
+                canvas_w=WIDTH, canvas_h=HEIGHT, ink=INK, secondary=SUBINK, border=HAIR,
+            )
         )
         # Label below the line, rotated so 11 names never collide. The
         # anchor sits a little left of the dot and the text runs down-left at

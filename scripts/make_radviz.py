@@ -50,7 +50,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import _style
 from _style import forced_color_patterns, os_adaptive_style, os_dark_style
-from _svg import point_on_circle
+from _svg import point_on_circle, tooltip_bubble
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
@@ -338,11 +338,19 @@ def _disc_and_anchors(anchors: List[Tuple[float, float]]) -> str:
             f'    <text x="{lx:.1f}" y="{ly + vshift:.1f}" font-size="19" '
             f'fill="{INK}" text-anchor="{anchor}" font-weight="500">{name}</text>'
         )
+        anchor_tip = f"Anchor: {name}. Kernels rich in this measurement are pulled toward it."
         parts.append(
-            f'    <circle class="anchor" cx="{ax:.1f}" cy="{ay:.1f}" r="7" '
-            f'fill="{INK}" stroke="{WHITE}" stroke-width="2.5">'
-            f"<title>Anchor: {name}. Kernels rich in this measurement are pulled toward it.</title>"
-            f"</circle>"
+            f'    <circle class="anchor hit" tabindex="0" cx="{ax:.1f}" cy="{ay:.1f}" r="7" '
+            f'fill="{INK}" stroke="{WHITE}" stroke-width="2.5" '
+            f'role="img" aria-label="{anchor_tip}"/>'
+        )
+        parts.append(
+            tooltip_bubble(
+                ax, ay - 20,
+                [name, "Anchor: pulls rich kernels toward it"],
+                anchor="middle", canvas_w=WIDTH, canvas_h=HEIGHT,
+                ink=INK, secondary=SUBTLE, border=GRID,
+            )
         )
     parts.append("  </g>")
     return "\n".join(parts)
@@ -392,12 +400,23 @@ def _points(
             x, y = project(r["norm"], anchors)  # type: ignore[arg-type]
             sx += x
             sy += y
-            tip = f"{name} kernel"
+            norm_vec = r["norm"]  # type: ignore[assignment]
+            dom_idx = max(range(len(norm_vec)), key=lambda j: norm_vec[j])  # type: ignore[index]
+            dom_feat = FEATURES[dom_idx]
+            dom_val = r["raw"][dom_idx]  # type: ignore[index]
+            tip = f"{name} kernel — pulled toward {dom_feat}"
             parts.append(
-                f'      <circle class="pt" cx="{x:.1f}" cy="{y:.1f}" r="6.5" '
-                f'stroke="{WHITE}" stroke-width="1.4" fill-opacity="0.78">'
-                f"<title>{tip}</title>"
-                f"</circle>"
+                f'      <circle class="pt hit" tabindex="0" cx="{x:.1f}" cy="{y:.1f}" r="6.5" '
+                f'stroke="{WHITE}" stroke-width="1.4" fill-opacity="0.78" '
+                f'role="img" aria-label="{tip}"/>'
+            )
+            parts.append(
+                tooltip_bubble(
+                    x, y - 16,
+                    [name, f"Dominant: {dom_feat}", f"{dom_feat}: {dom_val:.2f}"],
+                    anchor="middle", canvas_w=WIDTH, canvas_h=HEIGHT,
+                    ink=INK, secondary=SUBTLE, border=GRID,
+                )
             )
         parts.append("    </g>")
         n = max(1, len(cls_rows))
@@ -575,6 +594,9 @@ def build_svg(
     .anchor {{ transition: r .12s ease; }}
     .anchor:hover {{ r: 10; }}
     text {{ fill: {INK}; }}
+    .tip{{opacity:0;pointer-events:none;transition:opacity .12s ease}}
+    .hit:hover~.tip,.hit:focus~.tip{{opacity:1}}
+    @media (prefers-reduced-motion: reduce){{.tip{{transition:none}}}}
 {contrast_block}
 {fcp_style}
 {os_dark_style(extra='text{fill:#F2F2F7;}[stroke="#E5E5EA"]{stroke:#2C2C2E;}')}

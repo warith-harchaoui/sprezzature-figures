@@ -57,8 +57,8 @@ import sys
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
-from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
-from _svg import svg_open  # noqa: E402
+from _style import GRIDLINE, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
+from _svg import svg_open, tooltip_bubble  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
 
@@ -299,6 +299,9 @@ def build_svg(
         ".grow{animation:none}"
         "[data-anim]{opacity:1 !important;animation:none !important}"
         "}",
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}",
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}",
+        "@media (prefers-reduced-motion:reduce){.tip{transition:none}}",
     ]
     glyph_series = {".box-sig": green, ".box-cross": blue, ".diamond": orange}
     style_rows.append(os_adaptive_style(glyph_series, role="fill", forced=True))
@@ -368,7 +371,7 @@ def build_svg(
         # (and any raster export, which never runs the transition) settles
         # to the same finished row this whisker/box/cap markup already drew.
         parts.append(
-            f'<g class="row" data-anim="1" tabindex="0" role="img" aria-label="{tip}" '
+            f'<g class="row hit" data-anim="1" tabindex="0" role="img" aria-label="{tip}" '
             f'style="opacity:0;animation:fp-in .5s ease forwards;'
             f'animation-delay:{i * 70}ms">'
         )
@@ -426,6 +429,15 @@ def build_svg(
             f'font-family="Roboto Mono, monospace" fill="{ink}">{est}</text>'
         )
         parts.append("</g>")
+        parts.append(
+            tooltip_bubble(
+                cx, cy - half - 12,
+                [str(s["label"]), f'OR {float(s["or_"]):.2f} (95% CI {float(s["lo"]):.2f}-{float(s["hi"]):.2f})',
+                 f'weight {pct}% - {sig_note}'],
+                anchor="middle", canvas_w=width, canvas_h=height,
+                ink=ink, secondary=secondary, border=GRIDLINE,
+            )
+        )
 
     # --- pooled diamond ------------------------------------------
     dy = diamond_y + row_h / 2
@@ -442,7 +454,7 @@ def build_svg(
         f'(95% CI {lo_p:.2f}–{hi_p:.2f}), {pooled_het}'
     )
     parts.append(
-        f'<g class="row" data-anim="1" tabindex="0" role="img" aria-label="{pooled_tip}" '
+        f'<g class="row hit" data-anim="1" tabindex="0" role="img" aria-label="{pooled_tip}" '
         f'style="opacity:0;animation:fp-in .5s ease forwards;'
         f'animation-delay:{n_rows * 70}ms">'
     )
@@ -470,6 +482,14 @@ def build_svg(
         f'{or_p:.2f} ({lo_p:.2f}–{hi_p:.2f})</text>'
     )
     parts.append("</g>")
+    parts.append(
+        tooltip_bubble(
+            dcx, dy - dh - 12,
+            [pooled_label, f'OR {or_p:.2f} (95% CI {lo_p:.2f}-{hi_p:.2f})', pooled_het],
+            anchor="middle", canvas_w=width, canvas_h=height,
+            ink=ink, secondary=secondary, border=GRIDLINE,
+        )
+    )
 
     # --- x-axis (log ticks) --------------------------------------
     axis_y = axis_bottom + 8

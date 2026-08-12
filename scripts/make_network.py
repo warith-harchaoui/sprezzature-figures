@@ -48,7 +48,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import BG, INK, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
-from _svg import svg_open  # noqa: E402
+from _svg import svg_open, tooltip_bubble  # noqa: E402
 from _textfit import text_width  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
@@ -526,6 +526,9 @@ def build_svg(
         css_lines.append(f"{cond} .edge.i-{nid}{{opacity:.85}}")
     css_lines.append(".node:focus{outline:none}")
     css_lines.append(".node circle:focus{outline:none}")
+    css_lines.append(".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}")
+    css_lines.append(".hit:hover~.tip,.hit:focus~.tip{opacity:1}")
+    css_lines.append("@media (prefers-reduced-motion: reduce){.tip{transition:none}}")
     # OS-adaptive overrides (additive; the default render is byte-identical
     # because every rule below lives inside a media query). Under
     # prefers-contrast the five team hues deepen to their high-contrast
@@ -663,12 +666,31 @@ def build_svg(
         # queries below — a class on the group would not reach the circle's fill.
         team_slug = _team_slug(team_of[nid])
         parts.append(
-            f'<g class="node n-{nid}" tabindex="0" role="img" '
+            f'<g class="node hit n-{nid}" tabindex="0" role="img" '
             f'aria-label="{escape(tip)}">'
-            f'<title>{escape(tip)}</title>'
             f'<circle class="team-{team_slug}" cx="{x:.1f}" cy="{y:.1f}" '
             f'r="{r:.1f}" fill="{color}" stroke="{BG}" stroke-width="4"/>'
             f"</g>"
+        )
+        tip_lines = [label_of[nid], f"{team_of[nid]} team"]
+        if callers:
+            tip_lines.append(f"Called by {indeg[nid]}: " + ", ".join(label_of.get(c, c) for c in callers))
+        else:
+            tip_lines.append(f"Called by {indeg[nid]} service(s)")
+        if callee_of:
+            tip_lines.append("Calls: " + ", ".join(label_of.get(e, e) for e in callee_of))
+        tip_anchor, tip_x = "middle", x
+        if x < PLOT_PAD + 80:
+            tip_anchor, tip_x = "start", x
+        elif x > WIDTH - PLOT_PAD - 80:
+            tip_anchor, tip_x = "end", x
+        parts.append(
+            tooltip_bubble(
+                tip_x, y - r - 14,
+                tip_lines,
+                anchor=tip_anchor, canvas_w=WIDTH, canvas_h=HEIGHT,
+                ink=INK, secondary=SUBINK, border=EDGE,
+            )
         )
     parts.append("</g>")
 

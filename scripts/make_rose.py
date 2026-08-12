@@ -56,7 +56,7 @@ from typing import Any, Dict, List, Optional, Tuple
 # without the dataviz tier).
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import forced_color_patterns, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
-from _svg import point_on_circle, svg_open, xml_escape  # noqa: E402
+from _svg import point_on_circle, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
@@ -384,7 +384,9 @@ def build_svg(
         f".legend-row:focus {{ outline: 3px solid {_FOCUS}; outline-offset: 3px; }}",
         ".wedge:focus { outline: none; }",
         f".wedge:focus {{ stroke: {_FOCUS}; stroke-width: 2.4; }}",
-        "@media (prefers-reduced-motion: reduce) { .wedge { transition: none; } }",
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}",
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}",
+        "@media (prefers-reduced-motion: reduce) { .wedge { transition: none; } .tip{transition:none} }",
     ])
     # OS-adaptive overrides (additive; every rule lives inside an @media block,
     # so the default render is byte-for-byte unchanged). The three causes reuse
@@ -507,11 +509,24 @@ def build_svg(
                 f'{_xml(month)}{year} &#183; {_xml(str(cause["label"]))}: '
                 f'{v:.0f} per 1,000'
             )
+            share = 100.0 * v / totals[m_idx] if totals[m_idx] else 0.0
             parts.append(
-                f'<path class="wedge cause-{k}" tabindex="0" role="listitem" '
+                f'<path class="wedge hit cause-{k}" tabindex="0" role="listitem" '
                 f'd="{path}" fill="{color}" stroke="{_BG}" '
-                f'stroke-width="1.1" stroke-linejoin="round">'
-                f'<title>{tip}</title></path>'
+                f'stroke-width="1.1" stroke-linejoin="round" '
+                f'aria-label="{tip}"/>'
+            )
+            wedge_mid_r = (r0 + r1) / 2.0
+            wedge_mid_a = (start + end) / 2.0
+            wx, wy = _polar(_CX, _CY, wedge_mid_r, wedge_mid_a)
+            parts.append(
+                tooltip_bubble(
+                    wx, wy - 14,
+                    [f"{month}{year}", str(cause["label"]),
+                     f"{v:.0f} per 1,000 ({share:.0f}% of month)"],
+                    anchor="middle", canvas_w=_WIDTH, canvas_h=_HEIGHT,
+                    ink=_INK, secondary=_SUBTLE, border=_GRID,
+                )
             )
         parts.append('</g>')
 

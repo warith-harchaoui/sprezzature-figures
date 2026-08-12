@@ -58,7 +58,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import BG, INK, leveled_colors, load_palette, os_dark_style  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _svg import svg_open  # noqa: E402
+from _svg import svg_open, tooltip_bubble  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 
 # ------------------------------------------------------------------
@@ -394,6 +394,9 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
         "#tree:hover .cluster .branch{opacity:.2}"
         "#tree .cluster:hover .branch,#tree .cluster:focus-within .branch{opacity:1}"
         ".leaf-hit:focus{outline:none}"
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
         + adaptive
         # Additive dark mode: flip paper + ink and darken the hairline gridlines
         # (a stroke the ink map misses). Cluster branch hues read on dark.
@@ -515,12 +518,21 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
             f"L{_fmt(gr['x'])},{_fmt(my)} "
             f"L{_fmt(gr['x'])},{_fmt(gr['y'])}"
         )
-        tip = f"Merge at dissimilarity {height:.2f} — joins {len(nodes[node_id]['leaves'])} lines"
-        branch_cls = "branch" if cl is None else f"branch dg-c{cl}"
+        n_leaves = len(nodes[node_id]["leaves"])
+        tip = f"Merge at dissimilarity {height:.2f} — joins {n_leaves} lines"
+        branch_cls = "branch hit" if cl is None else f"branch dg-c{cl} hit"
         bucket.append(
-            f'<path class="{branch_cls}" d="{elbow}" fill="none" stroke="{color}" '
+            f'<path class="{branch_cls}" tabindex="0" d="{elbow}" fill="none" stroke="{color}" '
             f'stroke-width="{width}" stroke-linecap="round" '
             f'stroke-linejoin="round"><title>{escape(tip)}</title></path>'
+        )
+        bucket.append(
+            tooltip_bubble(
+                gr["x"], my + 8,
+                [f"dissimilarity {height:.2f}", f"joins {n_leaves} lines",
+                 CLUSTER_NAMES[cl] if cl is not None else "above cut (unclustered)"],
+                canvas_w=WIDTH, canvas_h=HEIGHT, ink=INK, secondary=SUBINK, border=GRIDLINE,
+            )
         )
 
     # Emit: neutral spine first (so coloured clusters sit visually on top),
@@ -562,11 +574,17 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
         # while the extra bottom margin gives even the longest line room.
         ly = baseline + 26
         parts.append(
-            f'<text class="leaf-hit" tabindex="0" x="{_fmt(g["x"])}" y="{_fmt(ly)}" '
+            f'<text class="leaf-hit hit" tabindex="0" x="{_fmt(g["x"])}" y="{_fmt(ly)}" '
             f'font-size="18" fill="{INK}" text-anchor="end" '
             f'transform="rotate(-32 {_fmt(g["x"])} {_fmt(ly)})">'
             f'{escape(label)}<title>{escape(label)} — {escape(CLUSTER_NAMES[cl])}'
             f'</title></text>'
+        )
+        parts.append(
+            tooltip_bubble(
+                g["x"], ly + 10, [str(label), str(CLUSTER_NAMES[cl])],
+                canvas_w=WIDTH, canvas_h=HEIGHT, ink=INK, secondary=SUBINK, border=GRIDLINE,
+            )
         )
     parts.append("</g>")
 

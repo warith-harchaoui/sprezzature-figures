@@ -28,7 +28,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY, cycle_hues  # noqa: E402
-from _svg import fmt_number, svg_open, xml_escape  # noqa: E402
+from _svg import fmt_number, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 
@@ -169,7 +169,9 @@ def build_svg(
         "<style>"
         ".pt{transition:opacity .12s ease,stroke-width .12s ease;}"
         ".pt:hover,.pt:focus{stroke-width:2.4;outline:none;}"
-        "@media (prefers-reduced-motion: reduce){.pt{transition:none;}}"
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        "@media (prefers-reduced-motion: reduce){.pt{transition:none;}.tip{transition:none}}"
         "</style>"
     )
 
@@ -243,9 +245,21 @@ def build_svg(
             bits.insert(0, str(seg))
         tip = ", ".join(bits)
         parts.append(
-            f'<circle class="pt" tabindex="0" cx="{cx:.1f}" cy="{cy:.1f}" r="{r:.1f}" '
-            f'fill="{color}" fill-opacity="0.72" stroke="{color}" stroke-width="1.2">'
-            f'<title>{xml_escape(tip)}</title></circle>'
+            f'<circle class="pt hit" tabindex="0" cx="{cx:.1f}" cy="{cy:.1f}" r="{r:.1f}" '
+            f'fill="{color}" fill-opacity="0.72" stroke="{color}" stroke-width="1.2" '
+            f'role="img" aria-label="{xml_escape(tip)}"/>'
+        )
+        tip_lines = [str(seg)] if seg else []
+        tip_lines.append(f"HP {row['horsepower']:.0f}, {row['mpg']:.1f} mpg")
+        if has_weight:
+            tip_lines.append(f"Weight {row['weight']:.0f} kg")
+        parts.append(
+            tooltip_bubble(
+                cx, cy - r - 12,
+                tip_lines,
+                anchor="middle", canvas_w=width, canvas_h=height,
+                ink=INK, secondary=SECONDARY, border=GRIDLINE,
+            )
         )
 
     # ---- segment legend ----

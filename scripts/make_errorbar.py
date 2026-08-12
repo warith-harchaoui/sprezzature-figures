@@ -28,7 +28,7 @@ from typing import Any, Dict, List, Optional
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _svg import svg_open, xml_escape  # noqa: E402
+from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
@@ -109,6 +109,9 @@ def build_svg(
         ".errbar{transition:opacity .15s ease;}"
         ".errbar:hover,.errbar:focus{opacity:.72;outline:none;}"
         "@media (prefers-reduced-motion: reduce){.errbar{transition:none;}}"
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
         "</style>"
     )
     parts.append(f'<rect width="{width}" height="{height}" fill="{BG}"/>')
@@ -142,13 +145,21 @@ def build_svg(
         y_lo, y_hi = y_for(float(r["lo"])), y_for(float(r["hi"]))
         y_mean = y_for(float(r["mean"]))
         tip = f"{r['g']}: mean {float(r['mean']):.0f} (95% CI {float(r['lo']):.0f}-{float(r['hi']):.0f})"
-        parts.append('<g class="errbar" tabindex="0">')
+        parts.append('<g class="errbar hit" tabindex="0">')
         parts.append(f'<title>{xml_escape(tip)}</title>')
         parts.append(f'<line x1="{cx:.1f}" y1="{y_lo:.1f}" x2="{cx:.1f}" y2="{y_hi:.1f}" stroke="{INK}" stroke-width="1.5"/>')
         parts.append(f'<line x1="{cx - cap_w / 2:.1f}" y1="{y_lo:.1f}" x2="{cx + cap_w / 2:.1f}" y2="{y_lo:.1f}" stroke="{INK}" stroke-width="1.5"/>')
         parts.append(f'<line x1="{cx - cap_w / 2:.1f}" y1="{y_hi:.1f}" x2="{cx + cap_w / 2:.1f}" y2="{y_hi:.1f}" stroke="{INK}" stroke-width="1.5"/>')
         parts.append(f'<circle cx="{cx:.1f}" cy="{y_mean:.1f}" r="6" fill="{COLOR_POINT}" stroke="{BG}" stroke-width="1.5"/>')
         parts.append("</g>")
+        parts.append(
+            tooltip_bubble(
+                cx, y_hi - 14,
+                [str(r["g"]), f"mean {float(r['mean']):.0f}", f"95% CI {float(r['lo']):.0f}-{float(r['hi']):.0f}"],
+                anchor="middle", canvas_w=width, canvas_h=height,
+                ink=INK, secondary=SECONDARY, border=GRIDLINE,
+            )
+        )
 
     # ---- x-axis ----
     axis_y = plot_y + plot_h

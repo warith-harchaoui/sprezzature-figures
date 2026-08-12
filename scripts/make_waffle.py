@@ -46,7 +46,7 @@ from typing import Any, Dict, List
 # without the dataviz tier).
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
-from _svg import svg_open, xml_escape  # noqa: E402
+from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
@@ -225,7 +225,9 @@ def build_svg(
     style_rows.extend([
         ".legend-row { cursor: pointer; }",
         f".legend-row:focus {{ outline: 3px solid {_FOCUS}; outline-offset: 2px; }}",
-        "@media (prefers-reduced-motion: reduce) { .tile { transition: none; } }",
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}",
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}",
+        "@media (prefers-reduced-motion: reduce) { .tile { transition: none; } .tip{transition:none} }",
     ])
     # OS-adaptive overrides (additive; the default render stays byte-identical
     # because every rule below lives inside a media query). Under
@@ -298,10 +300,10 @@ def build_svg(
         s = _slug(str(d["label"]))
         color = color_of[s]
         badge = number_of[s]
+        cat_tip = f'{_xml(str(d["label"]))}: {d["squares"]} % ({d["squares"]} squares)'
         parts.append(
-            f'<g class="cat cat-{s}" tabindex="0" role="listitem">'
-            f'<title>{_xml(str(d["label"]))}: {d["squares"]} % '
-            f'({d["squares"]} squares)</title>'
+            f'<g class="cat cat-{s}" tabindex="0" role="listitem" '
+            f'aria-label="{cat_tip}">'
         )
         first_cell = True
         for i, owner in enumerate(cell_owner):
@@ -319,8 +321,16 @@ def build_svg(
                 cx = x + _TILE / 2.0
                 cy = y + _TILE / 2.0
                 parts.append(
-                    f'<circle class="cat-{s}" cx="{cx:.1f}" cy="{cy:.1f}" '
+                    f'<circle class="cat-{s} hit" cx="{cx:.1f}" cy="{cy:.1f}" '
                     f'r="14" fill="#FFFFFF" fill-opacity="0.92"/>'
+                )
+                parts.append(
+                    tooltip_bubble(
+                        cx, cy - 22,
+                        [str(d["label"]), f"{d['squares']} %", f"{d['squares']} of 100 squares"],
+                        anchor="middle", canvas_w=_WIDTH, canvas_h=_HEIGHT,
+                        ink=_INK, secondary=_SUBTLE, border=_EMPTY,
+                    )
                 )
                 parts.append(
                     f'<text class="cat-{s}" x="{cx:.1f}" y="{cy:.1f}" '

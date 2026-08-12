@@ -59,11 +59,11 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _labels import label_cell  # noqa: E402
-from _style import BG, INK, leveled_colors, load_palette, os_dark_style  # noqa: E402
+from _style import BG, GRIDLINE, INK, leveled_colors, load_palette, os_dark_style  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _svg import svg_open  # noqa: E402
+from _svg import svg_open, tooltip_bubble  # noqa: E402
 
 # ------------------------------------------------------------------
 # Canvas + house-style tokens
@@ -439,6 +439,9 @@ def build_svg(
     css: List[str] = [
         ".seg{transition:opacity .18s ease}",
         ".dot:focus{outline:none}",
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}",
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}",
+        "@media (prefers-reduced-motion: reduce){.tip{transition:none}}",
     ]
     for _seg, slug in seg_slug.items():
         cond = f"#plot:has(.dot.{slug}:is(:hover,:focus))"
@@ -616,10 +619,18 @@ def build_svg(
             days = round(y, 1)
             tip = f"{seg} · ${spend}/mo · {days} active days/week"
             parts.append(
-                f'<circle class="dot {slug}" cx="{px:.1f}" cy="{py:.1f}" r="7.5" '
+                f'<circle class="dot {slug} hit" cx="{px:.1f}" cy="{py:.1f}" r="7.5" '
                 f'fill="{color}" stroke="#FFFFFF" stroke-width="1.6" '
                 f'tabindex="0" role="img" aria-label="{escape(tip)}">'
                 f'<title>{escape(tip)}</title></circle>'
+            )
+            parts.append(
+                tooltip_bubble(
+                    px, py - 16,
+                    [str(seg), f"${spend}/mo spend", f"{days} active days/week"],
+                    anchor="middle", canvas_w=WIDTH, canvas_h=HEIGHT,
+                    ink=INK, secondary=SUBINK, border=GRIDLINE,
+                )
             )
         parts.append("</g>")
 

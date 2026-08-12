@@ -34,7 +34,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY, cycle_hues  # noqa: E402
-from _svg import svg_open, xml_escape  # noqa: E402
+from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 
@@ -143,6 +143,13 @@ def build_svg(
         f'<desc id="vio-desc">Violin plot of {n} groups, values ranging {y_min:.0f} to '
         f'{y_max:.0f}. Hover or focus a violin for its exact median and spread.</desc>'
     )
+    parts.append(
+        "<style>"
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
+        "</style>"
+    )
     parts.append(f'<rect width="{width}" height="{height}" fill="{BG}"/>')
     parts.append(
         f'<text x="40" y="46" font-size="22" font-weight="700" fill="{INK}" '
@@ -193,8 +200,16 @@ def build_svg(
         std = math.sqrt(sum((s - mean) ** 2 for s in samples) / max(1, len(samples) - 1))
         tip = f"Group {g}: median {median:.1f}, std {std:.1f}, n={len(samples)}"
         parts.append(
-            f'<path tabindex="0" d="{path_d}" fill="{color}" fill-opacity="0.75" '
-            f'stroke="{color}" stroke-width="1"><title>{xml_escape(tip)}</title></path>'
+            f'<path class="hit" tabindex="0" d="{path_d}" fill="{color}" fill-opacity="0.75" '
+            f'stroke="{color}" stroke-width="1" role="img" aria-label="{xml_escape(tip)}"/>'
+        )
+        parts.append(
+            tooltip_bubble(
+                cx, y_for(s_max) - 16,
+                [f"Group {g}", f"median {median:.1f}", f"std {std:.1f}, n={len(samples)}"],
+                anchor="middle", canvas_w=width, canvas_h=height,
+                ink=INK, secondary=SECONDARY, border=GRIDLINE,
+            )
         )
         my = y_for(median)
         parts.append(

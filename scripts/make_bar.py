@@ -26,7 +26,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY, corner_radius, cycle_hues  # noqa: E402
-from _svg import bar_path, fmt_number, svg_open, xml_escape  # noqa: E402
+from _svg import bar_path, fmt_number, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 
@@ -182,6 +182,9 @@ def build_svg(
         ".bar:hover,.bar:focus{filter:brightness(1.08);transform:scaleY(1.015);outline:none;}"
         "@media (prefers-reduced-motion: reduce){.bar{transition:none;}"
         ".bar:hover,.bar:focus{transform:none;}}"
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
         "</style>"
     )
 
@@ -226,8 +229,16 @@ def build_svg(
             continue
         path = bar_path(x, y, bar_w, h, r, side="top")
         parts.append(
-            f'<path class="bar" tabindex="0" d="{path}" fill="{colors.get(region, "#007AFF")}">'
+            f'<path class="bar hit" tabindex="0" d="{path}" fill="{colors.get(region, "#007AFF")}">'
             f'<title>{xml_escape(tip)}</title></path>'
+        )
+        rank = i + 1
+        parts.append(
+            tooltip_bubble(
+                x + bar_w / 2.0, y - 6,
+                [region, f"{value:.0f}", f"{share:.1f}% of total · rank {rank}/{n}"],
+                canvas_w=width, canvas_h=height, ink=INK, secondary=SECONDARY, border=GRIDLINE,
+            )
         )
 
     axis_y = plot_y + plot_h

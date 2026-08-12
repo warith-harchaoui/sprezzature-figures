@@ -49,7 +49,7 @@ import sys
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _labels import best_text_colour  # noqa: E402
 from _style import forced_color_patterns, leveled_colors, os_adaptive_style, os_dark_style  # noqa: E402
-from _svg import catmull_rom_beziers, fmt_compact, xml_escape  # noqa: E402
+from _svg import catmull_rom_beziers, fmt_compact, tooltip_bubble, xml_escape  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
@@ -479,6 +479,20 @@ def build_svg(
             f'y2="{_fmt(grid_bot)}" stroke="#F0F0F3" stroke-width="1.4"/>'
         )
 
+    # ---- anchor point per ribbon: its thickest, calmest year -------------- #
+    # Shared by the on-band label placement below AND the hover-bubble anchor
+    # in the river loop, so both agree on the same "best" spot in the ribbon.
+    anchors: list[tuple[int, float, float]] = []
+    for i in range(n_genres):
+        thick = uppers[i] - lowers[i]                 # band thickness per year
+        centre = (uppers[i] + lowers[i]) / 2.0
+        slope = np.abs(np.gradient(centre))
+        score = thick - 5.5 * slope
+        score[:2] = -1e9
+        score[-2:] = -1e9
+        yi = int(np.argmax(score))
+        anchors.append((yi, x_of(yi), y_of(float(centre[yi]))))
+
     # ---- the river: one filled ribbon per genre --------------------------- #
     yidx = list(range(n_years))
     river: List[str] = ["<g>"]
@@ -486,31 +500,31 @@ def build_svg(
         top = [(x_of(yi), y_of(uppers[i, yi])) for yi in yidx]
         bottom = [(x_of(yi), y_of(lowers[i, yi])) for yi in yidx]
         d = _ribbon_path(top, bottom)
+        tip = _genre_tip(genre, years, shares_pct[i])
         # A whisper-thin white seam between bands sharpens every boundary
         # without a heavy stroke — pure fills, no colour-on-colour ambiguity.
         river.append(
-            f'<path class="river-{i}" d="{d}" fill="{colors[i]}" '
+            f'<path class="river-{i} hit" tabindex="0" d="{d}" fill="{colors[i]}" '
             f'fill-opacity="0.96" '
-            f'stroke="#FFFFFF" stroke-width="1.1" stroke-opacity="0.85">'
-            f"<title>{_genre_tip(genre, years, shares_pct[i])}</title></path>"
+            f'stroke="#FFFFFF" stroke-width="1.1" stroke-opacity="0.85" '
+            f'role="img" aria-label="{tip}"/>'
+        )
+        a_yi, a_cx, a_cy = anchors[i]
+        peak_share = float(shares_pct[i, a_yi])
+        river.append(
+            tooltip_bubble(
+                a_cx, a_cy - 16,
+                [genre, f"{peak_share:.0f}% of listening in {int(years[a_yi])}", f"{float(volume[i, a_yi]):.0f}B streams that year"],
+                anchor="middle", canvas_w=width, canvas_h=height,
+                ink=_INK, secondary=_SECONDARY, border="#F0F0F3",
+            )
         )
     river.append("</g>")
 
     # ---- on-band labels at each ribbon's thickest, calmest point ---------- #
     band_labels: List[str] = []
     for i, genre in enumerate(genres):
-        thick = uppers[i] - lowers[i]                 # band thickness per year
-        # Prefer a label spot where the band is thick AND its centre is not
-        # steeply sloped, so text sits flat inside the ribbon.
-        centre = (uppers[i] + lowers[i]) / 2.0
-        slope = np.abs(np.gradient(centre))
-        score = thick - 5.5 * slope
-        # Keep away from the very edges so the label never clips.
-        score[:2] = -1e9
-        score[-2:] = -1e9
-        yi = int(np.argmax(score))
-        cx = x_of(yi)
-        cy = y_of(float(centre[yi]))
+        yi, cx, cy = anchors[i]
         band_h_px = abs(y_of(float(uppers[i, yi])) - y_of(float(lowers[i, yi])))
         # Contrast text colour straight from the band fill: white on the
         # saturated ribbons, ink on the light ones (Orange). Shared helper, so
@@ -622,6 +636,9 @@ def build_svg(
     # groups here, so no blend-mode flip.
     parts.append(
         "<style>\n"
+        + ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
         + os_adaptive_style(river_series, role="fill")
         + "\n"
         + fcp_style

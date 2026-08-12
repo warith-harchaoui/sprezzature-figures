@@ -35,8 +35,8 @@ from typing import Any, Dict, List, Optional, Tuple
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _svg import svg_open, viridis, xml_escape  # noqa: E402
-from _style import BG, INK, SECONDARY  # noqa: E402
+from _svg import svg_open, tooltip_bubble, viridis, xml_escape  # noqa: E402
+from _style import BG, GRIDLINE, INK, SECONDARY  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
 DENDRO_COLOR = "#8E8E93"
@@ -238,7 +238,10 @@ def build_svg(
         "<style>"
         ".cell{transition:stroke-width .1s ease;}"
         ".cell:hover,.cell:focus{stroke:#1D1D1F;stroke-width:1.5;outline:none;}"
-        "@media (prefers-reduced-motion: reduce){.cell{transition:none;}}"
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        "@media (prefers-reduced-motion: reduce){.cell{transition:none;}"
+        ".tip{transition:none}}"
         "</style>"
     )
     parts.append(f'<rect width="{width}" height="{height}" fill="{BG}"/>')
@@ -295,9 +298,17 @@ def build_svg(
             y = grid_y + ri * cell_h
             tip = f"{r} x {c}: {value:.2f}"
             parts.append(
-                f'<rect class="cell" tabindex="0" x="{x:.1f}" y="{y:.1f}" '
+                f'<rect class="cell hit" tabindex="0" x="{x:.1f}" y="{y:.1f}" '
                 f'width="{cell_w:.1f}" height="{cell_h:.1f}" fill="{_ramp_hex(t, theme)}" '
                 f'stroke="{BG}" stroke-width="1"><title>{xml_escape(tip)}</title></rect>'
+            )
+            parts.append(
+                tooltip_bubble(
+                    x + cell_w / 2, y - 6,
+                    [f"{r} x {c}", f"value {value:.2f}", f"normalized {t:.2f}"],
+                    anchor="middle", canvas_w=width, canvas_h=height,
+                    ink=INK, secondary=SECONDARY, border=GRIDLINE,
+                )
             )
 
     # ---- axis labels ----

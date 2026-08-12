@@ -53,7 +53,7 @@ from xml.sax.saxutils import escape
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import BG, INK, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _svg import svg_open  # noqa: E402
+from _svg import svg_open, tooltip_bubble  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
@@ -150,6 +150,11 @@ FAMILY_PILL: Dict[str, str] = {
     "rl": "#22883A",    # deeper green  — 4.5:1
 }
 ROOT_COLOR = INK
+
+#: Generation names, one per depth column, shared by the column headers
+#: (`build_svg`) and the per-node hover tooltip (`_emit_one_node`), so
+#: they never drift apart.
+GEN_NAMES = ["Field", "Family", "Task", "Method"]
 
 
 # ------------------------------------------------------------------
@@ -456,6 +461,9 @@ def build_svg(
         ".lin:hover .link,.lin:hover .node,"
         ".lin:focus-within .link,.lin:focus-within .node{opacity:1}"
         ".card:focus{outline:none}"
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
         + contrast_css
         + dark_css
         + "</style>"
@@ -478,16 +486,15 @@ def build_svg(
         )
 
     # --- depth (generation) column headers ---
-    gen_names = ["Field", "Family", "Task", "Method"]
     seen_depths = sorted({g["depth"] for g in geometry.values()})
     for d in seen_depths:
-        if d >= len(gen_names):
+        if d >= len(GEN_NAMES):
             continue
         gx = next(g["x"] for g in geometry.values() if g["depth"] == d)
         parts.append(
             f'<text x="{gx:.1f}" y="{MARGIN_TOP - 30:.1f}" font-size="15" '
             f'font-weight="600" letter-spacing="1.0" fill="{SUBINK}">'
-            f'{escape(gen_names[d].upper())}</text>'
+            f'{escape(GEN_NAMES[d].upper())}</text>'
         )
 
     # ------------------------------------------------------------------
@@ -499,6 +506,18 @@ def build_svg(
     # branch light up its ancestors.
     # ------------------------------------------------------------------
     leaves = [n for n, _, _ in nodes if n not in kids]
+
+    # Every node in the tree (internal or leaf) is redrawn once per leaf
+    # lineage that passes through it, always at the same (x, y); SVG paints
+    # in document order, so only the LAST such redraw is actually on top and
+    # able to receive pointer/keyboard focus. Precompute, per node id, which
+    # leaf's redraw is that final (topmost) one, so exactly one hover bubble
+    # is emitted per node -- and it is emitted on the instance that can
+    # actually be hovered.
+    last_leaf_for_node: dict[str, str] = {}
+    for leaf in leaves:
+        for node_id in _lineage(leaf, parent):
+            last_leaf_for_node[node_id] = leaf
 
     parts.append('<g id="tree">')
 
@@ -524,7 +543,10 @@ def build_svg(
             _emit_one_link(parts, geometry, a, b, label_of=label_of)
         # the nodes along the chain
         for node_id in chain:
-            _emit_one_node(parts, geometry, label_of, kids, node_id, interactive=True)
+            _emit_one_node(
+                parts, geometry, label_of, kids, node_id, interactive=True,
+                emit_tip=(last_leaf_for_node.get(node_id) == leaf),
+            )
         parts.append("</g>")
     parts.append("</g>")
 
@@ -661,12 +683,23 @@ def _emit_one_node(
     node_id: str,
     *,
     interactive: bool,
+    emit_tip: bool = False,
 ) -> None:
     """Emit one node card (rounded rect + label), colored by its family.
 
     Root and family nodes are filled pills; deeper nodes are white chips
     with a colored left rule and colored text, so the tree stays airy and
     the ink-heavy pills draw the eye to the top of the hierarchy.
+
+    Parameters
+    ----------
+    emit_tip : bool, optional
+        When ``True`` (only ever the single, topmost-painted redraw of this
+        `node_id` -- see the ``last_leaf_for_node`` bookkeeping in
+        :func:`build_svg`), swap the plain native ``<title>`` for the
+        ``.hit``/``role``/``aria-label`` trio plus a rich
+        :func:`_svg.tooltip_bubble`, instead of duplicating a bubble on
+        every lineage redraw of a shared ancestor.
     """
     g = geometry[node_id]
     label = label_of[node_id]
@@ -678,7 +711,15 @@ def _emit_one_node(
     tip = label
 
     is_leaf = node_id not in kids
-    tab = ' tabindex="0"' if (interactive and not is_leaf) else ""
+    n_kids = len(kids.get(node_id, []))
+    gen_label = GEN_NAMES[depth] if depth < len(GEN_NAMES) else f"Depth {depth}"
+    detail2 = "Leaf topic" if is_leaf else f"{n_kids} sub-topic{'s' if n_kids != 1 else ''}"
+    tab = ' tabindex="0"' if (interactive and (not is_leaf or emit_tip)) else ""
+    hit_cls = " hit" if emit_tip else ""
+    title_or_aria = (
+        f' role="img" aria-label="{escape(tip)}"' if emit_tip else ""
+    )
+    title_child = "" if emit_tip else f'<title>{escape(tip)}</title>'
 
     if depth <= 1:
         # Filled pill — root is ink, families are their AA-safe deeper hue so
@@ -692,9 +733,9 @@ def _emit_one_node(
         pill_cls = f' pill-{fam}' if fam else ""
         parts.append(
             f'<g class="node">'
-            f'<rect class="card{pill_cls}"{tab} x="{x_left:.1f}" y="{y_top:.1f}" '
+            f'<rect class="card{pill_cls}{hit_cls}"{tab}{title_or_aria} x="{x_left:.1f}" y="{y_top:.1f}" '
             f'width="{w:.1f}" height="{h:.1f}" rx="{h / 2:.1f}" fill="{pill_fill}">'
-            f'<title>{escape(tip)}</title></rect>'
+            f'{title_child}</rect>'
             f'<text x="{cx:.1f}" y="{cy:.1f}" text-anchor="middle" '
             f'dominant-baseline="central" font-size="19" font-weight="700" '
             f'fill="{text_fill}">{escape(label)}</text>'
@@ -705,11 +746,12 @@ def _emit_one_node(
         rule_w = 5.0
         fam = g["family"]
         rule_cls = f' fam-{fam}' if fam else ""
+        chip_cls = f' class="{hit_cls.strip()}"' if hit_cls else ""
         parts.append(
             f'<g class="node">'
-            f'<rect x="{x_left:.1f}" y="{y_top:.1f}" width="{w:.1f}" '
+            f'<rect{chip_cls} x="{x_left:.1f}" y="{y_top:.1f}" width="{w:.1f}" '
             f'height="{h:.1f}" rx="10" fill="#FFFFFF" stroke="{HAIRLINE}" '
-            f'stroke-width="1.5"><title>{escape(tip)}</title></rect>'
+            f'stroke-width="1.5"{tab}{title_or_aria}>{title_child}</rect>'
             f'<rect class="fam-rule{rule_cls}" x="{x_left:.1f}" y="{y_top:.1f}" '
             f'width="{rule_w:.1f}" '
             f'height="{h:.1f}" rx="2.5" fill="{color}"/>'
@@ -717,6 +759,15 @@ def _emit_one_node(
             f'dominant-baseline="central" font-size="17" font-weight="500" '
             f'fill="{INK}">{escape(label)}</text>'
             f'</g>'
+        )
+    if emit_tip:
+        parts.append(
+            tooltip_bubble(
+                cx, y_top - 14,
+                [label, gen_label, detail2],
+                anchor="middle", canvas_w=WIDTH, canvas_h=HEIGHT,
+                ink=INK, secondary=SUBINK, border=HAIRLINE,
+            )
         )
 
 

@@ -27,7 +27,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import load_palette  # noqa: E402
-from _svg import svg_open, xml_escape  # noqa: E402
+from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
@@ -157,6 +157,13 @@ def build_svg(
         'crossing all four vertical axes; the three classes fall into three '
         'separated bands.</desc>'
     )
+    parts.append(
+        "<style>"
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
+        "</style>"
+    )
     parts.append(f'<rect width="{_WIDTH}" height="{_HEIGHT}" fill="{_BG}"/>')
 
     # Title + subtitle.
@@ -211,9 +218,21 @@ def build_svg(
             )
             tip = f"{name}: " + ", ".join(f"{k} {_fmt(car[k])}" for k, _t, _l, _h in AXES)
             parts.append(
-                f'<polyline points="{pts}" fill="none" stroke="{color}" '
+                f'<polyline class="hit" tabindex="0" points="{pts}" fill="none" stroke="{color}" '
                 f'stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" '
-                f'opacity="0.72"><title>{xml_escape(tip)}</title></polyline>'
+                f'opacity="0.72" role="img" aria-label="{xml_escape(tip)}"/>'
+            )
+            mid_i = len(AXES) // 2
+            mid_key, _mt, mid_lo, mid_hi = AXES[mid_i]
+            mid_x = ax_x[mid_i]
+            mid_y = y_of(car[mid_key], mid_lo, mid_hi)
+            parts.append(
+                tooltip_bubble(
+                    mid_x, mid_y - 14.0,
+                    [name] + [f"{k} {_fmt(car[k])}" for k, _t, _l, _h in AXES],
+                    anchor="middle", canvas_w=_WIDTH, canvas_h=_HEIGHT,
+                    ink=_INK, secondary=_SUBTLE, border=_GRID,
+                )
             )
 
     parts.append(fullscreen_control(_WIDTH, _HEIGHT, mode))

@@ -50,7 +50,7 @@ from typing import Any, Dict, List, Optional
 # The house-style palette lives alongside this file, in _style.py.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
-from _svg import svg_open, xml_escape  # noqa: E402
+from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
@@ -366,7 +366,9 @@ def build_svg(
         '.mstone:hover .dot,.mstone:focus .dot{r:11}'
         '.mstone:focus{outline:none}'
         '.mstone:focus .card,.mstone:hover .card{stroke-width:2.4}'
-        '@media (prefers-reduced-motion: reduce){.sweep{display:none}}'
+        '.tip{opacity:0;pointer-events:none;transition:opacity .12s ease}'
+        '.hit:hover~.tip,.hit:focus~.tip{opacity:1}'
+        '@media (prefers-reduced-motion: reduce){.sweep{display:none}.tip{transition:none}}'
         + contrast_css
         + dark_css
         + '</style>'
@@ -608,8 +610,8 @@ def build_svg(
         # single <title> serves the accessible tooltip.
         tip = f"{year}{' (planned)' if planned else ''} — {name}: {blurb}"
         parts.append(
-            f'<g class="mstone" tabindex="0" role="img" '
-            f'aria-label="{xml_escape(tip)}"><title>{xml_escape(tip)}</title>'
+            f'<g class="mstone hit" tabindex="0" role="img" '
+            f'aria-label="{xml_escape(tip)}">'
         )
 
         # Soft halo + solid dot on the spine (pure fills, no dark ring).
@@ -673,6 +675,14 @@ def build_svg(
             )
 
         parts.append("</g>")
+        parts.append(
+            tooltip_bubble(
+                mx, spine_y - 20,
+                [name, f"{_fmt_year(year)}{' (planned)' if planned else ''}", blurb],
+                anchor="middle", canvas_w=width, canvas_h=height,
+                ink=ink, secondary=secondary, border=hairline,
+            )
+        )
 
     # Era-name pills, drawn last so nothing occludes them.
     _era_labels()

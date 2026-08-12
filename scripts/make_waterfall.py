@@ -30,6 +30,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import BG, GRIDLINE, INK, SECONDARY, os_adaptive_style, os_dark_style  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
+from _svg import tooltip_bubble  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 # ---------------------------------------------------------------------------
@@ -193,7 +194,12 @@ def build_svg(
     # ------------------------------------------------------------------
     # os_adaptive_style takes a selector->hex dict; pass empty dict for no
     # series-specific contrast overrides (no dynamic palette needed here).
-    style = os_adaptive_style({}) + "\n" + os_dark_style()
+    style = (
+        os_adaptive_style({}) + "\n" + os_dark_style() + "\n"
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
+    )
     fs_ctrl = fullscreen_control(WIDTH, HEIGHT)
 
     lines: List[str] = []
@@ -282,11 +288,20 @@ def build_svg(
 
         # Bar rectangle with tooltip
         val_str = f"{bar['raw']:+,.1f}" if bar["kind"] != "total" else f"{bar['raw']:,.1f}"
-        tooltip = f"{bar['label'].replace(chr(10), ' ')}: {val_str}M"
+        bar_label_flat = bar["label"].replace(chr(10), " ")
+        tooltip = f"{bar_label_flat}: {val_str}M"
         lines.append(
-            f'<rect x="{x:.1f}" y="{py_top:.1f}" width="{bar_w:.1f}" '
-            f'height="{bar_h:.1f}" rx="3" fill="{color}" opacity="0.9">'
-            f'<title>{escape(tooltip)}</title></rect>'
+            f'<rect class="hit" tabindex="0" x="{x:.1f}" y="{py_top:.1f}" width="{bar_w:.1f}" '
+            f'height="{bar_h:.1f}" rx="3" fill="{color}" opacity="0.9" '
+            f'role="img" aria-label="{escape(tooltip)}"/>'
+        )
+        lines.append(
+            tooltip_bubble(
+                x + bar_w / 2.0, py_top - 16,
+                [bar_label_flat, f"{val_str}M", bar["kind"].capitalize()],
+                anchor="middle", canvas_w=WIDTH, canvas_h=HEIGHT,
+                ink=INK, secondary=SECONDARY, border=GRIDLINE,
+            )
         )
 
         # Value label above or below each bar

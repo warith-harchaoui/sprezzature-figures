@@ -60,7 +60,7 @@ from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _style import leveled_colors, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
-from _svg import svg_open, xml_escape  # noqa: E402
+from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
 
 
 def make_data(n: int = 90, seed: int = 7) -> List[Dict[str, float]]:
@@ -336,6 +336,9 @@ def build_svg(
         # Very light gridlines are strokes the ink map misses; drop them to a
         # low-contrast dark grey on a dark ground. Point white halos stay light.
         + os_dark_style(extra='[stroke="#EEEEEE"]{stroke:#2A2A2C;}')
+        + ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        + ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        + "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
         + "</style>"
     )
 
@@ -463,7 +466,7 @@ def build_svg(
             f'Mean {rec["mean"]:.0f} mmHg, wrist − arm {rec["diff"]:+.0f} mmHg'
         )
         parts.append(
-            f'<g class="pt" tabindex="0" role="img" '
+            f'<g class="pt hit" tabindex="0" role="img" '
             f'aria-label="{xml_escape(tip)}">'
         )
         parts.append(f"<title>{xml_escape(tip)}</title>")
@@ -476,6 +479,19 @@ def build_svg(
             f'fill-opacity="0.62" stroke="#FFFFFF" stroke-width="1.2"/>'
         )
         parts.append("</g>")
+        within_loa = loa_lo <= rec["diff"] <= loa_hi
+        parts.append(
+            tooltip_bubble(
+                cx, cy - 18,
+                [
+                    f"Mean {rec['mean']:.0f} mmHg",
+                    f"wrist − arm {rec['diff']:+.1f} mmHg",
+                    f"{'within' if within_loa else 'outside'} 95% limits of agreement",
+                ],
+                canvas_w=width, canvas_h=height, ink=ink, secondary=secondary,
+                border="#EEEEEE",
+            )
+        )
 
     # --- proportional-bias trend line (dotted Purple) ------------
     # A quiet secondary annotation: the least-squares fit of the

@@ -37,7 +37,7 @@ Author
 from __future__ import annotations
 from _interactive import fullscreen_control  # noqa: E402
 from _render import svg_example_path, write_svg  # noqa: E402
-from _svg import fmt_compact  # noqa: E402
+from _svg import fmt_compact, tooltip_bubble, xml_escape  # noqa: E402
 from _style import leveled_colors, os_adaptive_style, os_dark_style  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
@@ -389,6 +389,9 @@ def build_svg(
     )
     parts.append(
         "<style>"
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
         + os_adaptive_style(ridge_series, role="fill")
         + os_dark_style(extra=dark_extra)
         + "</style>"
@@ -450,8 +453,7 @@ def build_svg(
         )
 
         parts.append(
-            f'<g class="ridge">'
-            f'<title>{tip}</title>'
+            f'<g class="ridge hit" tabindex="0" role="img" aria-label="{xml_escape(tip)}">'
             f'<path class="rg-{i}" d="{area_d}" fill="{colour}" fill-opacity="0.82" '
             f'stroke="none"/>'
             f'<path d="{stroke_d}" fill="none" stroke="#FFFFFF" '
@@ -459,6 +461,17 @@ def build_svg(
             f'<path d="{stroke_d}" fill="none" stroke="{_INK}" '
             f'stroke-width="1.1" stroke-opacity="0.35"/>'
             f"</g>"
+        )
+        peak_i = int(np.argmax(dens))
+        peak_x = x_px(float(grid[peak_i]))
+        peak_y = base_y - float(dens[peak_i]) * peak_h
+        parts.append(
+            tooltip_bubble(
+                peak_x, peak_y - 14,
+                [label, f"Median {med:.0f} °C", f"Middle half {q1:.0f}–{q3:.0f} °C"],
+                anchor="middle", canvas_w=width, canvas_h=height,
+                ink=_INK, secondary=_SECONDARY, border="#E5E5EA",
+            )
         )
 
         # Row label at the left, vertically centred on the baseline.

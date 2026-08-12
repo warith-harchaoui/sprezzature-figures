@@ -64,7 +64,7 @@ from _style import (  # noqa: E402
     os_adaptive_style,
     os_dark_style,
 )
-from _svg import svg_open, xml_escape  # noqa: E402
+from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
 
@@ -300,6 +300,9 @@ def build_svg(
         ".pt .halo{opacity:0}"
         ".pt:hover .halo,.pt:focus .halo{opacity:1}"
         ".pt:focus{outline:none}"
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
         "\n" + contrast + "\n" + contrast_line + "\n" + fcp_style + "\n"
         # Additive OS dark mode: dark paper + light ink (default ink_map); the
         # scatter Blue and trend Orange are data hues, left alone. The very light
@@ -337,11 +340,25 @@ def build_svg(
         bh = count / count_ceiling * marg
         bx = sx(left)
         by = top_base - bh
+        bar_tip = f"{left:.1f}-{right:.1f} h slept: {count} volunteers"
         # Round only the top corners so the bar reads as a clean column.
         parts.append(
-            f'<rect class="jp-topbar" x="{bx + 1:.1f}" y="{by:.1f}" '
+            f'<rect class="jp-topbar hit" tabindex="0" x="{bx + 1:.1f}" y="{by:.1f}" '
             f'width="{max(bw - 2, 0.5):.1f}" '
-            f'height="{bh:.1f}" rx="3" fill="{top_fill}"/>'
+            f'height="{bh:.1f}" rx="3" fill="{top_fill}">'
+            f'<title>{xml_escape(bar_tip)}</title></rect>'
+        )
+        parts.append(
+            tooltip_bubble(
+                bx + max(bw - 2, 0.5) / 2.0,
+                max(4.0, by - 46.0),
+                [f"{left:.1f}-{right:.1f} h slept", f"{count} volunteers"],
+                canvas_w=width,
+                canvas_h=height,
+                ink=ink,
+                secondary=secondary,
+                border=grid_col,
+            )
         )
     parts.append(
         f'<text x="{plot_x:.1f}" y="{m_top - 8:.1f}" font-size="16" '
@@ -355,10 +372,25 @@ def build_svg(
         by = sy(hi)
         bh = sy(lo) - sy(hi)
         bw = count / count_ceiling * marg
+        bar_tip = f"{lo:.0f}-{hi:.0f} ms reaction time: {count} volunteers"
         parts.append(
-            f'<rect class="jp-rightbar" x="{right_base:.1f}" y="{by + 1:.1f}" '
+            f'<rect class="jp-rightbar hit" tabindex="0" x="{right_base:.1f}" y="{by + 1:.1f}" '
             f'width="{bw:.1f}" '
-            f'height="{max(bh - 2, 0.5):.1f}" rx="3" fill="{right_fill}"/>'
+            f'height="{max(bh - 2, 0.5):.1f}" rx="3" fill="{right_fill}">'
+            f'<title>{xml_escape(bar_tip)}</title></rect>'
+        )
+        parts.append(
+            tooltip_bubble(
+                right_base + bw + 8.0,
+                max(4.0, by + max(bh - 2, 0.5) / 2.0 - 24.0),
+                [f"{lo:.0f}-{hi:.0f} ms reaction time", f"{count} volunteers"],
+                anchor="start",
+                canvas_w=width,
+                canvas_h=height,
+                ink=ink,
+                secondary=secondary,
+                border=grid_col,
+            )
         )
     # Rotated caption for the right marginal, clear of the bars.
     rcap_x = width - m_right + 2
@@ -445,7 +477,7 @@ def build_svg(
         dot_px.append((cx, cy))
         tip = f"{s:.1f} h slept, {int(r)} ms reaction time"
         parts.append(
-            f'<g class="pt" tabindex="0" role="img" '
+            f'<g class="pt hit" tabindex="0" role="img" '
             f'aria-label="{xml_escape(tip)}">'
         )
         parts.append(f"<title>{xml_escape(tip)}</title>")
@@ -459,6 +491,18 @@ def build_svg(
             f'stroke-width="1.1"/>'
         )
         parts.append("</g>")
+        parts.append(
+            tooltip_bubble(
+                cx,
+                max(4.0, cy - 40.0),
+                [f"{s:.1f} h slept", f"{int(r)} ms reaction time"],
+                canvas_w=width,
+                canvas_h=height,
+                ink=ink,
+                secondary=secondary,
+                border=grid_col,
+            )
+        )
 
     # --- fitted trend line (drawn on top of the cloud) -----------
     # A soft white under-stroke keeps the trend crisp where it crosses the

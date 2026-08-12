@@ -60,6 +60,7 @@ from _style import (  # noqa: E402
 )
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 from _interactive import fullscreen_control, hover_isolate_css  # noqa: E402
+from _svg import tooltip_bubble  # noqa: E402
 
 
 # --------------------------------------------------------------------------- #
@@ -393,6 +394,9 @@ def build_svg(
         + adaptive
         + fcp_style
         + os_dark_style()
+        + ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        + ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        + "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
         + "</style>"
     )
     parts.append(f"<defs>{fcp_defs}</defs>")
@@ -472,6 +476,7 @@ def build_svg(
 
         x0 = axis_x[a_idx] + block_w
         x1 = axis_x[b_idx]
+        mx = (x0 + x1) / 2.0
 
         for flow in seg_flows:
             a_cat = flow["path"][a_idx]
@@ -496,12 +501,20 @@ def build_svg(
             # stacked green (or gray) ribbons never merge into an opaque blob —
             # each path keeps a crisp edge against its neighbour.
             parts.append(
-                f'<path class="ribbon ribbon-{outcome} ribbon-{ribbon_idx}" '
+                f'<path class="ribbon ribbon-{outcome} ribbon-{ribbon_idx} hit" '
                 f'tabindex="0" d="{d}" '
                 f'fill="{color}" '
                 f'fill-opacity="0.46" stroke="#FFFFFF" stroke-opacity="0.85" '
                 f'stroke-width="1.1" stroke-linejoin="round">'
                 f"<title>{_esc(tip)}</title></path>"
+            )
+            parts.append(
+                tooltip_bubble(
+                    mx, min(a_top, b_top) - 4,
+                    [f"{a_cat} → {b_cat} → {outcome}", f"{count} users", f"{pct:.0f}% of cohort"],
+                    canvas_w=width, canvas_h=height, ink=ink, secondary=secondary,
+                    border="#E5E5EA",
+                )
             )
             ribbon_idx += 1
     parts.append("</g>")
@@ -516,18 +529,26 @@ def build_svg(
             # ink so the coloured ribbons stay the star.
             if i == n_axes - 1:
                 fill = palette.get(OUTCOME_COLOR[cat], ink)
-                block_cls = f' class="oblock-{cat}"'
+                block_cls = f' class="oblock-{cat} hit"'
             else:
                 fill = ink
-                block_cls = ""
+                block_cls = ' class="hit"'
+            pct = 100.0 * b["count"] / total_records
             parts.append(
-                f'<rect{block_cls} x="{x:.1f}" y="{b["y0"]:.1f}" width="{block_w}" '
+                f'<rect{block_cls} tabindex="0" x="{x:.1f}" y="{b["y0"]:.1f}" width="{block_w}" '
                 f'height="{blk_h:.1f}" rx="5" fill="{fill}">'
                 f"<title>{_esc(cat)}: {int(b['count'])} users</title></rect>"
             )
+            parts.append(
+                tooltip_bubble(
+                    x + block_w / 2.0, b["y0"] - 4,
+                    [str(cat), f"{int(b['count'])} users", f"{pct:.0f}% of axis total"],
+                    canvas_w=width, canvas_h=height, ink=ink, secondary=secondary,
+                    border="#E5E5EA",
+                )
+            )
             # Label: left/first axis labels sit to the LEFT of the block,
             # everything else to the RIGHT, so text never overlaps ribbons.
-            pct = 100.0 * b["count"] / total_records
             label = f"{_esc(cat)}"
             sub = f"{int(b['count'])} · {pct:.0f}%"
             if i == 0:

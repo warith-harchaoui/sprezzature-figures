@@ -37,10 +37,10 @@ from typing import Any, Dict, List, Optional, Tuple
 
 # The house-style palette lives one directory up, in _style.py.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
+from _style import GRIDLINE, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _svg import svg_open  # noqa: E402
+from _svg import svg_open, tooltip_bubble  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
 
@@ -247,6 +247,9 @@ def build_svg(
         ".dot{cursor:pointer}",
         ".dot:hover,.dot:focus{stroke:#FFFFFF;stroke-width:2.5}",
         ".dot:focus{outline:none}",
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}",
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}",
+        "@media (prefers-reduced-motion:reduce){.tip{transition:none}}",
     ]
     dot_series = {".dot-within": blue, ".dot-tail": red}
     style_rows.append(os_adaptive_style(dot_series, role="fill", forced=True))
@@ -313,12 +316,19 @@ def build_svg(
             # Native tooltip: exact value, one decimal.
             tip = f"Ticket answered in {v:.1f} h"
             parts.append(
-                f'<circle class="dot {cat}" cx="{cx:.1f}" cy="{cy:.1f}" '
+                f'<circle class="dot {cat} hit" cx="{cx:.1f}" cy="{cy:.1f}" '
                 f'r="{r:.1f}" fill="{fill}" fill-opacity="0.92" '
                 f'stroke="#FFFFFF" stroke-width="1.5" tabindex="0" '
                 f'role="img" aria-label="{tip}">'
                 f'<title>{tip}</title>'
                 f'</circle>'
+            )
+            parts.append(
+                tooltip_bubble(
+                    cx + r + 8, cy - 20, anchor="start",
+                    lines=[f"{v:.1f} h response time", "past 4-hour target" if over else "within 4-hour target"],
+                    canvas_w=width, canvas_h=height, ink=ink, secondary=secondary, border=GRIDLINE,
+                )
             )
 
     # --- legend ---------------------------------------------------

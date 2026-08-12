@@ -59,9 +59,9 @@ from typing import Any, Dict, List, Optional, Tuple
 from xml.sax.saxutils import escape
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _style import BG, INK, forced_color_patterns, leveled_colors, load_palette, os_dark_style  # noqa: E402
+from _style import BG, GRIDLINE, INK, forced_color_patterns, leveled_colors, load_palette, os_dark_style  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
-from _svg import point_on_circle, svg_open  # noqa: E402
+from _svg import point_on_circle, svg_open, tooltip_bubble  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 
@@ -496,6 +496,9 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
         f"{arc_hover_dim}"
         f"{hover_rules}"
         ".flow:focus,.arc-hit:focus{outline:none}"
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
         + adaptive
         + fc_style
         # Additive dark mode: flip paper + the two ink tiers, and flip any
@@ -534,9 +537,16 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
             f"(net {sign}{net}k)"
         )
         parts.append(
-            f'<path id="arc-{rid}" class="arc-hit" tabindex="0" role="img" '
+            f'<path id="arc-{rid}" class="arc-hit hit" tabindex="0" role="img" '
             f'aria-label="{escape(arc_tip)}" d="{d}" fill="{g["color"]}">'
             f'<title>{escape(arc_tip)}</title></path>'
+        )
+        amx, amy = _polar((R_OUTER + R_INNER) / 2.0, g["mid"])
+        parts.append(
+            tooltip_bubble(
+                amx, amy, [g["name"], f"{g['out']}k left, {g['in']}k arrived", f"net {sign}{net}k"],
+                canvas_w=WIDTH, canvas_h=HEIGHT, ink=INK, secondary=SUBINK, border=GRIDLINE,
+            )
         )
 
     # --- flow ribbons (drawn after arcs; sit visually under them because
@@ -557,11 +567,18 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
         dst_id = REGION_ID[dst_name]
         tip = f"{src_name} → {dst_name}: {rb['value']}k people moved"
         parts.append(
-            f'<path class="flow src-{src_id} dst-{dst_id}" tabindex="0" '
+            f'<path class="flow src-{src_id} dst-{dst_id} hit" tabindex="0" '
             f'role="img" aria-label="{escape(tip)}" d="{d}" '
             f'fill="{rb["color"]}" fill-opacity="0.62" '
             f'stroke="{rb["color"]}" stroke-opacity="0.28" stroke-width="0.6">'
             f'<title>{escape(tip)}</title></path>'
+        )
+        rmx, rmy = _polar(R_INNER * 0.92, (rb["a0"] + rb["a1"]) / 2.0)
+        parts.append(
+            tooltip_bubble(
+                rmx, rmy, [f"{src_name} → {dst_name}", f"{rb['value']}k people moved"],
+                canvas_w=WIDTH, canvas_h=HEIGHT, ink=INK, secondary=SUBINK, border=GRIDLINE,
+            )
         )
     parts.append("</g>")
 

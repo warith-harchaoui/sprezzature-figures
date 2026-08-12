@@ -305,6 +305,126 @@ def bar_path(x: float, y: float, w: float, h: float, r: float, side: str = "top"
     return rounded_rect_path(x, y, w, h, tl, tr, br, bl)
 
 
+def tooltip_bubble(
+    x: float,
+    y: float,
+    lines: Sequence[str],
+    *,
+    anchor: str = "middle",
+    max_chars: int = 40,
+    canvas_w: float | None = None,
+    canvas_h: float | None = None,
+    bg: str = "#FFFFFF",
+    border: str = "#E5E5EA",
+    ink: str = "#1D1D1F",
+    secondary: str = "#6E6E73",
+    font_size: float = 12.5,
+    font_family: str = "",
+    cls: str = "tip",
+) -> str:
+    """Rounded-rect hover-info bubble, auto-sized to its (word-wrapped) content.
+
+    A shared "bubble" for the `.hit:hover~.tip{opacity:1}` pattern several
+    generators (and ``case-studies/financial-markets``, ``sprezzature-maps``)
+    each hand-rolled slightly differently. This is a genuinely new, common
+    capability — not a byte-identical extraction of existing inline code
+    (see the module docstring's rule for those) — so callers switching to it
+    will see their tooltip pixels change: real word-wrap via
+    :func:`wrap_no_orphan` instead of a fixed line list, and canvas-edge
+    clamping instead of letting the bubble run off the artboard.
+
+    First line renders bold in `ink` (the headline); the rest render in
+    `secondary` (supporting detail) — the convention every existing ad hoc
+    tooltip already used.
+
+    Parameters
+    ----------
+    x, y : float
+        Anchor point (the bubble's top edge sits at `y`; horizontal
+        position is resolved by `anchor`), in user-space pixels.
+    lines : sequence of str
+        One entry per logical line. Any entry longer than `max_chars` is
+        word-wrapped (never mid-word) into multiple rendered lines.
+    anchor : {"start", "middle", "end"}, optional
+        Horizontal anchor of `x` relative to the bubble. Mirrors SVG
+        `text-anchor` semantics. Defaults to ``"middle"``.
+    max_chars : int, optional
+        Wrap width in characters per line before word-wrap kicks in.
+        Defaults to 40 — comfortable for a `font_size` around 12-13px.
+    canvas_w, canvas_h : float or None, optional
+        When given, the bubble is clamped (4px margin) to stay fully
+        inside `[0, canvas_w] x [0, canvas_h]` — the artboard the caller
+        is drawing into — instead of overflowing past a chart's edge.
+    bg, border, ink, secondary : str, optional
+        Hex colours for the card fill, card stroke, headline text and
+        supporting-line text. Pass the caller's own house tokens so the
+        bubble matches the current corporate/academic theme.
+    font_size : float, optional
+        Body text size in px. Also drives the glyph-width estimate used
+        to size the card.
+    font_family : str, optional
+        CSS font stack for the bubble's text. Empty (default) inherits
+        whatever `font-family` the enclosing `<svg>` root already set via
+        :func:`svg_open` — pass one explicitly only when the bubble must
+        differ from the chart's own chrome font.
+    cls : str, optional
+        CSS class on the wrapping `<g>` (default ``"tip"``, matching the
+        house `.hit:hover~.tip` hover-reveal pattern). Give each bubble a
+        distinct class only if several coexist under one `.hit` sibling
+        selector and must not all reveal together.
+
+    Returns
+    -------
+    str
+        A `<g>` element: the rounded-rect background plus one `<text>`
+        per wrapped line. No positioning side effects — purely a string
+        the caller appends into its own `parts` list, exactly like every
+        other primitive in this module.
+    """
+    wrapped: _List[str] = []
+    for raw in lines:
+        wrapped.extend(wrap_no_orphan(raw, max_chars) if len(raw) > max_chars else [raw])
+    if not wrapped:
+        wrapped = [""]
+
+    pad = 9.0
+    lh = font_size * 1.28
+    char_w = font_size * 0.56  # average glyph width heuristic for a Roboto-ish sans at font_size
+    fw = max(len(s) for s in wrapped) * char_w + 2 * pad
+    fh = lh * len(wrapped) + 2 * pad - (lh - font_size)
+
+    if anchor == "end":
+        bx = x - fw
+    elif anchor == "start":
+        bx = x
+    else:
+        bx = x - fw / 2.0
+    by = y
+
+    if canvas_w is not None:
+        bx = max(4.0, min(bx, canvas_w - fw - 4.0))
+    if canvas_h is not None:
+        by = max(4.0, min(by, canvas_h - fh - 4.0))
+
+    f = fmt_compact
+    parts = [
+        f'<g class="{cls}">',
+        f'<rect x="{f(bx)}" y="{f(by)}" width="{f(fw)}" height="{f(fh)}" rx="9" '
+        f'fill="{bg}" stroke="{border}" stroke-width="1.2"/>',
+    ]
+    ff_attr = f' font-family="{xml_escape(font_family)}"' if font_family else ""
+    for i, s in enumerate(wrapped):
+        weight = "700" if i == 0 else "400"
+        col = ink if i == 0 else secondary
+        parts.append(
+            f'<text x="{f(bx + pad)}" y="{f(by + pad + font_size + i * lh)}" '
+            f'font-size="{f(font_size)}" font-weight="{weight}" fill="{col}"{ff_attr}>'
+            f"{xml_escape(s)}</text>"
+        )
+    parts.append("</g>")
+    return "".join(parts)
+
+
 def catmull_rom_beziers(
     pts: Sequence[Tuple[float, float]],
     fmt: Callable[[float], str],

@@ -61,7 +61,7 @@ from typing import Any, Dict, List, Optional, Tuple
 # without the dataviz tier).
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import load_palette, os_dark_style  # noqa: E402
-from _svg import hex_to_rgb as _hex_to_rgb, svg_open, viridis  # noqa: E402
+from _svg import hex_to_rgb as _hex_to_rgb, svg_open, tooltip_bubble, viridis  # noqa: E402
 from _svg import xml_escape  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
@@ -776,6 +776,9 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
             )
         )
     )
+    style_rows.append(".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}")
+    style_rows.append(".hit:hover~.tip,.hit:focus~.tip{opacity:1}")
+    style_rows.append("@media (prefers-reduced-motion:reduce){.tip{transition:none}}")
     parts.append("<style>\n" + "\n".join(style_rows) + "\n</style>")
 
     # ---- background ----
@@ -849,9 +852,17 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
         d = _hex_path(c["px"], c["py"], r_draw)
         label = f'{cnt} quake{"" if cnt == 1 else "s"}'
         parts.append(
-            f'<path class="hex" d="{d}" fill="{fill}" stroke="{_STROKE}" '
+            f'<path class="hex hit" d="{d}" fill="{fill}" stroke="{_STROKE}" '
             f'stroke-width="1.0" tabindex="0" role="listitem">'
             f'<title>{label}</title></path>'
+        )
+        parts.append(
+            tooltip_bubble(
+                c["px"], c["py"] - r_draw - 6,
+                [label, f"{t * 100:.0f}% of ramp max"],
+                anchor="middle", canvas_w=_WIDTH, canvas_h=_HEIGHT,
+                ink=_INK, secondary=_SUBTLE, border=_GRAT,
+            )
         )
     parts.append('</g>')
 

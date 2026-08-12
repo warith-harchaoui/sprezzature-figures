@@ -41,7 +41,7 @@ Author
 from __future__ import annotations
 from _render import svg_example_path, write_svg  # noqa: E402
 from _style import CORNERS, leveled_colors, os_adaptive_style, os_dark_style  # noqa: E402
-from _svg import fmt_compact, svg_open  # noqa: E402
+from _svg import fmt_compact, svg_open, tooltip_bubble  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
@@ -269,7 +269,10 @@ def build_svg(
         ".pt{cursor:pointer}"
         ".pt .halo{opacity:0;transition:opacity .15s ease}"
         ".pt:hover .halo,.pt:focus .halo{opacity:1}"
-        ".pt:focus{outline:none}\n"
+        ".pt:focus{outline:none}"
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        "@media (prefers-reduced-motion: reduce){.tip{transition:none}}\n"
         + os_adaptive_style({".po-accent": accent}, role="both")
         + "\n"
         # Additive OS dark mode: dark paper + light ink (default ink_map); the
@@ -363,12 +366,19 @@ def build_svg(
         is_peak = hour in (int(np.argmax(counts[6:11]) + 6), int(np.argmax(counts)))
         radius = 8.5 if is_peak else 5.0
         parts.append(
-            f'<g class="pt" tabindex="0" role="img" aria-label="{tip}">'
-            f'<title>{tip}</title>'
+            f'<g class="pt hit" tabindex="0" role="img" aria-label="{tip}">'
             f'<circle class="halo" cx="{fmt_compact(px)}" cy="{fmt_compact(py)}" '
             f'r="{radius + 9:.1f}" fill="{accent}" fill-opacity="0.16"/>'
             f'<circle class="po-accent" cx="{fmt_compact(px)}" cy="{fmt_compact(py)}" '
             f'r="{radius}" fill="{accent}" stroke="#FFFFFF" stroke-width="2"/></g>'
+        )
+        parts.append(
+            tooltip_bubble(
+                px, py - radius - 14,
+                [f"{hour:02d}:00", f"{value:.0f} departures", f"{share:.1f}% of the day's total"],
+                anchor="middle", canvas_w=width, canvas_h=height,
+                ink=_INK, secondary=_SECONDARY, border=_GRID,
+            )
         )
 
     # ---- peak callouts ---------------------------------------------------- #

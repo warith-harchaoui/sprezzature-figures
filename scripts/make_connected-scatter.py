@@ -57,8 +57,8 @@ from typing import Any, Dict, List, Optional, Tuple
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
-from _style import load_palette, os_dark_style  # noqa: E402
-from _svg import svg_open, xml_escape  # noqa: E402
+from _style import GRIDLINE, load_palette, os_dark_style  # noqa: E402
+from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
 
@@ -486,6 +486,9 @@ def build_svg(
         ".wp .halo{opacity:0}"
         ".wp:hover .halo,.wp:focus .halo{opacity:1}"
         ".wp:focus{outline:none}"
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
         + contrast
         # Additive dark mode. A marker's end-label is white (fill="#FFFFFF") and
         # sits on its data-hue dot, so we do not invert #FFFFFF globally; the
@@ -690,7 +693,7 @@ def build_svg(
         )
 
         parts.append(
-            f'<g class="wp" tabindex="0" role="img" aria-label="{xml_escape(tip)}">'
+            f'<g class="wp hit" tabindex="0" role="img" aria-label="{xml_escape(tip)}">'
         )
         parts.append(f"<title>{xml_escape(tip)}</title>")
 
@@ -719,6 +722,14 @@ def build_svg(
             f'fill="{fill}" stroke="#FFFFFF" stroke-width="2.5"/>'
         )
         parts.append("</g>")
+        parts.append(
+            tooltip_bubble(
+                cx, cy - r_dot - 12,
+                [str(year), f"{gdp:.1f}k $ per person", f"{co2:.1f} t CO2 per person"],
+                anchor="middle", canvas_w=width, canvas_h=height,
+                ink=ink, secondary=secondary, border=GRIDLINE,
+            )
+        )
 
     # --- year labels at the named waypoints (drawn last, on top) --
     # Placed on the ``side`` recorded in the data so labels sit clear of

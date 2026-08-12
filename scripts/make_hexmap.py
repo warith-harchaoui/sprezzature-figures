@@ -43,9 +43,9 @@ from typing import Any, Dict, List, Optional, Tuple
 # The house-style palette lives in _style (stdlib-only, safe to import
 # without the dataviz tier).
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _style import load_palette, os_dark_style  # noqa: E402
+from _style import GRIDLINE, load_palette, os_dark_style  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
-from _svg import svg_open, viridis, xml_escape  # noqa: E402
+from _svg import svg_open, tooltip_bubble, viridis, xml_escape  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
@@ -418,6 +418,9 @@ def build_svg(
             )
         )
     )
+    style_rows.append(".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}")
+    style_rows.append(".hit:hover~.tip,.hit:focus~.tip{opacity:1}")
+    style_rows.append("@media (prefers-reduced-motion:reduce){.tip{transition:none}}")
     parts.append("<style>\n" + "\n".join(style_rows) + "\n</style>")
 
     # ---- background ----
@@ -467,9 +470,20 @@ def build_svg(
             else "no trips"
         )
         parts.append(
-            f'<path class="hex" d="{d}" fill="{fill}" stroke="{_STROKE}" '
+            f'<path class="hex hit" d="{d}" fill="{fill}" stroke="{_STROKE}" '
             f'stroke-width="1.6" tabindex="0" role="listitem">'
             f'<title>{label}</title></path>'
+        )
+        bubble_lines = [label]
+        if cnt > 0:
+            bubble_lines.append(f"{cnt / max_count * 100:.0f}% of busiest hex")
+        parts.append(
+            tooltip_bubble(
+                c["px"], c["py"] - r - 6,
+                bubble_lines,
+                anchor="middle", canvas_w=_WIDTH, canvas_h=_HEIGHT,
+                ink=_INK, secondary=_SUBTLE, border=GRIDLINE,
+            )
         )
     parts.append('</g>')
 

@@ -43,7 +43,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
-from _svg import point_on_circle, svg_open, xml_escape  # noqa: E402
+from _svg import point_on_circle, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _style import os_dark_style  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
@@ -353,7 +353,9 @@ def build_svg(
     style_rows.extend([
         ".legend-row { cursor: pointer; }",
         f".legend-row:focus {{ outline: 3px solid {_FOCUS}; outline-offset: 2px; }}",
-        "@media (prefers-reduced-motion: reduce) { .wedge { transition: none; } }",
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}",
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}",
+        "@media (prefers-reduced-motion: reduce) { .wedge { transition: none; } .tip{transition:none} }",
     ])
     # OS-adaptive style (additive; media-gated so the default light render is
     # byte-for-byte unchanged). PERCEPTUAL figure — the YlOrBr speed ramp is NOT
@@ -476,11 +478,20 @@ def build_svg(
                 f'{_xml(direction)} · {_xml(str(band["label"]))}: '
                 f'{v:.1f}% of hours'
             )
+            mid_x, mid_y = _polar(_CX, _CY, (r0 + r1) / 2.0, (a0 + a1) / 2.0)
             parts.append(
-                f'<path class="wedge band-{s}" tabindex="0" role="listitem" '
+                f'<path class="wedge hit band-{s}" tabindex="0" role="listitem" '
                 f'd="{path}" fill="{color}" stroke="{_BG}" '
-                f'stroke-width="1.1" stroke-linejoin="round">'
-                f'<title>{tip}</title></path>'
+                f'stroke-width="1.1" stroke-linejoin="round" '
+                f'aria-label="{tip}"/>'
+            )
+            parts.append(
+                tooltip_bubble(
+                    mid_x, mid_y - 10,
+                    [direction, str(band["label"]), f"{v:.1f}% of hours"],
+                    anchor="middle", canvas_w=_WIDTH, canvas_h=_HEIGHT,
+                    ink=_INK, secondary=_SUBTLE, border=_GRID,
+                )
             )
         parts.append('</g>')
 

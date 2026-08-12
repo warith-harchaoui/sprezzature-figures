@@ -28,8 +28,8 @@ from typing import Any, Dict, List, Optional
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _style import BG, INK, SECONDARY, load_palette  # noqa: E402
-from _svg import svg_open, xml_escape  # noqa: E402
+from _style import BG, GRIDLINE, INK, SECONDARY, load_palette  # noqa: E402
+from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
 
@@ -130,7 +130,10 @@ def build_svg(
         "<style>"
         ".slope-line{transition:opacity .15s ease;}"
         ".slope-line:hover,.slope-line:focus{opacity:.55;outline:none;}"
-        "@media (prefers-reduced-motion: reduce){.slope-line{transition:none;}}"
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        "@media (prefers-reduced-motion: reduce){.slope-line{transition:none;}"
+        ".tip{transition:none}}"
         "</style>"
     )
     parts.append(f'<rect width="{width}" height="{height}" fill="{BG}"/>')
@@ -159,12 +162,23 @@ def build_svg(
         sign = "+" if change >= 0 else ""
         tip = f"{item}: {v0:.0f} to {v1:.0f} ({sign}{change:.0f})"
         color = colors.get(item, "#8E8E93")
-        parts.append('<g class="slope-line" tabindex="0">')
-        parts.append(f'<title>{xml_escape(tip)}</title>')
+        parts.append(
+            f'<g class="slope-line hit" tabindex="0" role="img" aria-label="{xml_escape(tip)}">'
+        )
         parts.append(f'<path d="{path_d}" fill="none" stroke="{color}" stroke-width="2.2"/>')
         for x, y in pts:
             parts.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="4" fill="{color}" stroke="{BG}" stroke-width="1.5"/>')
         parts.append("</g>")
+        mid_x = (pts[0][0] + pts[-1][0]) / 2.0
+        mid_y = (pts[0][1] + pts[-1][1]) / 2.0
+        parts.append(
+            tooltip_bubble(
+                mid_x, mid_y - 16,
+                [item, f"{v0:.0f} to {v1:.0f}", f"{sign}{change:.0f} change"],
+                anchor="middle", canvas_w=width, canvas_h=height,
+                ink=INK, secondary=SECONDARY, border=GRIDLINE,
+            )
+        )
 
         # End labels: item name + value at the first and last period.
         x0, y0 = pts[0]

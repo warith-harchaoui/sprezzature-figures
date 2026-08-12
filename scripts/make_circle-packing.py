@@ -69,7 +69,7 @@ from xml.sax.saxutils import escape
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import BG, INK, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
-from _svg import hex_to_rgb as _hex_to_rgb, svg_open  # noqa: E402
+from _svg import hex_to_rgb as _hex_to_rgb, svg_open, tooltip_bubble  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control, hover_isolate_css  # noqa: E402
 
@@ -810,6 +810,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
     # Value range across leaves (for shading + hero detection).
     leaf_values = [float(ch["value"]) for pkg in root["children"] for ch in pkg["children"]]  # type: ignore[index]
     vmin, vmax = min(leaf_values), max(leaf_values)
+    total_lines = sum(leaf_values)
 
     parts: List[str] = []
 
@@ -856,6 +857,9 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
         + hover_isolate_css("pkg", n_pkg, dim=0.30)
         + "#packs .pkg:focus-within{opacity:1}"
         ".hit:focus{outline:none}"
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
         + adaptive
         # Additive dark mode. The default map flips the paper and all on-paper
         # ink (title, subtitle, legend, footnote, hero call-out). The leaf
@@ -909,10 +913,19 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
         # Package container: a very pale wash of the hue + a hairline ring
         # in the hue, so nesting reads without a heavy dark border.
         parts.append(
-            f'<circle class="hit pkgring-{pkg["id"]}" cx="{px:.1f}" cy="{py:.1f}" '
+            f'<circle class="hit pkgring-{pkg["id"]}" tabindex="0" cx="{px:.1f}" cy="{py:.1f}" '
             f'r="{pr:.1f}" '
             f'fill="{_mix(pkg_color, 0.86)}" stroke="{_mix(pkg_color, 0.30)}" '
             f'stroke-width="1.5"><title>{escape(pkg_tip)}</title></circle>'
+        )
+        pkg_share = pkg_loc / total_lines * 100.0 if total_lines else 0.0
+        parts.append(
+            tooltip_bubble(
+                px, py - pr - 10,
+                [str(pkg["label"]), f"{n_mod} modules, {pkg_loc:,} lines", f"{pkg_share:.1f}% of codebase"],
+                anchor="middle", canvas_w=WIDTH, canvas_h=HEIGHT,
+                ink=INK, secondary=SUBINK, border=HAIRLINE,
+            )
         )
 
         # Leaves.
@@ -922,8 +935,17 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
             fill = _leaf_fill(pkg_color, float(loc), vmin, vmax)
             leaf_tip = f'{ch["id"]} — {loc:,} lines'
             parts.append(
-                f'<circle class="hit" cx="{cx:.1f}" cy="{cy:.1f}" r="{cr:.1f}" '
+                f'<circle class="hit" tabindex="0" cx="{cx:.1f}" cy="{cy:.1f}" r="{cr:.1f}" '
                 f'fill="{fill}"><title>{escape(leaf_tip)}</title></circle>'
+            )
+            leaf_share = loc / total_lines * 100.0 if total_lines else 0.0
+            parts.append(
+                tooltip_bubble(
+                    cx, cy - cr - 10,
+                    [str(ch["id"]), f"{loc:,} lines", f"{leaf_share:.1f}% of codebase"],
+                    anchor="middle", canvas_w=WIDTH, canvas_h=HEIGHT,
+                    ink=INK, secondary=SUBINK, border=HAIRLINE,
+                )
             )
             # Label if it fits.
             fit = _fit_label(str(ch["label"]), loc, cr)

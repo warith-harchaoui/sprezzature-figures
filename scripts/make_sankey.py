@@ -52,9 +52,9 @@ from typing import Any, Dict, List, Tuple
 from xml.sax.saxutils import escape
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _style import BG, INK, forced_color_patterns, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
+from _style import BG, GRIDLINE, INK, forced_color_patterns, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _svg import svg_open  # noqa: E402
+from _svg import svg_open, tooltip_bubble  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
@@ -380,6 +380,9 @@ def build_svg(
         "#links:hover .link{opacity:.18}"
         "#links .link:hover,#links .link:focus{opacity:1}"
         ".link:focus{outline:none}"
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
         + os_adaptive_style(sk_series, role="fill")
         + fcp_style
         + os_dark_style()
@@ -441,11 +444,20 @@ def build_svg(
         vol_txt = _fmt_k(vol)
         tip = f"{label_of[s]} → {label_of[t]}: {vol_txt} {volume_unit}"
         parts.append(
-            f'<path class="link{chan_cls}" tabindex="0" role="img" '
+            f'<path class="link hit{chan_cls}" tabindex="0" role="img" '
             f'aria-label="{escape(tip)}" d="{_ribbon_path(x0, y0, x1, y1, thick)}" '
             f'fill="{color}" fill-opacity="0.55" stroke="#FFFFFF" stroke-width="1.25" '
-            f'stroke-opacity="0.9">'
-            f'<title>{escape(tip)}</title></path>'
+            f'stroke-opacity="0.9"/>'
+        )
+        mid_x = (x0 + x1) / 2.0
+        mid_y = (y0 + y1) / 2.0 + thick / 2.0
+        parts.append(
+            tooltip_bubble(
+                mid_x, mid_y - 14,
+                [f"{label_of[s]} → {label_of[t]}", f"{vol_txt} {volume_unit}"],
+                anchor="middle", canvas_w=WIDTH, canvas_h=HEIGHT,
+                ink=INK, secondary=SUBINK, border=GRIDLINE,
+            )
         )
     parts.append("</g>")
 
@@ -464,10 +476,19 @@ def build_svg(
             ncol = _NEUTRAL_NODE
             node_cls = ""
         vol_txt = _fmt_k(g["vol"])
+        node_tip = f"{label}: {vol_txt} {volume_unit}"
         parts.append(
-            f'<rect class="node{node_cls}" x="{g["x"]:.1f}" y="{g["y"]:.1f}" '
-            f'width="{NODE_WIDTH}" height="{max(1.0, g["h"]):.1f}" rx="5" fill="{ncol}">'
-            f'<title>{escape(label)}: {vol_txt} {volume_unit}</title></rect>'
+            f'<rect class="node hit{node_cls}" tabindex="0" role="img" '
+            f'aria-label="{escape(node_tip)}" x="{g["x"]:.1f}" y="{g["y"]:.1f}" '
+            f'width="{NODE_WIDTH}" height="{max(1.0, g["h"]):.1f}" rx="5" fill="{ncol}"/>'
+        )
+        parts.append(
+            tooltip_bubble(
+                g["x"] + NODE_WIDTH / 2.0, g["y"] - 14,
+                [label, f"{vol_txt} {volume_unit}"],
+                anchor="middle", canvas_w=WIDTH, canvas_h=HEIGHT,
+                ink=INK, secondary=SUBINK, border=GRIDLINE,
+            )
         )
         cy = g["y"] + g["h"] / 2.0
         if layer_idx == n_layers - 1:

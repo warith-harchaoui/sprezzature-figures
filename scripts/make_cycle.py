@@ -60,7 +60,7 @@ from typing import Any, Dict, List, Optional, Tuple
 # without the dataviz tier).
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import forced_color_patterns, leveled_colors, os_adaptive_style, os_dark_style  # noqa: E402
-from _svg import point_on_circle, svg_open, xml_escape  # noqa: E402
+from _svg import point_on_circle, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
@@ -335,6 +335,9 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
         ".arc:focus { outline: none; }",
         f".arc:focus {{ stroke: {_FOCUS}; stroke-width: 3; }}",
         f".label-hit:focus {{ outline: 3px solid {_FOCUS}; outline-offset: 2px; }}",
+        ".tip { opacity: 0; pointer-events: none; transition: opacity .12s ease; }",
+        ".hit:hover~.tip, .hit:focus~.tip { opacity: 1; }",
+        "@media (prefers-reduced-motion: reduce) { .tip { transition: none; } }",
         # Marching-ants flow on the directional arrow, ON only when the reader
         # has not asked for reduced motion. A raster export freezes frame 0.
         "@media (prefers-reduced-motion: no-preference) {"
@@ -393,7 +396,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
         )
         parts.append(
             f'<g class="phase phase-{k}">'
-            f'<path class="arc phase-{k}" tabindex="0" role="listitem" '
+            f'<path class="arc phase-{k} hit" tabindex="0" role="listitem" '
             f'd="{path}" fill="{color}" stroke="{_BG}" stroke-width="2" '
             f'stroke-linejoin="round"><title>{tip}</title></path>'
         )
@@ -408,6 +411,13 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
             f'font-weight="700" font-family="Roboto Mono, monospace" '
             f'fill="#FFFFFF" text-anchor="middle" dominant-baseline="central" '
             f'style="pointer-events:none">{months:.0f}</text>'
+        )
+        parts.append(
+            tooltip_bubble(
+                mx, my + 22,
+                [str(p["label"]), f"{months:.0f} {month_word} ({share:.0f}% of the year)", str(p["sub"])],
+                canvas_w=_WIDTH, canvas_h=_HEIGHT, ink=_INK, secondary=_SUBTLE, border=_GRID,
+            )
         )
         parts.append('</g>')
     parts.append('</g>')

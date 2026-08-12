@@ -29,7 +29,7 @@ from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY  # noqa: E402
 from _scale import log_position, log_ticks  # noqa: E402
-from _svg import svg_open, xml_escape  # noqa: E402
+from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 COLOR_BOX = "#007AFF"
@@ -218,7 +218,10 @@ def build_svg(
         "<style>"
         ".box{transition:filter .15s ease;}"
         ".box:hover,.box:focus{filter:brightness(1.1);outline:none;}"
-        "@media (prefers-reduced-motion: reduce){.box{transition:none;}}"
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        "@media (prefers-reduced-motion: reduce){.box{transition:none;}"
+        ".tip{transition:none}}"
         "</style>"
     )
 
@@ -287,9 +290,22 @@ def build_svg(
                 f"{_fmt(s['whisker_hi'])}, n={s['n']}"
             )
             parts.append(
-                f'<rect class="box" tabindex="0" x="{x_left:.1f}" y="{y_q3:.1f}" '
+                f'<rect class="box hit" tabindex="0" x="{x_left:.1f}" y="{y_q3:.1f}" '
                 f'width="{box_w:.1f}" height="{max(1.0, y_q1 - y_q3):.1f}" '
                 f'fill="{color}" fill-opacity="0.85"><title>{xml_escape(tip)}</title></rect>'
+            )
+            parts.append(
+                tooltip_bubble(
+                    cx, y_q3 - 10,
+                    [
+                        f"{gtxt}{d}" if grouped else str(d),
+                        f"median {_fmt(s['med'])}",
+                        f"Q1 {_fmt(s['q1'])} — Q3 {_fmt(s['q3'])}",
+                        f"whiskers {_fmt(s['whisker_lo'])}-{_fmt(s['whisker_hi'])}, n={s['n']}",
+                    ],
+                    anchor="middle", canvas_w=width, canvas_h=height,
+                    ink=INK, secondary=SECONDARY, border=GRIDLINE,
+                )
             )
             parts.append(
                 f'<line x1="{x_left:.1f}" y1="{y_med:.1f}" x2="{x_left + box_w:.1f}" y2="{y_med:.1f}" '

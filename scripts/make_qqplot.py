@@ -33,7 +33,7 @@ from typing import Any, Dict, List, Optional
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _svg import svg_open, xml_escape  # noqa: E402
+from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
@@ -155,6 +155,13 @@ def build_svg(
         f'<desc id="qq-desc">Normal Q-Q plot of {n} observations. Points on the dashed line '
         f'indicate an approximately normal sample.</desc>'
     )
+    parts.append(
+        "<style>"
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
+        "</style>"
+    )
     parts.append(f'<rect width="{width}" height="{height}" fill="{BG}"/>')
     parts.append(
         f'<text x="40" y="46" font-size="22" font-weight="700" fill="{INK}" '
@@ -193,12 +200,25 @@ def build_svg(
     )
 
     # ---- points ----
-    for t, s in zip(theoretical, sample):
+    for i, (t, s) in enumerate(zip(theoretical, sample)):
         cx, cy = x_for(t), y_for(s)
+        deviation = s - t
         tip = f"Theoretical {t:.1f}, sample {s:.1f}"
         parts.append(
-            f'<circle tabindex="0" cx="{cx:.1f}" cy="{cy:.1f}" r="3.5" fill="{COLOR_POINT}" '
-            f'fill-opacity="0.85"><title>{xml_escape(tip)}</title></circle>'
+            f'<circle class="hit" tabindex="0" cx="{cx:.1f}" cy="{cy:.1f}" r="3.5" fill="{COLOR_POINT}" '
+            f'fill-opacity="0.85" role="img" aria-label="{xml_escape(tip)}"/>'
+        )
+        parts.append(
+            tooltip_bubble(
+                cx, cy - 16,
+                [
+                    f"Rank {i + 1} of {n}",
+                    f"theoretical {t:.1f}, sample {s:.1f}",
+                    f"{abs(deviation):.1f} {'above' if deviation >= 0 else 'below'} the line",
+                ],
+                anchor="middle", canvas_w=width, canvas_h=height,
+                ink=INK, secondary=SECONDARY, border=GRIDLINE,
+            )
         )
 
     parts.append(fullscreen_control(width, height, mode))

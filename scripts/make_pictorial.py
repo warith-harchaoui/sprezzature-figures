@@ -46,7 +46,7 @@ from typing import Any, Dict, List, Optional, Tuple
 # without the dataviz tier).
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import load_palette, os_adaptive_style, os_dark_style, qualitative_sequence  # noqa: E402
-from _svg import svg_open, xml_escape  # noqa: E402
+from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
@@ -359,9 +359,12 @@ def build_svg(
         ".row { cursor: pointer; }",
         ".row:focus { outline: none; }",
         f".row:focus .rowlabel {{ fill: {_FOCUS}; }}",
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}",
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}",
         "@media (prefers-reduced-motion: reduce) {"
         " .row, .icons { transition: none; }"
         " .reveal { animation: none !important; }"
+        " .tip{transition:none}"
         "}",
     ])
     # OS-adaptive overrides (additive; the default render is byte-identical
@@ -412,10 +415,11 @@ def build_svg(
         full = int(value // _UNIT)
         frac = (value - full * _UNIT) / _UNIT
 
+        share = value / max_value * 100.0
+        row_tip = f"{_xml(str(d['label']))}: {value:.0f} cyclists per 100 commuters"
         parts.append(
-            f'<g class="row row-{s}" tabindex="0" role="listitem">'
-            f'<title>{_xml(str(d["label"]))}: {value:.0f} cyclists per '
-            f'100 commuters</title>'
+            f'<g class="row row-{s} hit" tabindex="0" role="listitem" '
+            f'aria-label="{row_tip}">'
         )
 
         # Row label (city) on the left, value on the far right for scanning.
@@ -488,6 +492,14 @@ def build_svg(
         )
 
         parts.append('</g>')
+        parts.append(
+            tooltip_bubble(
+                _FIELD_X, top - 14,
+                [str(d["label"]), f"{value:.0f} per 100 commuters", f"{share:.1f}% of the top row"],
+                anchor="start", canvas_w=_WIDTH, canvas_h=_HEIGHT,
+                ink=_INK, secondary=_SUBTLE, border=_EMPTY,
+            )
+        )
 
     # ---- legend / unit key (bottom-left, below the rows) ----
     legend_y = _ROW_TOP + len(data) * _ROW_H + 26

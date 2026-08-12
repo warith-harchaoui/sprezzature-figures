@@ -62,8 +62,8 @@ from typing import Any, Dict, List
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
-from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
-from _svg import svg_open, xml_escape  # noqa: E402
+from _style import GRIDLINE, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
+from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 
@@ -369,6 +369,9 @@ def build_svg(
         ".pt .halo{opacity:0}"
         ".pt:hover .halo,.pt:focus .halo{opacity:1}"
         ".pt:focus{outline:none}"
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
         + os_adaptive_style({".pa-vital": vital_c}, role="fill")
         + os_adaptive_style({".pa-line": line_c}, role="both")
         # Additive OS dark mode: dark paper + light ink (default ink_map); the
@@ -445,10 +448,9 @@ def build_svg(
             reason=r["reason"], count=int(r["count"]), share=share, cum=float(r["cum"]),
         )
         parts.append(
-            f'<g class="bar" tabindex="0" role="img" '
+            f'<g class="bar hit" tabindex="0" role="img" '
             f'aria-label="{xml_escape(tip)}">'
         )
-        parts.append(f"<title>{xml_escape(tip)}</title>")
         # Rounded top corners via a small rx; white keyline lifts each bar off
         # the band and off its neighbour without a dark ring.
         parts.append(
@@ -457,6 +459,14 @@ def build_svg(
             f'stroke-width="1.5"/>'
         )
         parts.append("</g>")
+        parts.append(
+            tooltip_bubble(
+                cx, top - 14.0,
+                [str(r["reason"]), f"{int(r['count']):,} tickets", f"{share:.1f}% of total · cumulative {float(r['cum']):.1f}%"],
+                anchor="middle", canvas_w=width, canvas_h=height,
+                ink=ink, secondary=secondary, border=GRIDLINE,
+            )
+        )
 
     # --- cumulative-percentage line + markers --------------------
     # One smooth-enough polyline through the running totals, drawn with a soft
@@ -491,10 +501,9 @@ def build_svg(
         rr = 10.0 if is_cross else 6.5
         tip = strings["point_tooltip"].format(reason=r["reason"], cum=cum)
         parts.append(
-            f'<g class="pt" tabindex="0" role="img" '
+            f'<g class="pt hit" tabindex="0" role="img" '
             f'aria-label="{xml_escape(tip)}">'
         )
-        parts.append(f"<title>{xml_escape(tip)}</title>")
         parts.append(
             f'<circle class="halo" cx="{cx:.1f}" cy="{cy:.1f}" r="18" '
             f'fill="{ink}" fill-opacity="0.08"/>'
@@ -504,6 +513,14 @@ def build_svg(
             f'fill="{line_c}" stroke="#FFFFFF" stroke-width="2"/>'
         )
         parts.append("</g>")
+        parts.append(
+            tooltip_bubble(
+                cx, cy - 26.0,
+                [str(r["reason"]), f"cumulative {cum:.1f}% of total"],
+                anchor="middle", canvas_w=width, canvas_h=height,
+                ink=ink, secondary=secondary, border=GRIDLINE,
+            )
+        )
 
     # --- crossing call-out ---------------------------------------
     if crossing:

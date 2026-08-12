@@ -29,7 +29,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY, cycle_hues  # noqa: E402
-from _svg import svg_open, xml_escape  # noqa: E402
+from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 
@@ -141,7 +141,10 @@ def build_svg(
         "<style>"
         ".rangebar{transition:filter .15s ease;}"
         ".rangebar:hover,.rangebar:focus{filter:brightness(1.1);outline:none;}"
-        "@media (prefers-reduced-motion: reduce){.rangebar{transition:none;}}"
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        "@media (prefers-reduced-motion: reduce){.rangebar{transition:none;}"
+        ".tip{transition:none}}"
         "</style>"
     )
 
@@ -196,9 +199,17 @@ def build_svg(
             r = min(bar_w / 2.0, 4.0)
             tip = f"{c}, {m}: {low:.0f}°C to {high:.0f}°C"
             parts.append(
-                f'<rect class="rangebar" tabindex="0" x="{x:.1f}" y="{y_top:.1f}" '
+                f'<rect class="rangebar hit" tabindex="0" x="{x:.1f}" y="{y_top:.1f}" '
                 f'width="{bar_w:.1f}" height="{h:.1f}" rx="{r:.1f}" '
                 f'fill="{colors[c]}" fill-opacity="0.85"><title>{xml_escape(tip)}</title></rect>'
+            )
+            parts.append(
+                tooltip_bubble(
+                    x + bar_w / 2, y_top - 10,
+                    [f"{c}, {m}", f"low {low:.0f}°C — high {high:.0f}°C", f"span {high - low:.0f}°C"],
+                    anchor="middle", canvas_w=width, canvas_h=height,
+                    ink=INK, secondary=SECONDARY, border=GRIDLINE,
+                )
             )
 
     # ---- x-axis (month group labels) ----

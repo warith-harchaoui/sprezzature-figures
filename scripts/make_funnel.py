@@ -28,7 +28,8 @@ from xml.sax.saxutils import escape
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
-from _style import BG, INK, SECONDARY  # noqa: E402
+from _style import BG, GRIDLINE, INK, SECONDARY  # noqa: E402
+from _svg import tooltip_bubble  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 # ---------------------------------------------------------------------------
@@ -121,6 +122,13 @@ def build_svg(
         f'style="background:{BG};max-width:100%;height:auto">'
     )
     lines.append(f'<desc>{escape(subtitle)}</desc>')
+    lines.append(
+        "<style>"
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
+        "</style>"
+    )
     lines.append(f'<rect width="{WIDTH}" height="{HEIGHT}" fill="{BG}"/>')
 
     # Title and subtitle
@@ -172,8 +180,21 @@ def build_svg(
             conv_str = f" ({rate:.1f}% conversion)"
         tooltip = f"{stage}: {count:,.0f}{conv_str}"
         lines.append(
-            f'<path d="{d}" fill="{color}" opacity="0.88">'
+            f'<path class="hit" tabindex="0" d="{d}" fill="{color}" opacity="0.88">'
             f'<title>{escape(tooltip)}</title></path>'
+        )
+        bubble_lines = [str(stage), f"{count:,.0f} users"]
+        if i > 0:
+            rate = count / float(data[i - 1]["count"]) * 100
+            bubble_lines.append(f"{rate:.1f}% conversion from prior stage")
+        share = count / counts[0] * 100 if counts[0] else 0.0
+        bubble_lines.append(f"{share:.1f}% of stage 1")
+        lines.append(
+            tooltip_bubble(
+                cx, (y_top + y_bot) / 2.0 - 12, bubble_lines,
+                anchor="middle", canvas_w=WIDTH, canvas_h=HEIGHT,
+                ink=INK, secondary=SECONDARY, border=GRIDLINE,
+            )
         )
 
         # Stage label: name on the left, count on the right

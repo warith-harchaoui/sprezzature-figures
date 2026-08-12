@@ -26,7 +26,7 @@ from typing import Any, Dict, List, Optional
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _svg import svg_open, xml_escape  # noqa: E402
+from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
@@ -137,7 +137,10 @@ def build_svg(
         "<style>"
         ".pop{transition:r .12s ease;}"
         ".pop:hover,.pop:focus{r:8;outline:none;}"
-        "@media (prefers-reduced-motion: reduce){.pop{transition:none;}}"
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        "@media (prefers-reduced-motion: reduce){.pop{transition:none;}"
+        ".tip{transition:none}}"
         "</style>"
     )
     parts.append(f'<rect width="{width}" height="{height}" fill="{BG}"/>')
@@ -174,8 +177,16 @@ def build_svg(
         tip = f"{row['c']}: {v:.0f} ({share:.1f}% {strings['of_total']})"
         parts.append(f'<line x1="{plot_x:.1f}" y1="{cy:.1f}" x2="{x1:.1f}" y2="{cy:.1f}" stroke="{COLOR_STEM}" stroke-width="2"/>')
         parts.append(
-            f'<circle class="pop" tabindex="0" cx="{x1:.1f}" cy="{cy:.1f}" r="7" fill="{COLOR_DOT}" '
-            f'stroke="{BG}" stroke-width="1.5"><title>{xml_escape(tip)}</title></circle>'
+            f'<circle class="pop hit" tabindex="0" cx="{x1:.1f}" cy="{cy:.1f}" r="7" fill="{COLOR_DOT}" '
+            f'stroke="{BG}" stroke-width="1.5" role="img" aria-label="{xml_escape(tip)}"/>'
+        )
+        parts.append(
+            tooltip_bubble(
+                x1, cy - 14,
+                [str(row["c"]), f"{v:.0f} pts", f"{share:.1f}% {strings['of_total']}"],
+                anchor="middle", canvas_w=width, canvas_h=height,
+                ink=INK, secondary=SECONDARY, border=GRIDLINE,
+            )
         )
         parts.append(
             f'<text x="{plot_x - 12:.1f}" y="{cy + 4:.1f}" font-size="13" fill="{INK}" '

@@ -58,9 +58,9 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _style import leveled_colors, load_palette, os_dark_style  # noqa: E402
+from _style import GRIDLINE, leveled_colors, load_palette, os_dark_style  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
-from _svg import svg_open, xml_escape  # noqa: E402
+from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
 
 
 def make_data(
@@ -358,6 +358,9 @@ def build_svg(
         ".pt:hover .halo,.pt:focus .halo{opacity:1}"
         ".pt:focus{outline:none}"
         ".bar{cursor:pointer}"
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
         + adaptive
         # Light gridlines are strokes the ink map misses; darken them for a dark
         # ground. The grey diagonal / reference band reads at medium grey either
@@ -520,7 +523,7 @@ def build_svg(
             f'(gap {rec["gap"]:+.0%}, {side}); {int(rec["count"])} predictions'
         )
         parts.append(
-            f'<g class="pt" tabindex="0" role="img" '
+            f'<g class="pt hit" tabindex="0" role="img" '
             f'aria-label="{xml_escape(tip)}">'
         )
         parts.append(f"<title>{xml_escape(tip)}</title>")
@@ -535,6 +538,18 @@ def build_svg(
             f'fill-opacity="0.95" stroke="#FFFFFF" stroke-width="1.4"/>'
         )
         parts.append("</g>")
+        parts.append(
+            tooltip_bubble(
+                cx, cy - rr - 14,
+                [
+                    f'predicted {rec["predicted"]:.0%} vs observed {rec["observed"]:.0%}',
+                    f'gap {rec["gap"]:+.0%} ({side})',
+                    f'{int(rec["count"])} predictions',
+                ],
+                anchor="middle", canvas_w=width, canvas_h=height,
+                ink=ink, secondary=secondary, border=GRIDLINE,
+            )
+        )
 
     # --- "perfect calibration" caption, on top of the points ------
     # Rides ON the diagonal, rotated -45 degrees so it runs parallel to
@@ -607,7 +622,7 @@ def build_svg(
         bh = h_ax_bottom - by
         tip = f'{int(rec["count"])} predictions near {rec["predicted"]:.0%}'
         parts.append(
-            f'<g class="bar" tabindex="0" role="img" '
+            f'<g class="bar hit" tabindex="0" role="img" '
             f'aria-label="{xml_escape(tip)}">'
         )
         parts.append(f"<title>{xml_escape(tip)}</title>")
@@ -616,6 +631,14 @@ def build_svg(
             f'height="{bh:.1f}" rx="3" fill="{hist}" fill-opacity="0.85"/>'
         )
         parts.append("</g>")
+        parts.append(
+            tooltip_bubble(
+                bx + bw / 2, by - 10,
+                [f'near {rec["predicted"]:.0%} predicted', f'{int(rec["count"])} predictions'],
+                anchor="middle", canvas_w=width, canvas_h=height,
+                ink=ink, secondary=secondary, border=GRIDLINE,
+            )
+        )
 
     # histogram axes: baseline + a couple of count ticks on the left.
     parts.append(

@@ -27,8 +27,8 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _style import CORNERS  # noqa: E402
-from _svg import rounded_rect_path, svg_open, xml_escape  # noqa: E402
+from _style import CORNERS, GRIDLINE  # noqa: E402
+from _svg import rounded_rect_path, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
@@ -182,6 +182,13 @@ def build_svg(
         f'diagonal ({diag_str}) shows most predictions are correct; the largest '
         f'error is {worst_count} {worst_actual} predicted as {worst_pred}.</desc>'
     )
+    parts.append(
+        "<style>"
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
+        "</style>"
+    )
     parts.append(f'<rect width="{width}" height="{height}" fill="{_BG}"/>')
 
     # Title + subtitle (top-left, house style).
@@ -223,6 +230,7 @@ def build_svg(
             f'<text x="{_GRID_X - 24:.1f}" y="{cy + 5:.1f}" font-size="15" '
             f'fill="{_INK}" text-anchor="end">{xml_escape(name)}</text>'
         )
+        row_total = sum(matrix[i])
         for j, pred in enumerate(classes):
             count = matrix[i][j]
             t = count / vmax if vmax else 0.0
@@ -233,8 +241,21 @@ def build_svg(
             kind = "correct" if i == j else "error"
             tip = f"Actual {name}, predicted {pred}: {count} ({kind})"
             parts.append(
-                f'<path d="{rounded_rect_path(x, y, _CELL, _CELL, tile_r, tile_r, tile_r, tile_r)}" '
+                f'<path class="hit" tabindex="0" d="{rounded_rect_path(x, y, _CELL, _CELL, tile_r, tile_r, tile_r, tile_r)}" '
                 f'fill="{fill}"><title>{xml_escape(tip)}</title></path>'
+            )
+            row_share = count / row_total * 100.0 if row_total else 0.0
+            parts.append(
+                tooltip_bubble(
+                    x + _CELL / 2, y - 8,
+                    [
+                        f"actual {name} → predicted {pred}",
+                        f"{count} images ({kind})",
+                        f"{row_share:.1f}% of actual {name}",
+                    ],
+                    anchor="middle", canvas_w=width, canvas_h=height,
+                    ink=_INK, secondary=_SUBTLE, border=GRIDLINE,
+                )
             )
             parts.append(
                 f'<text x="{x + _CELL / 2:.1f}" y="{y + _CELL / 2 + 8:.1f}" '

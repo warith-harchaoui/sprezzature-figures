@@ -30,7 +30,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY, corner_radius, cycle_hues  # noqa: E402
-from _svg import bar_path, svg_open, xml_escape  # noqa: E402
+from _svg import bar_path, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 
@@ -198,6 +198,9 @@ def build_svg(
         ".bar{transition:filter .15s ease;}"
         ".bar:hover,.bar:focus{filter:brightness(1.08);outline:none;}"
         "@media (prefers-reduced-motion: reduce){.bar{transition:none;}}"
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
         "</style>"
     )
     parts.append(f'<rect width="{width}" height="{height}" fill="{BG}"/>')
@@ -250,8 +253,17 @@ def build_svg(
             tip = strings["tooltip_template"].format(region=region, period=period, value=value)
             path = bar_path(x, y, bar_w * 0.88, h, r, side="top")
             parts.append(
-                f'<path class="bar" tabindex="0" d="{path}" fill="{colors.get(region, "#007AFF")}">'
+                f'<path class="bar hit" tabindex="0" d="{path}" fill="{colors.get(region, "#007AFF")}">'
                 f'<title>{xml_escape(tip)}</title></path>'
+            )
+            period_total = sum(lookup.get((period, r2), 0.0) for r2 in regions) or 1.0
+            share = value / period_total * 100.0
+            parts.append(
+                tooltip_bubble(
+                    x + bar_w * 0.44, y - 6,
+                    [f"{region}, {period}", f"{value:.0f}", f"{share:.0f}% of {period} total"],
+                    canvas_w=width, canvas_h=height, ink=INK, secondary=SECONDARY, border=GRIDLINE,
+                )
             )
 
     # ---- x-axis ----

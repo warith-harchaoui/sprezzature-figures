@@ -52,9 +52,9 @@ from typing import Any, Dict, List, Optional, Tuple
 from xml.sax.saxutils import escape
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _style import BG, INK, forced_color_patterns, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
+from _style import BG, GRIDLINE, INK, forced_color_patterns, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
-from _svg import point_on_circle, svg_open  # noqa: E402
+from _svg import point_on_circle, svg_open, tooltip_bubble  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control, hover_isolate_css  # noqa: E402
 
@@ -462,6 +462,9 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
         + hover_isolate_css("chord", len(ribbons), dim=0.12)
         + ".arc{transition:opacity .18s ease}"
         ".chord:focus,.arc:focus{outline:none}"
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
         + adaptive
         + fcp_style
         # Paper + ink flip; the semi-transparent white hub disk inverts to a soft
@@ -499,11 +502,29 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
             f"{dst_name} reviewed {rb['v_dst']} of {src_name}'s)"
         )
         parts.append(
-            f'<path class="chord chord-{chord_idx} team-{rb["src"]}" tabindex="0" role="img" '
+            f'<path class="chord chord-{chord_idx} team-{rb["src"]} hit" tabindex="0" role="img" '
             f'aria-label="{escape(tip)}" d="{d}" fill="{rb["color"]}" '
             f'fill-opacity="0.5" stroke="{rb["color"]}" stroke-opacity="0.35" '
             f'stroke-width="0.6">'
             f'<title>{escape(tip)}</title></path>'
+        )
+        a_mid = (rb["a0"] + rb["a1"]) / 2.0
+        b_mid = (rb["b0"] + rb["b1"]) / 2.0
+        pa_mid = _polar(R_INNER, a_mid)
+        pb_mid = _polar(R_INNER, b_mid)
+        rx = CX + ((pa_mid[0] + pb_mid[0]) / 2.0 - CX) * 0.45
+        ry = CY + ((pa_mid[1] + pb_mid[1]) / 2.0 - CY) * 0.45
+        parts.append(
+            tooltip_bubble(
+                rx, ry,
+                [
+                    f"{src_name} ↔ {dst_name}",
+                    f"{rb['combined']} reviews total",
+                    f"{src_name} → {dst_name}: {rb['v_src']}, {dst_name} → {src_name}: {rb['v_dst']}",
+                ],
+                anchor="middle", canvas_w=WIDTH, canvas_h=HEIGHT,
+                ink=INK, secondary=SUBINK, border=GRIDLINE,
+            )
         )
     parts.append("</g>")
 
@@ -514,9 +535,18 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
         d = _arc_path(R_OUTER, R_INNER, g["a0"], g["a1"])
         arc_tip = f"{g['name']}: {g['total']} reviews in and out this sprint"
         parts.append(
-            f'<path class="arc team-{i}" tabindex="0" role="img" '
+            f'<path class="arc team-{i} hit" tabindex="0" role="img" '
             f'aria-label="{escape(arc_tip)}" d="{d}" fill="{g["color"]}">'
             f'<title>{escape(arc_tip)}</title></path>'
+        )
+        arc_mid_pt = _polar(R_OUTER + 8, g["mid"])
+        parts.append(
+            tooltip_bubble(
+                arc_mid_pt[0], arc_mid_pt[1] - 8,
+                [g["name"], f"{g['total']} reviews in and out"],
+                anchor="middle", canvas_w=WIDTH, canvas_h=HEIGHT,
+                ink=INK, secondary=SUBINK, border=GRIDLINE,
+            )
         )
 
         # Label: place it radially outside the arc, rotated to sit tangent

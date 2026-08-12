@@ -52,7 +52,7 @@ import numpy as np
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _svg import catmull_rom_beziers, fmt_compact  # noqa: E402
+from _svg import catmull_rom_beziers, fmt_compact, tooltip_bubble  # noqa: E402
 from _render import svg_example_path, write_svg  # noqa: E402
 from _style import leveled_colors, os_adaptive_style, os_dark_style  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
@@ -610,9 +610,17 @@ def build_svg(
             f"${plan[i] / 1000:.2f}M — ${abs(gap):.0f}k {sign} plan"
         )
         tips.append(
-            f'<rect x="{_fmt(gx - col_w / 2)}" y="{_fmt(m_top - 40)}" '
+            f'<rect class="hit" tabindex="0" x="{_fmt(gx - col_w / 2)}" y="{_fmt(m_top - 40)}" '
             f'width="{_fmt(col_w)}" height="{_fmt(plot_h + 40)}" '
             f'fill="transparent"><title>{tip}</title></rect>'
+        )
+        tips.append(
+            tooltip_bubble(
+                gx, m_top - 30,
+                [month_labels[i], f"actual ${actual[i] / 1000:.2f}M vs plan ${plan[i] / 1000:.2f}M",
+                 f"${abs(gap):.0f}k {sign} plan"],
+                canvas_w=width, canvas_h=height, ink=_INK, secondary=_SECONDARY, border="#EFEFF2",
+            )
         )
 
     # ---- OS-adaptive overrides (additive) --------------------------------- #
@@ -626,7 +634,12 @@ def build_svg(
     # single mass and destroy the encoding — so the browser's default (leave SVG
     # fills alone) is the correct behaviour here.
     diff_series = {".diff-above": _ABOVE_HUE_C, ".diff-below": _BELOW_HUE_C}
-    style_block = os_adaptive_style(diff_series, role="fill")
+    style_block = (
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
+    )
+    style_block += os_adaptive_style(diff_series, role="fill")
     # Additive dark mode: flip paper + the two ink tiers, and flip any multiply
     # overlap to screen so the two bands lighten (not muddy) on a dark surface.
     style_block += os_dark_style()

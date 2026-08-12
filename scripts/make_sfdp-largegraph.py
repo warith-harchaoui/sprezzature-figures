@@ -51,7 +51,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import BG, INK, forced_color_patterns, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _svg import svg_open  # noqa: E402
+from _svg import svg_open, tooltip_bubble  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
 # ------------------------------------------------------------------
@@ -505,6 +505,9 @@ def build_svg(
         css.append(f"{cond} .clabel.cl-{c}{{opacity:1}}")
         css.append(f"{cond} .cedge.e-{c}{{opacity:.65}}")
     css.append(".legend g:focus{outline:none}")
+    css.append(".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}")
+    css.append(".hit:hover~.tip,.hit:focus~.tip{opacity:1}")
+    css.append("@media (prefers-reduced-motion: reduce){.tip{transition:none}}")
     # OS-adaptive overrides (additive; every rule lives inside an @media block,
     # so the default render is byte-for-byte unchanged). Each lab already carries
     # a stable class: nodes ``.c-<c>``, and (added here) the solid legend / label
@@ -577,10 +580,21 @@ def build_svg(
     for i in range(n):
         x, y = pos[i]
         r = _radius(degree[i], max_deg)
+        lab = labels[comm[i]]
+        node_tip = f"{lab} researcher: {degree[i]} co-authorships"
         parts.append(
-            f'<circle class="comm c-{comm[i]}" cx="{x:.1f}" cy="{y:.1f}" '
+            f'<circle class="comm c-{comm[i]} hit" tabindex="0" cx="{x:.1f}" cy="{y:.1f}" '
             f'r="{r:.1f}" fill="{light[comm[i]]}" fill-opacity="0.85" '
-            f'stroke="{colors[comm[i]]}" stroke-width="1.6"/>'
+            f'stroke="{colors[comm[i]]}" stroke-width="1.6" '
+            f'role="img" aria-label="{escape(node_tip)}"/>'
+        )
+        parts.append(
+            tooltip_bubble(
+                x, y - r - 12,
+                [lab, f"{degree[i]} co-authorships", f"{sizes[comm[i]]} researchers in {lab}"],
+                anchor="middle", canvas_w=WIDTH, canvas_h=HEIGHT,
+                ink=INK, secondary=SUBINK, border=EDGE,
+            )
         )
     parts.append("</g>")
 

@@ -65,7 +65,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
-from _svg import svg_open, xml_escape  # noqa: E402
+from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 
@@ -330,6 +330,9 @@ def build_svg(
         ".pt .halo{opacity:0}"
         ".pt:hover .halo,.pt:focus .halo{opacity:1}"
         ".pt:focus{outline:none}"
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
         + "\n" + contrast_block + "\n"
         + os_dark_style() + "\n"
         "</style>"
@@ -476,10 +479,9 @@ def build_svg(
             f'the diagonal'
         )
         parts.append(
-            f'<g class="pt" tabindex="0" role="img" '
+            f'<g class="pt hit" tabindex="0" role="img" '
             f'aria-label="{xml_escape(tip)}">'
         )
-        parts.append(f"<title>{xml_escape(tip)}</title>")
         parts.append(
             f'<circle class="halo" cx="{cx:.1f}" cy="{cy:.1f}" r="18" '
             f'fill="{ink}" fill-opacity="0.08"/>'
@@ -490,6 +492,18 @@ def build_svg(
             f'fill="{col}" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>'
         )
         parts.append("</g>")
+        parts.append(
+            tooltip_bubble(
+                cx, cy - 26,
+                [
+                    f"Session {d['minutes']:.1f} min",
+                    f"theoretical P {theo:.2f}, empirical P {emp:.2f}",
+                    f"{abs(deviation):.2f} {dev_word} the diagonal",
+                ],
+                anchor="middle", canvas_w=width, canvas_h=height,
+                ink=ink, secondary=secondary, border=grid_col,
+            )
+        )
 
     # --- direct above / below annotations ------------------------
     # Each cluster sits on its own side of the diagonal, so the label goes

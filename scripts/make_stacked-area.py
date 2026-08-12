@@ -29,7 +29,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY, cycle_hues  # noqa: E402
-from _svg import svg_open, xml_escape  # noqa: E402
+from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 
@@ -135,7 +135,10 @@ def build_svg(
         ".band-group{transition:opacity .15s ease;}"
         "svg:hover .band-group,svg:focus-within .band-group{opacity:.45;}"
         + "".join(f'svg:has(.b{i}:hover,.b{i}:focus) .b{i}{{opacity:1;}}' for i in range(len(services)))
-        + "@media (prefers-reduced-motion: reduce){.band-group{transition:none;}}"
+        + ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        + "@media (prefers-reduced-motion: reduce){.band-group{transition:none;}"
+        ".tip{transition:none}}"
         "</style>"
     )
     parts.append(f'<rect width="{width}" height="{height}" fill="{BG}"/>')
@@ -177,11 +180,22 @@ def build_svg(
         bot_pts = [(x_for(m), y_for(v)) for m, v in zip(months, prev)]
         d = "M " + " L ".join(f"{x:.1f},{y:.1f}" for x, y in top_pts)
         d += " L " + " L ".join(f"{x:.1f},{y:.1f}" for x, y in reversed(bot_pts)) + " Z"
-        tip = f"{s}: {top[-1] - prev[-1]:.1f}k$ in the latest month"
+        latest = top[-1] - prev[-1]
+        latest_share = latest / (running[-1] or 1.0) * 100.0
+        tip = f"{s}: {latest:.1f}k$ in the latest month"
         parts.append(f'<g class="band-group b{si}">')
         parts.append(
-            f'<path tabindex="0" d="{d}" fill="{colors[s]}" fill-opacity="0.82">'
-            f'<title>{xml_escape(tip)}</title></path>'
+            f'<path class="hit" tabindex="0" d="{d}" fill="{colors[s]}" fill-opacity="0.82" '
+            f'role="img" aria-label="{xml_escape(tip)}"/>'
+        )
+        mid_i = len(months) // 2
+        parts.append(
+            tooltip_bubble(
+                top_pts[mid_i][0], (top_pts[mid_i][1] + bot_pts[mid_i][1]) / 2.0 - 14,
+                [s, f"{top[mid_i] - prev[mid_i]:.1f}k$ that month", f"{latest_share:.0f}% of latest total"],
+                anchor="middle", canvas_w=width, canvas_h=height,
+                ink=INK, secondary=SECONDARY, border=GRIDLINE,
+            )
         )
         parts.append("</g>")
         prev = top

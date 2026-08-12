@@ -54,7 +54,7 @@ from typing import Any, Dict, List, Optional, Tuple
 # without the dataviz tier).
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
-from _svg import svg_open, xml_escape  # noqa: E402
+from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
@@ -316,8 +316,10 @@ def build_svg(
         ".peak:hover circle, .peak:focus circle { r: 7; }",
         ".peak:focus { outline: none; }",
         ".peak:focus circle { stroke: #1D1D1F; stroke-width: 1.4; }",
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}",
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}",
         "@media (prefers-reduced-motion: reduce) { "
-        ".peak { transition: none; } }",
+        ".peak { transition: none; } .tip{transition:none} }",
     ]
     # OS-adaptive overrides (additive; each rule lives inside a media query so
     # the default render is byte-for-byte unchanged). Under prefers-contrast the
@@ -495,13 +497,9 @@ def build_svg(
         elif px > _PLOT_X + _PLOT_W - 40:
             anchor, lx = "end", px
         parts.append(
-            f'<g class="peak" tabindex="0" role="img" '
+            f'<g class="peak hit" tabindex="0" role="img" '
             f'aria-label="{_xml(gene)} on chromosome {chrom}, '
             f'{_fmt_p(peak_val)}">'
-        )
-        parts.append(
-            f'<title>{_xml(gene)} — chr{chrom}:{bp:,} · '
-            f'{_fmt_p(peak_val)}</title>'
         )
         parts.append(
             f'<circle class="mh-hit" cx="{px:.1f}" cy="{py:.1f}" r="4.2" '
@@ -513,6 +511,15 @@ def build_svg(
             f'text-anchor="{anchor}">{_xml(gene)}</text>'
         )
         parts.append('</g>')
+        parts.append(
+            tooltip_bubble(
+                lx, py - 40,
+                [gene, f"chr{chrom}:{bp:,}", _fmt_p(peak_val)],
+                anchor=anchor if anchor != "middle" else "middle",
+                canvas_w=_WIDTH, canvas_h=_HEIGHT,
+                ink=_INK, secondary=_SUBTLE, border=_GRIDLINE,
+            )
+        )
 
     # ---- x-axis: chromosome labels ----
     x_label_y = _PLOT_Y + _PLOT_H + 28.0
