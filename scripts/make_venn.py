@@ -286,7 +286,7 @@ def build_svg(
         f".grp:focus {{ outline: 3px solid {_FOCUS}; outline-offset: 3px; "
         f"border-radius: 12px; }}",
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}",
-        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}",
+        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}",
         "@media (prefers-reduced-motion: reduce) { "
         ".lobe, .setlabel { transition: none; } .tip{transition:none} }",
     ])

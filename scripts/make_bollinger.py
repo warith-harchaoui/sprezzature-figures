@@ -716,7 +716,7 @@ def build_svg(
     dark = os_dark_style(extra='[stroke="#EFEFF2"]{stroke:#2A2A2C;}')
     tip_css = (
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
         "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
     )
     parts.append("<style>" + adaptive + dark + tip_css + "</style>")

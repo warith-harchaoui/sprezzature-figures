@@ -317,7 +317,7 @@ def build_svg(
         ".peak:focus { outline: none; }",
         ".peak:focus circle { stroke: #1D1D1F; stroke-width: 1.4; }",
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}",
-        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}",
+        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}",
         "@media (prefers-reduced-motion: reduce) { "
         ".peak { transition: none; } .tip{transition:none} }",
     ]

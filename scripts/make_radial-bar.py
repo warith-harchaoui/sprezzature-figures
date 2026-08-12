@@ -298,7 +298,7 @@ def build_svg(
         "svg .bar:hover, svg .bar:focus { opacity: 1; }",
         f".bar:focus {{ outline: 3px solid {_FOCUS}; outline-offset: 2px; }}",
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}",
-        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}",
+        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}",
         "@media (prefers-reduced-motion: reduce) { .bar { transition: none; } "
         ".grow { animation: none !important; } .tip{transition:none} }",
     ]

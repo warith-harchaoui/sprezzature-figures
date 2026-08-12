@@ -224,7 +224,7 @@ def build_svg(
         ".bubble:hover,.bubble:focus{filter:brightness(1.08);outline:none;}",
         ".bubble:hover circle,.bubble:focus circle{stroke-width:2.4;}",
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}",
-        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}",
+        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}",
         "@media (prefers-reduced-motion: reduce){.bubble{transition:none;}"
         ".tip{transition:none}}",
     ]

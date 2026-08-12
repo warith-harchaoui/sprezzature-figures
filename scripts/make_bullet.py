@@ -315,7 +315,7 @@ def build_svg(
         '.bar:hover,.bar:focus{stroke:#1D1D1F;stroke-width:2}'
         '.bar:focus{outline:none}'
         '.tip{opacity:0;pointer-events:none;transition:opacity .12s ease}'
-        '.hit:hover~.tip,.hit:focus~.tip{opacity:1}'
+        '.hit:hover+.tip,.hit:focus+.tip{opacity:1}'
         '@media (prefers-reduced-motion:reduce){.tip{transition:none}}'
         + adaptive
         # Paper + ink flip to a dark surface; the pale-blue band ramp, the deep

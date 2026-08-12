@@ -355,7 +355,7 @@ def build_svg(
         ".legend-row { cursor: pointer; }",
         f".legend-row:focus {{ outline: 3px solid {_FOCUS}; outline-offset: 2px; }}",
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}",
-        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}",
+        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}",
         "@media (prefers-reduced-motion: reduce) { .dot { transition: none; } .tip{transition:none} }",
     ])
     # OS-adaptive overrides (additive; the default render is byte-identical

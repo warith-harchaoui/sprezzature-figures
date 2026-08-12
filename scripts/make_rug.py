@@ -244,7 +244,7 @@ def build_svg(
     parts.append(
         "<style>\n"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}\n"
-        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}\n"
+        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}\n"
         "@media (prefers-reduced-motion: reduce){.tip{transition:none}}\n"
         + os_adaptive_style({".rug-blue": blue}, role="both")
         + os_dark_style(extra=dark_extra)

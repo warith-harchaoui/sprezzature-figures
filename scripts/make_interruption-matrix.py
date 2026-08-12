@@ -151,7 +151,7 @@ def _hover_style() -> str:
         "svg.cross .lit{opacity:1;}"
         "svg.cross .lit .box{filter:saturate(1.2);}"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
         "@media (prefers-reduced-motion:reduce){"
         ".cell,.head,.sig,.box{transition:none;}"
         ".cell:hover .box{transform:none;}.tip{transition:none}}"

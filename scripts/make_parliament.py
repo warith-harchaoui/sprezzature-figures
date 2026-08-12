@@ -513,7 +513,7 @@ def build_svg(
         css.append(f"#floor:has(.p-{party_cls}:focus) .p-{party_cls}{{opacity:1}}")
     css.append(".seat:focus{outline:none}")
     css.append(".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}")
-    css.append(".hit:hover~.tip,.hit:focus~.tip{opacity:1}")
+    css.append(".hit:hover+.tip,.hit:focus+.tip{opacity:1}")
     css.append("@media (prefers-reduced-motion: reduce){.tip{transition:none}}")
     # OS-adaptive overrides (additive; the default render is byte-identical
     # because every rule below lives inside a media query). Under

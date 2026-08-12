@@ -593,7 +593,7 @@ def build_svg(
         ".cell:focus{outline:none}",
         ".seed,.slabel{transition:opacity .18s ease}",
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}",
-        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}",
+        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}",
         "@media (prefers-reduced-motion: reduce){.tip{transition:none}}",
     ]
     for slug in chain_slug.values():
@@ -726,7 +726,7 @@ def build_svg(
         tip = f"{who} — nearest shop for {cell_area_pct:.1f}% of the city · {chain}"
         cell_cx, cell_cy = _polygon_centroid(cell)
         # A <g> wraps each cell so the rich hover bubble is a sibling of the
-        # hit polygon (the ``.hit:hover~.tip`` house pattern).
+        # hit polygon (the ``.hit:hover+.tip`` house pattern).
         parts.append(
             f'<g class="cell {slug}" tabindex="0" role="img" '
             f'aria-label="{xml_escape(tip)}">'

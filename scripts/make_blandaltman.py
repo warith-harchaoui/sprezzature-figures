@@ -337,7 +337,7 @@ def build_svg(
         # low-contrast dark grey on a dark ground. Point white halos stay light.
         + os_dark_style(extra='[stroke="#EEEEEE"]{stroke:#2A2A2C;}')
         + ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        + ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        + ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
         + "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
         + "</style>"
     )

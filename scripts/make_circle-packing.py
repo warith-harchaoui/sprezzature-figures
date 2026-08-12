@@ -858,7 +858,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
         + "#packs .pkg:focus-within{opacity:1}"
         ".hit:focus{outline:none}"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
         "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
         + adaptive
         # Additive dark mode. The default map flips the paper and all on-paper

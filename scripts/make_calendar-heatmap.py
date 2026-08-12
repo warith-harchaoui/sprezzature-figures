@@ -147,7 +147,7 @@ def build_svg(
         ".cell{transition:stroke-width .1s ease;}"
         ".cell:hover,.cell:focus{stroke:#1D1D1F;stroke-width:1.5;outline:none;}"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
         "@media (prefers-reduced-motion: reduce){.cell{transition:none;}"
         ".tip{transition:none}}"
         "</style>"

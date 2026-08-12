@@ -489,7 +489,7 @@ def build_svg(
         ".stn:hover, .stn:focus { transform: scale(1.16); }",
         ".stn:focus { outline: none; }",
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}",
-        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}",
+        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}",
         "@media (prefers-reduced-motion: reduce) { .stn { transition: none; } .tip{transition:none} }",
     ]
     # OS-adaptive overrides (additive; the default render stays byte-identical

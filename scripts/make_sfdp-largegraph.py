@@ -506,7 +506,7 @@ def build_svg(
         css.append(f"{cond} .cedge.e-{c}{{opacity:.65}}")
     css.append(".legend g:focus{outline:none}")
     css.append(".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}")
-    css.append(".hit:hover~.tip,.hit:focus~.tip{opacity:1}")
+    css.append(".hit:hover+.tip,.hit:focus+.tip{opacity:1}")
     css.append("@media (prefers-reduced-motion: reduce){.tip{transition:none}}")
     # OS-adaptive overrides (additive; every rule lives inside an @media block,
     # so the default render is byte-for-byte unchanged). Each lab already carries

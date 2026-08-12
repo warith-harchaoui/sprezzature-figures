@@ -463,7 +463,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
         + ".arc{transition:opacity .18s ease}"
         ".chord:focus,.arc:focus{outline:none}"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
         "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
         + adaptive
         + fcp_style

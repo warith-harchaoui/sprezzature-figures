@@ -360,7 +360,7 @@ def build_svg(
         ".row:focus { outline: none; }",
         f".row:focus .rowlabel {{ fill: {_FOCUS}; }}",
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}",
-        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}",
+        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}",
         "@media (prefers-reduced-motion: reduce) {"
         " .row, .icons { transition: none; }"
         " .reveal { animation: none !important; }"
