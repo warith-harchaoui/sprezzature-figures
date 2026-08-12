@@ -46,7 +46,7 @@ from _style import (  # noqa: E402
     os_dark_style,
 )
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _svg import fmt_compact, svg_open  # noqa: E402
+from _svg import fmt_compact, svg_open, tooltip_bubble  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
@@ -327,7 +327,9 @@ def render_svg(
         ".tile{transition:transform .18s ease, filter .18s ease;transform-box:fill-box;transform-origin:center;}"
         ".tile:hover,.tile:focus{filter:brightness(1.06);transform:scale(1.015);outline:none;}"
         ".tile:focus{stroke:#1D1D1F;stroke-width:2;}"
-        "@media (prefers-reduced-motion: reduce){.tile{transition:none;}.tile:hover,.tile:focus{transform:none;}}"
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        "@media (prefers-reduced-motion: reduce){.tile{transition:none;}.tile:hover,.tile:focus{transform:none;}.tip{transition:none}}"
         + os_adaptive_style(tile_series, role="fill")
         + fcp_style
         # Additive OS dark mode: dark paper + light ink (default ink_map); the
@@ -379,11 +381,23 @@ def render_svg(
             f"({t['device']} = {t['share']:.0f}% of all orders)"
         )
         parts.append(
-            f'<rect class="tile tile-{_method_slug(t["method"])}" tabindex="0" '
+            f'<rect class="tile tile-{_method_slug(t["method"])} hit" tabindex="0" '
             f'x="{fmt_compact(t["x"], decimals=2)}" y="{fmt_compact(t["y"], decimals=2)}" '
             f'width="{fmt_compact(t["w"], decimals=2)}" height="{fmt_compact(t["h"], decimals=2)}" rx="{fmt_compact(rx, decimals=2)}" '
-            f'fill="{t["color"]}" stroke="#FFFFFF" stroke-width="3">'
-            f'<title>{escape(label)}</title></rect>'
+            f'fill="{t["color"]}" stroke="#FFFFFF" stroke-width="3" '
+            f'role="img" aria-label="{escape(label)}"/>'
+        )
+        parts.append(
+            tooltip_bubble(
+                t["x"] + t["w"] / 2.0, t["y"] - 12.0,
+                [
+                    f"{t['device']} · {t['method']}",
+                    f"{t['pct']:.0f}% of {t['device']} orders",
+                    f"{t['device']} = {t['share']:.0f}% of all orders",
+                ],
+                anchor="middle", canvas_w=width, canvas_h=height,
+                ink=ink, secondary=muted, border=hairline,
+            )
         )
         # In-tile percentage label when the segment is tall + wide enough.
         if t["h"] >= 34 and t["w"] >= 80:

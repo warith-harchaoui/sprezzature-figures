@@ -29,8 +29,8 @@ from typing import Any, Dict, List, Optional
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _style import BG, INK, SECONDARY, corner_radius, load_palette  # noqa: E402
-from _svg import svg_open, xml_escape  # noqa: E402
+from _style import BG, GRIDLINE, INK, SECONDARY, corner_radius, load_palette  # noqa: E402
+from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 
@@ -97,6 +97,7 @@ def build_svg(
     colors = _sex_colors(accessibility, theme)
     lookup: Dict[tuple, float] = {(r["age"], r["sex"]): float(r["pct"]) for r in rows}
     max_abs = max(abs(v) for v in lookup.values()) if lookup else 1.0
+    total_abs = sum(abs(v) for v in lookup.values()) or 1.0
 
     plot_x, plot_y = width / 2.0, 150.0
     right_margin, bottom_reserved = 60.0, 60.0
@@ -122,7 +123,10 @@ def build_svg(
         "<style>"
         ".pyr{transition:filter .15s ease;}"
         ".pyr:hover,.pyr:focus{filter:brightness(1.08);outline:none;}"
-        "@media (prefers-reduced-motion: reduce){.pyr{transition:none;}}"
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        "@media (prefers-reduced-motion: reduce){.pyr{transition:none;}"
+        ".tip{transition:none}}"
         "</style>"
     )
     parts.append(f'<rect width="{width}" height="{height}" fill="{BG}"/>')
@@ -174,10 +178,19 @@ def build_svg(
                 x0 = plot_x + gap
             r = corner_radius(length, bar_h, "bar")
             tip = f"{sex}, {age}: {abs(v):.0f}%"
+            share = abs(v) / total_abs * 100.0
             parts.append(
-                f'<rect class="pyr" tabindex="0" x="{x0:.1f}" y="{y0:.1f}" width="{length:.1f}" '
-                f'height="{bar_h:.1f}" rx="{r:.1f}" fill="{colors[sex]}">'
-                f'<title>{xml_escape(tip)}</title></rect>'
+                f'<rect class="pyr hit" tabindex="0" x="{x0:.1f}" y="{y0:.1f}" width="{length:.1f}" '
+                f'height="{bar_h:.1f}" rx="{r:.1f}" fill="{colors[sex]}" '
+                f'role="img" aria-label="{xml_escape(tip)}"/>'
+            )
+            parts.append(
+                tooltip_bubble(
+                    x0 + (length if sign < 0 else 0.0), y0 - 12,
+                    [f"{sex}, {age}", f"{abs(v):.0f}% of population", f"{share:.1f}% of pyramid total"],
+                    anchor="middle", canvas_w=width, canvas_h=height,
+                    ink=INK, secondary=SECONDARY, border=GRIDLINE,
+                )
             )
             label_x = x0 - 6 if sign < 0 else x0 + length + 6
             anchor = "end" if sign < 0 else "start"

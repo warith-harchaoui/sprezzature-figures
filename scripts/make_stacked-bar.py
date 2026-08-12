@@ -29,7 +29,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY, cycle_hues  # noqa: E402
-from _svg import svg_open, xml_escape  # noqa: E402
+from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 
@@ -124,7 +124,10 @@ def build_svg(
         "<style>"
         ".seg{transition:filter .15s ease;}"
         ".seg:hover,.seg:focus{filter:brightness(1.08);outline:none;}"
-        "@media (prefers-reduced-motion: reduce){.seg{transition:none;}}"
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        "@media (prefers-reduced-motion: reduce){.seg{transition:none;}"
+        ".tip{transition:none}}"
         "</style>"
     )
     parts.append(f'<rect width="{width}" height="{height}" fill="{BG}"/>')
@@ -163,6 +166,7 @@ def build_svg(
     for qi, quarter in enumerate(quarters):
         total = sum(lookup.get((quarter, t), 0.0) for t in types) or 1.0
         x0 = plot_x + qi * bin_w + (bin_w - bar_w) / 2
+        ranked = sorted(types, key=lambda t: -lookup.get((quarter, t), 0.0))
         cursor_frac = 0.0
         for t in types:
             share = lookup.get((quarter, t), 0.0)
@@ -171,10 +175,19 @@ def build_svg(
             y_bot = y_for(cursor_frac)
             h = max(0.5, y_bot - y_top)
             tip = f"{t}, {quarter}: {frac * 100:.0f}% of revenue"
+            rank = ranked.index(t) + 1
             parts.append(
-                f'<rect class="seg" tabindex="0" x="{x0:.1f}" y="{y_top:.1f}" width="{bar_w:.1f}" '
-                f'height="{h:.1f}" fill="{colors.get(t, "#8E8E93")}">'
-                f'<title>{xml_escape(tip)}</title></rect>'
+                f'<rect class="seg hit" tabindex="0" x="{x0:.1f}" y="{y_top:.1f}" width="{bar_w:.1f}" '
+                f'height="{h:.1f}" fill="{colors.get(t, "#8E8E93")}" '
+                f'role="img" aria-label="{xml_escape(tip)}"/>'
+            )
+            parts.append(
+                tooltip_bubble(
+                    x0 + bar_w / 2.0, min(y_top, y_bot) - 14,
+                    [f"{t} — {quarter}", f"{frac * 100:.0f}% of revenue", f"#{rank} of {len(types)} segments"],
+                    anchor="middle", canvas_w=width, canvas_h=height,
+                    ink=INK, secondary=SECONDARY, border=GRIDLINE,
+                )
             )
             cursor_frac += frac
 

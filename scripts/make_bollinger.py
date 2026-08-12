@@ -53,7 +53,7 @@ import numpy as np
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _svg import catmull_rom_beziers, fmt_compact  # noqa: E402
+from _svg import catmull_rom_beziers, fmt_compact, tooltip_bubble  # noqa: E402
 from _render import svg_example_path, write_svg  # noqa: E402
 from _style import leveled_colors, os_adaptive_style, os_dark_style  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
@@ -677,9 +677,18 @@ def build_svg(
             f"{pct:.0f}% of the way up the band"
         )
         tips.append(
-            f'<rect x="{_fmt(gx - col_w / 2)}" y="{_fmt(m_top)}" '
+            f'<rect class="hit" tabindex="0" x="{_fmt(gx - col_w / 2)}" y="{_fmt(m_top)}" '
             f'width="{_fmt(col_w)}" height="{_fmt(plot_h)}" '
             f'fill="transparent"><title>{tip}</title></rect>'
+        )
+        tips.append(
+            tooltip_bubble(
+                gx, y_of(float(close[d])) - 12,
+                [f"Day {d - start + 1}", f"close ${close[d]:.2f}",
+                 f"band ${lower[d]:.2f}–${upper[d]:.2f}", f"{pct:.0f}% up the band"],
+                canvas_w=width, canvas_h=height, ink=_INK, secondary=_SECONDARY,
+                border="#EFEFF2",
+            )
         )
 
     # ---- OS-adaptive overrides -------------------------------------------- #
@@ -705,7 +714,12 @@ def build_svg(
     # Light $5 gridlines are strokes the ink map misses; darken them for a dark
     # ground. The blue volatility band and its teal edges are data hues, left be.
     dark = os_dark_style(extra='[stroke="#EFEFF2"]{stroke:#2A2A2C;}')
-    parts.append("<style>" + adaptive + dark + "</style>")
+    tip_css = (
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
+    )
+    parts.append("<style>" + adaptive + dark + tip_css + "</style>")
 
     # ---- assemble --------------------------------------------------------- #
     parts.append("<defs>" + "".join(defs) + "</defs>")

@@ -30,7 +30,7 @@ from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY, cycle_hues  # noqa: E402
 from _scale import log_position, log_ticks  # noqa: E402
-from _svg import fmt_number, svg_open, xml_escape  # noqa: E402
+from _svg import fmt_number, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 
@@ -153,7 +153,9 @@ def build_svg(
         )
         + ".pt{transition:r .12s ease;}"
         ".pt:hover,.pt:focus{r:5.5;outline:none;}"
-        "@media (prefers-reduced-motion: reduce){.series-group,.pt{transition:none;}}"
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        "@media (prefers-reduced-motion: reduce){.series-group,.pt{transition:none;}.tip{transition:none}}"
         "</style>"
     )
     parts.append(f'<rect width="{width}" height="{height}" fill="{BG}"/>')
@@ -202,9 +204,21 @@ def build_svg(
             cx, cy = x_for(h), y_for(v)
             tip = f"{s}, {x_label} {fmt_number(h)}: {fmt_number(v)}"
             parts.append(
-                f'<circle class="pt" tabindex="0" cx="{cx:.1f}" cy="{cy:.1f}" r="3.5" '
+                f'<circle class="pt hit" tabindex="0" cx="{cx:.1f}" cy="{cy:.1f}" r="3.5" '
                 f'fill="{colors[s]}" stroke="{BG}" stroke-width="1.5">'
                 f'<title>{xml_escape(tip)}</title></circle>'
+            )
+            parts.append(
+                tooltip_bubble(
+                    cx,
+                    max(4.0, cy - 34.0),
+                    [s, f"{x_label} {fmt_number(h)}: {fmt_number(v)}"],
+                    canvas_w=width,
+                    canvas_h=height,
+                    ink=INK,
+                    secondary=SECONDARY,
+                    border=GRIDLINE,
+                )
             )
         parts.append("</g>")
 

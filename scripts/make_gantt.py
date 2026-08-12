@@ -27,7 +27,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY, corner_radius, cycle_hues  # noqa: E402
-from _svg import svg_open, xml_escape  # noqa: E402
+from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 
@@ -138,6 +138,9 @@ def build_svg(
         ".task{transition:filter .15s ease;}"
         ".task:hover,.task:focus{filter:brightness(1.08);outline:none;}"
         "@media (prefers-reduced-motion: reduce){.task{transition:none;}}"
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
         "</style>"
     )
     parts.append(f'<rect width="{width}" height="{height}" fill="{BG}"/>')
@@ -184,9 +187,17 @@ def build_svg(
         r_corner = corner_radius(w, bar_h, "bar")
         tip = f"{r['task']} ({team}): day {start:.0f}-{end:.0f}, {end - start:.0f} days"
         parts.append(
-            f'<rect class="task" tabindex="0" x="{x0:.1f}" y="{y:.1f}" width="{w:.1f}" '
+            f'<rect class="task hit" tabindex="0" x="{x0:.1f}" y="{y:.1f}" width="{w:.1f}" '
             f'height="{bar_h:.1f}" rx="{r_corner:.1f}" fill="{color}">'
             f'<title>{xml_escape(tip)}</title></rect>'
+        )
+        parts.append(
+            tooltip_bubble(
+                x0 + w / 2, y - 12,
+                [str(r["task"]), team, f"day {start:.0f}-{end:.0f} ({end - start:.0f} days)"],
+                anchor="middle", canvas_w=width, canvas_h=height,
+                ink=INK, secondary=SECONDARY, border=GRIDLINE,
+            )
         )
         ty = plot_y + i * row_h + row_h / 2 + 4
         parts.append(

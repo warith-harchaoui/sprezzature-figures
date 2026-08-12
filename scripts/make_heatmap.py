@@ -35,7 +35,8 @@ from typing import Any, Dict, List, Optional, Tuple
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import svg_example_path, write_svg  # noqa: E402
-from _svg import svg_open, xml_escape  # noqa: E402
+from _style import GRIDLINE  # noqa: E402
+from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
 
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
@@ -232,6 +233,9 @@ def build_svg(
     for j in range(n_c):
         style_rows.append(f"svg:has(.hour-{j}:hover) .hour-{j}{{opacity:1;}}")
     style_rows.append("@media (prefers-reduced-motion: reduce){.cell{transition:none;}}")
+    style_rows.append(".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}")
+    style_rows.append(".hit:hover~.tip,.hit:focus~.tip{opacity:1}")
+    style_rows.append("@media (prefers-reduced-motion:reduce){.tip{transition:none}}")
     parts.append("<style>\n" + "\n".join(style_rows) + "\n</style>")
 
     parts.append(f'<rect width="{width}" height="{height}" fill="{BG}"/>')
@@ -253,22 +257,32 @@ def build_svg(
         for j, hour in enumerate(hours):
             x = grid_x + j * cell_w
             v = lookup.get((day, hour))
+            if isinstance(hour, int):
+                span_lbl = f"{hour:02d}:00-{(hour + 1) % 24:02d}:00"
+            else:
+                span_lbl = str(hour)
             if v is None:
                 fill = "#F5F5F7"
                 tip = f"{day}: no reading at {hour}"
+                bubble_lines = [str(day), span_lbl, "no reading"]
             else:
                 t = (v - vmin) / span
                 fill = _ramp_hex(t)
                 share = (v / total * 100.0) if total else 0.0
-                if isinstance(hour, int):
-                    span_lbl = f"{hour:02d}:00-{(hour + 1) % 24:02d}:00"
-                else:
-                    span_lbl = str(hour)
                 tip = f"{day}, {span_lbl}: activity {v:.0f} ({share:.1f}% of week total)"
+                bubble_lines = [str(day), span_lbl, f"activity {v:.0f} ({share:.1f}% of week total)"]
             parts.append(
-                f'<rect class="cell day-{i} hour-{j}" x="{x:.2f}" y="{y:.2f}" '
+                f'<rect class="cell hit day-{i} hour-{j}" tabindex="0" x="{x:.2f}" y="{y:.2f}" '
                 f'width="{cell_w:.2f}" height="{cell_h:.2f}" fill="{fill}">'
                 f'<title>{xml_escape(tip)}</title></rect>'
+            )
+            parts.append(
+                tooltip_bubble(
+                    x + cell_w / 2, y - 4,
+                    bubble_lines,
+                    anchor="middle", canvas_w=width, canvas_h=height,
+                    ink=INK, secondary=SECONDARY, border=GRIDLINE,
+                )
             )
 
     # ---- x-axis (hour) — a tick every 3rd column so labels never crowd ----

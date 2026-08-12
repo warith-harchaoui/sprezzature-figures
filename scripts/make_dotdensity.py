@@ -57,7 +57,7 @@ from typing import Any, Dict, List, Sequence, Tuple
 # without the dataviz tier).
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
-from _svg import svg_open, xml_escape  # noqa: E402
+from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
@@ -563,6 +563,9 @@ def build_svg(
         ".legend-row:focus { outline: 3px solid #0A4DA0; outline-offset: 2px; }",
         "@media (prefers-reduced-motion: reduce) { "
         ".dept, .dots { transition: none; } }",
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}",
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}",
+        "@media (prefers-reduced-motion:reduce){.tip{transition:none}}",
     ])
     # OS-adaptive overrides (additive; the default render stays byte-identical
     # because every rule below lives inside an @media query — a descendant
@@ -647,19 +650,29 @@ def build_svg(
         s = _slug(name)
         color = region_color[name]
         people = region_people[name]
+        dots = region_dots[name]
         parts.append(
-            f'<g class="dots rg rg-{s}" tabindex="0" role="listitem">'
+            f'<g class="dots rg rg-{s} hit" tabindex="0" role="listitem">'
             f'<title>{_xml(name)}: about {people / 1_000_000:.1f} million '
-            f'residents ({len(region_dots[name])} dots)</title>'
+            f'residents ({len(dots)} dots)</title>'
         )
         # One compact <circle> per dot. fill-opacity lets overlapping dots
         # darken where density is highest — reinforcing the density read.
-        for sx, sy in region_dots[name]:
+        for sx, sy in dots:
             parts.append(
                 f'<circle cx="{sx:.1f}" cy="{sy:.1f}" r="{_DOT_R}" '
                 f'fill="{color}" fill-opacity="0.55"/>'
             )
         parts.append('</g>')
+        if dots:
+            cx = sum(p[0] for p in dots) / len(dots)
+            cy = sum(p[1] for p in dots) / len(dots)
+            parts.append(
+                tooltip_bubble(
+                    cx, cy, [name, f"{people / 1_000_000:.1f} million residents", f"{len(dots)} dots on the map"],
+                    canvas_w=_WIDTH, canvas_h=_HEIGHT, ink=_INK, secondary=_SUBTLE, border=_BORDER,
+                )
+            )
 
     # ---- legend (right column) ----
     legend_x = _MAP_X + _MAP_W + 44.0
@@ -676,7 +689,7 @@ def build_svg(
         cy = k * row_h
         people = region_people[name]
         parts.append(
-            f'<g class="rg rg-{s} legend-row" tabindex="0" role="listitem" '
+            f'<g class="rg rg-{s} legend-row hit" tabindex="0" role="listitem" '
             f'transform="translate(0,{cy:.1f})">'
             f'<title>{_xml(name)}: about {people / 1_000_000:.1f} million '
             f'residents</title>'
@@ -695,6 +708,13 @@ def build_svg(
             f'{people / 1_000_000:.1f} M residents</text>'
         )
         parts.append('</g>')
+        parts.append(
+            tooltip_bubble(
+                40, cy + 40, anchor="start",
+                lines=[name, f"{people / 1_000_000:.1f} million residents"],
+                canvas_w=_WIDTH, canvas_h=_HEIGHT, ink=_INK, secondary=_SUBTLE, border=_BORDER,
+            )
+        )
     parts.append('</g>')
 
     # ---- footnote / method note ----

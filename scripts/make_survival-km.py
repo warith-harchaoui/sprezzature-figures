@@ -34,7 +34,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY, cycle_hues  # noqa: E402
-from _svg import svg_open, xml_escape  # noqa: E402
+from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 
@@ -189,6 +189,13 @@ def build_svg(
         f'<desc id="km-desc">Kaplan-Meier survival curves for {len(arms)} arms over '
         f'{t_max:.0f} time units, with 95% confidence bands.</desc>'
     )
+    parts.append(
+        "<style>"
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
+        "</style>"
+    )
     parts.append(f'<rect width="{width}" height="{height}" fill="{BG}"/>')
     parts.append(
         f'<text x="40" y="46" font-size="24" font-weight="700" fill="{INK}" '
@@ -250,10 +257,21 @@ def build_svg(
 
         line_d = "M " + " L ".join(f"{x:.1f},{y:.1f}" for x, y in line_pts)
         final_s = curve[-1][1]
+        n_events = sum(1 for r in arm_rows if r["event"])
+        n_censored = len(arm_rows) - n_events
         tip = f"{a}: {final_s * 100:.0f}% surviving at {t_max:.0f} time units"
         parts.append(
-            f'<path tabindex="0" d="{line_d}" fill="none" stroke="{color}" stroke-width="2.5">'
-            f'<title>{xml_escape(tip)}</title></path>'
+            f'<path class="hit" tabindex="0" d="{line_d}" fill="none" stroke="{color}" '
+            f'stroke-width="2.5" role="img" aria-label="{xml_escape(tip)}"/>'
+        )
+        parts.append(
+            tooltip_bubble(
+                x_for(t_max), y_for(final_s) - 16,
+                [a, f"{final_s * 100:.0f}% surviving at {t_max:.0f} units",
+                 f"{n_events} events · {n_censored} censored"],
+                anchor="end", canvas_w=width, canvas_h=height,
+                ink=INK, secondary=SECONDARY, border=GRIDLINE,
+            )
         )
 
         # Censoring ticks.

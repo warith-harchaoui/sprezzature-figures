@@ -41,7 +41,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 import _style
-from _svg import viridis  # noqa: E402
+from _svg import tooltip_bubble, viridis  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
@@ -361,10 +361,18 @@ def _boxen_group(
             f'{_fmt_ms(box["lower"])}–{_fmt_ms(box["upper"])}'
         )
         parts.append(
-            f'    <rect class="lv" x="{cx - hw:.1f}" y="{top_y:.1f}" '
+            f'    <rect class="lv hit" tabindex="0" x="{cx - hw:.1f}" y="{top_y:.1f}" '
             f'width="{2 * hw:.1f}" height="{h:.1f}" rx="3" '
             f'fill="{_ramp_color(depth, theme)}" stroke="{WHITE}" stroke-width="1.4">'
             f"<title>{tip}</title></rect>"
+        )
+        parts.append(
+            tooltip_bubble(
+                cx, top_y - 6,
+                [label, f"middle {pct:.1f}% of requests",
+                 f"{_fmt_ms(box['lower'])}–{_fmt_ms(box['upper'])}"],
+                canvas_w=WIDTH, canvas_h=HEIGHT, ink=INK, secondary=SUBTLE, border=GRID,
+            )
         )
 
     # Median line — the crisp centre reference, drawn last (on top). A
@@ -622,6 +630,9 @@ def build_svg(
     text {{ fill: {INK}; }}
     {contrast}
     {dark}
+    .tip{{opacity:0;pointer-events:none;transition:opacity .12s ease}}
+    .hit:hover~.tip,.hit:focus~.tip{{opacity:1}}
+    @media (prefers-reduced-motion:reduce){{.tip{{transition:none}}}}
   </style>"""
     bg = f'  <rect width="{WIDTH}" height="{HEIGHT}" fill="{WHITE}"/>'
     title_text = (

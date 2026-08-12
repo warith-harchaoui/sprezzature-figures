@@ -51,7 +51,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import BG, INK, forced_color_patterns, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
-from _svg import hex_to_rgb, svg_open, xml_escape  # noqa: E402
+from _svg import hex_to_rgb, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
@@ -592,6 +592,9 @@ def build_svg(
         ".cell{transition:opacity .18s ease}",
         ".cell:focus{outline:none}",
         ".seed,.slabel{transition:opacity .18s ease}",
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}",
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}",
+        "@media (prefers-reduced-motion: reduce){.tip{transition:none}}",
     ]
     for slug in chain_slug.values():
         cond = f"#vmap:has(.cell.{slug}:is(:hover,:focus-within))"
@@ -721,15 +724,22 @@ def build_svg(
         )
         who = name if name else f"{chain} pharmacy"
         tip = f"{who} — nearest shop for {cell_area_pct:.1f}% of the city · {chain}"
-        # A <g> wraps each cell so its <title> tooltip is a sibling of the
-        # polygon (the most portable place across SVG renderers).
+        cell_cx, cell_cy = _polygon_centroid(cell)
+        # A <g> wraps each cell so the rich hover bubble is a sibling of the
+        # hit polygon (the ``.hit:hover~.tip`` house pattern).
         parts.append(
             f'<g class="cell {slug}" tabindex="0" role="img" '
-            f'aria-label="{xml_escape(tip)}"><title>{xml_escape(tip)}</title>'
-            f'<polygon points="{_poly_points(cell)}" '
+            f'aria-label="{xml_escape(tip)}">'
+            f'<polygon class="hit" points="{_poly_points(cell)}" '
             f'fill="{color}" '
             f'stroke="{HAIRLINE}" stroke-width="2" stroke-linejoin="round"/>'
-            f'</g>'
+            + tooltip_bubble(
+                cell_cx, cell_cy - 12,
+                [who, chain, f"nearest shop for {cell_area_pct:.1f}% of the city"],
+                anchor="middle", canvas_w=WIDTH, canvas_h=HEIGHT,
+                ink=INK, secondary=SUBINK,
+            )
+            + '</g>'
         )
     parts.append("</g>")  # /cells
 

@@ -45,7 +45,7 @@ from typing import Any, Dict, List, Optional, Tuple
 # without the dataviz tier).
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
-from _svg import svg_open, xml_escape  # noqa: E402
+from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
@@ -354,7 +354,9 @@ def build_svg(
     style_rows.extend([
         ".legend-row { cursor: pointer; }",
         f".legend-row:focus {{ outline: 3px solid {_FOCUS}; outline-offset: 2px; }}",
-        "@media (prefers-reduced-motion: reduce) { .dot { transition: none; } }",
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}",
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}",
+        "@media (prefers-reduced-motion: reduce) { .dot { transition: none; } .tip{transition:none} }",
     ])
     # OS-adaptive overrides (additive; the default render is byte-identical
     # because every rule below lives inside a media query and a class rule only
@@ -428,12 +430,20 @@ def build_svg(
         parts.append(f'<g class="cls cls-{s}">')
         for (sand, silt, clay) in d["points"]:  # type: ignore[union-attr]
             x, y = _project(float(sand), float(silt), float(clay))
+            tip = f"{d['label']} — sand {sand} %, silt {silt} %, clay {clay} %"
             parts.append(
-                f'<circle class="dot cls-{s}" cx="{x:.1f}" cy="{y:.1f}" '
+                f'<circle class="dot cls-{s} hit" tabindex="0" cx="{x:.1f}" cy="{y:.1f}" '
                 f'r="9.5" fill="{color}" fill-opacity="0.82" '
-                f'stroke="#FFFFFF" stroke-width="1.8">'
-                f'<title>{_xml(str(d["label"]))} — sand {sand} %, '
-                f'silt {silt} %, clay {clay} %</title></circle>'
+                f'stroke="#FFFFFF" stroke-width="1.8" '
+                f'role="img" aria-label="{_xml(tip)}"/>'
+            )
+            parts.append(
+                tooltip_bubble(
+                    x, y - 16,
+                    [str(d["label"]), f"sand {sand} %", f"silt {silt} % · clay {clay} %"],
+                    anchor="middle", canvas_w=_WIDTH, canvas_h=_HEIGHT,
+                    ink=_INK, secondary=_SUBTLE, border=_GRID,
+                )
             )
         parts.append('</g>')
 

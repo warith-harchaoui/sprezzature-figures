@@ -55,8 +55,8 @@ from xml.sax.saxutils import escape
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _style import BG, INK, load_palette, os_dark_style  # noqa: E402
-from _svg import catmull_rom_beziers, fmt_compact, svg_open  # noqa: E402
+from _style import BG, GRIDLINE, INK, load_palette, os_dark_style  # noqa: E402
+from _svg import catmull_rom_beziers, fmt_compact, svg_open, tooltip_bubble  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 # ------------------------------------------------------------------
@@ -312,7 +312,12 @@ def build_svg(
         '</defs>'
     )
     dark = os_dark_style(extra='[stroke="#E5E5EA"]{stroke:#2C2C2E;}')
-    p.append(f"<style>{dark}</style>")
+    tip_css = (
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
+    )
+    p.append(f"<style>{tip_css}{dark}</style>")
 
     # --- background ---
     p.append(f'<rect width="{WIDTH}" height="{HEIGHT}" fill="{BG}"/>')
@@ -384,15 +389,24 @@ def build_svg(
     )
 
     # --- data dots (every k), each with a native tooltip ---
+    prev_v: float | None = None
     for k, v in zip(ks, inertia, strict=True):
         cx, cy = sx(k), sy(v)
         tip = f"k = {fmt_compact(k)}: {fmt_compact(v)}"
         dot_fill = curve_deep if is_clear else muted
         p.append(
-            f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="4.6" fill="{dot_fill}" '
+            f'<circle class="hit" cx="{cx:.1f}" cy="{cy:.1f}" r="4.6" fill="{dot_fill}" '
             f'stroke="{BG}" stroke-width="1.6" tabindex="0" role="img" '
             f'aria-label="{escape(tip)}"><title>{escape(tip)}</title></circle>'
         )
+        delta_line = f"delta {fmt_compact(v - prev_v)} from previous k" if prev_v is not None else "first point"
+        p.append(
+            tooltip_bubble(
+                cx, cy - 14, [f"k = {fmt_compact(k)}", fmt_compact(v), delta_line],
+                canvas_w=WIDTH, canvas_h=HEIGHT, ink=INK, secondary=SUBINK, border=GRIDLINE,
+            )
+        )
+        prev_v = v
 
     if is_clear:
         # --- elbow marker: halo + ring + drop line to the axis ---

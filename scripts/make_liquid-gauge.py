@@ -46,7 +46,7 @@ from typing import Any, Dict, List, Optional, Tuple
 # without the dataviz tier); the XML escape helper lives in _svg.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import load_palette, os_dark_style  # noqa: E402
-from _svg import svg_open, xml_escape  # noqa: E402
+from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _render import svg_example_path, write_raster_companions, write_svg  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
@@ -362,6 +362,9 @@ def build_svg(
                 ".lg-chiptxt{fill:#1D1D1F;}"
             )
         )
+        + ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
         + "</style>"
     )
 
@@ -446,6 +449,30 @@ def build_svg(
     parts.append(
         f'<circle cx="{_CX}" cy="{_CY}" r="{_R:.1f}" fill="none" '
         f'stroke="{_RING}" stroke-width="6"/>'
+    )
+
+    # ---- hover/focus target for the whole vessel: one hit bubble restating
+    # the reading, the median, and the delta (this gauge has a single
+    # reading, not a set of per-datapoint marks, so it gets one hit target
+    # rather than one per mark). Transparent fill keeps it invisible while
+    # still receiving pointer/focus events.
+    delta_pre = value - median
+    tip_lines = [
+        f"Reservoir level — {_fmt_pct(value)}% {_METRIC}",
+        f"Seasonal median: {_fmt_pct(median)}%",
+        f"{abs(int(round(delta_pre)))} pts {'below' if delta_pre < 0 else 'above'} normal",
+    ]
+    parts.append(
+        f'<circle class="hit" tabindex="0" cx="{_CX}" cy="{_CY}" r="{_R:.1f}" '
+        f'fill="transparent" role="img" aria-label="{xml_escape(tip_lines[0])}">'
+        f'<title>{xml_escape("; ".join(tip_lines))}</title></circle>'
+    )
+    parts.append(
+        tooltip_bubble(
+            _CX, _CY - _R - 16, tip_lines,
+            canvas_w=_WIDTH, canvas_h=_HEIGHT,
+            ink=_INK, secondary=_SUBTLE, border=_RING,
+        )
     )
 
     # ---- percentage scale down the right rim (0/25/50/75/100) ----

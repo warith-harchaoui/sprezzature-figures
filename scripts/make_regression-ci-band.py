@@ -32,7 +32,7 @@ from typing import Any, Dict, List, Optional
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _svg import svg_open, xml_escape  # noqa: E402
+from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
@@ -147,6 +147,13 @@ def build_svg(
         f'<desc id="reg-desc">Linear regression of {len(rows)} points: '
         f'y = {fit["intercept"]:.2f} + {fit["slope"]:.2f}x, with a 95% confidence band.</desc>'
     )
+    parts.append(
+        "<style>"
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
+        "</style>"
+    )
     parts.append(f'<rect width="{width}" height="{height}" fill="{BG}"/>')
     parts.append(
         f'<text x="40" y="46" font-size="22" font-weight="700" fill="{INK}" '
@@ -181,8 +188,20 @@ def build_svg(
 
     # ---- scatter ----
     for x, y in zip(xs, ys):
+        cx, cy = x_for(x), y_for(y)
+        resid = y - predict(x)
+        pt_tip = f"x = {x:.2f}, y = {y:.2f} (residual {resid:+.2f})"
         parts.append(
-            f'<circle cx="{x_for(x):.1f}" cy="{y_for(y):.1f}" r="3" fill="{COLOR_POINT}" fill-opacity="0.55"/>'
+            f'<circle class="hit" tabindex="0" cx="{cx:.1f}" cy="{cy:.1f}" r="3" '
+            f'fill="{COLOR_POINT}" fill-opacity="0.55" role="img" aria-label="{xml_escape(pt_tip)}"/>'
+        )
+        parts.append(
+            tooltip_bubble(
+                cx, cy - 12,
+                [f"x = {x:.2f}", f"y = {y:.2f}", f"residual {resid:+.2f}"],
+                anchor="middle", canvas_w=width, canvas_h=height,
+                ink=INK, secondary=SECONDARY, border=GRIDLINE,
+            )
         )
 
     # ---- fitted line ----
@@ -190,8 +209,17 @@ def build_svg(
     line_d = "M " + " L ".join(f"{x:.1f},{y:.1f}" for x, y in line_pts)
     tip = f"y = {fit['intercept']:.2f} + {fit['slope']:.2f}x (n={fit['n']:.0f})"
     parts.append(
-        f'<path tabindex="0" d="{line_d}" fill="none" stroke="{COLOR_LINE}" stroke-width="2.5">'
-        f'<title>{xml_escape(tip)}</title></path>'
+        f'<path class="hit" tabindex="0" d="{line_d}" fill="none" stroke="{COLOR_LINE}" '
+        f'stroke-width="2.5" role="img" aria-label="{xml_escape(tip)}"/>'
+    )
+    mid_x, mid_y = line_pts[len(line_pts) // 2]
+    parts.append(
+        tooltip_bubble(
+            mid_x, mid_y - 16,
+            ["OLS fit", f"y = {fit['intercept']:.2f} + {fit['slope']:.2f}x", f"n = {fit['n']:.0f} points"],
+            anchor="middle", canvas_w=width, canvas_h=height,
+            ink=INK, secondary=SECONDARY, border=GRIDLINE,
+        )
     )
 
     # ---- x-axis ----

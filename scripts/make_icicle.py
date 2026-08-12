@@ -43,7 +43,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _svg import fmt_compact, svg_open, xml_escape  # noqa: E402
+from _svg import fmt_compact, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from _render import render_cli, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _style import os_dark_style  # noqa: E402
@@ -356,8 +356,10 @@ def render_svg(
         "transform-origin:center;cursor:pointer;}"
         ".bar:hover,.bar:focus{filter:brightness(1.07);transform:scaleY(1.04);outline:none;}"
         ".bar:focus{stroke:#1D1D1F;stroke-width:2.5;}"
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
         "@media (prefers-reduced-motion: reduce){.bar{transition:none;}"
-        ".bar:hover,.bar:focus{transform:none;}}"
+        ".bar:hover,.bar:focus{transform:none;}.tip{transition:none}}"
         "@media (prefers-contrast: more){"
         ".bar{stroke:#1D1D1F;stroke-width:1.6;}"
         f'[stroke="{hairline}"]{{stroke:{ink};stroke-width:1.4;}}'
@@ -437,10 +439,22 @@ def render_svg(
         pct = r["ms"] / total_ms * 100.0
         tip = f'{r["name"]}  -  {r["ms"]} ms  ({pct:.0f}% of request, depth {r["depth"]})'
         parts.append(
-            f'<rect class="bar" tabindex="0" x="{fmt_compact(x, decimals=2)}" y="{fmt_compact(y, decimals=2)}" '
+            f'<rect class="bar hit" tabindex="0" x="{fmt_compact(x, decimals=2)}" y="{fmt_compact(y, decimals=2)}" '
             f'width="{fmt_compact(max(w - 2.0, 1.0), decimals=2)}" height="{fmt_compact(row_h, decimals=2)}" rx="{fmt_compact(rx, decimals=2)}" '
             f'fill="{fill}" stroke="#FFFFFF" stroke-width="2">'
             f'<title>{xml_escape(tip)}</title></rect>'
+        )
+        parts.append(
+            tooltip_bubble(
+                x + w / 2.0,
+                max(4.0, y - 92.0),
+                [r["name"], f'{r["ms"]} ms', f'{pct:.0f}% of request - depth {r["depth"]}'],
+                canvas_w=width,
+                canvas_h=height,
+                ink=ink,
+                secondary=muted,
+                border=hairline,
+            )
         )
         # Two-line label (name + duration) when the bar is wide enough.
         label = _clip_label(r["name"], w)

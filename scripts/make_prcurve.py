@@ -69,7 +69,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
-from _svg import svg_open, xml_escape  # noqa: E402
+from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 
@@ -505,6 +505,9 @@ def build_svg(
         ".sw .halo{opacity:0;transition:opacity .12s ease}"
         ".sw:hover .halo,.sw:focus .halo{opacity:1}"
         ".sw:focus{outline:none}"
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
         + "\n" + contrast_block + "\n"
         + os_dark_style() + "\n"
         "</style>"
@@ -697,15 +700,22 @@ def build_svg(
                     f"{_threshold_words(thr)}"
                 )
                 parts.append(
-                    f'<g class="sw" tabindex="0" role="img" '
+                    f'<g class="sw hit" tabindex="0" role="img" '
                     f'aria-label="{xml_escape(htip)}">'
-                    f'<title>{xml_escape(htip)}</title>'
                     f'<circle class="halo" cx="{hx:.1f}" cy="{hy:.1f}" r="12" '
                     f'fill="{st["col"]}" fill-opacity="0.14"/>'
                     f'<circle class="pr-mark-{st["slug"]}" cx="{hx:.1f}" '
                     f'cy="{hy:.1f}" r="3.4" fill="{st["col"]}" '
                     f'fill-opacity="0.85" stroke="#FFFFFF" stroke-width="1.2"/>'
                     f'</g>'
+                )
+                parts.append(
+                    tooltip_bubble(
+                        hx, hy - 18,
+                        [label, f"recall {r:.0%}, precision {p:.0%}", _threshold_words(thr)],
+                        anchor="middle", canvas_w=width, canvas_h=height,
+                        ink=ink, secondary=secondary, border=grid_col,
+                    )
                 )
 
     # --- shipped (max-F1) operating-point markers ----------------
@@ -719,10 +729,9 @@ def build_svg(
             f'F1 {rec["f1"]:.2f}, {_threshold_words(rec["threshold"])}'
         )
         parts.append(
-            f'<g class="op" tabindex="0" role="img" '
+            f'<g class="op hit" tabindex="0" role="img" '
             f'aria-label="{xml_escape(tip)}">'
         )
-        parts.append(f"<title>{xml_escape(tip)}</title>")
         parts.append(
             f'<circle class="halo" cx="{cx:.1f}" cy="{cy:.1f}" r="26" '
             f'fill="{ink}" fill-opacity="0.08"/>'
@@ -745,6 +754,18 @@ def build_svg(
                 f'fill="{st["col"]}" stroke="#FFFFFF" stroke-width="3"/>'
             )
         parts.append("</g>")
+        parts.append(
+            tooltip_bubble(
+                cx, cy - 34,
+                [
+                    f"{label} — shipped operating point",
+                    f"recall {rec['recall']:.0%}, precision {rec['precision']:.0%}",
+                    f"F1 {rec['f1']:.2f}, {_threshold_words(rec['threshold'])}",
+                ],
+                anchor="middle", canvas_w=width, canvas_h=height,
+                ink=ink, secondary=secondary, border=grid_col,
+            )
+        )
 
     # --- inline direct labels (curve + AP), separated by shape ----
     # A small legend key sits inside the plot, low-left where both curves have

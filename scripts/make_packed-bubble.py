@@ -51,9 +51,9 @@ from typing import Any, Dict, List, Optional, Tuple
 from xml.sax.saxutils import escape
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _style import BG, INK, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
+from _style import BG, GRIDLINE, INK, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _svg import svg_open  # noqa: E402
+from _svg import svg_open, tooltip_bubble  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
@@ -490,6 +490,9 @@ def build_svg(
     css: List[str] = [
         ".bubble{transition:opacity .18s ease}",
         ".bubble:focus{outline:none}",
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}",
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}",
+        "@media (prefers-reduced-motion: reduce){.tip{transition:none}}",
     ]
     for _fam, slug in fam_slug.items():
         cond = f"#pack:has(.bubble.{slug}:is(:hover,:focus-within))"
@@ -537,8 +540,8 @@ def build_svg(
         slug = fam_slug[fam]
         tip = f"{name} — {_fmt_share(share)} of developers · {fam}"
         parts.append(
-            f'<g class="bubble {slug}" tabindex="0" role="img" '
-            f'aria-label="{escape(tip)}"><title>{escape(tip)}</title>'
+            f'<g class="bubble hit {slug}" tabindex="0" role="img" '
+            f'aria-label="{escape(tip)}">'
             f'<circle class="{slug}" cx="{x:.1f}" cy="{y:.1f}" r="{r:.1f}" '
             f'fill="{color}"/>'
         )
@@ -573,6 +576,14 @@ def build_svg(
                 f'{escape(_fmt_share(share))}</text>'
             )
         parts.append("</g>")
+        parts.append(
+            tooltip_bubble(
+                x, y - r - 12,
+                [name, fam, f"{_fmt_share(share)} of developers"],
+                anchor="middle", canvas_w=WIDTH, canvas_h=HEIGHT,
+                ink=INK, secondary=SUBINK, border=GRIDLINE,
+            )
+        )
     parts.append("</g>")  # /bubbles
 
     parts.append("</g>")  # /pack

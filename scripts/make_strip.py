@@ -32,7 +32,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY, cycle_hues  # noqa: E402
-from _svg import svg_open, xml_escape  # noqa: E402
+from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 
@@ -127,7 +127,10 @@ def build_svg(
         "<style>"
         ".dot{transition:r .12s ease;}"
         ".dot:hover,.dot:focus{r:6;outline:none;}"
-        "@media (prefers-reduced-motion: reduce){.dot{transition:none;}}"
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        "@media (prefers-reduced-motion: reduce){.dot{transition:none;}"
+        ".tip{transition:none}}"
         "</style>"
     )
     parts.append(f'<rect width="{width}" height="{height}" fill="{BG}"/>')
@@ -160,14 +163,24 @@ def build_svg(
         cx0 = plot_x + gi * bin_w + bin_w / 2
         color = colors.get(g, "#8E8E93")
         group_rows = [r for r in rows if r["group"] == g]
+        ranked = sorted(group_rows, key=lambda r: -float(r["value"]))
         for r in group_rows:
             v = float(r["value"])
             jitter = (rng.random() - 0.5) * jitter_w
             cx, cy = cx0 + jitter, y_for(v)
+            rank = ranked.index(r) + 1
             tip = f"{g}: {v:.1f}"
             parts.append(
-                f'<circle class="dot" tabindex="0" cx="{cx:.1f}" cy="{cy:.1f}" r="4" '
-                f'fill="{color}" fill-opacity="0.65"><title>{xml_escape(tip)}</title></circle>'
+                f'<circle class="dot hit" tabindex="0" cx="{cx:.1f}" cy="{cy:.1f}" r="4" '
+                f'fill="{color}" fill-opacity="0.65" role="img" aria-label="{xml_escape(tip)}"/>'
+            )
+            parts.append(
+                tooltip_bubble(
+                    cx, cy - 14,
+                    [g, f"{v:.1f}", f"#{rank} of {len(group_rows)} in {g}"],
+                    anchor="middle", canvas_w=width, canvas_h=height,
+                    ink=INK, secondary=SECONDARY, border=GRIDLINE,
+                )
             )
 
     # ---- x-axis ----

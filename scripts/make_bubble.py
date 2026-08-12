@@ -39,7 +39,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _scale import log_position, log_ticks  # noqa: E402
 from _style import BG, GRIDLINE, INK, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _svg import fmt_number, svg_open  # noqa: E402
+from _svg import fmt_number, svg_open, tooltip_bubble  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
@@ -223,7 +223,10 @@ def build_svg(
         "transform-box:fill-box;transform-origin:center;}",
         ".bubble:hover,.bubble:focus{filter:brightness(1.08);outline:none;}",
         ".bubble:hover circle,.bubble:focus circle{stroke-width:2.4;}",
-        "@media (prefers-reduced-motion: reduce){.bubble{transition:none;}}",
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}",
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}",
+        "@media (prefers-reduced-motion: reduce){.bubble{transition:none;}"
+        ".tip{transition:none}}",
     ]
     region_series = {f'circle[data-region="{reg}"]': col for reg, col in region_color.items()}
     css.append(os_adaptive_style(region_series, role="fill", forced=True))
@@ -298,11 +301,24 @@ def build_svg(
             f"GDP per capita ${gdp:.0f}k, population {_fmt1(pop)}M"
         )
         parts.append(
-            f'<g class="bubble" tabindex="0" role="img" aria-label="{escape(tip)}">'
+            f'<g class="bubble hit" tabindex="0" role="img" aria-label="{escape(tip)}">'
             f'<title>{escape(tip)}</title>'
             f'<circle data-region="{region}" cx="{cx:.1f}" cy="{cy:.1f}" r="{r:.1f}" '
             f'fill="{color}" fill-opacity="0.72" stroke="{color}" stroke-width="1.2"/>'
             f'</g>'
+        )
+        parts.append(
+            tooltip_bubble(
+                cx, cy - r - 12,
+                [
+                    f"{name} ({region})",
+                    f"life expectancy {_fmt1(life)} yrs",
+                    f"GDP per capita ${gdp:.0f}k",
+                    f"population {_fmt1(pop)}M",
+                ],
+                anchor="middle", canvas_w=WIDTH, canvas_h=HEIGHT,
+                ink=INK, secondary=SUBINK, border=GRIDLINE,
+            )
         )
 
     # ---- region legend (top-right) ----

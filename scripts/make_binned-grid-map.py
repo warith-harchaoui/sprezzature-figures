@@ -47,7 +47,7 @@ from typing import Any, Dict, List, Tuple
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import load_palette, os_dark_style  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
-from _svg import hex_to_rgb as _hex_to_rgb, svg_open, viridis  # noqa: E402
+from _svg import hex_to_rgb as _hex_to_rgb, svg_open, tooltip_bubble, viridis  # noqa: E402
 from _svg import xml_escape  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
@@ -579,6 +579,9 @@ def build_svg(
         # white cell casings are strokes (not fills) and stay light keylines,
         # and the red data ramp is left untouched.
         os_dark_style(extra='[fill="%s"]{fill:#161719;}' % _LAND),
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        "@media (prefers-reduced-motion:reduce){.tip{transition:none}}",
     ]
     parts.append("<style>\n" + "\n".join(style_rows) + "\n</style>")
 
@@ -658,12 +661,22 @@ def build_svg(
             else "no incidents"
         )
         parts.append(
-            f'<rect class="cell" x="{c["x"] + gap / 2:.1f}" '
+            f'<rect class="cell hit" x="{c["x"] + gap / 2:.1f}" '
             f'y="{c["y"] + gap / 2:.1f}" width="{inner:.1f}" '
             f'height="{inner:.1f}" rx="2" fill="{fill}" stroke="{_STROKE}" '
             f'stroke-width="{gap:.1f}" tabindex="0" role="listitem">'
             f'<title>{label}</title></rect>'
         )
+        if cnt > 0:
+            cell_share = cnt / total * 100.0 if total else 0.0
+            parts.append(
+                tooltip_bubble(
+                    c["x"] + inner / 2.0, c["y"] - 4,
+                    [label, f"{cell_share:.1f}% of all incidents"],
+                    canvas_w=_WIDTH, canvas_h=_HEIGHT, ink=_INK, secondary=_SUBTLE,
+                    border=_OUTLINE,
+                )
+            )
     parts.append('</g>')
 
     # ---- sequential legend (right column) ----

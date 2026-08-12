@@ -41,7 +41,7 @@ from typing import Dict, List, Optional, Tuple
 # without the dataviz tier).
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
-from _svg import svg_open, xml_escape  # noqa: E402
+from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
@@ -285,8 +285,10 @@ def build_svg(
         ".grp { cursor: pointer; }",
         f".grp:focus {{ outline: 3px solid {_FOCUS}; outline-offset: 3px; "
         f"border-radius: 12px; }}",
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}",
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}",
         "@media (prefers-reduced-motion: reduce) { "
-        ".lobe, .setlabel { transition: none; } }",
+        ".lobe, .setlabel { transition: none; } .tip{transition:none} }",
     ])
     # OS-adaptive overrides (additive; the default render is unchanged because
     # every rule below lives inside a media query). Under prefers-contrast the
@@ -384,10 +386,22 @@ def build_svg(
                 f'width="{pill_w:.1f}" height="{pill_h:.1f}" rx="{pill_h / 2:.1f}" '
                 f'fill="#FFFFFF" fill-opacity="0.86"/>'
             )
+        region_names = " + ".join(str(sets[ltr]["label"]) for ltr in key)
+        share = 100 * count / grand if grand else 0.0
+        region_tip = f"{region_names}: {count} people ({share:.0f}% of {grand})"
         parts.append(
-            f'<text x="{x:.1f}" y="{y:.1f}" font-size="28" font-weight="700" '
-            f'fill="{_INK}" text-anchor="middle" dominant-baseline="middle">'
+            f'<text class="hit" tabindex="0" x="{x:.1f}" y="{y:.1f}" font-size="28" font-weight="700" '
+            f'fill="{_INK}" text-anchor="middle" dominant-baseline="middle" '
+            f'role="img" aria-label="{_xml(region_tip)}">'
             f'{count}</text>'
+        )
+        parts.append(
+            tooltip_bubble(
+                x, y - 34,
+                [region_names, f"{count} people", f"{share:.0f}% of {grand}"],
+                anchor="middle", canvas_w=_WIDTH, canvas_h=_HEIGHT,
+                ink=_INK, secondary=_SUBTLE, border="#E5E5EA",
+            )
         )
 
     # ---- focusable set groups (labels + tooltip + hover targets) ----
@@ -401,16 +415,27 @@ def build_svg(
     for ltr in ("A", "B", "C"):
         s = sets[ltr]
         lx, ly, anchor = label_pos[ltr]
+        set_tip = (
+            f'{_xml(str(s["label"]))}: {totals[ltr]} of {grand} '
+            f'({100 * totals[ltr] / grand:.0f}%)'
+        )
         parts.append(
-            f'<g class="grp grp-{ltr}" tabindex="0" role="listitem">'
-            f'<title>{_xml(str(s["label"]))}: {totals[ltr]} of {grand} '
-            f'({100 * totals[ltr] / grand:.0f}%)</title>'
+            f'<g class="grp grp-{ltr}" tabindex="0" role="listitem" '
+            f'aria-label="{set_tip}">'
         )
         # Invisible hit area over the circle so hovering the lobe works too.
         parts.append(
-            f'<circle class="lobe-{ltr}" cx="{s["cx"]}" cy="{s["cy"]}" '
+            f'<circle class="lobe-{ltr} hit" cx="{s["cx"]}" cy="{s["cy"]}" '
             f'r="{_R}" fill="transparent" stroke="transparent" '
             f'stroke-width="22"/>'
+        )
+        parts.append(
+            tooltip_bubble(
+                lx, ly - 34,
+                [str(s["label"]), f"{totals[ltr]} of {grand} people", f"{100 * totals[ltr] / grand:.0f}% of total"],
+                anchor=anchor, canvas_w=_WIDTH, canvas_h=_HEIGHT,
+                ink=_INK, secondary=_SUBTLE, border="#E5E5EA",
+            )
         )
         parts.append(
             f'<text class="setlabel setlabel-{ltr}" x="{lx:.1f}" y="{ly:.1f}" '

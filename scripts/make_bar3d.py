@@ -58,7 +58,7 @@ from typing import Any, Dict, List, Optional, Tuple
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _svg import fmt_compact  # noqa: E402
+from _svg import fmt_compact, tooltip_bubble  # noqa: E402
 from _style import os_dark_style  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
@@ -548,6 +548,9 @@ def build_svg(
             ink_map={"#1D1D1F": "#F2F2F7", "#6E6E73": "#9C9CA3"},
             extra=".paper{fill:#0B0B0C;}[stroke=\"#D2D2D7\"]{stroke:#3A3A3C;}",
         )
+        + ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        + ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        + "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
         + "</style>"
     )
     parts.append(f"<title>{title}</title><desc>{strings['desc']}</desc>")
@@ -601,9 +604,19 @@ def build_svg(
             ox=ox, oy=oy, h_scale=h_scale, bar_w=bar_w,
             fill=fill, value=val, mono_family=mono_family,
         )
-        # Splice the accessible per-bar tooltip in as the group's first child.
-        group = group.replace("<g>", f"<g><title>{label}</title>", 1)
+        # Splice the accessible per-bar tooltip in as the group's first child,
+        # and mark the group as the hover/focus hit target.
+        group = group.replace("<g>", f'<g class="hit" tabindex="0"><title>{label}</title>', 1)
         bars.append(group)
+        cap_x, cap_y = _project(c, r, val, ox=ox, oy=oy, h_scale=h_scale)
+        share = (val / z_max * 100.0) if z_max else 0.0
+        bars.append(
+            tooltip_bubble(
+                cap_x, cap_y - 10,
+                [f"{rows[r]} · {cols[c]}", f"${val:.0f}k", f"{share:.0f}% of tallest bar"],
+                canvas_w=width, canvas_h=height, ink=_INK, secondary=_SECONDARY, border="#D2D2D7",
+            )
+        )
     parts.append(f'<g class="bars">{"".join(bars)}</g>')
 
     # ---- axis labels ------------------------------------------------------ #

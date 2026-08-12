@@ -46,7 +46,7 @@ from typing import Any, Dict, List, Optional
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
-from _svg import svg_open, xml_escape  # noqa: E402
+from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 
@@ -228,6 +228,9 @@ def build_svg(
         '.col:hover,.col:focus{filter:brightness(1.06)}'
         '.col:focus{outline:none}'
         '.colframe{fill:none;pointer-events:none}'
+        '.tip{opacity:0;pointer-events:none;transition:opacity .12s ease}'
+        '.hit:hover~.tip,.hit:focus~.tip{opacity:1}'
+        '@media (prefers-reduced-motion: reduce){.tip{transition:none}}'
         + contrast_css
         + dark_css
         + '</style>'
@@ -384,10 +387,23 @@ def build_svg(
         )
         iso = str(col["iso"])
         parts.append(
-            f'<path class="col col-{iso}" d="{path}" fill="{base_hex}" '
+            f'<path class="col hit col-{iso}" d="{path}" fill="{base_hex}" '
             f'tabindex="0" '
-            f'role="img" aria-label="{xml_escape(tip)}">'
-            f'<title>{xml_escape(tip)}</title></path>'
+            f'role="img" aria-label="{xml_escape(tip)}"/>'
+        )
+        if col_x <= m_left + 1.0:
+            tip_anchor = "start"
+        elif col_x + col_w >= m_left + plot_w - 1.0:
+            tip_anchor = "end"
+        else:
+            tip_anchor = "middle"
+        parts.append(
+            tooltip_bubble(
+                cxm, col_y - 16,
+                [name, f"${gdp_cap:.1f}k per capita x {_fmt_pop(pop)}", f"{_fmt_total(pop, gdp_cap)} total GDP"],
+                anchor=tip_anchor, canvas_w=width, canvas_h=height,
+                ink=ink, secondary=secondary, border="#E8E8ED",
+            )
         )
 
         # (The height value label on top of the column is placed in a

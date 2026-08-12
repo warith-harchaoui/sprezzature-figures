@@ -33,7 +33,7 @@ from typing import Any, Dict, List, Tuple
 from _interactive import fullscreen_control
 from _render import render_cli, svg_example_path, write_svg
 from _style import INK, SECONDARY, leveled_colors, os_adaptive_style, os_dark_style
-from _svg import xml_escape
+from _svg import tooltip_bubble, xml_escape
 from sprezzature_figures.fonts import chrome_stack_for_theme
 
 # ------------------------------------------------------------------
@@ -150,9 +150,11 @@ def _hover_style() -> str:
         "svg.cross .cell,svg.cross .head,svg.cross .sig{opacity:.24;}"
         "svg.cross .lit{opacity:1;}"
         "svg.cross .lit .box{filter:saturate(1.2);}"
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
         "@media (prefers-reduced-motion:reduce){"
         ".cell,.head,.sig,.box{transition:none;}"
-        ".cell:hover .box{transform:none;}}"
+        ".cell:hover .box{transform:none;}.tip{transition:none}}"
     )
 
 
@@ -337,10 +339,10 @@ def build_svg(
             # colour switch, and the number is legible on every cell.
             op = 0.0 if v == 0 else 0.14 + 0.52 * norm
             fill = ZERO if v == 0 else color_of[b]
-            klass = "cell" if v == 0 else f"cell spk-{idx[b]}"
+            klass = "cell hit" if v == 0 else f"cell hit spk-{idx[b]}"
             tip = f"{xml_escape(b)} coupe {xml_escape(a)} × {v}" if v else f"{xml_escape(b)} ne coupe jamais {xml_escape(a)}"
             g = [
-                f'<g class="{klass}" data-r="{r}" data-c="{c}"><title>{tip}</title>',
+                f'<g class="{klass}" tabindex="0" data-r="{r}" data-c="{c}"><title>{tip}</title>',
                 f'<rect class="box" x="{x + 3}" y="{y + 3}" width="{CELL - 6}" height="{CELL - 6}" rx="12" '
                 f'fill="{fill}" fill-opacity="{op:.3f}" stroke="{HAIRLINE}" stroke-width="1"/>',
             ]
@@ -352,6 +354,22 @@ def build_svg(
                 )
             g.append("</g>")
             p.append("".join(g))
+            bubble_lines = [f"{b} coupe {a}"]
+            bubble_lines.append(f"{v} fois" if v else "jamais (0 fois)")
+            if v:
+                bubble_lines.append(f"{norm * 100:.0f}% de l'échange le plus intense")
+            p.append(
+                tooltip_bubble(
+                    x + CELL / 2,
+                    max(4.0, y - 84.0),
+                    bubble_lines,
+                    canvas_w=w,
+                    canvas_h=h,
+                    ink=INK,
+                    secondary=SECONDARY,
+                    border=HAIRLINE,
+                )
+            )
 
         # Row total Σ (times A was cut) — lights with A's row.
         xt = cx(n)

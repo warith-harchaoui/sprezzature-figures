@@ -53,7 +53,7 @@ from typing import Any, Dict, List, Optional, Tuple
 # without the dataviz tier).
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
-from _svg import svg_open, xml_escape  # noqa: E402
+from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
@@ -495,8 +495,10 @@ def build_svg(
             ".legend-row { cursor: pointer; }",
             f".legend-row:focus {{ outline: 3px solid {_FOCUS}; "
             "outline-offset: 3px; border-radius: 8px; }",
+            ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}",
+            ".hit:hover~.tip,.hit:focus~.tip{opacity:1}",
             "@media (prefers-reduced-motion: reduce) { "
-            ".word { transition: none; } }",
+            ".word { transition: none; } .tip{transition:none} }",
         ]
     )
     # OS-adaptive overrides (additive; the default render stays byte-identical
@@ -568,11 +570,19 @@ def build_svg(
             # survives without colour (greyscale + colour-vision deficiency).
             weight = 700 if size >= 60 else (600 if size >= 34 else 500)
             parts.append(
-                f'<text class="word grp-{key}" x="{x:.1f}" y="{y:.1f}" '
+                f'<text class="word hit grp-{key}" x="{x:.1f}" y="{y:.1f}" '
                 f'font-size="{size:.1f}" font-weight="{weight}" '
                 f'fill="{color}" text-anchor="middle" '
-                f'dominant-baseline="central" tabindex="0" role="listitem">'
-                f'<title>{tip}</title>{_xml(display)}</text>'
+                f'dominant-baseline="central" tabindex="0" role="listitem" '
+                f'aria-label="{tip}">{_xml(display)}</text>'
+            )
+            parts.append(
+                tooltip_bubble(
+                    x, y - size / 2.0 - 16,
+                    [word, meta["label"], f"{count:,} mentions ({share:.0f}%)"],
+                    anchor="middle", canvas_w=_WIDTH, canvas_h=_HEIGHT,
+                    ink=_INK, secondary=_SUBTLE, border=_HAIR,
+                )
             )
         parts.append("</g>")
 

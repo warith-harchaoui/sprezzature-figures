@@ -34,7 +34,7 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _svg import svg_open, xml_escape  # noqa: E402
+from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
@@ -146,6 +146,13 @@ def build_svg(
         f'<desc id="gp-desc">Gaussian process posterior fit to {len(rows)} observed points. '
         f'Shaded band is the 95% credible interval; three faint lines are posterior samples.</desc>'
     )
+    parts.append(
+        "<style>"
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
+        "</style>"
+    )
     parts.append(f'<rect width="{width}" height="{height}" fill="{BG}"/>')
     parts.append(
         f'<text x="40" y="46" font-size="22" font-weight="700" fill="{INK}" '
@@ -198,8 +205,16 @@ def build_svg(
         cx, cy = x_for(float(r["x"])), y_for(float(r["y"]))
         tip = f"Observed: x={float(r['x']):.2f}, y={float(r['y']):.2f}"
         parts.append(
-            f'<circle tabindex="0" cx="{cx:.1f}" cy="{cy:.1f}" r="5" fill="{COLOR_POINT}" '
+            f'<circle class="hit" tabindex="0" cx="{cx:.1f}" cy="{cy:.1f}" r="5" fill="{COLOR_POINT}" '
             f'stroke="{BG}" stroke-width="1.5"><title>{xml_escape(tip)}</title></circle>'
+        )
+        parts.append(
+            tooltip_bubble(
+                cx, cy - 16,
+                [f"x = {float(r['x']):.2f}", f"y = {float(r['y']):.2f}", "observed point"],
+                anchor="middle", canvas_w=width, canvas_h=height,
+                ink=INK, secondary=SECONDARY, border=GRIDLINE,
+            )
         )
 
     # ---- x-axis ----

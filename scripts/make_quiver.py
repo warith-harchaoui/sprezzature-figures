@@ -29,8 +29,8 @@ from typing import Any, Dict, List, Optional, Tuple
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _svg import svg_open, viridis, xml_escape  # noqa: E402
-from _style import BG, INK, SECONDARY  # noqa: E402
+from _svg import svg_open, tooltip_bubble, viridis, xml_escape  # noqa: E402
+from _style import BG, GRIDLINE, INK, SECONDARY  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
 
@@ -150,6 +150,13 @@ def build_svg(
         f'<desc id="qv-desc">Vector field over a {n_cols}x{len(set(ys))} grid, peak '
         f'magnitude {max_mag:.1f}. Hover or focus an arrow for its exact vector.</desc>'
     )
+    parts.append(
+        "<style>"
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
+        "</style>"
+    )
     parts.append(f'<rect width="{width}" height="{height}" fill="{BG}"/>')
     parts.append(
         f'<text x="40" y="46" font-size="22" font-weight="700" fill="{INK}" '
@@ -172,10 +179,18 @@ def build_svg(
         points = f"{size:.1f},0 {-size * 0.55:.1f},{size * 0.55:.1f} {-size * 0.55:.1f},{-size * 0.55:.1f}"
         tip = f"({x:.0f}, {y:.0f}): vector ({fx:.1f}, {fy:.1f}), magnitude {mag:.2f}"
         parts.append(
-            f'<g transform="translate({cx:.1f},{cy:.1f}) rotate({angle_deg:.1f})" tabindex="0">'
-            f'<title>{xml_escape(tip)}</title>'
+            f'<g class="hit" transform="translate({cx:.1f},{cy:.1f}) rotate({angle_deg:.1f})" '
+            f'tabindex="0" role="img" aria-label="{xml_escape(tip)}">'
             f'<polygon points="{points}" fill="{_ramp_hex(t, theme)}" stroke="{BG}" stroke-width="0.5"/>'
             f'</g>'
+        )
+        parts.append(
+            tooltip_bubble(
+                cx, cy - tri_max / 2 - 14,
+                [f"({x:.0f}, {y:.0f})", f"vector ({fx:.1f}, {fy:.1f})", f"magnitude {mag:.2f} ({t * 100:.0f}% of peak)"],
+                anchor="middle", canvas_w=width, canvas_h=height,
+                ink=INK, secondary=SECONDARY, border=GRIDLINE,
+            )
         )
 
     # ---- legend ----

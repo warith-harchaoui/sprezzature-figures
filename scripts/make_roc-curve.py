@@ -30,7 +30,7 @@ from typing import Any, Dict, List, Optional, Tuple
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _svg import svg_open, xml_escape  # noqa: E402
+from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
@@ -136,6 +136,13 @@ def build_svg(
         f'<desc id="roc-desc">ROC curve over {len(rows)} scored observations, area under '
         f'the curve {auc:.3f}.</desc>'
     )
+    parts.append(
+        "<style>"
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
+        "</style>"
+    )
     parts.append(f'<rect width="{width}" height="{height}" fill="{BG}"/>')
     parts.append(
         f'<text x="40" y="46" font-size="22" font-weight="700" fill="{INK}" '
@@ -178,8 +185,17 @@ def build_svg(
     path_d = "M " + " L ".join(f"{x:.1f},{y:.1f}" for x, y in path_pts)
     tip = f"ROC curve, AUC = {auc:.3f}"
     parts.append(
-        f'<path tabindex="0" d="{path_d}" fill="none" stroke="{COLOR_ROC}" stroke-width="2.5">'
-        f'<title>{xml_escape(tip)}</title></path>'
+        f'<path class="hit" tabindex="0" d="{path_d}" fill="none" stroke="{COLOR_ROC}" '
+        f'stroke-width="2.5" role="img" aria-label="{xml_escape(tip)}"/>'
+    )
+    mid_x, mid_y = path_pts[len(path_pts) // 2]
+    parts.append(
+        tooltip_bubble(
+            mid_x, mid_y - 16,
+            ["ROC curve", f"AUC = {auc:.3f}", f"n = {len(rows)} scored"],
+            anchor="middle", canvas_w=width, canvas_h=height,
+            ink=INK, secondary=SECONDARY, border=GRIDLINE,
+        )
     )
 
     parts.append(fullscreen_control(width, height, mode))

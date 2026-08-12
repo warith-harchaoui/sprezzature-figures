@@ -35,9 +35,9 @@ from typing import Any, Dict, List, Optional, Tuple
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _style import BG, INK, SECONDARY, load_palette  # noqa: E402
+from _style import BG, GRIDLINE, INK, SECONDARY, load_palette  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
-from _svg import svg_open, xml_escape  # noqa: E402
+from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
 
 
 REGIONS = ["Americas", "Asia Pacific", "Europe", "Middle East & Africa"]
@@ -209,7 +209,10 @@ def build_svg(
         "<style>"
         ".arc{transition:opacity .15s ease;cursor:default;}"
         ".arc:hover,.arc:focus{opacity:.72;outline:none;}"
-        "@media (prefers-reduced-motion: reduce){.arc{transition:none;}}"
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        "@media (prefers-reduced-motion: reduce){.arc{transition:none;}"
+        ".tip{transition:none}}"
         "</style>"
     )
 
@@ -231,8 +234,17 @@ def build_svg(
         d = _annular_sector_path(cx, cy, ring1_inner, ring1_outer, a0, a1)
         tip = f"{r}: {region_totals[r]:,.1f} bn USD ({share * 100:.1f}% of total)"
         parts.append(
-            f'<path class="arc" tabindex="0" d="{d}" fill="{region_colors[r]}" '
-            f'stroke="{BG}" stroke-width="1.5"><title>{xml_escape(tip)}</title></path>'
+            f'<path class="arc hit" tabindex="0" d="{d}" fill="{region_colors[r]}" '
+            f'stroke="{BG}" stroke-width="1.5" role="img" aria-label="{xml_escape(tip)}"/>'
+        )
+        tip_x, tip_y = _polar(cx, cy, ring1_outer, (a0 + a1) / 2.0)
+        parts.append(
+            tooltip_bubble(
+                tip_x, tip_y - 14,
+                [r, f"{region_totals[r]:,.1f} bn USD", f"{share * 100:.1f}% of total"],
+                anchor="middle", canvas_w=width, canvas_h=height,
+                ink=INK, secondary=SECONDARY, border=GRIDLINE,
+            )
         )
         if (a1 - a0) > 0.18:
             mid_r = (ring1_inner + ring1_outer) / 2.0
@@ -255,8 +267,17 @@ def build_svg(
             d = _annular_sector_path(cx, cy, ring2_inner, ring2_outer, a0, a1)
             tip = f"{r} / {row['name']}: {float(row['value']):,.1f} bn USD"
             parts.append(
-                f'<path class="arc" tabindex="0" d="{d}" fill="{region_colors[r]}" fill-opacity="0.55" '
-                f'stroke="{BG}" stroke-width="1"><title>{xml_escape(tip)}</title></path>'
+                f'<path class="arc hit" tabindex="0" d="{d}" fill="{region_colors[r]}" fill-opacity="0.55" '
+                f'stroke="{BG}" stroke-width="1" role="img" aria-label="{xml_escape(tip)}"/>'
+            )
+            tip_x2, tip_y2 = _polar(cx, cy, ring2_outer, (a0 + a1) / 2.0)
+            parts.append(
+                tooltip_bubble(
+                    tip_x2, tip_y2 - 14,
+                    [row["name"], f"{float(row['value']):,.1f} bn USD", f"{share_local * 100:.1f}% of {r}"],
+                    anchor="middle", canvas_w=width, canvas_h=height,
+                    ink=INK, secondary=SECONDARY, border=GRIDLINE,
+                )
             )
 
     # ---- legend ----

@@ -31,7 +31,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _scale import log_position, log_ticks  # noqa: E402
-from _svg import fmt_number, svg_open, xml_escape  # noqa: E402
+from _svg import fmt_number, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
@@ -148,7 +148,10 @@ def build_svg(
         "<style>"
         ".candle{transition:opacity .15s ease;}"
         ".candle:hover,.candle:focus{opacity:.72;outline:none;}"
-        "@media (prefers-reduced-motion: reduce){.candle{transition:none;}}"
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        "@media (prefers-reduced-motion: reduce){.candle{transition:none;}"
+        ".tip{transition:none}}"
         "</style>"
     )
     parts.append(f'<rect width="{width}" height="{height}" fill="{BG}"/>')
@@ -193,7 +196,7 @@ def build_svg(
             f"Day {r['day']}: open {r['open']:.2f}, high {r['high']:.2f}, "
             f"low {r['low']:.2f}, close {r['close']:.2f}"
         )
-        parts.append('<g class="candle" tabindex="0">')
+        parts.append('<g class="candle hit" tabindex="0">')
         parts.append(f'<title>{xml_escape(tip)}</title>')
         parts.append(
             f'<line x1="{cx:.1f}" y1="{y_high:.1f}" x2="{cx:.1f}" y2="{y_low:.1f}" '
@@ -216,6 +219,18 @@ def build_svg(
             f'stroke="{color}" stroke-width="1.5"/>'
         )
         parts.append("</g>")
+        parts.append(
+            tooltip_bubble(
+                cx, y_high - 12,
+                [
+                    f"Day {r['day']}",
+                    f"open {r['open']:.2f} — close {r['close']:.2f}",
+                    f"high {r['high']:.2f} — low {r['low']:.2f}",
+                ],
+                anchor="middle", canvas_w=width, canvas_h=height,
+                ink=INK, secondary=SECONDARY, border=GRIDLINE,
+            )
+        )
 
     # ---- x-axis ----
     axis_y = plot_y + plot_h

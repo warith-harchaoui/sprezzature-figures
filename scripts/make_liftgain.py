@@ -68,8 +68,8 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
-from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
-from _svg import hex_to_rgb, svg_open, xml_escape  # noqa: E402
+from _style import GRIDLINE, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
+from _svg import hex_to_rgb, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
 
@@ -331,6 +331,9 @@ def build_svg(
         ".pt .halo{opacity:0}"
         ".pt:hover .halo,.pt:focus .halo{opacity:1}"
         ".pt:focus{outline:none}"
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
         + os_adaptive_style(lg_curve_series, role="stroke")
         + os_adaptive_style(lg_marker_series, role="fill")
         # Additive OS dark mode: dark paper + light ink (default ink_map); the
@@ -463,7 +466,7 @@ def build_svg(
         f'({op["lift"]}× better than random)'
     )
     parts.append(
-        f'<g class="pt" tabindex="0" role="img" aria-label="{xml_escape(tip)}">'
+        f'<g class="pt hit" tabindex="0" role="img" aria-label="{xml_escape(tip)}">'
     )
     parts.append(f"<title>{xml_escape(tip)}</title>")
     parts.append(
@@ -475,6 +478,22 @@ def build_svg(
         f'fill="{marker_c}" stroke="#FFFFFF" stroke-width="2.5"/>'
     )
     parts.append("</g>")
+    parts.append(
+        tooltip_bubble(
+            mx,
+            max(4.0, my - 46.0),
+            [
+                f"Top {round(opx * 100)}% contacted",
+                f"{op_pct}% of churners reached",
+                f"{op['lift']}x better than random",
+            ],
+            canvas_w=width,
+            canvas_h=height,
+            ink=ink,
+            secondary=secondary,
+            border=GRIDLINE,
+        )
+    )
     # A halo (paint-order: stroke) keeps this legible where the callout sits
     # close to the rising curve just past the marker -- a real "text grazes
     # the line" overlap caught by visual review at some cutoff values. The

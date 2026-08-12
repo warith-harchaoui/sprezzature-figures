@@ -34,7 +34,7 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _svg import fmt_number, svg_open, xml_escape  # noqa: E402
+from _svg import fmt_number, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
@@ -197,6 +197,13 @@ def build_svg(
         f'<desc id="kdec-desc">2-D kernel density contours of {len(rows)} points at '
         f'{n_levels} density levels.</desc>'
     )
+    parts.append(
+        "<style>"
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
+        "</style>"
+    )
     parts.append(f'<rect width="{width}" height="{height}" fill="{BG}"/>')
     parts.append(
         f'<text x="40" y="46" font-size="22" font-weight="700" fill="{INK}" '
@@ -235,7 +242,25 @@ def build_svg(
 
     # ---- raw scatter (faint) ----
     for x, y in samples:
-        parts.append(f'<circle cx="{x_for(x):.1f}" cy="{y_for(y):.1f}" r="2" fill="{COLOR_POINT}" fill-opacity="0.6"/>')
+        px, py = x_for(x), y_for(y)
+        pt_tip = f"x={fmt_number(float(x))}, y={fmt_number(float(y))}"
+        parts.append(
+            f'<circle class="hit" tabindex="0" cx="{px:.1f}" cy="{py:.1f}" r="2" '
+            f'fill="{COLOR_POINT}" fill-opacity="0.6"><title>{xml_escape(pt_tip)}</title></circle>'
+        )
+        parts.append(
+            tooltip_bubble(
+                px,
+                max(4.0, py - 26.0),
+                [f"x = {fmt_number(float(x))}", f"y = {fmt_number(float(y))}"],
+                canvas_w=width,
+                canvas_h=height,
+                ink=INK,
+                secondary=SECONDARY,
+                border=GRIDLINE,
+                font_size=10.5,
+            )
+        )
 
     # ---- contour levels ----
     for li, level in enumerate(levels):
@@ -250,8 +275,24 @@ def build_svg(
         path_d = " ".join(d_parts)
         tip = f"Density contour {li + 1} of {n_levels} (level {level:.4f})"
         parts.append(
-            f'<path tabindex="0" d="{path_d}" fill="none" stroke="{COLOR_CONTOUR}" '
+            f'<path class="hit" tabindex="0" d="{path_d}" fill="none" stroke="{COLOR_CONTOUR}" '
             f'stroke-width="1.5" stroke-opacity="{opacity:.2f}"><title>{xml_escape(tip)}</title></path>'
+        )
+        cx_pts = [x_for(p0[0]) for p0, p1 in segments] + [x_for(p1[0]) for p0, p1 in segments]
+        cy_pts = [y_for(p0[1]) for p0, p1 in segments] + [y_for(p1[1]) for p0, p1 in segments]
+        anchor_x = sum(cx_pts) / len(cx_pts)
+        anchor_y = min(cy_pts)
+        parts.append(
+            tooltip_bubble(
+                anchor_x,
+                max(4.0, anchor_y - 34.0),
+                [f"Contour {li + 1} of {n_levels}", f"density level {level:.4f}"],
+                canvas_w=width,
+                canvas_h=height,
+                ink=INK,
+                secondary=SECONDARY,
+                border=GRIDLINE,
+            )
         )
 
     # ---- axes ----

@@ -28,8 +28,8 @@ from typing import Any, Dict, List, Optional, Tuple
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _svg import svg_open, xml_escape  # noqa: E402
-from _style import BG, INK, SECONDARY  # noqa: E402
+from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _style import BG, GRIDLINE, INK, SECONDARY  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 
@@ -142,6 +142,9 @@ def build_svg(
         ".cell{transition:stroke-width .1s ease;}"
         ".cell:hover,.cell:focus{stroke:#1D1D1F;stroke-width:1.5;outline:none;}"
         "@media (prefers-reduced-motion: reduce){.cell{transition:none;}}"
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
         "</style>"
     )
     parts.append(f'<rect width="{width}" height="{height}" fill="{BG}"/>')
@@ -174,10 +177,19 @@ def build_svg(
             y = plot_y + ri * cell
             text_color = "#FFFFFF" if abs(r) > 0.6 else INK
             tip = f"{a} x {b}: r = {r:.2f}"
+            strength = "strong" if abs(r) >= 0.6 else "moderate" if abs(r) >= 0.3 else "weak"
+            direction = "positive" if r > 0 else "negative" if r < 0 else "no"
+            corr_desc = "no correlation" if r == 0 else f"{strength} {direction} correlation"
             parts.append(
-                f'<rect class="cell" tabindex="0" x="{x:.1f}" y="{y:.1f}" width="{cell:.1f}" '
+                f'<rect class="cell hit" tabindex="0" x="{x:.1f}" y="{y:.1f}" width="{cell:.1f}" '
                 f'height="{cell:.1f}" fill="{_ramp_hex(r)}" stroke="{BG}" stroke-width="1">'
                 f'<title>{xml_escape(tip)}</title></rect>'
+            )
+            parts.append(
+                tooltip_bubble(
+                    x + cell / 2, y + cell + 4, [f"{a} x {b}", f"r = {r:.2f}", corr_desc],
+                    canvas_w=width, canvas_h=height, ink=INK, secondary=SECONDARY, border=GRIDLINE,
+                )
             )
             parts.append(
                 f'<text x="{x + cell / 2:.1f}" y="{y + cell / 2 + 4:.1f}" font-size="12" '

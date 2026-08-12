@@ -33,7 +33,7 @@ from typing import Any, Dict, List, Optional, Tuple
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _svg import fmt_number, svg_open, viridis, xml_escape  # noqa: E402
+from _svg import fmt_number, svg_open, tooltip_bubble, viridis, xml_escape  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
@@ -201,6 +201,9 @@ def build_svg(
         ".hex{transition:opacity .15s ease;}"
         ".hex:hover,.hex:focus{opacity:.72;outline:none;}"
         "@media (prefers-reduced-motion: reduce){.hex{transition:none;}}"
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
         "</style>"
     )
     parts.append(f'<rect width="{width}" height="{height}" fill="{BG}"/>')
@@ -239,8 +242,16 @@ def build_svg(
         t = count / max_count
         tip = f"{count} point{'s' if count != 1 else ''} in this cell"
         parts.append(
-            f'<path class="hex" tabindex="0" d="{d}" fill="{_ramp_hex(t, theme)}">'
+            f'<path class="hex hit" tabindex="0" d="{d}" fill="{_ramp_hex(t, theme)}">'
             f'<title>{xml_escape(tip)}</title></path>'
+        )
+        parts.append(
+            tooltip_bubble(
+                cx, cy - hex_size_px - 6,
+                [f"{count} point{'s' if count != 1 else ''}", f"{t * 100:.0f}% of densest cell"],
+                anchor="middle", canvas_w=width, canvas_h=height,
+                ink=INK, secondary=SECONDARY, border=GRIDLINE,
+            )
         )
     parts.append('</g>')
 

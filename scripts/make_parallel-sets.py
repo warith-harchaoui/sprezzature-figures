@@ -60,7 +60,7 @@ from _style import (  # noqa: E402
     os_adaptive_style,
     os_dark_style,
 )
-from _svg import xml_escape  # noqa: E402
+from _svg import tooltip_bubble, xml_escape  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
@@ -388,7 +388,9 @@ def build_svg(
         ".flows:hover .ribbon{opacity:.12;}"
         ".flows .ribbon:hover{opacity:.96;}"
         ".flows .ribbon:focus{opacity:.96;outline:none;}"
-        "@media (prefers-reduced-motion: reduce){.ribbon{transition:none;}}"
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}"
+        "@media (prefers-reduced-motion: reduce){.ribbon{transition:none;}.tip{transition:none}}"
         + os_adaptive_style(
             outcome_series,
             role="fill",
@@ -496,10 +498,18 @@ def build_svg(
             # fill stays authoritative in the default (no-preference) render.
             outcome_cls = f"rib-{outcome.lower()}"
             parts.append(
-                f'<path class="ribbon {outcome_cls}" tabindex="0" d="{d}" fill="{color}" '
+                f'<path class="ribbon hit {outcome_cls}" tabindex="0" d="{d}" fill="{color}" '
                 f'fill-opacity="0.55" stroke="#FFFFFF" stroke-opacity="0.9" '
-                f'stroke-width="1.0" stroke-linejoin="round">'
-                f"<title>{xml_escape(tip)}</title></path>"
+                f'stroke-width="1.0" stroke-linejoin="round" '
+                f'role="img" aria-label="{xml_escape(tip)}"/>'
+            )
+            parts.append(
+                tooltip_bubble(
+                    (x0 + x1) / 2.0, (a_top + b_top) / 2.0 + h / 2.0 - 14.0,
+                    [f"{a_cat} → {b_cat} → {outcome}", f"{count} people ({pct:.0f}%)"],
+                    anchor="middle", canvas_w=width, canvas_h=height,
+                    ink=ink, secondary=secondary, border=hairline,
+                )
             )
     parts.append("</g>")
 
@@ -513,14 +523,23 @@ def build_svg(
             b = stacks[i][cat]
             blk_h = b["y1"] - b["y0"]
             fill = _DIED_RED if cat == "Died" else palette.get(BIN_COLOR.get(cat, ""), secondary)
+            pct = 100.0 * b["count"] / total
+            bin_tip = f"{cat}: {int(b['count'])} people ({pct:.0f}%)"
             parts.append(
-                f'<rect x="{x:.1f}" y="{b["y0"]:.1f}" width="{bin_w}" '
-                f'height="{blk_h:.1f}" rx="7" fill="{fill}">'
-                f"<title>{xml_escape(cat)}: {int(b['count'])} people</title></rect>"
+                f'<rect class="hit" tabindex="0" x="{x:.1f}" y="{b["y0"]:.1f}" width="{bin_w}" '
+                f'height="{blk_h:.1f}" rx="7" fill="{fill}" '
+                f'role="img" aria-label="{xml_escape(bin_tip)}"/>'
+            )
+            parts.append(
+                tooltip_bubble(
+                    x + bin_w / 2.0, b["y0"] - 14.0,
+                    [cat, f"{int(b['count'])} people", f"{pct:.0f}% of total"],
+                    anchor="middle", canvas_w=width, canvas_h=height,
+                    ink=ink, secondary=secondary, border=hairline,
+                )
             )
             # Label side: first axis labels LEFT, everything else RIGHT, so
             # text never overlaps ribbons.
-            pct = 100.0 * b["count"] / total
             sub = f"{int(b['count'])} · {pct:.0f}%"
             if i == 0:
                 tx, anchor = x - label_gap, "end"

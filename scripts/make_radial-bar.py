@@ -45,7 +45,7 @@ from typing import Any, Dict, List, Optional, Tuple
 # without the dataviz tier); the polar helpers live in _svg.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
-from _svg import point_on_circle, svg_open, xml_escape  # noqa: E402
+from _svg import point_on_circle, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
@@ -297,8 +297,10 @@ def build_svg(
         "svg:hover .bar, svg:focus-within .bar { opacity: .28; }",
         "svg .bar:hover, svg .bar:focus { opacity: 1; }",
         f".bar:focus {{ outline: 3px solid {_FOCUS}; outline-offset: 2px; }}",
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}",
+        ".hit:hover~.tip,.hit:focus~.tip{opacity:1}",
         "@media (prefers-reduced-motion: reduce) { .bar { transition: none; } "
-        ".grow { animation: none !important; } }",
+        ".grow { animation: none !important; } .tip{transition:none} }",
     ]
     # OS-adaptive overrides (additive; every rule lives inside an @media block,
     # so the default render is byte-for-byte unchanged). The two working hues
@@ -413,10 +415,10 @@ def build_svg(
             f'({share:.1f}% of the day)'
         )
         parts.append(
-            f'<path class="bar {bar_hue_class}" tabindex="0" role="listitem" '
+            f'<path class="bar hit {bar_hue_class}" tabindex="0" role="img" '
+            f'aria-label="{_xml(tip)}" '
             f'd="{path}" fill="{color}" fill-opacity="{base_op}" '
             f'stroke="{_BG}" stroke-width="1.6" stroke-linejoin="round">'
-            f'<title>{_xml(tip)}</title>'
             # One-shot grow-out: bars are full-size at t=0 (base state),
             # briefly shrink toward the hub, then settle — never appearing
             # from nothing. keyTimes start at the settled size.
@@ -425,6 +427,15 @@ def build_svg(
             f'dur="0.9s" begin="0s" fill="freeze" '
             f'calcMode="spline" keySplines="0 0 1 1;0 0 1 1;0.22 1 0.36 1"/>'
             f'</path>'
+        )
+        mx, my = _polar(_CX, _CY, r1, centre)
+        parts.append(
+            tooltip_bubble(
+                mx, my - 14,
+                [f"{h:02d}:00 – {h:02d}:59", f"{_fmt_trips(v)} trips", f"{share:.1f}% of the day"],
+                anchor="middle", canvas_w=_WIDTH, canvas_h=_HEIGHT,
+                ink=_INK, secondary=_SUBTLE, border=_GRID,
+            )
         )
     parts.append('</g>')
 
