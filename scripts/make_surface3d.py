@@ -295,7 +295,7 @@ def make_surface3d(
 
 def main() -> None:
     """Write the 3-D surface SVG to the canonical assets path."""
-    render_cli(__file__, "surface-3d", build_svg,
+    render_cli(__file__, "surface3d", build_svg,
                description="Render the 3-D surface SVG.")
 
 
