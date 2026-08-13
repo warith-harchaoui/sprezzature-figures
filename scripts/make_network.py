@@ -57,6 +57,7 @@ from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 # ------------------------------------------------------------------
 WIDTH = 1200
 HEIGHT = 980
+_MODULE_WIDTH, _MODULE_HEIGHT = WIDTH, HEIGHT  # baseline size before per-graph scaling
 # y where the graph area begins (below the title/subtitle/hint block). Large enough that
 # even a max-radius node (52px, see _radius) sitting at the very top of the layout box
 # clears the hint line at y=134 with margin, instead of visually overlapping it.
@@ -196,6 +197,11 @@ def _team_slug(team: str) -> str:
 
 
 SEED = 20260725  # fixed so the committed SVG is byte-reproducible
+# Extra clearance (px) added on top of a node-pair's summed radii before the
+# overlap-avoidance term in `_layout` kicks in — leaves breathing room for the
+# label that sits just below each circle, not just the circle itself.
+OVERLAP_CLEARANCE = 34.0
+OVERLAP_STRENGTH = 3.2
 
 
 # ------------------------------------------------------------------
@@ -206,6 +212,7 @@ def _layout(
     edges: List[Tuple[str, str]],
     width: float,
     height: float,
+    radii: Optional[Dict[str, float]] = None,
     iterations: int = 520,
 ) -> Dict[str, Tuple[float, float]]:
     """Relax nodes into a force-directed layout inside a box.
@@ -217,6 +224,15 @@ def _layout(
     instead of oscillating. A weak pull toward the box centre keeps
     disconnected drift in check.
 
+    Plain Fruchterman-Reingold treats every node as a dimensionless point,
+    so on a dense graph (many nodes, high-degree hubs sized up to 52px)
+    two circles can converge closer than their own radii and visibly
+    overlap even at equilibrium — the "spaghetti" hairball look. On top
+    of the point-charge repulsion, ``radii`` (when given) adds a linear
+    penalty once two circles are closer than the sum of their radii plus
+    label clearance, so the simulation actively pushes surfaces apart
+    instead of just centres.
+
     Parameters
     ----------
     ids : list of str
@@ -225,6 +241,10 @@ def _layout(
         Undirected endpoint pairs ``(a, b)``.
     width, height : float
         Size of the layout box the coordinates must fit inside.
+    radii : dict of str to float, optional
+        Per-node circle radius in pixels (see :func:`_radius`). When
+        given, drives the overlap-avoidance term described above; omit
+        to fall back to plain point-charge repulsion.
     iterations : int, optional
         Number of relaxation steps (default 520 — enough for a graph this
         size to reach a clean, uncrossed-looking arrangement).
@@ -272,6 +292,10 @@ def _layout(
                 dy = pos[a][1] - pos[b][1]
                 dist = math.hypot(dx, dy) or 0.01
                 force = (k * k) / dist
+                if radii is not None:
+                    min_sep = radii[a] + radii[b] + OVERLAP_CLEARANCE
+                    if dist < min_sep:
+                        force += (min_sep - dist) * OVERLAP_STRENGTH
                 ux, uy = dx / dist, dy / dist
                 disp[a][0] += ux * force
                 disp[a][1] += uy * force
@@ -440,6 +464,25 @@ def build_svg(
     ids = [s[0] for s in services]
     label_of = {s[0]: s[1] for s in services}
     team_of = {s[0]: s[2] for s in services}
+    # CSS-safe slug per node id, used everywhere a node id is embedded in a class
+    # name or selector (n-<slug>, l-<slug>, i-<slug>). Node ids come straight from
+    # caller data (e.g. French stratagem names with spaces and apostrophes) and an
+    # unescaped apostrophe inside a CSS selector breaks the tokenizer for the rest
+    # of the stylesheet — silently dropping unrelated rules like ``.tip{opacity:0}``,
+    # which is why every tooltip bubble used to render visible at once instead of
+    # only on hover. Reuses ``_team_slug``, which is generic despite the name.
+    slug = {nid: _team_slug(nid) for nid in ids}
+
+    # Canvas grows with the node count: the fixed 1200x980 box comfortably fits
+    # the ~15-node demo graph, but a real bipartite "who employs what" graph
+    # (many stratagems, each connected to several speakers) can have 20-30+
+    # nodes — cramming those into the same fixed box is what produces the
+    # overlapping-circle, overlapping-label "spaghetti" look. Growth is
+    # additive past a baseline so the tracked demo SVG stays byte-identical.
+    _BASELINE_NODES = 16
+    _extra_nodes = max(0, len(ids) - _BASELINE_NODES)
+    WIDTH = _MODULE_WIDTH + _extra_nodes * 30
+    HEIGHT = _MODULE_HEIGHT + _extra_nodes * 24
 
     # Undirected edge set for the layout (dedupe reversed duplicates).
     undirected: List[Tuple[str, str]] = []
@@ -458,10 +501,11 @@ def build_svg(
 
     indeg = _degrees(ids, calls)
     max_indeg = max(indeg.values()) if indeg else 1
+    radii = {nid: _radius(indeg[nid], max_indeg) for nid in ids}
 
     box_w = WIDTH - 2 * PLOT_PAD
     box_h = HEIGHT - PLOT_TOP - PLOT_PAD - 72  # leave room for the legend row
-    raw = _layout(ids, undirected, box_w, box_h)
+    raw = _layout(ids, undirected, box_w, box_h, radii=radii)
 
     # Translate box coords onto the canvas.
     pos: Dict[str, Tuple[float, float]] = {
@@ -511,19 +555,19 @@ def build_svg(
         # NOTE: :is(:hover,:focus-within) keeps ``cond`` a *single* complex
         # selector — a bare comma here would split the descendant rules and
         # silently break the fade.
-        cond = f'#graph:has(.node.n-{nid}:is(:hover,:focus-within))'
+        cond = f'#graph:has(.node.n-{slug[nid]}:is(:hover,:focus-within))'
         # Fade all.
         css_lines.append(f"{cond} .edge{{opacity:.07}}")
         css_lines.append(f"{cond} .node{{opacity:.20}}")
         css_lines.append(f"{cond} .nlabel{{opacity:.08}}")
         # Restore the hovered node + its neighbours (and their labels).
         keep = [nid] + sorted(neigh[nid])
-        node_sel = ",".join(f"{cond} .node.n-{k}" for k in keep)
-        label_sel = ",".join(f"{cond} .nlabel.l-{k}" for k in keep)
+        node_sel = ",".join(f"{cond} .node.n-{slug[k]}" for k in keep)
+        label_sel = ",".join(f"{cond} .nlabel.l-{slug[k]}" for k in keep)
         css_lines.append(f"{node_sel}{{opacity:1}}")
         css_lines.append(f"{label_sel}{{opacity:1}}")
         # Restore incident edges: every edge touching nid carries class i-<nid>.
-        css_lines.append(f"{cond} .edge.i-{nid}{{opacity:.85}}")
+        css_lines.append(f"{cond} .edge.i-{slug[nid]}{{opacity:.85}}")
     css_lines.append(".node:focus{outline:none}")
     css_lines.append(".node circle:focus{outline:none}")
     css_lines.append(".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}")
@@ -584,7 +628,7 @@ def build_svg(
         xa, ya = pos[a]
         xb, yb = pos[b]
         parts.append(
-            f'<line class="edge i-{a} i-{b}" x1="{xa:.1f}" y1="{ya:.1f}" '
+            f'<line class="edge i-{slug[a]} i-{slug[b]}" x1="{xa:.1f}" y1="{ya:.1f}" '
             f'x2="{xb:.1f}" y2="{yb:.1f}" stroke="{EDGE}" '
             f'stroke-width="2.2" stroke-linecap="round"/>'
         )
@@ -603,7 +647,15 @@ def build_svg(
     # the canvas edge, then push a label straight down past any earlier-placed
     # label it would otherwise overlap.
     LABEL_SIZE = 18.0
-    label_boxes: List[Dict[str, float]] = []
+    # Seed the collision set with every node circle's own bounding box first —
+    # on a dense graph a label sitting a few px from its intended node can
+    # otherwise land squarely on top of an unrelated neighbouring circle
+    # (labels only used to dodge other labels, never the circles themselves).
+    label_boxes: List[Dict[str, float]] = [
+        {"left": x - radii[nid], "right": x + radii[nid],
+         "top": y - radii[nid], "bottom": y + radii[nid]}
+        for nid, (x, y) in pos.items()
+    ]
     placements: Dict[str, Tuple[float, float, str]] = {}
     edge_margin = 6.0
     for nid in sorted(ids, key=lambda n: pos[n][0]):
@@ -620,8 +672,15 @@ def build_svg(
             anchor, lx = "end", WIDTH - edge_margin
         left = lx if anchor == "start" else (lx - w if anchor == "end" else lx - w / 2)
 
+        # Push down to dodge a collision, but only up to a small cap: on a dense
+        # graph, chasing every collision to a fully-clear spot can walk a label
+        # 200+px away from the node it names, which reads as an orphaned block
+        # of unrelated text — worse than the overlap it was avoiding. Past the
+        # cap, accept the last position (light overlap, still legible, still
+        # anchored near its node) rather than keep drifting.
+        max_below = below + 4 * (LABEL_SIZE + 4)
         guard = 0
-        while guard < 24:
+        while guard < 8 and below <= max_below:
             collided = False
             for box in label_boxes:
                 if left < box["right"] and left + w > box["left"] and below < box["bottom"] and below + LABEL_SIZE > box["top"]:
@@ -631,6 +690,7 @@ def build_svg(
             if not collided:
                 break
             guard += 1
+        below = min(below, max_below)
         label_boxes.append({"left": left, "right": left + w, "top": below, "bottom": below + LABEL_SIZE})
         placements[nid] = (lx, below, anchor)
 
@@ -638,7 +698,7 @@ def build_svg(
     for nid in ids:
         lx, below, anchor = placements[nid]
         parts.append(
-            f'<text class="nlabel l-{nid}" x="{lx:.1f}" y="{below:.1f}" '
+            f'<text class="nlabel l-{slug[nid]}" x="{lx:.1f}" y="{below:.1f}" '
             f'text-anchor="{anchor}" font-size="{LABEL_SIZE:.0f}" font-weight="600" '
             f'fill="{INK}" paint-order="stroke" stroke="{BG}" stroke-width="5" '
             f'stroke-linejoin="round">{escape(label_of[nid])}</text>'
@@ -666,7 +726,7 @@ def build_svg(
         # queries below — a class on the group would not reach the circle's fill.
         team_slug = _team_slug(team_of[nid])
         parts.append(
-            f'<g class="node hit n-{nid}" tabindex="0" role="img" '
+            f'<g class="node hit n-{slug[nid]}" tabindex="0" role="img" '
             f'aria-label="{escape(tip)}">'
             f'<circle class="team-{team_slug}" cx="{x:.1f}" cy="{y:.1f}" '
             f'r="{r:.1f}" fill="{color}" stroke="{BG}" stroke-width="4"/>'

@@ -63,6 +63,7 @@ from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_the
 # ------------------------------------------------------------------
 WIDTH = 1360
 HEIGHT = 820
+_MODULE_HEIGHT = HEIGHT  # baseline canvas height before per-graph density scaling
 MARGIN_LEFT = 44
 MARGIN_RIGHT = 44
 MARGIN_TOP = 168         # room for title + subtitle + stage headers
@@ -194,9 +195,33 @@ def _layers(nodes: List[Tuple[str, str, int]]) -> Dict[int, List[str]]:
 
 
 def _compute_geometry(
-    nodes: List[Tuple[str, str, int]], links: List[Tuple[str, str, float]]
+    nodes: List[Tuple[str, str, int]],
+    links: List[Tuple[str, str, float]],
+    *,
+    height: float = HEIGHT,
+    node_pad: float = NODE_PAD,
 ) -> Tuple[Dict[str, dict], float]:
     """Place every node and return (geometry, volume→pixel scale).
+
+    Parameters
+    ----------
+    height : float, optional
+        Canvas height to lay out into. Defaults to the module-level
+        ``HEIGHT``; callers with a dense layer (many nodes stacked in one
+        stage) pass a taller value — see the density scaling note on
+        ``node_pad`` below.
+    node_pad : float, optional
+        Vertical gap between stacked nodes within a layer. Defaults to
+        the module-level ``NODE_PAD``. A *fixed* pad breaks down once a
+        layer has enough nodes that ``node_pad * (n - 1)`` alone exceeds
+        the whole plot height — every layer's bar height collapses
+        towards zero (division by the ``1e-9`` floor below inflates
+        ``scale`` by many orders of magnitude, and every ribbon on the
+        whole diagram — not just the dense layer — renders at ~0px
+        thickness, i.e. invisible). Callers with a dense layer should
+        shrink ``node_pad`` accordingly; this function additionally
+        clamps ``pad_total`` defensively so a caller that does not is
+        still guaranteed a usable, non-degenerate layout.
 
     Returns
     -------
@@ -211,16 +236,28 @@ def _compute_geometry(
     """
     layers = _layers(nodes)
     plot_top = MARGIN_TOP
-    plot_bottom = HEIGHT - MARGIN_BOTTOM
+    plot_bottom = height - MARGIN_BOTTOM
     plot_h = plot_bottom - plot_top
     plot_left = MARGIN_LEFT
     plot_right = WIDTH - MARGIN_RIGHT
 
+    # Per-layer gap between stacked nodes. However dense a layer, leave at
+    # least 25% of the plot height for actual bars — never let padding alone
+    # consume (or exceed) plot_h; the gap used for scale below and for actual
+    # node stacking further down must be the same clamped value, or nodes
+    # positioned with the clamped gap would compute a *different* (unclamped)
+    # stack height than the one the scale was fitted to, and overflow the
+    # canvas again.
+    layer_gap: Dict[int, float] = {}
+    for layer_idx, ids in layers.items():
+        pad_total = min(node_pad * (len(ids) - 1), 0.75 * plot_h)
+        layer_gap[layer_idx] = pad_total / (len(ids) - 1) if len(ids) > 1 else 0.0
+
     # Vertical scale: the densest layer (most total volume) must fit.
     max_layer_vol = 0.0
-    for ids in layers.values():
+    for layer_idx, ids in layers.items():
         total = sum(_node_volume(n, links) for n in ids)
-        pad_total = NODE_PAD * (len(ids) - 1)
+        pad_total = layer_gap[layer_idx] * (len(ids) - 1)
         max_layer_vol = max(max_layer_vol, total / max(1e-9, (plot_h - pad_total)))
     scale = 1.0 / max_layer_vol if max_layer_vol else 1.0
 
@@ -233,8 +270,9 @@ def _compute_geometry(
     geometry: Dict[str, dict] = {}
     for layer_idx in sorted(layers):
         ids = layers[layer_idx]
+        gap = layer_gap[layer_idx]
         heights = [_node_volume(n, links) * scale for n in ids]
-        pad_total = NODE_PAD * (len(ids) - 1)
+        pad_total = gap * (len(ids) - 1)
         stack_h = sum(heights) + pad_total
         y = plot_top + (plot_h - stack_h) / 2.0
         for node_id, h in zip(ids, heights):
@@ -247,7 +285,7 @@ def _compute_geometry(
                 "out_cursor": y,
                 "in_cursor": y,
             }
-            y += h + NODE_PAD
+            y += h + gap
 
     return geometry, scale
 
@@ -341,10 +379,22 @@ def build_svg(
     palette_colors = list(palette.values())
     root_color = {root: palette_colors[i % len(palette_colors)] for i, root in enumerate(roots)}
 
-    geometry, _scale = _compute_geometry(nodes, links)
-    label_of = {nid: lbl for nid, lbl, _ in nodes}
     layers = _layers(nodes)
     n_layers = len(layers)
+    # Canvas + inter-node gap both scale with the densest stage: the fixed
+    # 820px/40px-gap combo (fine for a handful of nodes per stage) is what
+    # collapses every ribbon on the whole diagram to ~0px thickness once one
+    # stage has 15-20+ nodes (see `_compute_geometry`'s node_pad docstring) —
+    # growing the canvas alone still leaves cramped bars, so both move
+    # together. Baseline reproduces the tracked demo SVG byte-for-byte.
+    max_nodes_per_layer = max((len(ids) for ids in layers.values()), default=1)
+    _BASELINE_NODES_PER_LAYER = 8
+    _extra_nodes = max(0, max_nodes_per_layer - _BASELINE_NODES_PER_LAYER)
+    HEIGHT = _MODULE_HEIGHT + _extra_nodes * 20
+    node_pad = max(8.0, NODE_PAD - _extra_nodes * 1.3)
+
+    geometry, _scale = _compute_geometry(nodes, links, height=HEIGHT, node_pad=node_pad)
+    label_of = {nid: lbl for nid, lbl, _ in nodes}
 
     if stage_names is None:
         stage_names = list(_DEFAULT_STAGE_NAMES) if n_layers == len(_DEFAULT_STAGE_NAMES) else [
