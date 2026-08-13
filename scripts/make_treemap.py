@@ -334,7 +334,7 @@ def build_svg(
             pad = 6.0
             avail_w = r["dx"] - 2 * pad
             avail_h = r["dy"] - 2 * pad
-            name_size = fit_font_size(row["name"], avail_w, 11.0, min_px=8.0)
+            name_size = fit_font_size(row["name"], avail_w, 11.0, min_px=9.5)
             lines = wrap_to_width(row["name"], avail_w, name_size) if avail_w >= 20 else []
             line_h = name_size * 1.2
             value_h = 10.0 * 1.2
