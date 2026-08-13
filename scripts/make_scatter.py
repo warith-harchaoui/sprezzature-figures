@@ -148,6 +148,7 @@ def build_svg(
 
     weights = [float(r.get("weight") or 0) for r in rows]
     w_max = max(weights) if weights and has_weight else 1.0
+    w_min = min(weights) if weights and has_weight else 0.0
     r_min, r_max = 4.5, 11.0
 
     def r_for(w: float) -> float:
@@ -276,7 +277,12 @@ def build_svg(
             size_leg_y = leg_y + 26 + len(segments) * 26 + 30
             parts.append(f'<text x="{leg_x:.1f}" y="{size_leg_y:.1f}" font-size="13" font-weight="700" fill="{INK}">Weight (kg)</text>')
             cursor_y = size_leg_y + 22
-            for val in (w_max, w_max / 3):
+            # Bracket the *actual* weight range in the plotted data (not an
+            # arbitrary fraction of the max) -- a legend value smaller than
+            # every real data point (e.g. the old w_max/3) draws a reference
+            # circle no bubble in the plot ever matches, which misleads
+            # rather than calibrates the eye.
+            for val in (w_max, w_min):
                 r = r_for(val)
                 cy = cursor_y + r
                 parts.append(f'<circle cx="{leg_x + r_max:.1f}" cy="{cy:.1f}" r="{r:.1f}" fill="none" stroke="{SECONDARY}" stroke-width="1"/>')

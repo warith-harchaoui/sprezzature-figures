@@ -29,7 +29,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY, cycle_hues  # noqa: E402
-from _scale import log_position, log_ticks  # noqa: E402
+from _scale import log_position, log_ticks, nice_ticks  # noqa: E402
 from _svg import fmt_number, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
@@ -128,8 +128,10 @@ def build_svg(
         def y_for(v: float) -> float:
             return log_position(v, y_lo, y_hi, plot_y + plot_h, plot_y)
     else:
-        y_step = max_val / 4.0
-        y_ticks = [i * y_step for i in range(5)]
+        # Nice, round ticks (shared _scale.nice_ticks, the house convention
+        # used by make_bar.py/make_area.py/etc.) instead of raw max_val/4
+        # fractions, which produced unreadable labels like 124/93/62/31/0.
+        y_ticks = nice_ticks(max_val, 4)
         y_domain = y_ticks[-1] or 1.0
 
         def y_for(v: float) -> float:

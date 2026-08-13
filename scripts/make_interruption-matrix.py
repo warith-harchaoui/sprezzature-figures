@@ -226,9 +226,12 @@ def build_svg(
     grid_w = (n + 1) * CELL
     content_w = GUTTER + grid_w
     inner_w = max(content_w, _text_w(SUBTITLE, 16), _text_w(TITLE, 30))
-    w = inner_w + 2 * MARGIN
+    # Round the canvas box to 2dp: `_text_w` accumulates float error (e.g.
+    # 758.5600000000001) that would otherwise leak, verbatim, into the root
+    # <svg width>/<viewBox> — harmless to rendering but ugly in the markup.
+    w = round(inner_w + 2 * MARGIN, 2)
     top = TOP
-    h = top + (n + 1) * CELL + PAD_B
+    h = round(top + (n + 1) * CELL + PAD_B, 2)
     left = MARGIN + (inner_w - content_w) / 2 + GUTTER  # x of the grid's left edge
 
     def cx(c: float) -> float:

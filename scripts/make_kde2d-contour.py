@@ -34,6 +34,7 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
+from _scale import nice_ticks_range  # noqa: E402
 from _svg import fmt_number, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
@@ -214,11 +215,13 @@ def build_svg(
     # ---- gridlines + tick labels ----
     # Without these the reader can see the density shape but has no scale
     # reference at all (a real "hard to read" gap caught by visual review) --
-    # 5 evenly spaced ticks per axis, drawn behind the data.
+    # ~5 nice, round ticks per axis (shared _scale.nice_ticks_range, already
+    # adopted by make_beeswarm.py) instead of raw equal-fraction values,
+    # which produced unreadable labels like 7.5/5.2/2.9/0.63/-1.7. Ticks
+    # outside the padded window are dropped, drawn behind the data.
     mono_family = mono_stack_for_theme(theme)
-    n_ticks = 5
-    x_ticks = [x_lo + (x_hi - x_lo) * i / (n_ticks - 1) for i in range(n_ticks)]
-    y_ticks = [y_lo + (y_hi - y_lo) * i / (n_ticks - 1) for i in range(n_ticks)]
+    x_ticks = [t for t in nice_ticks_range(x_lo, x_hi, 5) if x_lo - 1e-9 <= t <= x_hi + 1e-9]
+    y_ticks = [t for t in nice_ticks_range(y_lo, y_hi, 5) if y_lo - 1e-9 <= t <= y_hi + 1e-9]
     for xt in x_ticks:
         tx = x_for(xt)
         parts.append(

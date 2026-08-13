@@ -19,6 +19,7 @@ Author
 
 from __future__ import annotations
 
+import math
 import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -29,6 +30,27 @@ from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY, corner_radius, cycle_hues  # noqa: E402
 from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
+
+
+def _nice_step(span: float, target_ticks: int = 6) -> float:
+    """Pick a 1/2/5-times-a-power-of-ten step so ``span / step`` ~= `target_ticks`.
+
+    The Gantt's x-axis is zero-anchored but its extent is the data's own
+    ``max_end`` (e.g. 33 days), not a round ceiling, so ``_scale.nice_ticks``
+    (which rounds the *ceiling* up, extending the axis past the data) isn't a
+    drop-in fit -- the axis here must stay pinned to `max_end` so the last
+    task's bar still reaches the plot's right edge. Rounding just the *step*
+    (Heckbert 1990) instead turns a naive ``max_end / 6`` divide -- which used
+    to print tick labels like ``6``/``11``/``16``/``22``/``28``/``33`` -- into
+    round, scannable gridlines like ``0``/``5``/``10``/.../``30``.
+    """
+    if span <= 0:
+        return 1.0
+    raw_step = span / target_ticks
+    exponent = math.floor(math.log10(raw_step))
+    fraction = raw_step / (10.0**exponent)
+    nice_fraction = 1.0 if fraction < 1.5 else 2.0 if fraction < 3 else 5.0 if fraction < 7 else 10.0
+    return nice_fraction * (10.0**exponent)
 
 
 TEAMS = ["Research", "Design", "Eng", "QA", "Ops"]
@@ -158,10 +180,10 @@ def build_svg(
         parts.append(f'<text x="{cursor + 20:.1f}" y="{ly:.1f}" font-size="12" fill="{INK}">{xml_escape(t)}</text>')
         cursor += 20 + 7.0 * len(t) + 22
 
-    # ---- x-axis gridlines ----
-    x_ticks = 6
-    for i in range(x_ticks + 1):
-        val = max_end * i / x_ticks
+    # ---- x-axis gridlines (round "nice" steps, not a naive 6-way split) ----
+    step = _nice_step(max_end, 6)
+    val = 0.0
+    while val <= max_end + 1e-9:
         tx = x_for(val)
         parts.append(
             f'<line x1="{tx:.1f}" y1="{plot_y:.1f}" x2="{tx:.1f}" y2="{plot_y + plot_h:.1f}" '
@@ -171,6 +193,7 @@ def build_svg(
             f'<text x="{tx:.1f}" y="{plot_y + plot_h + 20:.1f}" font-size="11" font-family="{mono_family}" '
             f'fill="{SECONDARY}" text-anchor="middle">{val:.0f}</text>'
         )
+        val += step
     parts.append(
         f'<text x="{plot_x + plot_w / 2:.1f}" y="{plot_y + plot_h + 42:.1f}" font-size="13" '
         f'fill="{INK}" text-anchor="middle">Day</text>'

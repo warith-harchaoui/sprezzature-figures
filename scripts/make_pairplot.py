@@ -238,7 +238,9 @@ def _kde(values: List[float], lo: float, hi: float, steps: int = 48) -> List[Tup
     return out
 
 
-def _marker(shape: str, cx: float, cy: float, r: float, fill: str, cls: str = "") -> str:
+def _marker(
+    shape: str, cx: float, cy: float, r: float, fill: str, cls: str = "", title: str = ""
+) -> str:
     """Return one filled marker (circle / square / triangle) with a white keyline.
 
     The white keyline lifts each point off its overlapping neighbours without a
@@ -262,19 +264,29 @@ def _marker(shape: str, cx: float, cy: float, r: float, fill: str, cls: str = ""
         the OS-adaptive ``@media`` rules can retint every mark of one family at
         once. Because a class rule only outranks the inline ``fill`` inside a
         media query, adding it leaves the default render pixel-identical.
+    title : str, optional
+        Native ``<title>`` tooltip text (e.g. the point's exact measured
+        values). Empty by default. This is *data disclosure*, not motion —
+        it adds no CSS transition, hover-lift or JS, so it doesn't
+        contradict the module's "no animation or hover motion" design
+        (a SPLOM stays a clean static overview at rest); it just lets a
+        reader confirm a mark's underlying numbers the same way every other
+        figure in the house style does.
 
     Returns
     -------
     str
-        A single SVG element (``<circle>`` / ``<rect>`` / ``<path>``).
+        A single SVG element (``<circle>`` / ``<rect>`` / ``<path>``),
+        with a nested ``<title>`` when `title` is given.
     """
     stroke = f'stroke="{KEYLINE}" stroke-width="0.9"'
     cls_attr = f'class="{cls}" ' if cls else ""
+    tip = f"<title>{xml_escape(title)}</title>" if title else ""
     if shape == "square":
         s = r * 1.78  # match the circle's visual area
         return (
             f'<rect {cls_attr}x="{cx - s / 2:.2f}" y="{cy - s / 2:.2f}" width="{s:.2f}" '
-            f'height="{s:.2f}" rx="1.2" fill="{fill}" {stroke}/>'
+            f'height="{s:.2f}" rx="1.2" fill="{fill}" {stroke}>{tip}</rect>'
         )
     if shape == "triangle":
         s = r * 2.35  # upward triangle, sized to a comparable footprint
@@ -285,12 +297,12 @@ def _marker(shape: str, cx: float, cy: float, r: float, fill: str, cls: str = ""
         return (
             f'<path {cls_attr}d="M {p1[0]:.2f} {p1[1]:.2f} L {p2[0]:.2f} {p2[1]:.2f} '
             f'L {p3[0]:.2f} {p3[1]:.2f} Z" fill="{fill}" {stroke} '
-            f'stroke-linejoin="round"/>'
+            f'stroke-linejoin="round">{tip}</path>'
         )
     # Default: circle.
     return (
         f'<circle {cls_attr}cx="{cx:.2f}" cy="{cy:.2f}" r="{r:.2f}" '
-        f'fill="{fill}" {stroke}/>'
+        f'fill="{fill}" {stroke}>{tip}</circle>'
     )
 
 
@@ -510,7 +522,15 @@ def build_svg(
                     continue
                 cx = scale_x(kx, x0, float(r[kx]))
                 cy = scale_y(ky, y0, float(r[ky]))
-                parts.append(_marker(shape, cx, cy, 3.6, fill, f"chem-{ci}"))
+                # Native <title> only — no hover motion/CSS, so this is pure
+                # data disclosure and doesn't reintroduce the animation the
+                # module docstring deliberately opts out of (see _marker's
+                # `title` parameter docs).
+                tip = (
+                    f'{chem}: {var_x["label"]} {_fmt_tick(float(r[kx]))} {var_x["unit"]}, '
+                    f'{var_y["label"]} {_fmt_tick(float(r[ky]))} {var_y["unit"]}'
+                )
+                parts.append(_marker(shape, cx, cy, 3.6, fill, f"chem-{ci}", title=tip))
 
     def draw_diagonal_cell(idx: int) -> None:
         """Draw a diagonal cell: overlaid per-chemistry densities of one variable."""
@@ -587,15 +607,29 @@ def build_svg(
         key = str(var["field"])
         x0, _ = cell_origin(col, n - 1)
         base_y = plot_y + grid_h  # bottom of the grid
-        for t in scales[key]["ticks"]:
+        col_ticks = scales[key]["ticks"]
+        for i, t in enumerate(col_ticks):
             gx = scale_x(key, x0, float(t))
             parts.append(
                 f'<line x1="{gx:.1f}" y1="{base_y:.1f}" x2="{gx:.1f}" '
                 f'y2="{base_y + 6:.1f}" stroke="{SECONDARY}" stroke-width="1.2"/>'
             )
+            # Adjacent columns each independently label the tick nearest their
+            # shared boundary, and those two ticks land at (almost) the same
+            # pixel x — with both centred (text-anchor="middle") the digits
+            # ran together (e.g. "400" + "20" read as "40020"). Pull the
+            # rightmost tick of a non-last column left and the leftmost tick
+            # of a non-first column right, so the two labels open up a gap
+            # instead of colliding; every interior tick keeps its centred
+            # anchor.
+            anchor, dx = "middle", 0.0
+            if i == len(col_ticks) - 1 and col < n - 1:
+                anchor, dx = "end", -4.0
+            elif i == 0 and col > 0:
+                anchor, dx = "start", 4.0
             parts.append(
-                f'<text x="{gx:.1f}" y="{base_y + 24:.1f}" font-size="14" '
-                f'{tick_font} fill="{SECONDARY}" text-anchor="middle">'
+                f'<text x="{gx + dx:.1f}" y="{base_y + 24:.1f}" font-size="14" '
+                f'{tick_font} fill="{SECONDARY}" text-anchor="{anchor}">'
                 f'{_fmt_tick(float(t))}</text>'
             )
         # Column variable title, centred under its column.

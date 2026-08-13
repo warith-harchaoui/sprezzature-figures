@@ -25,6 +25,7 @@ from typing import Any, Dict, List, Optional
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
+from _scale import nice_ticks  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY, corner_radius, cycle_hues  # noqa: E402
 from _svg import bar_path, fmt_number, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
@@ -137,8 +138,11 @@ def build_svg(
     total = sum(float(r["value"]) for r in rows) or 1.0
     max_val = max(float(r["value"]) for r in rows) if rows else 1.0
 
-    y_step = max_val / 4.0
-    y_ticks = [i * y_step for i in range(5)]
+    # Nice round tick values (0/20/40/.../100 rather than raw quarters of
+    # max_val like 23/46/69/92) -- see _scale.nice_ticks. y_domain (>= max_val)
+    # is what bar heights actually scale against, so the tallest bar gets a
+    # small headroom gap below the plot's top edge instead of touching it.
+    y_ticks = nice_ticks(max_val)
     y_domain = y_ticks[-1] or 1.0
 
     plot_y = 118.0

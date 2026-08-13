@@ -20,17 +20,17 @@ which is why a weather chart can pack a whole wind field onto a coast
 without a single number.
 
 This example is a synoptic surface analysis of a **cold front sweeping
-off the US Northeast coast**. Ahead of the sprezzature (to the southeast) a
-warm, humid southwesterly flow streams up the seaboard; the blue sprezzature
+off the US Northeast coast**. Ahead of the front (to the southeast) a
+warm, humid southwesterly flow streams up the seaboard; the blue front
 line marks the leading edge; behind it a sharp wind shift brings a cold,
 gusty northwesterly gale — the classic post-frontal "backing and
 freshening" every mariner on that coast knows. The barbs make the shift
 legible at a glance: the staffs pivot roughly 180° and the tallies grow
-from a few barbs to pennants as the gale fills in behind the sprezzature.
+from a few barbs to pennants as the gale fills in behind the front.
 
 The module builds the SVG string by hand — no matplotlib / seaborn /
 plotly, and no Vega (angled staffs with tallied pennants and barbs, a
-curved sprezzature glyph with triangle teeth, and side-aware station labels
+curved front glyph with triangle teeth, and side-aware station labels
 are authored far more directly and compactly as raw SVG). It follows the
 sprezzature-* house style from :mod:`_style`: the Apple-ish palette, Roboto
 typography, ink ``#1D1D1F`` on secondary ``#6E6E73`` on a white
@@ -109,12 +109,12 @@ _BARB_ANGLE: float = 118.0   # tick angle relative to the staff, degrees
 # degrees (the compass bearing the wind blows FROM: 0 = north, 90 =
 # east, 180 = south, 270 = west). ``speed_kt`` is sustained wind speed
 # in knots. Values are a hand-built but physically faithful teaching
-# field: a warm SW flow ahead of the sprezzature, a wind shift and gale behind
+# field: a warm SW flow ahead of the front, a wind shift and gale behind
 # it — not an official forecast.
 #
 # ``(name, lon, lat, dir_from_deg, speed_kt, label_side)``
 _STATIONS: List[Tuple[Any, ...]] = [
-    # --- Cold, gusty NW gale BEHIND the sprezzature (upper-left / inland) ---
+    # --- Cold, gusty NW gale BEHIND the front (upper-left / inland) ---
     ("Buffalo",       -78.87, 42.89, 300, 45, "L"),
     ("Rochester",     -77.61, 43.16, 305, 40, "L"),
     ("Syracuse",      -76.15, 43.05, 310, 35, "L"),
@@ -125,14 +125,14 @@ _STATIONS: List[Tuple[Any, ...]] = [
     ("Harrisburg",    -76.88, 40.27, 305, 25, "L"),
     ("Montreal",      -73.57, 45.50, 320, 50, "L"),
     ("Burlington",    -73.21, 44.48, 320, 45, "L"),
-    # --- Right AT / just behind the sprezzature: the wind-shift line ---
+    # --- Right AT / just behind the front: the wind-shift line ---
     ("Hartford",      -72.69, 41.76, 255, 25, "R"),
     ("New York",      -74.01, 40.71, 285, 25, "L"),
     ("Philadelphia",  -75.16, 39.95, 295, 20, "L"),
-    # --- Warm sector, at the coast, ahead of the sprezzature ---
+    # --- Warm sector, at the coast, ahead of the front ---
     ("Boston",        -71.06, 42.36, 215, 30, "R"),
     ("Worcester",     -71.80, 42.26, 210, 20, "R"),
-    # --- Warm, humid SW flow AHEAD of the sprezzature (offshore / SE) ---
+    # --- Warm, humid SW flow AHEAD of the front (offshore / SE) ---
     ("Portland ME",   -70.26, 43.66, 205, 25, "R"),
     ("Nantucket",     -70.10, 41.28, 210, 30, "R"),
     ("Atlantic City", -74.42, 39.36, 215, 25, "R"),
@@ -155,14 +155,14 @@ DEMO_DATA: List[Dict[str, Any]] = [
 
 #: Stations we call out with a name label, mapped to the side the label
 #: sits on ("L" / "R"). Kept sparse so the field does not choke on text;
-#: these anchor the story (behind / at / ahead of the sprezzature).
+#: these anchor the story (behind / at / ahead of the front).
 _LABELLED: Dict[str, str] = {
     "Montreal":     "L",   # up-left staff -> drop the name below-left, clear
     "Buffalo":      "L",
     "Albany":       "L",
     "Pittsburgh":   "L",
     "Boston":       "R",   # warm barb leans down-right -> name to the open E
-    "New York":     "L",   # straddles the sprezzature; the cold (W) side is open
+    "New York":     "L",   # straddles the front; the cold (W) side is open
     "Philadelphia": "L",
     "Nantucket":    "R",   # at the ocean edge -> name out over the water
     "Norfolk":      "R",
@@ -394,17 +394,17 @@ def _barb_glyph(cx: float, cy: float, dir_from_deg: float, speed_kt: int, color:
 
 
 # ------------------------------------------------------------------
-# Airmass colour: warm ahead of the sprezzature, cold behind it
+# Airmass colour: warm ahead of the front, cold behind it
 # ------------------------------------------------------------------
 def _airmass_color(lon: float, lat: float, warm: str, cold: str) -> str:
-    """Pick warm / cold ink by which side of the sprezzature a station sits on.
+    """Pick warm / cold ink by which side of the front a station sits on.
 
     A station is "ahead" (warm) if it lies to the SE (higher lon at its
-    latitude) of the sprezzature polyline; "behind" (cold) otherwise. The sprezzature
+    latitude) of the front polyline; "behind" (cold) otherwise. The front
     latitude bounds are interpolated so the test tracks the sweeping
     boundary rather than a single meridian.
     """
-    # Interpolate the sprezzature's longitude at this latitude.
+    # Interpolate the front's longitude at this latitude.
     front_lon = _COASTLINE[0][0]  # placeholder, overwritten below
     pts = _FRONT
     front_lon = pts[0][0]
@@ -415,7 +415,7 @@ def _airmass_color(lon: float, lat: float, warm: str, cold: str) -> str:
             front_lon = lo0 + t * (lo1 - lo0)
             break
     else:
-        # Above/below the sprezzature's latitude range: clamp to the nearest end.
+        # Above/below the front's latitude range: clamp to the nearest end.
         front_lon = pts[0][0] if lat > pts[0][1] else pts[-1][0]
     return warm if lon > front_lon else cold
 
@@ -478,7 +478,7 @@ def build_svg(
         "half barb 5 knots. Ahead of the blue cold front a warm "
         "southwesterly flow (orange) streams up the coast at 20 to 40 knots; "
         "behind it a cold northwesterly gale (blue) reaches 45 to 50 knots, "
-        "the staffs having pivoted roughly 180 degrees across the sprezzature."
+        "the staffs having pivoted roughly 180 degrees across the front."
     )
     parts.append(f'<desc id="wb-desc">{desc}</desc>')
 
@@ -494,9 +494,9 @@ def build_svg(
     ]
     # OS-adaptive overrides (additive; the default render stays byte-identical
     # because every rule below lives inside a media query). The two airmasses —
-    # a warm southwesterly ahead of the sprezzature and a cold northwesterly behind
+    # a warm southwesterly ahead of the front and a cold northwesterly behind
     # it — are colour-coded, but that colour is redundant: position relative to
-    # the sprezzature line, the ~180-degree pivot of the barb staffs, and the two big
+    # the front line, the ~180-degree pivot of the barb staffs, and the two big
     # airmass call-outs all separate the sectors on their own. Under
     # prefers-contrast the barbs (staffs, ticks, pennants and station dots via
     # role "both") and the airmass headline labels deepen to their
@@ -517,7 +517,7 @@ def build_svg(
     # the right-hand legend card (#FBFBFD/#E6E6EB) — would glare as bright shapes
     # on a dark page, so they are remapped to quiet dark greys that still ground
     # the barbs. The white page darkens and the ink tiers flip to light via the
-    # ink-map default; the warm/cold barb hues and the blue sprezzature line are data
+    # ink-map default; the warm/cold barb hues and the blue front line are data
     # and untouched. No multiply groups.
     dark_css = os_dark_style(
         screen_blend=False,
@@ -542,7 +542,7 @@ def build_svg(
     )
     parts.append(
         f'<text x="{_MAP_X + 4:.1f}" y="110" font-size="21" fill="{_SUBTLE}">'
-        f'Surface analysis · warm southwesterly ahead of the sprezzature, a cold '
+        f'Surface analysis · warm southwesterly ahead of the front, a cold '
         f'northwesterly gale filling in behind — barb ticks tally knots</text>'
     )
 
@@ -661,7 +661,7 @@ def _station_label(name: str, cx: float, cy: float, side: str, rounded: int) -> 
 
     Each labelled station carries an explicit side (``"L"`` / ``"R"``) chosen
     so the text lands on the open side of its barb and away from the crowded
-    sprezzature line. The block drops straight below the dot at a fixed clearance
+    front line. The block drops straight below the dot at a fixed clearance
     and the two lines share one anchor and one line gap, so name and speed
     stack cleanly and every station reads at the same offset from its barb.
 
@@ -698,8 +698,8 @@ def _station_label(name: str, cx: float, cy: float, side: str, rounded: int) -> 
 def _front_glyph(fit: Tuple[float, float, float, float], color: str) -> List[str]:
     """Return the cold-front glyph: a smooth line with triangular teeth.
 
-    The teeth point toward the *warm* side (the direction the sprezzature is
-    moving), which for this SE-bound sprezzature is toward the ocean (screen
+    The teeth point toward the *warm* side (the direction the front is
+    moving), which for this SE-bound front is toward the ocean (screen
     right). Cold fronts wear filled triangles; this is the standard
     surface-analysis symbol.
     """
@@ -732,7 +732,7 @@ def _front_glyph(fit: Tuple[float, float, float, float], color: str) -> List[str
         pos = acc
         while pos < seg:
             bx, by = x0 + dx * pos, y0 + dy * pos
-            # Tooth base spans a little along the sprezzature; apex juts outward.
+            # Tooth base spans a little along the front; apex juts outward.
             b1x, b1y = bx - dx * 7.0, by - dy * 7.0
             b2x, b2y = bx + dx * 7.0, by + dy * 7.0
             ax, ay = bx + nx * tooth, by + ny * tooth
@@ -748,7 +748,7 @@ def _front_glyph(fit: Tuple[float, float, float, float], color: str) -> List[str
 def _smooth_path(pts: List[Tuple[float, float]]) -> str:
     """Return an SVG path ``d`` smoothing a polyline via Catmull-Rom.
 
-    Converts each Catmull-Rom span to a cubic Bézier so the sprezzature reads
+    Converts each Catmull-Rom span to a cubic Bézier so the front reads
     as a single graceful sweep.
     """
     if len(pts) < 3:
@@ -768,7 +768,7 @@ def _smooth_path(pts: List[Tuple[float, float]]) -> str:
 
 
 def _airmass_labels(fit: Tuple[float, float, float, float], warm: str, cold: str) -> List[str]:
-    """Return the two big airmass call-outs placed on their side of the sprezzature."""
+    """Return the two big airmass call-outs placed on their side of the front."""
     out: List[str] = []
     # Cold airmass (behind / NW).
     cx, cy = _to_screen(-79.6, 45.6, fit)
@@ -858,8 +858,8 @@ def _legend(warm: str, cold: str, front_col: str) -> List[str]:
         f'fill="{_INK}">Airmass</text>'
     )
     key = [
-        (warm, "Warm sector", "southwesterly, ahead of sprezzature"),
-        (cold, "Cold sector", "northwesterly, behind sprezzature"),
+        (warm, "Warm sector", "southwesterly, ahead of front"),
+        (cold, "Cold sector", "northwesterly, behind front"),
     ]
     ky = ey + 30.0
     for col, name, sub in key:
@@ -882,7 +882,7 @@ def _legend(warm: str, cold: str, front_col: str) -> List[str]:
     # Cold-front symbol row.
     out.append(
         f'<text x="{lx:.1f}" y="{ky + 6:.1f}" font-size="16" font-weight="700" '
-        f'fill="{_INK}">Cold sprezzature</text>'
+        f'fill="{_INK}">Cold front</text>'
     )
     fy = ky + 34.0
     fx0, fx1 = lx + 6.0, lx + 96.0

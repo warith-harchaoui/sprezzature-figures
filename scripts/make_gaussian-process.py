@@ -25,6 +25,7 @@ Author
 
 from __future__ import annotations
 
+import math
 import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -37,6 +38,25 @@ from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
+
+
+def _nice_step(span: float, target_ticks: int = 5) -> float:
+    """Pick a 1/2/5-times-a-power-of-ten step so ``span / step`` ~= `target_ticks`.
+
+    Both axes here are data-driven windows that cross zero (x is roughly
+    symmetric around 0, y is a padded posterior range), so `_scale.nice_ticks`
+    (zero-anchored, rounds the ceiling) doesn't fit. Rounding just the step
+    (Heckbert 1990) turns a naive `span / n` divide -- which used to print
+    labels like `-3.8`/`-1.2`/`1.2`/`3.8` on x and `-1.5`/`-0.5`/`1.6`/`2.6`
+    on y -- into round, scannable values.
+    """
+    if span <= 0:
+        return 1.0
+    raw_step = span / target_ticks
+    exponent = math.floor(math.log10(raw_step))
+    fraction = raw_step / (10.0**exponent)
+    nice_fraction = 1.0 if fraction < 1.5 else 2.0 if fraction < 3 else 5.0 if fraction < 7 else 10.0
+    return nice_fraction * (10.0**exponent)
 
 COLOR_BAND = "#3E9BFF"
 COLOR_SAMPLE = "#9CC7FF"
@@ -160,19 +180,22 @@ def build_svg(
     )
     parts.append(f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>')
 
-    # ---- gridlines ----
-    y_ticks = 5
-    for i in range(y_ticks + 1):
-        val = (y_min - pad) + ((y_max + pad) - (y_min - pad)) * i / y_ticks
-        ty = y_for(val)
-        parts.append(
-            f'<line x1="{plot_x:.1f}" y1="{ty:.1f}" x2="{plot_x + plot_w:.1f}" y2="{ty:.1f}" '
-            f'stroke="{GRIDLINE}" stroke-width="1"/>'
-        )
-        parts.append(
-            f'<text x="{plot_x - 10:.1f}" y="{ty + 4:.1f}" font-size="11" font-family="{mono_family}" '
-            f'fill="{SECONDARY}" text-anchor="end">{val:.1f}</text>'
-        )
+    # ---- gridlines (round "nice" steps, not a naive 5-way split) ----
+    y_axis_lo, y_axis_hi = y_min - pad, y_max + pad
+    y_step = _nice_step(y_axis_hi - y_axis_lo, 5)
+    val = math.floor(y_axis_lo / y_step) * y_step
+    while val <= y_axis_hi + 1e-9:
+        if val >= y_axis_lo - 1e-9:
+            ty = y_for(val)
+            parts.append(
+                f'<line x1="{plot_x:.1f}" y1="{ty:.1f}" x2="{plot_x + plot_w:.1f}" y2="{ty:.1f}" '
+                f'stroke="{GRIDLINE}" stroke-width="1"/>'
+            )
+            parts.append(
+                f'<text x="{plot_x - 10:.1f}" y="{ty + 4:.1f}" font-size="11" font-family="{mono_family}" '
+                f'fill="{SECONDARY}" text-anchor="end">{val:.1f}</text>'
+            )
+        val += y_step
     parts.append(
         f'<text x="18" y="{plot_y + plot_h / 2:.1f}" font-size="13" fill="{INK}" '
         f'text-anchor="middle" transform="rotate(-90 18 {plot_y + plot_h / 2:.1f})">f(x)</text>'
@@ -223,14 +246,16 @@ def build_svg(
         f'<line x1="{plot_x:.1f}" y1="{axis_y:.1f}" x2="{plot_x + plot_w:.1f}" y2="{axis_y:.1f}" '
         f'stroke="{INK}" stroke-width="1.2"/>'
     )
-    x_ticks = 8
-    for i in range(x_ticks + 1):
-        val = x_lo + (x_hi - x_lo) * i / x_ticks
-        tx = x_for(val)
-        parts.append(
-            f'<text x="{tx:.1f}" y="{axis_y + 20:.1f}" font-size="11" font-family="{mono_family}" '
-            f'fill="{SECONDARY}" text-anchor="middle">{val:.1f}</text>'
-        )
+    x_step = _nice_step(x_hi - x_lo, 8)
+    val = math.floor(x_lo / x_step) * x_step
+    while val <= x_hi + 1e-9:
+        if val >= x_lo - 1e-9:
+            tx = x_for(val)
+            parts.append(
+                f'<text x="{tx:.1f}" y="{axis_y + 20:.1f}" font-size="11" font-family="{mono_family}" '
+                f'fill="{SECONDARY}" text-anchor="middle">{val:.1f}</text>'
+            )
+        val += x_step
     parts.append(
         f'<text x="{plot_x + plot_w / 2:.1f}" y="{axis_y + 42:.1f}" font-size="13" '
         f'fill="{INK}" text-anchor="middle">x</text>'

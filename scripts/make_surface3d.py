@@ -22,7 +22,7 @@ from typing import Dict, List, Optional, Tuple
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _svg import svg_open  # noqa: E402
+from _svg import svg_open, tooltip_bubble  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
@@ -172,6 +172,22 @@ def build_svg(
         'depth-sorted mesh quads shaded on a blue ramp by height, from about -1 '
         'at the edges to 3 at the peak, with a height legend.</desc>'
     )
+    # The mesh geometry is static (a projected isometric render, no orbit
+    # controls), but the one genuinely useful reading -- the peak's exact
+    # height -- was previously not exposed anywhere except the rounded
+    # legend endpoint. A single hover/focus marker at the peak vertex gives
+    # that exact value without cluttering the 841 tiny mesh quads with their
+    # own tooltips (which would bloat the file and be nearly impossible to
+    # aim a pointer at individually).
+    hover_css = (
+        ".peak-hit{cursor:pointer;}"
+        ".peak-hit:hover+.peak-dot,.peak-hit:focus+.peak-dot{r:6;}"
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        ".peak-hit:hover+.peak-dot+.tip,.peak-hit:focus+.peak-dot+.tip{opacity:1}"
+        "@media (prefers-reduced-motion: reduce){.peak-dot{transition:none;}"
+        ".tip{transition:none}}"
+    )
+    parts.append(f"<style>{hover_css}</style>")
     parts.append(f'<rect width="{_WIDTH}" height="{_HEIGHT}" fill="{_BG}"/>')
     parts.append(
         f'<text x="40" y="56" font-size="26" font-weight="600" fill="{_INK}" '
@@ -189,6 +205,27 @@ def build_svg(
             f'stroke-width="0.6" stroke-linejoin="round"/>'
         )
     parts.append('</g>')
+
+    # ---- peak marker: the one point on the surface worth an exact reading ----
+    peak_i, peak_j = np.unravel_index(np.argmax(zz), zz.shape)
+    peak_px, peak_py = float(px[peak_i, peak_j]), float(py[peak_i, peak_j])
+    peak_z = float(zz[peak_i, peak_j])
+    parts.append(
+        f'<circle class="peak-hit" tabindex="0" cx="{peak_px:.1f}" cy="{peak_py:.1f}" '
+        f'r="10" fill="transparent" role="img" aria-label="Peak height {peak_z:.2f}"/>'
+    )
+    parts.append(
+        f'<circle class="peak-dot" cx="{peak_px:.1f}" cy="{peak_py:.1f}" r="4" '
+        f'fill="#FFFFFF" stroke="{_shade(1.0)}" stroke-width="2"/>'
+    )
+    parts.append(
+        tooltip_bubble(
+            peak_px, peak_py - 14,
+            ["Peak", f"height {peak_z:.2f}"],
+            anchor="middle", canvas_w=_WIDTH, canvas_h=_HEIGHT,
+            ink=_INK, secondary=_SUBTLE, border="#E5E5EA",
+        )
+    )
 
     # Height legend (vertical colour bar, left).
     lx, lt, lb, lw = 56.0, 200.0, 560.0, 22.0

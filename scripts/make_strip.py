@@ -31,6 +31,7 @@ from typing import Any, Dict, List, Optional
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
+from _scale import nice_ticks_range  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY, cycle_hues  # noqa: E402
 from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
@@ -101,8 +102,10 @@ def build_svg(
     groups = [g for g in GROUPS if g in seen_groups] + [g for g in seen_groups if g not in GROUPS]
     colors = _group_colors(groups, accessibility, theme=theme)
     values = [float(r["value"]) for r in rows]
-    v_min, v_max = min(values), max(values)
-    pad = (v_max - v_min) * 0.1 or 1.0
+    raw_v_min, raw_v_max = min(values), max(values)
+    pad = (raw_v_max - raw_v_min) * 0.1 or 1.0
+    y_gridline_vals = nice_ticks_range(raw_v_min - pad, raw_v_max + pad, 5)
+    v_min, v_max = y_gridline_vals[0], y_gridline_vals[-1]
 
     plot_x, plot_y = 60.0, 118.0
     right_margin, bottom_reserved = 30.0, 60.0
@@ -113,7 +116,7 @@ def build_svg(
     jitter_w = bin_w * 0.55
 
     def y_for(v: float) -> float:
-        return plot_y + plot_h - (v - (v_min - pad)) / ((v_max + pad) - (v_min - pad)) * plot_h
+        return plot_y + plot_h - (v - v_min) / ((v_max - v_min) or 1.0) * plot_h
 
     rng = random.Random(41)
     parts: List[str] = []
@@ -141,9 +144,7 @@ def build_svg(
     parts.append(f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>')
 
     # ---- gridlines ----
-    y_ticks = 5
-    for i in range(y_ticks + 1):
-        val = (v_min - pad) + ((v_max + pad) - (v_min - pad)) * i / y_ticks
+    for val in y_gridline_vals:
         ty = y_for(val)
         parts.append(
             f'<line x1="{plot_x:.1f}" y1="{ty:.1f}" x2="{plot_x + plot_w:.1f}" y2="{ty:.1f}" '

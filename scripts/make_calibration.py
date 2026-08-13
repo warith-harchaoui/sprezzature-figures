@@ -58,6 +58,7 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
+from _scale import nice_ticks  # noqa: E402
 from _style import GRIDLINE, leveled_colors, load_palette, os_dark_style  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
@@ -601,7 +602,15 @@ def build_svg(
     # --- confidence histogram (bottom panel) ---------------------
     # How many predictions the model made in each bin. Bars share the
     # top view's x-axis exactly (same sx), so the two panels align.
-    h_max = max(counts) if counts else 1
+    h_max_raw = max(counts) if counts else 1
+    # The "0, half, max" ticks below were labelled off the *raw* max count
+    # (e.g. 1017), which the code comment already called "rounded to a clean
+    # number" without actually doing so -- true only by coincidence when the
+    # raw max happens to look round. nice_ticks (see _scale.py) with a fine
+    # n=10 step gives a genuinely round ceiling (1200 rather than 1017) with
+    # modest ~18% headroom, so the tallest bar no longer touches the panel's
+    # top edge exactly but every label is a clean number.
+    h_max = nice_ticks(h_max_raw, n=10)[-1] or h_max_raw
     h_ax_bottom = hist_y + hist_h
 
     def hy(count: float) -> float:

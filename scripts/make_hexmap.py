@@ -72,7 +72,10 @@ _INK: str = "#1D1D1F"       # primary text
 _SUBTLE: str = "#6E6E73"    # secondary text
 _SEA: str = "#DCE7F4"       # water / out-of-extent fill (faint blue)
 _LAND: str = "#FBFCFE"      # land silhouette under the hex lattice
-_EMPTY: str = "#E9ECF1"     # a land hex that caught zero points
+_EMPTY: str = "#DDDDE2"     # a land hex that caught zero points (kept clearly
+                             # greyer/darker than the palest ramp step —
+                             # #E2ECFA at count=1 — so "no data" never reads
+                             # as "lowest density")
 _STROKE: str = "#FFFFFF"    # white casing between hexes
 _BG: str = "#FFFFFF"        # background
 _FOCUS: str = "#0A4DA0"     # focus-ring blue

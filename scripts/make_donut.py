@@ -97,10 +97,20 @@ def build_svg(
     rows = sorted(data if data else DEMO_DATA, key=lambda r: -float(r["visits"]))
     total = sum(float(r["visits"]) for r in rows) or 1.0
     palette = load_palette(accessibility, theme=theme)
+    # Order matters: a donut's slices sit *adjacent* around a circle (and the
+    # last slice always wraps back to touch the first), so whichever two hues
+    # land next to each other need to stay distinguishable under colour-vision
+    # deficiency. The naive Red/Orange/Yellow/Green "traffic light" sequence
+    # puts Red and Green -- the single worst protanopia/deuteranopia pair --
+    # directly adjacent for the common 4-6 slice case (Green wraps back onto
+    # Red). This ordering front-loads a maximally CVD-distinct core
+    # (Blue/Orange/Purple/Teal, the safest quartet for 2-4 slice donuts, the
+    # most common count) and only reaches the Red/Green pair once 7+ slices
+    # are in play, by which point they're separated by Yellow on one side.
     hue_order = [palette.get(h, d) for h, d in (
-        ("Red", "#FF3B30"), ("Orange", "#FF9500"), ("Yellow", "#FFCC00"),
-        ("Green", "#28CD41"), ("Teal", "#79DBDC"), ("Blue", "#007AFF"),
-        ("Purple", "#AF52DE"), ("Pink", "#FF2D55"),
+        ("Blue", "#007AFF"), ("Orange", "#FF9500"), ("Purple", "#AF52DE"),
+        ("Teal", "#79DBDC"), ("Yellow", "#FFCC00"), ("Red", "#FF3B30"),
+        ("Green", "#28CD41"), ("Pink", "#FF2D55"),
     )]
     colors = {r["source"]: hue_order[i % len(hue_order)] for i, r in enumerate(rows)}
 

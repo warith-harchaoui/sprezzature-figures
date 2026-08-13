@@ -161,10 +161,16 @@ def build_svg(
     # ------------------------------------------------------------------
     all_tops = [b["base"] + (b["value"] if b["raw"] >= 0 else 0) for b in bars]
     all_bots = [b["base"] + (0 if b["raw"] >= 0 else -b["value"]) for b in bars]
-    # For total bars base=0, value=actual total
-    all_vals = [b["raw"] for b in bars]
-    data_min = min(0.0, min(all_bots + all_vals))
-    data_max = max(all_tops + all_vals)
+    # `all_tops`/`all_bots` already give the true pixel extent of every
+    # drawn rectangle (including total bars, where base=0 and value=the
+    # total). A raw per-row *delta* (e.g. "R&D investment" at -11.6) used to
+    # also feed into this min/max via `all_vals = [b["raw"] for b in bars]`
+    # -- but a delta's magnitude is not a y-axis position (the R&D bar
+    # itself sits entirely between +62.6 and +74.2), so folding -11.6 into
+    # `data_min` pulled the axis down to an unused "-20" gridline with no
+    # bar anywhere near it. Only the actual rectangle extents belong here.
+    data_min = min(0.0, min(all_bots))
+    data_max = max(all_tops)
     headroom = (data_max - data_min) * 0.15
     y_min = data_min - headroom
     y_max = data_max + headroom

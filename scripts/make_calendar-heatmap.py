@@ -169,6 +169,28 @@ def build_svg(
             f'text-anchor="end">{xml_escape(day)}</text>'
         )
 
+    # ---- week-index column labels ----
+    # The data model carries only a ``week`` index, not a real calendar date
+    # (see the ``data`` parameter docs), so this generator cannot show real
+    # month names the way GitHub's contribution graph does -- doing so would
+    # mean fabricating dates the caller never supplied. What it *can* give a
+    # reader is which of the n_weeks columns they're looking at, so the chart
+    # isn't left with zero temporal reference across its horizontal axis.
+    # Every 4th week (~monthly cadence) plus the last, mirroring the sparse
+    # month-label spacing convention without inventing month names.
+    label_weeks = list(range(0, n_weeks, 4)) if n_weeks else []
+    # Only tack on the final week if it isn't crowding the previous label
+    # (e.g. 18 weeks: periodic labels land on 1/5/9/13/17 -- 18 would sit
+    # right next to 17 and collide).
+    if n_weeks and (not label_weeks or n_weeks - 1 - label_weeks[-1] >= 2):
+        label_weeks.append(n_weeks - 1)
+    for wi in label_weeks:
+        tx = plot_x + wi * cell_w + cell_w / 2
+        parts.append(
+            f'<text x="{tx:.1f}" y="{plot_y - 8:.1f}" font-size="10" fill="{SECONDARY}" '
+            f'text-anchor="middle">Wk {weeks[wi] + 1}</text>'
+        )
+
     # ---- cells (grid marks: never rounded, per Sprezzature Corner Policy) ----
     for wi, week in enumerate(weeks):
         for di, day in enumerate(DAYS):

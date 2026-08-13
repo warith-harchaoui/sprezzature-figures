@@ -28,7 +28,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY  # noqa: E402
-from _scale import log_position, log_ticks  # noqa: E402
+from _scale import log_position, log_ticks, nice_ticks_range  # noqa: E402
 from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
@@ -168,7 +168,11 @@ def build_svg(
         y0, y1 = y_min - pad, y_max + pad
         if y_min >= 0:  # a non-negative quantity never dips below zero on the axis
             y0 = max(0.0, y0)
-        y_tick_vals = [y0 + (y1 - y0) * i / 6 for i in range(7)]
+        # Nice round tick values (see _scale.nice_ticks_range) instead of raw
+        # sixths of the padded [y0, y1] span, which produced labels like
+        # 36.0/52.6/69.2/85.9/102.5/119.1/135.7. Clipped back to [y0, y1] so
+        # no gridline is drawn outside the plot rectangle.
+        y_tick_vals = [t for t in nice_ticks_range(y0, y1, n=6) if y0 - 1e-9 <= t <= y1 + 1e-9]
 
     def _fmt(v: float) -> str:
         """Tick / tooltip format adapted to the value range (small values keep decimals)."""

@@ -569,7 +569,13 @@ def build(
         return R_MIN + math.sqrt(pop / pop_max) * (R_MAX - R_MIN)
 
     svg = [
-        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" '
+        # width/height alongside viewBox (matching every other generator's
+        # `_svg.svg_open` convention, and the same fix applied to the sibling
+        # `make_gapminder.py`) so the document has a sensible intrinsic size
+        # wherever it's embedded without relying on a parent page's own CSS --
+        # a viewBox-only SVG has no intrinsic size, and a plain `<img>`/
+        # direct-open would fall back to the UA default (300x150 CSS px).
+        f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}" '
         f'font-family="{chrome_stack_for_theme(theme)}" role="img" aria-labelledby="gm-t gm-d">',
         f'<title id="gm-t">{lab["title_a11y"]}, {years[0]} to {years[-1]}</title>',
         f'<desc id="gm-d">{lab["desc"]}</desc>',

@@ -33,7 +33,7 @@ from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
 
-ITEMS = ["Alpha", "Beta", "Gamma", "Delta", "Eps"]
+ITEMS = ["Alpha", "Beta", "Gamma", "Delta", "Epsilon"]
 PERIODS = ["2023", "2024"]
 
 DEMO_DATA: List[Dict[str, Any]] = [
@@ -41,7 +41,7 @@ DEMO_DATA: List[Dict[str, Any]] = [
     {"item": "Beta", "period": "2023", "v": 60}, {"item": "Beta", "period": "2024", "v": 48},
     {"item": "Gamma", "period": "2023", "v": 35}, {"item": "Gamma", "period": "2024", "v": 61},
     {"item": "Delta", "period": "2023", "v": 51}, {"item": "Delta", "period": "2024", "v": 52},
-    {"item": "Eps", "period": "2023", "v": 28}, {"item": "Eps", "period": "2024", "v": 40},
+    {"item": "Epsilon", "period": "2023", "v": 28}, {"item": "Epsilon", "period": "2024", "v": 40},
 ]
 
 

@@ -17,10 +17,11 @@ The generator builds the SVG string by hand (no matplotlib / seaborn /
 plotly, no Vega) so the log-scale geometry, the weight-scaled boxes,
 and the diamond are fully under our control, and matches the sprezzature-*
 house style: Roboto, the Apple-ish palette, rounded corners, ink
-``#1D1D1F``, secondary ``#6E6E73``, white background. Rows draw in with
-a staggered pure-SMIL animation (whiskers extend, boxes fade up), and
-every row and the diamond carry a native ``<title>`` tooltip plus a
-:hover / :focus highlight — no JavaScript.
+``#1D1D1F``, secondary ``#6E6E73``, white background. Every row and the
+pooled diamond draw fully settled, at rest (a load-time fade-in was tried
+and dropped -- static rasterizers don't run CSS animations, so it made
+every raster/PDF export of this figure render blank), and each carries a
+native ``<title>`` tooltip plus a :hover / :focus highlight — no JavaScript.
 
 The fake scenario pools **eight randomised trials of a home
 blood-pressure telemonitoring programme** on the odds of reaching a
@@ -294,11 +295,6 @@ def build_svg(
         "{stroke:" + keyline + ";stroke-width:2.4}",
         ".row:focus{outline:none}",
         ".row:hover .rowbg,.row:focus .rowbg{fill:#F5F5F7}",
-        "@keyframes fp-in{to{opacity:1}}",
-        "@media (prefers-reduced-motion:reduce){"
-        ".grow{animation:none}"
-        "[data-anim]{opacity:1 !important;animation:none !important}"
-        "}",
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}",
         ".hit:hover+.tip,.hit:focus+.tip{opacity:1}",
         "@media (prefers-reduced-motion:reduce){.tip{transition:none}}",
@@ -365,15 +361,18 @@ def build_svg(
             f'weight {pct}% — {sig_note}'
         )
 
-        # A short staggered fade+rise as each row draws in on load (the CSS
-        # already carried an orphaned reduced-motion guard for a `data-anim`
-        # attribute; this is that animation). Purely additive: the base SVG
-        # (and any raster export, which never runs the transition) settles
-        # to the same finished row this whisker/box/cap markup already drew.
+        # Rows draw fully settled, at rest -- a load-time CSS opacity
+        # animation was tried here before (an inline `opacity:0` with an
+        # `animation:...forwards` meant to fade each row in), but any static
+        # rasterizer (resvg, used for every PNG/PDF export and the gallery
+        # thumbnail) paints the SVG's presentation attributes as declared
+        # and does not execute CSS animations, so it rendered the inline
+        # `opacity:0` verbatim and permanently -- the entire chart body
+        # (every trial row and the pooled diamond) came out blank in every
+        # raster export. Static-at-rest avoids that failure mode entirely;
+        # :hover / :focus highlighting (below) still carries the interactivity.
         parts.append(
-            f'<g class="row hit" data-anim="1" tabindex="0" role="img" aria-label="{tip}" '
-            f'style="opacity:0;animation:fp-in .5s ease forwards;'
-            f'animation-delay:{i * 70}ms">'
+            f'<g class="row hit" tabindex="0" role="img" aria-label="{tip}">'
         )
         parts.append(f"<title>{tip}</title>")
         # Full-width hover band for a comfortable target.
@@ -454,9 +453,7 @@ def build_svg(
         f'(95% CI {lo_p:.2f}–{hi_p:.2f}), {pooled_het}'
     )
     parts.append(
-        f'<g class="row hit" data-anim="1" tabindex="0" role="img" aria-label="{pooled_tip}" '
-        f'style="opacity:0;animation:fp-in .5s ease forwards;'
-        f'animation-delay:{n_rows * 70}ms">'
+        f'<g class="row hit" tabindex="0" role="img" aria-label="{pooled_tip}">'
     )
     parts.append(f"<title>{pooled_tip}</title>")
     parts.append(

@@ -169,7 +169,12 @@ def build_svg(
         fx, fy = float(r["fx"]), float(r["fy"])
         mag = math.hypot(fx, fy)
         t = mag / max_mag
-        size = 3.0 + t * (tri_max - 3.0)
+        # A 3px floor left near-zero-magnitude arrows (the vortex core, where
+        # direction is most delicate) both tiny AND near-white-filled
+        # (ramp's t=0 stop is #EAF3FF) -- functionally invisible against the
+        # white canvas. Raise the floor so every arrow stays a legible
+        # shape regardless of magnitude.
+        size = 5.5 + t * (tri_max - 5.5)
         cx, cy = x_for(x), y_for(y)
         # Screen-space rotation: y is flipped between data (up-positive) and
         # SVG (down-positive), so the visual angle is atan2(-fy, fx); a
@@ -181,7 +186,11 @@ def build_svg(
         parts.append(
             f'<g class="hit" transform="translate({cx:.1f},{cy:.1f}) rotate({angle_deg:.1f})" '
             f'tabindex="0" role="img" aria-label="{xml_escape(tip)}">'
-            f'<polygon points="{points}" fill="{_ramp_hex(t, theme)}" stroke="{BG}" stroke-width="0.5"/>'
+            # Stroke was previously BG (white-on-white -- invisible); a
+            # low-opacity ink edge keeps every triangle's silhouette
+            # readable even at the pale end of the magnitude ramp.
+            f'<polygon points="{points}" fill="{_ramp_hex(t, theme)}" stroke="{INK}" '
+            f'stroke-opacity="0.22" stroke-width="0.75"/>'
             f'</g>'
         )
         parts.append(

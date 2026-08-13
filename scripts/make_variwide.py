@@ -432,12 +432,21 @@ def build_svg(
     # per-capita labels would overprint if centred. Sweep them apart on x
     # (same idea as the baseline callouts) and lift each a little higher,
     # then drop a hairline leader from the label down to the column top.
-    top_gap = 62.0
+    # The gap must clear each label's own rendered width (a fixed 62px pitch
+    # used to sit narrower than a 6-character "$52.7k" at 20px bold mono --
+    # about 74px wide -- so adjacent labels like "$52.7k"/"$48.9k" visibly
+    # overlapped; this mirrors pass 3's width-aware min-gap below).
+    top_font_size = 20.0
+    top_char_w_ratio = 0.62  # Roboto Mono glyph width as a fraction of font-size
+    top_label_widths = [len(f"${float(col['gdp_cap']):.1f}k") * top_font_size * top_char_w_ratio for col in cols]
     top_anchors = [float(col["cx"]) for col in cols]
     top_placed: List[float] = []
-    for ax in top_anchors:
-        target = ax if not top_placed else max(ax, top_placed[-1] + top_gap)
-        top_placed.append(target)
+    for i, ax in enumerate(top_anchors):
+        if not top_placed:
+            top_placed.append(ax)
+            continue
+        gap = max(62.0, (top_label_widths[i - 1] + top_label_widths[i]) / 2.0 + 12.0)
+        top_placed.append(max(ax, top_placed[-1] + gap))
     top_overflow = top_placed[-1] - (m_left + plot_w)
     if top_overflow > 0:
         top_placed = [p - top_overflow for p in top_placed]

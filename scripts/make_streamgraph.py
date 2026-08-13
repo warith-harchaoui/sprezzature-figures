@@ -530,10 +530,18 @@ def build_svg(
         # saturated ribbons, ink on the light ones (Orange). Shared helper, so
         # the rule matches every other figure in the gallery.
         ink = best_text_colour(colors[i])
-        # Two-line label when the band is tall enough: genre name over its share
-        # that year; otherwise the name alone, optically centred. Both lines use
-        # the one shared type scale so sizes never drift band to band.
-        share_here = float(shares_pct[i, yi])
+        # Two-line label when the band is tall enough: genre name over its
+        # share, otherwise the name alone, optically centred. Both lines use
+        # the one shared type scale so sizes never drift band to band. The
+        # anchor point (yi) is picked purely for legible *placement* (the
+        # ribbon's thickest, calmest year, excluding the crowded edges) --
+        # the percentage/year printed always reports the *final* year so it
+        # never contradicts the end-of-river leader label a few pixels to
+        # its right. Printing the anchor year's own value instead used to
+        # show two different (year, %) pairs for the same genre side by
+        # side (e.g. "33% in 2022" on-band vs "34% in 2024" in the leader),
+        # which read as inconsistent data rather than a placement choice.
+        share_here = float(shares_pct[i, n_years - 1])
         two_line = band_h_px > 40
         band_labels.append(
             f'<text x="{_fmt(cx)}" y="{_fmt(cy - (5 if two_line else -6))}" '
@@ -544,7 +552,7 @@ def build_svg(
             band_labels.append(
                 f'<text x="{_fmt(cx)}" y="{_fmt(cy + 18)}" text-anchor="middle" '
                 f'font-size="{_FS_VALUE}" font-family="{mono_family}" fill="{ink}" '
-                f'fill-opacity="0.85">{share_here:.0f}% in {int(years[yi])}</text>'
+                f'fill-opacity="0.85">{share_here:.0f}% in {int(years[n_years - 1])}</text>'
             )
 
     # ---- end-of-river leader labels (right margin, ink on white) ---------- #

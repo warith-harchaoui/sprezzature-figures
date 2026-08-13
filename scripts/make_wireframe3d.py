@@ -15,9 +15,12 @@ segments back-to-front (painter's algorithm) and paints them in the sprezzature-
 house style — Roboto type, the Apple-system palette, ink ``#1D1D1F`` on a
 white ground, rounded framing. Depth is reinforced twice over: nearer mesh
 lines are drawn darker and thicker on a house blue→teal ramp, and the whole
-lattice turns slowly on its vertical axis via a single pure-SMIL
-``<animateTransform type="rotate">`` so a still reader still perceives the
-solid (the rotation is what sells "3D" on a flat page).
+lattice turns slowly on its vertical axis for an honest 3D turn -- not a
+single flat ``<animateTransform type="rotate">`` (a 2D screen-space spin,
+which would distort the perspective), but a re-projection of every mesh
+edge's endpoints at each keyframe azimuth, each carrying its own pure-SMIL
+``<animate>`` tags on ``x1``/``y1``/``x2``/``y2`` -- so a still reader still
+perceives the solid (the rotation is what sells "3D" on a flat page).
 
 The example data is illustrative: a radially-symmetric ``sinc``-like ripple,
 the textbook "drop in a pond" surface a wireframe is made to show — one
@@ -390,9 +393,10 @@ def _mesh_svg(
     """Paint the depth-shaded mesh, optionally as a true-3D azimuth turntable.
 
     Each mesh edge becomes one ``<line>``. Under animation, every edge carries
-    two ``<animate>`` tags that drive its endpoints through the projected
-    coordinates at each keyframe azimuth — an honest 3D turn (the surface
-    genuinely rotates about its vertical axis, unlike a flat 2D ``rotate``).
+    four ``<animate>`` tags (``x1``, ``y1``, ``x2``, ``y2``) that drive its
+    two endpoints through the projected coordinates at each keyframe azimuth
+    — an honest 3D turn (the surface genuinely rotates about its vertical
+    axis, unlike a flat 2D ``rotate``).
     Colour and stroke width follow the *reference* frame's depth so nearer
     lines stay darker/thicker; the effect is stable for the gentle rock used
     here.
@@ -496,8 +500,10 @@ def build_svg(
         The sampled surface grids from :func:`_sample_surface`.
     animate : bool, optional
         When ``True`` (default) the lattice turns slowly on its vertical
-        axis via a single pure-SMIL ``<animateTransform>``. When ``False`` a
-        clean frozen frame is emitted (used for the static variant / stills).
+        axis via per-edge pure-SMIL ``<animate>`` tags re-projecting every
+        endpoint at each keyframe azimuth (see :func:`_mesh_svg`). When
+        ``False`` a clean frozen frame is emitted (used for the static
+        variant / stills), with no ``<animate>`` tags at all.
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`
         (``"self-contained"`` / ``"external"`` / ``"static"``). Defaults to

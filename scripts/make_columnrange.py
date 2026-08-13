@@ -28,6 +28,7 @@ from typing import Any, Dict, List, Optional
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
+from _scale import nice_ticks_range  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY, cycle_hues  # noqa: E402
 from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
@@ -168,10 +169,12 @@ def build_svg(
         cursor += 18 + 7.2 * len(c) + 20
 
     # ---- y-axis gridlines ----
-    y_ticks = 6
-    y_step = (y1 - y0) / y_ticks
-    for i in range(y_ticks + 1):
-        val = y0 + i * y_step
+    # Nice round tick values (see _scale.nice_ticks_range) instead of raw
+    # sixths of the padded [y0, y1] span, which produced labels like
+    # -8/-1/7/14/22/30/37. Clipped back to [y0, y1] so no gridline is drawn
+    # outside the plot rectangle.
+    y_tick_vals = [t for t in nice_ticks_range(y0, y1, n=6) if y0 - 1e-9 <= t <= y1 + 1e-9]
+    for val in y_tick_vals:
         ty = y_for(val)
         parts.append(
             f'<line x1="{plot_x:.1f}" y1="{ty:.1f}" x2="{plot_x + plot_w:.1f}" y2="{ty:.1f}" '

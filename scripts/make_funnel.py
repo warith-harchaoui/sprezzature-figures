@@ -46,12 +46,19 @@ LABEL_GUTTER = 160
 
 # House palette — six distinct hues, darker at the top to guide the eye
 STAGE_COLORS = [
+    # Adjacent stages in a funnel share an edge (there's no gap between
+    # trapezoids, unlike a bar chart), so any two consecutive colours here
+    # need to stay distinguishable under colour-vision deficiency. Red and
+    # Green -- the one pair that collapses under protanopia/deuteranopia --
+    # used to sit at positions 4 and 5 (directly touching); Red is moved to
+    # the end so it instead borders Turquoise, a safe pair under every CVD
+    # type, and Green now borders Turquoise on its other side too.
     "#007AFF",   # Blue (top: largest audience)
     "#AF52DE",   # Purple
     "#FF9500",   # Orange
     "#28CD41",   # Green
-    "#FF3B30",   # Red
-    "#79DBDC",   # Turquoise (bottom: smallest group)
+    "#79DBDC",   # Turquoise
+    "#FF3B30",   # Red (bottom: smallest group)
 ]
 
 
@@ -155,8 +162,17 @@ def build_svg(
             next_count = float(data[i + 1]["count"])
             half_bot = (next_count / max_count) * half_max
         else:
-            # Last stage: taper to a flat bottom (30px half-width)
-            half_bot = 30.0
+            # Last stage has no "next" count to taper to, so it gets a small
+            # flat bottom instead of tapering to a knife-edge point. Capped
+            # at `half_top` (never wider): an uncapped fixed 30px flat bottom
+            # made the final segment visually *flare outward* whenever its
+            # own top was already narrower than 30px -- which is the common
+            # case, since the last funnel stage is usually the smallest count
+            # by far (here, 842 users vs. a 124,800-user first stage put
+            # half_top around 3px, so a flat 30px bottom drew a bulging
+            # onion-dome shape that read as "this stage grew," the opposite
+            # of what a monotonically-shrinking funnel should ever show).
+            half_bot = min(30.0, half_top)
 
         y_top = MARGIN_V + i * slice_h
         y_bot = y_top + slice_h

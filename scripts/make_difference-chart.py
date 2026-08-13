@@ -418,7 +418,7 @@ def build_svg(
         ax_labels.append(
             f'<text x="{_fmt(m_left - 16)}" y="{_fmt(gy + 5)}" text-anchor="end" '
             f'font-size="15" font-family="{_mono_family}" fill="{_SECONDARY}">'
-            f"${v / 1000:.2f}M</text>"
+            f"${v:.0f}K</text>"
         )
         v += step
 
@@ -555,7 +555,7 @@ def build_svg(
     end_labels.append(
         f'<text x="{_fmt(lbl_x)}" y="{_fmt(ay + 17)}" font-size="14" '
         f'font-family="{_mono_family}" fill="{_SECONDARY}">'
-        f"${actual[-1] / 1000:.2f}M</text>"
+        f"${actual[-1]:.0f}K</text>"
     )
     end_labels.append(
         f'<line x1="{_fmt(p_end[0])}" y1="{_fmt(p_end[1])}" '
@@ -569,7 +569,7 @@ def build_svg(
     end_labels.append(
         f'<text x="{_fmt(lbl_x)}" y="{_fmt(py_ + 17)}" font-size="14" '
         f'font-family="{_mono_family}" fill="{_SECONDARY}">'
-        f"${plan[-1] / 1000:.2f}M</text>"
+        f"${plan[-1]:.0f}K</text>"
     )
 
     # ---- legend: the two gap colours -------------------------------------- #
@@ -606,8 +606,8 @@ def build_svg(
         gap = float(actual[i] - plan[i])
         sign = "ahead of" if gap >= 0 else "behind"
         tip = (
-            f"{month_labels[i]}: actual ${actual[i] / 1000:.2f}M vs plan "
-            f"${plan[i] / 1000:.2f}M — ${abs(gap):.0f}k {sign} plan"
+            f"{month_labels[i]}: actual ${actual[i]:.0f}K vs plan "
+            f"${plan[i]:.0f}K — ${abs(gap):.0f}K {sign} plan"
         )
         tips.append(
             f'<rect class="hit" tabindex="0" x="{_fmt(gx - col_w / 2)}" y="{_fmt(m_top - 40)}" '
@@ -617,8 +617,8 @@ def build_svg(
         tips.append(
             tooltip_bubble(
                 gx, m_top - 30,
-                [month_labels[i], f"actual ${actual[i] / 1000:.2f}M vs plan ${plan[i] / 1000:.2f}M",
-                 f"${abs(gap):.0f}k {sign} plan"],
+                [month_labels[i], f"actual ${actual[i]:.0f}K vs plan ${plan[i]:.0f}K",
+                 f"${abs(gap):.0f}K {sign} plan"],
                 canvas_w=width, canvas_h=height, ink=_INK, secondary=_SECONDARY, border="#EFEFF2",
             )
         )

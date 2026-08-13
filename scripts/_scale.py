@@ -106,9 +106,129 @@ def log_ticks(lo: float, hi: float) -> list[float]:
     return ticks
 
 
+def _nice_num(value: float, round_up_only: bool) -> float:
+    """Round `value` to the nearest 1/2/5-times-a-power-of-ten "nice" number.
+
+    Shared step of the classic Heckbert (1990) "nice numbers for graph
+    labels" algorithm, used twice by :func:`nice_ticks`: once to round the
+    overall span *up* (``round_up_only=True`` is misleading naming avoided —
+    see call sites) and once to round the per-tick step to the nearest of
+    ``{1, 2, 5, 10}`` (``round_up_only=False``, i.e. round-to-nearest).
+    """
+    exponent = math.floor(math.log10(value))
+    fraction = value / (10.0**exponent)
+    if round_up_only:
+        nice_fraction = 10.0 if fraction > 5 else 5.0 if fraction > 2 else 2.0 if fraction > 1 else 1.0
+    else:
+        nice_fraction = 1.0 if fraction < 1.5 else 2.0 if fraction < 3 else 5.0 if fraction < 7 else 10.0
+    return nice_fraction * (10.0**exponent)
+
+
+def nice_ticks(max_val: float, n: int = 4) -> list[float]:
+    """Evenly-spaced "nice" tick values from ``0`` up to a rounded ceiling ``>= max_val``.
+
+    Several linear-axis generators (bar, grouped-bar, stacked-area,
+    column-range, ...) used to divide ``max_val`` into `n` raw equal steps
+    (``max_val / n``), which lands the top gridline exactly on the data peak
+    but produces label values like ``23``/``46``/``69``/``92`` —
+    arithmetically even, but not numbers a reader can scan or do quick mental
+    math with. This is the classic "nice numbers for graph labels" fix
+    (Heckbert 1990 / the same idea behind D3's ``scale.nice()``): round the
+    overall span up to a nice ceiling, then pick a nice step near
+    ``ceiling / n``, so ticks land on ``0``/``20``/``40``/``60``/``80``/
+    ``100`` instead of ``0``/``23``/``46``/``69``/``92``. Because the step is
+    rounded rather than forced, the returned list can have more or fewer than
+    ``n + 1`` entries — the point is round numbers, not an exact count. The
+    tradeoff is that the top tick (and therefore the axis ceiling a caller
+    derives from ``ticks[-1]``) may now sit a little *above* ``max_val``
+    rather than exactly on it — deliberate: it gives the tallest bar/area a
+    sliver of headroom below the plot's top edge instead of touching it,
+    which is the more common professional-chart convention anyway.
+
+    Parameters
+    ----------
+    max_val : float
+        The largest value the axis must cover. Non-positive input returns
+        ``[0.0]`` (a degenerate single-tick axis) rather than raising.
+    n : int, optional
+        Target number of steps (actual count may differ slightly once the
+        step is rounded to a nice number). Defaults to ``4``, matching every
+        existing caller's previous ``max_val / 4.0``.
+
+    Returns
+    -------
+    list of float
+        Ascending ticks ``[0, step, 2*step, ...]`` with `step` a nice
+        1/2/5-times-a-power-of-ten value. The last entry is always
+        ``>= max_val`` (assuming `max_val` is positive).
+
+    Examples
+    --------
+    >>> nice_ticks(92)
+    [0.0, 20.0, 40.0, 60.0, 80.0, 100.0]
+    >>> nice_ticks(0)
+    [0.0]
+    """
+    if max_val <= 0:
+        return [0.0]
+    nice_range = _nice_num(max_val, True)
+    step = _nice_num(nice_range / n, False)
+    nice_max = math.ceil(max_val / step) * step
+    count = int(round(nice_max / step))
+    return [i * step for i in range(count + 1)]
+
+
+def nice_ticks_range(lo: float, hi: float, n: int = 5) -> list[float]:
+    """Nice tick values covering an arbitrary ``[lo, hi]`` span (not anchored at 0).
+
+    :func:`nice_ticks` assumes a ``0``-anchored axis (bar/area charts). Axes
+    whose floor isn't ``0`` (a beeswarm's value axis padded around
+    ``[v_min, v_max]``, a column-range's padded ``[y_min, y_max]``) instead
+    divided their *raw* span by a fixed tick count, which -- exactly like the
+    ``0``-anchored case -- produces label values that are evenly spaced but
+    not round (e.g. a beeswarm spanning 14.3..74.6 got ticks at 14/24/35/...
+    instead of 10/20/30/...). This rounds both the step *and* the two bounds
+    outward to the nearest nice multiple, the same Heckbert approach as
+    :func:`nice_ticks` generalized to a non-zero floor.
+
+    Parameters
+    ----------
+    lo, hi : float
+        The span to cover (typically already includes the caller's own
+        padding). `hi` must be greater than `lo`.
+    n : int, optional
+        Target number of steps; the actual count may differ once the step is
+        rounded to a nice number. Defaults to ``5``.
+
+    Returns
+    -------
+    list of float
+        Ascending ticks whose first entry is ``<= lo`` and last is ``>= hi``.
+        Empty if `hi` <= `lo`.
+
+    Examples
+    --------
+    >>> nice_ticks_range(14.3, 74.6)
+    [10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 80.0]
+    """
+    if hi <= lo:
+        return []
+    span = hi - lo
+    raw_step = span / n
+    step = _nice_num(raw_step, False)
+    nice_lo = math.floor(lo / step) * step
+    nice_hi = math.ceil(hi / step) * step
+    count = int(round((nice_hi - nice_lo) / step))
+    return [nice_lo + i * step for i in range(count + 1)]
+
+
 if __name__ == "__main__":  # tiny self-test
     assert log_position(1, 1, 100, 0.0, 100.0) == 0.0
     assert log_position(100, 1, 100, 0.0, 100.0) == 100.0
     assert log_ticks(3, 420) == [1.0, 10.0, 100.0, 1000.0]
     assert log_ticks(0, 5) == []
+    assert nice_ticks(92) == [0.0, 20.0, 40.0, 60.0, 80.0, 100.0]
+    assert nice_ticks(0) == [0.0]
+    assert nice_ticks_range(14.3, 74.6) == [10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 80.0]
+    assert nice_ticks_range(5, 5) == []
     print("_scale self-test OK")

@@ -83,7 +83,14 @@ _NEUTRAL_NODE = "#8E8E93"
 # The story: a week of visitors to a SaaS
 # marketing site, from acquisition channel through the funnel to the
 # outcome. The takeaway: organic search is the biggest top-of-funnel
-# source, yet paid traffic converts to a paid plan at a higher rate.
+# source, but most of the funnel still drains away before signup (5.1k
+# "Left" vs 3.1k "Signed up" out of 8.2k who browsed). Note the flows
+# pool by acquisition channel at "Browsed"/"Bounced" -- this dataset
+# does NOT carry per-channel attribution past that point, so don't put a
+# per-channel conversion-rate claim (e.g. "paid ads convert better") in
+# the title: it isn't something this graph structure can show, and the
+# ribbon/node coloring (which traces the *dominant* root by volume, not
+# a rate) would visually contradict it anyway.
 # Rows are flow records; nodes and their layers are inferred from them
 # (see :func:`_nodes_and_links`) rather than declared separately.
 # ------------------------------------------------------------------
@@ -323,7 +330,7 @@ def _fmt_k(v: float) -> str:
 def build_svg(
     data: List[Dict[str, Any]] | None = None,
     *,
-    title: str = "Organic search fills the funnel, but paid ads convert",
+    title: str = "Organic search fills the funnel, but most visitors still walk away",
     subtitle: str = "One week of site visitors, from channel to outcome",
     desc: str | None = None,
     stage_names: List[str] | None = None,
@@ -567,7 +574,7 @@ def make_sankey(
     data: List[Dict[str, Any]] | None = None,
     *,
     out: Path | str | None = None,
-    title: str = "Organic search fills the funnel, but paid ads convert",
+    title: str = "Organic search fills the funnel, but most visitors still walk away",
     subtitle: str = "One week of site visitors, from channel to outcome",
     desc: str | None = None,
     stage_names: List[str] | None = None,

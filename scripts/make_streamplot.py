@@ -44,7 +44,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _labels import label_cell  # noqa: E402
 from _style import load_palette, os_dark_style  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
-from _svg import svg_open, xml_escape  # noqa: E402
+from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 
@@ -779,9 +779,23 @@ def build_svg(
         f' [stroke="{_GRID}"]{{stroke:#6E6E73;stroke-width:2.2;}}'
         " }"
     )
+    # Per-streamline hover: a fat transparent "hit" stroke duplicates each
+    # thin visible line so the reader has a realistic pointer target, then
+    # reveals a tooltip bubble with that line's representative wind speed.
+    # This figure previously shipped with zero interactivity (no `.hit`/
+    # `.tip`, no `:hover`), the only chart in the batch missing the house
+    # hover-tooltip pattern every other data figure carries.
+    hover_css = (
+        ".hit{cursor:pointer;}"
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
+        "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
+    )
     parts.append(
         "<style>\n"
         + contrast_css
+        + "\n"
+        + hover_css
         + "\n"
         + os_dark_style(
             screen_blend=False,
@@ -833,6 +847,24 @@ def build_svg(
             f'<path d="{d}" fill="none" stroke="{color}" '
             f'stroke-width="{width:.2f}" stroke-linecap="round" '
             f'stroke-linejoin="round" opacity="0.95"/>'
+        )
+        # Fat transparent hit-stroke over the (thin) visible line, so the
+        # line is a realistic hover/focus target, immediately followed by
+        # its tooltip bubble -- the `.hit:hover+.tip` adjacent-sibling rule
+        # needs the two elements next to each other in document order.
+        mpx, mpy = ppts[len(ppts) // 2]
+        tip_label = f"Wind speed ~{v_here:.0f} km/h near ({mid[0]:.0f}, {mid[1]:.0f}) km"
+        parts.append(
+            f'<path class="hit" d="{d}" fill="none" stroke="transparent" '
+            f'stroke-width="12" tabindex="0" role="img" aria-label="{xml_escape(tip_label)}"/>'
+        )
+        parts.append(
+            tooltip_bubble(
+                mpx, mpy - 10,
+                [f"{v_here:.0f} km/h", f"({mid[0]:.0f}, {mid[1]:.0f}) km"],
+                anchor="middle", canvas_w=_WIDTH, canvas_h=_HEIGHT,
+                ink=_INK, secondary=_SUBTLE, border=_GRID,
+            )
         )
         # Arrowheads at a regular arc-length cadence, coloured to match.
         arrow_spacing = 150.0

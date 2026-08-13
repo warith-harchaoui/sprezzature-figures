@@ -23,6 +23,7 @@ Author
 
 from __future__ import annotations
 
+import math
 import random
 import sys
 from pathlib import Path
@@ -37,6 +38,40 @@ from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_the
 
 COLOR_LINE = "#007AFF"
 COLOR_MARKER = "#C7C7CC"
+
+
+def _nice_step(span: float, target_ticks: int = 6) -> float:
+    """Pick a 1/2/5-times-a-power-of-ten step so ``span / step`` ~= `target_ticks`.
+
+    The x-axis here doesn't start at 0 (it's an ECDF over an arbitrary
+    latency range), so :func:`_scale.nice_ticks` -- which always builds
+    ``[0, step, 2*step, ...]`` -- doesn't apply directly. This is the same
+    "nice numbers for graph labels" step-rounding on its own, usable against
+    any ``(lo, hi)`` window rather than only a zero-anchored one: it turns a
+    naive ``span / 6`` (which lands on values like ``76.67``, then rounds to
+    ugly tick labels like ``105``/``181``/``258``/``335``/``411``) into a
+    round step like ``50`` or ``100`` that a reader can scan at a glance.
+
+    Parameters
+    ----------
+    span : float
+        The axis range to cover (``hi - lo``). Non-positive input returns
+        ``1.0`` rather than raising.
+    target_ticks : int, optional
+        Roughly how many steps should fit across `span` (default 6).
+
+    Returns
+    -------
+    float
+        A step from ``{1, 2, 5} x 10**k``.
+    """
+    if span <= 0:
+        return 1.0
+    raw_step = span / target_ticks
+    exponent = math.floor(math.log10(raw_step))
+    fraction = raw_step / (10.0**exponent)
+    nice_fraction = 1.0 if fraction < 1.5 else 2.0 if fraction < 3 else 5.0 if fraction < 7 else 10.0
+    return nice_fraction * (10.0**exponent)
 
 
 def _make_demo_data() -> List[Dict[str, Any]]:
@@ -207,14 +242,23 @@ def build_svg(
         f'<line x1="{plot_x:.1f}" y1="{axis_y:.1f}" x2="{plot_x + plot_w:.1f}" y2="{axis_y:.1f}" '
         f'stroke="{INK}" stroke-width="1.2"/>'
     )
+    # Round tick step (nearest 1/2/5 x 10**k), not a naive `span / 6` divide --
+    # the latter used to print axis labels like 105/181/258/335/411, numbers
+    # with no round anchor a reader can scan against. See _nice_step's
+    # docstring for why _scale.nice_ticks (zero-anchored) doesn't apply here.
     x_ticks = 6
-    for i in range(x_ticks + 1):
-        val = (v_min - pad) + ((v_max + pad) - (v_min - pad)) * i / x_ticks
-        tx = x_for(val)
-        parts.append(
-            f'<text x="{tx:.1f}" y="{axis_y + 20:.1f}" font-size="11" font-family="{mono_family}" '
-            f'fill="{SECONDARY}" text-anchor="middle">{val:.0f}</text>'
-        )
+    axis_lo, axis_hi = v_min - pad, v_max + pad
+    step = _nice_step(axis_hi - axis_lo, x_ticks)
+    tick_start = math.floor(axis_lo / step) * step
+    val = tick_start
+    while val <= axis_hi + 1e-9:
+        if val >= axis_lo - 1e-9:
+            tx = x_for(val)
+            parts.append(
+                f'<text x="{tx:.1f}" y="{axis_y + 20:.1f}" font-size="11" font-family="{mono_family}" '
+                f'fill="{SECONDARY}" text-anchor="middle">{val:.0f}</text>'
+            )
+        val += step
     parts.append(
         f'<text x="{plot_x + plot_w / 2:.1f}" y="{axis_y + 42:.1f}" font-size="13" '
         f'fill="{INK}" text-anchor="middle">Latency (ms)</text>'

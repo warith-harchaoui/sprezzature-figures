@@ -485,10 +485,15 @@ def build_svg(
     )
 
     # Direct label riding on the curve near its start, naming what the line is
-    # (so the reader never hunts a legend to tell it from the bars).
+    # (so the reader never hunts a legend to tell it from the bars). The
+    # first cumulative point sits exactly at the first bar's own top edge
+    # (bar 1's share *is* the first cumulative value), so a *downward*
+    # offset used to drop the orange label straight onto the blue bar fill
+    # — poor contrast and visual clutter. Offset upward instead, into the
+    # clear background above the bar/point.
     lbl_x, lbl_y = pts[0]
     parts.append(
-        f'<text x="{lbl_x + 18:.1f}" y="{lbl_y + 30:.1f}" font-size="21" '
+        f'<text x="{lbl_x + 18:.1f}" y="{lbl_y - 14:.1f}" font-size="21" '
         f'font-weight="600" fill="{line_c}">{xml_escape(strings["curve_label"])}</text>'
     )
 
