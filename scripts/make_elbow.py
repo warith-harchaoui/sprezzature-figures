@@ -55,6 +55,7 @@ from xml.sax.saxutils import escape
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
+from _scale import nice_ticks  # noqa: E402
 from _style import BG, GRIDLINE, INK, load_palette, os_dark_style  # noqa: E402
 from _svg import catmull_rom_beziers, fmt_compact, svg_open, tooltip_bubble  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
@@ -247,10 +248,16 @@ def build_svg(
     x_label = x_label or strings["x_axis_default"]
     y_label = y_label or strings["y_axis_default"]
 
-    # Axis domain follows the data (with a little headroom on y) rather than
-    # the demo's fixed 0-1050 span, so a real caller's curve always fits.
-    y_max = max(inertia) * 1.05 if inertia else 1.0
-    y_ticks = [round(y_max * frac) for frac in (0, 0.25, 0.5, 0.75, 1.0)]
+    # Axis domain follows the data rather than the demo's fixed 0-1050 span,
+    # so a real caller's curve always fits. Ticks come from the shared "nice
+    # numbers" generator (round 1/2/5 x 10**k steps, e.g. 0/200/400/.../1000)
+    # instead of naive quartiles of the padded max, which used to print
+    # labels like 262/525/788 -- arithmetically even but not values a reader
+    # can scan or estimate against. `nice_ticks` also supplies its own
+    # headroom (its top tick lands at or above the data max), so no separate
+    # 1.05 padding factor is needed.
+    y_ticks = nice_ticks(max(inertia) if inertia else 1.0, n=4)
+    y_max = y_ticks[-1] if y_ticks[-1] > 0 else 1.0
 
     def sx(k: float) -> float:
         """Map an x value to a pixel x coordinate over the data's own span."""
@@ -342,7 +349,7 @@ def build_svg(
         p.append(
             f'<text x="{PL - 14:.1f}" y="{gy + 5:.1f}" text-anchor="end" '
             f'font-family="{mono_family}" font-size="14" fill="{SUBINK}">'
-            f'{tv:,}</text>'
+            f'{tv:,.0f}</text>'
         )
 
     # --- curve points in pixel space ---

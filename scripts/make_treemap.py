@@ -29,9 +29,10 @@ from typing import Any, Dict, List, Optional
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
+from _labels import best_text_colour  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY, qualitative_sequence  # noqa: E402
-from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _svg import hex_to_rgb, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 from _textfit import fit_font_size, text_width, wrap_to_width  # noqa: E402
 
@@ -176,6 +177,22 @@ def _normalize(values: List[float], area: float) -> List[float]:
     return [v * area / total for v in values]
 
 
+def _blend_over_white(hex_colour: str, alpha: float) -> str:
+    """Blend ``hex_colour`` at ``alpha`` opacity over a white backdrop.
+
+    Leaf rects are painted at ``fill-opacity="0.82"`` over the white canvas,
+    so the colour a reader's eye actually sees is lighter than the raw
+    category hue -- the contrast decision for the label text on top needs to
+    be made against *that* rendered colour, not the undiluted swatch hue.
+    """
+    r, g, b = hex_to_rgb(hex_colour)
+    br, bg, bb = 255, 255, 255
+    r = round(r * alpha + br * (1 - alpha))
+    g = round(g * alpha + bg * (1 - alpha))
+    b = round(b * alpha + bb * (1 - alpha))
+    return f"#{r:02X}{g:02X}{b:02X}"
+
+
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
     title: str | None = None,
@@ -299,6 +316,13 @@ def build_svg(
     # ---- rectangles ----
     for cat, crect in zip(categories, cat_rects):
         color = category_colors[cat]
+        # Choose ink or white label text by the *rendered* leaf colour (the
+        # 0.82 fill-opacity over white), not the raw swatch hue -- several
+        # house category colours (Security orange, Data & AI green, and
+        # especially Compliance's pale cyan) contrast poorly with white text
+        # (measured WCAG ratios as low as ~1.6:1 for Compliance, ~2.1-2.2:1
+        # for orange/green) even though blue/purple/red read fine white.
+        label_ink = best_text_colour(_blend_over_white(color, 0.82))
         leaves = grouped[cat]
         leaf_vals = [float(r["value"]) for r in leaves]
         leaf_area = crect["dx"] * crect["dy"]
@@ -357,13 +381,13 @@ def build_svg(
                 for i, ln in enumerate(lines):
                     parts.append(
                         f'<text x="{cxm:.1f}" y="{top + i * line_h:.1f}" '
-                        f'font-size="{name_size:.1f}" fill="{BG}" '
+                        f'font-size="{name_size:.1f}" fill="{label_ink}" '
                         f'text-anchor="middle">{xml_escape(ln)}</text>'
                     )
                 if show_value:
                     parts.append(
                         f'<text x="{cxm:.1f}" y="{top + n * line_h + 9:.1f}" font-size="10" '
-                        f'fill="{BG}" fill-opacity="0.85" text-anchor="middle">'
+                        f'fill="{label_ink}" fill-opacity="0.85" text-anchor="middle">'
                         f'{xml_escape(val_txt)}{xml_escape(unit_suffix)}</text>'
                     )
 

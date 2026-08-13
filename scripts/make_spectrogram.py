@@ -473,8 +473,19 @@ def build_svg(
     # viridis field the loud cells are pale (green/yellow), so a soft dark
     # backing pill (not a hard stroke halo) keeps the words legible without
     # ringing the glyphs.
-    def _labelled(cx: float, cy: float, text: str, *, anchor: str = "start") -> None:
-        """Place a feature label over the heatmap with a soft backing pill."""
+    def _labelled(cx: float, cy: float, text: str, *, anchor: str = "start", tip: str = "") -> None:
+        """Place a feature label over the heatmap with a soft backing pill.
+
+        The dense heatmap itself (tens of thousands of individual `<rect>`
+        cells) deliberately carries no per-cell hover -- a `.hit`/`.tip`
+        pair on every cell would bloat the DOM and file size for little
+        reader value, since color already encodes power continuously. But
+        that leaves the figure with literally zero interactive surface, out
+        of step with every other generator in this codebase. These three
+        feature-label pills are cheap, meaningful hover targets instead:
+        a native `<title>` (no extra CSS/DOM machinery needed) gives each
+        one a one-line tooltip explaining what the annotated feature is.
+        """
         pad_x, pad_y = 8.0, 6.0
         char_w = 8.6                       # rough advance for 15px Roboto 600
         w = len(text) * char_w + 2 * pad_x
@@ -485,6 +496,9 @@ def build_svg(
             rx = cx - (w - pad_x)
         else:  # middle
             rx = cx - w / 2
+        parts.append('<g tabindex="0" role="img">')
+        if tip:
+            parts.append(f"<title>{tip}</title>")
         parts.append(
             f'<rect x="{fmt_compact(rx, decimals=2)}" y="{fmt_compact(cy - h + pad_y, decimals=2)}" width="{fmt_compact(w, decimals=2)}" '
             f'height="{fmt_compact(h, decimals=2)}" rx="7" fill="#1D1D1F" fill-opacity="0.42"/>'
@@ -493,13 +507,23 @@ def build_svg(
             f'<text x="{fmt_compact(cx, decimals=2)}" y="{fmt_compact(cy, decimals=2)}" text-anchor="{anchor}" '
             f'font-size="15" font-weight="600" fill="#FFFFFF">{text}</text>'
         )
+        parts.append("</g>")
 
     # Label the glissando diagonal.
-    _labelled(x_px(2.28), y_px(2650.0), "rising tone", anchor="start")
+    _labelled(
+        x_px(2.28), y_px(2650.0), "rising tone", anchor="start",
+        tip="The glissando: a tone sweeping upward from about 300 Hz to 3 kHz over the full 3 seconds.",
+    )
     # Label the drone band.
-    _labelled(x_px(0.14), y_px(560.0), "bass drone", anchor="start")
+    _labelled(
+        x_px(0.14), y_px(560.0), "bass drone", anchor="start",
+        tip="A steady low-frequency drone held constant for the whole clip.",
+    )
     # Label one of the percussive taps (the broadband vertical streaks).
-    _labelled(x_px(1.5), y_px(3750.0), "percussive tap", anchor="middle")
+    _labelled(
+        x_px(1.5), y_px(3750.0), "percussive tap", anchor="middle",
+        tip="A broadband transient (energy across all frequencies at once) -- three of these are synthesized into the clip.",
+    )
 
     # ---- colour legend (vertical power ramp) ------------------------------ #
     leg_x = width - m_right + 44

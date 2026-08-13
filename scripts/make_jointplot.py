@@ -216,7 +216,10 @@ def build_svg(
     height = 940
     m_left = 118
     m_right = 40
-    m_top = 236
+    # 160, not the previous 236, so the ~75px gap between the subtitle and
+    # the "Distribution of hours slept" label collapses; the freed space
+    # goes to the scatter (plot_h grows automatically below), not wasted.
+    m_top = 160
     m_bottom = 96
     marg = 132            # thickness of each marginal band
     gap = 12              # gap between a marginal and the scatter
@@ -326,11 +329,6 @@ def build_svg(
         f'Reaction-time test vs. hours slept, 120 volunteers — marginals '
         f'show each distribution</text>'
     )
-    parts.append(
-        f'<text x="{m_left}" y="134" font-size="19" fill="{secondary}">'
-        f'</text>'
-    )
-
     # --- top marginal: histogram of hours slept ------------------
     # Bars grow downward from the top rail toward the scatter, so the marginal
     # reads as a distribution hugging the shared x-window.

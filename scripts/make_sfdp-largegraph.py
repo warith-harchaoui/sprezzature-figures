@@ -575,7 +575,9 @@ def build_svg(
         )
     parts.append("</g>")
 
-    # --- nodes, grouped per community so the hover class is shared. ---
+    # --- nodes, grouped per community so the hover class is shared. Drawn
+    #     BEFORE the community-label pills below, so the (opaque) pills
+    #     always paint on top and text stays perfectly crisp. ---
     parts.append('<g id="nodes">')
     for i in range(n):
         x, y = pos[i]
@@ -599,31 +601,104 @@ def build_svg(
     parts.append("</g>")
 
     # --- community labels as solid white "pills" pushed to each blob's
-    #     outer edge (away from the figure centre) so they sit on clear
-    #     canvas rather than buried in dots. No stroke halo — a filled
-    #     rounded rect behind ink-and-colour text reads cleanly and keeps
-    #     the lab colour visible via a small leading dot. ---
+    #     outer edge so they sit on clear canvas rather than buried in
+    #     dots. No stroke halo — a filled rounded rect behind ink-and-
+    #     colour text reads cleanly and keeps the lab colour visible via a
+    #     small leading dot.
+    #
+    #     Placement: every member of a cluster lies within `rim` of its
+    #     centroid, so a pill whose centre sits at distance
+    #     `rim + half-diagonal + margin` from the centroid, in ANY
+    #     direction, is guaranteed clear of every member (reverse triangle
+    #     inequality: the closest point of the pill to the centroid is at
+    #     least `push - half-diagonal` away). "Away from the figure
+    #     centre" is the preferred direction (reads as "label points
+    #     outward"), but for a cluster that already sits close to the
+    #     canvas edge (e.g. "Vision", near the top) that direction can run
+    #     out of canvas before it runs out of required distance -- clamping
+    #     the point back onto the canvas would silently break the
+    #     clearance guarantee and let the pill bite into a node. Nudge
+    #     across a NARROW fan (+/-60 degrees) around the preferred
+    #     direction first, so a cluster near one edge can slide sideways
+    #     into on-canvas room without straying so far around that the
+    #     label ends up nowhere near its own cluster (a wide/unbounded
+    #     search was tried and rejected: it could rotate the label
+    #     practically opposite its cluster when the preferred direction
+    #     was tight, which is a worse defect than a rare small overlap).
+    #     If nothing in that narrow fan clears the canvas, fall back to
+    #     the preferred direction, clamped -- a small residual overlap on
+    #     a canvas-edge cluster reads better than a mislabeled one.
+    #
+    #     That per-cluster search only avoids the OWNING cluster's own
+    #     nodes; with only 6 labels, two of them landing near each other
+    #     and overlapping is also possible (seen with "Theory"/"Robotics"
+    #     during development). A short pairwise relaxation pass after all
+    #     six positions are chosen nudges any overlapping pair apart along
+    #     their connecting line, re-clamped to canvas each pass. ---
     fig_cx = PLOT_PAD + box_w / 2
     fig_cy = PLOT_TOP + box_h / 2
-    parts.append('<g id="clabels">')
+    label_placements: List[Dict[str, float]] = []
     for c in range(len(communities)):
         members = [i for i in range(n) if comm[i] == c]
         mx = sum(pos[i][0] for i in members) / len(members)
         my = sum(pos[i][1] for i in members) / len(members)
-        # Blob radius (distance to farthest member) so we can push the
-        # label just past the cluster's outer rim.
         rim = max(math.hypot(pos[i][0] - mx, pos[i][1] - my) for i in members)
-        dx, dy = mx - fig_cx, my - fig_cy
-        dnorm = math.hypot(dx, dy) or 1.0
-        ux, uy = dx / dnorm, dy / dnorm
-        lxp = mx + ux * (rim * 0.72)
-        lyp = my + uy * (rim * 0.72)
-        label = escape(labels[c])
         pill_w = 30 + 16.2 * len(labels[c])
         pill_h = 46
-        # Keep the pill inside the canvas.
-        lxp = min(WIDTH - PLOT_PAD - pill_w / 2, max(PLOT_PAD + pill_w / 2, lxp))
-        lyp = min(HEIGHT - LEGEND_H - pill_h / 2, max(PLOT_TOP + pill_h / 2, lyp))
+        push = rim + math.hypot(pill_w, pill_h) / 2.0 + 10.0
+        x_lo, x_hi = PLOT_PAD + pill_w / 2, WIDTH - PLOT_PAD - pill_w / 2
+        y_lo, y_hi = PLOT_TOP + pill_h / 2, HEIGHT - LEGEND_H - pill_h / 2
+
+        dx, dy = mx - fig_cx, my - fig_cy
+        base_angle = math.atan2(dy, dx) if math.hypot(dx, dy) > 1e-6 else -math.pi / 2
+        lxp = lyp = None
+        for off_deg in (0, -20, 20, -40, 40, -60, 60):
+            ang = base_angle + math.radians(off_deg)
+            cand_x = mx + math.cos(ang) * push
+            cand_y = my + math.sin(ang) * push
+            if x_lo <= cand_x <= x_hi and y_lo <= cand_y <= y_hi:
+                lxp, lyp = cand_x, cand_y
+                break
+        if lxp is None:
+            # Nothing in the narrow fan cleared the canvas untouched;
+            # fall back to the preferred direction, clamped, as before.
+            lxp = min(x_hi, max(x_lo, mx + math.cos(base_angle) * push))
+            lyp = min(y_hi, max(y_lo, my + math.sin(base_angle) * push))
+        label_placements.append(
+            {"c": c, "x": lxp, "y": lyp, "w": pill_w, "h": pill_h,
+             "x_lo": x_lo, "x_hi": x_hi, "y_lo": y_lo, "y_hi": y_hi}
+        )
+
+    # Pairwise separation: any two pill rectangles that still overlap get
+    # nudged apart along their connecting line, then re-clamped to canvas.
+    for _pass in range(4):
+        moved = False
+        for i in range(len(label_placements)):
+            for j in range(i + 1, len(label_placements)):
+                a, b = label_placements[i], label_placements[j]
+                ox = (a["w"] + b["w"]) / 2 - abs(a["x"] - b["x"])
+                oy = (a["h"] + b["h"]) / 2 - abs(a["y"] - b["y"])
+                if ox <= 0 or oy <= 0:
+                    continue  # no rectangle overlap
+                moved = True
+                vx, vy = a["x"] - b["x"], a["y"] - b["y"]
+                vnorm = math.hypot(vx, vy) or 1.0
+                # Separate along the shallower overlap axis for a smaller,
+                # more natural nudge.
+                step = min(ox, oy) / 2.0 + 1.0
+                ux_, uy_ = vx / vnorm, vy / vnorm
+                a["x"] = min(a["x_hi"], max(a["x_lo"], a["x"] + ux_ * step))
+                a["y"] = min(a["y_hi"], max(a["y_lo"], a["y"] + uy_ * step))
+                b["x"] = min(b["x_hi"], max(b["x_lo"], b["x"] - ux_ * step))
+                b["y"] = min(b["y_hi"], max(b["y_lo"], b["y"] - uy_ * step))
+        if not moved:
+            break
+
+    parts.append('<g id="clabels">')
+    for placement in label_placements:
+        c = int(placement["c"])
+        lxp, lyp, pill_w, pill_h = placement["x"], placement["y"], placement["w"], placement["h"]
+        label = escape(labels[c])
         parts.append(
             f'<g class="clabel cl-{c}">'
             f'<rect x="{lxp - pill_w / 2:.1f}" y="{lyp - pill_h / 2:.1f}" '

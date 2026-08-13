@@ -33,6 +33,7 @@ from typing import Any, Dict, List, Optional, Tuple
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
+from _scale import nice_ticks_range  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY, load_palette  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
@@ -191,9 +192,14 @@ def build_svg(
         f'<line x1="{plot_x:.1f}" y1="{axis_y:.1f}" x2="{plot_x + plot_w:.1f}" y2="{axis_y:.1f}" '
         f'stroke="{INK}" stroke-width="1.2"/>'
     )
-    x_ticks = 6
-    for i in range(x_ticks + 1):
-        val = (v_min - pad) + ((v_max + pad) - (v_min - pad)) * i / x_ticks
+    # Nice round tick values (10/20/30/... rather than raw sixths of the
+    # padded span, which produced labels like 14/25/35/45/55/65/75) -- see
+    # _scale.nice_ticks_range. Dot x-positions and the plotted domain
+    # (v_min - pad .. v_max + pad) are unchanged; only clipped to that domain
+    # so no gridline is drawn outside the plot rectangle.
+    x_lo, x_hi = v_min - pad, v_max + pad
+    x_tick_vals = [t for t in nice_ticks_range(x_lo, x_hi) if x_lo - 1e-9 <= t <= x_hi + 1e-9]
+    for val in x_tick_vals:
         tx = x_for(val)
         parts.append(
             f'<line x1="{tx:.1f}" y1="{plot_y:.1f}" x2="{tx:.1f}" y2="{plot_y + plot_h:.1f}" '

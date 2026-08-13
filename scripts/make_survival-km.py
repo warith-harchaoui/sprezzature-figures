@@ -33,6 +33,7 @@ from typing import Any, Dict, List, Optional, Tuple
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
+from _scale import nice_ticks  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY, cycle_hues  # noqa: E402
 from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
@@ -289,9 +290,15 @@ def build_svg(
         f'<line x1="{plot_x:.1f}" y1="{axis_y:.1f}" x2="{plot_x + plot_w:.1f}" y2="{axis_y:.1f}" '
         f'stroke="{INK}" stroke-width="1.2"/>'
     )
-    x_ticks = 6
-    for i in range(x_ticks + 1):
-        val = t_max * i / x_ticks
+    # `t_max * i / 6` (the previous approach) divides evenly in pixel space
+    # but produces non-round labels for an arbitrary t_max (e.g. 0/10.5/21/
+    # 31.5/... for t_max=63). The curve itself is drawn to fill exactly
+    # [0, t_max] with no padding, so -- unlike an axis with headroom to
+    # round outward into -- ticks here must stay <= t_max; nice_ticks()
+    # rounds t_max up to a nice ceiling first, so any tick past t_max is
+    # dropped rather than left to render past the plot's right edge.
+    x_gridline_vals = [v for v in nice_ticks(t_max, 6) if v <= t_max] or [0.0, t_max]
+    for val in x_gridline_vals:
         tx = x_for(val)
         parts.append(
             f'<text x="{tx:.1f}" y="{axis_y + 20:.1f}" font-size="11" font-family="{mono_family}" '

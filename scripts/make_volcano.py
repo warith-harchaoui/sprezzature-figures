@@ -31,6 +31,7 @@ from typing import Any, Dict, List, Optional
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
+from _scale import nice_ticks_range  # noqa: E402
 from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
@@ -114,10 +115,20 @@ def build_svg(
     rows = data if data else DEMO_DATA
     lfcs = [float(r["lfc"]) for r in rows]
     ps = [float(r["neglogp"]) for r in rows]
-    x_min, x_max = min(min(lfcs), -LFC_THRESHOLD * 1.4), max(max(lfcs), LFC_THRESHOLD * 1.4)
-    y_min, y_max = 0.0, max(max(ps), P_THRESHOLD * 1.3)
-    x_pad = (x_max - x_min) * 0.06 or 1.0
-    y_pad = (y_max - y_min) * 0.08 or 1.0
+    raw_x_min, raw_x_max = min(min(lfcs), -LFC_THRESHOLD * 1.4), max(max(lfcs), LFC_THRESHOLD * 1.4)
+    raw_y_min, raw_y_max = 0.0, max(max(ps), P_THRESHOLD * 1.3)
+    x_pad = (raw_x_max - raw_x_min) * 0.06 or 1.0
+    y_pad = (raw_y_max - raw_y_min) * 0.08 or 1.0
+    x_gridline_vals = nice_ticks_range(raw_x_min - x_pad, raw_x_max + x_pad, 6)
+    y_gridline_vals = nice_ticks_range(raw_y_min - y_pad, raw_y_max + y_pad, 5)
+    # -log10(p) is never negative (p <= 1), so any nice-tick gridline below 0
+    # (the outward-rounding step can land there) is dropped rather than left
+    # in -- a negative gridline would imply an impossible value range for a
+    # quantity that structurally cannot go below zero.
+    if raw_y_min >= 0.0:
+        y_gridline_vals = [v for v in y_gridline_vals if v >= 0.0] or [0.0]
+    x_min, x_max = x_gridline_vals[0], x_gridline_vals[-1]
+    y_min, y_max = y_gridline_vals[0], y_gridline_vals[-1]
 
     plot_x, plot_y = 60.0, 118.0
     right_margin, bottom_reserved = 30.0, 60.0
@@ -125,10 +136,10 @@ def build_svg(
     plot_h = height - plot_y - bottom_reserved
 
     def x_for(v: float) -> float:
-        return plot_x + (v - (x_min - x_pad)) / ((x_max + x_pad) - (x_min - x_pad)) * plot_w
+        return plot_x + (v - x_min) / ((x_max - x_min) or 1.0) * plot_w
 
     def y_for(v: float) -> float:
-        return plot_y + plot_h - (v - (y_min - y_pad)) / ((y_max + y_pad) - (y_min - y_pad)) * plot_h
+        return plot_y + plot_h - (v - y_min) / ((y_max - y_min) or 1.0) * plot_h
 
     colors = {"Up": COLOR_UP, "Down": COLOR_DOWN, "n.s.": COLOR_NS}
     n_up = sum(1 for l, p in zip(lfcs, ps) if _classify(l, p) == "Up")
@@ -164,9 +175,7 @@ def build_svg(
         cursor += 16 + 7.0 * len(label) + 20
 
     # ---- gridlines ----
-    y_ticks = 5
-    for i in range(y_ticks + 1):
-        val = (y_min - y_pad) + ((y_max + y_pad) - (y_min - y_pad)) * i / y_ticks
+    for val in y_gridline_vals:
         ty = y_for(val)
         parts.append(
             f'<line x1="{plot_x:.1f}" y1="{ty:.1f}" x2="{plot_x + plot_w:.1f}" y2="{ty:.1f}" '
@@ -219,9 +228,7 @@ def build_svg(
         f'<line x1="{plot_x:.1f}" y1="{axis_y:.1f}" x2="{plot_x + plot_w:.1f}" y2="{axis_y:.1f}" '
         f'stroke="{INK}" stroke-width="1.2"/>'
     )
-    x_ticks = 6
-    for i in range(x_ticks + 1):
-        val = (x_min - x_pad) + ((x_max + x_pad) - (x_min - x_pad)) * i / x_ticks
+    for val in x_gridline_vals:
         tx = x_for(val)
         parts.append(
             f'<text x="{tx:.1f}" y="{axis_y + 20:.1f}" font-size="11" font-family="{mono_family}" '

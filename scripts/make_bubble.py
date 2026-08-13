@@ -36,7 +36,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from xml.sax.saxutils import escape
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _scale import log_position, log_ticks  # noqa: E402
+from _scale import log_position, log_ticks, nice_ticks_range  # noqa: E402
 from _style import BG, GRIDLINE, INK, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _svg import fmt_number, svg_open, tooltip_bubble  # noqa: E402
@@ -241,9 +241,11 @@ def build_svg(
     parts.append(f'<text x="40" y="70" font-size="14" fill="{SUBINK}">{escape(subtitle_txt)}</text>')
 
     # ---- y-axis gridlines + labels ----
-    y_ticks = 5
-    for i in range(y_ticks + 1):
-        life_val = y0 + (y1 - y0) * i / y_ticks
+    # Nice round tick values (see _scale.nice_ticks_range) instead of raw
+    # fifths of the padded [y0, y1] span. Clipped back to [y0, y1] so no
+    # gridline is drawn outside the plot rectangle.
+    y_tick_vals = [t for t in nice_ticks_range(y0, y1, n=5) if y0 - 1e-9 <= t <= y1 + 1e-9]
+    for life_val in y_tick_vals:
         ty = y_for(life_val)
         parts.append(
             f'<line x1="{plot_x:.1f}" y1="{ty:.1f}" x2="{plot_x + plot_w:.1f}" y2="{ty:.1f}" '
@@ -268,7 +270,10 @@ def build_svg(
     if log_x:
         gdp_ticks = [d for d in log_ticks(xlog_min, gdp_max) if x0 <= d <= x1]
     else:
-        gdp_ticks = [x0 + (x1 - x0) * i / 5 for i in range(6)]
+        # Nice round tick values (see _scale.nice_ticks_range) instead of raw
+        # fifths of the padded [x0, x1] span, which produced labels like
+        # 3/14/25/36/47/59.
+        gdp_ticks = [t for t in nice_ticks_range(x0, x1, n=5) if x0 - 1e-9 <= t <= x1 + 1e-9]
     for gdp_val in gdp_ticks:
         tx = x_for(gdp_val)
         parts.append(

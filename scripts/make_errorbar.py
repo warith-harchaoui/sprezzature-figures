@@ -21,6 +21,7 @@ Author
 
 from __future__ import annotations
 
+import math
 import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -33,6 +34,25 @@ from _style import BG, GRIDLINE, INK, SECONDARY  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 COLOR_POINT = "#007AFF"
+
+
+def _nice_step(span: float, target_ticks: int = 5) -> float:
+    """Pick a 1/2/5-times-a-power-of-ten step so ``span / step`` ~= `target_ticks`.
+
+    This axis doesn't start at 0 (it's a padded min/max window around the
+    confidence intervals), so ``_scale.nice_ticks`` -- which always builds
+    ``[0, step, 2*step, ...]`` -- doesn't apply directly. Rounding the step
+    itself to a "nice" 1/2/5 x 10**k value (Heckbert 1990) turns a naive
+    ``span / 5`` divide -- which used to land on tick labels like
+    ``28``/``39``/``50``/``61``/``72``/``83`` -- into a round, scannable step.
+    """
+    if span <= 0:
+        return 1.0
+    raw_step = span / target_ticks
+    exponent = math.floor(math.log10(raw_step))
+    fraction = raw_step / (10.0**exponent)
+    nice_fraction = 1.0 if fraction < 1.5 else 2.0 if fraction < 3 else 5.0 if fraction < 7 else 10.0
+    return nice_fraction * (10.0**exponent)
 
 DEMO_DATA: List[Dict[str, Any]] = [
     {"g": "A", "mean": 40, "lo": 34, "hi": 46},
@@ -121,19 +141,22 @@ def build_svg(
     )
     parts.append(f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>')
 
-    # ---- y-axis gridlines ----
-    y_ticks = 5
-    for i in range(y_ticks + 1):
-        val = (v_min - pad) + ((v_max + pad) - (v_min - pad)) * i / y_ticks
-        ty = y_for(val)
-        parts.append(
-            f'<line x1="{plot_x:.1f}" y1="{ty:.1f}" x2="{plot_x + plot_w:.1f}" y2="{ty:.1f}" '
-            f'stroke="{GRIDLINE}" stroke-width="1"/>'
-        )
-        parts.append(
-            f'<text x="{plot_x - 10:.1f}" y="{ty + 4:.1f}" font-size="12" font-family="{mono_family}" '
-            f'fill="{SECONDARY}" text-anchor="end">{val:.0f}</text>'
-        )
+    # ---- y-axis gridlines (round "nice" steps, not a naive 5-way split) ----
+    axis_lo, axis_hi = v_min - pad, v_max + pad
+    step = _nice_step(axis_hi - axis_lo, 5)
+    val = math.floor(axis_lo / step) * step
+    while val <= axis_hi + 1e-9:
+        if val >= axis_lo - 1e-9:
+            ty = y_for(val)
+            parts.append(
+                f'<line x1="{plot_x:.1f}" y1="{ty:.1f}" x2="{plot_x + plot_w:.1f}" y2="{ty:.1f}" '
+                f'stroke="{GRIDLINE}" stroke-width="1"/>'
+            )
+            parts.append(
+                f'<text x="{plot_x - 10:.1f}" y="{ty + 4:.1f}" font-size="12" font-family="{mono_family}" '
+                f'fill="{SECONDARY}" text-anchor="end">{val:.0f}</text>'
+            )
+        val += step
     parts.append(
         f'<text x="18" y="{plot_y + plot_h / 2:.1f}" font-size="13" fill="{INK}" '
         f'text-anchor="middle" transform="rotate(-90 18 {plot_y + plot_h / 2:.1f})">Value</text>'

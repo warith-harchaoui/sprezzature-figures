@@ -42,7 +42,7 @@ Author
 from __future__ import annotations
 from _render import svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
-from _svg import VIRIDIS_STOPS, color_ramp, fmt_compact, viridis  # noqa: E402
+from _svg import VIRIDIS_STOPS, color_ramp, fmt_compact, tooltip_bubble, viridis  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
 import argparse
@@ -308,6 +308,24 @@ def build_svg(
         f"horizontal band is a damp irrigation drip line. Colour runs pale sky "
         f"(driest) to deep navy (wettest).</desc>"
     )
+    # The smooth field itself carries no per-pixel interactivity (33k fine
+    # cells make per-cell hit-testing both meaningless — a bilinear blend has
+    # no discrete "value" to report between nodes — and prohibitively heavy).
+    # Instead, the *measured* coarse survey nodes each get a hoverable/
+    # focusable marker with the shared tooltip bubble, matching the house
+    # convention that every figure exposes real data on hover, and making the
+    # otherwise-invisible sensor grid underneath the interpolation legible.
+    parts.append(
+        "<style>"
+        ".node-hit{fill:#FFFFFF;fill-opacity:0.001;stroke:none;cursor:pointer;}"
+        ".node-mark{fill:#FFFFFF;stroke:#0A2E5C;stroke-width:1.2;opacity:0.4;"
+        "transition:opacity .12s ease,r .12s ease;pointer-events:none;}"
+        ".node-hit:hover+.node-mark,.node-hit:focus+.node-mark{opacity:1;r:5;}"
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        ".node-hit:hover+.node-mark+.tip,.node-hit:focus+.node-mark+.tip{opacity:1}"
+        "@media (prefers-reduced-motion:reduce){.node-mark,.tip{transition:none}}"
+        "</style>"
+    )
     parts.append(f'<rect width="{width}" height="{height}" rx="18" fill="{_BG}"/>')
     parts.append(
         f'<text x="{m_left - 44}" y="60" font-size="30" font-weight="700" '
@@ -431,6 +449,34 @@ def build_svg(
     _labelled(x_px(14.0), y_px(11.0), "wet hollow", light=True)
     _labelled(x_px(37.0), y_px(28.0), "dry ridge", anchor="end", light=False)
     _labelled(x_px(20.0), y_px(22.0), "drip-line seam", light=True)
+
+    # ---- coarse survey-node markers (the real measurements) --------------- #
+    # The smooth field is an interpolation between these 63 actual sensor
+    # readings; surfacing them on hover lets a reader check the raw number
+    # behind any part of the blend, not just the three narrative call-outs.
+    parts.append('<g role="list" aria-label="soil-moisture survey nodes">')
+    for yi, ym in enumerate(ys):
+        for xi, xm in enumerate(xs):
+            nx, ny = x_px(float(xm)), y_px(float(ym))
+            val = float(field[yi, xi])
+            parts.append(
+                f'<circle class="node-hit" cx="{fmt_compact(nx, decimals=2)}" '
+                f'cy="{fmt_compact(ny, decimals=2)}" r="11" tabindex="0" '
+                f'role="listitem"><title>Survey node ({xm:.0f} m east, {ym:.0f} m '
+                f'north): {val:.1f}% moisture</title></circle>'
+            )
+            parts.append(
+                f'<circle class="node-mark" cx="{fmt_compact(nx, decimals=2)}" '
+                f'cy="{fmt_compact(ny, decimals=2)}" r="3"/>'
+            )
+            parts.append(
+                tooltip_bubble(
+                    nx, ny - 14, [f"{val:.1f}% moisture", f"{xm:.0f} m east, {ym:.0f} m north"],
+                    anchor="middle", canvas_w=width, canvas_h=height,
+                    ink=_INK, secondary=_SECONDARY,
+                )
+            )
+    parts.append("</g>")
 
     # ---- colour legend (vertical value ramp) ------------------------------ #
     leg_x = width - m_right + 52

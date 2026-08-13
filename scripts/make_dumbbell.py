@@ -368,6 +368,22 @@ def build_svg(
         m_val = float(rec["group_b"])
         xw = sx(w_val)
         xm = sx(m_val)
+        # When two groups are nearly tied (e.g. $29 vs $30 against an
+        # $20-$80 axis), the true-to-scale pixel gap is smaller than the
+        # dots' own diameter, so the two 15px-radius circles fully overlap
+        # and the connecting bar -- the whole point of a "dumbbell" -- is
+        # invisible underneath them. Clamp the *drawn* separation to at
+        # least one dot diameter plus a sliver of visible bar, nudging both
+        # dots symmetrically outward from their true midpoint; the value
+        # labels stay attached to these same nudged positions, so the text
+        # is never far from the dot it names, and the numbers themselves
+        # (never the drawn distance) are what carry the true reading.
+        min_sep = 2.0 * r + 8.0
+        sep = xm - xw
+        if abs(sep) < min_sep:
+            mid = (xw + xm) / 2.0
+            half = min_sep / 2.0 if sep >= 0 else -min_sep / 2.0
+            xw, xm = mid - half, mid + half
         gap = m_val - w_val
         gap_pct = round(100.0 * abs(gap) / max(abs(m_val), abs(w_val), 1e-9))
         category = xml_escape(str(rec["category"]))

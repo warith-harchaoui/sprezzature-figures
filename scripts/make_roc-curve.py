@@ -12,8 +12,12 @@ classifier's discrimination ability independent of any one threshold.
 Previously rendered via Vega-Lite (the ROC points computed offline,
 ``vl_convert``); this module now computes the ROC curve and AUC itself
 from raw classifier scores -- sort-and-sweep over unique thresholds,
-trapezoidal-rule AUC -- no Vega, no matplotlib, no scikit-learn. Every
-point carries a native ``<title>`` tooltip with its threshold and rates.
+trapezoidal-rule AUC -- no Vega, no matplotlib, no scikit-learn. The whole
+curve carries one hover tooltip with the AUC; a thinned, evenly-spaced
+subset of points (at most 16) also gets its own marker + tooltip reporting
+the exact threshold and (FPR, TPR) pair at that point, so a reader can
+answer "what threshold gets me here" without the curve turning into a
+solid ring of overlapping hit targets.
 
 Author
 ------
@@ -51,26 +55,42 @@ def _make_demo_data() -> List[Dict[str, Any]]:
 DEMO_DATA: List[Dict[str, Any]] = _make_demo_data()
 
 
-def _roc_curve(rows: List[Dict[str, Any]]) -> Tuple[List[Tuple[float, float]], float]:
+def _roc_curve(
+    rows: List[Dict[str, Any]],
+) -> Tuple[List[Tuple[float, float]], List[Optional[float]], float]:
     """Compute ROC points (FPR, TPR) swept over unique score thresholds, and
-    the AUC via the trapezoidal rule."""
+    the AUC via the trapezoidal rule.
+
+    Returns
+    -------
+    points : list of (fpr, tpr)
+        One entry per swept threshold, plus the ``(0, 0)`` and ``(1, 1)``
+        anchors.
+    point_thresholds : list of float or None
+        The score threshold that produced each entry in ``points`` at the
+        same index; ``None`` for the two synthetic anchors (no real
+        threshold produces exactly (0, 0) or (1, 1)).
+    """
     n_pos = sum(1 for r in rows if r["label"] == 1)
     n_neg = sum(1 for r in rows if r["label"] == 0)
     thresholds = sorted({float(r["score"]) for r in rows}, reverse=True)
     points: List[Tuple[float, float]] = [(0.0, 0.0)]
+    point_thresholds: List[Optional[float]] = [None]
     for t in thresholds:
         tp = sum(1 for r in rows if r["label"] == 1 and float(r["score"]) >= t)
         fp = sum(1 for r in rows if r["label"] == 0 and float(r["score"]) >= t)
         tpr = tp / n_pos if n_pos else 0.0
         fpr = fp / n_neg if n_neg else 0.0
         points.append((fpr, tpr))
+        point_thresholds.append(t)
     points.append((1.0, 1.0))
+    point_thresholds.append(None)
     # Trapezoidal AUC over the (already threshold-sorted, monotone-in-FPR-ish) points.
     points_sorted = sorted(set(points))
     auc = 0.0
     for (x0, y0), (x1, y1) in zip(points_sorted, points_sorted[1:]):
         auc += (x1 - x0) * (y0 + y1) / 2.0
-    return points, auc
+    return points, point_thresholds, auc
 
 
 def build_svg(
@@ -114,7 +134,7 @@ def build_svg(
     _ = accessibility
     mono_family = mono_stack_for_theme(theme)
     rows = data if data else DEMO_DATA
-    points, auc = _roc_curve(rows)
+    points, point_thresholds, auc = _roc_curve(rows)
     title = f"ROC Curve — AUC {auc:.2f}"
     subtitle = "True-positive rate vs. false-positive rate across all thresholds"
 
@@ -197,6 +217,45 @@ def build_svg(
             ink=INK, secondary=SECONDARY, border=GRIDLINE,
         )
     )
+
+    # ---- per-threshold hover markers (thinned) ---------------------------
+    # A dense sweep over unique classifier scores can produce 100+ points;
+    # a small, evenly-spaced subset gets its own visible marker + tooltip so
+    # a reader can inspect "at this threshold, what's my FPR/TPR" -- the
+    # question this figure exists to answer -- without turning the curve
+    # into a solid ring of overlapping hit targets.
+    n_pts = len(points)
+    max_markers = 16
+    if n_pts <= max_markers:
+        marker_idx = list(range(n_pts))
+    else:
+        marker_idx = sorted(
+            {round(i * (n_pts - 1) / (max_markers - 1)) for i in range(max_markers)}
+        )
+    for idx in marker_idx:
+        fpr, tpr = points[idx]
+        thr = point_thresholds[idx]
+        if thr is not None:
+            thr_txt = f"threshold {thr:.2f}"
+        elif fpr == 0.0 and tpr == 0.0:
+            thr_txt = "threshold → reject all"
+        else:
+            thr_txt = "threshold → accept all"
+        mx, my = x_for(fpr), y_for(tpr)
+        tip2 = f"FPR {fpr:.2f}, TPR {tpr:.2f}, {thr_txt}"
+        parts.append(
+            f'<circle class="hit" tabindex="0" cx="{mx:.1f}" cy="{my:.1f}" r="4.5" '
+            f'fill="{BG}" stroke="{COLOR_ROC}" stroke-width="2" '
+            f'role="img" aria-label="{xml_escape(tip2)}"/>'
+        )
+        parts.append(
+            tooltip_bubble(
+                mx, my - 14,
+                [f"FPR {fpr:.2f}, TPR {tpr:.2f}", thr_txt],
+                anchor="middle", canvas_w=width, canvas_h=height,
+                ink=INK, secondary=SECONDARY, border=GRIDLINE,
+            )
+        )
 
     parts.append(fullscreen_control(width, height, mode))
     parts.append("</svg>")

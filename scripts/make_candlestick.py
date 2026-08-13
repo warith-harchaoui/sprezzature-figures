@@ -30,7 +30,7 @@ from typing import Any, Dict, List, Optional
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _scale import log_position, log_ticks  # noqa: E402
+from _scale import log_position, log_ticks, nice_ticks_range  # noqa: E402
 from _svg import fmt_number, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
@@ -165,7 +165,15 @@ def build_svg(
     if log_y:
         y_gridline_vals = y_ticks_log
     else:
-        y_gridline_vals = [(v_min - pad) + ((v_max + pad) - (v_min - pad)) * i / 6 for i in range(7)]
+        # Nice round tick values (see _scale.nice_ticks_range) instead of raw
+        # sixths of the padded span, which produced labels like
+        # 86/90/95/100/105/110/115 (an unrounded low tick mixed with rounded
+        # ones). Clipped back to the padded domain so no gridline is drawn
+        # outside the plot rectangle.
+        y_lo_pad, y_hi_pad = v_min - pad, v_max + pad
+        y_gridline_vals = [
+            t for t in nice_ticks_range(y_lo_pad, y_hi_pad, n=6) if y_lo_pad - 1e-9 <= t <= y_hi_pad + 1e-9
+        ]
     for val in y_gridline_vals:
         ty = y_for(val)
         parts.append(

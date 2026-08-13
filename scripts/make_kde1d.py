@@ -31,6 +31,7 @@ from typing import Any, Dict, List, Optional
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
+from _scale import nice_ticks, nice_ticks_range  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
@@ -117,7 +118,14 @@ def build_svg(
     step = (x_hi - x_lo) / (n_points - 1)
     x_eval = [x_lo + i * step for i in range(n_points)]
     density = _gaussian_kde(samples, x_eval, bandwidth)
-    peak = max(density) * 1.12
+    # Nice, round y-tick values (Heckbert 1990, shared with bar/area/etc.)
+    # instead of raw_max/4 fractions — the old `peak * i / 4` scheme produced
+    # unreadable labels like 0.434/0.326/0.217/0.109. An 8% pre-pad before
+    # rounding guarantees the curve's true peak always sits under the top
+    # gridline with a sliver of headroom, even when the raw max already
+    # lands exactly on a nice number.
+    y_tick_vals = nice_ticks(max(density) * 1.08, 4)
+    peak = y_tick_vals[-1]
 
     plot_x, plot_y = 60.0, 118.0
     right_margin, bottom_reserved = 30.0, 60.0
@@ -151,9 +159,7 @@ def build_svg(
     parts.append(f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>')
 
     # ---- gridlines ----
-    y_ticks = 4
-    for i in range(y_ticks + 1):
-        val = peak * i / y_ticks
+    for val in y_tick_vals:
         ty = y_for(val)
         parts.append(
             f'<line x1="{plot_x:.1f}" y1="{ty:.1f}" x2="{plot_x + plot_w:.1f}" y2="{ty:.1f}" '
@@ -184,13 +190,18 @@ def build_svg(
         f'<line x1="{plot_x:.1f}" y1="{axis_y:.1f}" x2="{plot_x + plot_w:.1f}" y2="{axis_y:.1f}" '
         f'stroke="{INK}" stroke-width="1.2"/>'
     )
-    x_ticks = 7
-    for i in range(x_ticks + 1):
-        val = x_lo + (x_hi - x_lo) * i / x_ticks
+    # Nice, round x-tick values (shared _scale.nice_ticks_range helper,
+    # already adopted by make_beeswarm.py) instead of the old
+    # x_lo + span*i/7 fractions, which produced unreadable labels like
+    # 3.1/4.3/6.6/7.7/8.9. Ticks landing outside the padded [x_lo, x_hi]
+    # window are dropped, matching the beeswarm call site's own filter.
+    for val in nice_ticks_range(x_lo, x_hi, 7):
+        if val < x_lo - 1e-9 or val > x_hi + 1e-9:
+            continue
         tx = x_for(val)
         parts.append(
             f'<text x="{tx:.1f}" y="{axis_y + 20:.1f}" font-size="11" font-family="{mono_family}" '
-            f'fill="{SECONDARY}" text-anchor="middle">{val:.1f}</text>'
+            f'fill="{SECONDARY}" text-anchor="middle">{val:.3g}</text>'
         )
     parts.append(
         f'<text x="{plot_x + plot_w / 2:.1f}" y="{axis_y + 42:.1f}" font-size="13" '

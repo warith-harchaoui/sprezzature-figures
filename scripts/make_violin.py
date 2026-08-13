@@ -33,6 +33,7 @@ from typing import Any, Dict, List, Optional
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
+from _scale import nice_ticks_range  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY, cycle_hues  # noqa: E402
 from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
@@ -122,8 +123,10 @@ def build_svg(
     groups = [g for g in GROUPS if g in seen_groups] + [g for g in seen_groups if g not in GROUPS]
     colors = _group_colors(groups, accessibility, theme=theme)
     all_vals = [float(r["y"]) for r in rows]
-    y_min, y_max = min(all_vals), max(all_vals)
-    y_pad = (y_max - y_min) * 0.08 or 1.0
+    raw_y_min, raw_y_max = min(all_vals), max(all_vals)
+    y_pad = (raw_y_max - raw_y_min) * 0.08 or 1.0
+    y_gridline_vals = nice_ticks_range(raw_y_min - y_pad, raw_y_max + y_pad, 5)
+    y_min, y_max = y_gridline_vals[0], y_gridline_vals[-1]
 
     plot_x, plot_y = 60.0, 118.0
     right_margin, bottom_reserved = 30.0, 60.0
@@ -134,7 +137,7 @@ def build_svg(
     violin_half_w = bin_w * 0.38
 
     def y_for(v: float) -> float:
-        return plot_y + plot_h - (v - (y_min - y_pad)) / ((y_max + y_pad) - (y_min - y_pad)) * plot_h
+        return plot_y + plot_h - (v - y_min) / ((y_max - y_min) or 1.0) * plot_h
 
     parts: List[str] = []
     parts.append(svg_open(width, height, "vio-title", "vio-desc", font_family=chrome_stack_for_theme(theme)))
@@ -158,9 +161,7 @@ def build_svg(
     parts.append(f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>')
 
     # ---- gridlines ----
-    y_ticks = 5
-    for i in range(y_ticks + 1):
-        val = (y_min - y_pad) + ((y_max + y_pad) - (y_min - y_pad)) * i / y_ticks
+    for val in y_gridline_vals:
         ty = y_for(val)
         parts.append(
             f'<line x1="{plot_x:.1f}" y1="{ty:.1f}" x2="{plot_x + plot_w:.1f}" y2="{ty:.1f}" '

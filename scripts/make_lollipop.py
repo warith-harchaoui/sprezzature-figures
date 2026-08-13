@@ -26,6 +26,7 @@ from typing import Any, Dict, List, Optional
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
+from _scale import nice_ticks  # noqa: E402
 from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
@@ -121,8 +122,17 @@ def build_svg(
     n = len(rows)
     row_h = plot_h / n if n else plot_h
 
+    # Nice, round tick values (shared _scale.nice_ticks, the house
+    # convention) instead of raw max_v/5 fractions, which produced
+    # unreadable labels like 0/18/36/55/73/91. The axis domain is the nice
+    # ceiling itself (e.g. 100 for a max of 91), so the top gridline lands
+    # on the plot's right edge and the ad hoc "* 0.92" headroom fudge factor
+    # is no longer needed — the nice ceiling already provides it.
+    x_tick_vals = nice_ticks(max_v, 5)
+    x_domain = x_tick_vals[-1] or 1.0
+
     def x_for(v: float) -> float:
-        return plot_x + v / max_v * plot_w * 0.92
+        return plot_x + v / x_domain * plot_w
 
     parts: List[str] = []
     parts.append(svg_open(width, height, "lp-title", "lp-desc", font_family=chrome_stack_for_theme(theme)))
@@ -151,9 +161,7 @@ def build_svg(
     parts.append(f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>')
 
     # ---- x-axis gridlines ----
-    x_ticks = 5
-    for i in range(x_ticks + 1):
-        val = max_v * i / x_ticks
+    for val in x_tick_vals:
         tx = x_for(val)
         parts.append(
             f'<line x1="{tx:.1f}" y1="{plot_y:.1f}" x2="{tx:.1f}" y2="{plot_y + plot_h:.1f}" '

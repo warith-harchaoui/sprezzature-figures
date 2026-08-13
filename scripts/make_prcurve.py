@@ -60,7 +60,7 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 import numpy as np
 
@@ -172,6 +172,7 @@ def _thin(
     thresholds: np.ndarray,
     model: str,
     max_points: int = 120,
+    must_keep: Sequence[int] = (),
 ) -> List[Dict[str, Any]]:
     """Down-sample a dense PR curve to a plottable record list.
 
@@ -188,6 +189,13 @@ def _thin(
         Label carried on every record.
     max_points : int, optional
         Target number of points to keep. Default 120.
+    must_keep : sequence of int, optional
+        Extra indices to force into the retained set even when they'd
+        otherwise be thinned away — used so the shipped (max-F1) operating
+        point marker always lands exactly on the drawn polyline instead of
+        floating near it (evenly-spaced thinning has no reason to land on
+        the argmax-F1 index, and PR curves are step functions, so a marker
+        placed at a dropped index can visibly miss the line).
 
     Returns
     -------
@@ -202,6 +210,8 @@ def _thin(
         idx = np.arange(n)
     else:
         idx = np.unique(np.linspace(0, n - 1, max_points).astype(int))
+        if must_keep:
+            idx = np.unique(np.concatenate([idx, np.asarray(must_keep, dtype=int)]))
     return [
         {
             "recall": round(float(recall[i]), 4),
@@ -318,14 +328,17 @@ def make_data(data: Optional[List[Dict[str, Any]]] = None) -> Dict[str, Any]:
     for label, score_key in _ROW_MODELS.items():
         scores = np.array([float(r[score_key]) for r in rows])
         recall, precision, thresholds, average_precision = _pr_from_scores(y_true, scores)
-        curves.extend(_thin(recall, precision, thresholds, label))
-        ap[label] = round(average_precision, 3)
 
         # Highlight one operating point per model: the threshold that
         # maximises the F1 score (the harmonic mean of precision and
-        # recall) — the point a practitioner would ship.
+        # recall) — the point a practitioner would ship. Computed before
+        # thinning so `best`'s index can be forced into the retained set
+        # (see `_thin`'s `must_keep` — otherwise the marker can float off
+        # the drawn polyline).
         f1 = 2.0 * precision * recall / np.maximum(precision + recall, 1e-12)
         best = int(np.argmax(f1[1:])) + 1  # skip the (0, 1) anchor
+        curves.extend(_thin(recall, precision, thresholds, label, must_keep=[best]))
+        ap[label] = round(average_precision, 3)
         points.append(
             {
                 "recall": round(float(recall[best]), 4),

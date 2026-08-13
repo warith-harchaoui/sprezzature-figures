@@ -38,6 +38,24 @@ from _style import BG, GRIDLINE, INK, SECONDARY  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 
+def _nice_step(span: float, target_ticks: int = 5) -> float:
+    """Pick a 1/2/5-times-a-power-of-ten step so ``span / step`` ~= `target_ticks`.
+
+    Both axes are data-driven windows that don't anchor at 0, so
+    `_scale.nice_ticks` (zero-anchored, rounds the ceiling) doesn't fit.
+    Rounding just the step (Heckbert 1990) turns a naive `span / n` divide --
+    which used to print labels like `-0.98`/`0.81`/`2.6`/`4.4`/`6.2` on x and
+    `-0.55`/`1.2`/`3.0`/`4.7`/`6.5`/`8.3` on y -- into round, scannable values.
+    """
+    if span <= 0:
+        return 1.0
+    raw_step = span / target_ticks
+    exponent = math.floor(math.log10(raw_step))
+    fraction = raw_step / (10.0**exponent)
+    nice_fraction = 1.0 if fraction < 1.5 else 2.0 if fraction < 3 else 5.0 if fraction < 7 else 10.0
+    return nice_fraction * (10.0**exponent)
+
+
 _RAMP: Tuple[Tuple[float, str], ...] = (
     (0.00, "#EAF3FF"), (0.25, "#9CC7FF"), (0.55, "#3E9BFF"),
     (0.80, "#007AFF"), (1.00, "#0A4DA0"),
@@ -213,19 +231,22 @@ def build_svg(
     )
     parts.append(f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>')
 
-    # ---- y-axis gridlines + tick labels (drawn first so hex cells sit on top) ----
-    y_ticks = 5
-    for i in range(y_ticks + 1):
-        val = y_min + (y_max - y_min) * i / y_ticks
-        ty = y_for(val)
-        parts.append(
-            f'<line x1="{plot_x:.1f}" y1="{ty:.1f}" x2="{plot_x + plot_w:.1f}" y2="{ty:.1f}" '
-            f'stroke="{GRIDLINE}" stroke-width="1"/>'
-        )
-        parts.append(
-            f'<text x="{plot_x - 10:.1f}" y="{ty + 4:.1f}" font-size="11" font-family="{mono_family}" '
-            f'fill="{SECONDARY}" text-anchor="end">{fmt_number(val)}</text>'
-        )
+    # ---- y-axis gridlines + tick labels (round "nice" steps, not a naive
+    # 5-way split; drawn first so hex cells sit on top) ----
+    y_step = _nice_step(y_max - y_min, 5)
+    val = math.floor(y_min / y_step) * y_step
+    while val <= y_max + 1e-9:
+        if val >= y_min - 1e-9:
+            ty = y_for(val)
+            parts.append(
+                f'<line x1="{plot_x:.1f}" y1="{ty:.1f}" x2="{plot_x + plot_w:.1f}" y2="{ty:.1f}" '
+                f'stroke="{GRIDLINE}" stroke-width="1"/>'
+            )
+            parts.append(
+                f'<text x="{plot_x - 10:.1f}" y="{ty + 4:.1f}" font-size="11" font-family="{mono_family}" '
+                f'fill="{SECONDARY}" text-anchor="end">{fmt_number(val)}</text>'
+            )
+        val += y_step
 
     # ---- hex cells, clipped to the plot rectangle so no cell bleeds into the
     # margin (a hex centred near an edge still has corners past plot_x/plot_y) ----
@@ -265,18 +286,20 @@ def build_svg(
         f'<line x1="{plot_x:.1f}" y1="{plot_y:.1f}" x2="{plot_x:.1f}" y2="{axis_y:.1f}" '
         f'stroke="{INK}" stroke-width="1.2"/>'
     )
-    x_ticks = 5
-    for i in range(x_ticks + 1):
-        val = x_min + (x_max - x_min) * i / x_ticks
-        tx = x_for(val)
-        parts.append(
-            f'<line x1="{tx:.1f}" y1="{axis_y:.1f}" x2="{tx:.1f}" y2="{axis_y + 6:.1f}" '
-            f'stroke="{INK}" stroke-width="1"/>'
-        )
-        parts.append(
-            f'<text x="{tx:.1f}" y="{axis_y + 20:.1f}" font-size="11" font-family="{mono_family}" '
-            f'fill="{SECONDARY}" text-anchor="middle">{fmt_number(val)}</text>'
-        )
+    x_step = _nice_step(x_max - x_min, 5)
+    val = math.floor(x_min / x_step) * x_step
+    while val <= x_max + 1e-9:
+        if val >= x_min - 1e-9:
+            tx = x_for(val)
+            parts.append(
+                f'<line x1="{tx:.1f}" y1="{axis_y:.1f}" x2="{tx:.1f}" y2="{axis_y + 6:.1f}" '
+                f'stroke="{INK}" stroke-width="1"/>'
+            )
+            parts.append(
+                f'<text x="{tx:.1f}" y="{axis_y + 20:.1f}" font-size="11" font-family="{mono_family}" '
+                f'fill="{SECONDARY}" text-anchor="middle">{fmt_number(val)}</text>'
+            )
+        val += x_step
     parts.append(
         f'<text x="{plot_x + plot_w / 2:.1f}" y="{axis_y + 42:.1f}" font-size="13" '
         f'fill="{INK}" text-anchor="middle">x</text>'

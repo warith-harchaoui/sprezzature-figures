@@ -26,7 +26,7 @@ from typing import Any, Dict, List, Optional
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _scale import log_position, log_ticks  # noqa: E402
+from _scale import log_position, log_ticks, nice_ticks  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY, cycle_hues  # noqa: E402
 from _svg import fmt_number, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
@@ -148,9 +148,15 @@ def build_svg(
         def y_for(v: float) -> float:
             return log_position(v, y_lo, y_hi, plot_y + plot_h, plot_y)
     else:
+        # Round the axis ceiling up to a "nice" number (nice_ticks) instead of
+        # scaling to the raw peak -- see _scale.nice_ticks. y_domain (>= max_total)
+        # is what the fill actually scales against, so the gridlines drawn
+        # below from the same tick list always land on the plot's top edge.
+        y_ticks = nice_ticks(max_total)
+        y_domain = y_ticks[-1] or 1.0
 
         def y_for(v: float) -> float:
-            return plot_y + plot_h - (v / max_total * plot_h if max_total else 0.0)
+            return plot_y + plot_h - (v / y_domain * plot_h if y_domain else 0.0)
 
     parts: List[str] = []
     parts.append(svg_open(width, height, "area-title", "area-desc", font_family=chrome_stack_for_theme(theme)))
@@ -199,11 +205,9 @@ def build_svg(
             cursor += 18 + 7.2 * len(ch) + 22
 
     # ---- y-axis gridlines ----
-    if log_y:
-        y_gridline_vals = y_ticks
-    else:
-        y_step = max_total / 4.0
-        y_gridline_vals = [i * y_step for i in range(5)]
+    # y_ticks is already the right list for both branches: log_ticks(...) above
+    # for log_y, nice_ticks(...) above otherwise.
+    y_gridline_vals = y_ticks
     for val in y_gridline_vals:
         ty = y_for(val)
         parts.append(

@@ -368,10 +368,6 @@ def build_svg(
         f'Cumulative-gain curve: churners reached vs share of the '
         f'model-ranked base contacted</text>'
     )
-    parts.append(
-        f'<text x="{m_left}" y="156" font-size="20" fill="{secondary}">'
-        f'</text>'
-    )
 
     # --- gridlines (very light, on the shared 0..1 grid) ---------
     for t in ticks:

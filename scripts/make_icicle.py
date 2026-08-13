@@ -311,7 +311,7 @@ def render_svg(
     # categorical level would de-tune them. Reference it so linters see it used.
     del accessibility
     tree = tree if tree else TREE
-    width, height = 1300, 860
+    width = 1300
     plot_x, plot_y = 88.0, 234.0
     plot_w = width - plot_x - 88.0
     row_h = 74.0
@@ -327,6 +327,13 @@ def render_svg(
     rects: List[Dict[str, Any]] = []
     flatten(tree, 0, 0.0, px_per_ms, rects)
     max_depth = max(r["depth"] for r in rects)
+
+    # Canvas height is derived from the tree's own depth (rows) plus the
+    # fixed-height callout + legend band beneath it, instead of a constant —
+    # a hardcoded 860px left ~120px of dead white space below the legend for
+    # the 5-row demo tree, and would clip a deeper tree instead of growing.
+    _rows_bottom = plot_y + (max_depth + 1) * (row_h + row_gap)
+    height = int(round(_rows_bottom + 46.0 + 40.0 + 50.0))
 
     parts: List[str] = []
     parts.append(svg_open(width, height, "ice-t", "ice-d", font_family=chrome_stack_for_theme(theme)))

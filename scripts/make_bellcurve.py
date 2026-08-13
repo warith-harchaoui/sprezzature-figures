@@ -28,7 +28,8 @@ from typing import Any, Dict, List, Optional
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _svg import svg_open, xml_escape  # noqa: E402
+from _scale import nice_ticks, nice_ticks_range  # noqa: E402
+from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
@@ -92,7 +93,13 @@ def build_svg(
     x_min, x_max = mean - 4.0 * std, mean + 4.0 * std
     step = (x_max - x_min) / (n_points - 1)
     curve = [(x_min + i * step, _normal_pdf(x_min + i * step, mean, std)) for i in range(n_points)]
-    peak_y = max(y for _, y in curve) * 1.18
+    peak_density = max(y for _, y in curve)
+    # Nice round y-axis ticks (see _scale.nice_ticks) replace the old ad hoc
+    # "raw peak * 1.18" headroom fudge -- both the tick values (previously
+    # ugly quarters like 0.0103/0.0207/0.0310/0.0414/0.0517) and the axis
+    # ceiling now come from the same rounded-up nice scale.
+    y_tick_vals = nice_ticks(peak_density, n=5)
+    peak_y = y_tick_vals[-1] if y_tick_vals[-1] > 0 else peak_density * 1.18
 
     plot_x, plot_y = 76.0, 118.0
     right_margin, bottom_reserved = 30.0, 70.0
@@ -109,6 +116,17 @@ def build_svg(
     parts.append(svg_open(width, height, "bc-title", "bc-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="bc-title">{xml_escape(title)}</title>')
     parts.append(f'<desc id="bc-desc">{xml_escape(subtitle)}</desc>')
+    # House hover-tooltip pattern (previously absent from this generator --
+    # every mark had a bare native <title> but no .hit/.tip reveal, no
+    # :hover/:focus CSS at all, and no reduced-motion guard, unlike the rest
+    # of the library since the tooltip_bubble standardisation).
+    parts.append(
+        "<style>"
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
+        "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
+        "</style>"
+    )
 
     parts.append(f'<rect width="{width}" height="{height}" fill="{BG}"/>')
     parts.append(
@@ -118,9 +136,7 @@ def build_svg(
     parts.append(f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>')
 
     # ---- y-axis gridlines ----
-    y_ticks = 5
-    for i in range(y_ticks + 1):
-        val = peak_y * i / y_ticks
+    for val in y_tick_vals:
         ty = y_for(val)
         parts.append(
             f'<line x1="{plot_x:.1f}" y1="{ty:.1f}" x2="{plot_x + plot_w:.1f}" y2="{ty:.1f}" '
@@ -141,9 +157,12 @@ def build_svg(
         f'<line x1="{plot_x:.1f}" y1="{axis_y:.1f}" x2="{plot_x + plot_w:.1f}" y2="{axis_y:.1f}" '
         f'stroke="{INK}" stroke-width="1"/>'
     )
-    x_ticks = 8
-    for i in range(x_ticks + 1):
-        val = x_min + (x_max - x_min) * i / x_ticks
+    # Nice round x-axis ticks (see _scale.nice_ticks_range) instead of raw
+    # eighths of mean+-4std, which produced labels like 36/45/54/63/72/81/
+    # 91/100/109. Clipped to [x_min, x_max] so no tick lands outside the
+    # plotted domain (x_for is not defined past that range).
+    x_tick_vals = [t for t in nice_ticks_range(x_min, x_max, n=8) if x_min - 1e-9 <= t <= x_max + 1e-9]
+    for val in x_tick_vals:
         tx = x_for(val)
         parts.append(
             f'<text x="{tx:.1f}" y="{axis_y + 20:.1f}" font-size="11" font-family="{mono_family}" '
@@ -158,23 +177,59 @@ def build_svg(
     top_pts = [(x_for(x), y_for(y)) for x, y in curve]
     path_d = "M " + " L ".join(f"{x:.1f},{y:.1f}" for x, y in top_pts)
     path_d += f" L {top_pts[-1][0]:.1f},{axis_y:.1f} L {top_pts[0][0]:.1f},{axis_y:.1f} Z"
-    tip = f"Normal(mean={mean:.1f}, std={std:.1f}), peak density {max(y for _, y in curve):.4f} at x={mean:.1f}"
+    tip = f"Normal(mean={mean:.1f}, std={std:.1f}), peak density {peak_density:.4f} at x={mean:.1f}"
     parts.append(
-        f'<path tabindex="0" d="{path_d}" fill="{COLOR_FILL}" fill-opacity="0.25" '
+        f'<path class="hit" tabindex="0" d="{path_d}" fill="{COLOR_FILL}" fill-opacity="0.25" '
         f'stroke="{COLOR_STROKE}" stroke-width="2.5"><title>{xml_escape(tip)}</title></path>'
+    )
+    peak_x, peak_y_px = x_for(mean), y_for(peak_density)
+    parts.append(
+        tooltip_bubble(
+            peak_x, peak_y_px - 14,
+            [f"Normal(μ={mean:.1f}, σ={std:.1f})", f"peak density {peak_density:.4f} at x={mean:.1f}"],
+            canvas_w=width, canvas_h=height, ink=INK, secondary=SECONDARY, border=GRIDLINE,
+        )
     )
 
     # ---- annotation lines: mean and +-1 sigma ----
+    # ~34.1% of the area under a normal curve lies between the mean and one
+    # sigma on either side (the standard 68-95-99.7 rule); surfaced in the
+    # sigma tooltips since the on-canvas label only shows the raw value.
     annotations = [
-        (mean, f"μ = {mean:.1f}", COLOR_MEAN),
-        (mean - std, f"−1σ ({mean - std:.1f})", COLOR_SIGMA1),
-        (mean + std, f"+1σ ({mean + std:.1f})", COLOR_SIGMA1),
+        (mean, f"μ = {mean:.1f}", COLOR_MEAN, ["μ (mean)", f"{mean:.1f}", "center of the distribution"]),
+        (
+            mean - std,
+            f"−1σ ({mean - std:.1f})",
+            COLOR_SIGMA1,
+            ["−1σ", f"{mean - std:.1f}", "~34.1% of the area lies between here and μ"],
+        ),
+        (
+            mean + std,
+            f"+1σ ({mean + std:.1f})",
+            COLOR_SIGMA1,
+            ["+1σ", f"{mean + std:.1f}", "~34.1% of the area lies between μ and here"],
+        ),
     ]
-    for x_val, label, color in annotations:
+    for x_val, label, color, tip_lines in annotations:
         ax = x_for(x_val)
         parts.append(
             f'<line x1="{ax:.1f}" y1="{plot_y:.1f}" x2="{ax:.1f}" y2="{axis_y:.1f}" '
             f'stroke="{color}" stroke-width="1.5" stroke-dasharray="5 3"/>'
+        )
+        # Fat transparent hit-stroke over the (1.5px) visible dashed line so
+        # it is a realistic hover/focus target, immediately followed by its
+        # tooltip bubble -- the `.hit:hover+.tip` adjacent-sibling rule needs
+        # the two elements next to each other in document order.
+        parts.append(
+            f'<line class="hit" tabindex="0" x1="{ax:.1f}" y1="{plot_y:.1f}" x2="{ax:.1f}" y2="{axis_y:.1f}" '
+            f'stroke="transparent" stroke-width="14"/>'
+        )
+        parts.append(
+            tooltip_bubble(
+                ax, plot_y - 26,
+                tip_lines,
+                canvas_w=width, canvas_h=height, ink=INK, secondary=SECONDARY, border=GRIDLINE,
+            )
         )
         parts.append(
             f'<text x="{ax:.1f}" y="{plot_y - 8:.1f}" font-size="11" font-family="{mono_family}" '

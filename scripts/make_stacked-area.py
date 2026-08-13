@@ -28,6 +28,7 @@ from typing import Any, Dict, List, Optional
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
+from _scale import nice_ticks  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY, cycle_hues  # noqa: E402
 from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
@@ -116,8 +117,12 @@ def build_svg(
     def x_for(m: float) -> float:
         return plot_x + (m - x_min) / ((x_max - x_min) or 1.0) * plot_w
 
-    y_step = max_total / 4.0
-    y_ticks = [i * y_step for i in range(5)]
+    # Nice round tick values (Heckbert "nice numbers") instead of naive
+    # linear division of max_total into 4 raw steps -- max_total/4.0-style
+    # division lands the top gridline exactly on the data peak but produces
+    # unscannable labels like 16/32/49/65 instead of 0/16/32/48/64 or
+    # similar round numbers a reader can do mental math with.
+    y_ticks = nice_ticks(max_total, 4)
     y_domain = y_ticks[-1] or 1.0
 
     def y_for(v: float) -> float:
