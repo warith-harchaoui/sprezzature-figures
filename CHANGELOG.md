@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+### Added
+
+- **Explicit axis/color-scale overrides on `heatmap` and `line-multi`,**
+  for callers who need several figures to share one comparable scale
+  instead of each auto-scaling to its own data (a before/after pair, or a
+  fixed print-figure grid). `make_heatmap`/`build_svg` gained `vmin`/`vmax`
+  (color-ramp extremes, both CLI-exposed as `--vmin`/`--vmax`);
+  `make_line_multi`/`build_svg` gained `x_domain`/`y_domain` (explicit axis
+  bounds), `x_tick_step`/`y_tick_step` (evenly-spaced labeled ticks via the
+  new `_scale.fixed_step_ticks`), and `y_minor_step` (unlabeled minor
+  gridlines, requires `y_domain`) — all five auto-exposed as CLI flags
+  through `_render.py`'s existing `_OPTIONAL_FLAGS` registry (including a
+  new `"lo,hi"` parser for the two tuple-shaped domain flags). Left unset,
+  every one of these generators renders byte-identical to before. Covered
+  by `tests/test_axis_overrides.py`.
+
 ### Removed
 
 - **`choropleth` and `situation_map` moved to their own repo,
@@ -15,6 +31,12 @@
   `hexbin-map`, `spike-map`) stayed here, unaffected.
 
 ### Fixed
+
+- **`_scale.fixed_step_ticks` no longer overshoots `hi`.** When `step` did
+  not evenly divide `hi - lo` (e.g. a 24-hour axis ticked every 3 units
+  from a 23-inclusive domain), a naive `round()` of the tick count could
+  place the last tick past `hi`, rendering a gridline/label outside the
+  plotted axis.
 
 - **All 126 registered chart kinds are now `status="stable"`, up from 46.**
   The other 80 were stuck at `status="legacy"`: real, complete generators

@@ -29,7 +29,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY, cycle_hues  # noqa: E402
-from _scale import log_position, log_ticks, nice_ticks  # noqa: E402
+from _scale import fixed_step_ticks, log_position, log_ticks, nice_ticks, nice_ticks_range  # noqa: E402
 from _svg import fmt_number, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
@@ -65,6 +65,11 @@ def build_svg(
     log_x: bool = False,
     log_y: bool = False,
     theme: str = "corporate",
+    x_domain: Optional[tuple] = None,
+    x_tick_step: Optional[float] = None,
+    y_domain: Optional[tuple] = None,
+    y_tick_step: Optional[float] = None,
+    y_minor_step: Optional[float] = None,
 ) -> str:
     """Assemble the full multi-series (continuous-axis) line chart SVG document as a string.
 
@@ -84,6 +89,22 @@ def build_svg(
         Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
         the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
         See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
+    x_domain, y_domain : tuple of (float, float), optional
+        Explicit ``(lo, hi)`` axis bounds, overriding the default of the
+        data's own min/max (x) or a 0-anchored nice ceiling (y). Ignored for
+        an axis in log mode.
+    x_tick_step, y_tick_step : float, optional
+        Explicit, evenly-spaced labeled-tick step (see
+        :func:`_scale.fixed_step_ticks`), overriding the default heuristic
+        tick placement. Requires the matching `x_domain`/`y_domain` to be
+        set too (the step needs bounds to walk between). Ignored in log
+        mode.
+    y_minor_step : float, optional
+        When set, draws unlabeled minor gridlines across `y_domain` at this
+        step, in addition to the labeled `y_tick_step` ones -- for a case
+        where the meaningful grid is finer than what could legibly carry a
+        label on every line (e.g. a 0.1 grid with a label only every 0.5).
+        Requires `y_domain`.
 
     Returns
     -------
@@ -106,7 +127,7 @@ def build_svg(
     max_val = max(all_vals) if all_vals else 1.0
     pos_vals = [v for v in all_vals if v > 0]
     min_pos = min(pos_vals) if pos_vals else 1.0
-    x_min, x_max = min(hours), max(hours)
+    x_min, x_max = (float(x_domain[0]), float(x_domain[1])) if x_domain else (min(hours), max(hours))
     x_pos = [h for h in hours if h > 0]
     xlog_min = min(x_pos) if x_pos else 1.0
 
@@ -127,15 +148,21 @@ def build_svg(
 
         def y_for(v: float) -> float:
             return log_position(v, y_lo, y_hi, plot_y + plot_h, plot_y)
+    elif y_domain:
+        y_lo, y_hi = float(y_domain[0]), float(y_domain[1])
+        y_ticks = fixed_step_ticks(y_lo, y_hi, y_tick_step) if y_tick_step else nice_ticks_range(y_lo, y_hi)
+
+        def y_for(v: float) -> float:
+            return plot_y + plot_h - (v - y_lo) / ((y_hi - y_lo) or 1.0) * plot_h
     else:
         # Nice, round ticks (shared _scale.nice_ticks, the house convention
         # used by make_bar.py/make_area.py/etc.) instead of raw max_val/4
         # fractions, which produced unreadable labels like 124/93/62/31/0.
         y_ticks = nice_ticks(max_val, 4)
-        y_domain = y_ticks[-1] or 1.0
+        y_lo, y_hi = 0.0, (y_ticks[-1] or 1.0)
 
         def y_for(v: float) -> float:
-            return plot_y + plot_h - (v / y_domain * plot_h)
+            return plot_y + plot_h - (v / y_hi * plot_h)
 
     parts: List[str] = []
     parts.append(svg_open(width, height, "lm-title", "lm-desc", font_family=chrome_stack_for_theme(theme)))
@@ -178,6 +205,15 @@ def build_svg(
         )
         parts.append(f'<text x="{cursor + 22:.1f}" y="{ly2:.1f}" font-size="12" fill="{INK}">{xml_escape(s)}</text>')
         cursor += 22 + 7.2 * len(s) + 20
+
+    # ---- y-axis minor gridlines (unlabeled, finer than the labeled ticks) ----
+    if y_minor_step and y_domain:
+        for tick in fixed_step_ticks(y_lo, y_hi, y_minor_step):
+            ty = y_for(tick)
+            parts.append(
+                f'<line x1="{plot_x:.1f}" y1="{ty:.1f}" x2="{plot_x + plot_w:.1f}" y2="{ty:.1f}" '
+                f'stroke="{GRIDLINE}" stroke-width="0.5" opacity="0.5"/>'
+            )
 
     # ---- y-axis gridlines ----
     for tick in y_ticks:
@@ -230,10 +266,13 @@ def build_svg(
         f'<line x1="{plot_x:.1f}" y1="{axis_y:.1f}" x2="{plot_x + plot_w:.1f}" y2="{axis_y:.1f}" '
         f'stroke="{INK}" stroke-width="1.2"/>'
     )
-    # x ticks: decade ticks (log), the classic every-3rd-hour rule for small integer axes
-    # (keeps the demo unchanged), or ~8 evenly-spaced samples for a wide continuous range.
+    # x ticks: decade ticks (log), an explicit fixed step (opt-in), the classic
+    # every-3rd-hour rule for small integer axes (keeps the demo unchanged), or
+    # ~8 evenly-spaced samples for a wide continuous range.
     if log_x:
         xticks = [d for d in log_ticks(xlog_min, x_max) if x_min * 0.9999 <= d <= x_max * 1.0000001]
+    elif x_tick_step and x_domain:
+        xticks = fixed_step_ticks(x_min, x_max, x_tick_step)
     elif x_max <= 24 and all(float(h).is_integer() for h in hours):
         xticks = [h for h in hours if int(h) % 3 == 0]
     else:
@@ -269,6 +308,11 @@ def make_line_multi(
     log_x: bool = False,
     log_y: bool = False,
     theme: str = "corporate",
+    x_domain: Optional[tuple] = None,
+    x_tick_step: Optional[float] = None,
+    y_domain: Optional[tuple] = None,
+    y_tick_step: Optional[float] = None,
+    y_minor_step: Optional[float] = None,
 ) -> Path:
     """Render a hand-authored multi-series (continuous-axis) line chart and write the SVG to *out*.
 
@@ -287,6 +331,10 @@ def make_line_multi(
         Forwarded to :func:`build_svg`.
     theme : str, optional
         Visual theme. Forwarded to :func:`build_svg`.
+    x_domain, x_tick_step, y_domain, y_tick_step, y_minor_step : optional
+        Explicit axis control, forwarded to :func:`build_svg`; see its
+        docstring. Left at their defaults, the axes behave exactly as
+        before (data-driven domain, heuristic ticks).
 
     Returns
     -------
@@ -301,7 +349,9 @@ def make_line_multi(
     """
     svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
                      mode=mode, accessibility=accessibility, x_label=x_label, y_label=y_label,
-                     log_x=log_x, log_y=log_y, theme=theme)
+                     log_x=log_x, log_y=log_y, theme=theme, x_domain=x_domain,
+                     x_tick_step=x_tick_step, y_domain=y_domain, y_tick_step=y_tick_step,
+                     y_minor_step=y_minor_step)
     dest = Path(out) if out else svg_example_path(__file__, "line-multi")
     return write_svg(dest, svg, theme=theme)
 

@@ -134,6 +134,8 @@ def build_svg(
     show_cell_labels: bool = True,
     square: bool = False,
     theme: str = "corporate",
+    vmin: Optional[float] = None,
+    vmax: Optional[float] = None,
 ) -> str:
     """Assemble the full row x column heatmap SVG document as a string.
 
@@ -160,6 +162,11 @@ def build_svg(
         sequential blue ramp itself is not re-themed (no categorical hues to
         swap), matching the same deferral as other generators' sequential
         ramps.
+    vmin, vmax : float, optional
+        Explicit color-scale extremes, overriding the default of this
+        call's own data min/max. Set both to the same fixed values across
+        several heatmaps (e.g. a before/after pair) so their color ramps
+        stay comparable instead of each auto-scaling to its own range.
 
     Returns
     -------
@@ -173,8 +180,8 @@ def build_svg(
     n_r, n_c = len(days), len(hours)
 
     values = list(lookup.values())
-    vmax = max(values) if values else 0.0
-    vmin = min(values) if values else 0.0
+    vmax = vmax if vmax is not None else (max(values) if values else 0.0)
+    vmin = vmin if vmin is not None else (min(values) if values else 0.0)
     total = sum(values)
     peak_key = max(lookup, key=lambda k: lookup[k]) if lookup else (None, None)
 
@@ -358,6 +365,8 @@ def make_heatmap(
     show_cell_labels: bool = True,
     square: bool = False,
     theme: str = "corporate",
+    vmin: Optional[float] = None,
+    vmax: Optional[float] = None,
 ) -> Path:
     """Render a hand-authored row x column heatmap and write the SVG to *out*.
 
@@ -374,6 +383,8 @@ def make_heatmap(
         Canvas size in pixels.
     mode, accessibility, theme : str
         Forwarded to :func:`build_svg`.
+    vmin, vmax : float, optional
+        Forwarded to :func:`build_svg`; see its docstring.
 
     Returns
     -------
@@ -390,7 +401,7 @@ def make_heatmap(
         data, title=title, subtitle=subtitle, width=width, height=height,
         mode=mode, accessibility=accessibility, x_label=x_label, y_label=y_label,
         legend_label=legend_label, show_cell_labels=show_cell_labels, square=square,
-        theme=theme,
+        theme=theme, vmin=vmin, vmax=vmax,
     )
     dest = Path(out) if out else svg_example_path(__file__, "heatmap")
     return write_svg(dest, svg, theme=theme)
@@ -415,9 +426,17 @@ if __name__ == "__main__":
         default="corporate",
         help="visual theme: corporate (default, Roboto) or academic (LaTeX-style Latin Modern)",
     )
+    p.add_argument(
+        "--vmin", type=float, default=None,
+        help="explicit color-scale minimum (default: this call's own data min)",
+    )
+    p.add_argument(
+        "--vmax", type=float, default=None,
+        help="explicit color-scale maximum (default: this call's own data max)",
+    )
     args = p.parse_args()
     make_heatmap(
         out=args.out, title=args.title, subtitle=args.subtitle,
         width=args.width, height=args.height, mode=args.mode, accessibility=args.accessibility,
-        theme=args.theme,
+        theme=args.theme, vmin=args.vmin, vmax=args.vmax,
     )
