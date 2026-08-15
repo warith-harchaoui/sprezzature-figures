@@ -285,6 +285,17 @@ def _svg_to_html(svg: str) -> str:
     )
 
 
+def _parse_float_pair(raw: str) -> tuple:
+    """Parse a ``"lo,hi"`` CLI value into a ``(float, float)`` domain tuple.
+
+    Used as an :data:`_OPTIONAL_FLAGS` ``type`` for ``x_domain``/``y_domain``
+    parameters, whose Python-API shape (a 2-tuple) argparse cannot infer on
+    its own.
+    """
+    lo, hi = raw.split(",")
+    return (float(lo), float(hi))
+
+
 #: Extra ``build_svg`` parameters :func:`render_cli` will expose as flags
 #: *when the target generator declares them* — each entry is
 #: ``name -> (flag, type, help)``. This is what lets a bespoke-argparse
@@ -301,6 +312,13 @@ _OPTIONAL_FLAGS: dict = {
     "y_label": ("--y-label", str, "y-axis title (default: the generator's own)"),
     "log_x": ("--log-x", "flag", "use a logarithmic x-axis"),
     "log_y": ("--log-y", "flag", "use a logarithmic y-axis"),
+    "vmin": ("--vmin", float, "explicit color-scale minimum (default: this call's own data min)"),
+    "vmax": ("--vmax", float, "explicit color-scale maximum (default: this call's own data max)"),
+    "x_domain": ("--x-domain", _parse_float_pair, "explicit 'lo,hi' x-axis bounds (default: data min/max)"),
+    "y_domain": ("--y-domain", _parse_float_pair, "explicit 'lo,hi' y-axis bounds (default: a 0-anchored nice ceiling)"),
+    "x_tick_step": ("--x-tick-step", float, "explicit x tick spacing (requires --x-domain)"),
+    "y_tick_step": ("--y-tick-step", float, "explicit y tick spacing (requires --y-domain)"),
+    "y_minor_step": ("--y-minor-step", float, "unlabeled minor gridline spacing (requires --y-domain)"),
 }
 
 

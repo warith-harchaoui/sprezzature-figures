@@ -222,6 +222,45 @@ def nice_ticks_range(lo: float, hi: float, n: int = 5) -> list[float]:
     return [nice_lo + i * step for i in range(count + 1)]
 
 
+def fixed_step_ticks(lo: float, hi: float, step: float) -> list[float]:
+    """Evenly-spaced tick values from `lo` to `hi` at an explicit `step`.
+
+    Unlike :func:`nice_ticks`/:func:`nice_ticks_range`, the step is not
+    rounded to a "nice" 1/2/5 multiple: the caller has already chosen it
+    (e.g. to match a known theoretical bound, or a fixed grid density for a
+    print figure). Values are rounded to 9 decimal places to absorb float
+    accumulation error from repeated addition (``-1.6 + 8 * 0.2`` landing a
+    few ULPs off ``0``).
+
+    Parameters
+    ----------
+    lo, hi : float
+        Inclusive tick range. `hi` must be greater than or equal to `lo`.
+    step : float
+        Spacing between consecutive ticks. Must be positive.
+
+    Returns
+    -------
+    list of float
+        Ascending ticks from `lo` to `hi` (`hi` included when it falls on
+        an exact multiple of `step` from `lo`, within float tolerance).
+        Never exceeds `hi`: when `step` does not evenly divide
+        ``hi - lo``, the last tick lands short of `hi` rather than
+        overshooting it (a naive ``round()`` of the tick count can push
+        the final tick past `hi`, placing a gridline/label outside the
+        plotted axis).
+
+    Examples
+    --------
+    >>> fixed_step_ticks(-1.6, 1.6, 0.2)[:3]
+    [-1.6, -1.4, -1.2]
+    """
+    if step <= 0 or hi < lo:
+        return []
+    n = int(math.floor((hi - lo) / step + 1e-9))
+    return [round(lo + i * step, 9) for i in range(n + 1)]
+
+
 if __name__ == "__main__":  # tiny self-test
     assert log_position(1, 1, 100, 0.0, 100.0) == 0.0
     assert log_position(100, 1, 100, 0.0, 100.0) == 100.0
@@ -231,4 +270,9 @@ if __name__ == "__main__":  # tiny self-test
     assert nice_ticks(0) == [0.0]
     assert nice_ticks_range(14.3, 74.6) == [10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 80.0]
     assert nice_ticks_range(5, 5) == []
+    assert fixed_step_ticks(-1.6, 1.6, 0.2)[0] == -1.6
+    assert fixed_step_ticks(-1.6, 1.6, 0.2)[-1] == 1.6
+    assert len(fixed_step_ticks(-1.6, 1.6, 0.2)) == 17
+    assert fixed_step_ticks(1, 0, 0.1) == []
+    assert fixed_step_ticks(0, 23, 3) == [0.0, 3.0, 6.0, 9.0, 12.0, 15.0, 18.0, 21.0]
     print("_scale self-test OK")
