@@ -35,7 +35,11 @@ from .fonts import register_all as _register_fonts
 # as ``sprezzature_figures_scripts/``. Resolve whichever exists.
 _pkg_parent = Path(__file__).resolve().parent.parent
 _SCRIPTS_DIR = next(
-    (_pkg_parent / name for name in ("scripts", "sprezzature_figures_scripts") if (_pkg_parent / name).is_dir()),
+    (
+        _pkg_parent / name
+        for name in ("scripts", "sprezzature_figures_scripts")
+        if (_pkg_parent / name).is_dir()
+    ),
     _pkg_parent / "scripts",
 )
 
@@ -75,7 +79,9 @@ def _demo_data_for(canonical_kind: str) -> list[dict[str, Any]]:
     """Load DEMO_DATA from the registered module for an already-resolved kind."""
     definition = _get_figure_definition(canonical_kind)
     script_path = _SCRIPTS_DIR / Path(definition.module).name
-    module_name = f"_sprezzature_figures_democonfig_{canonical_kind.replace('-', '_').replace(' ', '_')}"
+    module_name = (
+        f"_sprezzature_figures_democonfig_{canonical_kind.replace('-', '_').replace(' ', '_')}"
+    )
     mod = _load_module(script_path, module_name)
     return getattr(mod, "DEMO_DATA", [])
 
@@ -101,7 +107,9 @@ def list_kinds(status: str | None = None) -> list[str]:
     return _list_kinds(status=status)  # type: ignore[arg-type]
 
 
-def validate_figure_input(kind: str, data: list[dict[str, Any]] | None, **kwargs: Any) -> list[ValidationIssue]:
+def validate_figure_input(
+    kind: str, data: list[dict[str, Any]] | None, **kwargs: Any
+) -> list[ValidationIssue]:
     """
     Check `data` against the registered required data roles for `kind`.
 
@@ -193,10 +201,14 @@ def make_figure(kind: str, data: list[dict[str, Any]], **kwargs: Any) -> Path:
             fn_name = f"make_{kind.lower().strip().replace('-', '_').replace(' ', '_')}"
             fn = getattr(mod, fn_name, None)
             if fn is None:
-                raise AttributeError(f"Script {legacy_path.name} has no function named {fn_name!r}.")
+                raise AttributeError(
+                    f"Script {legacy_path.name} has no function named {fn_name!r}."
+                )
             return Path(fn(data, **kwargs))
         available = _list_kinds()
-        raise ValueError(f"No script for kind={kind!r}. Available ({len(available)}): {', '.join(available)}")
+        raise ValueError(
+            f"No script for kind={kind!r}. Available ({len(available)}): {', '.join(available)}"
+        )
 
     definition = _get_figure_definition(canonical)
     if definition.status != "stable":
@@ -211,12 +223,15 @@ def make_figure(kind: str, data: list[dict[str, Any]], **kwargs: Any) -> Path:
     errors = [i for i in issues if i.severity == "error"]
     if errors:
         raise ValueError(
-            f"Invalid data for kind={canonical!r}: " + "; ".join(f"{i.field}: {i.message}" for i in errors)
+            f"Invalid data for kind={canonical!r}: "
+            + "; ".join(f"{i.field}: {i.message}" for i in errors)
         )
 
     script_path = _SCRIPTS_DIR / Path(definition.module).name
     if not script_path.exists():
-        raise FileNotFoundError(f"Registered module {definition.module!r} not found at {script_path}")
+        raise FileNotFoundError(
+            f"Registered module {definition.module!r} not found at {script_path}"
+        )
 
     module_name = f"_sprezzature_figures_make_{canonical.replace('-', '_').replace(' ', '_')}"
     mod = _load_module(script_path, module_name)
@@ -231,7 +246,9 @@ def make_figure(kind: str, data: list[dict[str, Any]], **kwargs: Any) -> Path:
     result = fn(data, **kwargs)
     result_path = Path(result).resolve()
     if not result_path.exists():
-        raise RuntimeError(f"make_figure({canonical!r}) did not produce an output file at {result_path}")
+        raise RuntimeError(
+            f"make_figure({canonical!r}) did not produce an output file at {result_path}"
+        )
     return result_path
 
 
@@ -339,7 +356,10 @@ def main() -> None:
     except (ValueError, AttributeError, FileNotFoundError, RuntimeError) as exc:
         print(f"Error rendering {args.kind!r}: {exc}", file=sys.stderr)
         if args.data:
-            print("If your columns don't match the figure's roles, bind them with --map role=column.", file=sys.stderr)
+            print(
+                "If your columns don't match the figure's roles, bind them with --map role=column.",
+                file=sys.stderr,
+            )
         sys.exit(1)
     print(result)
 

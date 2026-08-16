@@ -124,7 +124,10 @@ else:
         except (ValueError, AttributeError, FileNotFoundError, RuntimeError) as exc:
             click.echo(f"Error rendering {kind!r}: {exc}", err=True)
             if data_path:
-                click.echo("If your columns don't match the figure's roles, bind them with --map role=column.", err=True)
+                click.echo(
+                    "If your columns don't match the figure's roles, bind them with --map role=column.",
+                    err=True,
+                )
             raise SystemExit(1) from exc
         click.echo(result)
 
@@ -144,8 +147,15 @@ else:
         default=None,
         type=click.Choice(
             [
-                "comparison", "trend", "distribution", "composition", "relationship",
-                "flow", "hierarchy", "geography", "model_evaluation",
+                "comparison",
+                "trend",
+                "distribution",
+                "composition",
+                "relationship",
+                "flow",
+                "hierarchy",
+                "geography",
+                "model_evaluation",
             ]
         ),
         help="Your analytical goal. Ranks figures that serve it first, instead of "
@@ -213,6 +223,8 @@ else:
             top_binding = assign_columns(top, profile) or {}
             # Alias each bound column to the role name the generator expects,
             # keeping the originals so figures that read extra columns still work.
-            bound = [{**row, **{role: row[col] for role, col in top_binding.items()}} for row in records]
+            bound = [
+                {**row, **{role: row[col] for role, col in top_binding.items()}} for row in records
+            ]
             result = make_figure(top.kind, bound, out=render_out)
             click.echo(f"rendered top recommendation ({top.kind}) -> {result}")

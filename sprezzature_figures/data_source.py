@@ -55,7 +55,10 @@ def _load_csv_stdlib(path: Path, delimiter: str) -> list[dict[str, Any]]:
         reader = csv.DictReader(f, delimiter=delimiter)
         if reader.fieldnames is None:
             return []
-        return [{k: _coerce_scalar(v) if isinstance(v, str) else v for k, v in row.items()} for row in reader]
+        return [
+            {k: _coerce_scalar(v) if isinstance(v, str) else v for k, v in row.items()}
+            for row in reader
+        ]
 
 
 def _load_csv_pandas(path: Path) -> list[dict[str, Any]] | None:
@@ -124,7 +127,11 @@ def load_records(path: str | Path) -> list[dict[str, Any]]:
     if suffix == ".json":
         records = _unwrap_json_array(json.loads(path.read_text(encoding="utf-8")), path.name)
     elif suffix in (".jsonl", ".ndjson"):
-        records = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
+        records = [
+            json.loads(line)
+            for line in path.read_text(encoding="utf-8").splitlines()
+            if line.strip()
+        ]
     elif suffix in (".csv", ".tsv", ".txt"):
         records = _load_csv_pandas(path)
         if records is None:

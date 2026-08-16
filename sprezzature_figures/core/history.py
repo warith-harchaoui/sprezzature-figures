@@ -70,7 +70,9 @@ def revert_to(project_dir: Path, iteration_id: str) -> IterationRecord:
     return record
 
 
-def compare(project_dir: Path, iteration_id_a: str, iteration_id_b: str) -> tuple[IterationRecord, IterationRecord]:
+def compare(
+    project_dir: Path, iteration_id_a: str, iteration_id_b: str
+) -> tuple[IterationRecord, IterationRecord]:
     """Both records for side-by-side display (plan §12: for the MVP, a
     computed visual diff is not required).
     """
