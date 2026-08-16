@@ -1,10 +1,12 @@
 """
-Tests that the three hand-authored-SVG figures adapted in Commit 7
+Tests that the three hand-authored-SVG figures adapted for user data
 (waffle, dumbbell, sankey) actually work with arbitrary user data through
-make_figure(), not just their own DEMO_DATA. Plan §7 explicitly calls this
-out for sankey ("ajouter des tests avec des données utilisateur"); applied
-here to all three since the same class of bug (hardcoded module-level
-data baked into build_svg) applied to all of them before this commit.
+make_figure(), not just their own built-in DEMO_DATA. The project's
+internal design plan explicitly calls this out for sankey, in §7
+("ajouter des tests avec des données utilisateur", French for "add tests
+with user data"); applied here to all three, since the same bug, data
+hardcoded at module level and baked into build_svg instead of read from
+the function argument, affected all of them before this fix.
 
 Author
 ------

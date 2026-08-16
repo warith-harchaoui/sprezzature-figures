@@ -1,8 +1,12 @@
 """
-Opt-in live text-LLM tests: exercise the REAL BestEngineLLMClient path
-(best_engine_ai_helper.llm.chat) that every default run mocks out with
-FakeLLMClient. Marked ``llm`` -> deselected by default; skips (never fails)
-when no model backend is reachable.
+Opt-in live text-LLM tests: exercise the real BestEngineLLMClient path
+(best_engine_ai_helper.llm.chat), the actual network call to a language
+model that every default test run replaces with FakeLLMClient, a stand-in
+that returns canned answers instead. "Opt-in" means these carry the pytest
+marker ``llm``, so a plain ``pytest`` run skips them automatically; when
+selected on purpose but no model backend is reachable, a test here skips
+rather than fails, so a laptop with no model running never turns red for
+the wrong reason.
 
 Run with:  pytest -m llm
 

@@ -1,9 +1,10 @@
 """
-Tests for the FastAPI HTTP surface (sprezzature_figures.api).
+Tests for the FastAPI HTTP surface (sprezzature_figures.api); FastAPI is
+the Python web framework this project's HTTP API is built on.
 
-Rendering tests actually call make_figure() (they render real SVGs), so
-they're marked @pytest.mark.slow like the equivalent tests in
-test_make_figure.py -- excluded from the default fast run, included in CI's
+Rendering tests actually call make_figure() and render real SVGs, so
+they're marked @pytest.mark.slow, like the equivalent tests in
+test_make_figure.py: excluded from the default fast run, included in CI's
 second pass (see README.md's Development section).
 
 Author

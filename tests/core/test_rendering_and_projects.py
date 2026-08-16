@@ -1,5 +1,7 @@
 """
-Tests for sprezzature_figures.core.rendering and .projects: atomic writes,
+Tests for sprezzature_figures.core.rendering and .projects: atomic writes
+(a file is written to a temporary path and only swapped into place once
+complete, so a crash mid-write can never leave a half-written file behind),
 isolated project workspaces, and the unified render-to-project pipeline.
 
 Author

@@ -1,11 +1,14 @@
 """
-Shared reachability gate for the opt-in live LLM/VLM tests (markers ``llm``
-and ``vision``). These tests are deselected by default (see pyproject's
-``addopts``) and, when explicitly selected, skip rather than fail whenever
-best-engine-ai-helper or its backend isn't actually reachable -- so running
-them can never break CI or a laptop without a model server.
+Shared reachability gate for the opt-in live LLM/VLM tests. A VLM, or
+vision-language model, is a model that can look at an image as well as
+read text; these tests carry the pytest markers ``llm`` and ``vision``.
+They are deselected by default (see pyproject.toml's ``addopts``); when
+explicitly selected, they skip rather than fail whenever
+best-engine-ai-helper or its backend isn't actually reachable, so running
+them can never break CI or a laptop with no model server.
 
-Not a test module (no ``test_`` prefix); imported by the live test files.
+Not a test module itself (its filename carries no ``test_`` prefix, so
+pytest never collects it directly); the live test files import it.
 
 Author
 ------

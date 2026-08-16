@@ -1,13 +1,15 @@
 """
-Smoke tests for the MCP surface (sprezzature_figures.mcp).
+Smoke tests for the MCP surface (sprezzature_figures.mcp); MCP, the Model
+Context Protocol, is the standard that lets an AI assistant call this
+project's chart generators as tools.
 
-A full protocol handshake (initialize / session / tools-call) needs a real
-running server and is exercised manually -- see the module docstring in
+A full protocol handshake (initialize, open a session, call a tool) needs a
+real running server and is exercised manually: see the module docstring in
 mcp.py. This just confirms the import chain resolves and the MCP endpoint
-actually gets mounted on the shared FastAPI app, which is the one thing
-most likely to break silently on a fastapi-mcp/mcp version bump (see the
-pinning comment in pyproject.toml's [mcp] extra -- this caught a real
-incompatibility once already).
+actually gets mounted on the shared FastAPI app, the one thing most likely
+to break silently on a fastapi-mcp/mcp version bump (see the pinning
+comment in pyproject.toml's [mcp] extra: this caught a real incompatibility
+once already).
 
 Author
 ------

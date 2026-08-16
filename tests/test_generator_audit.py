@@ -1,7 +1,7 @@
 """
 Tests for tools/audit_generators.py.
 
-These do not require every figure to be stable — they require the audit
+These do not require every figure to be stable: they require the audit
 itself to be runnable and to give every discovered script an explicit,
 well-formed verdict. Slow (renders every contract-complete generator) is
 marked and excluded from the default run.

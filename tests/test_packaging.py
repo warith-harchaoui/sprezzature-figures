@@ -1,7 +1,7 @@
 """
 Packaging smoke tests: build a wheel, install it into throwaway venvs, and
-verify the installed package actually works -- the only way to catch "the
-wheel is missing files" bugs (figures.json, the scripts package, a new
+verify the installed package actually works. This is the only way to catch
+"the wheel is missing files" bugs (figures.json, the scripts package, a new
 subpackage not added to pyproject's packages list) that an editable install
 hides, and to confirm the install procedures documented in the README hold
 on a clean machine.

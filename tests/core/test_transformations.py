@@ -1,7 +1,10 @@
 """
-Tests for the deterministic transformation executor (core/transformations.py):
-each Transform type applied to plain rows, plus the ordering, the string/number
-tolerance, and the missing-column safeguard.
+Tests for the deterministic transformation executor in
+core/transformations.py, deterministic meaning the same input rows always
+produce the same output rows, with no hidden randomness: each Transform
+type applied to plain rows, plus the ordering between them, the tolerance
+for comparing strings and numbers, and the safeguard against a missing
+column.
 
 Author
 ------
