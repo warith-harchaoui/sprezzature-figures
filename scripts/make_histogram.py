@@ -10,10 +10,10 @@ distributions.
 Previously rendered via Vega-Lite (``vl_convert``); this module now bins the
 data itself (a small "nice-step" binning routine, the same idea Vega's own
 binning uses: round the bin width to 1/2/5x10^k so edges read as friendly
-numbers) and paints the bars by hand — no Vega, no matplotlib. Each bar
+numbers) and paints the bars by hand, with no Vega and no matplotlib. Each bar
 carries a native ``<title>`` tooltip with its exact bin range, count and
 share of the sample, and rounds only its free (top) end per the Sprezzature
-Corner Policy — the baseline stays flat so every bar visibly starts at zero.
+Corner Policy: the baseline stays flat so every bar visibly starts at zero.
 
 Author
 ------

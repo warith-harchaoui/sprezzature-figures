@@ -4,7 +4,7 @@ make_cycle — a house-styled cyclic-process wheel (rotation / cycle diagram) as
 
 A cycle wheel answers a question a bar chart cannot: *how does one thing
 spend its turn?* Where a pie slices a static whole, a cycle wheel reads
-as a **loop** — a ring of coloured arcs whose lengths are each phase's
+as a **loop**: a ring of coloured arcs whose lengths are each phase's
 share of one full turn, wrapped by a directional arrow so the eye follows
 the sequence round and round. It is the natural figure for anything that
 comes back to where it started: a crop rotation, the seasons, a product
@@ -12,7 +12,7 @@ lifecycle, a sprint, the water or carbon cycle, a sleep or menstrual
 cycle.
 
 This module rebuilds the form in the sprezzature-* house style around an
-agronomy exemplar — the growth calendar of a field of **winter wheat**,
+agronomy exemplar: the growth calendar of a field of **winter wheat**,
 sown in October and harvested the following July. The seven acts of the
 crop year (sowing, tillering, stem extension, heading, grain filling,
 harvest, and the bare-soil intercrop before the next sowing) each take a
@@ -24,12 +24,12 @@ begins again. The form follows the crop-rotation plates in the *Mémo
 visuel d'agronomie* (Dunod, 2024); the calendar here is an illustrative
 single-crop year, not a transcription of that book's data.
 
-The SVG is built by hand — no matplotlib / seaborn / plotly, and no
+The SVG is built by hand, with no matplotlib, seaborn, plotly, or
 Vega, because a directed ring of proportional annular arcs with radial
 labels and a flow arrow is not a native Vega-Lite mark and reads far more
 cleanly authored directly. It follows the tokens from :mod:`_style`: the
-Apple-ish palette (here mapped so each arc's hue also nods at its season
-— amber autumn, cool winter, green spring, gold summer, earth-brown bare
+Apple-ish palette (here mapped so each arc's hue also nods at its season:
+amber autumn, cool winter, green spring, gold summer, earth-brown bare
 soil), Roboto typography, ink ``#1D1D1F`` on a white ground, well-sat
 rounded corners, a takeaway title and a one-line subtitle.
 
@@ -37,7 +37,7 @@ The figure is interactive without any JavaScript: hovering or
 keyboard-focusing any arc or its label dims the other phases so one act
 of the year stands out, and each arc carries a native ``<title>`` tooltip
 with its month span and share of the year. The directional arrow flows
-as gentle marching ants to signal the loop's sense — motion that is
+as gentle marching ants to signal the loop's sense, motion that is
 switched off under ``prefers-reduced-motion`` and simply renders as a
 static arrow in a raster export.
 

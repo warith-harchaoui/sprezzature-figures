@@ -20,7 +20,7 @@ Exit codes:
 * ``1`` — one or more errors, or any finding under ``--strict``.
 * ``2`` — CLI or parse error.
 
-The auditor is **stdlib + PyYAML** only — no browser, no model, no
+The auditor is **stdlib + PyYAML** only, with no browser, no model, no
 network. Vega-Lite specs are parsed with ``json``; SVG / HTML use
 ``xml.etree`` and ``html.parser``.
 

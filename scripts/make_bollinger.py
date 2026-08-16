@@ -4,7 +4,7 @@
 Bollinger bands wrap a price series in a volatility envelope: a 20-day simple
 moving average (the middle band) flanked by an upper and lower band two standard
 deviations away, measured over the same rolling window. When markets go quiet the
-two bands pinch together — a **squeeze** — and the coiled range often precedes a
+two bands pinch together into a **squeeze**, and the coiled range often precedes a
 sharp directional move; when price pushes through a band, the **breakout** is the
 trade traders wait for. The shaded envelope turns "how volatile is this, and
 where is price relative to its own recent range?" into a single glance.
@@ -18,14 +18,14 @@ line ride the same Catmull-Rom smoothing so the shaded region hugs the rendered
 curves with no seam.
 
 A Bollinger chart is a dense static read; motion adds nothing a still cannot
-already show, so the whole picture is drawn fully at rest — every band, line,
+already show, so the whole picture is drawn fully at rest: every band, line,
 marker and label is present the instant the SVG loads. The squeeze and breakout
 each carry a native ``<title>`` tooltip, and the two events are also spelled out
 in ink text, so the story survives colour-vision deficiency.
 
 The example data is illustrative: **one trading year of a mid-cap stock**, priced
-around the mid-$120s, that drifts sideways into a tight late-summer squeeze — the
-20-day band width falls to a yearly low — and then breaks out to the upside,
+around the mid-$120s, that drifts sideways into a tight late-summer squeeze (the
+20-day band width falls to a yearly low), then breaks out to the upside,
 riding the upper band through the autumn. It is the textbook squeeze-then-breakout
 shape a Bollinger chart is built to narrate.
 

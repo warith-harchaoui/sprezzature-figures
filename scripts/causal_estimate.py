@@ -22,7 +22,9 @@ Backends
 DAG input
 ---------
 
-Pass one of:
+The causal graph: a diagram of which variable is assumed to affect which,
+drawn with arrows and no loops back on themselves (a directed acyclic graph,
+DAG) so DoWhy can read off which variables to control for. Pass one of:
 
 * ``--dag path/to/dag.gml`` — GraphML file.
 * ``--dag path/to/dag.dot`` — Graphviz DOT.

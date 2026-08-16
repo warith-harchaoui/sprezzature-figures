@@ -6,17 +6,17 @@ A **circle-packing** diagram encodes a strict parent → child hierarchy as
 *enclosure*: every node is a circle, a child sits inside its parent, and a
 leaf's **area** is proportional to its quantitative weight. Nesting depth
 reads as containment (a directory wraps its files), sibling weight reads as
-disk size, and the whole tree collapses into one dense, gap-free disk — the
+disk size, and the whole tree collapses into one dense, gap-free disk: the
 same idea D3's ``d3.pack`` and AntV's pack layout draw, but tuned here to a
 poster-scale canvas with gentle depth shading and clean, non-overlapping
 leaf labels.
 
 The figure tells one concrete story: the source tree of a mid-size Python
 web service, where every leaf circle is a **module sized by its lines of
-code**. The takeaway the subtitle states — one package, ``services/``,
-holds nearly half the codebase, and a single 2,410-line module inside it
-(``payments.py``) is the biggest ball on the board — a refactor target that
-jumps out of the packing the instant you look at it.
+code**. The takeaway the subtitle states, and the refactor target that
+jumps out of the packing the instant you look at it: one package,
+``services/``, holds nearly half the codebase, and a single 2,410-line
+module inside it (``payments.py``) is the biggest ball on the board.
 
 Vega-Lite has no pack layout (the geometry is a recursive
 circle-enclosure solve, not a data-to-mark mapping), so this is built as an

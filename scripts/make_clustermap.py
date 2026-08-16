@@ -13,9 +13,9 @@ affinity.
 
 Previously rendered via Vega-Lite (the clustering ran offline and only the
 resulting row/column sort order was baked into the spec, with no
-dendrogram drawn at all); this module now computes the clustering itself
--- average-linkage hierarchical agglomeration on Euclidean distance,
-implemented from scratch -- and draws both the reordered grid and a real
+dendrogram drawn at all); this module now computes the clustering itself,
+using average-linkage hierarchical agglomeration on Euclidean distance
+implemented from scratch, and draws both the reordered grid and a real
 dendrogram along each axis by hand. No Vega, no matplotlib, no scipy.
 Every cell carries a native ``<title>`` tooltip.
 

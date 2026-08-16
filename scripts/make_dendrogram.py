@@ -6,7 +6,7 @@ A dendrogram is the tree that hierarchical (agglomerative) clustering
 produces: leaves are the original observations, and each internal node
 is a *merge* of two sub-clusters drawn at the height (dissimilarity) at
 which they joined. Reading the tree top-down, the taller a merge sits,
-the more different the two branches it unites — so a horizontal "cut"
+the more different the two branches it unites, so a horizontal "cut"
 at any height yields a flat clustering, and the vertical gap below a
 cut tells you how stable that grouping is.
 
@@ -34,7 +34,7 @@ corners, a start-anchored title plus a one-line takeaway subtitle.
 Interaction (no JavaScript): every merge elbow and every leaf carries a
 native ``<title>`` tooltip (merge height / cluster membership), and a
 CSS ``:hover`` / ``:focus`` rule lifts the hovered cluster's branches
-to full strength while dimming the rest — the "isolate a cluster"
+to full strength while dimming the rest: the "isolate a cluster"
 affordance that suits this capability. The figure is otherwise static
 (a dendrogram does not benefit from animation), so ``animated`` is
 false and ``interactive`` is true.

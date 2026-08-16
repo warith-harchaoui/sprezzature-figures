@@ -10,7 +10,7 @@ for survey estimates, salary bands by role, and any situation where the
 viewer needs to compare spans rather than point values.
 
 Previously rendered via Vega-Lite (``vl_convert``); this module now builds
-the ``<svg>`` markup by hand -- no Vega, no matplotlib -- so every floating
+the ``<svg>`` markup by hand, not with Vega or matplotlib, so every floating
 bar carries a native ``<title>`` tooltip and rounds both free ends per the
 Sprezzature Corner Policy (a range bar has no baseline, both ends are free).
 

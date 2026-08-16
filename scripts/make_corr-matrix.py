@@ -11,8 +11,8 @@ modelling, spotting multicollinearity, confirming an expected correlation
 structure.
 
 Previously rendered via Vega-Lite (a layered ``rect`` + ``text`` mark,
-``vl_convert``); this module now paints both layers by hand -- no Vega,
-no matplotlib. Every cell carries a native ``<title>`` tooltip.
+``vl_convert``); this module now paints both layers by hand, not with
+Vega or matplotlib. Every cell carries a native ``<title>`` tooltip.
 
 Author
 ------

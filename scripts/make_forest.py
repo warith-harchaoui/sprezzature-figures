@@ -10,7 +10,7 @@ horizontal whisker spanning its confidence interval (CI). A vertical
 axis), so a whisker that crosses it is a study whose result is not
 statistically distinguishable from "no effect". At the foot of the
 column sits the **pooled diamond**: its centre is the random-effects
-summary estimate and its width is the summary CI — the single number
+summary estimate and its width is the summary CI, the single number
 the whole analysis exists to produce.
 
 The generator builds the SVG string by hand (no matplotlib / seaborn /
@@ -19,15 +19,15 @@ and the diamond are fully under our control, and matches the sprezzature-*
 house style: Roboto, the Apple-ish palette, rounded corners, ink
 ``#1D1D1F``, secondary ``#6E6E73``, white background. Every row and the
 pooled diamond draw fully settled, at rest (a load-time fade-in was tried
-and dropped -- static rasterizers don't run CSS animations, so it made
+and dropped: static rasterizers don't run CSS animations, so it made
 every raster/PDF export of this figure render blank), and each carries a
-native ``<title>`` tooltip plus a :hover / :focus highlight — no JavaScript.
+native ``<title>`` tooltip plus a :hover / :focus highlight, no JavaScript.
 
 The fake scenario pools **eight randomised trials of a home
 blood-pressure telemonitoring programme** on the odds of reaching a
 blood-pressure target at twelve months. Most trials favour the
 programme (odds ratio, OR, above 1), several individually cross the
-null, and the pooled diamond lands cleanly to the right of 1.0 — the
+null, and the pooled diamond lands cleanly to the right of 1.0: the
 textbook "the whole is more certain than any single part" story a
 forest plot is built to tell.
 

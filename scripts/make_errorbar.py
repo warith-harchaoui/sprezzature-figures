@@ -3,15 +3,15 @@
 make_errorbar — a house-styled error bar chart as hand-authored SVG.
 
 Plots a point estimate per category with a capped vertical bar spanning
-its uncertainty interval (a 95% confidence interval, a standard
-deviation, a min-max range -- whatever the caller's ``lo``/``hi`` mean).
+its uncertainty interval: a 95% confidence interval, a standard
+deviation, a min-max range, whatever the caller's ``lo``/``hi`` mean.
 The default chart for "here's the number, and here's how sure we are"
 across a handful of groups: A/B test lifts, experiment arms, survey
 means by cohort.
 
 Previously rendered via Vega-Lite (a layered ``rule`` + ``point`` mark,
 ``vl_convert``); this module now paints the whisker, caps, and point by
-hand -- no Vega, no matplotlib. Every error bar carries a native
+hand, not with Vega or matplotlib. Every error bar carries a native
 ``<title>`` tooltip with the mean and interval.
 
 Author

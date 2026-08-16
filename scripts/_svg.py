@@ -22,11 +22,14 @@ byte-for-byte identical to the inline code it replaces:
   behavior-neutral drift between copies. Not the same job as
   :func:`fmt_compact`: that one is for path-data coordinates (always one
   decimal, trimmed); this one is for text a reader looks at.
-* :func:`catmull_rom_beziers` — the Catmull-Rom → cubic-Bézier ``C``
-  command run those same three generators carried as a private
-  ``_catmull_rom``. The caller passes its own formatter so the emitted
-  string stays byte-identical (streamgraph/difference-chart/bollinger
-  all pass :func:`fmt_compact`).
+* :func:`catmull_rom_beziers` — turns a raw list of data points into a
+  smooth curve instead of the sharp zig-zag a straight point-to-point line
+  would draw, using the Catmull-Rom method (fit a curve through each point
+  using its two neighbours) converted to the cubic-Bézier ``C`` command
+  SVG actually understands. Those same three generators carried this as a
+  private ``_catmull_rom``. The caller passes its own formatter so the
+  emitted string stays byte-identical (streamgraph/difference-chart/
+  bollinger all pass :func:`fmt_compact`).
 * :func:`hex_to_rgb` — the ``#RRGGBB`` → ``(r, g, b)`` int triple that
   the hexbin-map, binned-grid-map and circle-packing generators each
   spelled out as a private ``_hex_to_rgb``.
@@ -42,13 +45,14 @@ Deliberately *not* extracted: the per-element hover/tooltip wrappers
 (the ``<g tabindex=…><title>…`` blocks and their ``:hover`` CSS) and the
 pill-label backgrounds. Those differ in class names, ARIA wiring, and
 rounding across generators, so a shared helper could not be made
-output-identical without editing rendered bytes — which the DRY refactor
-must never do. Callers keep their own float formatting; these helpers
-only return the raw string / floats the inline code produced.
+output-identical without editing rendered bytes, and a shared-helper cleanup
+that changes even one rendered pixel defeats its own purpose, so it never does.
+Callers keep their own float formatting; these helpers only return the raw
+string / floats the inline code produced.
 
 Other tempting-but-rejected candidates (kept inline because they fail
 either the rule of three *or* the byte-identical test): the annular
-arc/sector path (rose == radial-bar only — two callers); the ``_polar``
+arc/sector path (rose == radial-bar only, two callers); the ``_polar``
 clock-bearing helpers (behaviour splits by signature and all already
 delegate to :func:`point_on_circle`); the Equal-Earth map projection
 (spike-map and hexbin-map differ, and windbarb is equirectangular); the
@@ -56,8 +60,8 @@ flow-ribbon paths (three unrelated implementations); the sequential
 colour ramp (hexbin vs binned differ in stops, gamma and light anchor);
 and the ``convex_hull`` scan (only one of these generators uses it).
 
-The module is **stdlib-only** — it imports nothing but :mod:`math` — so
-it stays importable everywhere ``_style.py`` is (no dataviz tier needed).
+The module is **stdlib-only**, importing nothing but :mod:`math`, so it
+stays importable everywhere ``_style.py`` is (no dataviz tier needed).
 
 Author
 ------

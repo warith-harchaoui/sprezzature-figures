@@ -9,12 +9,12 @@ each paired measurement against their *mean*, then overlays the mean
 difference (the **bias**) and the 95 % **limits of agreement**
 (bias ± 1.96·SD of the differences). A high correlation only says two
 methods rise and fall together; this plot shows whether they actually
-*agree* — how large the typical gap is, whether it drifts with the
+*agree*: how large the typical gap is, whether it drifts with the
 magnitude of the measurement, and how wide a band contains 95 % of the
 disagreements.
 
-This generator builds the SVG **by hand** — no matplotlib / seaborn /
-plotly, no Vega — so the shaded limits-of-agreement band, the bias and
+This generator builds the SVG **by hand**, with no matplotlib, seaborn,
+plotly, or Vega, so the shaded limits-of-agreement band, the bias and
 limit rules with their right-hand value chips, the difference scatter,
 and the proportional-bias trend line are all under our control and can
 carry the house interactivity (per-point tooltips, a fullscreen button)
@@ -27,7 +27,7 @@ The scenario compares a **wrist blood-pressure monitor** against a clinic
 **arm cuff** (the reference) across 90 patients. The wrist device reads
 systematically low (a negative bias) and its error grows with blood
 pressure (proportional bias), so the cloud of points tilts downward to
-the right — the textbook pattern the plot is built to expose. A dashed
+the right: the textbook pattern the plot is built to expose. A dashed
 trend line through the differences makes that drift impossible to miss.
 
 The final artifact is always an SVG written to

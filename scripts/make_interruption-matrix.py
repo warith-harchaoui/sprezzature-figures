@@ -8,11 +8,11 @@ into an asymmetric speaker×speaker matrix: each **column** is an interrupter
 opacity proportional to the count, so a dark column reads at a glance as a big
 interrupter and a dark row as someone who gets cut a lot. A right ``Σ`` strip
 totals each row (times interrupted); a bottom ``Σ`` strip totals each column
-(cuts made). The diagonal is inert — nobody cuts themselves.
+(cuts made). The diagonal is inert: nobody cuts themselves.
 
 Beyond the native per-cell tooltip, the figure carries a **crosshair hover**
 (self-contained mode): pointing at any cell lights that interrupter's whole
-column and that interrupted's whole row — totals included — and dims the rest,
+column and that interrupted's whole row, totals included, and dims the rest,
 so "everyone X cut" and "everyone who cut X" light up together. Hovering a name
 header does the same for that speaker. It is pure enhancement: the numbers are
 printed in every cell, so the figure reads fully as a static image too.

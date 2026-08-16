@@ -4,14 +4,14 @@ make_confusion-matrix — a house-styled 3-class confusion matrix as a hand SVG.
 
 A confusion matrix crosses the *actual* class (rows) against the *predicted*
 class (columns): the diagonal is where the classifier is right, everything
-off-diagonal is a specific mistake. This figure labels **both** axes — class
-names down the left (Actual) and the same names across the top (Predicted) — so
+off-diagonal is a specific mistake. This figure labels **both** axes: class
+names down the left (Actual) and the same names across the top (Predicted), so
 a reader never has to guess which way a cell reads. Cells are shaded on a single
 blue ramp (darkest = most examples, so the correct diagonal stands out) with the
 count printed in each, a small gap between cells (a tile grid, gently rounded per
 the Sprezzature Corner Policy), and generous breathing room around the grid.
 
-The SVG is built by hand — no matplotlib / Vega — so it matches the other hero
+The SVG is built by hand, with no matplotlib or Vega, so it matches the other hero
 figures and carries a native ``<title>`` per cell plus an accessible
 ``<title>``/``<desc>``.
 

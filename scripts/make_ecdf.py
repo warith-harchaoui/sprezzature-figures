@@ -13,8 +13,8 @@ where percentile thresholds matter more than the shape's name.
 Previously rendered via Vega-Lite (a ``window`` + ``joinaggregate`` +
 ``calculate`` transform chain producing a step-after line, plus a rule
 layer for the percentile marker; ``vl_convert``); this module now sorts
-and accumulates the values itself and paints the step path by hand -- no
-Vega, no matplotlib. The curve carries a native ``<title>`` tooltip.
+and accumulates the values itself and paints the step path by hand, not
+with Vega or matplotlib. The curve carries a native ``<title>`` tooltip.
 
 Author
 ------

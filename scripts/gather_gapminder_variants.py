@@ -25,8 +25,8 @@ Data honesty (the point of the exercise):
 
 * Present-border countries carry their own OWID series, densified onto the
   annual grid (interior linear interpolation, left back-fill, a short
-  clamped trend for 2024-2025 — the same densify rule the first tribute
-  uses).
+  clamped trend for 2024-2025), the same densify rule the first tribute
+  uses.
 * The federations carry the **population-weighted mean** of their
   successors' series (successor populations from the same UN source).
 * The divided pairs (West/East Germany, N/S Vietnam, N/S Yemen) are a

@@ -19,7 +19,7 @@ This module owns the *only* piece that is identical across figures: the
 fullscreen wiring (a generic script, no visible chrome of its own). The
 figure-specific hit regions and tooltips stay in each generator.
 
-There is no on-canvas button — the whole figure is the hit target. A
+There is no on-canvas button: the whole figure is the hit target. A
 ``<img>``-embedded SVG never runs the ``<script>`` at all (browsers don't
 execute scripts inside `<img>`-referenced SVGs), so nothing changes for
 thumbnails; the script only ever runs once the SVG is a live document.

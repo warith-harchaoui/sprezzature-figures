@@ -11,8 +11,8 @@ finance, and equally usable for any open/high/low/close-shaped series
 (sensor readings, auction prices).
 
 Previously rendered via Vega-Lite (a layered ``rule`` + ``bar`` mark,
-``vl_convert``); this module now paints both layers by hand -- no Vega,
-no matplotlib. Every candle carries a native ``<title>`` tooltip with all
+``vl_convert``); this module now paints both layers by hand, not with
+Vega or matplotlib. Every candle carries a native ``<title>`` tooltip with all
 four values.
 
 Author

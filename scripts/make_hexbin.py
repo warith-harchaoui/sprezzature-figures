@@ -11,8 +11,8 @@ of any two continuous variables.
 
 Previously rendered via Vega-Lite (points pre-binned offline into hexagon
 centres + counts, then drawn with a fixed hexagon-shaped point mark,
-``vl_convert``); this module now runs the binning itself -- axial hex-grid
-assignment via the standard flat-top axial-round algorithm -- on raw
+``vl_convert``); this module now runs the binning itself, axial hex-grid
+assignment via the standard flat-top axial-round algorithm, on raw
 scatter points, and paints true hexagon cells by hand. No Vega, no
 matplotlib. Every cell carries a native ``<title>`` tooltip with its count.
 

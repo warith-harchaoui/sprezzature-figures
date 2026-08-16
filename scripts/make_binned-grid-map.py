@@ -9,7 +9,7 @@ raw events fall in each cell, and shading the cell by that count on a
 sequential single-hue ramp. It is the square-bin sibling of the hexbin
 map (``hexmap.svg``): where the hexagon lattice trades axis alignment for
 six equidistant neighbours, the square grid keeps a crisp, legible
-raster that maps one-to-one onto a city block grid — exactly what a
+raster that maps one-to-one onto a city block grid: exactly what a
 crime-desk or operations analyst reaches for.
 
 This module builds the SVG string by hand (no matplotlib / seaborn /

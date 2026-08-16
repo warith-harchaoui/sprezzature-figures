@@ -8,13 +8,13 @@ identically broken, across four generators (make_line, make_area,
 make_scatter, make_columnrange): each built its color scale's ``domain``
 from a **hardcoded** list of demo category names (or worse, from
 ``row["field"]`` with no ``.get()``) instead of the data actually passed
-in. Once that role is optional -- as it is for all four in the figure
-registry -- a caller who doesn't bind it gets either a ``KeyError`` crash
+in. Once that role is optional, as it is for all four in the figure
+registry, a caller who doesn't bind it gets either a ``KeyError`` crash
 (direct ``row["field"]`` access) or a legend showing categories that don't
 exist in the data at all (a hardcoded ``scale.domain``). Both were real
 bugs, not stylistic choices; see docs/studio/STATUS.md.
 
-The module is **stdlib-only**, importing nothing -- these generators only
+The module is **stdlib-only**, importing nothing: these generators only
 need a plain function, not a dataclass or a dependency.
 
 Author

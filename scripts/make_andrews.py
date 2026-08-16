@@ -18,7 +18,7 @@ class smears across the band. This is the R ``andrews`` / pandas
 This module builds the SVG string **by hand** (no matplotlib / seaborn /
 plotly, no Vega): it standardises the features, evaluates each row's
 Fourier curve on a fine ``t`` grid (numpy only), and paints the curves as
-translucent coloured strokes in the sprezzature-* house style — Roboto type, the
+translucent coloured strokes in the sprezzature-* house style: Roboto type, the
 Apple-system palette, ink ``#1D1D1F`` on a white ground, rounded framing.
 Per-class median curves are over-drawn in full opacity so the reader sees
 each class's *signature* on top of its cloud, and a per-class ``<title>``
@@ -27,7 +27,7 @@ gives a native hover tooltip with no JavaScript.
 The example data is illustrative: three penguin species measured on four
 body dimensions (bill length and depth, flipper length, body mass). The
 takeaway the figure is built to show is that the three species trace three
-visibly distinct Fourier signatures — the multivariate structure the
+visibly distinct Fourier signatures: the multivariate structure the
 Andrews transform is made to surface.
 
 Usage

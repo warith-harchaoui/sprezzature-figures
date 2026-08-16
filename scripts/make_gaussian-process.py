@@ -12,9 +12,9 @@ from data, narrow band and converging samples near it.
 
 Previously rendered via Vega-Lite (a four-layer area + line + line + point
 spec whose posterior was computed offline, ``vl_convert``); this module
-now runs the GP regression itself -- RBF kernel, Cholesky-based posterior
+now runs the GP regression itself: RBF kernel, Cholesky-based posterior
 mean/covariance, sampling via a Cholesky factor of the posterior
-covariance, all via numpy (already a core dependency) -- no Vega, no
+covariance, all via numpy (already a core dependency), with no Vega, no
 matplotlib, no scikit-learn. The mean curve carries a native ``<title>``
 tooltip.
 

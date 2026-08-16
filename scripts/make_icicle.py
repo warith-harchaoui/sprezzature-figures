@@ -4,15 +4,15 @@
 An icicle plot lays a hierarchy out as a stack of rectangular bands: the root
 spans the full width at the top, and every level below partitions its parent's
 width in proportion to a size measure. Read top-down it is an outline of the
-tree; read as a CPU profile it is a *flame graph* — each bar is a function, its
+tree; read as a CPU profile it is a *flame graph*: each bar is a function, its
 width is the wall-clock time spent inside it (self + children), and the stack of
 bars under a bar is its call tree. Wide bars are where the time goes.
 
 Here the measured quantity is the time a web service spends handling one API
 request: 480 milliseconds, broken down by call stack. The story the figure
 tells is that a single un-cached database query (``fetch_user_orders`` →
-``run_sql``) eats almost half of the whole request — the widest tower in the
-graph — which is exactly the bar an engineer would click to fix first.
+``run_sql``) eats almost half of the whole request: the widest tower in the
+graph, and exactly the bar an engineer would click to fix first.
 
 Vega-Lite has no native partition / icicle mark (rect widths must be laid out
 from a cumulative running offset the grammar cannot express on one axis), so the

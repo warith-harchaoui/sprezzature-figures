@@ -4,18 +4,18 @@ make_beeswarm — a house-styled beeswarm plot as hand-authored SVG.
 
 A beeswarm plot places one dot per observation along a shared numeric
 axis, nudging dots that would overlap just far enough apart (vertically,
-here) to keep every point visible -- unlike a strip plot's random jitter,
+here) to keep every point visible. Unlike a strip plot's random jitter,
 the offset is deterministic collision avoidance, so the swarm's width at
 any point on the axis is itself a density cue. Colour groups the points
 so the reader can compare several overlapping distributions on one axis
 at once. Typical uses: exam scores across three classes, response times
-across experiment arms, salaries across departments -- anywhere a
+across experiment arms, salaries across departments: anywhere a
 histogram would hide individual outliers and a box plot would hide shape.
 
 Previously rendered via full Vega (``vl_convert``, a ``force`` transform
 running a collide + x + y simulation); this module now runs a
 deterministic greedy collision-avoidance placement itself and paints
-each dot by hand -- no Vega, no matplotlib. Every dot carries a native
+each dot by hand, not with Vega or matplotlib. Every dot carries a native
 ``<title>`` tooltip.
 
 Author

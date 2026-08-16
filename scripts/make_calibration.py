@@ -13,15 +13,15 @@ leaves its bin points flat on the diagonal.
 
 This figure deliberately shows the most common failure mode: an
 **overconfident** classifier (a boosted-tree churn model). Its
-reliability curve sags **below** the diagonal — for every predicted
+reliability curve sags **below** the diagonal: for every predicted
 probability the observed rate of positives is lower, i.e. the model's
 confident "90 %" outcomes only happen about 78 % of the time. The gap
 between the curve and the diagonal is the miscalibration the plot exists
 to expose, summarised as an Expected Calibration Error (ECE) in the
 subtitle.
 
-This generator builds the SVG **by hand** — no matplotlib / seaborn /
-plotly, no Vega — so the tolerance ribbon, the 45-degree reference line,
+This generator builds the SVG **by hand**, with no matplotlib, seaborn,
+plotly, or Vega, so the tolerance ribbon, the 45-degree reference line,
 the per-bin gap stems, the reliability points sized by bin count, the
 confidence histogram below, and the in-plot annotations are all under
 our control and can carry the house interactivity (per-mark tooltips, a

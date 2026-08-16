@@ -4,11 +4,11 @@ make_arcdiagram — publication-quality arc diagram as a hand-authored SVG.
 
 An arc diagram lays every node on a single horizontal baseline and draws
 each link as a semicircular arc rising *above* that line. Because the
-nodes share one axis, the reader's whole attention goes to the arcs — and
-to the **order** of the nodes, which is the diagram's real message. A good
+nodes share one axis, the reader's whole attention goes to the arcs and to
+the **order** of the nodes, which is the diagram's real message. A good
 ordering makes structure jump out: tightly connected groups sit next to
 each other so their arcs are short and dense, while the rare long arc that
-leaps across the whole line flags a bridge — an edge that holds two
+leaps across the whole line flags a bridge, an edge that holds two
 otherwise separate communities together.
 
 This figure tells that story with an illustrative collaboration network:
@@ -16,8 +16,8 @@ who co-authored a paper with whom across two research groups. The nodes
 are ordered so the *Vision* group and the *Language* group cluster on the
 left and right; one researcher, **Nadia**, sits in the middle and is the
 only person with co-authors in *both* groups. Her two long arcs sweeping
-across the diagram are the single bridge between the two worlds — remove
-her and the collaboration graph falls into two disconnected halves.
+across the diagram are the single bridge between the two worlds: remove
+her, and the collaboration graph falls into two disconnected halves.
 
 Vega-Lite has no native arc-diagram mark, so the figure is built as an SVG
 string by hand rather than through ``vl_convert``. House style follows
@@ -27,13 +27,13 @@ start-anchored title plus a one-line takeaway subtitle.
 
 Interaction (no JavaScript): every node and every arc carries a native
 ``<title>`` tooltip, and CSS ``:hover`` / ``:focus`` on an arc fades every
-other arc and thickens the hovered one — the "pick out one collaboration"
-affordance that suits this capability, keyboard-reachable via ``tabindex``.
+other arc and thickens the hovered one, so the reader can pick out one
+collaboration at a time; the effect is keyboard-reachable via ``tabindex``.
 The figure is deliberately **static** (no draw-on animation): an arc
 diagram's whole message is the node *order* and the shape of the arcs, and
-a still shows both at once — motion would only hide the picture while it
-runs. Every arc is fully painted at load; the interaction merely lets a
-reader isolate one collaboration.
+a still shows both at once, whereas motion would only hide the picture
+while it runs. Every arc is fully painted at load; the interaction merely
+lets a reader isolate one collaboration.
 
 Running the module writes the SVG to
 ``sprezzature-figures/assets/svg-examples/arcdiagram.svg``.
