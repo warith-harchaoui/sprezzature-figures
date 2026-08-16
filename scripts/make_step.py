@@ -4,14 +4,14 @@ make_step — a house-styled step line chart as hand-authored SVG.
 
 Connects each point with a horizontal-then-vertical (step-after) line
 rather than a straight diagonal, so the chart never implies a value in
-between two measured states -- exactly right for anything that holds a
+between two measured states: exactly right for anything that holds a
 value constant until it changes, then jumps. Typical uses: inventory
 level after each transaction, a state machine's value over discrete
 steps, a price that only updates on trade, any piecewise-constant series.
 
 Previously rendered via Vega-Lite (``interpolate: "step-after"``,
-``vl_convert``); this module now builds the step path itself and paints
-it by hand -- no Vega, no matplotlib. Every point carries a native
+``vl_convert``). This module now builds the step path itself and paints
+it by hand: no Vega, no matplotlib. Every point carries a native
 ``<title>`` tooltip.
 
 Author

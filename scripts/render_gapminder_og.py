@@ -7,7 +7,7 @@ preview, so we rasterise one spread-out frame (year 2019) of each language's SVG
 to a PNG at the chart's own aspect ratio. Run after ``make_gapminder.py``.
 
 Needs a headless Chrome (Playwright, ``channel="chrome"``) because the frame is
-chosen by seeking the SMIL animation — something static renderers can't do.
+chosen by seeking the SMIL animation, something static renderers can't do.
 
 Author
 ------

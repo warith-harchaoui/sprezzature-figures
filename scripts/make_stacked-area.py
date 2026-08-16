@@ -9,8 +9,8 @@ while each band's own thickness traces its individual contribution.
 Typical uses: monthly cost by service, cumulative resource usage, any
 composition that should read both as a whole and as its parts.
 
-Previously rendered via Vega-Lite (``vl_convert``); this module now
-computes the cumulative stacking and paints each band by hand -- no
+Previously rendered via Vega-Lite (``vl_convert``). This module now
+computes the cumulative stacking and paints each band by hand: no
 Vega, no matplotlib. Hovering a band highlights it via CSS ``:has()``;
 every band carries a native ``<title>`` tooltip.
 

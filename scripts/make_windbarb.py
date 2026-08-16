@@ -4,7 +4,7 @@ make_windbarb — a house-styled meteorological wind-barb station plot as SVG.
 
 A *wind barb* (or *station plot* barb) is the synoptic meteorologist's
 glyph for a wind vector. A straight **staff** is drawn pointing *from*
-the direction the wind blows toward the station — the way a weathervane
+the direction the wind blows toward the station, the way a weathervane
 points into the wind. Ticks on the upwind end of the staff encode speed
 in knots by a base-5 tally:
 
@@ -15,7 +15,7 @@ in knots by a base-5 tally:
 
 Read the ticks and add them up: a pennant, two full barbs and a half
 barb is 50 + 20 + 5 = 75 knots. Because direction lives in the staff
-angle and speed in the tally, one small mark carries a full 2-D vector —
+angle and speed in the tally, one small mark carries a full 2-D vector,
 which is why a weather chart can pack a whole wind field onto a coast
 without a single number.
 
@@ -23,12 +23,12 @@ This example is a synoptic surface analysis of a **cold front sweeping
 off the US Northeast coast**. Ahead of the front (to the southeast) a
 warm, humid southwesterly flow streams up the seaboard; the blue front
 line marks the leading edge; behind it a sharp wind shift brings a cold,
-gusty northwesterly gale — the classic post-frontal "backing and
+gusty northwesterly gale: the classic post-frontal "backing and
 freshening" every mariner on that coast knows. The barbs make the shift
 legible at a glance: the staffs pivot roughly 180° and the tallies grow
 from a few barbs to pennants as the gale fills in behind the front.
 
-The module builds the SVG string by hand — no matplotlib / seaborn /
+The module builds the SVG string by hand: no matplotlib / seaborn /
 plotly, and no Vega (angled staffs with tallied pennants and barbs, a
 curved front glyph with triangle teeth, and side-aware station labels
 are authored far more directly and compactly as raw SVG). It follows the

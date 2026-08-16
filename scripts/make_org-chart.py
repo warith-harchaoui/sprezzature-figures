@@ -18,10 +18,10 @@ a **top-down tidy tree**:
   chief executive, so the whole VP layer lines up and the whole team
   layer lines up;
 * leaves (teams) are packed left-to-right at an even pitch, and each
-  parent is centred over the horizontal span of its children — the
+  parent is centred over the horizontal span of its children: the
   classic tidy layout that keeps the chart compact with no crossings;
 * **connectors** are orthogonal elbows (down from the parent, across a
-  shared bus, then down into each child) — the convention every org
+  shared bus, then down into each child), the convention every org
   chart uses, so the structure reads as "reporting lines".
 
 Each box is a rounded card printing the role on top and the team's
@@ -37,7 +37,7 @@ states the point.
 
 Interaction (no JavaScript): every box carries a native ``<title>``
 tooltip (role, division, headcount), and a CSS ``:hover`` / ``:focus``
-rule lifts a whole division — the VP card, its bus, and its teams
+rule lifts a whole division: the VP card, its bus, and its teams
 brighten while the rest of the chart dims. "Isolate a division" is the
 affordance an org chart invites, so ``interactive`` is true. A static
 chart needs no motion, so ``animated`` is false.

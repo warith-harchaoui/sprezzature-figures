@@ -5,15 +5,15 @@ make_strip — a house-styled strip plot as hand-authored SVG.
 Plots one dot per observation along a categorical axis, jittered
 horizontally within each category's band so overlapping points stay
 individually visible instead of stacking into an unreadable column.
-Simpler than a beeswarm's deterministic collision avoidance -- pure
-random jitter -- and correspondingly quicker to read for a modest sample
+Simpler than a beeswarm's deterministic collision avoidance (pure
+random jitter) and correspondingly quicker to read for a modest sample
 size per category. Typical uses: dose-response data, raw measurements
 behind a box plot, any small-to-medium sample split by category.
 
 Previously rendered via Vega-Lite (a ``calculate: "random()"`` transform
-feeding an ``xOffset`` encoding, ``vl_convert``); this module now jitters
+feeding an ``xOffset`` encoding, ``vl_convert``). This module now jitters
 each point itself (a seeded RNG, reproducible across renders) and paints
-every dot by hand -- no Vega, no matplotlib. Every dot carries a native
+every dot by hand: no Vega, no matplotlib. Every dot carries a native
 ``<title>`` tooltip.
 
 Author

@@ -2,8 +2,8 @@
 """
 make_ternary — a house-styled ternary (barycentric) plot as a hand-authored SVG.
 
-A ternary plot places every three-part composition — three fractions
-that sum to one — as a single point inside an equilateral triangle.
+A ternary plot places every three-part composition (three fractions
+that sum to one) as a single point inside an equilateral triangle.
 Each corner is a pure end-member (100 % of one part, 0 % of the other
 two); the perpendicular distance from the opposite edge encodes that
 part's share. It is the natural chart for compositional data, where the
@@ -11,13 +11,13 @@ three numbers are *not independent* (they always sum to 100 %) so a
 Cartesian scatter would double-count and mislead.
 
 This module builds the SVG string by hand (no matplotlib / seaborn /
-plotly, and no Vega — Vega-Lite has no first-class ternary geometry, so
+plotly, and no Vega, since Vega-Lite has no first-class ternary geometry, so
 the barycentric projection is authored directly). It follows the
 sprezzature-* house style pulled from :mod:`_style`: the Apple-ish saturated
 palette, Roboto typography, ink ``#1D1D1F`` on a white background,
 rounded markers, a takeaway title, and a one-line subtitle.
 
-The example is a soil-texture chart — the classic use of a ternary:
+The example is a soil-texture chart, the classic use of a ternary:
 each sample is a mix of **sand**, **silt**, and **clay** (the three
 mineral grain sizes, which by definition sum to 100 %), grouped by the
 soil textbook's texture class. The figure is interactive without any

@@ -16,7 +16,7 @@ The loop applies to every surface that produces a visual from code:
 * **Hand-authored graphics** — ``.svg`` (rsvg-convert or ImageMagick)
 
 Data viz is *one* application. A webpage, a UI component, a Mermaid
-architecture diagram — all go through the same four-step cycle.
+architecture diagram all go through the same four-step cycle.
 
 Two modes
 ---------
@@ -29,14 +29,14 @@ Two modes
     A fully offline alternative.  After rendering the PNG, the script calls
     ``qwen3-vl:8b`` (a vision-language model) to generate the critique
     automatically and pre-fill the assessment file.  No cloud API, no Claude
-    Code session required — works in any terminal once Ollama is running and
+    Code session required. It works in any terminal once Ollama is running and
     the model is pulled.
 
     The call itself is never made directly: every LLM/VLM call across the
     ``sprezzature-*`` suite routes through ``best_engine_ai_helper.llm.chat``,
     which resolves the model and the backend (Ollama by default; OpenAI-
     compatible or LangChain are opt-in via ``SPREZZATURE_LLM_BACKEND``). This
-    script only shapes the prompt and hands it a PNG — it never talks to
+    script only shapes the prompt and hands it a PNG; it never talks to
     Ollama's REST API itself.
 
     Pull the model once::
@@ -102,7 +102,7 @@ Usage
 Notes
 -----
 * Assessment files are keyed by a stable 8-char MD5 of the *resolved* source
-  path — the same source always maps to the same assessment slot.
+  path: the same source always maps to the same assessment slot.
 * ``.private/`` is in the top-level ``.gitignore``; assessment files and
   rendered PNGs are never committed.
 * For diagram surfaces (Vega / TikZ / Mermaid / SVG), rendering is delegated

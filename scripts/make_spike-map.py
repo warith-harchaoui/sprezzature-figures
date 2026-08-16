@@ -5,7 +5,7 @@ make_spike-map — a house-styled spike map as a hand-authored SVG.
 A *spike map* encodes a per-location quantity as the **height of a
 vertical spike** planted at that place on a projected basemap. Because
 every spike shares the same footprint and grows only upward, the eye
-compares heights along a single common baseline — the most honest
+compares heights along a single common baseline, the most honest
 one-dimensional comparison there is (Cleveland & McGill rank *position
 along a common scale* above area, angle, and colour). Against a faint
 land silhouette the spikes read like a skyline: where the ink is tall,
@@ -15,10 +15,10 @@ This example plants one spike at each of the world's largest **urban
 agglomerations**, spike height ∝ metropolitan population (2024 order of
 magnitude, United Nations World Urbanization Prospects). The takeaway
 is the shape of the century's urban century: the tallest skyline stands
-over East and South Asia — Tokyo, Delhi, Shanghai — while the Americas,
+over East and South Asia (Tokyo, Delhi, Shanghai) while the Americas,
 Africa and Europe carry shorter, sparser spikes.
 
-The module builds the SVG string by hand — no matplotlib / seaborn /
+The module builds the SVG string by hand: no matplotlib / seaborn /
 plotly, and no Vega (a projected basemap overlaid with hundreds of
 hand-placed spikes, a size legend, and side-aware city labels is
 authored far more directly and compactly as raw SVG). It follows the
@@ -29,8 +29,8 @@ one-line subtitle.
 
 Geometry is self-contained: the land silhouette comes from the vendored
 ``assets/geo/countries-110m.json`` TopoJSON and is drawn with a pure
-closed-form **Equal Earth** projection (Šavrič, Patterson & Jenny 2018)
-— an equal-area projection whose pleasing globe-like curvature reads as
+closed-form **Equal Earth** projection (Šavrič, Patterson & Jenny 2018),
+an equal-area projection whose pleasing globe-like curvature reads as
 a proper world map, no pyproj dependency. A native ``<title>`` per
 spike gives a no-JavaScript hover tooltip, and CSS ``:hover`` lifts the
 hovered spike out of the skyline.

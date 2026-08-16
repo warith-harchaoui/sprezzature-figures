@@ -3,7 +3,7 @@
 make_upset — a house-styled UpSet plot rendered as a hand-authored SVG.
 
 An **UpSet plot** (Lex et al., *IEEE TVCG*, 2014) visualises the sizes
-of intersections among many sets — the job a Venn diagram does for two
+of intersections among many sets: the job a Venn diagram does for two
 or three sets, but scaling cleanly to a dozen. It has three coordinated
 panels:
 
@@ -16,7 +16,7 @@ panels:
   each individual set.
 
 This generator builds the SVG string by hand (no matplotlib / seaborn /
-plotly, and no Vega — the three-panel matrix geometry with connector
+plotly, and no Vega, since the three-panel matrix geometry with connector
 lines aligned to bars is clearer authored directly). It follows the
 sprezzature-* house style pulled from :mod:`_style`: the Apple-ish saturated
 palette, Roboto typography, ink ``#1D1D1F`` on a white background,
@@ -26,7 +26,7 @@ The figure is interactive without any JavaScript: hovering or
 keyboard-focusing a combination (its bar, its matrix column, or the
 connector) highlights that column and dims the rest, and every bar and
 matrix column carries a native ``<title>`` tooltip with the exact
-count. Every mark is drawn at full size in its final state — there is
+count. Every mark is drawn at full size in its final state: there is
 no entrance animation, because an UpSet plot is a static comparison of
 counts that gains nothing from motion, and a frozen first frame must
 never look empty.

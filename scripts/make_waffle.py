@@ -4,7 +4,7 @@ make_waffle — a house-styled waffle chart (square pie) as a hand-authored SVG.
 
 A waffle chart lays out a 10x10 grid of 100 unit squares and fills a
 run of squares per category so that the *count of squares* reads off
-the proportion directly — one square is one percent. It is the
+the proportion directly: one square is one percent. It is the
 part-to-whole alternative to a pie: easier to compare small shares,
 and it never asks the eye to judge angles.
 

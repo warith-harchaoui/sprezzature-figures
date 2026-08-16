@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Generate a publication-quality *3D wireframe* figure as a standalone SVG.
 
-A 3D wireframe draws a surface ``z = f(x, y)`` as a lattice of mesh lines —
-the constant-``x`` and constant-``y`` grid curves projected onto the page —
+A 3D wireframe draws a surface ``z = f(x, y)`` as a lattice of mesh lines,
+the constant-``x`` and constant-``y`` grid curves projected onto the page,
 so the reader reads the shape of a two-argument function from its silhouette
 alone, without a filled/shaded solid. It is the matplotlib
 ``Axes3D.plot_wireframe`` idiom; R, seaborn, and plotly have no first-class
@@ -12,18 +12,18 @@ This module builds the SVG string **by hand** (no matplotlib / seaborn /
 plotly, no Vega): it samples the surface on a regular grid, rotates the
 lattice in 3D, projects it with a simple perspective camera, sorts the mesh
 segments back-to-front (painter's algorithm) and paints them in the sprezzature-*
-house style — Roboto type, the Apple-system palette, ink ``#1D1D1F`` on a
+house style: Roboto type, the Apple-system palette, ink ``#1D1D1F`` on a
 white ground, rounded framing. Depth is reinforced twice over: nearer mesh
 lines are drawn darker and thicker on a house blue→teal ramp, and the whole
-lattice turns slowly on its vertical axis for an honest 3D turn -- not a
+lattice turns slowly on its vertical axis for an honest 3D turn, not a
 single flat ``<animateTransform type="rotate">`` (a 2D screen-space spin,
 which would distort the perspective), but a re-projection of every mesh
 edge's endpoints at each keyframe azimuth, each carrying its own pure-SMIL
-``<animate>`` tags on ``x1``/``y1``/``x2``/``y2`` -- so a still reader still
+``<animate>`` tags on ``x1``/``y1``/``x2``/``y2``. That way a still reader still
 perceives the solid (the rotation is what sells "3D" on a flat page).
 
 The example data is illustrative: a radially-symmetric ``sinc``-like ripple,
-the textbook "drop in a pond" surface a wireframe is made to show — one
+the textbook "drop in a pond" surface a wireframe is made to show: one
 central peak ringed by decaying concentric waves.
 
 Usage

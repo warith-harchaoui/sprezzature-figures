@@ -3,8 +3,8 @@
 
 A polar plot places data on an **angular axis** (θ) and a **radial axis** (r):
 each observation is a point at distance ``r`` from the centre, at bearing ``θ``.
-It is the natural chart for anything *cyclic* — a compass, a 24-hour clock, a
-seasonal round — where wrapping the axis into a circle keeps midnight next to
+It is the natural chart for anything *cyclic* (a compass, a 24-hour clock, a
+seasonal round) where wrapping the axis into a circle keeps midnight next to
 23:00 and the reader can see the shape of the cycle at a glance instead of a
 line that falsely "jumps" from the right edge back to the left. It is the R
 ``coord_polar`` / matplotlib ``projection="polar"`` / plotly ``scatterpolar``
@@ -14,7 +14,7 @@ This module builds the SVG string **by hand** (no matplotlib / seaborn /
 plotly, no Vega): it maps a cyclic series onto polar coordinates, draws the
 radial grid rings and the hour spokes of a clock face, and paints a filled
 radial area with its outline and data dots. The figure is deliberately
-**static** — the shape of the day is the insight, and a still renders it in
+**static**: the shape of the day is the insight, and a still renders it in
 full at a glance; a spinning "radar sweep" would only distract from the twin
 commuter peaks the reader is here to see. Everything is in the sprezzature-* house
 style: Roboto type, the Apple-system palette, ink ``#1D1D1F`` on a white

@@ -2,19 +2,22 @@
 """
 make_kde2d-contour — a house-styled 2-D kernel density contour plot as hand-authored SVG.
 
-Smooths a 2-D scatter into a continuous density surface (a bivariate
-Gaussian kernel at each point, summed onto a grid) and draws it as
-isocontour lines -- concentric rings around each mode, closer together
-where density changes fastest. The faint scatter underneath keeps the
-raw data visible so the reader can sanity-check the smoothing against
-the points it summarises. Typical uses: 2-D density of two continuous
-variables, visualising where a bivariate sample concentrates.
+The 1-D idea behind :mod:`make_kde1d` (stack a small bell shape, a Gaussian
+kernel, on every observation to get a smooth density curve) extends to two
+variables at once: smooth a 2-D scatter into a density surface, then slice
+that surface at a few height levels and draw each slice as a closed ring,
+the way a topographic map draws elevation contours. Rings sit closer
+together where the density changes fastest, the same way closely-packed
+contour lines mark a steep hillside. The faint scatter underneath keeps
+the raw data visible, so the reader can check the smoothing against the
+points it summarises. Typical use: the 2-D density of two continuous
+variables, showing where a bivariate sample concentrates.
 
 Previously rendered via full Vega (the ``kde2d`` transform onto a grid,
 then ``isocontour`` for marching-squares-style contour extraction,
-``vl_convert``); this module now computes the 2-D KDE itself (numpy,
+``vl_convert``). This module now computes the 2-D KDE itself (numpy,
 already a core dependency) and runs its own marching-squares contour
-extraction -- no Vega, no matplotlib, no scipy, no d3-contour. Each
+extraction: no Vega, no matplotlib, no scipy, no d3-contour. Each
 contour ring carries a native ``<title>`` tooltip with its density level.
 
 Author

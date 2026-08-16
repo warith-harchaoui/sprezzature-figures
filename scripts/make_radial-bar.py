@@ -4,13 +4,13 @@ make_radial-bar — a house-styled radial (circular) bar chart as a hand-authore
 
 A radial bar chart wraps a bar chart around a clock face: each category
 becomes a wedge whose *length* (outward from a central hole) encodes a
-value, and whose *angular position* encodes an inherently circular axis
-— here, the twenty-four hours of the day. The circular layout is not
+value, and whose *angular position* encodes an inherently circular axis:
+here, the twenty-four hours of the day. The circular layout is not
 decoration: because hour 23 sits right next to hour 0, the daily rhythm
 reads as a continuous loop, and the two commute peaks land on opposite
 sides of the dial the way a reader already pictures a day.
 
-This module builds the SVG string by hand — no matplotlib / seaborn /
+This module builds the SVG string by hand: no matplotlib / seaborn /
 plotly, and no Vega, because true annular bars (rounded wedges keyed to
 a clock) are not a native Vega-Lite mark and read far cleaner authored
 directly. It follows the sprezzature-* house style pulled from :mod:`_style`:

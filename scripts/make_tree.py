@@ -16,7 +16,7 @@ SVG string by hand rather than through ``vl_convert``. The layout is a
 * every node sits in a column ("depth") fixed by its distance from the
   root, so all siblings across the tree line up by generation;
 * leaves are packed onto evenly-spaced rows, and each internal node is
-  centred on the vertical span of its children — the classic tidy
+  centred on the vertical span of its children: the classic tidy
   layout that keeps the tree compact with no crossing edges;
 * **links** are smooth horizontal cubic-Bézier curves (diagonal links,
   not elbow/orthogonal) from a parent's right edge to a child's left
@@ -30,7 +30,7 @@ so the eye can group a family at a glance.
 
 Interaction (no JavaScript): every node carries a native ``<title>``
 tooltip, and a CSS ``:hover`` / ``:focus`` rule lifts a node's whole
-root-to-node lineage — the ancestor links and node cards brighten while
+root-to-node lineage: the ancestor links and node cards brighten while
 the rest of the tree dims. That "trace a branch to the root" affordance
 is exactly what a hierarchy invites, so ``interactive`` is true. A tidy
 tree does not benefit from motion, so ``animated`` is false.

@@ -6,25 +6,25 @@ hand-authored SVG.
 A *Manhattan plot* is the canonical summary figure of a genome-wide
 association study (GWAS). Every point is one genetic variant (a single
 nucleotide polymorphism, SNP): its horizontal position is the variant's
-location along the genome — chromosomes 1 … 22 laid end to end — and its
+location along the genome, chromosomes 1 through 22 laid end to end, and its
 height is the statistical strength of that variant's association with the
 trait, drawn as ``-log10(p)`` so that tiny p-values tower upward (the
 skyline that gives the plot its name). Points are tinted in two
 alternating colours, one per chromosome, so the reader can tell where one
 chromosome ends and the next begins. A dashed horizontal line marks the
-genome-wide significance threshold — the classic ``5 × 10⁻⁸``,
-i.e. ``-log10(p) ≈ 7.3`` — and any variant poking above it is a candidate
+genome-wide significance threshold, the classic ``5 × 10⁻⁸``
+(``-log10(p) ≈ 7.3``); any variant poking above it is a candidate
 signal worth following up.
 
 This example is an illustrative GWAS of **adult height**, a textbook
 highly-polygenic trait: many loci across many chromosomes clear the line,
 rather than one lone spike. The takeaway, stated in the subtitle, is
-exactly that — height is written across the whole genome, not at a single
+exactly that: height is written across the whole genome, not at a single
 address. The tallest peaks are labelled with a plausible nearby gene and
 carry a native ``<title>`` tooltip (chromosome, base-pair position,
 p-value) so the figure is lightly interactive with **no JavaScript**.
 
-The module builds the SVG string by hand — no matplotlib / seaborn /
+The module builds the SVG string by hand: no matplotlib / seaborn /
 plotly, and no Vega (tens of thousands of scattered points with a custom
 genomic x-axis are authored far more directly and compactly as raw SVG).
 It follows the sprezzature-* house style pulled from :mod:`_style`: the

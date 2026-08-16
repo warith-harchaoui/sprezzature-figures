@@ -7,7 +7,7 @@ increasing radius, coloured by the party that holds it. It is the
 canonical way a newsroom shows *who won the chamber*: the eye reads the
 half-ring as the assembly floor, each block of colour as a party's
 delegation, and a single radial gap plus a majority line answers the
-only question that matters on election night — did anyone clear the bar
+only question that matters on election night: did anyone clear the bar
 to govern alone, and if not, which coalitions can?
 
 Vega-Lite has no native hemicycle mark (the seat lattice is a bespoke

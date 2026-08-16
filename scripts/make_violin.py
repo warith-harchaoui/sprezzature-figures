@@ -4,7 +4,7 @@ make_violin — a house-styled violin plot as hand-authored SVG.
 
 Mirrors a Gaussian kernel density estimate left and right of a central
 axis, one violin per category, so the full shape of each group's
-distribution -- not just its median and spread -- is visible side by
+distribution, not just its median and spread, is visible side by
 side: bimodal groups show two bulges, skewed groups show an asymmetric
 silhouette, a box plot alone would hide both. A median tick marks the
 centre of each violin. Typical uses: comparing distribution shape across
@@ -14,7 +14,7 @@ carries information.
 Previously rendered via Vega-Lite (a column-faceted, horizontally
 mirrored ``area`` mark over pre-computed KDE points, ``vl_convert``);
 this module now computes the Gaussian KDE itself and paints each
-mirrored violin by hand -- no Vega, no matplotlib, no scipy. Every violin
+mirrored violin by hand: no Vega, no matplotlib, no scipy. Every violin
 carries a native ``<title>`` tooltip with its median and spread.
 
 Author

@@ -6,12 +6,12 @@ Mirrors two categories' horizontal bars around a shared zero axis, one
 row per age band, oldest at top: the classic demographic pyramid, one
 side (typically male) drawn negative-left, the other (female)
 positive-right, both labelled with their absolute share. The shape
-itself tells the story -- a wide base means a young, growing population;
+itself tells the story: a wide base means a young, growing population;
 a bulge in the middle means an ageing one.
 
 Previously rendered via Vega-Lite (negative/positive values on a shared
-``x`` encoding with an absolute-value axis label expression, ``vl_convert``);
-this module now paints each mirrored bar by hand -- no Vega, no
+``x`` encoding with an absolute-value axis label expression, ``vl_convert``).
+This module now paints each mirrored bar by hand: no Vega, no
 matplotlib. Every bar carries a native ``<title>`` tooltip with its
 absolute share.
 

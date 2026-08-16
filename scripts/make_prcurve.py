@@ -7,16 +7,16 @@ Generate the **precision-recall (PR) curve** figure in the
 classifier sweeps from strict to lenient, precision (of the positives it
 flags, how many are truly positive) is plotted against recall (of all the
 true positives, how many it caught). Each curve is the model's whole
-precision-vs-recall trade-off in one line, and the area under it — the
-**average precision (AP)** — labels the curve directly.
+precision-vs-recall trade-off in one line, and the area under it, the
+**average precision (AP)**, labels the curve directly.
 
 The scenario is a **fraud-detection** classifier scoring card
-transactions, where the positive class (fraud) is rare — roughly 3 % of
+transactions, where the positive class (fraud) is rare: roughly 3 % of
 transactions. That prevalence matters: on an imbalanced problem the PR
 curve is the honest picture (unlike the receiver-operating-characteristic
 curve, whose large true-negative pool flatters a weak model). To make the
-comparison legible the figure layers **two** models — a strong gradient-
-boosted model and a weaker logistic baseline — so the reader sees one
+comparison legible the figure layers **two** models: a strong gradient-
+boosted model and a weaker logistic baseline, so the reader sees one
 curve dominate the other across the whole recall range.
 
 Every PR curve is read against the **no-skill baseline**: a classifier

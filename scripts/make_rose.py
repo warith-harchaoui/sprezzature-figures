@@ -2,8 +2,8 @@
 """
 make_rose — a house-styled Nightingale rose (coxcomb / polar-area chart) as a hand-authored SVG.
 
-A rose diagram — Florence Nightingale's *coxcomb*, also called a
-polar-area chart — is a pie chart's honest cousin. Every wedge spans
+A rose diagram, Florence Nightingale's *coxcomb*, also called a
+polar-area chart, is a pie chart's honest cousin. Every wedge spans
 the **same angle** (here one twelfth of the circle, one per month), so
 the eye is not fooled by fat slices; the story lives entirely in each
 wedge's **radius**, which grows with the value. Nightingale used it in
@@ -13,14 +13,14 @@ sheer size of the disease petals won the argument that a table never
 could.
 
 This module rebuilds that argument in the sprezzature-* house style. Twelve
-monthly wedges are stacked by cause of death — preventable disease,
-wounds, and everything else — so each petal's total radius is the
+monthly wedges are stacked by cause of death (preventable disease,
+wounds, and everything else), so each petal's total radius is the
 month's death rate and its coloured bands show what the men were dying
 of. The reader sees at a glance that the pale-blue disease band swamps
 the red wounds band, and that the whole rose shrinks dramatically once
 Nightingale's sanitary commission arrives.
 
-The SVG is built by hand — no matplotlib / seaborn / plotly, and no
+The SVG is built by hand: no matplotlib / seaborn / plotly, and no
 Vega, because equal-angle annular sectors keyed to a calendar are not a
 native Vega-Lite mark and read far more cleanly authored directly. It
 follows the tokens from :mod:`_style`: the Apple-ish palette, Roboto

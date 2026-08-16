@@ -15,13 +15,13 @@ product. Every ticket is tagged with the one reason it was opened, and
 the chart answers the question a support lead asks on Monday morning:
 *if I could fix only a handful of root causes, which ones would clear
 most of the backlog?* The takeaway the figure is built to state: **three
-or four reasons drive ~80 % of the tickets** — the bars left of the
+or four reasons drive ~80 % of the tickets**: the bars left of the
 crossing are tinted as the "vital few", the rest fade to grey, and the
 crossing is annotated with the exact count and percentage.
 
 This generator builds the SVG by hand (no matplotlib / seaborn / plotly,
-no Vega) so the two coordinated scales — a left percentage axis for the
-bar shares and a right percentage axis for the cumulative curve — sit
+no Vega) so the two coordinated scales, a left percentage axis for the
+bar shares and a right percentage axis for the cumulative curve, sit
 under our own control, along with the vital-few tint, the direct curve
 label, and the 80 % guide. Marks are distinguished by **more than
 hue**: the bars are a solid fill split blue↔grey (survives greyscale

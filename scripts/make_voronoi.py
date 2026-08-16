@@ -4,7 +4,7 @@ make_voronoi — publication-quality Voronoi catchment map as hand-authored SVG.
 
 A Voronoi tessellation partitions a plane into one cell per seed point,
 where every location inside a cell is closer to that seed than to any
-other. It is the natural answer to "which facility serves this spot?" —
+other. It is the natural answer to "which facility serves this spot?":
 the honest, distance-true version of a catchment map that a hand-drawn
 service-area blob only approximates. Here the seeds are the pharmacies of
 a mid-size city, the fill colour marks the chain each one belongs to, and

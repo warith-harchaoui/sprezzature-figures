@@ -4,14 +4,14 @@ make_quiver — a house-styled vector field (quiver) plot as hand-authored SVG.
 
 Draws one small triangular arrow per grid point, rotated to the local
 vector's direction and coloured/sized by its magnitude, so a 2-D vector
-field's overall structure -- a vortex, a source, a saddle -- reads as a
+field's overall structure (a vortex, a source, a saddle) reads as a
 pattern at a glance rather than a table of (dx, dy) numbers. Typical
 uses: fluid-flow or wind-field snapshots, gradient fields, any function
 that assigns a direction and magnitude to every point in a plane.
 
 Previously rendered via Vega-Lite (a rotated triangle point mark,
-``vl_convert``); this module now computes the field and paints each
-rotated triangle by hand -- no Vega, no matplotlib. Every arrow carries a
+``vl_convert``). This module now computes the field and paints each
+rotated triangle by hand: no Vega, no matplotlib. Every arrow carries a
 native ``<title>`` tooltip with its exact vector and magnitude.
 
 Author

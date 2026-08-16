@@ -7,8 +7,8 @@ categorical color and numeric size encoding, to reveal correlation,
 clusters, or outliers. Typical uses: price vs. quality rating, engine
 size vs. fuel economy, marketing spend vs. conversions.
 
-Previously rendered via Vega-Lite (``vl_convert``); this module now builds
-the ``<svg>`` markup by hand -- no Vega, no matplotlib -- so every point
+Previously rendered via Vega-Lite (``vl_convert``). This module now builds
+the ``<svg>`` markup by hand: no Vega, no matplotlib. Every point
 carries a native ``<title>`` tooltip with its exact reading.
 
 Author

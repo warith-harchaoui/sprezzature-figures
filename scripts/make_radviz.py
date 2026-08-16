@@ -8,7 +8,7 @@ metaphor. Each of the ``D`` features is an **anchor** pinned at an
 equally-spaced point on a unit circle. Every row is a ball tied to all
 ``D`` anchors by springs; the spring to anchor *j* pulls with a force
 proportional to that row's (min-max normalised) value of feature *j*.
-The ball settles at the force-balanced point — the value-weighted
+The ball settles at the force-balanced point: the value-weighted
 average of the anchor positions:
 
     p_i = ( Σ_j v_ij · a_j ) / ( Σ_j v_ij )
@@ -19,7 +19,7 @@ is a *class-separation* read at a glance: if the coloured clouds pull
 apart toward different rims, the raw features already carry the signal a
 classifier would exploit; if they pile up in the middle, they do not.
 
-The plot is built **by hand** as an SVG string — Vega-Lite has no
+The plot is built **by hand** as an SVG string: Vega-Lite has no
 RadViz mark, and hand SVG lets each anchor and each point carry its own
 ``<title>`` tooltip and a CSS ``:hover`` lift. The figure is a clean
 **static** poster: a RadViz projection is a settled spring layout, so
@@ -28,7 +28,7 @@ does not already show. No matplotlib, seaborn, or plotly. Running the
 module writes the SVG artifact.
 
 The data is synthetic but communicative: three wheat-kernel varieties
-(Kama, Rosa, Canadian) described by seven geometric measurements — the
+(Kama, Rosa, Canadian) described by seven geometric measurements, the
 shape of a real seed-sorting problem, where a grain elevator wants to
 know whether cheap calliper measurements separate the varieties before
 training anything.

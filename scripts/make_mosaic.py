@@ -5,7 +5,7 @@ A mosaic (Marimekko) plot shows how a whole splits along *two* categorical
 dimensions at once. Each **column** is a first-level category whose *width*
 encodes that category's share of the grand total; within a column the stacked
 **segments** encode a second categorical proportion by *height*. The area of any
-tile is therefore proportional to a joint frequency — width times height — which
+tile is therefore proportional to a joint frequency (width times height), which
 lets a reader compare both marginals and the cells in a single view.
 
 Vega-Lite has no native Marimekko mark (rect widths cannot be data-driven off a

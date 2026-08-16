@@ -7,14 +7,14 @@ body of text, and how do they group*. Here the text is a year of
 product reviews for a mid-range coffee grinder; each word is sized by
 how often reviewers used it and tagged by the theme it belongs to. The
 theme reads two ways so it never leans on colour alone: a sign glyph and
-a hue together — a leading ``+`` in green for what buyers praise, a
+a hue together: a leading ``+`` in green for what buyers praise, a
 leading ``−`` in red for what they complain about, and no glyph in blue
 for the neutral product vocabulary both camps share. The takeaway is
 meant to jump out of the raster: the biggest words are *grind* and
 *quiet*, so people mostly love how it works, while the largest complaint
 word is *noisy*, the one recurring gripe.
 
-This module builds the SVG string by hand — no matplotlib / seaborn /
+This module builds the SVG string by hand: no matplotlib / seaborn /
 wordcloud / plotly, and no Vega, because a collision-free
 Archimedean-spiral packing of variable-size glyphs is not a native
 Vega-Lite mark and is far cleaner authored directly. Placement is fully

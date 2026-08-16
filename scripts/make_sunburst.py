@@ -15,8 +15,8 @@ a donut chart is more legible. For many-leaf flat hierarchies, a treemap
 uses area more efficiently.
 
 Previously rendered via full Vega (``vl_convert``, ``stratify`` +
-``partition`` transforms); this module now computes the ring geometry
-itself and paints the annular sectors by hand -- no Vega, no matplotlib.
+``partition`` transforms). This module now computes the ring geometry
+itself and paints the annular sectors by hand: no Vega, no matplotlib.
 Every arc carries a native ``<title>`` tooltip with its exact value.
 
 Author

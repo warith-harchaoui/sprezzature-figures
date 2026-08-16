@@ -8,18 +8,18 @@ what fraction of the true positives have you captured by the time you
 have contacted the top X %? Three reference curves make the answer
 legible:
 
-* the **random baseline** — a diagonal, where contacting X % of a
+* the **random baseline**: a diagonal, where contacting X % of a
   randomly ordered list captures X % of the positives (no targeting);
-* the **perfect model** — the theoretical ceiling, where every real
+* the **perfect model**: the theoretical ceiling, where every real
   positive is ranked ahead of every negative, so the curve climbs at
   the steepest possible slope until all positives are captured, then
   flattens;
-* the **actual model** — the real ranked list, which lives between the
+* the **actual model**: the real ranked list, which lives between the
   two; its *gap above the baseline* is the value the model adds.
 
 The scenario is a churn-prevention campaign with a fixed calling
 budget. The takeaway the figure is built to communicate: **calling the
-riskiest 20 % of the ranked list reaches ~63 % of the churners** — a
+riskiest 20 % of the ranked list reaches ~63 % of the churners**: a
 marker sits at that operating point, with dropped guide lines and a
 direct call-out stating both the gain and the lift over random. That is
 the number a campaign owner budgets against.
@@ -30,9 +30,10 @@ operating-point guides, and the direct curve labels are all under our
 control. Curves are distinguished by **more than hue**: the model curve
 is a thick solid line with an end-label, the perfect-model envelope is a
 thinner solid line labelled at its kink, and the random baseline is a
-*dashed* diagonal — so the three read apart under greyscale and
-deuteranopia and each is named directly on the plot, not only in a
-legend. It matches the sprezzature-* house style: Roboto, the Apple-ish
+*dashed* diagonal. That way the three read apart under greyscale and
+deuteranopia (a red-green colour-vision deficiency where hue alone would
+merge two of the curves), and each is named directly on the plot, not
+only in a legend. It matches the sprezzature-* house style: Roboto, the Apple-ish
 palette, rounded corners, ink ``#1D1D1F``, secondary ``#6E6E73``, white
 background, white keylines.
 

@@ -10,9 +10,9 @@ across groups. Typical uses: software package sizes, portfolio composition,
 file-system usage, and any taxonomy with a value attached to each leaf.
 
 Previously rendered via full Vega (``vl_convert``, ``treemap`` transform
-with the squarify method); this module now runs the squarify algorithm
+with the squarify method). This module now runs the squarify algorithm
 itself (Bruls, Huizing & van Wijk, 2000) and paints the nested rectangles
-by hand -- no Vega, no matplotlib. Every leaf carries a native ``<title>``
+by hand: no Vega, no matplotlib. Every leaf carries a native ``<title>``
 tooltip with its exact value.
 
 Author
