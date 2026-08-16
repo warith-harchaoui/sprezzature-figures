@@ -5,8 +5,9 @@ Adapter that exposes the FastAPI app defined in :mod:`sprezzature_figures.api`
 as MCP tools so any MCP-aware host (agent runtimes, IDE integrations,
 custom shells) can call ``kinds`` / ``kind_definition`` / ``render`` as
 first-class tools. Uses :mod:`fastapi_mcp`
-(https://github.com/tadata-org/fastapi_mcp) -- one line wraps the whole
-existing HTTP surface, so we never duplicate the route definitions.
+(https://github.com/tadata-org/fastapi_mcp): one line wraps the whole
+existing HTTP surface, so the same route definitions serve both plain HTTP
+callers and MCP hosts without being written twice.
 
 Install the extra to pull in ``fastapi-mcp``::
 

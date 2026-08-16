@@ -5,8 +5,9 @@ The FigurePlan records *what* data-shaping steps should apply (filter, sort,
 aggregate, top-N, ...) as an auditable list of typed :mod:`~.operations`
 ``Transform`` models. This module is the missing executor that actually
 *applies* them to ``list[dict]`` rows, in list order, before the rows reach a
-generator. Nothing here evaluates free-form code -- every step is a closed,
-typed operation, matching plan §4.3.
+generator. Nothing here evaluates free-form code: every step is one of a
+fixed, closed set of typed operations, matching plan §4.3, so there is no
+way for a transform to do anything other than what its type declares.
 
 Two rules keep the output trustworthy:
 
@@ -14,7 +15,9 @@ Two rules keep the output trustworthy:
   rather than silently emptying the dataset (an unknown column can't filter
   what isn't there; the plan validator flags such columns upstream). This is
   reported through :class:`TransformNote`, never hidden.
-- Rows are never mutated in place -- each step returns fresh dicts.
+- Rows are never mutated in place: each step returns fresh dicts rather than
+  editing the ones it was given, so an earlier step's output is never
+  silently changed out from under it.
 
 Author
 ------

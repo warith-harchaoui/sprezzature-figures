@@ -2,8 +2,8 @@
 Undo/redo/revert/compare over a project's recorded iterations (plan §12).
 All of it is a thin layer on top of two facts already on disk: the
 project manifest's `current_iteration` pointer (projects.py) and each
-IterationRecord's `parent_iteration_id` (iterations.py). No separate
-branch-tracking structure -- reverting to an old version and then
+IterationRecord's `parent_iteration_id` (iterations.py). There is no
+separate branch-tracking structure: reverting to an old version and then
 recording a new one is what creates a branch, automatically, because the
 new record's parent is whatever was current at the time.
 

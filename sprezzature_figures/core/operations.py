@@ -7,9 +7,10 @@ Two distinct layers, per plan §4.2/§4.3:
   aggregate, ...) that lives in ``FigurePlan.transformations`` and is applied
   to the dataset before rendering. No free-form formulas.
 - ``FigureOperation``: a single chat-driven edit to the plan itself (set a
-  title, bind a column, add a filter, ...). This is what an LLM's
-  ``EditProposal`` (plan §10.2) is allowed to emit, validated before being
-  applied -- never arbitrary code.
+  title, bind a column, add a filter, ...). This is what the language model's
+  ``EditProposal`` (plan §10.2) is allowed to emit, validated before it is
+  ever applied. The model itself never runs code: it only ever picks one of
+  these named, pre-defined operations.
 
 Author
 ------
