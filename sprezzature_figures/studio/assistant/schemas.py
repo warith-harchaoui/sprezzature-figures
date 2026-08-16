@@ -1,7 +1,9 @@
 """
-Structured LLM output contracts (plan §10). The model is never allowed to
-return free-form JSON validated on faith -- every call site names one of
-these types, and sprezzature_figures.studio.assistant.repair enforces it.
+Structured output contracts for the language model (plan §10). The model
+is never allowed to return free-form JSON taken on faith: every call site
+names one of the typed schemas defined here, and
+sprezzature_figures.studio.assistant.repair actually checks the model's
+answer against it before anything downstream sees it.
 
 IntentAnalysis is not redefined here: it's sprezzature_figures.core.
 figure_plan.UserIntent, which already has exactly this shape (plan's own

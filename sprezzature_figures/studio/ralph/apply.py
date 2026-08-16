@@ -1,8 +1,8 @@
 """
 Deterministic application of a FigureOperation to a FigurePlan. This lives
 in ralph/, not core/, because applying operations is Ralph's job (plan
-§1.3: "Ralph modifies the plan, never the image") -- core stays models and
-pure validation only.
+§1.3: "Ralph modifies the plan, never the image"); core is kept to models
+and pure validation only.
 
 Author
 ------

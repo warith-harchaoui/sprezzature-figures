@@ -1,7 +1,7 @@
 """
-The small "which model is configured" badge (plan §9.4). Purely
-informational -- never gates any action, since the plan requires the app
-to start and stay usable even when the engine is unavailable.
+The small "which model is configured" badge (plan §9.4). It is purely
+informational and never blocks any action, since the plan requires the app
+to start and stay usable even when no language-model engine is available.
 
 Author
 ------

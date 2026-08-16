@@ -1,17 +1,20 @@
 """
 IterationRecord: an immutable record of one accepted change (plan §12).
-Persisted alongside the render artifacts Commit 8 already writes into each
-``iterations/NNNN/`` directory -- this module adds ``plan.json`` (the
-resulting FigurePlan, kept as its own file so other consumers don't need
-to parse the whole record) and ``event.json`` (the full record, including
-the render result and critique).
+"Immutable" means once written, a record is never edited again, only ever
+read or superseded by a new one, the same way a git commit is never
+rewritten in place. Each record is persisted alongside the render artifacts
+Commit 8 already writes into its own ``iterations/NNNN/`` directory: this
+module adds ``plan.json`` (the resulting FigurePlan, kept as its own file so
+other consumers don't need to parse the whole record) and ``event.json``
+(the full record, including the render result and critique).
 
-Undo/redo/branch all fall out of one simple fact: every IterationRecord
-names its ``parent_iteration_id``. "Undo" moves the project's current
-pointer to the parent; "redo" moves it to the most recent child; reverting
-to an old version and then recording a new one naturally creates a branch,
-since the new record's parent is whatever was current at the time -- no
-separate branch-tracking structure to keep in sync.
+Undo, redo and branching all fall out of one simple fact: every
+IterationRecord names its ``parent_iteration_id``, the record it was made
+from. "Undo" moves the project's current pointer to that parent; "redo"
+moves it to the most recent child; reverting to an old version and then
+recording a new one naturally creates a branch, since the new record's
+parent is whatever was current at the time. No separate branch-tracking
+structure is needed to keep this in sync.
 
 Author
 ------

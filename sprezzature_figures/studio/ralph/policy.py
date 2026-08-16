@@ -4,10 +4,11 @@ What Ralph is and isn't allowed to do on its own (plan §11.2-§11.4).
 Safe repairs are cosmetic, meaning-preserving fixes Ralph may apply without
 asking: a bigger margin, a larger font, rotated labels, a moved legend, a
 bigger canvas, stronger contrast, a repositioned annotation. Everything
-that changes what the data says -- a different figure kind, a filter, an
-aggregation, a top-N, a group-others -- requires explicit user confirmation,
-even if the model itself didn't flag it as such (defense in depth against a
-model that forgets to set `requires_confirmation`).
+that changes what the data actually says, such as a different figure kind,
+a filter, an aggregation, a top-N, or a group-others, requires explicit
+user confirmation, even if the model itself did not flag it as such. That
+redundancy is deliberate: a second line of defense in case the model
+forgets to set `requires_confirmation`.
 
 Author
 ------

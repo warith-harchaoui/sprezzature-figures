@@ -1,28 +1,37 @@
 """
 fonts — the project's typeface sources: Roboto/Roboto Serif/Roboto Mono (the
 default **corporate** theme) and Latin Modern Roman/Mono (the **academic**
-theme, a LaTeX-native face -- GUST e-foundry's free extension of Donald
-Knuth's Computer Modern), bundled as TTF/WOFF2 files so every figure and the
-Studio web app render the house typography identically regardless of what is
-(or is not) installed on the host machine. No more hoping
-``"Roboto, sans-serif"`` resolves to the real thing -- the font is
-registered / embedded directly.
+theme, the face LaTeX documents use by default: GUST e-foundry's free
+extension of Donald Knuth's Computer Modern), bundled as TTF/WOFF2 font
+files so every figure and the Studio web app render the house typography
+identically regardless of what is, or is not, installed on the host
+machine. Without this, writing ``"Roboto, sans-serif"`` in a stylesheet
+only *hopes* the browser or renderer happens to have Roboto installed; here
+the font itself is registered or embedded directly, so the figure always
+carries its own typeface with it.
 
 Font files live under ``assets/fonts/`` in the source tree and ship in the
 wheel as the sibling package ``sprezzature_figures_fonts`` (same pattern as
-``scripts/`` -> ``sprezzature_figures_scripts``). Sources: the OFL-licensed
-Google Fonts repository for Roboto (see the ``OFL-*.txt`` files), and GUST
-e-foundry's Latin Modern under the GUST Font License / LPPL (see
-``GUST-FONT-LICENSE-LatinModern.txt``) -- both permit bundling and
-redistribution.
+``scripts/`` becoming ``sprezzature_figures_scripts``). Sources: the
+OFL-licensed Google Fonts repository for Roboto (see the ``OFL-*.txt``
+files), and GUST e-foundry's Latin Modern under the GUST Font License /
+LPPL (see ``GUST-FONT-LICENSE-LatinModern.txt``). Both licenses permit
+bundling and redistribution, which is why these fonts, and not some other
+free alternative, were chosen.
 
-This module is deliberately **stdlib-only** at import time (only
-``base64``/``functools``/``pathlib``) so ``scripts/_svg.py`` -- which must
-stay importable without the dataviz tier -- can depend on it. The optional
-integration (:func:`register_matplotlib`) imports its target library lazily
-and no-ops if it is not installed. The rasteriser (``resvg_py``) has no
-persistent font-directory registration -- callers pass :data:`RESVG_FONT_DIRS`
-as the ``font_dirs`` keyword on each ``svg_to_bytes`` call instead.
+This module is deliberately **stdlib-only** at import time, meaning it
+imports nothing beyond Python's own standard library (only
+``base64``/``functools``/``pathlib``, no third-party package). That matters
+because ``scripts/_svg.py`` must stay importable even without the
+``dataviz`` extra installed (the optional dependency group that pulls in
+heavier plotting libraries), and this module is one of the things it
+depends on. The optional Matplotlib integration
+(:func:`register_matplotlib`) imports its target library lazily and does
+nothing if that library is not installed. The rasteriser, the component
+that turns an SVG into pixels (``resvg_py``), keeps no persistent
+font-directory registration of its own; callers pass
+:data:`RESVG_FONT_DIRS` as the ``font_dirs`` keyword on each
+``svg_to_bytes`` call instead.
 
 Author
 ------

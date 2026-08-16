@@ -11,22 +11,22 @@ RalphEngine: the interactive loop from plan §11.1.
     -> optional safe repair (ralph.repair.apply_safe_repairs)
     -> new render
 
-Ralph never touches the rendered image directly -- every change goes
-through a FigureOperation applied to the FigurePlan, then a fresh render
-(plan §1.3).
+Ralph never touches the rendered image directly: every change goes through
+a FigureOperation applied to the FigurePlan, then a fresh render (plan
+§1.3).
 
-This engine takes already-resolved `data` rows alongside the FigurePlan:
-the caller resolves them via ``pages.editor._resolve_data``, which now
+This engine takes already-resolved `data` rows alongside the FigurePlan.
+The caller resolves them via ``pages.editor._resolve_data``, which now
 executes ``FigurePlan.transformations`` (filter/sort/aggregate/...) against
-the imported rows before mapping columns onto role names -- see
+the imported rows before mapping columns onto role names; see
 ``core.transformations.apply_transformations``. The transformations list
 remains the auditable record of what was applied.
 
 The two model-facing steps (interpret and visually inspect) are wrapped so
-a live model failing -- empty/malformed JSON, a timeout, an unreachable
-backend -- degrades gracefully (the figure still renders, the reason is
-reported in ``RalphResult.notes``) instead of crashing the user's turn
-(plan §11.4, §16.4).
+that a live model failing in some way (empty or malformed JSON, a timeout,
+an unreachable backend) degrades gracefully instead of crashing the user's
+turn: the figure still renders, and the reason for the failure is reported
+in ``RalphResult.notes`` (plan §11.4, §16.4).
 
 Author
 ------

@@ -1,9 +1,11 @@
 """
-Unified rendering: turns a figure kind + data into a RenderResult with both
-the source artifact and a PNG preview, using atomic writes so a reader never
-sees a half-written file. Never depends on the studio extras (pandas,
-nicegui, ...) -- only resvg_py, already a core dependency, is needed to
-convert SVG to PNG.
+Unified rendering: turns a figure kind and its data into a RenderResult with
+both the source artifact and a PNG preview. Writes are atomic, meaning the
+finished file is built under a temporary name and only renamed into place
+once it is complete, so a reader can never open a half-written file mid-save.
+This module never depends on the studio extras (pandas, nicegui, the
+NiceGUI-based web app, ...): only resvg_py, already a core dependency, is
+needed to convert SVG to PNG.
 
 Author
 ------

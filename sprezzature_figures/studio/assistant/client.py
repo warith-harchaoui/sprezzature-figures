@@ -1,9 +1,12 @@
 """
-The LLM/VLM client interface (plan §9.1) and its real implementation, a
-thin wrapper over best_engine_ai_helper.llm.chat(). Nothing in this
-package calls Ollama or any backend directly -- best-engine-ai-helper
-resolves the model and backend, this module only shapes the call and
-enforces the response schema.
+The client interface to a language model (LLM) or vision-language model
+(VLM, a model that can also look at an image) used by the Studio (plan
+§9.1), plus its real implementation: a thin wrapper over
+best_engine_ai_helper.llm.chat(). Nothing in this package calls Ollama (a
+tool for running language models on your own machine) or any other backend
+directly; best-engine-ai-helper resolves which model and backend to use,
+and this module's only job is to shape the call correctly and enforce that
+the response matches the expected schema.
 
 Author
 ------

@@ -1,8 +1,10 @@
 """
-Profile a pandas DataFrame into a DatasetProfile: the synthetic summary sent
-onward for intent analysis and recommendation. Never sends raw rows anywhere
-by itself (plan §1.4) -- callers decide separately whether to attach a small
-sample.
+Profile a pandas DataFrame (an in-memory table, the standard shape a
+spreadsheet or CSV is loaded into for analysis in Python) into a
+DatasetProfile: a synthetic summary sent onward for intent analysis and
+recommendation. This module never sends the raw rows anywhere by itself
+(plan §1.4); it is left to callers to decide separately whether to attach a
+small sample of real rows.
 
 Author
 ------

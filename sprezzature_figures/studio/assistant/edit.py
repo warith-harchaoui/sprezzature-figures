@@ -1,8 +1,9 @@
 """
 Chat-driven plan edits: turn one user message into an EditProposal (plan
-§10.2), then drop any operation that fails validation -- a nonexistent
-column, an undeclared style option -- before it's ever handed to whatever
-applies operations to a FigurePlan (the Ralph engine, Commit 10).
+§10.2), then drop any operation that fails validation (say, a reference to a
+column that does not exist, or an undeclared style option) before it is ever
+handed to whatever applies operations to a FigurePlan (the Ralph engine,
+Commit 10).
 
 Author
 ------

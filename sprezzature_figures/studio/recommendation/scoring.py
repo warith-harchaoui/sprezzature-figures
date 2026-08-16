@@ -1,11 +1,12 @@
 """
 Deterministic scoring (plan §6, step 2): rank the compatible figure kinds by
-how well they suit *this* dataset, before the LLM ever sees them. The score is
-a small, legible combination of readability signals and -- when the caller
-knows the user's analytical goal -- an intent-match term, not a learned model,
-so the ranking is reproducible and explainable. Readability alone leaves many
-kinds tied at 1.0; the goal term is what breaks that tie toward the figure the
-user actually asked for.
+how well they suit *this* dataset, before the language model ever sees
+them. The score is a small, legible combination of readability signals
+plus, when the caller knows the user's analytical goal, an intent-match
+term. It is not a learned model, so the ranking is reproducible and
+explainable by hand. Readability alone leaves many kinds tied at 1.0; the
+goal term is what breaks that tie toward the figure the user actually
+asked for.
 
 Author
 ------

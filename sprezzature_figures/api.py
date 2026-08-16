@@ -21,7 +21,9 @@ Install the extra to get the runtime dependencies::
 
     pip install 'sprezzature-figures[api]'
 
-Then run the app with any ASGI server::
+Then run the app with any ASGI server (the standard interface Python web
+servers and frameworks use to talk to each other; Uvicorn below is one
+implementation of it)::
 
     uvicorn sprezzature_figures.api:app --host 0.0.0.0 --port 8000
 

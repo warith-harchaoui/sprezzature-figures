@@ -1,8 +1,11 @@
 """
 FigurePlan: the source of truth for a figure being edited in Sprezzature
-Studio (plan §1.2). Neither the conversation nor the rendered PNG is
-authoritative -- only this Pydantic model is. Every accepted edit produces a
-new FigurePlan version (see sprezzature_figures.core.iterations, Commit 12).
+Studio (plan §1.2). Neither the chat conversation nor the rendered PNG is
+authoritative; only this object is. It is a Pydantic model, meaning a plain
+Python class that also validates its own fields at construction time (a
+FigurePlan built with a bad value raises immediately, rather than passing a
+silently wrong figure downstream). Every accepted edit produces a new
+FigurePlan version (see sprezzature_figures.core.iterations, Commit 12).
 
 Author
 ------

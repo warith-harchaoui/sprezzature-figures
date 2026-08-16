@@ -1,9 +1,10 @@
 """
-Deterministic semantic-type detection for an imported column: numeric,
+Rule-based detection of an imported column's semantic type (numeric,
 categorical, text, datetime, boolean, identifier, latitude, longitude,
-percentage, currency, url, email (plan §5.5). No LLM involved -- a model may
-later *suggest* a correction, but never replaces this detection without
-explicit user confirmation.
+percentage, currency, url, email; plan §5.5): fixed rules decide the type,
+with no language model involved in the decision itself. A model may later
+*suggest* a correction, but it never overrides this detection without
+the user explicitly confirming the change.
 
 Author
 ------

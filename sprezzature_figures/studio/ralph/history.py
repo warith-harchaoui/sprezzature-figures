@@ -1,10 +1,10 @@
 """
 In-memory round-by-round history for one Ralph session, feeding the
-stopping criteria (plan §11.5). Not to be confused with the persistent,
-disk-backed IterationRecord history (plan §12, Commit 12) -- this is
-Ralph's own short-term memory of "what did I just try", scoped to however
-long the caller keeps a RalphHistory instance alive (typically one
-autopilot repair loop, or one chat session).
+stopping criteria (plan §11.5). This is not the persistent, disk-backed
+IterationRecord history (plan §12, Commit 12); it is Ralph's own
+short-term memory of "what did I just try", which only lasts as long as
+the caller keeps a RalphHistory instance alive (typically one autopilot
+repair loop, or one chat session).
 
 Author
 ------

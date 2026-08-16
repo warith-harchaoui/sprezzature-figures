@@ -1,9 +1,10 @@
 """
-Ask a VLM to actually look at a rendered PNG and judge it (plan §10.3,
+Ask a vision-language model (a model that can look at an image, not just
+read text) to actually look at a rendered PNG and judge it (plan §10.3,
 §11.6). The context sent is deliberately narrow: the image, the user's
 intent, the figure kind and bound roles, title/subtitle, dimensions, a
 statistical summary, the transformations applied, and the previous
-critique if there is one -- never the full dataset.
+critique if there is one. It never includes the full dataset.
 
 Author
 ------

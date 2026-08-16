@@ -1,9 +1,9 @@
 """
-Apply a VisualCritique's safe repairs to a FigurePlan (plan §11.2). Not to
-be confused with sprezzature_figures.studio.assistant.repair, which fixes
-malformed LLM JSON -- this module fixes the *figure*, and only ever with
-operations policy.is_safe_repair() actually approves, regardless of what
-the critique claims is safe.
+Apply a VisualCritique's safe repairs to a FigurePlan (plan §11.2). Do not
+confuse this with sprezzature_figures.studio.assistant.repair, which fixes
+malformed JSON coming back from the model: this module fixes the *figure*
+itself, and only ever with operations that ``policy.is_safe_repair()``
+actually approves, regardless of what the critique claims is safe.
 
 Author
 ------

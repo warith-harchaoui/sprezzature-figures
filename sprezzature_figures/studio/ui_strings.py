@@ -1,5 +1,5 @@
 """
-Studio's own interface chrome language -- English/French labels, buttons,
+Studio's own interface chrome language: the English/French labels, buttons,
 placeholders, and notifications for the Studio UI itself.
 
 Distinct from ``studio.i18n`` (``state.language``), which picks the language

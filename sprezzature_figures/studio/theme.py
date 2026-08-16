@@ -1,18 +1,19 @@
 """
 theme — the Studio's visual language, matching the public
 harchaoui.org/warith/sprezzature site (same Roboto typography, the same
-neutral/brand-blue palette, the same rounded-card look) instead of raw
-default Quasar styling.
+neutral/brand-blue palette, the same rounded-card look) instead of the raw
+default styling of Quasar, the UI component library NiceGUI is built on.
 
-The installed NiceGUI build ships no Tailwind utility CSS at all (its
+The installed NiceGUI build ships no Tailwind utility CSS at all. Its
 ``.classes()`` calls happily accept Tailwind-style tokens like ``w-1/4`` or
-``gap-4``, but nothing defines them, so they are silent no-ops) -- that gap
-is what made the first cut of the Studio UI look unstyled. This module is a
-small, hand-authored, self-hosted subset of Tailwind covering exactly the
-utility classes the Studio components use, plus the brand design tokens
-(colors, radius, shadow) lifted from the reference site's own
-``css/app.css``. No CDN, no build step: one `<style>` block injected once at
-app startup (see ``studio/app.py::register_theme``).
+``gap-4``, but nothing actually defines what those tokens mean, so they
+silently do nothing. That gap is what made the first cut of the Studio UI
+look unstyled. This module fills it with a small, hand-authored,
+self-hosted subset of Tailwind covering exactly the utility classes the
+Studio components use, plus the brand design tokens (colors, radius,
+shadow) lifted from the reference site's own ``css/app.css``. No CDN, no
+build step: one `<style>` block injected once at app startup (see
+``studio/app.py::register_theme``).
 
 Author
 ------

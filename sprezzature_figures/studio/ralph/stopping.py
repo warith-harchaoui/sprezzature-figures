@@ -6,10 +6,12 @@ regression, or the user cancelling (handled by the caller, not here).
 
 Issue signatures are category + severity + a normalized message, so the
 same underlying problem reported with slightly different wording doesn't
-look "new" round over round. The plan also mentions an "approximate zone";
-VisualIssue (Commit 9) doesn't carry bounding-box coordinates yet -- a real
-zone needs grounded VLM output, which isn't wired up -- so this is a
-documented simplification, not a silent omission.
+look "new" round over round. The plan also mentions an "approximate zone",
+meaning where on the figure the issue sits; VisualIssue (Commit 9) does not
+carry bounding-box coordinates yet, because a real zone would need a
+vision-language model that grounds its answer in image coordinates, which
+is not wired up here. That is a documented simplification, not a silent
+omission.
 
 Author
 ------

@@ -3,11 +3,12 @@ Studio-only figure language: which of a small set of language-aware
 generators (see ``core.rendering._LANGUAGE_AWARE_KINDS``) should render its
 chrome text (title, subtitle, axis/legend labels) in French vs English.
 
-Default is French -- Studio's own default, not the library's (``make_figure``
-called directly, via the CLI, the API, or MCP always defaults a generator's
-`language` param to "en"). Once a CSV is imported, the language of its
-*column names* becomes the single language for everything rendered from it,
-so one dataset never mixes French axis chrome with an English legend.
+The default is French. That is Studio's own default, not the library's:
+``make_figure`` called directly, or via the CLI, the HTTP API, or MCP,
+always defaults a generator's `language` param to "en". Once a CSV is
+imported, the language of its *column names* becomes the single language
+for everything rendered from it, so one dataset never mixes French axis
+chrome with an English legend.
 
 Author
 ------

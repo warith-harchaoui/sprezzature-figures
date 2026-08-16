@@ -1,7 +1,8 @@
 """
-System prompt templates for each LLM call site. Kept as plain functions
-(not a template engine) -- these are short and the interesting logic lives
-in what's fed to them (schemas.py), not in string formatting.
+System prompt templates for each call site that talks to the language
+model. Kept as plain functions rather than a templating engine, since they
+are short: the interesting logic lives in what gets fed to them
+(schemas.py), not in the string formatting itself.
 
 Author
 ------

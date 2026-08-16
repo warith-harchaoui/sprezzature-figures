@@ -1,7 +1,8 @@
 """
-Sprezzature Studio's NiceGUI application: a single page registering a
-fresh SessionState per connecting client (plan §13.7 -- never a global
-ProjectState shared between users).
+Sprezzature Studio's NiceGUI (the Python web-UI framework it's built on)
+application: a single page registering a fresh SessionState per connecting
+client (plan §13.7), so two people using the Studio at once never see or
+edit a shared ProjectState by accident.
 
 Author
 ------

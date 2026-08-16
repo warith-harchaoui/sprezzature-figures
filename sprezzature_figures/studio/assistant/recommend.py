@@ -1,10 +1,11 @@
 """
-LLM-assisted reranking/explanation of already-compatible figure candidates
-(plan §6). This module does not decide which figures are compatible with a
-dataset -- that's a deterministic step owned by whatever calls this (a
-future studio.recommendation package). It only reranks, explains, titles,
-and flags tradeoffs among candidates it's handed, and never introduces a
-kind outside that list.
+Language-model-assisted reranking and explanation of figure candidates that
+are already known to be compatible with the dataset (plan §6). This module
+does not decide which figures are compatible: that is a separate,
+deterministic step owned by whatever calls this module (a future
+studio.recommendation package). It only reranks, explains, titles, and
+flags tradeoffs among the candidates it is handed, and it never introduces
+a chart kind outside that given list.
 
 Author
 ------
