@@ -91,14 +91,22 @@ def _structural_warnings(df: pd.DataFrame) -> list[DataWarning]:
     seen: set[str] = set()
     for col in df.columns:
         if col in seen:
-            warnings.append(DataWarning(column=str(col), message="duplicate column name", severity="error"))
+            warnings.append(
+                DataWarning(column=str(col), message="duplicate column name", severity="error")
+            )
         seen.add(col)
         if str(col).startswith("Unnamed:"):
-            warnings.append(DataWarning(column=str(col), message="column has no header name", severity="warning"))
+            warnings.append(
+                DataWarning(
+                    column=str(col), message="column has no header name", severity="warning"
+                )
+            )
 
     for i, col in enumerate(df.columns):
         if df.iloc[:, i].isna().all():
-            warnings.append(DataWarning(column=str(col), message="column is entirely empty", severity="warning"))
+            warnings.append(
+                DataWarning(column=str(col), message="column is entirely empty", severity="warning")
+            )
 
     return warnings
 
@@ -118,7 +126,9 @@ def profile_dataframe(
     ``PROFILING_SAMPLE_ROWS``; larger frames are sampled so an accidental
     50M-row CSV doesn't hang the UI (plan §5.4).
     """
-    sample = df if len(df) <= PROFILING_SAMPLE_ROWS else df.sample(PROFILING_SAMPLE_ROWS, random_state=0)
+    sample = (
+        df if len(df) <= PROFILING_SAMPLE_ROWS else df.sample(PROFILING_SAMPLE_ROWS, random_state=0)
+    )
 
     # Positional indexing (not sample[col]) because duplicate column labels
     # make label-based indexing return a DataFrame instead of a Series.

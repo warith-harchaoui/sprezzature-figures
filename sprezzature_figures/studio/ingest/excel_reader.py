@@ -33,8 +33,12 @@ def read_excel(path: str | Path, *, sheet_name: str | int = 0, header_row: int =
     return pd.read_excel(path, sheet_name=sheet_name, header=header_row, engine="openpyxl")
 
 
-def preview_excel(path: str | Path, *, sheet_name: str | int = 0, header_row: int = 0, n_rows: int = 500) -> pd.DataFrame:
-    return pd.read_excel(path, sheet_name=sheet_name, header=header_row, engine="openpyxl", nrows=n_rows)
+def preview_excel(
+    path: str | Path, *, sheet_name: str | int = 0, header_row: int = 0, n_rows: int = 500
+) -> pd.DataFrame:
+    return pd.read_excel(
+        path, sheet_name=sheet_name, header=header_row, engine="openpyxl", nrows=n_rows
+    )
 
 
 def excel_fingerprint(path: str | Path) -> str:
@@ -59,10 +63,16 @@ def excel_warnings(path: str | Path, *, sheet_name: str | int = 0) -> list[DataW
                 )
             )
 
-        header = [str(c.value).strip() if c.value is not None else "" for c in next(ws.iter_rows(max_row=1))]
+        header = [
+            str(c.value).strip() if c.value is not None else ""
+            for c in next(ws.iter_rows(max_row=1))
+        ]
         if any(h == "" for h in header):
             warnings.append(
-                DataWarning(message=f"sheet {ws.title!r} has one or more unnamed columns", severity="warning")
+                DataWarning(
+                    message=f"sheet {ws.title!r} has one or more unnamed columns",
+                    severity="warning",
+                )
             )
 
         rows = list(ws.iter_rows(min_row=2, values_only=True))

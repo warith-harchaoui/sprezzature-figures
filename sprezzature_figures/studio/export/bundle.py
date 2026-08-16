@@ -93,10 +93,14 @@ def export_project(
         root = Path(tmp) / safe_name
         root.mkdir()
 
-        (root / "README.md").write_text(_README_TEMPLATE.format(project_name=project_name), encoding="utf-8")
+        (root / "README.md").write_text(
+            _README_TEMPLATE.format(project_name=project_name), encoding="utf-8"
+        )
         (root / "figure-plan.json").write_text(plan.model_dump_json(indent=2), encoding="utf-8")
         (root / "manifest.json").write_text(
-            json.dumps(build_export_manifest(project_name=project_name, plan=plan, render=render), indent=2),
+            json.dumps(
+                build_export_manifest(project_name=project_name, plan=plan, render=render), indent=2
+            ),
             encoding="utf-8",
         )
         # Write the data the figure is actually built from: the imported rows
@@ -107,7 +111,9 @@ def export_project(
         copy_output_images(render, root / "output")
         (root / "reproduce.py").write_text(generate_reproduce_script(plan), encoding="utf-8")
         (root / "accessibility").mkdir()
-        (root / "accessibility" / "alt-text.txt").write_text(generate_alt_text(plan, dataset), encoding="utf-8")
+        (root / "accessibility" / "alt-text.txt").write_text(
+            generate_alt_text(plan, dataset), encoding="utf-8"
+        )
 
         archive_path = exports_dir / f"{safe_name}.sprezzature.zip"
         archive_base = str(archive_path).removesuffix(".zip")

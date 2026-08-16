@@ -191,7 +191,7 @@ class SetStyleOption(_OperationBase):
     )
     value: Any = Field(
         default=None,
-        description="The new value for that option (e.g. 1.4 for font_scale, \"bottom\" for legend_position).",
+        description='The new value for that option (e.g. 1.4 for font_scale, "bottom" for legend_position).',
     )
 
 

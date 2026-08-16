@@ -41,7 +41,11 @@ from pathlib import Path
 # (collision-free) as the sibling package sprezzature_figures_fonts/.
 _pkg_parent = Path(__file__).resolve().parent.parent
 FONTS_DIR = next(
-    (p for p in (_pkg_parent / "assets" / "fonts", _pkg_parent / "sprezzature_figures_fonts") if p.is_dir()),
+    (
+        p
+        for p in (_pkg_parent / "assets" / "fonts", _pkg_parent / "sprezzature_figures_fonts")
+        if p.is_dir()
+    ),
     _pkg_parent / "assets" / "fonts",
 )
 
@@ -62,46 +66,76 @@ ACADEMIC_MONO_STACK = "LM Mono, Latin Modern Mono, ui-monospace, monospace"
 # key -> (ttf filename, woff2 filename, CSS font-family, font-style, font-weight range)
 _FACES: dict[str, dict[str, str]] = {
     "sans": {
-        "ttf": "Roboto-Variable.ttf", "woff2": "Roboto-Variable.woff2",
-        "family": "Roboto", "style": "normal", "weight": "100 900",
+        "ttf": "Roboto-Variable.ttf",
+        "woff2": "Roboto-Variable.woff2",
+        "family": "Roboto",
+        "style": "normal",
+        "weight": "100 900",
     },
     "sans_italic": {
-        "ttf": "Roboto-Italic-Variable.ttf", "woff2": "Roboto-Italic-Variable.woff2",
-        "family": "Roboto", "style": "italic", "weight": "100 900",
+        "ttf": "Roboto-Italic-Variable.ttf",
+        "woff2": "Roboto-Italic-Variable.woff2",
+        "family": "Roboto",
+        "style": "italic",
+        "weight": "100 900",
     },
     "serif": {
-        "ttf": "RobotoSerif-Variable.ttf", "woff2": "RobotoSerif-Variable.woff2",
-        "family": "Roboto Serif", "style": "normal", "weight": "100 900",
+        "ttf": "RobotoSerif-Variable.ttf",
+        "woff2": "RobotoSerif-Variable.woff2",
+        "family": "Roboto Serif",
+        "style": "normal",
+        "weight": "100 900",
     },
     "serif_italic": {
-        "ttf": "RobotoSerif-Italic-Variable.ttf", "woff2": "RobotoSerif-Italic-Variable.woff2",
-        "family": "Roboto Serif", "style": "italic", "weight": "100 900",
+        "ttf": "RobotoSerif-Italic-Variable.ttf",
+        "woff2": "RobotoSerif-Italic-Variable.woff2",
+        "family": "Roboto Serif",
+        "style": "italic",
+        "weight": "100 900",
     },
     "mono": {
-        "ttf": "RobotoMono-Variable.ttf", "woff2": "RobotoMono-Variable.woff2",
-        "family": "Roboto Mono", "style": "normal", "weight": "100 900",
+        "ttf": "RobotoMono-Variable.ttf",
+        "woff2": "RobotoMono-Variable.woff2",
+        "family": "Roboto Mono",
+        "style": "normal",
+        "weight": "100 900",
     },
     "mono_italic": {
-        "ttf": "RobotoMono-Italic-Variable.ttf", "woff2": "RobotoMono-Italic-Variable.woff2",
-        "family": "Roboto Mono", "style": "italic", "weight": "100 900",
+        "ttf": "RobotoMono-Italic-Variable.ttf",
+        "woff2": "RobotoMono-Italic-Variable.woff2",
+        "family": "Roboto Mono",
+        "style": "italic",
+        "weight": "100 900",
     },
     # Latin Modern is static (no variable-font axis), so bold/italic are
     # separate files rather than a weight range on one face.
     "academic_serif": {
-        "ttf": "LatinModernRoman-Regular.ttf", "woff2": "LatinModernRoman-Regular.woff2",
-        "family": "LM Roman", "style": "normal", "weight": "400",
+        "ttf": "LatinModernRoman-Regular.ttf",
+        "woff2": "LatinModernRoman-Regular.woff2",
+        "family": "LM Roman",
+        "style": "normal",
+        "weight": "400",
     },
     "academic_serif_bold": {
-        "ttf": "LatinModernRoman-Bold.ttf", "woff2": "LatinModernRoman-Bold.woff2",
-        "family": "LM Roman", "style": "normal", "weight": "700",
+        "ttf": "LatinModernRoman-Bold.ttf",
+        "woff2": "LatinModernRoman-Bold.woff2",
+        "family": "LM Roman",
+        "style": "normal",
+        "weight": "700",
     },
     "academic_serif_italic": {
-        "ttf": "LatinModernRoman-Italic.ttf", "woff2": "LatinModernRoman-Italic.woff2",
-        "family": "LM Roman", "style": "italic", "weight": "400",
+        "ttf": "LatinModernRoman-Italic.ttf",
+        "woff2": "LatinModernRoman-Italic.woff2",
+        "family": "LM Roman",
+        "style": "italic",
+        "weight": "400",
     },
     "academic_mono": {
-        "ttf": "LatinModernMono-Regular.ttf", "woff2": "LatinModernMono-Regular.woff2",
-        "family": "LM Mono", "style": "normal", "weight": "400",
+        "ttf": "LatinModernMono-Regular.ttf",
+        "woff2": "LatinModernMono-Regular.woff2",
+        "family": "LM Mono",
+        "style": "normal",
+        "weight": "400",
     },
 }
 
@@ -122,7 +156,12 @@ THEMES: dict[str, dict[str, object]] = {
         "mono_stack": MONO_STACK,
     },
     "academic": {
-        "faces": ("academic_serif", "academic_serif_bold", "academic_serif_italic", "academic_mono"),
+        "faces": (
+            "academic_serif",
+            "academic_serif_bold",
+            "academic_serif_italic",
+            "academic_mono",
+        ),
         "chrome_stack": ACADEMIC_SERIF_STACK,
         "mono_stack": ACADEMIC_MONO_STACK,
     },

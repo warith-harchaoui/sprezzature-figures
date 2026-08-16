@@ -32,9 +32,18 @@ _SVG_LIKE_RENDERERS = {"vega_lite", "vega", "svg"}
 # this set -- everyone else has hard-coded English chrome and would raise
 # TypeError on an unexpected `language` kwarg. Extend as more generators gain
 # a language switch; see sprezzature_figures/studio/i18n.py.
-_LANGUAGE_AWARE_KINDS = frozenset({
-    "bar", "bar-grouped", "bar3d", "sunburst", "treemap", "line", "pareto", "lollipop",
-})
+_LANGUAGE_AWARE_KINDS = frozenset(
+    {
+        "bar",
+        "bar-grouped",
+        "bar3d",
+        "sunburst",
+        "treemap",
+        "line",
+        "pareto",
+        "lollipop",
+    }
+)
 
 
 class RenderResult(BaseModel):

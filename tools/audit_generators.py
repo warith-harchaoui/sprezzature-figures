@@ -57,9 +57,7 @@ def _alarm_handler(signum: int, frame: Any) -> None:  # noqa: ARG001
 
 def discover_scripts() -> list[Path]:
     """Every scripts/make_*.py generator, excluding the dispatcher itself."""
-    return sorted(
-        p for p in SCRIPTS_DIR.glob("make_*.py") if p.stem != "make_figure"
-    )
+    return sorted(p for p in SCRIPTS_DIR.glob("make_*.py") if p.stem != "make_figure")
 
 
 def derive_kind(path: Path) -> str:
@@ -314,7 +312,10 @@ def run_audit(*, render: bool, timeout: int) -> list[dict[str, Any]]:
     """
     with tempfile.TemporaryDirectory(prefix="sprezzature-audit-") as tmp:
         tmp_dir = Path(tmp)
-        return [audit_one(p, render=render, timeout=timeout, tmp_dir=tmp_dir) for p in discover_scripts()]
+        return [
+            audit_one(p, render=render, timeout=timeout, tmp_dir=tmp_dir)
+            for p in discover_scripts()
+        ]
 
 
 def summarize(entries: list[dict[str, Any]]) -> dict[str, int]:
@@ -361,11 +362,18 @@ def main(argv: list[str] | None = None) -> int:
     """CLI entry point: run the audit and write `generator_audit.json`/`GENERATOR_AUDIT.md`."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--render", action="store_true", help="Also attempt to render each contract-complete generator."
+        "--render",
+        action="store_true",
+        help="Also attempt to render each contract-complete generator.",
     )
-    parser.add_argument("--timeout", type=int, default=30, help="Per-script render timeout in seconds.")
     parser.add_argument(
-        "--out-dir", type=Path, default=DOCS_DIR, help="Where to write generator_audit.json / GENERATOR_AUDIT.md."
+        "--timeout", type=int, default=30, help="Per-script render timeout in seconds."
+    )
+    parser.add_argument(
+        "--out-dir",
+        type=Path,
+        default=DOCS_DIR,
+        help="Where to write generator_audit.json / GENERATOR_AUDIT.md.",
     )
     args = parser.parse_args(argv)
 

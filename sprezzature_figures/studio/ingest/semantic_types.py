@@ -25,7 +25,9 @@ _LAT_NAME_RE = re.compile(r"(^|_)lat(itude)?($|_)", re.IGNORECASE)
 _LON_NAME_RE = re.compile(r"(^|_)lon(gitude)?($|_)", re.IGNORECASE)
 _ID_NAME_RE = re.compile(r"(^|_)(id|uuid|guid)($|_)", re.IGNORECASE)
 _PERCENT_NAME_RE = re.compile(r"pct|percent|%|rate$|ratio$", re.IGNORECASE)
-_CURRENCY_NAME_RE = re.compile(r"price|cost|revenue|amount|salary|budget|spend|usd|eur|gbp", re.IGNORECASE)
+_CURRENCY_NAME_RE = re.compile(
+    r"price|cost|revenue|amount|salary|budget|spend|usd|eur|gbp", re.IGNORECASE
+)
 
 _IDENTIFIER_UNIQUE_RATIO = 0.98
 _CATEGORICAL_MAX_UNIQUE_RATIO = 0.5

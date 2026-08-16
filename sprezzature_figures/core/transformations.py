@@ -172,9 +172,7 @@ def _apply_aggregate(rows: list[Row], t: AggregateTransform) -> list[Row]:
     for key in order:
         members = groups[key]
         new_row: Row = dict(zip(t.group_by, key, strict=True))
-        new_row[out_col] = _aggregate_values(
-            [row.get(t.value_column) for row in members], t.agg
-        )
+        new_row[out_col] = _aggregate_values([row.get(t.value_column) for row in members], t.agg)
         result.append(new_row)
     return result
 
@@ -248,6 +246,7 @@ def _apply_calculate(rows: list[Row], t: CalculateDerived) -> list[Row]:
 # Public entry point
 # --------------------------------------------------------------------------
 
+
 # Every transform declares the column(s) it needs present to do anything.
 # Aggregate/top-N with a missing *value* column still group/slice, so they
 # guard only on their structural columns.
@@ -300,9 +299,7 @@ def apply_transformations(
         missing = [col for col in needed if not _has_column(current, col)]
         if missing:
             notes.append(
-                TransformNote(
-                    f"Skipped {transform.kind}: column(s) {missing} not in the data."
-                )
+                TransformNote(f"Skipped {transform.kind}: column(s) {missing} not in the data.")
             )
             continue
 

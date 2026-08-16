@@ -15,7 +15,9 @@ from sprezzature_figures.core.dataset import DataWarning
 from .profiler import MAX_UPLOAD_BYTES
 
 
-def validate_upload_size(path: str | Path, *, max_bytes: int = MAX_UPLOAD_BYTES) -> list[DataWarning]:
+def validate_upload_size(
+    path: str | Path, *, max_bytes: int = MAX_UPLOAD_BYTES
+) -> list[DataWarning]:
     size = Path(path).stat().st_size
     if size > max_bytes:
         return [

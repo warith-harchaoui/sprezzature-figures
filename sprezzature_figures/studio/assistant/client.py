@@ -68,7 +68,9 @@ class BestEngineLLMClient:
         json_schema = response_model.model_json_schema() if response_model is not None else None
 
         def _ask(p: str) -> str | dict[str, Any]:
-            return chat(p, system=system, images=images, json_schema=json_schema, temperature=temperature)
+            return chat(
+                p, system=system, images=images, json_schema=json_schema, temperature=temperature
+            )
 
         raw = _ask(prompt)
         if response_model is None:
@@ -83,7 +85,13 @@ class BestEngineLLMClient:
         response_model: type[ModelT] | None = None,
         temperature: float = 0.1,
     ) -> str | ModelT:
-        return self._call(prompt, system=system, images=None, response_model=response_model, temperature=temperature)
+        return self._call(
+            prompt,
+            system=system,
+            images=None,
+            response_model=response_model,
+            temperature=temperature,
+        )
 
     def chat_vision(
         self,
@@ -95,7 +103,11 @@ class BestEngineLLMClient:
         temperature: float = 0.1,
     ) -> str | ModelT:
         return self._call(
-            prompt, system=system, images=[image], response_model=response_model, temperature=temperature
+            prompt,
+            system=system,
+            images=[image],
+            response_model=response_model,
+            temperature=temperature,
         )
 
 

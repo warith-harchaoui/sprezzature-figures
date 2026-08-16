@@ -44,7 +44,9 @@ def clipboard_fingerprint(text: str) -> str:
 def clipboard_warnings(df: pd.DataFrame) -> list[DataWarning]:
     warnings: list[DataWarning] = []
     if df.empty:
-        warnings.append(DataWarning(message="pasted content produced no data rows", severity="error"))
+        warnings.append(
+            DataWarning(message="pasted content produced no data rows", severity="error")
+        )
     if len(df.columns) == 1:
         warnings.append(
             DataWarning(

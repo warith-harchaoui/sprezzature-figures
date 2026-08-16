@@ -72,10 +72,12 @@ class FigureRecommendation(BaseModel):
         description="Why this figure suits the user's intent and this dataset, in one concrete sentence."
     )
     suggested_title: str = Field(
-        default="", description="A specific, editorially-worded title for this figure (not a generic label)."
+        default="",
+        description="A specific, editorially-worded title for this figure (not a generic label).",
     )
     tradeoff: str = Field(
-        default="", description="The main limitation or reading difficulty of this figure for this data."
+        default="",
+        description="The main limitation or reading difficulty of this figure for this data.",
     )
 
 
@@ -100,9 +102,12 @@ class VisualIssue(BaseModel):
     severity: Literal["low", "medium", "high", "critical"] = Field(
         description="How much this problem hurts the figure: low (cosmetic) to critical (misleads or breaks it)."
     )
-    observation: str = Field(description="What you actually see in the image that is wrong, stated concretely.")
+    observation: str = Field(
+        description="What you actually see in the image that is wrong, stated concretely."
+    )
     evidence: str = Field(
-        default="", description="The specific region or element of the image that shows the problem."
+        default="",
+        description="The specific region or element of the image that shows the problem.",
     )
     suggested_action: str = Field(
         default="", description="The single most useful fix for this problem, phrased as an action."
@@ -110,8 +115,12 @@ class VisualIssue(BaseModel):
 
 
 class EditorialSuggestion(BaseModel):
-    summary: str = Field(description="An editorial improvement the user might choose (not a safe auto-fix), in one sentence.")
-    rationale: str = Field(default="", description="Why this would strengthen the figure's message.")
+    summary: str = Field(
+        description="An editorial improvement the user might choose (not a safe auto-fix), in one sentence."
+    )
+    rationale: str = Field(
+        default="", description="Why this would strengthen the figure's message."
+    )
     operation: FigureOperation | None = Field(
         default=None,
         description="The single typed edit that would carry out this suggestion, if it maps to one; else null.",
@@ -134,19 +143,26 @@ class VisualCritique(BaseModel):
         ge=0, le=100, description="0-100: how well the figure conveys the user's intended message."
     )
     readability_score: int = Field(
-        ge=0, le=100, description="0-100: how easily labels, values, and text can be read at this size."
+        ge=0,
+        le=100,
+        description="0-100: how easily labels, values, and text can be read at this size.",
     )
     visual_hierarchy_score: int = Field(
         ge=0, le=100, description="0-100: how clearly the most important element stands out."
     )
     accessibility_score: int = Field(
-        ge=0, le=100, description="0-100: contrast, colour-blind safety, and legibility for all readers."
+        ge=0,
+        le=100,
+        description="0-100: contrast, colour-blind safety, and legibility for all readers.",
     )
     data_fidelity_score: int = Field(
-        ge=0, le=100, description="0-100: how faithfully the figure represents the data without distortion."
+        ge=0,
+        le=100,
+        description="0-100: how faithfully the figure represents the data without distortion.",
     )
     issues: list[VisualIssue] = Field(
-        default_factory=list, description="Every distinct visual problem you can see, most severe first."
+        default_factory=list,
+        description="Every distinct visual problem you can see, most severe first.",
     )
     safe_repairs: list[FigureOperation] = Field(
         default_factory=list,
@@ -161,5 +177,6 @@ class VisualCritique(BaseModel):
         description="Changes worth offering the user but that need their decision (they alter emphasis or meaning).",
     )
     concise_summary: str = Field(
-        default="", description="A two-to-three line plain-language summary of the verdict and the top fixes."
+        default="",
+        description="A two-to-three line plain-language summary of the verdict and the top fixes.",
     )

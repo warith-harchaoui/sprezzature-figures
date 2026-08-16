@@ -43,7 +43,9 @@ class IterationRecord(BaseModel):
     accepted_operations: list[FigureOperation] = Field(default_factory=list)
     plan_after: FigurePlan
     render_result: RenderResult
-    critique: dict[str, Any] | None = None  # VisualCritique.model_dump(); avoids a core->studio import
+    critique: dict[str, Any] | None = (
+        None  # VisualCritique.model_dump(); avoids a core->studio import
+    )
     status: Literal["success", "failed", "cancelled"] = "success"
 
 
@@ -60,7 +62,9 @@ def load_iteration_record(iteration_dir: Path) -> IterationRecord:
     """Reconstruct an IterationRecord previously written by
     save_iteration_record.
     """
-    return IterationRecord.model_validate_json((iteration_dir / "event.json").read_text(encoding="utf-8"))
+    return IterationRecord.model_validate_json(
+        (iteration_dir / "event.json").read_text(encoding="utf-8")
+    )
 
 
 def list_iterations(project_dir: Path) -> list[IterationRecord]:
@@ -68,7 +72,10 @@ def list_iterations(project_dir: Path) -> list[IterationRecord]:
     iterations_dir = project_dir / "iterations"
     if not iterations_dir.is_dir():
         return []
-    dirs = sorted((p for p in iterations_dir.iterdir() if p.is_dir() and (p / "event.json").exists()), key=lambda p: p.name)
+    dirs = sorted(
+        (p for p in iterations_dir.iterdir() if p.is_dir() and (p / "event.json").exists()),
+        key=lambda p: p.name,
+    )
     return [load_iteration_record(p) for p in dirs]
 
 

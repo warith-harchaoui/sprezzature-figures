@@ -32,7 +32,15 @@ _STYLE_FIELDS = set(StyleOptions.model_fields)
 
 def _transform_columns(transform: Transform) -> list[str]:
     kind = transform.kind
-    if kind in ("filter_value", "filter_range", "filter_temporal", "sort", "rename_display", "top_n", "group_others"):
+    if kind in (
+        "filter_value",
+        "filter_range",
+        "filter_temporal",
+        "sort",
+        "rename_display",
+        "top_n",
+        "group_others",
+    ):
         return [transform.column]
     if kind == "aggregate":
         return [*transform.group_by, transform.value_column]
@@ -41,18 +49,24 @@ def _transform_columns(transform: Transform) -> list[str]:
     return []
 
 
-def _check_columns_exist(columns: list[str], dataset: DatasetProfile | None, field: str) -> list[ValidationIssue]:
+def _check_columns_exist(
+    columns: list[str], dataset: DatasetProfile | None, field: str
+) -> list[ValidationIssue]:
     if dataset is None:
         return []
     known = {c.name for c in dataset.columns}
     return [
-        ValidationIssue(field=field, message=f"column {c!r} does not exist in the dataset", severity="error")
+        ValidationIssue(
+            field=field, message=f"column {c!r} does not exist in the dataset", severity="error"
+        )
         for c in columns
         if c not in known
     ]
 
 
-def validate_operation(op: FigureOperation, *, dataset: DatasetProfile | None = None) -> list[ValidationIssue]:
+def validate_operation(
+    op: FigureOperation, *, dataset: DatasetProfile | None = None
+) -> list[ValidationIssue]:
     """Issues that would make `op` unsafe or meaningless to apply.
 
     Only checks what's knowable independent of the rest of the plan (column
@@ -104,6 +118,8 @@ def validate_plan(
     if dataset is not None:
         issues += _check_columns_exist(sorted(plan.bound_columns()), dataset, "bindings")
         for transform in plan.transformations:
-            issues += _check_columns_exist(_transform_columns(transform), dataset, "transformations")
+            issues += _check_columns_exist(
+                _transform_columns(transform), dataset, "transformations"
+            )
 
     return issues

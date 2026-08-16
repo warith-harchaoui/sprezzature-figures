@@ -87,11 +87,15 @@ def create_project(name: str, *, source_name: str = "") -> Path:
 
 
 def load_manifest(project_dir: Path) -> ProjectManifest:
-    return ProjectManifest.model_validate_json((project_dir / "manifest.json").read_text(encoding="utf-8"))
+    return ProjectManifest.model_validate_json(
+        (project_dir / "manifest.json").read_text(encoding="utf-8")
+    )
 
 
 def save_manifest(project_dir: Path, manifest: ProjectManifest) -> Path:
-    return Path(atomic_write_text(project_dir / "manifest.json", manifest.model_dump_json(indent=2)))
+    return Path(
+        atomic_write_text(project_dir / "manifest.json", manifest.model_dump_json(indent=2))
+    )
 
 
 def allocate_iteration_dir(project_dir: Path) -> Path:
@@ -116,4 +120,6 @@ def write_iteration_json(iteration_dir: Path, filename: str, payload: dict) -> P
     """Atomically write one of an iteration's JSON side-files (plan.json,
     critique.json, event.json, ...).
     """
-    return Path(atomic_write_text(iteration_dir / filename, json.dumps(payload, indent=2, default=str)))
+    return Path(
+        atomic_write_text(iteration_dir / filename, json.dumps(payload, indent=2, default=str))
+    )

@@ -70,7 +70,9 @@ def read_csv(path: str | Path, options: CsvReadOptions | None = None) -> pd.Data
     )
 
 
-def preview_csv(path: str | Path, options: CsvReadOptions | None = None, n_rows: int = 500) -> pd.DataFrame:
+def preview_csv(
+    path: str | Path, options: CsvReadOptions | None = None, n_rows: int = 500
+) -> pd.DataFrame:
     resolved = options or sniff_csv(path)
     return pd.read_csv(
         path,

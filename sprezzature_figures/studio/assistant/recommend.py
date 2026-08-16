@@ -56,7 +56,9 @@ def explain_recommendations(
         "reason it fits, a specific title, and its main tradeoff."
     )
 
-    result = client.chat_text(prompt, system=RECOMMEND_SYSTEM, response_model=RecommendationSet, temperature=0.2)
+    result = client.chat_text(
+        prompt, system=RECOMMEND_SYSTEM, response_model=RecommendationSet, temperature=0.2
+    )
     assert isinstance(result, RecommendationSet)
 
     return [r for r in result.recommendations if r.kind in candidate_kinds]

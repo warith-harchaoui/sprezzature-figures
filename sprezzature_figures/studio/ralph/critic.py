@@ -23,7 +23,8 @@ def _stats_summary(dataset: DatasetProfile | None) -> str:
     if dataset is None:
         return "(no dataset profile available)"
     return "; ".join(
-        f"{c.name}: {c.semantic_type}, {c.unique_count} unique, {c.null_ratio:.0%} null" for c in dataset.columns
+        f"{c.name}: {c.semantic_type}, {c.unique_count} unique, {c.null_ratio:.0%} null"
+        for c in dataset.columns
     )
 
 
@@ -47,7 +48,9 @@ def critique_prompt(
         f"Message to convey: {plan.intent.message_to_convey!r}",
     ]
     if previous_critique is not None:
-        parts.append(f"Previous critique verdict: {previous_critique.verdict} -- {previous_critique.concise_summary}")
+        parts.append(
+            f"Previous critique verdict: {previous_critique.verdict} -- {previous_critique.concise_summary}"
+        )
     parts.append(
         "\nLook at the attached PNG and judge THIS render against the intent above: "
         "score each dimension 0-100, list the concrete visual problems you can see, "

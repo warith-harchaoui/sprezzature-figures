@@ -143,19 +143,21 @@ def assign_columns(definition: FigureDefinition, profile: DatasetProfile) -> dic
 # recommendation pool for both the CLI's `recommend` and Studio's cards;
 # still fully renderable via `make_figure()` directly or the "Or choose
 # manually" picker for someone who wants the fixed illustration on purpose.
-_DATA_BLIND_HERO_KINDS = frozenset({
-    "arcdiagram",
-    "binned-grid-map",
-    "chord",
-    "circle-packing",
-    "convex-hull",
-    "cycle",
-    "dendrogram",
-    "dependency-wheel",
-    "edge-bundling",
-    "elbow",
-    "embedding_projector",
-})
+_DATA_BLIND_HERO_KINDS = frozenset(
+    {
+        "arcdiagram",
+        "binned-grid-map",
+        "chord",
+        "circle-packing",
+        "convex-hull",
+        "cycle",
+        "dendrogram",
+        "dependency-wheel",
+        "edge-bundling",
+        "elbow",
+        "embedding_projector",
+    }
+)
 
 
 def compatible_definitions(
@@ -164,6 +166,8 @@ def compatible_definitions(
     """Every figure of the given status whose required roles this dataset can
     fill, in registry order. Pass `status=None` to consider all kinds."""
     definitions = (
-        get_figure_definition(kind) for kind in list_kinds(status) if kind not in _DATA_BLIND_HERO_KINDS
+        get_figure_definition(kind)
+        for kind in list_kinds(status)
+        if kind not in _DATA_BLIND_HERO_KINDS
     )
     return [d for d in definitions if can_fill_required_roles(d, profile)]

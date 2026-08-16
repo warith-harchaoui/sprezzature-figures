@@ -56,9 +56,21 @@ class FakeLLMClient:
         return self._last
 
     def _respond(
-        self, prompt: str, *, system: str | None, response_model: type[BaseModel] | None, temperature: float
+        self,
+        prompt: str,
+        *,
+        system: str | None,
+        response_model: type[BaseModel] | None,
+        temperature: float,
     ) -> Any:
-        self.calls.append({"prompt": prompt, "system": system, "response_model": response_model, "temperature": temperature})
+        self.calls.append(
+            {
+                "prompt": prompt,
+                "system": system,
+                "response_model": response_model,
+                "temperature": temperature,
+            }
+        )
         item = self._next()
         if isinstance(item, BaseException):
             raise item
@@ -84,7 +96,9 @@ class FakeLLMClient:
         response_model: type[BaseModel] | None = None,
         temperature: float = 0.1,
     ) -> Any:
-        return self._respond(prompt, system=system, response_model=response_model, temperature=temperature)
+        return self._respond(
+            prompt, system=system, response_model=response_model, temperature=temperature
+        )
 
     def chat_vision(
         self,
@@ -95,4 +109,6 @@ class FakeLLMClient:
         response_model: type[BaseModel] | None = None,
         temperature: float = 0.1,
     ) -> Any:
-        return self._respond(prompt, system=system, response_model=response_model, temperature=temperature)
+        return self._respond(
+            prompt, system=system, response_model=response_model, temperature=temperature
+        )

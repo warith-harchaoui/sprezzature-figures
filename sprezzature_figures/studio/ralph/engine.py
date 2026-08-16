@@ -90,7 +90,9 @@ class RalphEngine:
             return propose_edit(self.client, message, plan, dataset=dataset), None
         except Exception as exc:  # noqa: BLE001 - any model/network failure degrades, never crashes the turn
             return (
-                EditProposal(summary="", operations=[], expected_effect="", requires_confirmation=False),
+                EditProposal(
+                    summary="", operations=[], expected_effect="", requires_confirmation=False
+                ),
                 f"Could not interpret the request ({exc}). The figure is unchanged.",
             )
 
@@ -174,8 +176,12 @@ class RalphEngine:
 
         current_plan = apply_operations(plan, applied_ops)
         render_result = render_figure_to_project(
-            current_plan.figure_kind, data, project_id=project_id, iteration_dir=iteration_dir,
-            title=current_plan.title, language=language,
+            current_plan.figure_kind,
+            data,
+            project_id=project_id,
+            iteration_dir=iteration_dir,
+            title=current_plan.title,
+            language=language,
         )
 
         if mode == RalphMode.manual:
@@ -211,8 +217,12 @@ class RalphEngine:
             if repair_ops:
                 current_plan = repaired_plan
                 render_result = render_figure_to_project(
-                    current_plan.figure_kind, data, project_id=project_id, iteration_dir=iteration_dir,
-                    title=current_plan.title, language=language,
+                    current_plan.figure_kind,
+                    data,
+                    project_id=project_id,
+                    iteration_dir=iteration_dir,
+                    title=current_plan.title,
+                    language=language,
                 )
             return RalphResult(
                 plan=current_plan,
@@ -247,11 +257,18 @@ class RalphEngine:
             history.rounds[-1].applied_operations = repair_ops
             repairs_this_call.extend(repair_ops)
             render_result = render_figure_to_project(
-                current_plan.figure_kind, data, project_id=project_id, iteration_dir=iteration_dir,
-                title=current_plan.title, language=language,
+                current_plan.figure_kind,
+                data,
+                project_id=project_id,
+                iteration_dir=iteration_dir,
+                title=current_plan.title,
+                language=language,
             )
             critique, crit_note = self._try_critique(
-                render_result.preview_path.read_bytes(), current_plan, dataset, previous_critique=critique
+                render_result.preview_path.read_bytes(),
+                current_plan,
+                dataset,
+                previous_critique=critique,
             )
             if crit_note:
                 notes.append(crit_note)

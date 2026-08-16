@@ -50,4 +50,6 @@ print(f"Wrote {{path}}")
 
 def generate_reproduce_script(plan: FigurePlan, *, library_version: str = "1.0.0") -> str:
     bindings = {role: binding.columns for role, binding in plan.bindings.items()}
-    return _TEMPLATE.format(version=library_version, bindings=bindings, kind=plan.figure_kind, title=plan.title)
+    return _TEMPLATE.format(
+        version=library_version, bindings=bindings, kind=plan.figure_kind, title=plan.title
+    )

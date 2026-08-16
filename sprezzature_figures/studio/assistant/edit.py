@@ -57,5 +57,7 @@ def propose_edit(
     )
     assert isinstance(result, EditProposal)
 
-    valid_operations = [op for op in result.operations if not validate_operation(op, dataset=dataset)]
+    valid_operations = [
+        op for op in result.operations if not validate_operation(op, dataset=dataset)
+    ]
     return result.model_copy(update={"operations": _dedup_operations(valid_operations)})

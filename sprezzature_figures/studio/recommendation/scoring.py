@@ -32,11 +32,24 @@ _GOAL_CATEGORY_KEYWORDS: dict[str, tuple[str, ...]] = {
     "trend": ("time series", "temporal", "change"),
     "distribution": ("distribution", "range"),
     "composition": ("composition", "compositional", "decomposition"),
-    "relationship": ("relationship", "bivariate", "multivariate", "correlation", "regression", "dimensionality"),
+    "relationship": (
+        "relationship",
+        "bivariate",
+        "multivariate",
+        "correlation",
+        "regression",
+        "dimensionality",
+    ),
     "flow": ("flow", "network", "pipeline"),
     "hierarchy": ("hierarchy",),
     "geography": ("geospatial", "spatial", "meteorolog"),
-    "model_evaluation": ("model evaluation", "goodness of fit", "diagnostics", "agreement", "meta-analysis"),
+    "model_evaluation": (
+        "model evaluation",
+        "goodness of fit",
+        "diagnostics",
+        "agreement",
+        "meta-analysis",
+    ),
 }
 
 
@@ -69,7 +82,10 @@ def _readability_score(definition: FigureDefinition, profile: DatasetProfile) ->
                 points -= 0.3
 
     # Penalise a dataset far larger than the figure is meant for.
-    if definition.max_recommended_rows is not None and profile.row_count > definition.max_recommended_rows:
+    if (
+        definition.max_recommended_rows is not None
+        and profile.row_count > definition.max_recommended_rows
+    ):
         points -= 0.2
 
     # Reward optional roles the data can also fill, capped so it never
@@ -135,7 +151,9 @@ def infer_goal(profile: DatasetProfile) -> str | None:
     return None
 
 
-def score(definition: FigureDefinition, profile: DatasetProfile, *, goal: str | None = None) -> float:
+def score(
+    definition: FigureDefinition, profile: DatasetProfile, *, goal: str | None = None
+) -> float:
     """A 0..1 suitability score for showing *this* dataset as this figure.
 
     Without a `goal`, this is the readability score alone (unchanged behaviour):
@@ -162,5 +180,7 @@ def rank(
     registry order, so the ranking is fully deterministic). Pass `goal` (the
     user's `analytical_goal`) to rank intent-first; omit it for the
     readability-only order the headless CLI uses by default."""
-    scored = [(d, score(d, profile, goal=goal)) for d in compatible_definitions(profile, status=status)]
+    scored = [
+        (d, score(d, profile, goal=goal)) for d in compatible_definitions(profile, status=status)
+    ]
     return sorted(scored, key=lambda pair: pair[1], reverse=True)
