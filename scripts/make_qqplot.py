@@ -5,15 +5,15 @@ make_qqplot — a house-styled normal Q-Q plot as hand-authored SVG.
 Plots each sorted sample value against the value a normal distribution
 would produce at the same rank (its theoretical quantile), so a sample
 drawn from a genuinely normal population falls on the dashed y=x
-reference line -- systematic curvature or S-shapes reveal skew or
+reference line. Systematic curvature or S-shapes reveal skew or
 heavy/light tails at a glance, far more sensitively than a histogram's
 silhouette. The standard diagnostic for "is this residual/measurement
 sample approximately Gaussian".
 
 Previously rendered via Vega-Lite (theoretical quantiles computed offline
-against a reference line, ``vl_convert``); this module now computes the
-theoretical normal quantiles itself -- Acklam's rational approximation of
-the inverse normal CDF, no scipy -- and paints both the points and the
+against a reference line, ``vl_convert``). This module now computes the
+theoretical normal quantiles itself, using Acklam's rational approximation of
+the inverse normal CDF (no scipy), and paints both the points and the
 reference line by hand. No Vega, no matplotlib. Every point carries a
 native ``<title>`` tooltip.
 

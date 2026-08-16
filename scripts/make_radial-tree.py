@@ -8,7 +8,7 @@ a concentric ring further out, with the angular span of the canvas split
 among the leaves. Reading it, depth becomes *radius* (distance from the
 centre) and sibling order becomes *angle*, so a wide, shallow taxonomy
 fills the frame far more compactly than the left-to-right tidy tree in
-``make_tree.py`` — the same reason a sunburst beats an indented list when
+``make_tree.py``, the same reason a sunburst beats an indented list when
 the branching factor is high. Links are **curved** (they bow along the
 arc between two rings) rather than drawn as straight spokes, which keeps
 sibling bundles visually separate and reads as an organic "branching"
@@ -21,16 +21,16 @@ is the classic radial Reingold–Tilford variant:
 
 * a post-order pass gives every **leaf** the next free slice of the
   angular range; each internal node is centred on the angular span of
-  its children — the tidy-tree rule, expressed in angle instead of row;
+  its children, the tidy-tree rule, expressed in angle instead of row;
 * **depth** fixes the radius: ring 0 is the centre, and each deeper
   generation sits on a wider concentric ring;
 * **links** are cubic Béziers whose control points are pulled toward the
-  parent's ring, so each link bows outward along the arc — the smooth
+  parent's ring, so each link bows outward along the arc: the smooth
   "radial diagonal" that professional dendrogram / phylogeny tools draw.
 
 This is a **static** figure. A radial tree communicates its whole shape
-in a single glance — a grow-in reveal adds no insight a still cannot
-carry, and (worse) would leave the gallery's first frame empty — so
+in a single glance: a grow-in reveal adds no insight a still cannot
+carry, and (worse) would leave the gallery's first frame empty. So
 every mark is drawn once, fully, in its final state. The one piece of
 motion that *does* pay for itself is interaction, and it stays
 CSS-only (no JavaScript): every node carries a native ``<title>``

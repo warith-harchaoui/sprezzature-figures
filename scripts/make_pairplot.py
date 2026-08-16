@@ -6,21 +6,21 @@ A SPLOM lays every pair of numeric variables against each other in a grid: the
 off-diagonal cells are scatter plots (one variable versus another), and the
 diagonal cells show each variable's own distribution. It is the fastest way to
 eyeball, all at once, which variables move together, which separate the groups,
-and where the outliers hide — the multivariate answer to "just plot the data".
+and where the outliers hide: the multivariate answer to "just plot the data".
 
 This generator assembles **one self-contained Scalable Vector Graphics (SVG)**
 figure by hand (no matplotlib / seaborn / plotly, no Vega). Building the string
 directly is what lets the figure carry the house fullscreen control and the
-``mode`` interactivity argument, and keeps the whole grid — data, scales,
-markers — under our control. The data lives *inside* this file, so the figure is
+``mode`` interactivity argument, and keeps the whole grid (data, scales,
+markers) under our control. The data lives *inside* this file, so the figure is
 reproducible from this module alone: no charting library, no notebook, no build
 step.
 
 The illustrative dataset is a fleet of production **electric-vehicle battery
 cells** binned by chemistry (three families of lithium-ion cell). Four measured
 properties are crossed: usable energy density, fast-charge time, internal
-resistance and rated cycle life. The story the grid tells — and states in its
-subtitle — is that the three chemistries fall into three clean clusters, so a
+resistance and rated cycle life. The story the grid tells, and states in its
+subtitle, is that the three chemistries fall into three clean clusters, so a
 single cell measurement is enough to tell the families apart.
 
 Off-diagonal cells are scatter plots coloured by chemistry, each column sharing
@@ -28,7 +28,7 @@ one x-scale and each row one y-scale (the standard SPLOM convention, so a point'
 position is comparable across a whole row or column). Diagonal cells show the
 per-chemistry distribution of that one variable as overlaid kernel-density areas,
 so the diagonal is an informative distribution summary rather than a wasted
-45-degree line. The result is a clean static figure — a SPLOM earns its keep as
+45-degree line. The result is a clean static figure: a SPLOM earns its keep as
 an at-a-glance overview, so no animation or hover motion is added.
 
 Accessibility: each chemistry is encoded by **both** a curated hue **and** a

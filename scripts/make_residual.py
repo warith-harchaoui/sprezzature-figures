@@ -5,14 +5,14 @@ make_residual — a residual-vs-fitted diagnostic scatter as hand-authored SVG.
 A **residual plot** scatters the residuals of a regression (observed minus
 predicted) against the model's fitted values, anchored by a zero reference
 line and overlaid with a smoothed trend of the residuals. This is the seaborn
-``residplot`` capability — the single diagnostic a modeller reaches for to
+``residplot`` capability: the single diagnostic a modeller reaches for to
 ask "is anything left in the residuals?". A well-specified model leaves them
 scattered as a shapeless, constant-width band around zero.
 
 This figure deliberately shows the opposite: the fake data comes from a model
 fit *linearly* to a relationship that curves, so the residuals bow into a
 smile (positive at both ends, negative in the middle) and fan out toward the
-right — the two classic tells of a mis-specified mean and non-constant
+right: the two classic tells of a mis-specified mean and non-constant
 variance. The smoothed trend line makes the curvature impossible to miss,
 which is the whole point of the plot.
 
@@ -22,17 +22,17 @@ Vega) so the residual scatter, the dashed zero rule, the locally-weighted
 matches the sprezzature-* house style: Roboto, the Apple-ish palette, rounded
 corners, ink ``#1D1D1F``, secondary ``#6E6E73``, white background, white
 keylines (never black rings). Points are coloured by the *sign* of the
-residual — Blue above the zero rule (model under-predicts), Orange below it
-(model over-predicts) — a blue↔orange split that survives deuteranopia and
+residual, Blue above the zero rule (model under-predicts), Orange below it
+(model over-predicts): a blue↔orange split that survives deuteranopia and
 greyscale, reinforced by position above/below zero and two in-plot labels, so
 the sign never rides on colour alone.
 
 The scenario is a **house-price regression**: an analyst predicts sale price
 from floor area with a straight-line least-squares fit, but the true
 relationship curves (price accelerates for larger homes) and the spread
-widens with size — the textbook mis-specification a residual plot exposes.
+widens with size: the textbook mis-specification a residual plot exposes.
 
-The figure is **static** — the diagnostic is a single still. Each residual
+The figure is **static**: the diagnostic is a single still. Each residual
 point carries a native ``<title>`` tooltip and a :hover / :focus enlargement;
 no JavaScript beyond the fullscreen control.
 

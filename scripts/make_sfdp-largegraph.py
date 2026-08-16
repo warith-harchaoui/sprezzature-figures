@@ -12,9 +12,9 @@ whole shape emerges without anyone hand-placing a single node.
 This figure lays out a synthetic collaboration network of ~320 people in
 six research groups (a planted stochastic-block model: many edges inside a
 group, few across) and colours every node by its group. Vega-Lite has no
-force simulation, so the layout is precomputed in **pure Python** — a
+force simulation, so the layout is precomputed in **pure Python**: a
 Barnes-Hut-free but sfdp-flavoured Fruchterman-Reingold relaxation with a
-weak per-community gravity that separates the blobs — and the result is
+weak per-community gravity that separates the blobs, and the result is
 emitted as a hand-authored SVG. A fixed seed makes the committed file
 byte-reproducible.
 

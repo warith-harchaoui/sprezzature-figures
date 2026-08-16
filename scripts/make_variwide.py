@@ -6,19 +6,19 @@ A **variwide** column chart encodes two measures at once. Each column's
 **height** is the first measure and its **width** is the second, so the
 **area** of every column reads as their product. Here the height is GDP
 per capita (thousands of US dollars), the width is population, and the
-area of each column is therefore the country's **total GDP** — the two
+area of each column is therefore the country's **total GDP**: the two
 levers of national output shown in a single mark.
 
 Eight economies are laid out left to right in a continuous band (no gaps
 between columns), sorted by GDP per capita so the tops fall in a clean
 staircase. The reader sees instantly that a tall, narrow bar (Germany,
 United States) and a short, wide bar (China, India) can enclose similar
-*area* — the same total output reached two different ways. Every column
+*area*: the same total output reached two different ways. Every column
 carries its height value on top, its width value along the shared
 baseline axis, and an area (total-GDP) label centred inside.
 
-This generator builds the SVG string by hand — no matplotlib / seaborn /
-plotly, no Vega — because a variwide axis is a **non-uniform** x-axis
+This generator builds the SVG string by hand (no matplotlib / seaborn /
+plotly, no Vega) because a variwide axis is a **non-uniform** x-axis
 (tick positions are the cumulative widths, not evenly spaced categories),
 which a categorical grammar cannot express directly. It matches the
 sprezzature-* house style: Roboto, the Apple-ish palette, rounded top corners,

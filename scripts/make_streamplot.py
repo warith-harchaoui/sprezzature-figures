@@ -5,13 +5,13 @@ make_streamplot — house-styled streamplot of a 2D wind field as hand-authored 
 A streamplot traces the *streamlines* of a two-dimensional vector field:
 curves everywhere tangent to the flow, so a weightless parcel dropped
 into the field would ride along one. Here the field is a synthetic
-surface-wind map over a coastal region — a steady westerly airflow with
+surface-wind map over a coastal region: a steady westerly airflow with
 a low-pressure cyclone spun up off the coast. Reading it: follow any
 line downwind to see where the air goes; the darker and thicker a line,
 the faster the wind along it; the tight spiral is the storm's centre,
 where the flow wraps cyclonically (counter-clockwise) around the low.
 
-The streamlines are computed offline in pure Python — the field is
+The streamlines are computed offline in pure Python: the field is
 sampled on a grid and each streamline is integrated with a classical
 fourth-order Runge-Kutta scheme, both upstream and downstream from a
 seed point, then drawn as one smooth polyline. No matplotlib / seaborn

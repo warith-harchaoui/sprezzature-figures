@@ -12,19 +12,19 @@ follow that outcome (here: *survived* vs *did not*) all the way across
 the diagram and watch which category combinations concentrate it.
 
 This is the chart Plotly ships as ``go.Parcats``. Neither matplotlib nor
-seaborn has a primitive for it. This module builds the SVG by hand —
+seaborn has a primitive for it. This module builds the SVG by hand:
 segmented category bars with rounded ends at each axis, joined by cubic
-Bézier ribbons — so the output is dependency-light, reproducible, and
+Bézier ribbons, so the output is dependency-light, reproducible, and
 natively interactive (CSS ``:hover`` + native ``<title>`` tooltips, no
 JavaScript).
 
-The example is the canonical parcats dataset — the passengers of the
-*Titanic* — read across four axes:
+The example is the canonical parcats dataset, the passengers of the
+*Titanic*, read across four axes:
 
     Travel class  →  Sex  →  Age group  →  Outcome
 
 The takeaway the subtitle states: survival on the *Titanic* tracked
-"women and children first" far more than the fare paid — first-class
+"women and children first" far more than the fare paid; first-class
 women almost all lived, third-class men almost all died.
 
 House style: white background, Roboto type, ink ``#1D1D1F`` /

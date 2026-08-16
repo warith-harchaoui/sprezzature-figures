@@ -8,9 +8,9 @@ each sorted observation, its *empirical* cumulative-distribution-function
 predicted by a fitted reference distribution, and the whole cloud is read
 against the 45-degree line where the two agree. This is the
 distribution-diagnostic a modeller reaches for to ask "does my fitted
-distribution actually describe the middle of the data?" — the P-P plot is
-most sensitive in the centre of the distribution (unlike the Q-Q plot,
-which is most sensitive in the tails).
+distribution actually describe the middle of the data?" The P-P plot is
+most sensitive in the centre of the distribution, unlike the Q-Q plot,
+which is most sensitive in the tails.
 
 A perfectly-fitting reference distribution leaves the points lying flat
 along the diagonal. This figure deliberately shows the opposite: the fake
@@ -18,7 +18,7 @@ data are **customer session durations**, which are right-skewed, while the
 analyst fits a symmetric **Normal** reference. Because the Normal
 over-predicts small probabilities and under-predicts large ones against a
 skewed sample, the empirical-vs-theoretical points bow into a smooth S /
-arc that pulls clearly off the diagonal — the classic tell that a
+arc that pulls clearly off the diagonal: the classic tell that a
 symmetric law is the wrong shape for skewed data.
 
 This generator builds the SVG by hand (no matplotlib / seaborn / plotly,
@@ -27,7 +27,7 @@ point clusters (coloured by which side of the diagonal they fall on, and
 labelled directly so the split survives greyscale), and the smooth trend
 arc are all under our control. The signed split uses blue (empirical above
 the line, the Normal under-states the probability) versus orange (below
-the line, the Normal over-states it) — never red-green, so it holds up
+the line, the Normal over-states it), never red-green, so it holds up
 under deuteranopia and in greyscale. It matches the sprezzature-* house style:
 Roboto, the Apple-ish palette, rounded corners, ink ``#1D1D1F``,
 secondary ``#6E6E73``, white background, white keylines.

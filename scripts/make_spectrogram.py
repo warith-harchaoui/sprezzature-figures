@@ -5,17 +5,17 @@ A spectrogram is the heatmap of a short-time Fourier transform (STFT): the
 signal is chopped into overlapping windows, each window is Fourier-transformed,
 and the per-window power spectrum is stacked into a *time* (x) by *frequency*
 (y) grid whose cell colour encodes *power* (loudness) in decibels. It is the
-matplotlib ``specgram`` / ``librosa.display.specshow`` idiom — the canonical way
+matplotlib ``specgram`` / ``librosa.display.specshow`` idiom: the canonical way
 to *see* how the frequency content of a sound evolves over time.
 
 This module builds the SVG string **by hand** (no matplotlib / seaborn /
-plotly, no Vega): it synthesises a short, communicative audio clip with numpy —
-a rising musical glissando riding over a steady bass drone, with three
-percussive taps — computes a genuine Hann-windowed STFT (numpy ``rfft`` only),
+plotly, no Vega): it synthesises a short, communicative audio clip with numpy
+(a rising musical glissando riding over a steady bass drone, with three
+percussive taps), computes a genuine Hann-windowed STFT (numpy ``rfft`` only),
 maps power in dB onto a perceptually-uniform *viridis-like* ramp, and paints the
 time-frequency grid as a mosaic of ``<rect>`` cells in the sprezzature-* house style:
 Roboto type, ink ``#1D1D1F`` on white, rounded framing, a labelled colour
-legend. The figure is a **static** poster-size raster — a spectrogram is a
+legend. The figure is a **static** poster-size raster: a spectrogram is a
 time-frequency image whose x-axis already *is* time, so it gains nothing from
 motion; the whole story is legible in one glance with no animation and no
 JavaScript.

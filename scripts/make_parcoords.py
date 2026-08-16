@@ -11,7 +11,7 @@ collide. The three classes fall into three clean bands: compacts are light,
 economical and low-powered; SUVs are heavy, thirsty and powerful; midsize sits
 between.
 
-Built by hand — no matplotlib / Vega — to match the other hero figures, with a
+Built by hand, no matplotlib, no Vega, to match the other hero figures, with a
 native ``<title>`` per line and an accessible ``<title>``/``<desc>``.
 
 Author

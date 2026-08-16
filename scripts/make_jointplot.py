@@ -6,7 +6,7 @@ A **joint plot** shows the *joint* relation of two continuous variables in a
 central scatter and each *marginal* distribution as a histogram glued to the
 matching edge: the x-variable's histogram sits on the top rail, the
 y-variable's on the right rail. This is the seaborn ``jointplot`` / R
-``ggExtra`` capability — one panel that answers both "how do these two move
+``ggExtra`` capability: one panel that answers both "how do these two move
 together?" and "how is each one spread?" at the same time.
 
 This generator builds the SVG by hand (no matplotlib / seaborn / plotly, no
@@ -25,7 +25,7 @@ reaction time = Apple Purple) so the two distributions never blur together;
 the scatter stays Blue and the fitted trend Orange, so the panel reads in
 four clearly-separated house colours.
 
-The figure is **static** — a joint plot shows the whole joint-and-marginal
+The figure is **static**: a joint plot shows the whole joint-and-marginal
 story in one still. Each scatter point carries a native ``<title>`` tooltip
 and a :hover / :focus enlargement; no JavaScript beyond the fullscreen
 control.

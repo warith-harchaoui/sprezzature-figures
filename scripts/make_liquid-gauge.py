@@ -19,7 +19,7 @@ normal" note. A faint dashed line marks that median on the vessel wall,
 and a tick scale down the right edge anchors the fill height to real
 percentages so "63 %" is legible as a level, not just a number.
 
-Pure-Python, hand-built SVG string — no Vega, no matplotlib — because a
+Pure-Python, hand-built SVG string, no Vega, no matplotlib, because a
 clipped wavy liquid surface is not a native Vega-Lite mark and has to be
 placed exactly. It follows the sprezzature-* house style pulled from
 :mod:`_style`: the Apple-ish saturated palette (a calm blue liquid), a

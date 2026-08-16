@@ -4,7 +4,7 @@ make_volcano — a house-styled volcano plot as hand-authored SVG.
 
 Scatters effect size (log2 fold-change) against statistical significance
 (-log10 p-value) for many simultaneous tests, with dashed threshold lines
-marking the fold-change and significance cutoffs -- so points earning
+marking the fold-change and significance cutoffs, so points earning
 both a large enough effect and a small enough p-value fall into the two
 upper corners ("Up"/"Down") that the eye reads as a volcano's rising
 sides. The standard chart for differential-expression results in
@@ -13,7 +13,7 @@ genomics, and equally usable for any large multiple-testing comparison.
 Previously rendered via Vega-Lite (a plain coloured ``point`` mark,
 significance pre-classified offline, ``vl_convert``); this module now
 classifies each point against the same thresholds it draws and paints
-the scatter plus threshold lines by hand -- no Vega, no matplotlib.
+the scatter plus threshold lines by hand: no Vega, no matplotlib.
 Every point carries a native ``<title>`` tooltip.
 
 Author

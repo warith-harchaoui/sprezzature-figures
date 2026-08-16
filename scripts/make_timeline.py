@@ -10,8 +10,8 @@ sweeps left-to-right and reads *when* each thing happened and *what* it
 was, while the alternating callouts keep neighbouring labels from
 colliding.
 
-This example charts the modern era of Mars exploration — from the first
-successful flyby to the sample-return campaign — as thirteen milestones
+This example charts the modern era of Mars exploration, from the first
+successful flyby to the sample-return campaign, as thirteen milestones
 on a single decade-scaled spine (1965 → 2035). Each milestone carries a
 year, a mission name, and a one-line description. Four coloured **era
 bands** run behind the spine (Flybys & Orbiters, First Landers, Rover

@@ -12,11 +12,11 @@ here.
 This module builds the SVG string **by hand** (no matplotlib / seaborn /
 plotly, no Vega). The single artifact it writes is BOTH:
 
-* a complete **still** figure — every point, the axis gizmo, the legend
+* a complete **still** figure: every point, the axis gizmo, the legend
   and the header are fully drawn at a fixed three-quarter viewing angle,
   so a static rasteriser (``rsvg-convert``) or an ``<img>`` embed shows a
   correct 3D scatter with no animation and no grounding shadow; and
-* an **interactive** figure — a small vanilla-JavaScript block embedded
+* an **interactive** figure: a small vanilla-JavaScript block embedded
   in a ``<script>`` element re-projects the cloud live so the reader can
   **drag** to rotate, **scroll** to zoom, and **hover** a point for a
   tooltip. No external library (no d3 / three / plotly); the projection
@@ -30,7 +30,7 @@ honest.
 
 The example data is illustrative but true-to-life: three cultivars of
 grape described by three chemistry readings (colour intensity, flavanoid
-content, proline), the textbook shape a 3D scatter is made to show — three
+content, proline), the textbook shape a 3D scatter is made to show: three
 compact, well-separated clouds that a chemist would use to fingerprint an
 unlabelled sample.
 

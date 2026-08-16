@@ -10,8 +10,8 @@ A tighter, more readable alternative to a grouped bar chart for a small
 number of items measured before and after.
 
 Previously rendered via Vega-Lite (a nominal two-category ``x`` encoding
-with a line mark, ``vl_convert``); this module now paints each item's
-line and end labels by hand -- no Vega, no matplotlib. Every line carries
+with a line mark, ``vl_convert``). This module now paints each item's
+line and end labels by hand: no Vega, no matplotlib. Every line carries
 a native ``<title>`` tooltip with both values and the change.
 
 Author

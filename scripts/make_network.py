@@ -23,7 +23,7 @@ treatment, a start-anchored title plus a one-line takeaway subtitle.
 Interaction (no JavaScript): every node carries a native ``<title>``
 tooltip, and a pure-CSS ``:hover`` / ``:focus-within`` rule fades the
 whole graph except the hovered node, its incident edges, and its direct
-neighbours — the "hover a node to highlight its neighbours" affordance
+neighbours: the "hover a node to highlight its neighbours" affordance
 that suits this capability. The graph is otherwise static, so ``animated``
 is false and ``interactive`` is true.
 

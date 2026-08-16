@@ -3,14 +3,14 @@
 make_regression-ci-band — a house-styled OLS regression with a confidence band as hand-authored SVG.
 
 Fits a straight line to a scatter of points by ordinary least squares and
-plots it with a shaded 95% confidence band around the fitted mean --
+plots it with a shaded 95% confidence band around the fitted mean:
 narrower near the centre of the data, widening toward the edges, exactly
 where the fit is least certain. The scatter stays visible underneath so
 the reader can judge the fit's plausibility directly. The default chart
 for "is there a linear trend here, and how sure are we".
 
 Previously rendered via Vega-Lite (the regression computed offline, three
-layers -- band, scatter, line -- ``vl_convert``); this module now runs the
+layers: band, scatter, line; ``vl_convert``). This module now runs the
 OLS fit itself (closed-form least squares, residual standard error, the
 standard formula for the standard error of the mean prediction) and
 paints all three layers by hand. No Vega, no matplotlib, no scipy. The

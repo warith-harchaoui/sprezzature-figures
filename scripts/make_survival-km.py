@@ -6,14 +6,14 @@ Estimates the probability of "surviving" (not yet experiencing the event
 of interest) past each point in time from a sample of possibly-censored
 durations, plotted as a step-down curve with a shaded confidence band and
 small tick marks where a subject was censored (left the study before the
-event, without it happening). Comparing two arms' curves -- which drops
-faster, whether the bands overlap -- is the core visual of clinical-trial
+event, without it happening). Comparing two arms' curves, which drops
+faster, whether the bands overlap, is the core visual of clinical-trial
 and reliability-engineering reporting.
 
 Previously rendered via Vega-Lite (the estimator computed offline, a
-layered step-after ``area`` + ``line``, ``vl_convert``); this module now
-computes the Kaplan-Meier estimator itself -- the product-limit formula
-for the survival function, Greenwood's formula for its variance -- and
+layered step-after ``area`` + ``line``, ``vl_convert``). This module now
+computes the Kaplan-Meier estimator itself: the product-limit formula
+for the survival function, Greenwood's formula for its variance, and
 paints both layers plus censoring ticks by hand. No Vega, no matplotlib,
 no lifelines. The curve carries a native ``<title>`` tooltip.
 

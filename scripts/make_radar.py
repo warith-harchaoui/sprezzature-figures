@@ -10,21 +10,21 @@ weaknesses, and you see where two subjects trade places. It is the R
 
 The classic failure mode of the chart is **colour-on-colour**: two translucent
 filled polygons overlap into a muddy grey blob and no series stays readable.
-This generator sidesteps that entirely — each series is a **thick coloured
+This generator sidesteps that entirely: each series is a **thick coloured
 outline** with **vertex dots** and only a *very light* fill, so overlaps never
 turn grey and every profile stays traceable to its legend colour.
 
 This module builds the SVG string **by hand** (no matplotlib / seaborn /
 plotly, no Vega): it lays out the angular spokes, draws concentric grid rings
 with a rounded radial scale, and paints one outlined polygon per subject. The
-figure is deliberately **static** — the shape *is* the insight, and a still
+figure is deliberately **static**: the shape *is* the insight, and a still
 renders it in full. Everything is in the sprezzature-* house style: Roboto type, the
 Apple-system palette, ink ``#1D1D1F`` on a white ground, rounded framing, and
 native ``<title>`` hover tooltips (no JavaScript).
 
 The example data is illustrative: three managed cloud databases scored 0–100
-across six buyer criteria, chosen so the three profiles genuinely cross — one
-wins on speed, one on ecosystem, one on price — which is exactly the situation a
+across six buyer criteria, chosen so the three profiles genuinely cross, one
+wins on speed, one on ecosystem, one on price, which is exactly the situation a
 radar chart is built to reveal.
 
 Usage

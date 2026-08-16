@@ -7,7 +7,7 @@ meandering silhouette that minimises the visual "wiggle" of the inner bands. The
 payoff is a flowing, river-like picture where each band's **thickness** is its
 value and the reader can follow one colour ribbon across time without the
 distortion a fixed baseline forces onto the upper bands. It is the natural chart
-for part-to-whole quantities that morph over time — market share, genre
+for part-to-whole quantities that morph over time: market share, genre
 popularity, ticket categories.
 
 This module builds the SVG string **by hand** (no matplotlib / seaborn /
@@ -15,12 +15,12 @@ plotly, no Vega): it computes the Lee-Byron *wiggle* baseline, lays each genre
 as a stacked ribbon with smooth Catmull-Rom spline edges, paints them in the
 Apple-system house palette, and drops a bold label straight onto each band at
 its thickest, most stable point. Native ``<title>`` tooltips give per-genre
-peak-share detail on hover — no JavaScript.
+peak-share detail on hover, no JavaScript.
 
 The example data is illustrative: recorded-music streaming share by genre from
 2000 to 2024, the two-decade arc where Hip-Hop / R&B overtakes Rock as the
-format shifts from the compact disc to on-demand streaming — a story the river
-tells at a glance, because the Hip-Hop ribbon swells while the Rock ribbon
+format shifts from the compact disc to on-demand streaming. It is a story the
+river tells at a glance, because the Hip-Hop ribbon swells while the Rock ribbon
 thins.
 
 Usage

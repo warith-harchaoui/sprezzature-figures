@@ -2,17 +2,21 @@
 """
 make_kde1d — a house-styled 1-D kernel density estimate as hand-authored SVG.
 
-Smooths a sample of numeric observations into a continuous density curve
-using a Gaussian kernel at each point, summed and normalised -- no
-binning choice the way a histogram forces one, and the bandwidth is the
-only smoothing knob. A vertical gradient fill (pale at the baseline, full
-house blue at the curve) keeps the shape readable without a legend.
-Typical uses: any single numeric sample where the exact bin edges of a
-histogram would be a distraction from the shape itself.
+A **kernel density estimate** (KDE) turns a handful of numbers into a smooth
+curve: centre a small bell shape (a Gaussian kernel) on every observation,
+then add all the bells together. Where observations cluster, the bells
+overlap and stack up into a hill; where they thin out, the curve sinks
+towards zero. It gives the same "where does this sample concentrate?"
+reading as a histogram, without a histogram's arbitrary choice of bin
+edges: the only knob left is the bandwidth, how wide each bell is drawn.
+A vertical gradient fill (pale at the baseline, full house blue at the
+curve) keeps the shape readable without a legend. Typical use: any single
+numeric sample where a histogram's bin edges would distract from the
+shape itself.
 
-Previously rendered via Vega-Lite (the ``density`` transform, ``vl_convert``);
-this module now computes the kernel density estimate itself and paints the
-filled curve by hand -- no Vega, no matplotlib, no scipy. The curve carries
+Previously rendered via Vega-Lite (the ``density`` transform, ``vl_convert``).
+This module now computes the kernel density estimate itself and paints the
+filled curve by hand: no Vega, no matplotlib, no scipy. The curve carries
 a native ``<title>`` tooltip.
 
 Author

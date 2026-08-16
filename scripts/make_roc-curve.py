@@ -10,9 +10,9 @@ random, 1.0 is perfect separation. The standard chart for reporting a
 classifier's discrimination ability independent of any one threshold.
 
 Previously rendered via Vega-Lite (the ROC points computed offline,
-``vl_convert``); this module now computes the ROC curve and AUC itself
-from raw classifier scores -- sort-and-sweep over unique thresholds,
-trapezoidal-rule AUC -- no Vega, no matplotlib, no scikit-learn. The whole
+``vl_convert``). This module now computes the ROC curve and AUC itself
+from raw classifier scores: a sort-and-sweep over unique thresholds, then
+trapezoidal-rule AUC. No Vega, no matplotlib, no scikit-learn. The whole
 curve carries one hover tooltip with the AUC; a thinned, evenly-spaced
 subset of points (at most 16) also gets its own marker + tooltip reporting
 the exact threshold and (FPR, TPR) pair at that point, so a reader can

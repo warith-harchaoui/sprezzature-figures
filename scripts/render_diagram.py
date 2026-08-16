@@ -10,13 +10,13 @@ script provides: turn a text source you can edit (a Vega-Lite spec, a
 TikZ figure, a Mermaid diagram) into a PNG the agent can actually *look*
 at, then critique, then edit the **original source**, then re-render.
 
-Four source kinds, detected automatically from the file — you never
-pass the kind (JSON is vega, ``<svg>`` is svg, a LaTeX preamble is tikz,
+Four source kinds, detected automatically from the file (you never
+pass the kind: JSON is vega, ``<svg>`` is svg, a LaTeX preamble is tikz,
 a ``graph`` / ``%%{init}`` header is mermaid):
 
 * ``vega``    — a Vega-Lite v5 (or full Vega) JSON spec. Rasterised with
   ``vl-convert`` (a single self-contained wheel that bundles its own
-  Vega runtime — no browser, no Node, offline). This renders the **real
+  Vega runtime: no browser, no Node, offline). This renders the **real
   spec that ships in the browser**, not a matplotlib re-draw, so what you
   look at is what your readers get. Because the spec carries its own data
   inline, the emitted ``.json`` is a reproducible, diffable file (figure + data
@@ -34,9 +34,9 @@ sprezzature-colors palette** (``sprezzature-colors/references/palette.csv``, the
 tokens documented at <https://harchaoui.org/warith/colors/>) via
 :mod:`_style`. TikZ gets a ``\\definecolor`` preamble of the base hues;
 Mermaid gets an injected ``%%{init}%%`` theme; Vega keeps whatever the
-spec's own ``config`` declares — this renderer only rasterises a
+spec's own ``config`` declares. This renderer only rasterises a
 caller-supplied external spec, it does not author Vega itself. You can
-always edit the colors afterwards — the palette is the *first* choice,
+always edit the colors afterwards: the palette is the *first* choice,
 not a lock-in.
 
 Background is selectable per the embedding context:
@@ -44,8 +44,8 @@ Background is selectable per the embedding context:
 transparent`` (overlay / dark page), ``--background dark`` (house dark
 canvas), or an explicit ``#RRGGBB``. ``auto`` follows ``--dark``.
 
-Vega can also emit vector output for print — ``--format svg`` / ``--format
-pdf`` — at exact physical dimensions (set ``width``/``height`` in the spec
+Vega can also emit vector output for print (``--format svg`` / ``--format
+pdf``) at exact physical dimensions (set ``width``/``height`` in the spec
 to inches × dpi and pass ``--ppi``); PNG is the loop default.
 
 Usage

@@ -12,7 +12,7 @@ is being counted before reading a single label. This is the pictorial's
 defining trait, and what sets it apart from the waffle (which uses
 plain squares).
 
-This module builds the SVG string by hand — no matplotlib / seaborn /
+This module builds the SVG string by hand: no matplotlib / seaborn /
 plotly, and no Vega, because a clipped repeated-glyph grid with a
 partial last icon is a layout Vega-Lite cannot express cleanly. It
 follows the sprezzature-* house style pulled from :mod:`_style`: the
@@ -24,7 +24,7 @@ The figure is quietly interactive without any JavaScript: hovering or
 keyboard-focusing a group's row of icons (or its label) lifts that row
 and dims the others, and every row carries a native ``<title>``
 tooltip. A gentle SMIL "fill-in" reveals the icons left-to-right on
-load — every icon is fully visible at ``t = 0`` (the animation only
+load; every icon is fully visible at ``t = 0`` (the animation only
 adds a brief settle), so a static raster shows the finished chart.
 Motion is guarded by ``prefers-reduced-motion``.
 

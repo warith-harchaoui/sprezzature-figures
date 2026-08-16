@@ -3,14 +3,14 @@
 make_venn — a house-styled three-set Venn diagram as a hand-authored SVG.
 
 A Venn diagram shows how many members fall into each combination of a
-few overlapping sets. With three circles there are seven regions —
+few overlapping sets. With three circles there are seven regions:
 three "only" lobes, three pairwise crescents, and one center where all
-three sets meet — and the whole point is to read a **count** off each
+three sets meet, and the whole point is to read a **count** off each
 region. This figure labels every one of the seven regions with its
 count so the diagram works as a table you can see.
 
 This module builds the SVG string by hand (no matplotlib / seaborn /
-plotly, and no Vega here because Vega-Lite has no set-overlap mark — a
+plotly, and no Vega here because Vega-Lite has no set-overlap mark: a
 Venn is placed geometry, clearest authored directly). It follows the
 sprezzature-* house style pulled from :mod:`_style`: the Apple-ish saturated
 palette, Roboto typography, ink ``#1D1D1F`` on a white background,
@@ -18,8 +18,8 @@ rounded set labels, a takeaway title, and a one-line subtitle.
 
 The figure is interactive without any JavaScript: hovering or
 keyboard-focusing a set's label (or its outline) brings that whole
-circle forward and dims the other two, so a single set's footprint —
-and every region it touches — stands out. Each set carries a native
+circle forward and dims the other two, so a single set's footprint,
+and every region it touches, stands out. Each set carries a native
 ``<title>`` tooltip with its grand total. Motion is guarded by
 ``prefers-reduced-motion``.
 

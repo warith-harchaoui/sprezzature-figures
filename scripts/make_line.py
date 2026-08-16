@@ -7,9 +7,9 @@ axis (typically time) across a small number of series. Typical uses:
 monthly revenue by product line, daily active users, sensor readings
 over time.
 
-Previously rendered via Vega-Lite (``vl_convert``); this module now draws
-the polylines and points by hand -- no Vega, no matplotlib -- so every
-point carries a native ``<title>`` tooltip and hovering a series highlights
+Previously rendered via Vega-Lite (``vl_convert``). This module now draws
+the polylines and points by hand: no Vega, no matplotlib, so every
+point carries a native ``<title>`` tooltip, and hovering a series highlights
 its line while dimming the rest.
 
 Author

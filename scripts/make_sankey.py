@@ -31,7 +31,7 @@ the whole cascade.
 
 Interaction (no JavaScript): every ribbon carries a native ``<title>``
 tooltip with its exact volume, and a CSS ``:hover`` / ``:focus`` rule
-dims the other ribbons so the hovered flow pops — the "hover-highlight
+dims the other ribbons so the hovered flow pops: the "hover-highlight
 a flow" affordance that suits this capability. The figure is otherwise
 static (a Sankey does not benefit from animation), so ``animated`` is
 false and ``interactive`` is true.

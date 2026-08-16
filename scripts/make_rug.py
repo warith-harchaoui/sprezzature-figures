@@ -3,8 +3,8 @@
 make_rug — a publication-quality **rug plot** as a hand-authored SVG.
 
 A rug plot draws one short tick per raw observation along an axis, so
-the reader sees the *actual* 1-D sample — every value, every gap, every
-cluster — instead of a smoothed summary that hides them. This figure
+the reader sees the *actual* 1-D sample (every value, every gap, every
+cluster) instead of a smoothed summary that hides them. This figure
 pairs a soft kernel-density silhouette (the "shape") with the rug (the
 "truth") underneath it, the classic seaborn ``rugplot`` + ``kdeplot``
 combination, so the density curve is always anchored to the data that
@@ -18,7 +18,7 @@ single density peak would paper over.
 Design follows the sprezzature-* house style (see ``_style.py``): Roboto,
 the Apple-system palette, ink ``#1D1D1F`` on a white background,
 secondary ``#6E6E73`` for supporting text, rounded corners. The output
-is a single self-contained SVG — the only artifact this skill ships.
+is a single self-contained SVG: the only artifact this skill ships.
 The figure is deliberately static: a density-plus-rug picture reads
 fully at a glance, so no motion is added (it would only delay the
 insight, and a draw-on curve leaves the first raster frame empty).
