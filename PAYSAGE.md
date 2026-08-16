@@ -6,7 +6,7 @@
 
 ```
 suite sprezzature
-├── sprezzature-figures   ← ce paquet  (126 types de graphiques)
+├── sprezzature-figures   ← ce paquet  (124 types de graphiques)
 ├── sprezzature-colors    (palettes de couleurs accessibles)
 ├── sprezzature-vision    (génération de textes alternatifs, légendes)
 ├── sprezzature-audio     (transcription audio, traduction de sous-titres)
@@ -28,10 +28,9 @@ suite sprezzature
 
 ## Quand choisir sprezzature-figures
 
-- Vous avez besoin de 126 types de graphiques prêts à l'emploi via une API unique et cohérente.
+- Vous avez besoin de 124 types de graphiques prêts à l'emploi via une API unique et cohérente.
 - Vous voulez que `make_figure("treemap", data)` fonctionne sans lire de documentation.
 - Vous avez besoin de la boucle Ralph Eyeball pour le contrôle qualité visuel automatisé.
-- Votre production doit respecter les standards sprezzature (WRITING.md, CODING.md).
 - Vous construisez un pipeline qui intègre des figures dans une publication web.
 
 ## Comparaison
