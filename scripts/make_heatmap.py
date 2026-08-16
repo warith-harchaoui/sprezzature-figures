@@ -10,11 +10,11 @@ Typical uses: activity by day-of-week x hour, correlation matrices, A/B test
 results by cohort x variant.
 
 Previously rendered via Vega-Lite (``vl_convert``); this module now builds
-the ``<svg>`` markup by hand — no Vega, no matplotlib — so it matches the
-other hero figures and every cell carries a native ``<title>`` tooltip with
+the ``<svg>`` markup by hand, with no Vega and no matplotlib, so it matches
+the other hero figures and every cell carries a native ``<title>`` tooltip with
 its exact reading ("Tue, 09:00-10:00: activity 58, 4.2% of week total").
 Per the Sprezzature Corner Policy, grid cells never round (``rx`` stays at
-0 — the grid *is* the message); hovering a cell dims every other cell and
+0: the grid *is* the message); hovering a cell dims every other cell and
 keeps that cell's whole row and column lit, a pure-CSS crosshair
 (``:has()``) that makes "how does this day compare" and "how does this hour
 compare" both readable at a glance, guarded by ``prefers-reduced-motion``.

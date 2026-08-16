@@ -31,7 +31,7 @@ Extras optionnels (combinables, ex. `"sprezzature-figures[cli,dataviz]"`) :
 | `[dataviz]` | matplotlib / networkx / wordcloud / shapely / pyproj / pyyaml, nécessaires à la poignée de générateurs matplotlib (inférence causale, explicabilité) |
 | `[studio]` | Sprezzature Studio : l'application NiceGUI + le copilote Ralph (voir plus bas) |
 | `[api]` | Surface HTTP FastAPI (voir plus bas) |
-| `[mcp]` | Surface d'outils MCP sur `[api]` (voir plus bas) |
+| `[mcp]` | Surface d'outils MCP (_Model Context Protocol_) au-dessus de `[api]`, pour appeler cette bibliothèque depuis un assistant IA (voir plus bas) |
 
 Utilisez un environnement virtuel pour tout isoler :
 
@@ -175,21 +175,27 @@ départage rarement ; c'est le but qui rend le classement décisif.
 
 ## Thèmes visuels
 
-Chaque graphique accepte un paramètre `theme`, indépendant de
-`accessibility` (le moteur de palettes sûres pour la vision des couleurs —
-les deux se combinent librement) :
+Chaque graphique accepte un paramètre `theme`, qui règle l'apparence
+(polices, couleurs), séparé du paramètre `accessibility`, qui garantit que
+la palette reste lisible en cas de daltonisme (au sens large : tout trouble
+de la vision des couleurs). Les deux se combinent librement parce qu'ils
+répondent à deux questions différentes : l'un est affaire de goût, l'autre
+détermine qui peut réellement lire le graphique.
 
-- **`"corporate"`** (par défaut) — Roboto pour le texte d'habillage
-  (titre, sous-titre, libellés d'axes), Roboto Mono pour les graduations et
-  valeurs numériques, ainsi que la palette catégorielle dérivée du style
-  Apple. Rendu identique au bit près à tout ce qui existait avant `theme`.
-- **`"academic"`** — Latin Modern Roman/Mono (l'extension libre et
-  native LaTeX de Computer Modern) pour un rendu façon figure de revue
-  scientifique, avec la palette catégorielle
-  [Okabe-Ito](https://jfly.uni-koeln.de/color/) (Okabe & Ito, 2002) —
-  sûre pour la vision des couleurs par construction, la référence
-  recommandée pour les figures scientifiques depuis l'éditorial de Wong
-  dans *Nature Methods* en 2011.
+- **`"corporate"`** (par défaut) : Roboto pour le texte d'habillage
+  (titre, sous-titre, libellés d'axes), Roboto Mono pour les graduations
+  et les valeurs numériques, avec une palette catégorielle dérivée du
+  style Apple. Le rendu est identique au bit près à tout ce qui existait
+  avant l'introduction de `theme`, donc adopter ce paramètre ne change
+  rien pour le code déjà en place.
+- **`"academic"`** : Latin Modern Roman et Mono, l'extension libre et
+  native LaTeX de Computer Modern, pour un rendu façon figure de revue
+  scientifique, associée à la palette catégorielle
+  [Okabe-Ito](https://jfly.uni-koeln.de/color/) (Okabe et Ito, 2002).
+  Cette palette a été conçue pour rester lisible sous les formes
+  courantes de daltonisme ; c'est pourquoi elle sert de référence
+  recommandée pour les figures scientifiques depuis l'éditorial de Wong,
+  publié dans *Nature Methods* en 2011.
 
 ```python
 make_figure("bar", data, out="revenue.svg", theme="academic")
@@ -289,7 +295,13 @@ nouvelle, conforme au plan et testée.
 
 ## API HTTP & MCP
 
-Trois interfaces exposent le même dispatcheur `make_figure()` :
+Au-delà de la ligne de commande, la même fonction `make_figure()` est
+joignable sur le réseau de deux façons : comme une simple API HTTP, et
+comme un outil MCP. Le MCP (_Model Context Protocol_) est une norme qui
+permet à un assistant IA d'appeler directement les fonctions d'un
+programme, de la même façon qu'un humain les appellerait depuis un script,
+sans avoir à lire une documentation et à deviner. Trois interfaces
+exposent au total le même dispatcheur `make_figure()` :
 
 | Interface | Toujours installée ? | Point d'entrée |
 |---|---|---|

@@ -1,7 +1,7 @@
 # The generator contract
 
-For a `scripts/make_<kind>.py` script to be usable from `make_figure()` —
-and, more strictly, to be `status="stable"` and shown in the Studio; it
+For a `scripts/make_<kind>.py` script to be usable from `make_figure()`,
+and, more strictly, to be `status="stable"` and shown in the Studio, it
 must expose:
 
 ```python
@@ -58,14 +58,14 @@ Run `python tools/audit_generators.py --render` to regenerate
 `python tools/build_figures_catalog.py` to regenerate the registry from it
 (cross-referenced against `FIGURES.md`'s category/description text).
 `tools/build_figures_catalog.py`'s `HAND_ROLES` dict is where
-`required_roles`/`optional_roles` are hand-declared for stable figures —
+`required_roles`/`optional_roles` are hand-declared for stable figures:
 regenerating the catalogue re-applies these, so they survive a rebuild.
 
 ## Adding a new stable figure
 
 1. Write `scripts/make_<kind>.py` following the contract above (copy the
    pattern of an existing hand-authored-SVG generator, e.g. `make_bar.py`
-   or `make_waffle.py`). House policy: hand-authored SVG only — no Vega,
+   or `make_waffle.py`). House policy: hand-authored SVG only, no Vega and
    no matplotlib.
 2. Add a row to `FIGURES.md` (kind, category, one-line "when to use").
 3. Add a `HAND_ROLES` entry in `tools/build_figures_catalog.py` naming the

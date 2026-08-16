@@ -10,7 +10,7 @@ copy-pasted, verbatim, into roughly sixty generators; this module is the one
 place it now lives.
 
 Only the pieces that were *byte-for-byte identical* across generators are
-factored here — the path expression, the ``mkdir``/``write_text``/``print``
+factored here: the path expression, the ``mkdir``/``write_text``/``print``
 sequence, and (for the handful of generators that expose a ``--out`` flag) the
 tiny argparse wiring. The figure-specific ``build_svg`` bodies stay in their own
 files; this module never touches the SVG string, so adopting it leaves every
@@ -20,9 +20,10 @@ that render twice, or maps that also emit a PNG companion) still call
 their extra logic inline.
 
 The module is **stdlib-only** (``argparse`` + ``pathlib``), so it imports
-everywhere the generators already run — no dataviz tier required. The ``wrote
-<path>`` line is a deliberate, user-facing CLI confirmation (these scripts are
-run by hand), not diagnostic logging, so it stays a plain ``print``.
+everywhere the generators already run, with no dataviz tier required. The
+``wrote <path>`` line is a deliberate, user-facing CLI confirmation (these
+scripts are run by hand), not diagnostic logging, so it stays a plain
+``print``.
 
 Consumers
 ---------

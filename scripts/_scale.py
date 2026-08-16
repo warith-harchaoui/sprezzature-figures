@@ -6,8 +6,8 @@ A handful of generators expose a ``log_x``/``log_y`` toggle for an axis
 whose data spans several orders of magnitude (session counts, prices,
 p-values). The linear case is a single, self-explanatory line
 (``p0 + (v - lo) / (hi - lo) * (p1 - p0)``) that each generator keeps as its
-own inline closure — too trivial and too coupled to each script's own plot
-geometry names to be worth abstracting. The *log* case is not: it needs a
+own inline closure: it is too trivial, and too tied to each script's own
+plot geometry names, to be worth pulling out. The *log* case is not: it needs a
 zero/negative guard, a log-domain interpolation, and a decade-tick
 generator with floating-point slop at the boundary, and getting any of
 those slightly wrong is easy to miss on a chart that renders anyway (just

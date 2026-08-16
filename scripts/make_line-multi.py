@@ -11,7 +11,7 @@ platform, sensor readings per minute by device, any small set of series
 sampled densely along one continuous axis.
 
 Previously rendered via Vega-Lite (``vl_convert``); this module now draws
-the polylines and points by hand -- no Vega, no matplotlib. Every point
+the polylines and points by hand, with no Vega and no matplotlib. Every point
 carries a native ``<title>`` tooltip.
 
 Author

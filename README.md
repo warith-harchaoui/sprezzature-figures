@@ -30,7 +30,7 @@ Optional extras (combine as needed, e.g. `"sprezzature-figures[cli,dataviz]"`):
 | `[dataviz]` | matplotlib / networkx / wordcloud / shapely / pyproj / pyyaml, needed for the small set of matplotlib-based generators (causal inference, explainability) |
 | `[studio]` | Sprezzature Studio: the NiceGUI app + Ralph copilot (see below) |
 | `[api]` | FastAPI HTTP surface (see below) |
-| `[mcp]` | MCP tool surface on top of `[api]` (see below) |
+| `[mcp]` | MCP (Model Context Protocol) tool surface on top of `[api]`, for calling this library from an AI assistant (see below) |
 
 Use a virtual environment to keep things isolated:
 
@@ -177,19 +177,26 @@ Quick overview:
 
 ## Visual themes
 
-Every chart supports a `theme` parameter, independent of `accessibility`
-(the CVD-safe palette engine — the two compose freely):
+Every chart supports a `theme` parameter for how it looks (fonts, colors),
+kept separate from `accessibility`, which controls whether the palette
+stays readable for colour-vision deficiency (CVD, the general term for
+what is commonly called colour blindness). The two settings compose
+freely because they solve different problems: one is taste, the other is
+who can actually read the chart.
 
-- **`"corporate"`** (default) — Roboto for chrome text (title/subtitle/axis
-  labels), Roboto Mono for tick/numeric labels, and the Apple-system-derived
-  categorical palette. Byte-identical to every render from before `theme`
-  existed.
-- **`"academic"`** — Latin Modern Roman/Mono (the free, LaTeX-native
-  extension of Computer Modern) for a journal-figure look, and the
-  [Okabe-Ito](https://jfly.uni-koeln.de/color/) categorical palette (Okabe &
-  Ito, 2002) — colour-vision-deficiency-safe by construction, the standard
-  recommended for scientific figures since Wong's 2011 *Nature Methods*
-  editorial.
+- **`"corporate"`** (default): Roboto for the chrome text (title,
+  subtitle, axis labels), Roboto Mono for tick and numeric labels, and a
+  categorical palette derived from Apple's system colours. Renders
+  byte-identical to every chart made before `theme` existed, so adopting
+  the parameter changes nothing for existing callers.
+- **`"academic"`**: Latin Modern Roman and Mono, the free, LaTeX-native
+  extension of Computer Modern, for a journal-figure look, paired with the
+  [Okabe-Ito](https://jfly.uni-koeln.de/color/) categorical palette (Okabe
+  and Ito, 2002). That palette is CVD-safe by construction: it was
+  designed so its colours stay distinguishable under the common forms of
+  colour-vision deficiency, which is why it has been the standard
+  recommendation for scientific figures since Wong's 2011 editorial in
+  *Nature Methods*.
 
 ```python
 make_figure("bar", data, out="revenue.svg", theme="academic")
@@ -284,7 +291,12 @@ plan-driven, testable implementation.
 
 ## HTTP API & MCP
 
-Three interfaces expose the same `make_figure()` dispatcher:
+Beyond the command line, the same `make_figure()` function is reachable
+over the network in two ways: as a plain HTTP API, and as an MCP tool.
+MCP (the Model Context Protocol) is a standard that lets an AI assistant
+call a program's functions directly, the same way a human would call them
+from a script, instead of having to read documentation and guess. Three
+interfaces expose the same `make_figure()` dispatcher in total:
 
 | Interface | Always installed? | Entry point |
 |---|---|---|
