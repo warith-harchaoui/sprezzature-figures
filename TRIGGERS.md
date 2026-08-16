@@ -50,4 +50,4 @@ from sprezzature_figures import make_figure
 path = make_figure(kind, data, out="output.png", title="My chart")
 ```
 
-All 84 kinds and their expected `data` shape are documented in [FIGURES.md](FIGURES.md).
+All 124 kinds and their expected `data` shape are documented in [FIGURES.md](FIGURES.md).

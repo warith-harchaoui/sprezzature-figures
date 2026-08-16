@@ -1,10 +1,16 @@
 # LLM/VLM structured output contracts
 
-The model never generates or executes code. Every call site is scoped to
-one Pydantic schema in `sprezzature_figures.studio.assistant.schemas` (plus
-`core.figure_plan.UserIntent`, reused rather than duplicated), and every
-response is validated (with exactly one repair attempt) before anything
-downstream sees it.
+Ask a language model a free-text question and you get free text back: fine
+for a chat reply, unusable as input to a program that expects, say, a list
+of exactly this shape of edit. So every model call in Studio asks for a
+specific shape instead of a paragraph, that shape is written down once as a
+Pydantic schema, a Python description of "this response must have exactly
+these fields, of exactly these types" (`sprezzature_figures.studio.
+assistant.schemas`, plus `core.figure_plan.UserIntent`, reused rather than
+duplicated), and the model's answer is checked against that schema (with
+exactly one repair attempt) before anything downstream ever sees it. The
+model never generates or executes code; it only ever fills in one of these
+predeclared shapes.
 
 ## The client (`assistant.client`)
 
@@ -30,18 +36,30 @@ of a real model call.
 
 ## How the schema reaches the model
 
-The response model isn't only used to validate the answer: its
-`model_json_schema()` is passed to the backend as a grammar constraint, so the
-model is steered to produce the right shape in the first place (Ollama's
-structured output, the OpenAI `json_schema` response format). Each field
-carries a `description` in the Pydantic model, which the model sees, so it
-fills the field with a real value instead of a default. One transport detail
-lives in `best-engine-ai-helper`: Ollama's grammar cannot build a discriminated
-union of `$ref` branches (it then emits only an empty value), so the schema is
-flattened to a single tagged object before it is sent, and this package's
-Pydantic model re-validates the answer against the true union afterwards. The
-net effect is that `FigureOperation` lists (chart edits, safe repairs) come
-back populated rather than empty.
+The response model isn't only used to check the answer after the fact: its
+`model_json_schema()` (the same shape description, exported as JSON) is
+handed to the backend *before* generation starts, as a grammar constraint,
+a rule that blocks the model from producing any token that would break the
+required shape, the same way a fill-in-the-blanks form makes some answers
+impossible to write down. This steers the model to the right shape in the
+first place instead of hoping it complies (Ollama's structured output, the
+OpenAI `json_schema` response format). Each field also carries a
+`description` in the Pydantic model, which the model sees, so it fills the
+field with a real value instead of a default.
+
+One transport detail lives in `best-engine-ai-helper`: some of these
+schemas are a discriminated union, one field ("which kind of edit is
+this?") that decides which of several different shapes the rest of the
+object must take, the way a form's "type of vehicle" checkbox decides
+whether the next field asks for a car's plate number or a bike's frame
+size. Ollama's grammar engine cannot build that kind of union when its
+branches are expressed as `$ref` pointers (references to a shape defined
+elsewhere in the schema); when it tries, it silently emits an empty value
+instead of raising an error. So the schema is flattened to a single tagged
+object before it is sent to Ollama, and this package's own Pydantic model
+re-validates the answer against the true union afterwards. The net effect
+is that `FigureOperation` lists (chart edits, safe repairs) come back
+populated rather than silently empty.
 
 ## Validate-then-repair (`assistant.repair`)
 

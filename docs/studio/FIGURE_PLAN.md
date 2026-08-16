@@ -1,11 +1,18 @@
 # The FigurePlan
 
-`sprezzature_figures.core.figure_plan.FigurePlan` is the single source of
-truth for a figure under construction. Neither the chat transcript nor the
-rendered PNG is authoritative: only this Pydantic model is. Every accepted
-chat edit produces a new `FigurePlan` (recorded as an
-[`IterationRecord`](ARCHITECTURE.md#where-a-render-actually-lives)); Ralph
-never edits the rendered image directly.
+A figure under construction in Studio has three things that could, in
+principle, describe it: the chat messages that led here, the rendered PNG
+on screen, and a structured record of every choice made (which columns
+feed which role, which filters, which style). Only the third one counts.
+`sprezzature_figures.core.figure_plan.FigurePlan` is that structured
+record, and it is the single source of truth: the chat transcript is just
+a log of how it got there, and the PNG is disposable, thrown away and
+regenerated from the plan on every change. `FigurePlan` is a Pydantic
+model, Python's standard way to write down "this object must have exactly
+these fields, of exactly these types" so the shape can be checked instead
+of assumed. Every accepted chat edit produces a new `FigurePlan` (recorded
+as an [`IterationRecord`](ARCHITECTURE.md#where-a-render-actually-lives));
+Ralph never edits the rendered image directly.
 
 ## Shape
 
@@ -47,15 +54,18 @@ resolved = [{role: row[binding.column] for role, binding in plan.bindings.items(
 ## Transformations
 
 `plan.transformations` is a list of `Transform`, a discriminated union
-(`core.operations.Transform`) covering exactly plan §4.3's supported set:
-`filter_value`, `filter_range`, `filter_temporal`, `sort`, `aggregate`,
-`rename_display`, `top_n`, `group_others`, `calculate` (difference/ratio).
-No free-form formulas.
+(`core.operations.Transform`, one field naming which kind of transform this
+is, deciding what shape the rest of the object must take) covering exactly
+plan §4.3's supported set: `filter_value`, `filter_range`,
+`filter_temporal`, `sort`, `aggregate`, `rename_display`, `top_n`,
+`group_others`, `calculate` (difference/ratio). No free-form formulas.
 
 These transformations are executed, not merely recorded.
 `core.transformations.apply_transformations(rows, transforms)` runs each
-step deterministically, in list order, over `list[dict]` rows: one closed
-applier per transform type, no code evaluation. `_resolve_data()` in
+step deterministically, in list order, over `list[dict]` rows, using one
+fixed, hand-written function per transform type rather than evaluating any
+formula the user typed: no code evaluation, so a chat message can never
+run arbitrary logic against the data. `_resolve_data()` in
 `studio/pages/editor.py` calls it on the imported rows (keyed by the
 original column names) before mapping columns onto role names, so a filter
 or sort requested in the chat actually changes the rendered figure. The

@@ -85,7 +85,7 @@ print(chemin)  # PosixPath('revenu.png')
 
 Les 124 types enregistrés sont tous `status="stable"` (vérifiés par rendu de
 bout en bout). Voir [docs/studio/GENERATOR_AUDIT.md](docs/studio/GENERATOR_AUDIT.md)
-pour le détail de l'audit par type, et `make-figure --list --status stable`
+pour le détail de l'audit par type, ou lancer `make-figure --list --status stable`
 pour confirmer l'ensemble actuel. Chaque type stable tolère qu'un rôle
 optionnel reste non lié : il produit un rendu par défaut sensé au lieu de
 planter.
@@ -261,9 +261,11 @@ Ce dépôt contient deux choses :
 - **Sprezzature Studio** (`sprezzature_figures.studio`, CLI
   `sprezzature-studio`) : une application NiceGUI locale pour importer un
   CSV/TSV/XLSX/JSON, choisir un type de graphique, associer les colonnes, puis
-  affiner la figure en dialoguant avec **Ralph**, un copilote LLM/VLM qui
-  modifie un plan structuré et regarde vraiment le rendu avant de décider
-  que c'est terminé. Nécessite l'extra `studio` :
+  affiner la figure en dialoguant avec **Ralph**, un copilote adossé à un
+  modèle de langage qui lit votre texte (un LLM) et à un modèle de vision
+  qui regarde le rendu (un VLM). Ralph modifie un plan structuré et regarde
+  vraiment le rendu avant de décider que c'est terminé. Nécessite l'extra
+  `studio` :
 
   ```bash
   pip install "sprezzature-figures[studio]"

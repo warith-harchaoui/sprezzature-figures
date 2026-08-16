@@ -1,5 +1,19 @@
 # The Ralph loop
 
+Ralph is Studio's editing copilot: you describe a change in plain language
+("make the bars orange", "sort by value"), and instead of guessing at
+pixels, Ralph turns that sentence into a small, typed edit to the chart's
+*plan*, the same structured description (kind, bound columns, style
+options) a human would fill in by clicking dropdowns. Nothing touches the
+rendered image directly; every change re-renders the chart from that plan,
+so the same plan always produces the same output. In `assisted`/`autopilot`
+mode, Ralph then looks at the rendered result with a vision-language model,
+a model trained to describe and judge images (a VLM, as distinct from the
+text-only LLM that reads your message), and decides whether it needs
+another pass, the same way you would glance at a chart before shipping it.
+
+Say a user types "make the bars orange." The loop that follows is:
+
 ```
 user message
   -> structured interpretation      (assistant.edit.propose_edit -> EditProposal)
@@ -12,9 +26,11 @@ user message
   -> re-render
 ```
 
-Ralph modifies the `FigurePlan`, never the rendered image. Every change is
-a typed `FigureOperation`, applied deterministically
-(`sprezzature_figures.studio.ralph.apply`), then re-rendered from scratch.
+"Make the bars orange" becomes an `EditProposal` naming a `StyleOptions`
+change, gets checked against the rules below, is applied to the
+`FigurePlan` as one typed `FigureOperation`
+(`sprezzature_figures.studio.ralph.apply`), and the chart is re-rendered
+from that updated plan, never patched in place.
 
 ## Modes (`RalphMode`)
 

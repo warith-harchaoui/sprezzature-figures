@@ -4,7 +4,7 @@
 
 ```
 sprezzature_figures/
-├── make_figure.py, __init__.py     # the library — no Studio dependency
+├── make_figure.py, __init__.py     # the library (no Studio dependency)
 ├── catalog/                        # figure registry (FigureDefinition, figures.json)
 ├── core/                           # domain models + pure logic, no studio/* imports
 │   ├── dataset.py                  #   DatasetProfile, ColumnProfile

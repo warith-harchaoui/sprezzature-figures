@@ -88,8 +88,10 @@ push to `main` and on pull requests:
   hold on a clean machine, on every supported OS.
 
 CI caught a real bug local development never surfaced: `make_situation_map.py`
-raised `SystemExit` (not an `Exception` subclass) at module import time
-for a missing dependency, which killed the whole test run in a clean
+(since moved to the [sprezzature-maps](https://github.com/warith-harchaoui/sprezzature-maps)
+repo, along with `choropleth`, but the bug and the lesson predate that
+move) raised `SystemExit` (not an `Exception` subclass) at module import
+time for a missing dependency, which killed the whole test run in a clean
 environment where that dependency wasn't already installed globally (as it
 happened to be on the development machine). Fixed at the source (see
 `docs/studio/STATUS.md`'s Commit 10 entry for the full story).

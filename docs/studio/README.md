@@ -2,9 +2,10 @@
 
 A local, chat-driven editor for the figures in this repository: import a
 CSV/XLSX, pick a chart type, bind columns to its data roles, then refine it
-by talking to **Ralph**, an LLM/VLM copilot that edits a structured
-`FigurePlan`, re-renders, and actually looks at the result before deciding
-whether it's done.
+by talking to **Ralph**, a copilot built on a language model that reads
+your text (an LLM) and a vision model that looks at the rendered chart (a
+VLM). Ralph edits a structured `FigurePlan`, re-renders, and actually
+looks at the result before deciding whether it's done.
 
 ## Install & launch
 
@@ -43,7 +44,7 @@ app starts and stays usable even with no model configured; see
 [DATA_PRIVACY.md](DATA_PRIVACY.md)).
 
 Everything in this directory documents the Studio specifically. For the
-figure-rendering library itself (`make_figure()`, the 90-generator
+figure-rendering library itself (`make_figure()`, the 124-generator
 catalogue, the CLI), see the top-level [README.md](../../README.md) /
 [FIGURES.md](../../FIGURES.md).
 
@@ -77,9 +78,10 @@ catalogue, the CLI), see the top-level [README.md](../../README.md) /
 
 The library, catalogue, dispatcher, ingest pipeline, core domain models, LLM
 client, Ralph engine, NiceGUI app, and iteration history/export are all built
-and tested. 46 of 126 chart types are `status="stable"` (render-verified end to
-end); the rest are cataloged with an explicit status rather than silently
-assumed to work. The `FigurePlan`'s transformations (filter / sort / aggregate
+and tested. All 124 registered chart types are `status="stable"` (render-verified
+end to end, see [GENERATOR_AUDIT.md](GENERATOR_AUDIT.md)); a status is always
+recorded explicitly rather than a kind being silently assumed to work. The
+`FigurePlan`'s transformations (filter / sort / aggregate
 / top-N / ...) are executed deterministically on the render and export paths,
 not just recorded. The Ralph loop runs against a real model end to end and
 degrades gracefully: a model that returns malformed JSON, times out, or is
