@@ -1,8 +1,10 @@
 """
-Tests for the make_figure dispatcher and list_kinds utility.
+Tests for the make_figure dispatcher, the function that looks up a chart
+kind's name and calls its generator, and the list_kinds utility.
 
-Slow tests (those that render actual figures) are marked with @pytest.mark.slow
-and excluded from the default pytest run. Run them explicitly with:
+Slow tests, those that render actual figures, are marked with
+@pytest.mark.slow and excluded from the default pytest run. Run them
+explicitly with:
 
     pytest -m slow tests/
 

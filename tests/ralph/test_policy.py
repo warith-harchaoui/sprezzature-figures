@@ -1,6 +1,8 @@
 """
-Tests for sprezzature_figures.studio.ralph.policy: safe-repair and
-confirmation-required classification (plan §11.2/§11.3).
+Tests for sprezzature_figures.studio.ralph.policy: classifying a proposed
+fix as either safe-repair (small enough to apply on its own) or
+confirmation-required (needs the user's yes first), per the project's
+internal design plan, §11.2/§11.3.
 
 Author
 ------

@@ -1,7 +1,10 @@
 """
-Tests for sprezzature_figures.studio.export: the reproducibility archive,
-including actually unzipping it and running reproduce.py in a fresh
-directory to confirm it's genuinely standalone (plan §14).
+Tests for sprezzature_figures.studio.export: the reproducibility archive, a
+zip file that lets someone else rebuild the exact same figure elsewhere.
+The tests actually unzip it and run reproduce.py in a fresh directory to
+confirm it's genuinely standalone, not secretly depending on files left
+behind on the original machine (per the project's internal design plan,
+§14).
 
 Author
 ------

@@ -1,6 +1,9 @@
 """
-Tests for sprezzature_figures.core.iterations and .history: recording,
-loading, undo/redo/revert/compare, and branch-by-revert (plan §12).
+Tests for sprezzature_figures.core.iterations and .history: recording an
+edit, loading it back, undo/redo/revert/compare, and branch-by-revert, the
+case where reverting to an earlier state and then editing again forks a new
+history branch instead of overwriting the old one (specified in the
+project's internal design plan, §12).
 
 Author
 ------

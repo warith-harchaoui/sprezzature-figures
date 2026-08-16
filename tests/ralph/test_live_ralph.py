@@ -1,12 +1,14 @@
 """
-Opt-in live VLM test: run the full Ralph loop (interpret -> validate ->
-modify -> render -> critique -> safe-repair) against a REAL model through
-best-engine-ai-helper, with the rendered PNG genuinely handed to a vision
-model. This is the path every default test mocks with FakeLLMClient (whose
-chat_vision discards the image); here the bytes really reach the VLM.
+Opt-in live VLM test: run the full Ralph loop (interpret, validate, modify,
+render, critique, safe-repair) against a real model through
+best-engine-ai-helper, with the rendered PNG genuinely handed to a VLM
+(vision-language model, one that can look at an image as well as read
+text). This is the path every default test mocks with FakeLLMClient, whose
+chat_vision discards the image instead of looking at it; here the bytes
+really reach the model.
 
-Marked ``vision`` (and ``slow`` for the real render) -> deselected by
-default; skips (never fails) when no backend is reachable.
+Marked ``vision`` (and ``slow`` for the real render), so deselected by
+default; it skips, never fails, when no backend is reachable.
 
 Run with:  pytest -m vision
 

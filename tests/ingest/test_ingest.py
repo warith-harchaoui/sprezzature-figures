@@ -1,6 +1,9 @@
 """
-Tests for sprezzature_figures.studio.ingest: CSV/XLSX/clipboard readers,
-semantic type detection, and the profiler.
+Tests for sprezzature_figures.studio.ingest: the CSV, XLSX, and clipboard
+readers, semantic type detection (guessing whether a column holds a date, a
+category, or a number, from its values rather than its header name), and
+the profiler, which summarizes a loaded table before the user picks a
+chart.
 
 Author
 ------

@@ -1,6 +1,7 @@
 """
-Tests for sprezzature_figures.studio.ralph.repair (applying a critique's
-safe repairs) and .history (RalphHistory bookkeeping).
+Tests for sprezzature_figures.studio.ralph.repair, which applies a
+critique's safe repairs automatically, and .history, the RalphHistory
+record that tracks what Ralph tried and changed over a session.
 
 Author
 ------

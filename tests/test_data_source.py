@@ -1,7 +1,7 @@
 """
-Tests for data_source.load_records -- the CLI's local-file loader -- and the
-``make-figure --data`` wiring that lets a user render their own file instead of
-the built-in DEMO_DATA.
+Tests for data_source.load_records, the CLI's local-file loader, and the
+``make-figure --data`` wiring that lets a user render their own file
+instead of the built-in DEMO_DATA.
 
 Author
 ------

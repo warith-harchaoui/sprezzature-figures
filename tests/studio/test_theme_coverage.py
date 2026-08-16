@@ -1,15 +1,19 @@
 """
-Guard against the failure mode that left the first Studio UI unstyled:
-a component using a Tailwind-style utility class that ``theme.py`` never
-defines. Since the installed NiceGUI build ships no Tailwind CSS, such a
-class is a silent no-op -- the layout just quietly doesn't apply.
+Guard against the failure mode that left the first Studio UI unstyled: a
+component using a Tailwind-style utility class (a short, single-purpose CSS
+class name, like ``text-lg``, that stands in for a whole style rule) that
+``theme.py`` never defines. The installed NiceGUI build (the Python UI
+framework Studio is built on) ships no Tailwind CSS of its own, so such a
+class is a silent no-op: the layout just quietly doesn't apply, with no
+error to point at the mistake.
 
-This test statically extracts every class token passed to a ``.classes(...)``
-call across ``sprezzature_figures/studio`` and asserts each is covered by
-``theme.supported_classes()`` (which is derived from the shipped stylesheet
-itself). Add the class to ``theme.py`` -- or, for a class provided by an
-external stylesheet (Quasar), to ``KNOWN_EXTERNAL`` below -- to make a new
-usage pass.
+This test statically extracts every class token passed to a
+``.classes(...)`` call across ``sprezzature_figures/studio`` and asserts
+each is covered by ``theme.supported_classes()``, which is derived from the
+shipped stylesheet itself. To make a new usage pass, add the class to
+``theme.py``; for a class that instead comes from an external stylesheet
+(Quasar, NiceGUI's underlying component library), add it to
+``KNOWN_EXTERNAL`` below.
 
 Author
 ------

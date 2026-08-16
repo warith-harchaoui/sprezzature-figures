@@ -1,7 +1,9 @@
 """
 Tests for SessionState, config.engine_status(), and the pure-logic helpers
-inside data_panel/editor (upload parsing, role->column resolution, chat
-summary text) -- all testable as plain Python without a running server.
+inside data_panel/editor: upload parsing, role-to-column resolution
+(matching a chart's required roles, like "x-axis", to the user's actual
+column names), and chat-summary text. All of it is testable as plain
+Python, without a running server.
 
 Author
 ------

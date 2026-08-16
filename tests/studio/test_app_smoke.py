@@ -1,9 +1,11 @@
 """
-App-launch smoke test (plan §16.5): start the real Studio server as a
-subprocess, confirm it serves HTTP 200 with the expected page structure,
-then stop it. Deliberately not testing "every visual detail by pixel
-coordinates" (plan's own caution) -- this is the "does it actually start
-and render something sane" check.
+App-launch smoke test: a smoke test checks that a system starts and does
+the basics, not every detail (specified in the project's internal design
+plan, §16.5). Start the real Studio server as a subprocess, confirm it
+serves HTTP 200 with the expected page structure, then stop it.
+Deliberately not testing "every visual detail by pixel coordinates" (the
+plan's own caution): this is the "does it actually start and render
+something sane" check.
 
 Author
 ------

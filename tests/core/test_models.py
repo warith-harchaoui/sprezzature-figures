@@ -1,6 +1,7 @@
 """
-Tests for sprezzature_figures.core: dataset/figure_plan/operations models
-and validation.
+Tests for sprezzature_figures.core: the dataset, figure_plan (the
+structured, editable description of a chart before it's rendered), and
+operations models, plus their validation.
 
 Author
 ------

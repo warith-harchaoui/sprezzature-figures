@@ -3,7 +3,7 @@ Tests for the explicit axis-override kwargs: `_scale.fixed_step_ticks`, the
 `vmin`/`vmax` color-scale override on `make_heatmap`, and the
 `x_domain`/`x_tick_step`/`y_domain`/`y_tick_step`/`y_minor_step` axis
 overrides on `make_line_multi`. Left at their defaults, every one of these
-generators must render byte-identical to its pre-override output -- that
+generators must render byte-identical to its pre-override output: that
 invariant is the main thing under test, alongside the actual override
 behaviour.
 

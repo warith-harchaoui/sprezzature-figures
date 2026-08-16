@@ -1,8 +1,9 @@
 """
 End-to-end tests for RalphEngine.apply_user_request() across all three
-modes (manual/assisted/autopilot), against FakeLLMClient and real
-rendering (so these are marked slow, like the other render-touching
-tests in this suite).
+modes: manual (the user approves every change), assisted (Ralph proposes,
+the user confirms), and autopilot (Ralph applies and self-corrects without
+asking). Runs against FakeLLMClient with real rendering, so, like the
+other render-touching tests in this suite, it's marked slow.
 
 Author
 ------

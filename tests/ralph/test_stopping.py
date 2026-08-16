@@ -1,6 +1,8 @@
 """
-Tests for sprezzature_figures.studio.ralph.stopping: the plan §11.5
-stopping criteria and issue-signature computation.
+Tests for sprezzature_figures.studio.ralph.stopping: the stopping criteria
+that tell Ralph when to quit iterating (specified in the project's internal
+design plan, §11.5), and how an issue's signature, a fingerprint used to
+recognize the same problem across iterations, is computed.
 
 Author
 ------

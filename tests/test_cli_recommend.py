@@ -1,6 +1,8 @@
 """
-Tests for the Click CLI's ``recommend`` command -- the headless twin of the
-Studio recommendation cards. Skipped when the optional Click / profiling stack
+Tests for the Click CLI's ``recommend`` command, the headless (no browser,
+no page to load) twin of the Studio recommendation cards: same ranking
+logic, reachable from a terminal instead. Skipped when the optional Click
+(the command-line framework this command is built with) / profiling stack
 isn't installed.
 
 Author

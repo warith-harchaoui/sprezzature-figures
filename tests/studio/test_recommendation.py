@@ -1,6 +1,9 @@
 """
-Deterministic figure-recommendation engine (plan §6): the hard-constraint
-compatibility filter and the scoring/rank on top. No LLM here.
+Deterministic figure-recommendation engine (specified in the project's
+internal design plan, §6): first a hard-constraint compatibility filter
+rules out chart kinds the data can't support, then a scoring pass ranks
+what's left. No language model involved here: the ranking is plain,
+reproducible logic.
 
 Author
 ------

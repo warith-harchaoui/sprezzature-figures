@@ -1,6 +1,9 @@
 """
-Tests for sprezzature_figures.studio.ralph.apply: deterministic
-FigureOperation -> FigurePlan application.
+Tests for sprezzature_figures.studio.ralph.apply: applying a
+FigureOperation (one requested edit, e.g. "change the color") to a
+FigurePlan (the chart's current structured description) deterministically,
+so the same operation applied to the same plan always produces the same
+result.
 
 Author
 ------

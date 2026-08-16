@@ -1,6 +1,8 @@
 """
-Tests for sprezzature_figures.catalog: registry loading, alias resolution,
-and that every scripts/make_*.py generator has a matching entry.
+Tests for sprezzature_figures.catalog: loading the registry, resolving a
+chart kind's aliases (alternate names that should still find the right
+generator), and checking that every scripts/make_*.py generator has a
+matching catalog entry.
 
 Author
 ------

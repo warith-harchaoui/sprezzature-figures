@@ -1,8 +1,10 @@
 """
-Tests for sprezzature_figures.studio.assistant: the FakeLLMClient contract,
-schema validation/repair, intent analysis, edit proposals (with operation
-filtering), and recommendation reranking. No real LLM/VLM call anywhere in
-this file -- everything runs against FakeLLMClient.
+Tests for sprezzature_figures.studio.assistant: the contract of
+FakeLLMClient, a test double that stands in for a real language-model call
+so these tests never touch the network, plus schema validation and repair,
+intent analysis, edit proposals with operation filtering, and
+recommendation reranking. No real LLM/VLM call happens anywhere in this
+file: every exchange runs against FakeLLMClient.
 
 Author
 ------
