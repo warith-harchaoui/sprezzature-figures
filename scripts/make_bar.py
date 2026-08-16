@@ -7,7 +7,7 @@ categories. Typical uses: revenue by region, headcount by department,
 survey scores by cohort.
 
 Previously rendered via Vega-Lite (``vl_convert``); this module now builds
-the ``<svg>`` markup by hand -- no Vega, no matplotlib -- so every bar
+the ``<svg>`` markup by hand, not with Vega or matplotlib, so every bar
 carries a native ``<title>`` tooltip and rounds only its free (top) end
 per the Sprezzature Corner Policy.
 

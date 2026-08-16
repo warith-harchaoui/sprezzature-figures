@@ -8,19 +8,20 @@ axes. Unlike a Sankey (which shows one-way volume between arbitrary
 nodes), every record here is present at *every* axis, so each vertical
 stack sums to the same total and the ribbons only ever re-partition the
 same 100 %. matplotlib and seaborn have no primitive for this; plotly
-exposes it as ``parcats`` and R as ``ggalluvial``. This module builds
-the SVG string by hand — cubic-Bézier ribbons between stacked category
-blocks — so the result is dependency-light, reproducible, and natively
-interactive (CSS ``:hover`` + native ``<title>`` tooltips, no JS).
+exposes it as ``parcats`` and R as ``ggalluvial``. This module builds the
+SVG string by hand, drawing each ribbon as a smooth cubic-Bézier curve
+between the stacked category blocks it connects, so the result is
+dependency-light, reproducible, and natively interactive (CSS ``:hover``
+plus native ``<title>`` tooltips, no JavaScript).
 
 The example follows one cohort of new sign-ups through three axes of a
 software-as-a-service (SaaS) funnel:
 
     Acquisition channel  →  Plan chosen  →  90-day outcome
 
-The takeaway the subtitle states: the ribbon from *Referral* into
-*Retained* is the fattest single strand, and *Free-trial* users churn
-far more than *Paid* ones — the point a reader should get at a glance.
+The takeaway the subtitle states, and the point a reader should get at a
+glance: the ribbon from *Referral* into *Retained* is the fattest single
+strand, and *Free-trial* users churn far more than *Paid* ones.
 
 House style: white background, Roboto type, ink ``#1D1D1F`` /
 secondary ``#6E6E73``, rounded corners, the Apple-system categorical

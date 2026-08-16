@@ -5,7 +5,7 @@ make_boxen — letter-value (boxen) plot as a hand-authored SVG.
 A **letter-value plot** (Hofmann, Wickham & Kafadar 2017), popularised
 as seaborn's ``boxenplot``, is a box-plot built for *large* samples. A
 classic box plot stops at the quartiles and then dumps everything past
-1.5·IQR into "outliers" — which, at n in the tens of thousands, is both
+1.5·IQR into "outliers", which, at n in the tens of thousands, is both
 misleading (hundreds of perfectly ordinary points flagged as outliers)
 and wasteful (the interesting tail shape is thrown away). The
 letter-value plot instead draws a *nested* stack of boxes, each one
@@ -15,14 +15,14 @@ letter value **F**), then the middle 75 % (**E**), the middle 87.5 %
 estimated reliably. The widening/narrowing of successive boxes reads
 off the tail heaviness directly.
 
-This module builds the plot **by hand** as an SVG string — Vega-Lite
+This module builds the plot **by hand** as an SVG string: Vega-Lite
 has no native letter-value mark, and hand SVG lets each nested box carry
 its own ``<title>`` tooltip and a CSS ``:hover`` lift. No matplotlib,
 seaborn, or plotly. Running the module writes the SVG artifact.
 
 The data is synthetic but communicative: end-to-end request latency for
 three service tiers, the exact distribution where a boxen plot earns its
-keep — latency is right-skewed with a long tail, and "the p99 tail is
+keep. Latency is right-skewed with a long tail, and "the p99 tail is
 what pages you at 3 a.m.", not the median.
 
 Style follows the sprezzature-* house tokens (Roboto, Apple-system palette,

@@ -9,10 +9,10 @@ Minor and major ticks sit just inside the arc, and each zone is named
 outside it so the reader knows what "72 %" *means* without a legend.
 
 The example measures **web-server CPU load** at a traffic peak: the
-needle lands at 72 %, inside the amber "Busy" zone — comfortably under
+needle lands at 72 %, inside the amber "Busy" zone, comfortably under
 the red line but worth watching. A subtle, base-visible SMIL animation
 lets the needle *settle* into place (it starts already on the dial at a
-plausible reading, then eases to the final value — it never sweeps in
+plausible reading, then eases to the final value, never sweeping in
 from nothing), so the static raster is always a correct, complete gauge.
 
 Pure-Python, hand-built SVG string (no Vega, no matplotlib) because the

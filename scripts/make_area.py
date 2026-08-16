@@ -8,7 +8,7 @@ traffic by acquisition channel over time, cumulative headcount by
 department, resource usage by workload type.
 
 Previously rendered via Vega-Lite (``vl_convert``); this module now stacks
-the series itself and paints the bands by hand -- no Vega, no matplotlib.
+the series itself and paints the bands by hand, not with Vega or matplotlib.
 Each band carries a native ``<title>`` tooltip on hover, and a pure-CSS
 hover rule lifts the hovered band's opacity while dimming the rest.
 

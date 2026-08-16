@@ -5,20 +5,22 @@ _lang
 Shared, stdlib-first helper for **content-based language handling**: extract the
 visible body text from HTML / Markdown / plain content, then detect its language
 with `langdetect`_. One canonical implementation, duplicated (intentionally)
-across every sprezzature-* skill so each stays self-contained — **keep every copy
+across every sprezzature-* skill so each stays self-contained: **keep every copy
 byte-identical** (a test, ``tests/test_bodytext.py``, enforces it).
 
 There is **no configured default language** anywhere in the suite: callers pass
 the content they actually process (surrounding text, page HTML, the input to
 rewrite, a transcript, chart labels) and the language is detected from it.
 
-``langdetect`` is opt-in — it lives under each Ollama tool's own
+``langdetect`` is opt-in: it lives under each Ollama tool's own
 ``requirements-*.txt``. When it is absent, detection degrades to the caller's
 explicit fallback; ``extract_body_text`` itself is pure stdlib.
 
-Determinism note: ``langdetect`` seeds its RNG from the input by default; we pin
-``DetectorFactory.seed`` once at import so the same text always maps to the same
-tag.
+Determinism note: without a fixed starting point, ``langdetect`` seeds its
+random number generator from the input text itself, so the exact same text can
+occasionally get tagged with a different language on two different runs. We
+pin that starting point once, at import time (``DetectorFactory.seed``), so
+the same text always maps to the same tag.
 
 .. _langdetect: https://github.com/Mimino666/langdetect
 

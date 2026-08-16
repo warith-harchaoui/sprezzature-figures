@@ -10,14 +10,14 @@ three charts read as one family:
 Variant A — **Fertility vs life expectancy**
     x = fertility (births per woman), LINEAR, domain [1, 8]; countries start on
     the right (large families) and sweep left as fertility falls.
-    y = life expectancy (years), LINEAR, domain [8, 92] — the same y as the
+    y = life expectancy (years), LINEAR, domain [8, 92], the same y as the
     first tribute. As families shrink, lives lengthen.
 
 Variant B — **Child survival vs income**
-    x = child survival (% of children reaching age 5), on a *spread* scale
-    ``u = -log10(100 - s)`` so 90 %, 99 %, 99.9 % are equally spaced — a plain
+    x = child survival (% of children reaching age 5), on a *spread* scale,
+    ``u = -log10(100 - s)``, so 90 %, 99 %, 99.9 % are equally spaced; a plain
     50..100 linear axis would crush every country against 100 by the end and
-    hide the whole story. y = GDP per capita, LOG, domain [$300, $200k] —
+    hide the whole story. y = GDP per capita, LOG, domain [$300, $200k],
     the very scale (and money formatter) the first tribute uses on its x, now
     vertical. Survival and income rise together.
 
@@ -30,8 +30,8 @@ pan/zoom, and a full English + French pair each.
 
 Nothing in ``make_gapminder.py`` or the original ``gapminder-animated.svg`` is
 touched: the shared pieces (``REGION_COLOR``, ``NAME_HISTORY``, the i18n tables)
-are **imported**, and the parts that differ per variant — the axis scales, the
-grid, and the player's inverse functions ``invX`` / ``invY`` — are generalised
+are **imported**, and the parts that differ per variant (the axis scales, the
+grid, and the player's inverse functions ``invX`` / ``invY``) are generalised
 here so the follow-country readout reports the right quantity for each scale
 (linear, log, and the ``-log10(100 - s)`` spread).
 

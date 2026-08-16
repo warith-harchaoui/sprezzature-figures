@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Generate an *embedding projector* figure as a single self-contained SVG.
 
-An embedding projector — the interaction popularised by the TensorFlow
-Embedding Projector — takes a high-dimensional embedding (word vectors,
+An embedding projector, the interaction popularised by the TensorFlow
+Embedding Projector, takes a high-dimensional embedding (word vectors,
 image features, user profiles) projected down to two dimensions and lets
 the reader *walk the neighbourhood*: point at any item and it lights up
 its nearest neighbours, so "which things does the model think are alike?"
@@ -33,7 +33,7 @@ grouped into six everyday semantic families (Animals, Colours, Countries,
 Fruits, Instruments, Sports). Each family is a Gaussian blob around a
 spread centroid with a little inter-cluster overlap near the borders, so
 the clusters read clearly while a point's nearest neighbours stay
-semantically sensible — mostly same-family, occasionally a border word
+semantically sensible: mostly same-family, occasionally a border word
 from an adjacent family. The ``k = 6`` nearest neighbours per point are
 precomputed from the 2D layout distance; that neighbour relation is the
 "projector" the interaction reveals. A fixed seed makes the committed file

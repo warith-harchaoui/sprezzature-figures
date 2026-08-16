@@ -5,8 +5,8 @@ Across the gallery the same small graphic kept being re-invented: a rounded
 **cell behind a text label** — a chip, pill, plate, badge or tag that lifts a
 name, a value or a call-out off a busy background so it stays readable. Voronoi
 territory names, parliament read-outs, bullet target ticks, boxen p99 tags,
-spike-map hover flags, dashboard call-outs — all of them wanted the same thing,
-and each spelled it out inline with slightly different (and sometimes ugly)
+spike-map hover flags and dashboard call-outs all wanted the same thing, and
+each spelled it out inline with slightly different (and sometimes ugly)
 geometry: black halos, colour-on-colour, uneven padding.
 
 This module makes that one component **shared, colour-driven and nicely done**.

@@ -8,18 +8,18 @@ hexagons; every raw event falls into exactly one hexagon; each hexagon is
 shaded by the *count* of events it captured on a single-hue sequential ramp.
 Hexagons tile the plane without the axis-aligned bias of a square grid, and
 each cell has six equidistant neighbours, so the density surface reads more
-evenly than a 2-D histogram — the same idea deck.gl's ``HexagonLayer`` (Uber
+evenly than a 2-D histogram: the same idea deck.gl's ``HexagonLayer`` (Uber
 H3) popularised, done here as a clean, print-ready static poster.
 
 This example bins **three decades of large earthquakes** (magnitude 5.5 and
 above) onto a real world basemap. The takeaway writes itself: the deep-red
-cells trace the **Ring of Fire** — the horseshoe of subduction zones around
+cells trace the **Ring of Fire**: the horseshoe of subduction zones around
 the Pacific rim, from the Andes up through Alaska and the Aleutians, down
-past Japan, the Philippines and Indonesia to Tonga — while the continental
+past Japan, the Philippines and Indonesia to Tonga, while the continental
 interiors stay almost empty.
 
-The module builds the SVG string by hand — no matplotlib / seaborn / plotly,
-and no Vega (a hexagonal lattice clipped to a projected coastline, with a
+The module builds the SVG string by hand, with no matplotlib, seaborn, plotly,
+or Vega (a hexagonal lattice clipped to a projected coastline, with a
 count legend and place labels, is authored far more directly as raw SVG). It
 follows the sprezzature-* house style pulled from :mod:`_style`: a single-hue
 sequential ramp keyed to the palette's Red, Roboto typography, ink
@@ -28,7 +28,7 @@ legend, a takeaway title, and a one-line subtitle.
 
 Geometry is self-contained: the land silhouette comes from the vendored
 ``assets/geo/countries-110m.json`` TopoJSON and is drawn with a pure
-closed-form **Equal Earth** projection (Šavrič, Patterson & Jenny 2018) — an
+closed-form **Equal Earth** projection (Šavrič, Patterson & Jenny 2018), an
 equal-area projection whose globe-like curvature reads as a proper world
 map, and whose equal-area property keeps the hexbin density honest. The
 projection is **centred on the Pacific** (central meridian 160° E) so the

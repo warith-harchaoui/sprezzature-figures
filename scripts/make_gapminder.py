@@ -2,7 +2,7 @@
 """
 make_gapminder — build the animated Gapminder bubble chart (Hans Rosling homage).
 
-Reads the **real** crunched dataset (``assets/data/tribute-hans-rosling-1950-2025.csv`` — income,
+Reads the **real** crunched dataset (``assets/data/tribute-hans-rosling-1950-2025.csv``: income,
 life expectancy and population per country, **one row per country per year,
 1952-2022**, gathered from Our World in Data; see the sibling ``.PROVENANCE.md``)
 and emits one self-contained animated Scalable Vector Graphics (SVG) file with
@@ -11,7 +11,7 @@ and emits one self-contained animated Scalable Vector Graphics (SVG) file with
 Every country in the dataset is a bubble: horizontal = GDP per capita (log
 scale), vertical = life expectancy, area = population, colour = world region.
 The bubbles animate **year by year** (one frame per year, five seconds per year),
-sweeping up and to the right as countries grow richer and healthier — the point
+sweeping up and to the right as countries grow richer and healthier: the point
 Rosling made famous. The largest countries carry a name label that follows the
 bubble, and a big year counter ticks every year behind the cloud.
 

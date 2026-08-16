@@ -4,13 +4,13 @@ make_calendar-heatmap — a house-styled GitHub-style calendar heatmap as hand-a
 
 Encodes a daily count as cell colour on a week-by-day grid: columns are
 weeks, rows are the seven days, and each cell's fill is a single
-pale-to-navy blue ramp -- a monotone lightness sweep so the pattern
+pale-to-navy blue ramp, a monotone lightness sweep so the pattern
 survives greyscale and every colour-vision deficiency without a second
 encoding. Typical uses: commit activity, daily active users, habit
-tracking -- any daily count viewed over months at a glance.
+tracking, any daily count viewed over months at a glance.
 
 Previously rendered via Vega-Lite (``vl_convert``); this module now
-builds the ``<svg>`` grid by hand -- no Vega, no matplotlib. Grid cells
+builds the ``<svg>`` grid by hand, not with Vega or matplotlib. Grid cells
 never round (Sprezzature Corner Policy: grids stay square) and every
 cell carries a native ``<title>`` tooltip with its exact count.
 

@@ -4,7 +4,7 @@ make_dumbbell — a dumbbell (DNA / connected-dot) plot as hand-authored SVG.
 
 A **dumbbell plot** compares two states of the same categories by
 drawing, for each row, the two values as a pair of dots joined by a
-short connecting segment — the "dumbbell". The length of the segment
+short connecting segment: the "dumbbell". The length of the segment
 *is* the change, so the eye reads the gap directly without arithmetic.
 It is the cleanest way to show "before vs after" or "group A vs group B"
 across many categories at once, and it beats a grouped bar chart because
@@ -24,7 +24,7 @@ by a segment whose length is the gap; the gap in currency is printed on
 the segment, and the two endpoint pay figures sit just outside their dots.
 A faint reference band marks the company-wide median so a reader sees
 which roles pull the average up or down. The figure is **static**: a
-dumbbell already shows every gap in one still, so no motion is added — it
+dumbbell already shows every gap in one still, so no motion is added: it
 would reveal nothing the reader cannot already see. Each row carries a
 native ``<title>`` tooltip and a :hover / :focus highlight; no JavaScript.
 

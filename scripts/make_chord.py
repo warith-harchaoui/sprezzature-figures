@@ -29,8 +29,8 @@ subtitle.
 
 Interaction (no JavaScript): every ribbon and every arc carries a
 native ``<title>`` tooltip with its exact volume, and a CSS ``:hover`` /
-``:focus`` rule dims the rest of the diagram so the hovered chord — or
-every chord touching a hovered arc — pops. This is the "hover a chord to
+``:focus`` rule dims the rest of the diagram so the hovered chord, or
+every chord touching a hovered arc, pops. This is the "hover a chord to
 trace it" affordance that suits this capability. The figure is otherwise
 static (a chord diagram does not benefit from animation), so
 ``animated`` is false and ``interactive`` is true.

@@ -21,12 +21,12 @@ The scenario is the **United Kingdom's carbon decoupling**: carbon-dioxide
 emissions per person (vertical) against economic output per person
 (horizontal), one point per five years from 1990 to 2022. The path first
 climbs to the right, then curls back hard to the left while still moving
-up the income axis — the economy keeps growing while emissions fall by
+up the income axis: the economy keeps growing while emissions fall by
 nearly half. That left-turning hook is the defining mark of the chart:
 growth and carbon, once locked together, have come apart. Figures are
 rounded from the public record and illustrative.
 
-The figure is **static** — a connected scatter shows the whole trajectory
+The figure is **static**: a connected scatter shows the whole trajectory
 in one still, and animating the pen along the path would only re-tell what
 the arrowheads and year labels already say. Each waypoint carries a native
 ``<title>`` tooltip and a :hover / :focus enlargement; no JavaScript.

@@ -2,8 +2,8 @@
 """
 gather_gapminder — crunch one tidy dataset from multiple real sources.
 
-Hans Rosling's famous bubble chart needs three time series per country — income
-per person, life expectancy and population — on one shared, **annual** year grid,
+Hans Rosling's famous bubble chart needs three time series per country: income
+per person, life expectancy and population, on one shared, **annual** year grid,
 1950 to 2025. No single public file carries all three cleanly for every country
 across that span, so we gather them from the most reliable open sources and merge
 them ourselves into one vendored comma-separated-values (CSV) file that the
@@ -28,10 +28,10 @@ So of the trailing years only **income for 2025** is our own extrapolation
 (everything else to 2025 is real data or the standard UN medium-variant
 projection). We keep only countries with at least ``MIN_REAL`` real income
 observations, interpolate the few interior gaps linearly, and back-fill the left
-edge — so no bubble is mostly invented.
+edge, so no bubble is mostly invented.
 
 Output: ``assets/data/tribute-hans-rosling-1950-2025.csv`` with columns
-``country,year,continent,gdpPercap,lifeExp,pop`` — the single file we provide
+``country,year,continent,gdpPercap,lifeExp,pop``, the single file we provide
 ourselves and the one ``make_gapminder.py`` consumes.
 
 Author

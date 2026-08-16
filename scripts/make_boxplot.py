@@ -9,7 +9,7 @@ scores by class.
 
 Previously rendered via Vega-Lite's native ``boxplot`` mark; this module
 now computes the five-number summary and outliers itself and paints the
-box, whiskers, and outlier points by hand -- no Vega, no matplotlib.
+box, whiskers, and outlier points by hand, not with Vega or matplotlib.
 Every box carries a native ``<title>`` tooltip with its exact quartiles.
 
 Author

@@ -13,15 +13,15 @@ series stacks into one screen and outliers pop out by colour weight alone.
 This module builds the SVG string **by hand** (no matplotlib / seaborn /
 plotly, no Vega): it lays each series into its own banded row, paints the bands
 as increasingly saturated house-palette blues (above baseline) and reds
-(below), and adds native ``<title>`` hover tooltips — no JavaScript. A horizon
+(below), and adds native ``<title>`` hover tooltips, no JavaScript. A horizon
 chart is a dense static comparison; motion adds nothing a still cannot already
-show, so the whole picture is drawn fully at rest — every band is present the
+show, so the whole picture is drawn fully at rest: every band is present the
 instant the SVG loads. The colour weight of a row is a redundant channel on top
 of vertical position, so the busiest node is obvious at a glance.
 
 The example data is illustrative: hourly CPU utilisation across a small fleet
 of database nodes over one day, plotted as the deviation from each node's own
-daily mean — the framing horizon charts are made for, where a single saturated
+daily mean, the framing horizon charts are made for, where a single saturated
 red-then-dark-blue row instantly flags the node that swung hardest.
 
 Usage

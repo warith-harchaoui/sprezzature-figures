@@ -9,15 +9,15 @@ field reads as one continuous surface, the way a physical measurement actually
 varies in space.
 
 This module builds the SVG string **by hand** (no matplotlib / seaborn / plotly,
-no Vega): it synthesises a small, communicative measurement grid with numpy — a
-soil-moisture survey over a research field, with a wet hollow, a drier ridge, and
-a damp irrigation seam — then performs the bilinear up-sampling *itself* in numpy
+no Vega): it synthesises a small, communicative measurement grid with numpy, a
+soil-moisture survey over a research field with a wet hollow, a drier ridge, and
+a damp irrigation seam, then performs the bilinear up-sampling *itself* in numpy
 (no SVG blur filter) and paints the smooth result as a dense mosaic of tiny crisp
 ``<rect>`` cells in the sprezzature-* house style: Roboto type, ink ``#1D1D1F`` on
 white, rounded framing, x/y axes with ticks, and a labelled colour legend.
 
 The colour ramp is the house Apple-blue sequential ramp
-``#EAF3FF`` → ``#007AFF`` → ``#0A4DA0`` — mono-hue, colour-vision-deficiency safe,
+``#EAF3FF`` → ``#007AFF`` → ``#0A4DA0``, mono-hue and colour-vision-deficiency safe,
 never a rainbow. The figure is a **static** poster-size raster: an interpolated
 heatmap is an image whose whole story is legible in one glance, so it gains
 nothing from motion and ships with no animation and no JavaScript.

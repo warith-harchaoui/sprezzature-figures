@@ -7,12 +7,12 @@ share of a whole is encoded as an arc's angular span, ordered largest to
 smallest so the eye reads dominance at a glance. The open centre keeps the
 figure legible even with a percentage label sitting just outside each arc.
 Typical uses: traffic by acquisition channel, budget by category, votes by
-candidate — any small (2-6 category) part-of-whole breakdown where a bar
+candidate: any small (2-6 category) part-of-whole breakdown where a bar
 chart would waste the "whole" framing a donut gives for free.
 
 Previously rendered via Vega-Lite (``vl_convert``, a layered ``arc`` +
 ``text`` mark with a ``theta`` encoding); this module now computes the
-wedge angles itself and paints the annulus by hand -- no Vega, no
+wedge angles itself and paints the annulus by hand, not with Vega or no
 matplotlib. Every wedge carries a native ``<title>`` tooltip.
 
 Author

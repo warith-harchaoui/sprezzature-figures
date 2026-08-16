@@ -36,8 +36,8 @@ start-anchored title plus a one-line takeaway subtitle.
 
 Interaction (no JavaScript): every edge and every leaf label carries a
 native ``<title>`` tooltip, and a CSS ``:hover`` / ``:focus`` rule dims
-the rest of the diagram so the hovered dependency — or every dependency
-touching a hovered module — pops. This is the "hover to trace" affordance
+the rest of the diagram so the hovered dependency, or every dependency
+touching a hovered module, pops. This is the "hover to trace" affordance
 that suits bundling, where the whole point is that individual threads are
 otherwise hard to follow inside a cable. The figure is otherwise static
 (bundling does not benefit from animation), so ``animated`` is false and

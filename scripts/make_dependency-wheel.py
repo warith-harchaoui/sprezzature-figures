@@ -6,8 +6,8 @@ A **dependency wheel** lays every node on the rim of a single circle and
 draws a directed, sankey-weighted ribbon from a source arc to a target
 arc for every flow between two nodes. It is a *directed* cousin of the
 chord diagram: where a chord ribbon is symmetric, a dependency-wheel
-ribbon knows its direction — it is fat where it leaves the source and
-tapers as it lands on the target, and it carries the **source node's
+ribbon knows its direction, fat where it leaves the source and
+tapering as it lands on the target, and it carries the **source node's
 colour** the whole way, so the eye can trace "who sends how much to
 whom" around the ring. It answers reallocation / migration / hand-off
 questions ("where did this region's people go?", "how was the budget
@@ -37,7 +37,7 @@ point.
 Interaction (no JavaScript): every ribbon and every arc carries a native
 ``<title>`` tooltip with its exact value, and a CSS ``:hover`` /
 ``:focus`` rule dims the rest of the wheel so that focusing a node's arc
-lights up only that node's flows — the "hover one node to see all its
+lights up only that node's flows: the "hover one node to see all its
 dependencies" affordance that defines this chart type. The figure is
 otherwise static (a dependency wheel does not benefit from animation),
 so ``animated`` is false and ``interactive`` is true.

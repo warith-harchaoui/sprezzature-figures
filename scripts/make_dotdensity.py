@@ -9,18 +9,18 @@ occupy equal ink, the eye reads *density* directly: where the dots
 crowd, the thing is concentrated; where the map goes bare, it is
 sparse. Unlike a choropleth it is not fooled by big empty regions
 (no "the whole of a large rural county looks important because it is
-large") — the dots pile up only where the people actually are.
+large"): the dots pile up only where the people actually are.
 
 This example maps the resident population of metropolitan France:
 **one dot per 25 000 residents**, dropped inside the department each
 person lives in and tinted by the department's macro-region so the
 coastal and Paris clusters read as coherent blocks. The takeaway is
-the classic French geography lesson — people ring the coasts and pack
+the classic French geography lesson: people ring the coasts and pack
 into the Paris basin, while the rural *diagonale du vide* running from
 the Ardennes to the Pyrenees stays almost empty.
 
-The module builds the SVG string by hand — no matplotlib / seaborn /
-plotly, and no Vega (a scatter of tens of thousands of jittered points
+The module builds the SVG string by hand, with no matplotlib, seaborn,
+plotly, or Vega (a scatter of tens of thousands of jittered points
 clipped to real polygons is authored far more directly and compactly
 as raw SVG). It follows the sprezzature-* house style pulled from
 :mod:`_style`: the Apple-ish saturated palette, Roboto typography,

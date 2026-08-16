@@ -11,20 +11,20 @@ having to mentally subtract one curve from the other at every point.
 This module builds the SVG string **by hand** (no matplotlib / seaborn /
 plotly, no Vega): the trick a plotting library makes awkward is the two-colour
 fill of the *inter-curve* region, which we get cleanly with a pair of SVG
-``clipPath`` half-planes — the above-hue area is clipped to "actual is on top",
-the below-hue area to "plan is on top" — so the two colours meet exactly on
+``clipPath`` half-planes: the above-hue area is clipped to "actual is on top",
+and the below-hue area to "plan is on top", so the two colours meet exactly on
 every crossing with no overlap and no seam. The two curves ride on top as crisp
 lines, and the crossings (where the surplus flips to a shortfall) are marked.
 
 A difference chart is a dense static comparison; motion adds nothing a still
-cannot already show, so the whole picture is drawn fully at rest — every band,
+cannot already show, so the whole picture is drawn fully at rest: every band,
 line and marker is present the instant the SVG loads. Colour is a redundant
 channel on top of "which line is higher", and each region also carries a
 native ``<title>`` tooltip, so the story survives colour-vision deficiency.
 
 The example data is illustrative: a mid-size software company's **actual
 monthly recurring revenue** plotted against the **board-approved plan** across
-one fiscal year — the framing difference charts are made for, where a blue
+one fiscal year, the framing difference charts are made for, where a blue
 cushion in the strong quarters and a red gap in the summer slump are legible
 at a glance.
 

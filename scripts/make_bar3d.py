@@ -5,7 +5,7 @@ A 3D bar chart raises a solid box at each cell of a two-way categorical
 grid, the box height encoding a single quantity ``z = f(row, col)``. It is
 the matplotlib ``Axes3D.bar3d`` idiom; R, seaborn, and plotly have no
 first-class equivalent in this house style, so a hand-built SVG is the
-natural home for it here. It is used *sparingly* — a 3D bar field trades
+natural home for it here. It is used *sparingly*: a 3D bar field trades
 some readability for the "landscape" gestalt of a rows x cols surface, and
 earns its keep only when the reader is meant to feel the overall relief of
 the grid (which rows/cols are tall, where the ridge runs) rather than read
@@ -20,7 +20,7 @@ occlude farther ones. Depth is reinforced twice: bar height drives a house
 blue->teal fill ramp, and the three faces of each bar carry graded lightness
 (top lightest, right mid, left darkest) so every box has an unambiguous 3D
 read. A value label rides the top cap of every bar so the exact number is
-one glance away — the relief tells the story, the labels close the loop.
+one glance away: the relief tells the story, the labels close the loop.
 
 The figure is a **static** poster: a 3D bar field is a still landscape, and
 its whole point (the ridge, the plain) is legible in one look. Motion would
@@ -29,7 +29,7 @@ animation.
 
 The example data is illustrative: quarterly cloud-infrastructure spend across
 four engineering teams, the textbook "two categoricals, one measure" table a
-3D bar field is made to show — one team's ridge (Data) towers over the grid
+3D bar field is made to show: one team's ridge (Data) towers over the grid
 while another (Docs) stays a flat plain.
 
 Usage

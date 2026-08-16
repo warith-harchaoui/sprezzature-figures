@@ -2,8 +2,8 @@
 """
 make_elbow — elbow / knee detection (the Kneedle method) as a hand SVG.
 
-Choosing "how many" — clusters for k-means, components for PCA, ``eps`` for
-DBSCAN — usually comes down to reading an *elbow*: the point on a
+Choosing "how many" (clusters for k-means, components for PCA, ``eps`` for
+DBSCAN) usually comes down to reading an *elbow*: the point on a
 diminishing-returns curve where the steep early gains give way to a flat
 tail, so spending more stops paying off. The eye finds it easily; automating
 it is the job of the **Kneedle** algorithm (Satopää et al., *Finding a Kneedle
@@ -12,14 +12,14 @@ https://github.com/arvkevi/kneed).
 
 Kneedle is simple and elegant: normalise both axes to the unit square, flip
 the curve into a concave-increasing frame, subtract the diagonal to get a
-*difference curve*, and take its peak — that peak is the point of maximum
+*difference curve*, and take its peak: that peak is the point of maximum
 curvature, the elbow. By default this figure applies exactly that method to a
 demo k-means inertia curve and finds the elbow at ``k = 4``. Pass real
-``data`` (see :func:`make_elbow`) to plot an actual sweep instead — the axis
+``data`` (see :func:`make_elbow`) to plot an actual sweep instead, and the axis
 domain, the elbow marker, and the Kneedle inset all follow the data.
 
 A caller with its own uncertainty estimate (e.g. a bootstrap confidence
-interval, a detection rate across resamples, a null-model p-value — see
+interval, a detection rate across resamples, a null-model p-value, see
 `elbow-helper <https://github.com/warith-harchaoui/elbow-helper>`_, whose
 ``robust_elbow()`` computes exactly these) can pass them through ``ci``,
 ``detection_rate``, and ``null_p_value`` to enrich the Kneedle inset instead
