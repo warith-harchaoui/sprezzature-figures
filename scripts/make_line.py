@@ -28,7 +28,7 @@ from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _scale import log_position, log_ticks, nice_ticks  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY, cycle_hues  # noqa: E402
-from _svg import fmt_number, svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _svg import foreground_tip_css, fmt_number, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 
@@ -225,8 +225,11 @@ def build_svg(
         + ".pt{transition:r .12s ease;}"
         ".pt:hover,.pt:focus{r:5.5;outline:none;}"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
-        "@media (prefers-reduced-motion: reduce){.series-group,.pt{transition:none;}.tip{transition:none}}"
+        + "".join(
+            foreground_tip_css(len(months), mark_prefix=f"pt-{si}", tip_prefix=f"tip-{si}")
+            for si in range(len(series))
+        )
+        + "@media (prefers-reduced-motion: reduce){.series-group,.pt{transition:none;}.tip{transition:none}}"
         "</style>"
     )
 
@@ -283,16 +286,22 @@ def build_svg(
         path_d = "M " + " L ".join(f"{x:.1f},{y:.1f}" for x, y in pts)
         parts.append(f'<g class="series-group s{si}">')
         parts.append(f'<path d="{path_d}" fill="none" stroke="{colors[s]}" stroke-width="2.5"/>')
+        # Every point is drawn first, every one of its bubbles appended
+        # afterward (still inside this same series-group, so the id-matched
+        # hover rule above still finds them as siblings): SVG paints in
+        # document order regardless of hover state, so a bubble sitting next
+        # to its own point would be covered by any point drawn after it.
+        bubbles: List[str] = []
         for i, m in enumerate(months):
             v = lookup.get((s, m), 0.0)
             cx, cy = x_for(i), y_for(v)
             tip = f"{s}, {m}: {v:.0f}"
             parts.append(
-                f'<circle class="pt hit" tabindex="0" cx="{cx:.1f}" cy="{cy:.1f}" r="4" '
+                f'<circle id="pt-{si}-{i}" class="pt hit" tabindex="0" cx="{cx:.1f}" cy="{cy:.1f}" r="4" '
                 f'fill="{colors[s]}" stroke="{BG}" stroke-width="1.5">'
                 f'<title>{xml_escape(tip)}</title></circle>'
             )
-            parts.append(
+            bubbles.append(
                 tooltip_bubble(
                     cx,
                     max(4.0, cy - 34.0),
@@ -302,8 +311,10 @@ def build_svg(
                     ink=INK,
                     secondary=SECONDARY,
                     border=GRIDLINE,
+                    elem_id=f"tip-{si}-{i}",
                 )
             )
+        parts.extend(bubbles)
         parts.append("</g>")
 
     # ---- x-axis ----

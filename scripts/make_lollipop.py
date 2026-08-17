@@ -27,7 +27,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _scale import nice_ticks  # noqa: E402
-from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _svg import foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
@@ -148,8 +148,8 @@ def build_svg(
         ".pop{transition:r .12s ease;}"
         ".pop:hover,.pop:focus{r:8;outline:none;}"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
-        "@media (prefers-reduced-motion: reduce){.pop{transition:none;}"
+        + foreground_tip_css(len(rows), mark_prefix="pop", tip_prefix="pop-tip")
+        + "@media (prefers-reduced-motion: reduce){.pop{transition:none;}"
         ".tip{transition:none}}"
         "</style>"
     )
@@ -177,6 +177,10 @@ def build_svg(
     )
 
     # ---- lollipops ----
+    # Every dot is drawn first, every one of its bubbles appended afterward:
+    # SVG paints in document order regardless of hover state, so a bubble
+    # sitting next to its own dot would be covered by any dot drawn after it.
+    lollipop_tips: List[str] = []
     for i, row in enumerate(rows):
         v = float(row["v"])
         cy = plot_y + i * row_h + row_h / 2
@@ -185,21 +189,23 @@ def build_svg(
         tip = f"{row['c']}: {v:.0f} ({share:.1f}% {strings['of_total']})"
         parts.append(f'<line x1="{plot_x:.1f}" y1="{cy:.1f}" x2="{x1:.1f}" y2="{cy:.1f}" stroke="{COLOR_STEM}" stroke-width="2"/>')
         parts.append(
-            f'<circle class="pop hit" tabindex="0" cx="{x1:.1f}" cy="{cy:.1f}" r="7" fill="{COLOR_DOT}" '
+            f'<circle id="pop-{i}" class="pop hit" tabindex="0" cx="{x1:.1f}" cy="{cy:.1f}" r="7" fill="{COLOR_DOT}" '
             f'stroke="{BG}" stroke-width="1.5" role="img" aria-label="{xml_escape(tip)}"/>'
         )
-        parts.append(
+        lollipop_tips.append(
             tooltip_bubble(
                 x1, cy - 14,
                 [str(row["c"]), f"{v:.0f} pts", f"{share:.1f}% {strings['of_total']}"],
                 anchor="middle", canvas_w=width, canvas_h=height,
                 ink=INK, secondary=SECONDARY, border=GRIDLINE,
+                elem_id=f"pop-tip-{i}",
             )
         )
         parts.append(
             f'<text x="{plot_x - 12:.1f}" y="{cy + 4:.1f}" font-size="13" fill="{INK}" '
             f'text-anchor="end">{xml_escape(str(row["c"]))}</text>'
         )
+    parts.extend(lollipop_tips)
 
     axis_y = plot_y + plot_h
     parts.append(

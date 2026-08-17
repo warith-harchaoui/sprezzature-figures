@@ -45,7 +45,7 @@ from typing import Any, Dict, List, Optional, Tuple
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import GRIDLINE, load_palette, os_dark_style  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
-from _svg import svg_open, tooltip_bubble, viridis, xml_escape  # noqa: E402
+from _svg import foreground_tip_css, svg_open, tooltip_bubble, viridis, xml_escape  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
@@ -422,7 +422,7 @@ def build_svg(
         )
     )
     style_rows.append(".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}")
-    style_rows.append(".hit:hover+.tip,.hit:focus+.tip{opacity:1}")
+    style_rows.append(foreground_tip_css(len(cells), mark_prefix="hex"))
     style_rows.append("@media (prefers-reduced-motion:reduce){.tip{transition:none}}")
     parts.append("<style>\n" + "\n".join(style_rows) + "\n</style>")
 
@@ -460,7 +460,12 @@ def build_svg(
     # ---- hexbin layer ----
     parts.append('<g role="list" aria-label="hexagonal density bins">')
     r = _HEX_R
-    for c in cells:
+    # Hexes draw first, every bubble is collected and appended once, last
+    # (still inside this same group) -- SVG has no z-index, so a bubble next
+    # to its own hex would be covered by any hex drawn afterward. See
+    # _svg.foreground_tip_css's docstring for the full pattern.
+    tip_bubbles: List[str] = []
+    for i, c in enumerate(cells):
         cnt = int(c["count"])
         if cnt <= 0:
             fill = _EMPTY
@@ -473,21 +478,23 @@ def build_svg(
             else "no trips"
         )
         parts.append(
-            f'<path class="hex hit" d="{d}" fill="{fill}" stroke="{_STROKE}" '
+            f'<path id="hex-{i}" class="hex hit" d="{d}" fill="{fill}" stroke="{_STROKE}" '
             f'stroke-width="1.6" tabindex="0" role="listitem">'
             f'<title>{label}</title></path>'
         )
         bubble_lines = [label]
         if cnt > 0:
             bubble_lines.append(f"{cnt / max_count * 100:.0f}% of busiest hex")
-        parts.append(
+        tip_bubbles.append(
             tooltip_bubble(
                 c["px"], c["py"] - r - 6,
                 bubble_lines,
                 anchor="middle", canvas_w=_WIDTH, canvas_h=_HEIGHT,
                 ink=_INK, secondary=_SUBTLE, border=GRIDLINE,
+                elem_id=f"tip-{i}",
             )
         )
+    parts.extend(tip_bubbles)
     parts.append('</g>')
 
     # ---- sequential legend (right column) ----

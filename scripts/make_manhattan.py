@@ -54,7 +54,7 @@ from typing import Any, Dict, List, Optional, Tuple
 # without the dataviz tier).
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
-from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _svg import foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
@@ -317,7 +317,11 @@ def build_svg(
         ".peak:focus { outline: none; }",
         ".peak:focus circle { stroke: #1D1D1F; stroke-width: 1.4; }",
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}",
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}",
+        # The id-paired hover rule itself can't live here: it needs
+        # `len(labelled)`, and `labelled` (the lead-SNP list below) isn't
+        # populated until after this <style> block is already flushed to
+        # `parts`. See the second, small <style> block appended right after
+        # the labelled-peaks loop instead.
         "@media (prefers-reduced-motion: reduce) { "
         ".peak { transition: none; } .tip{transition:none} }",
     ]
@@ -488,7 +492,12 @@ def build_svg(
     )
 
     # ---- labelled lead SNPs: gene tag + interactive tooltip ----
-    for px, py, gene, chrom, color, bp, peak_val in labelled:
+    # Every peak group is drawn first, every one of its bubbles appended
+    # afterward: SVG paints in document order regardless of hover state, so
+    # a bubble sitting right after its own peak would be covered by any peak
+    # drawn later (dense loci put several lead SNPs close together).
+    peak_tips: List[str] = []
+    for peak_i, (px, py, gene, chrom, color, bp, peak_val) in enumerate(labelled):
         # Keep the gene label inside the plot horizontally.
         anchor = "middle"
         lx = px
@@ -497,7 +506,7 @@ def build_svg(
         elif px > _PLOT_X + _PLOT_W - 40:
             anchor, lx = "end", px
         parts.append(
-            f'<g class="peak hit" tabindex="0" role="img" '
+            f'<g id="peak-{peak_i}" class="peak hit" tabindex="0" role="img" '
             f'aria-label="{_xml(gene)} on chromosome {chrom}, '
             f'{_fmt_p(peak_val)}">'
         )
@@ -511,15 +520,20 @@ def build_svg(
             f'text-anchor="{anchor}">{_xml(gene)}</text>'
         )
         parts.append('</g>')
-        parts.append(
+        peak_tips.append(
             tooltip_bubble(
                 lx, py - 40,
                 [gene, f"chr{chrom}:{bp:,}", _fmt_p(peak_val)],
                 anchor=anchor if anchor != "middle" else "middle",
                 canvas_w=_WIDTH, canvas_h=_HEIGHT,
                 ink=_INK, secondary=_SUBTLE, border=_GRIDLINE,
+                elem_id=f"peak-tip-{peak_i}",
             )
         )
+    parts.extend(peak_tips)
+    parts.append(
+        f"<style>{foreground_tip_css(len(labelled), mark_prefix='peak', tip_prefix='peak-tip')}</style>"
+    )
 
     # ---- x-axis: chromosome labels ----
     x_label_y = _PLOT_Y + _PLOT_H + 28.0
