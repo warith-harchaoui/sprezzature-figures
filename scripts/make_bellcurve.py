@@ -29,7 +29,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _scale import nice_ticks, nice_ticks_range  # noqa: E402
-from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _svg import foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
@@ -123,9 +123,15 @@ def build_svg(
     parts.append(
         "<style>"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
-        "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
-        "</style>"
+        # A bubble drawn right next to its own mark would be covered by any
+        # mark drawn afterward (SVG paints in document order, regardless of
+        # hover) -- marks draw first, bubbles last, paired by id; see
+        # _svg.foreground_tip_css. The curve is always a single mark; the
+        # mean/-1sigma/+1sigma annotations are always exactly 3.
+        + foreground_tip_css(1, mark_prefix="curve-hit", tip_prefix="curve-tip")
+        + foreground_tip_css(3, mark_prefix="ann-hit", tip_prefix="ann-tip")
+        + "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
+        + "</style>"
     )
 
     parts.append(f'<rect width="{width}" height="{height}" fill="{BG}"/>')
@@ -179,17 +185,18 @@ def build_svg(
     path_d += f" L {top_pts[-1][0]:.1f},{axis_y:.1f} L {top_pts[0][0]:.1f},{axis_y:.1f} Z"
     tip = f"Normal(mean={mean:.1f}, std={std:.1f}), peak density {peak_density:.4f} at x={mean:.1f}"
     parts.append(
-        f'<path class="hit" tabindex="0" d="{path_d}" fill="{COLOR_FILL}" fill-opacity="0.25" '
+        f'<path id="curve-hit-0" class="hit" tabindex="0" d="{path_d}" fill="{COLOR_FILL}" fill-opacity="0.25" '
         f'stroke="{COLOR_STROKE}" stroke-width="2.5"><title>{xml_escape(tip)}</title></path>'
     )
     peak_x, peak_y_px = x_for(mean), y_for(peak_density)
-    parts.append(
+    bell_tips: List[str] = [
         tooltip_bubble(
             peak_x, peak_y_px - 14,
             [f"Normal(μ={mean:.1f}, σ={std:.1f})", f"peak density {peak_density:.4f} at x={mean:.1f}"],
             canvas_w=width, canvas_h=height, ink=INK, secondary=SECONDARY, border=GRIDLINE,
+            elem_id="curve-tip-0",
         )
-    )
+    ]
 
     # ---- annotation lines: mean and +-1 sigma ----
     # ~34.1% of the area under a normal curve lies between the mean and one
@@ -210,31 +217,33 @@ def build_svg(
             ["+1σ", f"{mean + std:.1f}", "~34.1% of the area lies between μ and here"],
         ),
     ]
-    for x_val, label, color, tip_lines in annotations:
+    for ann_idx, (x_val, label, color, tip_lines) in enumerate(annotations):
         ax = x_for(x_val)
         parts.append(
             f'<line x1="{ax:.1f}" y1="{plot_y:.1f}" x2="{ax:.1f}" y2="{axis_y:.1f}" '
             f'stroke="{color}" stroke-width="1.5" stroke-dasharray="5 3"/>'
         )
         # Fat transparent hit-stroke over the (1.5px) visible dashed line so
-        # it is a realistic hover/focus target, immediately followed by its
-        # tooltip bubble -- the `.hit:hover+.tip` adjacent-sibling rule needs
-        # the two elements next to each other in document order.
+        # it is a realistic hover/focus target. Its tooltip bubble is
+        # collected into bell_tips and drawn after every mark, not right
+        # here -- see the id-paired foreground_tip_css rule above.
         parts.append(
-            f'<line class="hit" tabindex="0" x1="{ax:.1f}" y1="{plot_y:.1f}" x2="{ax:.1f}" y2="{axis_y:.1f}" '
+            f'<line id="ann-hit-{ann_idx}" class="hit" tabindex="0" x1="{ax:.1f}" y1="{plot_y:.1f}" x2="{ax:.1f}" y2="{axis_y:.1f}" '
             f'stroke="transparent" stroke-width="14"/>'
         )
-        parts.append(
+        bell_tips.append(
             tooltip_bubble(
                 ax, plot_y - 26,
                 tip_lines,
                 canvas_w=width, canvas_h=height, ink=INK, secondary=SECONDARY, border=GRIDLINE,
+                elem_id=f"ann-tip-{ann_idx}",
             )
         )
         parts.append(
             f'<text x="{ax:.1f}" y="{plot_y - 8:.1f}" font-size="11" font-family="{mono_family}" '
             f'fill="{color}" text-anchor="middle">{xml_escape(label)}</text>'
         )
+    parts.extend(bell_tips)
 
     parts.append(fullscreen_control(width, height, mode))
     parts.append("</svg>")
