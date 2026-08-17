@@ -45,7 +45,7 @@ from typing import Any, Dict, List, Optional, Tuple
 # without the dataviz tier); the polar helpers live in _svg.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
-from _svg import point_on_circle, svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _svg import foreground_tip_css, point_on_circle, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
@@ -298,7 +298,7 @@ def build_svg(
         "svg .bar:hover, svg .bar:focus { opacity: 1; }",
         f".bar:focus {{ outline: 3px solid {_FOCUS}; outline-offset: 2px; }}",
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}",
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}",
+        foreground_tip_css(n),
         "@media (prefers-reduced-motion: reduce) { .bar { transition: none; } "
         ".grow { animation: none !important; } .tip{transition:none} }",
     ]
@@ -395,6 +395,12 @@ def build_svg(
 
     # ---- the bars: one annular wedge per hour ----
     parts.append('<g class="grow">')
+    # Bubbles are collected here and drawn only once, all together, right
+    # before this group closes (see the `parts.extend(tips)` below): SVG
+    # has no z-index, so a bubble sitting next to its own bar would be
+    # covered by any bar drawn afterward. `h` (already a unique hour index)
+    # pairs each bar with its bubble (`hit-N`/`tip-N`).
+    tips: List[str] = []
     for h, v in enumerate(data):
         centre = h * sector_deg
         a0 = centre - (sector_deg - pad_deg) / 2.0
@@ -415,7 +421,7 @@ def build_svg(
             f'({share:.1f}% of the day)'
         )
         parts.append(
-            f'<path class="bar hit {bar_hue_class}" tabindex="0" role="img" '
+            f'<path id="hit-{h}" class="bar hit {bar_hue_class}" tabindex="0" role="img" '
             f'aria-label="{_xml(tip)}" '
             f'd="{path}" fill="{color}" fill-opacity="{base_op}" '
             f'stroke="{_BG}" stroke-width="1.6" stroke-linejoin="round">'
@@ -429,14 +435,16 @@ def build_svg(
             f'</path>'
         )
         mx, my = _polar(_CX, _CY, r1, centre)
-        parts.append(
+        tips.append(
             tooltip_bubble(
                 mx, my - 14,
                 [f"{h:02d}:00 – {h:02d}:59", f"{_fmt_trips(v)} trips", f"{share:.1f}% of the day"],
                 anchor="middle", canvas_w=_WIDTH, canvas_h=_HEIGHT,
                 ink=_INK, secondary=_SUBTLE, border=_GRID,
+                elem_id=f"tip-{h}",
             )
         )
+    parts.extend(tips)
     parts.append('</g>')
 
     # ---- centre readout: the two peak hours, the takeaway in numbers ----
