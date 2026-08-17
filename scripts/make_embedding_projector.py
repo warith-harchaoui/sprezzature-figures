@@ -68,7 +68,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import GRIDLINE, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _render import write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
-from _svg import fmt_compact, tooltip_bubble  # noqa: E402
+from _svg import fmt_compact, foreground_tip_css, tooltip_bubble  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
 # Repo-relative default output — the one SVG artifact this figure ships.
@@ -855,8 +855,8 @@ def build_svg(
         "@media (prefers-reduced-motion:reduce){"
         ".pt,.pt-halo,.rep-label{transition:none}}"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
-        "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
+        + foreground_tip_css(n, mark_prefix="pt", tip_prefix="pt-tip")
+        + "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
     )
     # OS-adaptive overrides (additive; the default render stays byte-identical
     # because every rule below lives inside an @media query, and a descendant
@@ -900,6 +900,7 @@ def build_svg(
     #     Painter order is by cluster so same-family dots layer cleanly. ---
     parts.append('<g id="points">')
     order = sorted(range(n), key=lambda i: int(records[i]["ci"]))
+    point_tips: List[str] = []
     for i in order:
         r = records[i]
         ci = int(r["ci"])
@@ -908,7 +909,7 @@ def build_svg(
         cluster = escape(str(r["cluster"]))
         nn_words = ", ".join(escape(str(records[j]["word"])) for j in neighbours[i][:3])
         parts.append(
-            f'<g id="pt{i}" class="pt c-{ci} hit" tabindex="0" role="listitem" '
+            f'<g id="pt-{i}" class="pt c-{ci} hit" tabindex="0" role="listitem" '
             f'aria-label="{word}, {cluster}">'
             f'<title>{word} — {cluster}</title>'
             # WHITE halo for separation in dense areas (no dark grounding ring).
@@ -918,12 +919,16 @@ def build_svg(
             f'fill="{fills[ci]}" stroke="{colors[ci]}" stroke-width="1.6"/>'
             f'</g>'
         )
-        parts.append(
+        point_tips.append(
             tooltip_bubble(
                 px, py + 14, [str(r["word"]), str(r["cluster"]), f"nearest: {nn_words}"],
                 canvas_w=_VIEW_W, canvas_h=_VIEW_H, ink=_INK, secondary=_SECONDARY, border=GRIDLINE,
+                elem_id=f"pt-tip-{i}",
             )
         )
+    # Every point's bubble drawn only after every point, so a later point in
+    # a dense cluster can never cover an earlier one's bubble.
+    parts.extend(point_tips)
     parts.append("</g>")
 
     # --- always-on representative labels so the still isn't anonymous.

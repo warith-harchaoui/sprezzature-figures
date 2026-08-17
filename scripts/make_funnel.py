@@ -29,7 +29,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY  # noqa: E402
-from _svg import tooltip_bubble  # noqa: E402
+from _svg import foreground_tip_css, tooltip_bubble  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 # ---------------------------------------------------------------------------
@@ -132,8 +132,8 @@ def build_svg(
     lines.append(
         "<style>"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
-        "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
+        + foreground_tip_css(len(data), mark_prefix="stage", tip_prefix="stagetip")
+        + "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
         "</style>"
     )
     lines.append(f'<rect width="{WIDTH}" height="{HEIGHT}" fill="{BG}"/>')
@@ -151,6 +151,7 @@ def build_svg(
 
     # Funnel trapezoids
     cx = WIDTH / 2.0   # horizontal center
+    funnel_tips: List[str] = []
     for i, row in enumerate(data):
         count = float(row["count"])
         stage = row["stage"]
@@ -196,7 +197,7 @@ def build_svg(
             conv_str = f" ({rate:.1f}% conversion)"
         tooltip = f"{stage}: {count:,.0f}{conv_str}"
         lines.append(
-            f'<path class="hit" tabindex="0" d="{d}" fill="{color}" opacity="0.88">'
+            f'<path id="stage-{i}" class="hit" tabindex="0" d="{d}" fill="{color}" opacity="0.88">'
             f'<title>{escape(tooltip)}</title></path>'
         )
         bubble_lines = [str(stage), f"{count:,.0f} users"]
@@ -205,11 +206,12 @@ def build_svg(
             bubble_lines.append(f"{rate:.1f}% conversion from prior stage")
         share = count / counts[0] * 100 if counts[0] else 0.0
         bubble_lines.append(f"{share:.1f}% of stage 1")
-        lines.append(
+        funnel_tips.append(
             tooltip_bubble(
                 cx, (y_top + y_bot) / 2.0 - 12, bubble_lines,
                 anchor="middle", canvas_w=WIDTH, canvas_h=HEIGHT,
                 ink=INK, secondary=SECONDARY, border=GRIDLINE,
+                elem_id=f"stagetip-{i}",
             )
         )
 
@@ -230,6 +232,10 @@ def build_svg(
             f'font-family="{mono_family}">{escape(count_txt)}</text>'
         )
 
+    # Every stage's bubble drawn only after every trapezoid and label, so a
+    # narrower stage lower in the funnel can never cover a wider stage's
+    # bubble above it -- SVG has no z-index.
+    lines.extend(funnel_tips)
     lines.append(fs_ctrl)
     lines.append("</svg>")
     return "\n".join(lines)
