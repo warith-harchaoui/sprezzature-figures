@@ -33,7 +33,7 @@ from typing import Any, Dict, List, Optional, Tuple
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _svg import fmt_number, svg_open, tooltip_bubble, viridis, xml_escape  # noqa: E402
+from _svg import foreground_tip_css, fmt_number, svg_open, tooltip_bubble, viridis, xml_escape  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
@@ -220,7 +220,7 @@ def build_svg(
         ".hex:hover,.hex:focus{opacity:.72;outline:none;}"
         "@media (prefers-reduced-motion: reduce){.hex{transition:none;}}"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
+        f"{foreground_tip_css(len(counts), mark_prefix='hex')}"
         "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
         "</style>"
     )
@@ -255,7 +255,13 @@ def build_svg(
         f'width="{plot_w:.1f}" height="{plot_h:.1f}"/></clipPath>'
     )
     parts.append('<g clip-path="url(#hex-clip)">')
-    for (q, r), count in counts.items():
+    # Hexes draw first, every bubble is collected and appended once, last,
+    # still inside this same clipped group (so clipping behaviour is
+    # unchanged) -- SVG has no z-index, so a bubble next to its own hex
+    # would be covered by any hex drawn afterward. See
+    # _svg.foreground_tip_css's docstring for the full pattern.
+    tip_bubbles: List[str] = []
+    for i, ((q, r), count) in enumerate(counts.items()):
         hx, hy = _hex_center(q, r, hex_size)
         cx, cy = x_for(x_min + hx), y_for(y_min + hy)
         corners = _hex_corners(cx, cy, hex_size_px * 1.02)
@@ -263,17 +269,19 @@ def build_svg(
         t = count / max_count
         tip = f"{count} point{'s' if count != 1 else ''} in this cell"
         parts.append(
-            f'<path class="hex hit" tabindex="0" d="{d}" fill="{_ramp_hex(t, theme)}">'
+            f'<path id="hex-{i}" class="hex hit" tabindex="0" d="{d}" fill="{_ramp_hex(t, theme)}">'
             f'<title>{xml_escape(tip)}</title></path>'
         )
-        parts.append(
+        tip_bubbles.append(
             tooltip_bubble(
                 cx, cy - hex_size_px - 6,
                 [f"{count} point{'s' if count != 1 else ''}", f"{t * 100:.0f}% of densest cell"],
                 anchor="middle", canvas_w=width, canvas_h=height,
                 ink=INK, secondary=SECONDARY, border=GRIDLINE,
+                elem_id=f"tip-{i}",
             )
         )
+    parts.extend(tip_bubbles)
     parts.append('</g>')
 
     # ---- axes ----
