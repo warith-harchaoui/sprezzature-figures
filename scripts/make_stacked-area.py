@@ -30,7 +30,7 @@ from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _scale import nice_ticks  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY, cycle_hues  # noqa: E402
-from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _svg import foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 
@@ -141,7 +141,7 @@ def build_svg(
         "svg:hover .band-group,svg:focus-within .band-group{opacity:.45;}"
         + "".join(f'svg:has(.b{i}:hover,.b{i}:focus) .b{i}{{opacity:1;}}' for i in range(len(services)))
         + ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
+        + foreground_tip_css(len(services))
         + "@media (prefers-reduced-motion: reduce){.band-group{transition:none;}"
         ".tip{transition:none}}"
         "</style>"
@@ -178,7 +178,13 @@ def build_svg(
     )
 
     # ---- stacked bands ----
+    # Every band's bubble is queued into `bubbles` and appended once, after
+    # every band is drawn, rather than right next to its own band: SVG has
+    # no z-index, so a bubble drawn in place would be covered by any band
+    # drawn afterward (bands stack on top of each other), no matter which
+    # one is hovered.
     prev = [0.0] * len(months)
+    bubbles: List[str] = []
     for si, s in enumerate(services):
         top = cum[s]
         top_pts = [(x_for(m), y_for(v)) for m, v in zip(months, top)]
@@ -188,21 +194,24 @@ def build_svg(
         latest = top[-1] - prev[-1]
         latest_share = latest / (running[-1] or 1.0) * 100.0
         tip = f"{s}: {latest:.1f}k$ in the latest month"
-        parts.append(f'<g class="band-group b{si}">')
+        # The band-group/bN classes used to live on a wrapping <g> around
+        # both the path and its bubble; they carry only class-based CSS
+        # (opacity dimming), so they move onto the path directly now that
+        # the bubble no longer sits next to it -- see the loop comment.
         parts.append(
-            f'<path class="hit" tabindex="0" d="{d}" fill="{colors[s]}" fill-opacity="0.82" '
-            f'role="img" aria-label="{xml_escape(tip)}"/>'
+            f'<path id="hit-{si}" class="hit band-group b{si}" tabindex="0" d="{d}" fill="{colors[s]}" '
+            f'fill-opacity="0.82" role="img" aria-label="{xml_escape(tip)}"/>'
         )
         mid_i = len(months) // 2
-        parts.append(
+        bubbles.append(
             tooltip_bubble(
                 top_pts[mid_i][0], (top_pts[mid_i][1] + bot_pts[mid_i][1]) / 2.0 - 14,
                 [s, f"{top[mid_i] - prev[mid_i]:.1f}k$ that month", f"{latest_share:.0f}% of latest total"],
                 anchor="middle", canvas_w=width, canvas_h=height,
                 ink=INK, secondary=SECONDARY, border=GRIDLINE,
+                elem_id=f"tip-{si}",
             )
         )
-        parts.append("</g>")
         prev = top
 
     # ---- x-axis ----
@@ -223,6 +232,7 @@ def build_svg(
         f'fill="{INK}" text-anchor="middle">Month</text>'
     )
 
+    parts.extend(bubbles)
     parts.append(fullscreen_control(width, height, mode))
     parts.append("</svg>")
     return "\n".join(parts)
