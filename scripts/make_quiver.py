@@ -29,7 +29,7 @@ from typing import Any, Dict, List, Optional, Tuple
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _svg import svg_open, tooltip_bubble, viridis, xml_escape  # noqa: E402
+from _svg import foreground_tip_css, svg_open, tooltip_bubble, viridis, xml_escape  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
@@ -153,7 +153,6 @@ def build_svg(
     parts.append(
         "<style>"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
         "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
         "</style>"
     )
@@ -164,7 +163,13 @@ def build_svg(
     )
     parts.append(f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>')
 
-    for r in rows:
+    # Bubbles are collected here and drawn only once, all together, as the
+    # last thing in the document: SVG has no z-index, so a bubble sitting
+    # next to its own arrow would be covered by any arrow drawn afterward.
+    # `i` pairs each arrow with its bubble (`hit-N`/`tip-N`) since they are
+    # no longer document neighbours.
+    tips: List[str] = []
+    for i, r in enumerate(rows):
         x, y = float(r["x"]), float(r["y"])
         fx, fy = float(r["fx"]), float(r["fy"])
         mag = math.hypot(fx, fy)
@@ -184,7 +189,7 @@ def build_svg(
         points = f"{size:.1f},0 {-size * 0.55:.1f},{size * 0.55:.1f} {-size * 0.55:.1f},{-size * 0.55:.1f}"
         tip = f"({x:.0f}, {y:.0f}): vector ({fx:.1f}, {fy:.1f}), magnitude {mag:.2f}"
         parts.append(
-            f'<g class="hit" transform="translate({cx:.1f},{cy:.1f}) rotate({angle_deg:.1f})" '
+            f'<g id="hit-{i}" class="hit" transform="translate({cx:.1f},{cy:.1f}) rotate({angle_deg:.1f})" '
             f'tabindex="0" role="img" aria-label="{xml_escape(tip)}">'
             # Stroke was previously BG (white-on-white -- invisible); a
             # low-opacity ink edge keeps every triangle's silhouette
@@ -193,12 +198,13 @@ def build_svg(
             f'stroke-opacity="0.22" stroke-width="0.75"/>'
             f'</g>'
         )
-        parts.append(
+        tips.append(
             tooltip_bubble(
                 cx, cy - tri_max / 2 - 14,
                 [f"({x:.0f}, {y:.0f})", f"vector ({fx:.1f}, {fy:.1f})", f"magnitude {mag:.2f} ({t * 100:.0f}% of peak)"],
                 anchor="middle", canvas_w=width, canvas_h=height,
                 ink=INK, secondary=SECONDARY, border=GRIDLINE,
+                elem_id=f"tip-{i}",
             )
         )
 
@@ -216,6 +222,8 @@ def build_svg(
         f'fill="{SECONDARY}">{max_mag:.1f} (Magnitude)</text>'
     )
 
+    parts.extend(tips)
+    parts.append(f"<style>{foreground_tip_css(len(tips))}</style>")
     parts.append(fullscreen_control(width, height, mode))
     parts.append("</svg>")
     return "\n".join(parts)
