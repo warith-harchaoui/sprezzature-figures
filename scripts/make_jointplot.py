@@ -64,7 +64,7 @@ from _style import (  # noqa: E402
     os_adaptive_style,
     os_dark_style,
 )
-from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _svg import foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
 
@@ -304,7 +304,9 @@ def build_svg(
         ".pt:hover .halo,.pt:focus .halo{opacity:1}"
         ".pt:focus{outline:none}"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
+        f"{foreground_tip_css(len(top_hist), mark_prefix='topbar', tip_prefix='topbartip')}"
+        f"{foreground_tip_css(len(right_hist), mark_prefix='rightbar', tip_prefix='rightbartip')}"
+        f"{foreground_tip_css(len(data), mark_prefix='point', tip_prefix='pointtip')}"
         "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
         "\n" + contrast + "\n" + contrast_line + "\n" + fcp_style + "\n"
         # Additive OS dark mode: dark paper + light ink (default ink_map); the
@@ -333,7 +335,15 @@ def build_svg(
     # Bars grow downward from the top rail toward the scatter, so the marginal
     # reads as a distribution hugging the shared x-window.
     top_base = m_top + marg           # the rail the bars stand on
-    for left, right, count in top_hist:
+    # This chart has three independent hit/tip groups (top bars, right bars,
+    # scatter points below); each gets its own id prefix and bubble list so
+    # ids never collide across groups. Every group draws its marks first,
+    # then its bubbles, all appended once at the very end (SVG has no
+    # z-index; a bubble next to its own mark would be covered by any mark
+    # drawn afterward -- in any group, not just its own) -- see
+    # _svg.foreground_tip_css's docstring.
+    topbar_tips: List[str] = []
+    for i, (left, right, count) in enumerate(top_hist):
         bw = sx(right) - sx(left)
         bh = count / count_ceiling * marg
         bx = sx(left)
@@ -341,12 +351,12 @@ def build_svg(
         bar_tip = f"{left:.1f}-{right:.1f} h slept: {count} volunteers"
         # Round only the top corners so the bar reads as a clean column.
         parts.append(
-            f'<rect class="jp-topbar hit" tabindex="0" x="{bx + 1:.1f}" y="{by:.1f}" '
+            f'<rect id="topbar-{i}" class="jp-topbar hit" tabindex="0" x="{bx + 1:.1f}" y="{by:.1f}" '
             f'width="{max(bw - 2, 0.5):.1f}" '
             f'height="{bh:.1f}" rx="3" fill="{top_fill}">'
             f'<title>{xml_escape(bar_tip)}</title></rect>'
         )
-        parts.append(
+        topbar_tips.append(
             tooltip_bubble(
                 bx + max(bw - 2, 0.5) / 2.0,
                 max(4.0, by - 46.0),
@@ -356,6 +366,7 @@ def build_svg(
                 ink=ink,
                 secondary=secondary,
                 border=grid_col,
+                elem_id=f"topbartip-{i}",
             )
         )
     parts.append(
@@ -366,18 +377,19 @@ def build_svg(
     # --- right marginal: histogram of reaction times -------------
     # Bars grow leftward from the right rail toward the scatter.
     right_base = plot_x + plot_w + gap    # left edge the bars stand on
-    for lo, hi, count in right_hist:
+    rightbar_tips: List[str] = []
+    for i, (lo, hi, count) in enumerate(right_hist):
         by = sy(hi)
         bh = sy(lo) - sy(hi)
         bw = count / count_ceiling * marg
         bar_tip = f"{lo:.0f}-{hi:.0f} ms reaction time: {count} volunteers"
         parts.append(
-            f'<rect class="jp-rightbar hit" tabindex="0" x="{right_base:.1f}" y="{by + 1:.1f}" '
+            f'<rect id="rightbar-{i}" class="jp-rightbar hit" tabindex="0" x="{right_base:.1f}" y="{by + 1:.1f}" '
             f'width="{bw:.1f}" '
             f'height="{max(bh - 2, 0.5):.1f}" rx="3" fill="{right_fill}">'
             f'<title>{xml_escape(bar_tip)}</title></rect>'
         )
-        parts.append(
+        rightbar_tips.append(
             tooltip_bubble(
                 right_base + bw + 8.0,
                 max(4.0, by + max(bh - 2, 0.5) / 2.0 - 24.0),
@@ -388,6 +400,7 @@ def build_svg(
                 ink=ink,
                 secondary=secondary,
                 border=grid_col,
+                elem_id=f"rightbartip-{i}",
             )
         )
     # Rotated caption for the right marginal, clear of the bars.
@@ -468,14 +481,15 @@ def build_svg(
     # bright keyline, never a dark ring.
     r_dot = 7.0
     dot_px: List[Tuple[float, float]] = []
-    for d in data:
+    point_tips: List[str] = []
+    for i, d in enumerate(data):
         s = float(d["sleep"])
         r = float(d["rt"])
         cx, cy = sx(s), sy(r)
         dot_px.append((cx, cy))
         tip = f"{s:.1f} h slept, {int(r)} ms reaction time"
         parts.append(
-            f'<g class="pt hit" tabindex="0" role="img" '
+            f'<g id="point-{i}" class="pt hit" tabindex="0" role="img" '
             f'aria-label="{xml_escape(tip)}">'
         )
         parts.append(f"<title>{xml_escape(tip)}</title>")
@@ -489,7 +503,7 @@ def build_svg(
             f'stroke-width="1.1"/>'
         )
         parts.append("</g>")
-        parts.append(
+        point_tips.append(
             tooltip_bubble(
                 cx,
                 max(4.0, cy - 40.0),
@@ -499,6 +513,7 @@ def build_svg(
                 ink=ink,
                 secondary=secondary,
                 border=grid_col,
+                elem_id=f"pointtip-{i}",
             )
         )
 
@@ -540,6 +555,9 @@ def build_svg(
         f'fitted trend</text>'
     )
 
+    parts.extend(topbar_tips)
+    parts.extend(rightbar_tips)
+    parts.extend(point_tips)
     parts.append(fullscreen_control(width, height, mode))
     parts.append("</svg>")
     return "\n".join(parts)
