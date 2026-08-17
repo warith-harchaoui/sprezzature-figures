@@ -61,7 +61,7 @@ from typing import Any, Dict, List, Optional, Tuple
 # without the dataviz tier).
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import load_palette, os_dark_style  # noqa: E402
-from _svg import hex_to_rgb as _hex_to_rgb, svg_open, tooltip_bubble, viridis  # noqa: E402
+from _svg import foreground_tip_css, hex_to_rgb as _hex_to_rgb, svg_open, tooltip_bubble, viridis  # noqa: E402
 from _svg import xml_escape  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
@@ -777,7 +777,8 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
         )
     )
     style_rows.append(".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}")
-    style_rows.append(".hit:hover+.tip,.hit:focus+.tip{opacity:1}")
+    n_hexes = sum(1 for c in cells if int(c["count"]) > 0)
+    style_rows.append(foreground_tip_css(n_hexes, mark_prefix="hex", tip_prefix="hextip"))
     style_rows.append("@media (prefers-reduced-motion:reduce){.tip{transition:none}}")
     parts.append("<style>\n" + "\n".join(style_rows) + "\n</style>")
 
@@ -841,6 +842,15 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
     parts.append('<g role="list" aria-label="hexagonal earthquake-density bins">')
     r_draw = _HEX_R * 0.94  # tiny gap => white casing shows between hexes
     ordered = sorted(cells, key=lambda c: c["count"])
+    # Hexes draw first, every bubble is collected and appended once, last,
+    # right before this group closes (still a sibling of every hex, just no
+    # longer document-order-adjacent to its own) -- SVG has no z-index, so a
+    # bubble next to its own hex would be covered by any hex drawn after it
+    # (and cells are sorted low-count-first, so this was reachable for
+    # exactly the low-count hexes a reader is most likely to check). See
+    # _svg.foreground_tip_css's docstring for the full pattern.
+    tip_bubbles: List[str] = []
+    k = 0
     for c in ordered:
         cnt = int(c["count"])
         if cnt <= 0:
@@ -852,18 +862,21 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
         d = _hex_path(c["px"], c["py"], r_draw)
         label = f'{cnt} quake{"" if cnt == 1 else "s"}'
         parts.append(
-            f'<path class="hex hit" d="{d}" fill="{fill}" stroke="{_STROKE}" '
+            f'<path id="hex-{k}" class="hex hit" d="{d}" fill="{fill}" stroke="{_STROKE}" '
             f'stroke-width="1.0" tabindex="0" role="listitem">'
             f'<title>{label}</title></path>'
         )
-        parts.append(
+        tip_bubbles.append(
             tooltip_bubble(
                 c["px"], c["py"] - r_draw - 6,
                 [label, f"{t * 100:.0f}% of ramp max"],
                 anchor="middle", canvas_w=_WIDTH, canvas_h=_HEIGHT,
                 ink=_INK, secondary=_SUBTLE, border=_GRAT,
+                elem_id=f"hextip-{k}",
             )
         )
+        k += 1
+    parts.extend(tip_bubbles)
     parts.append('</g>')
 
     # ---- region call-outs (leader-free text labels in ink) ----
