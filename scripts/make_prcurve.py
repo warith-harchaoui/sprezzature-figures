@@ -69,7 +69,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
-from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _svg import foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 
@@ -519,7 +519,6 @@ def build_svg(
         ".sw:hover .halo,.sw:focus .halo{opacity:1}"
         ".sw:focus{outline:none}"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
         "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
         + "\n" + contrast_block + "\n"
         + os_dark_style() + "\n"
@@ -667,6 +666,16 @@ def build_svg(
             return "threshold above every score (nothing flagged)"
         return f"threshold {float(threshold):.2f}"
 
+    # Every bubble below is collected here instead of appended in place, and
+    # drawn only once as the very last thing in the document (see the
+    # `sw_tips`/`op_tips` extends near the end of this function): SVG has no
+    # z-index, so a bubble sitting next to its own mark would be covered by
+    # any mark drawn later in the arc. `sw_i`/`op_i` give each mark and
+    # its bubble a matching id (`sw-N`/`op-N`) since they're no longer
+    # next-door neighbours in the document, so foreground_tip_css needs a
+    # unique pair to know which bubble belongs to which mark.
+    sw_tips: List[str] = []
+    sw_i = 0
     for label in ("Logistic baseline", "Gradient-boosted"):
         st = style[label]
         pts = [(sx(r), sy(p)) for r, p, _thr in per_model[label]]
@@ -713,7 +722,7 @@ def build_svg(
                     f"{_threshold_words(thr)}"
                 )
                 parts.append(
-                    f'<g class="sw hit" tabindex="0" role="img" '
+                    f'<g id="sw-{sw_i}" class="sw hit" tabindex="0" role="img" '
                     f'aria-label="{xml_escape(htip)}">'
                     f'<circle class="halo" cx="{hx:.1f}" cy="{hy:.1f}" r="12" '
                     f'fill="{st["col"]}" fill-opacity="0.14"/>'
@@ -722,16 +731,20 @@ def build_svg(
                     f'fill-opacity="0.85" stroke="#FFFFFF" stroke-width="1.2"/>'
                     f'</g>'
                 )
-                parts.append(
+                sw_tips.append(
                     tooltip_bubble(
                         hx, hy - 18,
                         [label, f"recall {r:.0%}, precision {p:.0%}", _threshold_words(thr)],
                         anchor="middle", canvas_w=width, canvas_h=height,
                         ink=ink, secondary=secondary, border=grid_col,
+                        elem_id=f"tip-sw-{sw_i}",
                     )
                 )
+                sw_i += 1
 
     # --- shipped (max-F1) operating-point markers ----------------
+    op_tips: List[str] = []
+    op_i = 0
     for rec in bundle["points"]:
         label = rec["model"]
         st = style[label]
@@ -742,7 +755,7 @@ def build_svg(
             f'F1 {rec["f1"]:.2f}, {_threshold_words(rec["threshold"])}'
         )
         parts.append(
-            f'<g class="op hit" tabindex="0" role="img" '
+            f'<g id="op-{op_i}" class="op hit" tabindex="0" role="img" '
             f'aria-label="{xml_escape(tip)}">'
         )
         parts.append(
@@ -767,7 +780,7 @@ def build_svg(
                 f'fill="{st["col"]}" stroke="#FFFFFF" stroke-width="3"/>'
             )
         parts.append("</g>")
-        parts.append(
+        op_tips.append(
             tooltip_bubble(
                 cx, cy - 34,
                 [
@@ -777,8 +790,10 @@ def build_svg(
                 ],
                 anchor="middle", canvas_w=width, canvas_h=height,
                 ink=ink, secondary=secondary, border=grid_col,
+                elem_id=f"tip-op-{op_i}",
             )
         )
+        op_i += 1
 
     # --- inline direct labels (curve + AP), separated by shape ----
     # A small legend key sits inside the plot, low-left where both curves have
@@ -820,6 +835,16 @@ def build_svg(
             f'  ·  AP {ap[label]:.2f}</text>'
         )
 
+    # Every bubble drawn last, after everything else in the document, so
+    # each one always sits in front of the marks (SVG paints in document
+    # order, hover state or not) -- see the `sw_tips`/`op_tips` comment
+    # near the top of this function.
+    parts.extend(sw_tips)
+    parts.extend(op_tips)
+    parts.append(
+        f"<style>{foreground_tip_css(sw_i, mark_prefix='sw', tip_prefix='tip-sw')}"
+        f"{foreground_tip_css(op_i, mark_prefix='op', tip_prefix='tip-op')}</style>"
+    )
     parts.append(fullscreen_control(width, height, mode))
     parts.append("</svg>")
     return "\n".join(parts)
