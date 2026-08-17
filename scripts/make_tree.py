@@ -462,8 +462,20 @@ def build_svg(
         ".lin:focus-within .link,.lin:focus-within .node{opacity:1}"
         ".card:focus{outline:none}"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
-        "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
+        # Every node's `.hit` mark sits several levels deep (#lineages >
+        # .lin > .node > rect), several levels deeper than its own bubble
+        # (a direct child of #lineages, appended after every lineage is
+        # drawn -- see the `bubbles` list in build_svg): they are not
+        # siblings, so the usual `#hit-N~#tip-N` sibling rule (this
+        # codebase's default, see _svg.foreground_tip_css) cannot reach
+        # across that gap. `:has()` can: it matches by "some descendant
+        # of this scope is hovered", regardless of nesting depth on either
+        # side, the same technique already used above for `.lin`.
+        + "".join(
+            f"svg:has(#hit-{i}:hover) #tip-{i},svg:has(#hit-{i}:focus) #tip-{i}{{opacity:1}}"
+            for i in range(len(nodes))
+        )
+        + "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
         + contrast_css
         + dark_css
         + "</style>"
@@ -518,6 +530,10 @@ def build_svg(
     for leaf in leaves:
         for node_id in _lineage(leaf, parent):
             last_leaf_for_node[node_id] = leaf
+    # Every node id that will ever emit a tip (every node, exactly once)
+    # gets a stable slot here, used to id-pair its `.hit` mark with its
+    # bubble -- see _emit_one_node's `tip_index` parameter.
+    tip_index_for_node: dict[str, int] = {nid: i for i, nid in enumerate(last_leaf_for_node)}
 
     parts.append('<g id="tree">')
 
@@ -530,6 +546,12 @@ def build_svg(
 
     # Then the interactive lineage groups on top (transparent at rest via
     # the base underneath; they only change opacity on hover/focus).
+    # Every emitted bubble is queued into `bubbles` and appended once, after
+    # every lineage is drawn, rather than right next to its own node: SVG
+    # has no z-index, so a bubble drawn in place would be covered by a
+    # later lineage redrawing a shared ancestor on top of it, no matter
+    # which node is hovered.
+    bubbles: List[str] = []
     parts.append('<g id="lineages">')
     for leaf in leaves:
         chain = _lineage(leaf, parent)
@@ -543,12 +565,16 @@ def build_svg(
             _emit_one_link(parts, geometry, a, b, label_of=label_of)
         # the nodes along the chain
         for node_id in chain:
-            _emit_one_node(
+            bubble = _emit_one_node(
                 parts, geometry, label_of, kids, node_id, interactive=True,
                 emit_tip=(last_leaf_for_node.get(node_id) == leaf),
+                tip_index=tip_index_for_node[node_id],
             )
+            if bubble:
+                bubbles.append(bubble)
         parts.append("</g>")
     parts.append("</g>")
+    parts.extend(bubbles)
 
     parts.append("</g>")  # #tree
 
@@ -684,7 +710,8 @@ def _emit_one_node(
     *,
     interactive: bool,
     emit_tip: bool = False,
-) -> None:
+    tip_index: int = 0,
+) -> Optional[str]:
     """Emit one node card (rounded rect + label), colored by its family.
 
     Root and family nodes are filled pills; deeper nodes are white chips
@@ -700,6 +727,20 @@ def _emit_one_node(
         ``.hit``/``role``/``aria-label`` trio plus a rich
         :func:`_svg.tooltip_bubble`, instead of duplicating a bubble on
         every lineage redraw of a shared ancestor.
+    tip_index : int, optional
+        This node's slot in :func:`build_svg`'s ``tip_index_for_node``,
+        used to id-pair the ``.hit`` mark with its bubble. Only meaningful
+        when `emit_tip` is true.
+
+    Returns
+    -------
+    str or None
+        The node's :func:`_svg.tooltip_bubble` when `emit_tip` is true
+        (the caller collects these and appends them once, after every
+        lineage is drawn, rather than right next to their own node -- SVG
+        has no z-index, so a bubble drawn in place would be covered by a
+        later lineage redrawing a shared ancestor on top of it); ``None``
+        otherwise. Never appended to `parts` directly by this function.
     """
     g = geometry[node_id]
     label = label_of[node_id]
@@ -716,6 +757,7 @@ def _emit_one_node(
     detail2 = "Leaf topic" if is_leaf else f"{n_kids} sub-topic{'s' if n_kids != 1 else ''}"
     tab = ' tabindex="0"' if (interactive and (not is_leaf or emit_tip)) else ""
     hit_cls = " hit" if emit_tip else ""
+    id_attr = f' id="hit-{tip_index}"' if emit_tip else ""
     title_or_aria = (
         f' role="img" aria-label="{escape(tip)}"' if emit_tip else ""
     )
@@ -733,7 +775,7 @@ def _emit_one_node(
         pill_cls = f' pill-{fam}' if fam else ""
         parts.append(
             f'<g class="node">'
-            f'<rect class="card{pill_cls}{hit_cls}"{tab}{title_or_aria} x="{x_left:.1f}" y="{y_top:.1f}" '
+            f'<rect{id_attr} class="card{pill_cls}{hit_cls}"{tab}{title_or_aria} x="{x_left:.1f}" y="{y_top:.1f}" '
             f'width="{w:.1f}" height="{h:.1f}" rx="{h / 2:.1f}" fill="{pill_fill}">'
             f'{title_child}</rect>'
             f'<text x="{cx:.1f}" y="{cy:.1f}" text-anchor="middle" '
@@ -749,7 +791,7 @@ def _emit_one_node(
         chip_cls = f' class="{hit_cls.strip()}"' if hit_cls else ""
         parts.append(
             f'<g class="node">'
-            f'<rect{chip_cls} x="{x_left:.1f}" y="{y_top:.1f}" width="{w:.1f}" '
+            f'<rect{id_attr}{chip_cls} x="{x_left:.1f}" y="{y_top:.1f}" width="{w:.1f}" '
             f'height="{h:.1f}" rx="10" fill="#FFFFFF" stroke="{HAIRLINE}" '
             f'stroke-width="1.5"{tab}{title_or_aria}>{title_child}</rect>'
             f'<rect class="fam-rule{rule_cls}" x="{x_left:.1f}" y="{y_top:.1f}" '
@@ -761,14 +803,14 @@ def _emit_one_node(
             f'</g>'
         )
     if emit_tip:
-        parts.append(
-            tooltip_bubble(
-                cx, y_top - 14,
-                [label, gen_label, detail2],
-                anchor="middle", canvas_w=WIDTH, canvas_h=HEIGHT,
-                ink=INK, secondary=SUBINK, border=HAIRLINE,
-            )
+        return tooltip_bubble(
+            cx, y_top - 14,
+            [label, gen_label, detail2],
+            anchor="middle", canvas_w=WIDTH, canvas_h=HEIGHT,
+            ink=INK, secondary=SUBINK, border=HAIRLINE,
+            elem_id=f"tip-{tip_index}",
         )
+    return None
 
 
 def make_tree(

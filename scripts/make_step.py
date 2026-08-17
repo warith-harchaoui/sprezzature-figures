@@ -29,7 +29,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _scale import nice_ticks_range  # noqa: E402
-from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _svg import foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
@@ -110,8 +110,8 @@ def build_svg(
         ".pt{transition:r .12s ease;}"
         ".pt:hover,.pt:focus{r:5.5;outline:none;}"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
-        "@media (prefers-reduced-motion: reduce){.pt{transition:none;}"
+        + foreground_tip_css(len(ts))
+        + "@media (prefers-reduced-motion: reduce){.pt{transition:none;}"
         ".tip{transition:none}}"
         "</style>"
     )
@@ -148,20 +148,26 @@ def build_svg(
     path_d = "M " + " L ".join(f"{x:.1f},{y:.1f}" for x, y in step_pts)
     parts.append(f'<path d="{path_d}" fill="none" stroke="{COLOR_LINE}" stroke-width="2.5"/>')
     prev_y: float | None = None
-    for t, y in zip(ts, ys):
+    # Every point's bubble is queued into `bubbles` and appended once, after
+    # every point is drawn, rather than right next to its own point: SVG has
+    # no z-index, so a bubble drawn in place would be covered by any point
+    # drawn afterward, no matter which one is hovered.
+    bubbles: List[str] = []
+    for i, (t, y) in enumerate(zip(ts, ys)):
         cx, cy = x_for(t), y_for(y)
         tip = f"t={t:.0f}: {y:.0f}"
         parts.append(
-            f'<circle class="pt hit" tabindex="0" cx="{cx:.1f}" cy="{cy:.1f}" r="4" fill="{COLOR_LINE}" '
+            f'<circle id="hit-{i}" class="pt hit" tabindex="0" cx="{cx:.1f}" cy="{cy:.1f}" r="4" fill="{COLOR_LINE}" '
             f'stroke="{BG}" stroke-width="1.5" role="img" aria-label="{xml_escape(tip)}"/>'
         )
         delta_line = "start of series" if prev_y is None else f"{'+' if y - prev_y >= 0 else ''}{y - prev_y:.0f} from previous step"
-        parts.append(
+        bubbles.append(
             tooltip_bubble(
                 cx, cy - 16,
                 [f"t = {t:.0f}", f"value {y:.0f}", delta_line],
                 anchor="middle", canvas_w=width, canvas_h=height,
                 ink=INK, secondary=SECONDARY, border=GRIDLINE,
+                elem_id=f"tip-{i}",
             )
         )
         prev_y = y
@@ -182,6 +188,7 @@ def build_svg(
         f'fill="{INK}" text-anchor="middle">Step</text>'
     )
 
+    parts.extend(bubbles)
     parts.append(fullscreen_control(width, height, mode))
     parts.append("</svg>")
     return "\n".join(parts)

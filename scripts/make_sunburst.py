@@ -37,7 +37,7 @@ from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY, load_palette  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
-from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _svg import foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 
 
 REGIONS = ["Americas", "Asia Pacific", "Europe", "Middle East & Africa"]
@@ -210,8 +210,8 @@ def build_svg(
         ".arc{transition:opacity .15s ease;cursor:default;}"
         ".arc:hover,.arc:focus{opacity:.72;outline:none;}"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
-        "@media (prefers-reduced-motion: reduce){.arc{transition:none;}"
+        + foreground_tip_css(len(regions_sorted) + sum(len(grouped[r]) for r in regions_sorted))
+        + "@media (prefers-reduced-motion: reduce){.arc{transition:none;}"
         ".tip{transition:none}}"
         "</style>"
     )
@@ -224,6 +224,15 @@ def build_svg(
     parts.append(f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>')
 
     # ---- ring 1: regions ----
+    # Every arc's bubble (both rings) is queued into `bubbles` and appended
+    # once, after every arc in both rings is drawn, rather than right next
+    # to its own arc: SVG has no z-index, so a bubble drawn in place would
+    # be covered by any arc drawn afterward, no matter which one is
+    # hovered -- and ring 2 is drawn entirely after ring 1. A single index
+    # runs across both rings so every hit/tip pair in the whole chart has
+    # its own unique id.
+    bubbles: List[str] = []
+    arc_idx = 0
     angle = 0.0
     region_angles: Dict[str, Tuple[float, float]] = {}
     for r in regions_sorted:
@@ -234,18 +243,20 @@ def build_svg(
         d = _annular_sector_path(cx, cy, ring1_inner, ring1_outer, a0, a1)
         tip = f"{r}: {region_totals[r]:,.1f} bn USD ({share * 100:.1f}% of total)"
         parts.append(
-            f'<path class="arc hit" tabindex="0" d="{d}" fill="{region_colors[r]}" '
+            f'<path id="hit-{arc_idx}" class="arc hit" tabindex="0" d="{d}" fill="{region_colors[r]}" '
             f'stroke="{BG}" stroke-width="1.5" role="img" aria-label="{xml_escape(tip)}"/>'
         )
         tip_x, tip_y = _polar(cx, cy, ring1_outer, (a0 + a1) / 2.0)
-        parts.append(
+        bubbles.append(
             tooltip_bubble(
                 tip_x, tip_y - 14,
                 [r, f"{region_totals[r]:,.1f} bn USD", f"{share * 100:.1f}% of total"],
                 anchor="middle", canvas_w=width, canvas_h=height,
                 ink=INK, secondary=SECONDARY, border=GRIDLINE,
+                elem_id=f"tip-{arc_idx}",
             )
         )
+        arc_idx += 1
         if (a1 - a0) > 0.18:
             mid_r = (ring1_inner + ring1_outer) / 2.0
             lx, ly = _polar(cx, cy, mid_r, (a0 + a1) / 2.0)
@@ -267,18 +278,20 @@ def build_svg(
             d = _annular_sector_path(cx, cy, ring2_inner, ring2_outer, a0, a1)
             tip = f"{r} / {row['name']}: {float(row['value']):,.1f} bn USD"
             parts.append(
-                f'<path class="arc hit" tabindex="0" d="{d}" fill="{region_colors[r]}" fill-opacity="0.55" '
-                f'stroke="{BG}" stroke-width="1" role="img" aria-label="{xml_escape(tip)}"/>'
+                f'<path id="hit-{arc_idx}" class="arc hit" tabindex="0" d="{d}" fill="{region_colors[r]}" '
+                f'fill-opacity="0.55" stroke="{BG}" stroke-width="1" role="img" aria-label="{xml_escape(tip)}"/>'
             )
             tip_x2, tip_y2 = _polar(cx, cy, ring2_outer, (a0 + a1) / 2.0)
-            parts.append(
+            bubbles.append(
                 tooltip_bubble(
                     tip_x2, tip_y2 - 14,
                     [row["name"], f"{float(row['value']):,.1f} bn USD", f"{share_local * 100:.1f}% of {r}"],
                     anchor="middle", canvas_w=width, canvas_h=height,
                     ink=INK, secondary=SECONDARY, border=GRIDLINE,
+                    elem_id=f"tip-{arc_idx}",
                 )
             )
+            arc_idx += 1
 
     # ---- legend ----
     lx0 = side_margin + avail_w + 30.0
@@ -292,6 +305,7 @@ def build_svg(
         parts.append(f'<circle cx="{lx0 + 6:.1f}" cy="{ly - 4:.1f}" r="6" fill="{region_colors[r]}"/>')
         parts.append(f'<text x="{lx0 + 20:.1f}" y="{ly:.1f}" font-size="12" fill="{INK}">{xml_escape(r)}</text>')
 
+    parts.extend(bubbles)
     parts.append(fullscreen_control(width, height, mode))
     parts.append("</svg>")
     return "\n".join(parts)

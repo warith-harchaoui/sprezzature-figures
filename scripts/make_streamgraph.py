@@ -49,7 +49,7 @@ import sys
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _labels import best_text_colour  # noqa: E402
 from _style import forced_color_patterns, leveled_colors, os_adaptive_style, os_dark_style  # noqa: E402
-from _svg import catmull_rom_beziers, fmt_compact, tooltip_bubble, xml_escape  # noqa: E402
+from _svg import catmull_rom_beziers, fmt_compact, foreground_tip_css, tooltip_bubble, xml_escape  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
@@ -494,8 +494,15 @@ def build_svg(
         anchors.append((yi, x_of(yi), y_of(float(centre[yi]))))
 
     # ---- the river: one filled ribbon per genre --------------------------- #
+    # Every ribbon's bubble is queued into `river_tips` and appended once,
+    # after every ribbon is drawn (still inside this same <g>, so the
+    # id-matched hover rule below still finds them as siblings), rather
+    # than right next to its own ribbon: SVG has no z-index, so a bubble
+    # drawn in place would be covered by any ribbon drawn afterward, no
+    # matter which one is hovered.
     yidx = list(range(n_years))
     river: List[str] = ["<g>"]
+    river_tips: List[str] = []
     for i, genre in enumerate(genres):
         top = [(x_of(yi), y_of(uppers[i, yi])) for yi in yidx]
         bottom = [(x_of(yi), y_of(lowers[i, yi])) for yi in yidx]
@@ -504,21 +511,23 @@ def build_svg(
         # A whisper-thin white seam between bands sharpens every boundary
         # without a heavy stroke — pure fills, no colour-on-colour ambiguity.
         river.append(
-            f'<path class="river-{i} hit" tabindex="0" d="{d}" fill="{colors[i]}" '
+            f'<path id="hit-{i}" class="river-{i} hit" tabindex="0" d="{d}" fill="{colors[i]}" '
             f'fill-opacity="0.96" '
             f'stroke="#FFFFFF" stroke-width="1.1" stroke-opacity="0.85" '
             f'role="img" aria-label="{tip}"/>'
         )
         a_yi, a_cx, a_cy = anchors[i]
         peak_share = float(shares_pct[i, a_yi])
-        river.append(
+        river_tips.append(
             tooltip_bubble(
                 a_cx, a_cy - 16,
                 [genre, f"{peak_share:.0f}% of listening in {int(years[a_yi])}", f"{float(volume[i, a_yi]):.0f}B streams that year"],
                 anchor="middle", canvas_w=width, canvas_h=height,
                 ink=_INK, secondary=_SECONDARY, border="#F0F0F3",
+                elem_id=f"tip-{i}",
             )
         )
+    river.extend(river_tips)
     river.append("</g>")
 
     # ---- on-band labels at each ribbon's thickest, calmest point ---------- #
@@ -645,8 +654,8 @@ def build_svg(
     parts.append(
         "<style>\n"
         + ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
-        "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
+        + foreground_tip_css(len(genres))
+        + "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
         + os_adaptive_style(river_series, role="fill")
         + "\n"
         + fcp_style
