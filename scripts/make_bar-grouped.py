@@ -31,7 +31,7 @@ from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _scale import nice_ticks  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY, corner_radius, cycle_hues  # noqa: E402
-from _svg import bar_path, svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _svg import bar_path, foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 
@@ -203,8 +203,14 @@ def build_svg(
         ".bar:hover,.bar:focus{filter:brightness(1.08);outline:none;}"
         "@media (prefers-reduced-motion: reduce){.bar{transition:none;}}"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
-        "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
+        # A bubble drawn right next to its own bar would be covered by any
+        # bar drawn afterward (SVG paints in document order, regardless of
+        # hover) -- bars draw first, bubbles last, paired by id; see
+        # _svg.foreground_tip_css. Upper-bound count (some (period, region)
+        # cells have no bar to draw when their value is 0) is harmless: an
+        # id with no matching mark just never fires.
+        + foreground_tip_css(len(periods) * len(regions), mark_prefix="bar-hit", tip_prefix="bar-tip")
+        + "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
         "</style>"
     )
     parts.append(f'<rect width="{width}" height="{height}" fill="{BG}"/>')
@@ -244,6 +250,7 @@ def build_svg(
     )
 
     # ---- bars ----
+    bar_tips: List[str] = []
     for pi, period in enumerate(periods):
         group_x = plot_x + pi * bin_w + (bin_w - group_w) / 2
         for ri, region in enumerate(regions):
@@ -253,22 +260,25 @@ def build_svg(
             h = plot_y + plot_h - y
             if h <= 0:
                 continue
+            bar_idx = pi * len(regions) + ri
             r = corner_radius(bar_w, h, "bar")
             tip = strings["tooltip_template"].format(region=region, period=period, value=value)
             path = bar_path(x, y, bar_w * 0.88, h, r, side="top")
             parts.append(
-                f'<path class="bar hit" tabindex="0" d="{path}" fill="{colors.get(region, "#007AFF")}">'
+                f'<path id="bar-hit-{bar_idx}" class="bar hit" tabindex="0" d="{path}" fill="{colors.get(region, "#007AFF")}">'
                 f'<title>{xml_escape(tip)}</title></path>'
             )
             period_total = sum(lookup.get((period, r2), 0.0) for r2 in regions) or 1.0
             share = value / period_total * 100.0
-            parts.append(
+            bar_tips.append(
                 tooltip_bubble(
                     x + bar_w * 0.44, y - 6,
                     [f"{region}, {period}", f"{value:.0f}", f"{share:.0f}% of {period} total"],
                     canvas_w=width, canvas_h=height, ink=INK, secondary=SECONDARY, border=GRIDLINE,
+                    elem_id=f"bar-tip-{bar_idx}",
                 )
             )
+    parts.extend(bar_tips)
 
     # ---- x-axis ----
     axis_y = plot_y + plot_h
