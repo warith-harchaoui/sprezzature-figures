@@ -28,7 +28,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY, corner_radius, cycle_hues  # noqa: E402
-from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _svg import foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 
@@ -161,7 +161,7 @@ def build_svg(
         ".task:hover,.task:focus{filter:brightness(1.08);outline:none;}"
         "@media (prefers-reduced-motion: reduce){.task{transition:none;}}"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
+        f"{foreground_tip_css(len(rows), mark_prefix='bar')}"
         "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
         "</style>"
     )
@@ -200,6 +200,13 @@ def build_svg(
     )
 
     # ---- task bars ----
+    # Every bar is drawn first, every hover bubble is collected into `tip_bubbles`
+    # and appended once, last, right before the closing tag -- SVG has no
+    # z-index, so a bubble emitted next to its own bar would be covered by any
+    # bar drawn after it. Each bar/bubble pair gets a matching id
+    # (`bar-N`/`tip-N`) since they are no longer document-order neighbours; see
+    # `_svg.foreground_tip_css`'s docstring for the full pattern.
+    tip_bubbles: List[str] = []
     for i, r in enumerate(rows):
         start, end = float(r["start"]), float(r["end"])
         y = plot_y + i * row_h + (row_h - bar_h) / 2
@@ -210,16 +217,17 @@ def build_svg(
         r_corner = corner_radius(w, bar_h, "bar")
         tip = f"{r['task']} ({team}): day {start:.0f}-{end:.0f}, {end - start:.0f} days"
         parts.append(
-            f'<rect class="task hit" tabindex="0" x="{x0:.1f}" y="{y:.1f}" width="{w:.1f}" '
+            f'<rect id="bar-{i}" class="task hit" tabindex="0" x="{x0:.1f}" y="{y:.1f}" width="{w:.1f}" '
             f'height="{bar_h:.1f}" rx="{r_corner:.1f}" fill="{color}">'
             f'<title>{xml_escape(tip)}</title></rect>'
         )
-        parts.append(
+        tip_bubbles.append(
             tooltip_bubble(
                 x0 + w / 2, y - 12,
                 [str(r["task"]), team, f"day {start:.0f}-{end:.0f} ({end - start:.0f} days)"],
                 anchor="middle", canvas_w=width, canvas_h=height,
                 ink=INK, secondary=SECONDARY, border=GRIDLINE,
+                elem_id=f"tip-{i}",
             )
         )
         ty = plot_y + i * row_h + row_h / 2 + 4
@@ -234,6 +242,7 @@ def build_svg(
         f'stroke="{INK}" stroke-width="1.2"/>'
     )
 
+    parts.extend(tip_bubbles)
     parts.append(fullscreen_control(width, height, mode))
     parts.append("</svg>")
     return "\n".join(parts)
