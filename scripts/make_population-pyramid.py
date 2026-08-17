@@ -30,7 +30,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY, corner_radius, load_palette  # noqa: E402
-from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _svg import foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 
@@ -124,8 +124,13 @@ def build_svg(
         ".pyr{transition:filter .15s ease;}"
         ".pyr:hover,.pyr:focus{filter:brightness(1.08);outline:none;}"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
-        "@media (prefers-reduced-motion: reduce){.pyr{transition:none;}"
+        # Upper bound, not an exact count: a (sex, age) pair with a
+        # zero-or-negative bar length draws no mark/tip pair at all (see the
+        # `continue` in the loop below), so some of these generated ids never
+        # appear in the document -- harmless, an unmatched id selector just
+        # matches nothing.
+        + foreground_tip_css(len(ages) * 2, mark_prefix="pyr", tip_prefix="pyr-tip")
+        + "@media (prefers-reduced-motion: reduce){.pyr{transition:none;}"
         ".tip{transition:none}}"
         "</style>"
     )
@@ -163,10 +168,18 @@ def build_svg(
         parts.append(f'<text x="{plot_x:.1f}" y="{cy:.1f}" font-size="12" fill="{INK}" text-anchor="middle">{xml_escape(age)}</text>')
 
     # ---- bars ----
+    # Every bar is drawn first, every one of its bubbles appended afterward
+    # (see pyr_tips below): SVG paints in document order regardless of hover
+    # state, so a bubble sitting next to its own bar would be covered by any
+    # bar drawn after it (adjacent age bands sit close together).
+    pyr_tips: List[str] = []
+    mark_i = 0
     for i, age in enumerate(ages):
         cy = plot_y + i * row_h + row_h / 2
         y0 = cy - bar_h / 2
         for sex, sign in (("Male", -1), ("Female", 1)):
+            this_mark_i = mark_i
+            mark_i += 1
             v = lookup.get((age, sex), 0.0)
             length = bar_len(v)
             if length <= 0:
@@ -180,16 +193,17 @@ def build_svg(
             tip = f"{sex}, {age}: {abs(v):.0f}%"
             share = abs(v) / total_abs * 100.0
             parts.append(
-                f'<rect class="pyr hit" tabindex="0" x="{x0:.1f}" y="{y0:.1f}" width="{length:.1f}" '
+                f'<rect id="pyr-{this_mark_i}" class="pyr hit" tabindex="0" x="{x0:.1f}" y="{y0:.1f}" width="{length:.1f}" '
                 f'height="{bar_h:.1f}" rx="{r:.1f}" fill="{colors[sex]}" '
                 f'role="img" aria-label="{xml_escape(tip)}"/>'
             )
-            parts.append(
+            pyr_tips.append(
                 tooltip_bubble(
                     x0 + (length if sign < 0 else 0.0), y0 - 12,
                     [f"{sex}, {age}", f"{abs(v):.0f}% of population", f"{share:.1f}% of pyramid total"],
                     anchor="middle", canvas_w=width, canvas_h=height,
                     ink=INK, secondary=SECONDARY, border=GRIDLINE,
+                    elem_id=f"pyr-tip-{this_mark_i}",
                 )
             )
             label_x = x0 - 6 if sign < 0 else x0 + length + 6
@@ -198,6 +212,7 @@ def build_svg(
                 f'<text x="{label_x:.1f}" y="{cy + 4:.1f}" font-size="10" font-family="{mono_family}" '
                 f'fill="{SECONDARY}" text-anchor="{anchor}">{abs(v):.0f}%</text>'
             )
+    parts.extend(pyr_tips)
 
     parts.append(fullscreen_control(width, height, mode))
     parts.append("</svg>")

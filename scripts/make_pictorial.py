@@ -46,7 +46,7 @@ from typing import Any, Dict, List, Optional, Tuple
 # without the dataviz tier).
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import load_palette, os_adaptive_style, os_dark_style, qualitative_sequence  # noqa: E402
-from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _svg import foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
@@ -365,7 +365,7 @@ def build_svg(
         ".row:focus { outline: none; }",
         f".row:focus .rowlabel {{ fill: {_FOCUS}; }}",
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}",
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}",
+        foreground_tip_css(len(data), mark_prefix="row", tip_prefix="row-tip"),
         "@media (prefers-reduced-motion: reduce) {"
         " .row, .icons { transition: none; }"
         " .reveal { animation: none !important; }"
@@ -412,6 +412,11 @@ def build_svg(
     )
 
     # ---- icon rows, one per city ----
+    # Every row is drawn first, every one of its bubbles appended afterward
+    # (see row_tips below): SVG paints in document order regardless of hover
+    # state, so a bubble sitting next to its own row would be covered by the
+    # row drawn after it (rows sit close together vertically).
+    row_tips: List[str] = []
     for k, d in enumerate(data):
         s = _slug(str(d["label"]))
         color = str(d["color"])
@@ -423,7 +428,7 @@ def build_svg(
         share = value / max_value * 100.0
         row_tip = f"{_xml(str(d['label']))}: {value:.0f} cyclists per 100 commuters"
         parts.append(
-            f'<g class="row row-{s} hit" tabindex="0" role="listitem" '
+            f'<g id="row-{k}" class="row row-{s} hit" tabindex="0" role="listitem" '
             f'aria-label="{row_tip}">'
         )
 
@@ -497,14 +502,16 @@ def build_svg(
         )
 
         parts.append('</g>')
-        parts.append(
+        row_tips.append(
             tooltip_bubble(
                 _FIELD_X, top - 14,
                 [str(d["label"]), f"{value:.0f} per 100 commuters", f"{share:.1f}% of the top row"],
                 anchor="start", canvas_w=_WIDTH, canvas_h=_HEIGHT,
                 ink=_INK, secondary=_SUBTLE, border=_EMPTY,
+                elem_id=f"row-tip-{k}",
             )
         )
+    parts.extend(row_tips)
 
     # ---- legend / unit key (bottom-left, below the rows) ----
     legend_y = _ROW_TOP + len(data) * _ROW_H + 26

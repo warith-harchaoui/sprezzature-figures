@@ -63,7 +63,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _style import GRIDLINE, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
-from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _svg import foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 
@@ -370,8 +370,9 @@ def build_svg(
         ".pt:hover .halo,.pt:focus .halo{opacity:1}"
         ".pt:focus{outline:none}"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
-        "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
+        + foreground_tip_css(len(rows), mark_prefix="bar", tip_prefix="bar-tip")
+        + foreground_tip_css(len(rows), mark_prefix="pt", tip_prefix="pt-tip")
+        + "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
         + os_adaptive_style({".pa-vital": vital_c}, role="fill")
         + os_adaptive_style({".pa-line": line_c}, role="both")
         # Additive OS dark mode: dark paper + light ink (default ink_map); the
@@ -432,6 +433,11 @@ def build_svg(
     )
 
     # --- sorted bars (vital few Blue, trivial many grey) ---------
+    # Every bar is drawn first, every one of its bubbles appended afterward
+    # (see bar_tips below): SVG paints in document order regardless of hover
+    # state, so a bubble sitting next to its own bar would be covered by any
+    # bar drawn after it.
+    bar_tips: List[str] = []
     for i, r in enumerate(rows):
         cx = slot_center(i)
         share = float(r["share"])
@@ -448,7 +454,7 @@ def build_svg(
             reason=r["reason"], count=int(r["count"]), share=share, cum=float(r["cum"]),
         )
         parts.append(
-            f'<g class="bar hit" tabindex="0" role="img" '
+            f'<g id="bar-{i}" class="bar hit" tabindex="0" role="img" '
             f'aria-label="{xml_escape(tip)}">'
         )
         # Rounded top corners via a small rx; white keyline lifts each bar off
@@ -459,14 +465,16 @@ def build_svg(
             f'stroke-width="1.5"/>'
         )
         parts.append("</g>")
-        parts.append(
+        bar_tips.append(
             tooltip_bubble(
                 cx, top - 14.0,
                 [str(r["reason"]), f"{int(r['count']):,} tickets", f"{share:.1f}% of total · cumulative {float(r['cum']):.1f}%"],
                 anchor="middle", canvas_w=width, canvas_h=height,
                 ink=ink, secondary=secondary, border=GRIDLINE,
+                elem_id=f"bar-tip-{i}",
             )
         )
+    parts.extend(bar_tips)
 
     # --- cumulative-percentage line + markers --------------------
     # One smooth-enough polyline through the running totals, drawn with a soft
@@ -499,6 +507,11 @@ def build_svg(
 
     # Round markers at every step; the crossing point reuses the same recipe,
     # only larger, so all markers form one family.
+    # Every point is drawn first, every one of its bubbles appended afterward
+    # (see pt_tips below): SVG paints in document order regardless of hover
+    # state, so a bubble sitting next to its own point would be covered by
+    # any point drawn after it.
+    pt_tips: List[str] = []
     for i, r in enumerate(rows):
         cx, cy = pts[i]
         cum = float(r["cum"])
@@ -506,7 +519,7 @@ def build_svg(
         rr = 10.0 if is_cross else 6.5
         tip = strings["point_tooltip"].format(reason=r["reason"], cum=cum)
         parts.append(
-            f'<g class="pt hit" tabindex="0" role="img" '
+            f'<g id="pt-{i}" class="pt hit" tabindex="0" role="img" '
             f'aria-label="{xml_escape(tip)}">'
         )
         parts.append(
@@ -518,14 +531,16 @@ def build_svg(
             f'fill="{line_c}" stroke="#FFFFFF" stroke-width="2"/>'
         )
         parts.append("</g>")
-        parts.append(
+        pt_tips.append(
             tooltip_bubble(
                 cx, cy - 26.0,
                 [str(r["reason"]), f"cumulative {cum:.1f}% of total"],
                 anchor="middle", canvas_w=width, canvas_h=height,
                 ink=ink, secondary=secondary, border=GRIDLINE,
+                elem_id=f"pt-tip-{i}",
             )
         )
+    parts.extend(pt_tips)
 
     # --- crossing call-out ---------------------------------------
     if crossing:

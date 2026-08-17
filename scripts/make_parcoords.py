@@ -27,7 +27,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import load_palette  # noqa: E402
-from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _svg import foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
@@ -160,8 +160,10 @@ def build_svg(
     parts.append(
         "<style>"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
-        "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
+        + foreground_tip_css(
+            sum(len(cars) for cars in cars_by_class.values()), mark_prefix="car", tip_prefix="car-tip"
+        )
+        + "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
         "</style>"
     )
     parts.append(f'<rect width="{_WIDTH}" height="{_HEIGHT}" fill="{_BG}"/>')
@@ -208,7 +210,14 @@ def build_svg(
             f'{_fmt(lo)}</text>'
         )
 
-    # Polylines: one per car, coloured by class.
+    # Polylines: one per car, coloured by class. Every polyline is drawn
+    # first, every one of its bubbles appended afterward (see car_tips
+    # below): SVG paints in document order regardless of hover state, so a
+    # bubble sitting next to its own polyline would be covered by any
+    # polyline drawn after it -- and parallel-coordinate lines cross and
+    # overlap by construction.
+    car_tips: List[str] = []
+    car_i = 0
     for name, cars in cars_by_class.items():
         color = class_color[name]
         for car in cars:
@@ -218,7 +227,7 @@ def build_svg(
             )
             tip = f"{name}: " + ", ".join(f"{k} {_fmt(car[k])}" for k, _t, _l, _h in AXES)
             parts.append(
-                f'<polyline class="hit" tabindex="0" points="{pts}" fill="none" stroke="{color}" '
+                f'<polyline id="car-{car_i}" class="hit" tabindex="0" points="{pts}" fill="none" stroke="{color}" '
                 f'stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" '
                 f'opacity="0.72" role="img" aria-label="{xml_escape(tip)}"/>'
             )
@@ -226,14 +235,17 @@ def build_svg(
             mid_key, _mt, mid_lo, mid_hi = AXES[mid_i]
             mid_x = ax_x[mid_i]
             mid_y = y_of(car[mid_key], mid_lo, mid_hi)
-            parts.append(
+            car_tips.append(
                 tooltip_bubble(
                     mid_x, mid_y - 14.0,
                     [name] + [f"{k} {_fmt(car[k])}" for k, _t, _l, _h in AXES],
                     anchor="middle", canvas_w=_WIDTH, canvas_h=_HEIGHT,
                     ink=_INK, secondary=_SUBTLE, border=_GRID,
+                    elem_id=f"car-tip-{car_i}",
                 )
             )
+            car_i += 1
+    parts.extend(car_tips)
 
     parts.append(fullscreen_control(_WIDTH, _HEIGHT, mode))
     parts.append("</svg>")

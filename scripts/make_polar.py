@@ -41,7 +41,7 @@ Author
 from __future__ import annotations
 from _render import svg_example_path, write_svg  # noqa: E402
 from _style import CORNERS, leveled_colors, os_adaptive_style, os_dark_style  # noqa: E402
-from _svg import fmt_compact, svg_open, tooltip_bubble  # noqa: E402
+from _svg import fmt_compact, foreground_tip_css, svg_open, tooltip_bubble  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
@@ -271,8 +271,8 @@ def build_svg(
         ".pt:hover .halo,.pt:focus .halo{opacity:1}"
         ".pt:focus{outline:none}"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
-        "@media (prefers-reduced-motion: reduce){.tip{transition:none}}\n"
+        + foreground_tip_css(n, mark_prefix="pt", tip_prefix="pt-tip")
+        + "@media (prefers-reduced-motion: reduce){.tip{transition:none}}\n"
         + os_adaptive_style({".po-accent": accent}, role="both")
         + "\n"
         # Additive OS dark mode: dark paper + light ink (default ink_map); the
@@ -352,6 +352,11 @@ def build_svg(
     # Every mark carries a real per-hour tooltip: the category (hour), its
     # magnitude (departures) and angle (bearing clockwise from midnight), plus
     # its share of the day's total — not a generic hover.
+    # Every dot is drawn first, every one of its bubbles appended afterward
+    # (see pt_tips below): SVG paints in document order regardless of hover
+    # state, so a bubble sitting next to its own dot would be covered by any
+    # dot drawn after it -- and dots near the centre routinely overlap.
+    pt_tips: List[str] = []
     day_total = float(counts.sum())
     for hour in range(n):
         value = float(counts[hour])
@@ -366,20 +371,22 @@ def build_svg(
         is_peak = hour in (int(np.argmax(counts[6:11]) + 6), int(np.argmax(counts)))
         radius = 8.5 if is_peak else 5.0
         parts.append(
-            f'<g class="pt hit" tabindex="0" role="img" aria-label="{tip}">'
+            f'<g id="pt-{hour}" class="pt hit" tabindex="0" role="img" aria-label="{tip}">'
             f'<circle class="halo" cx="{fmt_compact(px)}" cy="{fmt_compact(py)}" '
             f'r="{radius + 9:.1f}" fill="{accent}" fill-opacity="0.16"/>'
             f'<circle class="po-accent" cx="{fmt_compact(px)}" cy="{fmt_compact(py)}" '
             f'r="{radius}" fill="{accent}" stroke="#FFFFFF" stroke-width="2"/></g>'
         )
-        parts.append(
+        pt_tips.append(
             tooltip_bubble(
                 px, py - radius - 14,
                 [f"{hour:02d}:00", f"{value:.0f} departures", f"{share:.1f}% of the day's total"],
                 anchor="middle", canvas_w=width, canvas_h=height,
                 ink=_INK, secondary=_SECONDARY, border=_GRID,
+                elem_id=f"pt-tip-{hour}",
             )
         )
+    parts.extend(pt_tips)
 
     # ---- peak callouts ---------------------------------------------------- #
     # Each peak dot gets an ink label set into the open interior of the dial,
