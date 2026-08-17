@@ -35,7 +35,7 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _svg import foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
@@ -169,7 +169,7 @@ def build_svg(
     parts.append(
         "<style>"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
+        f"{foreground_tip_css(len(rows), mark_prefix='point')}"
         "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
         "</style>"
     )
@@ -224,19 +224,24 @@ def build_svg(
     )
 
     # ---- observed points ----
-    for r in rows:
+    # Points drawn first, bubbles collected and appended last (SVG has no
+    # z-index; a bubble next to its own point would be covered by any point
+    # drawn afterward) -- see _svg.foreground_tip_css's docstring.
+    tip_bubbles: List[str] = []
+    for i, r in enumerate(rows):
         cx, cy = x_for(float(r["x"])), y_for(float(r["y"]))
         tip = f"Observed: x={float(r['x']):.2f}, y={float(r['y']):.2f}"
         parts.append(
-            f'<circle class="hit" tabindex="0" cx="{cx:.1f}" cy="{cy:.1f}" r="5" fill="{COLOR_POINT}" '
+            f'<circle id="point-{i}" class="hit" tabindex="0" cx="{cx:.1f}" cy="{cy:.1f}" r="5" fill="{COLOR_POINT}" '
             f'stroke="{BG}" stroke-width="1.5"><title>{xml_escape(tip)}</title></circle>'
         )
-        parts.append(
+        tip_bubbles.append(
             tooltip_bubble(
                 cx, cy - 16,
                 [f"x = {float(r['x']):.2f}", f"y = {float(r['y']):.2f}", "observed point"],
                 anchor="middle", canvas_w=width, canvas_h=height,
                 ink=INK, secondary=SECONDARY, border=GRIDLINE,
+                elem_id=f"tip-{i}",
             )
         )
 
@@ -261,6 +266,7 @@ def build_svg(
         f'fill="{INK}" text-anchor="middle">x</text>'
     )
 
+    parts.extend(tip_bubbles)
     parts.append(fullscreen_control(width, height, mode))
     parts.append("</svg>")
     return "\n".join(parts)
