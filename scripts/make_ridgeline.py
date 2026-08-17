@@ -37,7 +37,7 @@ Author
 from __future__ import annotations
 from _interactive import fullscreen_control  # noqa: E402
 from _render import svg_example_path, write_svg  # noqa: E402
-from _svg import fmt_compact, tooltip_bubble, xml_escape  # noqa: E402
+from _svg import fmt_compact, foreground_tip_css, tooltip_bubble, xml_escape  # noqa: E402
 from _style import leveled_colors, os_adaptive_style, os_dark_style  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
@@ -390,8 +390,8 @@ def build_svg(
     parts.append(
         "<style>"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
-        "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
+        + foreground_tip_css(len(labels))
+        + "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
         + os_adaptive_style(ridge_series, role="fill")
         + os_dark_style(extra=dark_extra)
         + "</style>"
@@ -423,6 +423,13 @@ def build_svg(
     # Drawing order: bottom-most first would let upper ridges cover it. We
     # want each ridge to sit in front of the one *below* it, so we paint from
     # top of the stack downward and rely on later (lower) ridges overlapping.
+    # Bubbles are collected here and drawn only once, all together, after
+    # every ridge (see the `parts.extend` right before the x-axis): SVG has
+    # no z-index, so a bubble sitting next to its own ridge would be
+    # covered by any ridge drawn afterward -- and ridgeline plots overlap
+    # by design, so this is the chart type most likely to hit the bug.
+    # `i` pairs each ridge with its bubble (`hit-N`/`tip-N`).
+    tips: List[str] = []
     for i, label in enumerate(labels):
         base_y = m_top + step * (i + 0.85)  # baseline for this ridge
         dens = densities[label] / global_peak  # 0..1
@@ -453,7 +460,7 @@ def build_svg(
         )
 
         parts.append(
-            f'<g class="ridge hit" tabindex="0" role="img" aria-label="{xml_escape(tip)}">'
+            f'<g id="hit-{i}" class="ridge hit" tabindex="0" role="img" aria-label="{xml_escape(tip)}">'
             f'<path class="rg-{i}" d="{area_d}" fill="{colour}" fill-opacity="0.82" '
             f'stroke="none"/>'
             f'<path d="{stroke_d}" fill="none" stroke="#FFFFFF" '
@@ -465,12 +472,13 @@ def build_svg(
         peak_i = int(np.argmax(dens))
         peak_x = x_px(float(grid[peak_i]))
         peak_y = base_y - float(dens[peak_i]) * peak_h
-        parts.append(
+        tips.append(
             tooltip_bubble(
                 peak_x, peak_y - 14,
                 [label, f"Median {med:.0f} °C", f"Middle half {q1:.0f}–{q3:.0f} °C"],
                 anchor="middle", canvas_w=width, canvas_h=height,
                 ink=_INK, secondary=_SECONDARY, border="#E5E5EA",
+                elem_id=f"tip-{i}",
             )
         )
 
@@ -479,6 +487,8 @@ def build_svg(
             f'<text x="{m_left - 20}" y="{fmt_compact(base_y - 5)}" text-anchor="end" '
             f'font-size="18" fill="{_INK}">{label}</text>'
         )
+
+    parts.extend(tips)
 
     # ---- x-axis line + tick labels + title -------------------------------- #
     axis_y = m_top + plot_h + 34

@@ -50,7 +50,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import _style
 from _style import forced_color_patterns, os_adaptive_style, os_dark_style
-from _svg import point_on_circle, tooltip_bubble
+from _svg import foreground_tip_css, point_on_circle, tooltip_bubble
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
@@ -313,8 +313,14 @@ def _disc_and_anchors(anchors: List[Tuple[float, float]]) -> str:
         f'    <circle cx="{CX}" cy="{CY}" r="{RADIUS / 2:.1f}" fill="none" '
         f'stroke="{GRID}" stroke-width="1.5" stroke-dasharray="3 6"/>'
     )
-    # Spokes + anchor knobs + labels.
-    for (ax, ay), name in zip(anchors, FEATURES):
+    # Spokes + anchor knobs + labels. Bubbles are collected here and drawn
+    # only once, all together, right before this group closes: SVG has no
+    # z-index, so a bubble sitting next to its own anchor would be covered
+    # by any anchor drawn afterward. `i` pairs each anchor with its bubble
+    # (`anchor-N`/`tip-anchor-N`) since they are no longer document
+    # neighbours.
+    tips: List[str] = []
+    for i, ((ax, ay), name) in enumerate(zip(anchors, FEATURES)):
         parts.append(
             f'    <line x1="{CX}" y1="{CY}" x2="{ax:.1f}" y2="{ay:.1f}" '
             f'stroke="{GRID}" stroke-width="1.5"/>'
@@ -340,18 +346,20 @@ def _disc_and_anchors(anchors: List[Tuple[float, float]]) -> str:
         )
         anchor_tip = f"Anchor: {name}. Kernels rich in this measurement are pulled toward it."
         parts.append(
-            f'    <circle class="anchor hit" tabindex="0" cx="{ax:.1f}" cy="{ay:.1f}" r="7" '
+            f'    <circle id="anchor-{i}" class="anchor hit" tabindex="0" cx="{ax:.1f}" cy="{ay:.1f}" r="7" '
             f'fill="{INK}" stroke="{WHITE}" stroke-width="2.5" '
             f'role="img" aria-label="{anchor_tip}"/>'
         )
-        parts.append(
+        tips.append(
             tooltip_bubble(
                 ax, ay - 20,
                 [name, "Anchor: pulls rich kernels toward it"],
                 anchor="middle", canvas_w=WIDTH, canvas_h=HEIGHT,
                 ink=INK, secondary=SUBTLE, border=GRID,
+                elem_id=f"tip-anchor-{i}",
             )
         )
+    parts.extend(tips)
     parts.append("  </g>")
     return "\n".join(parts)
 
@@ -396,7 +404,17 @@ def _points(
             f'    <g class="rv-{name.lower()}" role="listitem" '
             f'aria-label="{name} kernels" fill="{col}">'
         )
-        for r in cls_rows:
+        # Every bubble in this class is collected here and drawn only
+        # once, all together, right before this class's own group closes:
+        # SVG has no z-index, so a bubble sitting next to its own point
+        # would be covered by any point drawn afterward -- most visibly
+        # a later point from the *same* class, since points of one variety
+        # cluster together. `pi` pairs each point with its bubble
+        # (`pt-{ci}-N`/`tip-pt-{ci}-N`), scoped per class since the CSS
+        # sibling selector needs the hovered mark and its bubble to share
+        # the same immediate parent, which each class's own `<g>` is.
+        cls_tips: List[str] = []
+        for pi, r in enumerate(cls_rows):
             x, y = project(r["norm"], anchors)  # type: ignore[arg-type]
             sx += x
             sy += y
@@ -406,18 +424,20 @@ def _points(
             dom_val = r["raw"][dom_idx]  # type: ignore[index]
             tip = f"{name} kernel — pulled toward {dom_feat}"
             parts.append(
-                f'      <circle class="pt hit" tabindex="0" cx="{x:.1f}" cy="{y:.1f}" r="6.5" '
+                f'      <circle id="pt-{ci}-{pi}" class="pt hit" tabindex="0" cx="{x:.1f}" cy="{y:.1f}" r="6.5" '
                 f'stroke="{WHITE}" stroke-width="1.4" fill-opacity="0.78" '
                 f'role="img" aria-label="{tip}"/>'
             )
-            parts.append(
+            cls_tips.append(
                 tooltip_bubble(
                     x, y - 16,
                     [name, f"Dominant: {dom_feat}", f"{dom_feat}: {dom_val:.2f}"],
                     anchor="middle", canvas_w=WIDTH, canvas_h=HEIGHT,
                     ink=INK, secondary=SUBTLE, border=GRID,
+                    elem_id=f"tip-pt-{ci}-{pi}",
                 )
             )
+        parts.extend(cls_tips)
         parts.append("    </g>")
         n = max(1, len(cls_rows))
         centroids.append((sx / n, sy / n))
@@ -548,6 +568,14 @@ def build_svg(
 
     n_total = len(rows)
     n_feat = len(FEATURES)
+    # Foreground-tooltip CSS: one rule set for the anchors, one per class
+    # (see _disc_and_anchors/_points for why the ids are scoped this way).
+    tip_css = foreground_tip_css(n_feat, mark_prefix="anchor", tip_prefix="tip-anchor") + "".join(
+        foreground_tip_css(
+            len([r for r in rows if r["cls"] == ci]), mark_prefix=f"pt-{ci}", tip_prefix=f"tip-pt-{ci}"
+        )
+        for ci in range(len(CLASSES))
+    )
 
     title = "Seven calliper measurements already separate the wheat varieties"
     subtitle = (
@@ -595,7 +623,7 @@ def build_svg(
     .anchor:hover {{ r: 10; }}
     text {{ fill: {INK}; }}
     .tip{{opacity:0;pointer-events:none;transition:opacity .12s ease}}
-    .hit:hover+.tip,.hit:focus+.tip{{opacity:1}}
+    {tip_css}
     @media (prefers-reduced-motion: reduce){{.tip{{transition:none}}}}
 {contrast_block}
 {fcp_style}

@@ -34,7 +34,7 @@ from typing import Any, Dict, List, Optional, Tuple
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _svg import foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
@@ -159,7 +159,6 @@ def build_svg(
     parts.append(
         "<style>"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
         "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
         "</style>"
     )
@@ -205,18 +204,23 @@ def build_svg(
     path_d = "M " + " L ".join(f"{x:.1f},{y:.1f}" for x, y in path_pts)
     tip = f"ROC curve, AUC = {auc:.3f}"
     parts.append(
-        f'<path class="hit" tabindex="0" d="{path_d}" fill="none" stroke="{COLOR_ROC}" '
+        f'<path id="hit-curve" class="hit" tabindex="0" d="{path_d}" fill="none" stroke="{COLOR_ROC}" '
         f'stroke-width="2.5" role="img" aria-label="{xml_escape(tip)}"/>'
     )
     mid_x, mid_y = path_pts[len(path_pts) // 2]
-    parts.append(
+    # Bubbles are collected here (the curve's own, plus every threshold
+    # marker's below) and drawn only once, all together, right before this
+    # function returns: SVG has no z-index, so a bubble sitting next to its
+    # own mark would be covered by any mark drawn afterward.
+    tips: List[str] = [
         tooltip_bubble(
             mid_x, mid_y - 16,
             ["ROC curve", f"AUC = {auc:.3f}", f"n = {len(rows)} scored"],
             anchor="middle", canvas_w=width, canvas_h=height,
             ink=INK, secondary=SECONDARY, border=GRIDLINE,
+            elem_id="tip-curve",
         )
-    )
+    ]
 
     # ---- per-threshold hover markers (thinned) ---------------------------
     # A dense sweep over unique classifier scores can produce 100+ points;
@@ -232,7 +236,7 @@ def build_svg(
         marker_idx = sorted(
             {round(i * (n_pts - 1) / (max_markers - 1)) for i in range(max_markers)}
         )
-    for idx in marker_idx:
+    for m_i, idx in enumerate(marker_idx):
         fpr, tpr = points[idx]
         thr = point_thresholds[idx]
         if thr is not None:
@@ -244,19 +248,25 @@ def build_svg(
         mx, my = x_for(fpr), y_for(tpr)
         tip2 = f"FPR {fpr:.2f}, TPR {tpr:.2f}, {thr_txt}"
         parts.append(
-            f'<circle class="hit" tabindex="0" cx="{mx:.1f}" cy="{my:.1f}" r="4.5" '
+            f'<circle id="hit-marker-{m_i}" class="hit" tabindex="0" cx="{mx:.1f}" cy="{my:.1f}" r="4.5" '
             f'fill="{BG}" stroke="{COLOR_ROC}" stroke-width="2" '
             f'role="img" aria-label="{xml_escape(tip2)}"/>'
         )
-        parts.append(
+        tips.append(
             tooltip_bubble(
                 mx, my - 14,
                 [f"FPR {fpr:.2f}, TPR {tpr:.2f}", thr_txt],
                 anchor="middle", canvas_w=width, canvas_h=height,
                 ink=INK, secondary=SECONDARY, border=GRIDLINE,
+                elem_id=f"tip-marker-{m_i}",
             )
         )
 
+    parts.extend(tips)
+    parts.append(
+        f"<style>#hit-curve:hover~#tip-curve,#hit-curve:focus~#tip-curve{{opacity:1}}"
+        f"{foreground_tip_css(len(marker_idx), mark_prefix='hit-marker', tip_prefix='tip-marker')}</style>"
+    )
     parts.append(fullscreen_control(width, height, mode))
     parts.append("</svg>")
     return "\n".join(parts)

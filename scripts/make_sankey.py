@@ -54,7 +54,7 @@ from xml.sax.saxutils import escape
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import BG, GRIDLINE, INK, forced_color_patterns, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _svg import svg_open, tooltip_bubble  # noqa: E402
+from _svg import foreground_tip_css, svg_open, tooltip_bubble  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
@@ -438,8 +438,9 @@ def build_svg(
         "#links .link:hover,#links .link:focus{opacity:1}"
         ".link:focus{outline:none}"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
-        "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
+        + foreground_tip_css(len(links), mark_prefix="link", tip_prefix="tip-link")
+        + foreground_tip_css(len(nodes), mark_prefix="node", tip_prefix="tip-node")
+        + "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
         + os_adaptive_style(sk_series, role="fill")
         + fcp_style
         + os_dark_style()
@@ -491,7 +492,13 @@ def build_svg(
         gt["in_cursor"] += thick
         endpoints[(s, t)] = (x0, y0, x1, y1, thick)
 
-    for s, t, vol in ordered:
+    # Bubbles are collected here and drawn only once, all together, right
+    # before this group closes (see `parts.extend(link_tips)` below): SVG
+    # has no z-index, so a bubble sitting next to its own ribbon would be
+    # covered by any ribbon drawn afterward. `li` pairs each ribbon with
+    # its bubble (`link-N`/`tip-link-N`).
+    link_tips: List[str] = []
+    for li, (s, t, vol) in enumerate(ordered):
         x0, y0, x1, y1, thick = endpoints[(s, t)]
         # A ribbon carries the color of the root that dominates its *source*
         # node, so the origin story survives the whole cascade.
@@ -501,26 +508,33 @@ def build_svg(
         vol_txt = _fmt_k(vol)
         tip = f"{label_of[s]} → {label_of[t]}: {vol_txt} {volume_unit}"
         parts.append(
-            f'<path class="link hit{chan_cls}" tabindex="0" role="img" '
+            f'<path id="link-{li}" class="link hit{chan_cls}" tabindex="0" role="img" '
             f'aria-label="{escape(tip)}" d="{_ribbon_path(x0, y0, x1, y1, thick)}" '
             f'fill="{color}" fill-opacity="0.55" stroke="#FFFFFF" stroke-width="1.25" '
             f'stroke-opacity="0.9"/>'
         )
         mid_x = (x0 + x1) / 2.0
         mid_y = (y0 + y1) / 2.0 + thick / 2.0
-        parts.append(
+        link_tips.append(
             tooltip_bubble(
                 mid_x, mid_y - 14,
                 [f"{label_of[s]} → {label_of[t]}", f"{vol_txt} {volume_unit}"],
                 anchor="middle", canvas_w=WIDTH, canvas_h=HEIGHT,
                 ink=INK, secondary=SUBINK, border=GRIDLINE,
+                elem_id=f"tip-link-{li}",
             )
         )
+    parts.extend(link_tips)
     parts.append("</g>")
 
     # --- nodes + labels ---
     parts.append('<g id="nodes">')
-    for node_id, label, layer_idx in nodes:
+    # Bubbles are collected here and drawn only once, all together, right
+    # before this group closes (see `parts.extend(node_tips)` below), same
+    # reasoning as the links group above. `ni` pairs each node with its
+    # bubble (`node-N`/`tip-node-N`).
+    node_tips: List[str] = []
+    for ni, (node_id, label, layer_idx) in enumerate(nodes):
         g = geometry[node_id]
         root = dominant.get(node_id)
         if root == node_id:
@@ -535,16 +549,17 @@ def build_svg(
         vol_txt = _fmt_k(g["vol"])
         node_tip = f"{label}: {vol_txt} {volume_unit}"
         parts.append(
-            f'<rect class="node hit{node_cls}" tabindex="0" role="img" '
+            f'<rect id="node-{ni}" class="node hit{node_cls}" tabindex="0" role="img" '
             f'aria-label="{escape(node_tip)}" x="{g["x"]:.1f}" y="{g["y"]:.1f}" '
             f'width="{NODE_WIDTH}" height="{max(1.0, g["h"]):.1f}" rx="5" fill="{ncol}"/>'
         )
-        parts.append(
+        node_tips.append(
             tooltip_bubble(
                 g["x"] + NODE_WIDTH / 2.0, g["y"] - 14,
                 [label, f"{vol_txt} {volume_unit}"],
                 anchor="middle", canvas_w=WIDTH, canvas_h=HEIGHT,
                 ink=INK, secondary=SUBINK, border=GRIDLINE,
+                elem_id=f"tip-node-{ni}",
             )
         )
         cy = g["y"] + g["h"] / 2.0
@@ -562,6 +577,7 @@ def build_svg(
             f'font-weight="400" fill="{SUBINK}" font-size="15">'
             f'{escape(vol_txt)}</tspan></text>'
         )
+    parts.extend(node_tips)
     parts.append("</g>")
 
 
