@@ -70,7 +70,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _style import GRIDLINE, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
-from _svg import hex_to_rgb, svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _svg import foreground_tip_css, hex_to_rgb, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
 
@@ -333,7 +333,7 @@ def build_svg(
         ".pt:hover .halo,.pt:focus .halo{opacity:1}"
         ".pt:focus{outline:none}"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
+        f"{foreground_tip_css(1)}"
         "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
         + os_adaptive_style(lg_curve_series, role="stroke")
         + os_adaptive_style(lg_marker_series, role="fill")
@@ -463,7 +463,7 @@ def build_svg(
         f'({op["lift"]}× better than random)'
     )
     parts.append(
-        f'<g class="pt hit" tabindex="0" role="img" aria-label="{xml_escape(tip)}">'
+        f'<g id="hit-0" class="pt hit" tabindex="0" role="img" aria-label="{xml_escape(tip)}">'
     )
     parts.append(f"<title>{xml_escape(tip)}</title>")
     parts.append(
@@ -489,6 +489,7 @@ def build_svg(
             ink=ink,
             secondary=secondary,
             border=GRIDLINE,
+            elem_id="tip-0",
         )
     )
     # A halo (paint-order: stroke) keeps this legible where the callout sits
