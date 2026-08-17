@@ -54,7 +54,7 @@ from xml.sax.saxutils import escape
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import BG, GRIDLINE, INK, forced_color_patterns, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
-from _svg import point_on_circle, svg_open, tooltip_bubble  # noqa: E402
+from _svg import foreground_tip_css, point_on_circle, svg_open, tooltip_bubble  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control, hover_isolate_css  # noqa: E402
 
@@ -463,7 +463,8 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
         + ".arc{transition:opacity .18s ease}"
         ".chord:focus,.arc:focus{outline:none}"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
+        + foreground_tip_css(len(ribbons), mark_prefix="ribbon", tip_prefix="ribbon-tip")
+        + foreground_tip_css(n, mark_prefix="arc", tip_prefix="arc-tip") +
         "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
         + adaptive
         + fcp_style
@@ -489,7 +490,14 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
     )
 
     # --- ribbons (drawn first, under the arcs) ---
+    # Every ribbon is drawn first, then every hover card is appended
+    # afterward, still inside #chords so the id-matched hover rule below
+    # still finds them as siblings (see _svg.foreground_tip_css): SVG
+    # paints in document order regardless of hover state, so a card
+    # sitting right next to its own ribbon would be covered by any ribbon
+    # drawn later.
     parts.append('<g id="chords">')
+    ribbon_tip_cards: List[str] = []
     # Thickest first so thin ribbons layer cleanly on top.
     for chord_idx, rb in enumerate(sorted(ribbons, key=lambda r: -r["combined"])):
         d = _ribbon_path(rb["a0"], rb["a1"], rb["b0"], rb["b1"], R_INNER)
@@ -502,7 +510,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
             f"{dst_name} reviewed {rb['v_dst']} of {src_name}'s)"
         )
         parts.append(
-            f'<path class="chord chord-{chord_idx} team-{rb["src"]} hit" tabindex="0" role="img" '
+            f'<path id="ribbon-{chord_idx}" class="chord chord-{chord_idx} team-{rb["src"]} hit" tabindex="0" role="img" '
             f'aria-label="{escape(tip)}" d="{d}" fill="{rb["color"]}" '
             f'fill-opacity="0.5" stroke="{rb["color"]}" stroke-opacity="0.35" '
             f'stroke-width="0.6">'
@@ -514,7 +522,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
         pb_mid = _polar(R_INNER, b_mid)
         rx = CX + ((pa_mid[0] + pb_mid[0]) / 2.0 - CX) * 0.45
         ry = CY + ((pa_mid[1] + pb_mid[1]) / 2.0 - CY) * 0.45
-        parts.append(
+        ribbon_tip_cards.append(
             tooltip_bubble(
                 rx, ry,
                 [
@@ -524,28 +532,38 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
                 ],
                 anchor="middle", canvas_w=WIDTH, canvas_h=HEIGHT,
                 ink=INK, secondary=SUBINK, border=GRIDLINE,
+                elem_id=f"ribbon-tip-{chord_idx}",
             )
         )
+    parts.extend(ribbon_tip_cards)
     parts.append("</g>")
 
     # --- group arcs + labels ---
+    # Every arc (and its rim label) is drawn first, then every hover card
+    # is appended afterward, still inside #arcs -- both so the id-matched
+    # hover rule below still finds them as siblings, and so a card can
+    # never sit under a rim label drawn after it either (the two used to
+    # interleave per-arc; a bubble is only ever safe once nothing else in
+    # its group is drawn after it).
     parts.append('<g id="arcs">')
+    arc_tip_cards: List[str] = []
     for i in range(n):
         g = groups[i]
         d = _arc_path(R_OUTER, R_INNER, g["a0"], g["a1"])
         arc_tip = f"{g['name']}: {g['total']} reviews in and out this sprint"
         parts.append(
-            f'<path class="arc team-{i} hit" tabindex="0" role="img" '
+            f'<path id="arc-{i}" class="arc team-{i} hit" tabindex="0" role="img" '
             f'aria-label="{escape(arc_tip)}" d="{d}" fill="{g["color"]}">'
             f'<title>{escape(arc_tip)}</title></path>'
         )
         arc_mid_pt = _polar(R_OUTER + 8, g["mid"])
-        parts.append(
+        arc_tip_cards.append(
             tooltip_bubble(
                 arc_mid_pt[0], arc_mid_pt[1] - 8,
                 [g["name"], f"{g['total']} reviews in and out"],
                 anchor="middle", canvas_w=WIDTH, canvas_h=HEIGHT,
                 ink=INK, secondary=SUBINK, border=GRIDLINE,
+                elem_id=f"arc-tip-{i}",
             )
         )
 
@@ -562,6 +580,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
             f'dominant-baseline="middle">'
             f'{escape(g["name"])}</text>'
         )
+    parts.extend(arc_tip_cards)
     parts.append("</g>")
 
     # --- centre annotation: the takeaway number, quietly ---
