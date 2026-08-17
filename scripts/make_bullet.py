@@ -45,7 +45,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import GRIDLINE, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
-from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _svg import foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 
 
@@ -315,7 +315,7 @@ def build_svg(
         '.bar:hover,.bar:focus{stroke:#1D1D1F;stroke-width:2}'
         '.bar:focus{outline:none}'
         '.tip{opacity:0;pointer-events:none;transition:opacity .12s ease}'
-        '.hit:hover+.tip,.hit:focus+.tip{opacity:1}'
+        + foreground_tip_css(n) +
         '@media (prefers-reduced-motion:reduce){.tip{transition:none}}'
         + adaptive
         # Paper + ink flip to a dark surface; the pale-blue band ramp, the deep
@@ -383,6 +383,7 @@ def build_svg(
     )
 
     # --- rows ----------------------------------------------------
+    tip_cards: List[str] = []
     for i, k in enumerate(kpis):
         name = str(k["name"])
         unit = str(k["unit"])
@@ -441,13 +442,16 @@ def build_svg(
         gap_word = "of target" if beats else "of target"
         tip = f"{name}: {_fmt(value)} {unit} — {pct}% {gap_word} ({_fmt(target)} {unit})"
         parts.append(
-            f'<rect class="bar hit" x="{bar_x:.1f}" y="{bar_y:.1f}" '
+            f'<rect id="hit-{i}" class="bar hit" x="{bar_x:.1f}" y="{bar_y:.1f}" '
             f'width="{max(0.0, bar_end - bar_x):.2f}" height="{bar_h}" rx="5" '
             f'fill="{bar_fill}" tabindex="0" role="img" '
             f'aria-label="{xml_escape(tip)}"><title>{xml_escape(tip)}</title>'
             f'</rect>'
         )
-        parts.append(
+        # Collected, not appended in place: every bar is drawn before any
+        # bubble (see _svg.foreground_tip_css) so a later row's bar never
+        # paints over an earlier row's open bubble.
+        tip_cards.append(
             tooltip_bubble(
                 bar_x + max(0.0, bar_end - bar_x) / 2, bar_y - 12,
                 [
@@ -457,6 +461,7 @@ def build_svg(
                 ],
                 anchor="middle", canvas_w=width, canvas_h=height,
                 ink=ink, secondary=secondary, border=GRIDLINE,
+                elem_id=f"tip-{i}",
             )
         )
 
@@ -504,6 +509,7 @@ def build_svg(
             f'font-weight="600" fill="{delta_color}">{arrow} {pct}% '
             f'{delta_word}</text>'
         )
+    parts.extend(tip_cards)
 
     # --- band-scale caption (bottom, once) -----------------------
     # Names the three shades so a first-time reader knows dark→light is

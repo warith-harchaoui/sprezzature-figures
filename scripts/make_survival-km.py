@@ -35,7 +35,7 @@ from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _scale import nice_ticks  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY, cycle_hues  # noqa: E402
-from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _svg import foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 
@@ -193,8 +193,8 @@ def build_svg(
     parts.append(
         "<style>"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
-        "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
+        + foreground_tip_css(len(arms))
+        + "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
         "</style>"
     )
     parts.append(f'<rect width="{width}" height="{height}" fill="{BG}"/>')
@@ -230,7 +230,12 @@ def build_svg(
     )
 
     # ---- KM curves per arm ----
-    for a in arms:
+    # Every curve's bubble is queued into `bubbles` and appended once, after
+    # every curve is drawn, rather than right next to its own curve: SVG has
+    # no z-index, so a bubble drawn in place would be covered by any curve
+    # drawn afterward, no matter which one is hovered.
+    bubbles: List[str] = []
+    for ai, a in enumerate(arms):
         arm_rows = [r for r in rows if r["arm"] == a]
         curve, censor_times = _km_estimate(arm_rows)
         color = colors.get(a, "#8E8E93")
@@ -262,16 +267,17 @@ def build_svg(
         n_censored = len(arm_rows) - n_events
         tip = f"{a}: {final_s * 100:.0f}% surviving at {t_max:.0f} time units"
         parts.append(
-            f'<path class="hit" tabindex="0" d="{line_d}" fill="none" stroke="{color}" '
+            f'<path id="hit-{ai}" class="hit" tabindex="0" d="{line_d}" fill="none" stroke="{color}" '
             f'stroke-width="2.5" role="img" aria-label="{xml_escape(tip)}"/>'
         )
-        parts.append(
+        bubbles.append(
             tooltip_bubble(
                 x_for(t_max), y_for(final_s) - 16,
                 [a, f"{final_s * 100:.0f}% surviving at {t_max:.0f} units",
                  f"{n_events} events · {n_censored} censored"],
                 anchor="end", canvas_w=width, canvas_h=height,
                 ink=INK, secondary=SECONDARY, border=GRIDLINE,
+                elem_id=f"tip-{ai}",
             )
         )
 
@@ -309,6 +315,7 @@ def build_svg(
         f'fill="{INK}" text-anchor="middle">Months</text>'
     )
 
+    parts.extend(bubbles)
     parts.append(fullscreen_control(width, height, mode))
     parts.append("</svg>")
     return "\n".join(parts)

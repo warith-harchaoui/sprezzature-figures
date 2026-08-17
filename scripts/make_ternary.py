@@ -45,7 +45,7 @@ from typing import Any, Dict, List, Optional, Tuple
 # without the dataviz tier).
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
-from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _svg import foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
@@ -355,7 +355,7 @@ def build_svg(
         ".legend-row { cursor: pointer; }",
         f".legend-row:focus {{ outline: 3px solid {_FOCUS}; outline-offset: 2px; }}",
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}",
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}",
+        foreground_tip_css(sum(len(d["points"]) for d in grouped)),
         "@media (prefers-reduced-motion: reduce) { .dot { transition: none; } .tip{transition:none} }",
     ])
     # OS-adaptive overrides (additive; the default render is byte-identical
@@ -424,27 +424,41 @@ def build_svg(
     parts.extend(_axis_labels())
 
     # ---- sample markers, grouped by texture class ----
+    # Each point's bubble is queued and appended after every point *in its
+    # own class group*, not right next to its own point: SVG has no
+    # z-index, so a bubble drawn in place would be covered by any point
+    # drawn afterward, no matter which one is hovered. A bubble must stay
+    # inside the same <g class="cls ..."> as its point (CSS `~` only
+    # matches same-parent siblings), so each group gets its own trailing
+    # batch rather than one combined batch at the very end of the chart.
+    # `pt_idx` still runs across every group so every hit/tip pair in the
+    # whole chart keeps a unique id.
+    pt_idx = 0
     for d in grouped:
         s = _slug(str(d["label"]))
         color = str(d["color"])
         parts.append(f'<g class="cls cls-{s}">')
+        group_bubbles: List[str] = []
         for (sand, silt, clay) in d["points"]:  # type: ignore[union-attr]
             x, y = _project(float(sand), float(silt), float(clay))
             tip = f"{d['label']} — sand {sand} %, silt {silt} %, clay {clay} %"
             parts.append(
-                f'<circle class="dot cls-{s} hit" tabindex="0" cx="{x:.1f}" cy="{y:.1f}" '
+                f'<circle id="hit-{pt_idx}" class="dot cls-{s} hit" tabindex="0" cx="{x:.1f}" cy="{y:.1f}" '
                 f'r="9.5" fill="{color}" fill-opacity="0.82" '
                 f'stroke="#FFFFFF" stroke-width="1.8" '
                 f'role="img" aria-label="{_xml(tip)}"/>'
             )
-            parts.append(
+            group_bubbles.append(
                 tooltip_bubble(
                     x, y - 16,
                     [str(d["label"]), f"sand {sand} %", f"silt {silt} % · clay {clay} %"],
                     anchor="middle", canvas_w=_WIDTH, canvas_h=_HEIGHT,
                     ink=_INK, secondary=_SUBTLE, border=_GRID,
+                    elem_id=f"tip-{pt_idx}",
                 )
             )
+            pt_idx += 1
+        parts.extend(group_bubbles)
         parts.append('</g>')
 
     # ---- legend (top-right) ----

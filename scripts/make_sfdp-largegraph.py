@@ -51,7 +51,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import BG, INK, forced_color_patterns, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _svg import svg_open, tooltip_bubble  # noqa: E402
+from _svg import foreground_tip_css, svg_open, tooltip_bubble  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
 # ------------------------------------------------------------------
@@ -506,7 +506,7 @@ def build_svg(
         css.append(f"{cond} .cedge.e-{c}{{opacity:.65}}")
     css.append(".legend g:focus{outline:none}")
     css.append(".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}")
-    css.append(".hit:hover+.tip,.hit:focus+.tip{opacity:1}")
+    css.append(foreground_tip_css(n))
     css.append("@media (prefers-reduced-motion: reduce){.tip{transition:none}}")
     # OS-adaptive overrides (additive; every rule lives inside an @media block,
     # so the default render is byte-for-byte unchanged). Each lab already carries
@@ -578,6 +578,14 @@ def build_svg(
     # --- nodes, grouped per community so the hover class is shared. Drawn
     #     BEFORE the community-label pills below, so the (opaque) pills
     #     always paint on top and text stays perfectly crisp. ---
+    # Every node's bubble is queued into `bubbles` and appended once, after
+    # every node is drawn (still inside this same #nodes group, so the
+    # id-matched hover rule below still finds them as siblings), rather
+    # than right next to its own node: SVG has no z-index, so with
+    # hundreds of nodes packed by a force-directed layout, a bubble drawn
+    # in place would routinely be covered by nodes drawn afterward, no
+    # matter which one is hovered.
+    bubbles: List[str] = []
     parts.append('<g id="nodes">')
     for i in range(n):
         x, y = pos[i]
@@ -585,19 +593,21 @@ def build_svg(
         lab = labels[comm[i]]
         node_tip = f"{lab} researcher: {degree[i]} co-authorships"
         parts.append(
-            f'<circle class="comm c-{comm[i]} hit" tabindex="0" cx="{x:.1f}" cy="{y:.1f}" '
+            f'<circle id="hit-{i}" class="comm c-{comm[i]} hit" tabindex="0" cx="{x:.1f}" cy="{y:.1f}" '
             f'r="{r:.1f}" fill="{light[comm[i]]}" fill-opacity="0.85" '
             f'stroke="{colors[comm[i]]}" stroke-width="1.6" '
             f'role="img" aria-label="{escape(node_tip)}"/>'
         )
-        parts.append(
+        bubbles.append(
             tooltip_bubble(
                 x, y - r - 12,
                 [lab, f"{degree[i]} co-authorships", f"{sizes[comm[i]]} researchers in {lab}"],
                 anchor="middle", canvas_w=WIDTH, canvas_h=HEIGHT,
                 ink=INK, secondary=SUBINK, border=EDGE,
+                elem_id=f"tip-{i}",
             )
         )
+    parts.extend(bubbles)
     parts.append("</g>")
 
     # --- community labels as solid white "pills" pushed to each blob's

@@ -50,7 +50,7 @@ from typing import Any, Dict, List, Optional
 # The house-style palette lives alongside this file, in _style.py.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
-from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _svg import foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
@@ -367,8 +367,8 @@ def build_svg(
         '.mstone:focus{outline:none}'
         '.mstone:focus .card,.mstone:hover .card{stroke-width:2.4}'
         '.tip{opacity:0;pointer-events:none;transition:opacity .12s ease}'
-        '.hit:hover+.tip,.hit:focus+.tip{opacity:1}'
-        '@media (prefers-reduced-motion: reduce){.sweep{display:none}.tip{transition:none}}'
+        + foreground_tip_css(n)
+        + '@media (prefers-reduced-motion: reduce){.sweep{display:none}.tip{transition:none}}'
         + contrast_css
         + dark_css
         + '</style>'
@@ -600,7 +600,13 @@ def build_svg(
         )
 
     # --- pass 2: every spine dot + callout card, painted over the stems --
-    for s in specs:
+    # Every milestone's bubble is queued into `bubbles` and appended once,
+    # at the very end of the document, rather than right after its own
+    # callout: SVG has no z-index, so a bubble drawn in place would be
+    # covered by any milestone (or the era labels / sweep marker) drawn
+    # afterward, no matter which one is hovered.
+    bubbles: List[str] = []
+    for si, s in enumerate(specs):
         year, name, blurb = s["year"], s["name"], s["blurb"]
         slug, color, planned = s["slug"], s["color"], s["planned"]
         mx, lines, card_h = s["mx"], s["lines"], s["card_h"]
@@ -610,7 +616,7 @@ def build_svg(
         # single <title> serves the accessible tooltip.
         tip = f"{year}{' (planned)' if planned else ''} — {name}: {blurb}"
         parts.append(
-            f'<g class="mstone hit" tabindex="0" role="img" '
+            f'<g id="hit-{si}" class="mstone hit" tabindex="0" role="img" '
             f'aria-label="{xml_escape(tip)}">'
         )
 
@@ -675,12 +681,13 @@ def build_svg(
             )
 
         parts.append("</g>")
-        parts.append(
+        bubbles.append(
             tooltip_bubble(
                 mx, spine_y - 20,
                 [name, f"{_fmt_year(year)}{' (planned)' if planned else ''}", blurb],
                 anchor="middle", canvas_w=width, canvas_h=height,
                 ink=ink, secondary=secondary, border=hairline,
+                elem_id=f"tip-{si}",
             )
         )
 
@@ -736,6 +743,7 @@ def build_svg(
         f'future dates approximate</text>'
     )
 
+    parts.extend(bubbles)
     parts.append(fullscreen_control(width, height, mode))
     parts.append("</svg>")
     return "\n".join(parts)
