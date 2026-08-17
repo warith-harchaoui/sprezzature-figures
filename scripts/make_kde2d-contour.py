@@ -38,7 +38,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _scale import nice_ticks_range  # noqa: E402
-from _svg import fmt_number, svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _svg import fmt_number, foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
@@ -204,7 +204,8 @@ def build_svg(
     parts.append(
         "<style>"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
+        f"{foreground_tip_css(len(samples), mark_prefix='point', tip_prefix='pointtip')}"
+        f"{foreground_tip_css(len(levels), mark_prefix='contour', tip_prefix='contourtip')}"
         "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
         "</style>"
     )
@@ -247,14 +248,20 @@ def build_svg(
         )
 
     # ---- raw scatter (faint) ----
-    for x, y in samples:
+    # Two independent hit/tip groups on this chart (scatter points, contour
+    # lines below); each gets its own id prefix and bubble list. Every group
+    # draws its marks first, then its bubbles, appended once at the end (SVG
+    # has no z-index; a bubble next to its own mark would be covered by any
+    # mark drawn afterward) -- see _svg.foreground_tip_css's docstring.
+    point_tips: List[str] = []
+    for i, (x, y) in enumerate(samples):
         px, py = x_for(x), y_for(y)
         pt_tip = f"x={fmt_number(float(x))}, y={fmt_number(float(y))}"
         parts.append(
-            f'<circle class="hit" tabindex="0" cx="{px:.1f}" cy="{py:.1f}" r="2" '
+            f'<circle id="point-{i}" class="hit" tabindex="0" cx="{px:.1f}" cy="{py:.1f}" r="2" '
             f'fill="{COLOR_POINT}" fill-opacity="0.6"><title>{xml_escape(pt_tip)}</title></circle>'
         )
-        parts.append(
+        point_tips.append(
             tooltip_bubble(
                 px,
                 max(4.0, py - 26.0),
@@ -265,10 +272,12 @@ def build_svg(
                 secondary=SECONDARY,
                 border=GRIDLINE,
                 font_size=10.5,
+                elem_id=f"pointtip-{i}",
             )
         )
 
     # ---- contour levels ----
+    contour_tips: List[str] = []
     for li, level in enumerate(levels):
         segments = _marching_squares(density, level, x_coords, y_coords)
         if not segments:
@@ -281,14 +290,14 @@ def build_svg(
         path_d = " ".join(d_parts)
         tip = f"Density contour {li + 1} of {n_levels} (level {level:.4f})"
         parts.append(
-            f'<path class="hit" tabindex="0" d="{path_d}" fill="none" stroke="{COLOR_CONTOUR}" '
+            f'<path id="contour-{li}" class="hit" tabindex="0" d="{path_d}" fill="none" stroke="{COLOR_CONTOUR}" '
             f'stroke-width="1.5" stroke-opacity="{opacity:.2f}"><title>{xml_escape(tip)}</title></path>'
         )
         cx_pts = [x_for(p0[0]) for p0, p1 in segments] + [x_for(p1[0]) for p0, p1 in segments]
         cy_pts = [y_for(p0[1]) for p0, p1 in segments] + [y_for(p1[1]) for p0, p1 in segments]
         anchor_x = sum(cx_pts) / len(cx_pts)
         anchor_y = min(cy_pts)
-        parts.append(
+        contour_tips.append(
             tooltip_bubble(
                 anchor_x,
                 max(4.0, anchor_y - 34.0),
@@ -298,6 +307,7 @@ def build_svg(
                 ink=INK,
                 secondary=SECONDARY,
                 border=GRIDLINE,
+                elem_id=f"contourtip-{li}",
             )
         )
 
@@ -320,6 +330,8 @@ def build_svg(
         f'text-anchor="middle" transform="rotate(-90 22 {plot_y + plot_h / 2:.1f})">y</text>'
     )
 
+    parts.extend(point_tips)
+    parts.extend(contour_tips)
     parts.append(fullscreen_control(width, height, mode))
     parts.append("</svg>")
     return "\n".join(parts)
