@@ -533,14 +533,21 @@ def build_svg(
     parts.append('<g id="pack">')
 
     # --- bubbles layer (each disk carries its own inside label) ---
+    # Every bubble is drawn first, every one of its tooltips appended
+    # afterward (still inside #bubbles, so the id-matched hover rule below
+    # still finds them as siblings): SVG paints in document order regardless
+    # of hover state, so a tooltip sitting next to its own bubble would be
+    # covered by any bubble drawn after it -- and packed circles overlap by
+    # construction.
     parts.append('<g id="bubbles">')
-    for (name, share, fam), (x, y), r in zip(ordered, centres, radii):
+    bubble_tips: List[str] = []
+    for bub_i, ((name, share, fam), (x, y), r) in enumerate(zip(ordered, centres, radii)):
         color = family_color[fam]
         label_ink = family_label[fam]
         slug = fam_slug[fam]
         tip = f"{name} — {_fmt_share(share)} of developers · {fam}"
         parts.append(
-            f'<g class="bubble hit {slug}" tabindex="0" role="img" '
+            f'<g id="bubble-{bub_i}" class="bubble hit {slug}" tabindex="0" role="img" '
             f'aria-label="{escape(tip)}">'
             f'<circle class="{slug}" cx="{x:.1f}" cy="{y:.1f}" r="{r:.1f}" '
             f'fill="{color}"/>'
@@ -576,14 +583,16 @@ def build_svg(
                 f'{escape(_fmt_share(share))}</text>'
             )
         parts.append("</g>")
-        parts.append(
+        bubble_tips.append(
             tooltip_bubble(
                 x, y - r - 12,
                 [name, fam, f"{_fmt_share(share)} of developers"],
                 anchor="middle", canvas_w=WIDTH, canvas_h=HEIGHT,
                 ink=INK, secondary=SUBINK, border=GRIDLINE,
+                elem_id=f"bubble-tip-{bub_i}",
             )
         )
+    parts.extend(bubble_tips)
     parts.append("</g>")  # /bubbles
 
     parts.append("</g>")  # /pack
