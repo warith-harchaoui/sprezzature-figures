@@ -30,7 +30,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import BG, GRIDLINE, INK, SECONDARY, os_adaptive_style, os_dark_style  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
-from _svg import tooltip_bubble  # noqa: E402
+from _svg import foreground_tip_css, tooltip_bubble  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 # ---------------------------------------------------------------------------
@@ -203,7 +203,7 @@ def build_svg(
     style = (
         os_adaptive_style({}) + "\n" + os_dark_style() + "\n"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
+        f"{foreground_tip_css(len(bars), mark_prefix='bar')}"
         "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
     )
     fs_ctrl = fullscreen_control(WIDTH, HEIGHT)
@@ -275,6 +275,11 @@ def build_svg(
     # chartjunk, so the bars stand on their own.)
 
     # Bars
+    # Every bar's bubble is collected here and appended once, at the very
+    # end (after every bar and its axis label), rather than right next to
+    # its own bar: SVG has no z-index, so a bubble drawn in place would
+    # sit under any bar drawn afterward.
+    bubbles: List[str] = []
     for i, bar in enumerate(bars):
         x = MARGIN_LEFT + i * slot_w + (slot_w - bar_w) / 2.0
         color = (
@@ -297,16 +302,17 @@ def build_svg(
         bar_label_flat = bar["label"].replace(chr(10), " ")
         tooltip = f"{bar_label_flat}: {val_str}M"
         lines.append(
-            f'<rect class="hit" tabindex="0" x="{x:.1f}" y="{py_top:.1f}" width="{bar_w:.1f}" '
+            f'<rect id="bar-{i}" class="hit" tabindex="0" x="{x:.1f}" y="{py_top:.1f}" width="{bar_w:.1f}" '
             f'height="{bar_h:.1f}" rx="3" fill="{color}" opacity="0.9" '
             f'role="img" aria-label="{escape(tooltip)}"/>'
         )
-        lines.append(
+        bubbles.append(
             tooltip_bubble(
                 x + bar_w / 2.0, py_top - 16,
                 [bar_label_flat, f"{val_str}M", bar["kind"].capitalize()],
                 anchor="middle", canvas_w=WIDTH, canvas_h=HEIGHT,
                 ink=INK, secondary=SECONDARY, border=GRIDLINE,
+                elem_id=f"tip-{i}",
             )
         )
 
@@ -328,6 +334,7 @@ def build_svg(
                 f'{escape(part)}</text>'
             )
 
+    lines.extend(bubbles)
     lines.append(fs_ctrl)
     lines.append("</svg>")
     return "\n".join(lines)

@@ -354,7 +354,19 @@ def build_svg(
         ".legend-row { cursor: pointer; }",
         f".legend-row:focus {{ outline: 3px solid {_FOCUS}; outline-offset: 2px; }}",
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}",
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}",
+        # Each wedge's bubble is collected and appended once, after every
+        # band (see the loop below), rather than staying next to its own
+        # wedge: SVG has no z-index, and later bands are drawn at a
+        # larger radius that can reach back over an earlier band's
+        # bubble at a neighbouring direction. Wedges live inside their
+        # own per-band <g>, so a bubble moved out of it is no longer a
+        # *sibling* of its own wedge (`~`/`+` need a shared parent) --
+        # this keys off :has() on the shared svg root instead.
+        "".join(
+            f"svg:has(#wedge-{i}:hover) #wedgetip-{i},"
+            f"svg:has(#wedge-{i}:focus) #wedgetip-{i}{{opacity:1}}"
+            for i in range(len(bands) * len(_DIRECTIONS))
+        ),
         "@media (prefers-reduced-motion: reduce) { .wedge { transition: none; } .tip{transition:none} }",
     ])
     # OS-adaptive style (additive; media-gated so the default light render is
@@ -458,11 +470,13 @@ def build_svg(
     # Grouped by band so a single CSS rule highlights that band across
     # every direction. We emit band-by-band; each wedge sits at the right
     # cumulative radius for its sector.
+    bubbles: List[str] = []
     for b_idx, band in enumerate(bands):
         s = slugs[b_idx]
         color = str(band["color"])
         parts.append(f'<g class="band band-{s}">')
         for d_idx, direction in enumerate(_DIRECTIONS):
+            wedge_i = b_idx * len(_DIRECTIONS) + d_idx
             v = grid[d_idx][b_idx]
             if v <= 0:
                 continue
@@ -480,17 +494,18 @@ def build_svg(
             )
             mid_x, mid_y = _polar(_CX, _CY, (r0 + r1) / 2.0, (a0 + a1) / 2.0)
             parts.append(
-                f'<path class="wedge hit band-{s}" tabindex="0" role="listitem" '
+                f'<path id="wedge-{wedge_i}" class="wedge hit band-{s}" tabindex="0" role="listitem" '
                 f'd="{path}" fill="{color}" stroke="{_BG}" '
                 f'stroke-width="1.1" stroke-linejoin="round" '
                 f'aria-label="{tip}"/>'
             )
-            parts.append(
+            bubbles.append(
                 tooltip_bubble(
                     mid_x, mid_y - 10,
                     [direction, str(band["label"]), f"{v:.1f}% of hours"],
                     anchor="middle", canvas_w=_WIDTH, canvas_h=_HEIGHT,
                     ink=_INK, secondary=_SUBTLE, border=_GRID,
+                    elem_id=f"wedgetip-{wedge_i}",
                 )
             )
         parts.append('</g>')
@@ -545,6 +560,7 @@ def build_svg(
     )
 
     # Fullscreen control per interactivity mode, just before the close.
+    parts.extend(bubbles)
     parts.append(fullscreen_control(_WIDTH, _HEIGHT, mode))
     parts.append('</svg>')
     return "\n".join(parts)

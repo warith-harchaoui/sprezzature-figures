@@ -32,7 +32,7 @@ from _interactive import fullscreen_control  # noqa: E402
 from _labels import best_text_colour  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY, qualitative_sequence  # noqa: E402
-from _svg import hex_to_rgb, svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _svg import foreground_tip_css, hex_to_rgb, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 from _textfit import fit_font_size, text_width, wrap_to_width  # noqa: E402
 
@@ -292,7 +292,7 @@ def build_svg(
         ".leaf{transition:opacity .15s ease;cursor:default;}"
         ".leaf:hover,.leaf:focus{opacity:.72;outline:none;}"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
+        f"{foreground_tip_css(len(rows), mark_prefix='leaf')}"
         "@media (prefers-reduced-motion: reduce){.leaf{transition:none;}"
         ".tip{transition:none}}"
         "</style>"
@@ -314,6 +314,11 @@ def build_svg(
         cursor += 24 + 7.0 * len(cat) + 22
 
     # ---- rectangles ----
+    # Every leaf's bubble is collected here and appended once, after every
+    # leaf rect, rather than right next to its own rect: SVG has no z-index,
+    # so a bubble drawn in place would sit under any leaf drawn afterward.
+    bubbles: List[str] = []
+    leaf_i = 0
     for cat, crect in zip(categories, cat_rects):
         color = category_colors[cat]
         # Choose ink or white label text by the *rendered* leaf colour (the
@@ -335,19 +340,21 @@ def build_svg(
             share = float(row["value"]) / cat_total * 100.0
             tip = f"{cat} / {row['name']}: {val_txt}{unit_suffix}"
             parts.append(
-                f'<rect class="leaf hit" tabindex="0" x="{r["x"]:.1f}" y="{r["y"]:.1f}" '
+                f'<rect id="leaf-{leaf_i}" class="leaf hit" tabindex="0" x="{r["x"]:.1f}" y="{r["y"]:.1f}" '
                 f'width="{max(0.0, r["dx"]):.1f}" height="{max(0.0, r["dy"]):.1f}" '
                 f'fill="{color}" fill-opacity="0.82" stroke="{BG}" stroke-width="2" '
                 f'role="img" aria-label="{xml_escape(tip)}"/>'
             )
-            parts.append(
+            bubbles.append(
                 tooltip_bubble(
                     r["x"] + max(0.0, r["dx"]) / 2.0, r["y"] - 4,
                     [row["name"], f"{val_txt}{unit_suffix}", f"{share:.1f}% of {cat}"],
                     anchor="middle", canvas_w=width, canvas_h=height,
                     ink=INK, secondary=SECONDARY, border=GRIDLINE,
+                    elem_id=f"tip-{leaf_i}",
                 )
             )
+            leaf_i += 1
             # Fit the label to the leaf's actual pixel box instead of assuming a
             # fixed threshold fits any string: a long name (French routinely runs
             # 20-40% longer than English) previously overran its rectangle and
@@ -391,6 +398,7 @@ def build_svg(
                         f'{xml_escape(val_txt)}{xml_escape(unit_suffix)}</text>'
                     )
 
+    parts.extend(bubbles)
     parts.append(fullscreen_control(width, height, mode))
     parts.append("</svg>")
     return "\n".join(parts)

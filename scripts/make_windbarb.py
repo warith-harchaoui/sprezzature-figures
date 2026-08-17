@@ -489,7 +489,19 @@ def build_svg(
         ".stn:hover, .stn:focus { transform: scale(1.16); }",
         ".stn:focus { outline: none; }",
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}",
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}",
+        # Each station's bubble is collected and appended once, after
+        # every station (see the loop below), rather than staying inside
+        # its own <g class="stn">: SVG has no z-index, so a bubble drawn
+        # in place would sit under any station drawn afterward nearby.
+        # That means it is no longer a *sibling* of its own hit circle (a
+        # `~`/`+` selector needs a shared parent), so this keys off
+        # :has() instead -- no extra renderer requirement, since :focus
+        # transform above already assumes modern CSS.
+        "".join(
+            f"svg:has(#stnhit-{i}:hover) #stntip-{i},"
+            f"svg:has(#stnhit-{i}:focus) #stntip-{i}{{opacity:1}}"
+            for i in range(len(data) if data else len(DEMO_DATA))
+        ),
         "@media (prefers-reduced-motion: reduce) { .stn { transition: none; } .tip{transition:none} }",
     ]
     # OS-adaptive overrides (additive; the default render stays byte-identical
@@ -590,8 +602,9 @@ def build_svg(
         for r in rows
     ]
     label_parts: List[str] = []
+    bubbles: List[str] = []
     parts.append('<g role="list">')
-    for name, lon, lat, dir_from, speed in stations:
+    for stn_i, (name, lon, lat, dir_from, speed) in enumerate(stations):
         cx, cy = _to_screen(lon, lat, fit)
         col = _airmass_color(lon, lat, warm, cold)
         rounded = _rounded_speed(speed)
@@ -607,16 +620,19 @@ def build_svg(
         parts.append(
             f'<g class="stn air-{air_cls}" tabindex="0" role="listitem" '
             f'aria-label="{stn_tip}">'
-            f'<circle class="hit" cx="{cx:.1f}" cy="{cy:.1f}" r="18" '
+            f'<circle id="stnhit-{stn_i}" class="hit" cx="{cx:.1f}" cy="{cy:.1f}" r="18" '
             f'fill="transparent"/>'
-            + tooltip_bubble(
+            f'{_barb_glyph(cx, cy, dir_from, speed, col)}'
+            f'</g>'
+        )
+        bubbles.append(
+            tooltip_bubble(
                 cx, cy - 22,
                 [name, f"{rounded} kt from {_dir_name(dir_from)}", f"{int(dir_from)}°"],
                 anchor="middle", canvas_w=_WIDTH, canvas_h=_HEIGHT,
                 ink=_INK, secondary=_SUBTLE, border="#E5E5EA",
+                elem_id=f"stntip-{stn_i}",
             )
-            + f'{_barb_glyph(cx, cy, dir_from, speed, col)}'
-            f'</g>'
         )
         if name in _LABELLED:
             label_parts.append(_station_label(name, cx, cy, _LABELLED[name], rounded))
@@ -637,6 +653,7 @@ def build_svg(
         f' · Surface analysis, US Northeast seaboard</text>'
     )
 
+    parts.extend(bubbles)
     parts.append(fullscreen_control(_WIDTH, _HEIGHT, mode))
     parts.append('</svg>')
     return "\n".join(parts)
