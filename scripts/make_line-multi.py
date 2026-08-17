@@ -30,7 +30,7 @@ from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY, cycle_hues  # noqa: E402
 from _scale import fixed_step_ticks, log_position, log_ticks, nice_ticks, nice_ticks_range  # noqa: E402
-from _svg import fmt_number, svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _svg import fmt_number, foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 
@@ -183,7 +183,7 @@ def build_svg(
         + ".pt{transition:r .12s ease;}"
         ".pt:hover,.pt:focus{r:5.5;outline:none;}"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
+        f"{foreground_tip_css(len(series) * len(hours), mark_prefix='pt', tip_prefix='pttip')}"
         "@media (prefers-reduced-motion: reduce){.series-group,.pt{transition:none;}.tip{transition:none}}"
         "</style>"
     )
@@ -232,21 +232,30 @@ def build_svg(
     )
 
     # ---- lines + points ----
+    # Points draw first, every bubble is collected and appended once, last
+    # -- but each series lives in its own <g class="series-group">, and CSS
+    # `~` only matches same-parent siblings, so each series' bubbles go
+    # before *that series'* closing tag, not at the very end of the whole
+    # document. SVG has no z-index: a bubble next to its own point would be
+    # covered by any point drawn after it, within the same series -- see
+    # _svg.foreground_tip_css's docstring for the full pattern.
+    pt_id = 0
     for si, s in enumerate(series):
         pts = [(x_for(h), y_for(lookup.get((s, h), 0.0))) for h in hours]
         path_d = "M " + " L ".join(f"{x:.1f},{y:.1f}" for x, y in pts)
         parts.append(f'<g class="series-group s{si}">')
         parts.append(f'<path d="{path_d}" fill="none" stroke="{colors[s]}" stroke-width="2.5"/>')
+        series_tips: List[str] = []
         for h in hours:
             v = lookup.get((s, h), 0.0)
             cx, cy = x_for(h), y_for(v)
             tip = f"{s}, {x_label} {fmt_number(h)}: {fmt_number(v)}"
             parts.append(
-                f'<circle class="pt hit" tabindex="0" cx="{cx:.1f}" cy="{cy:.1f}" r="3.5" '
+                f'<circle id="pt-{pt_id}" class="pt hit" tabindex="0" cx="{cx:.1f}" cy="{cy:.1f}" r="3.5" '
                 f'fill="{colors[s]}" stroke="{BG}" stroke-width="1.5">'
                 f'<title>{xml_escape(tip)}</title></circle>'
             )
-            parts.append(
+            series_tips.append(
                 tooltip_bubble(
                     cx,
                     max(4.0, cy - 34.0),
@@ -256,8 +265,11 @@ def build_svg(
                     ink=INK,
                     secondary=SECONDARY,
                     border=GRIDLINE,
+                    elem_id=f"pttip-{pt_id}",
                 )
             )
+            pt_id += 1
+        parts.extend(series_tips)
         parts.append("</g>")
 
     # ---- x-axis ----
