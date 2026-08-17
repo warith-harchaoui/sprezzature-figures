@@ -325,6 +325,7 @@ def tooltip_bubble(
     font_size: float = 12.5,
     font_family: str = "",
     cls: str = "tip",
+    elem_id: str | None = None,
 ) -> str:
     """Rounded-rect hover-info bubble, auto-sized to its (word-wrapped) content.
 
@@ -376,6 +377,18 @@ def tooltip_bubble(
         house `.hit:hover~.tip` hover-reveal pattern). Give each bubble a
         distinct class only if several coexist under one `.hit` sibling
         selector and must not all reveal together.
+    elem_id : str or None, optional
+        ``id`` attribute on the wrapping `<g>`. Set this (paired with a
+        matching ``id`` on the hover mark, and :func:`foreground_tip_css`
+        for the CSS) whenever more than a couple of bubbles can visually
+        overlap, e.g. a dense scatter, a hemicycle, a network, a treemap:
+        SVG has no z-index, so a bubble drawn right next to its own mark
+        is covered by any mark drawn *after* it in the document, no
+        matter which one is hovered. The fix is to draw every mark first
+        and every bubble last (see :func:`foreground_tip_css`'s
+        docstring for the full pattern); once bubbles no longer sit next
+        to their own mark, only a unique id pair can still tell the CSS
+        which bubble belongs to which mark.
 
     Returns
     -------
@@ -411,8 +424,9 @@ def tooltip_bubble(
         by = max(4.0, min(by, canvas_h - fh - 4.0))
 
     f = fmt_compact
+    id_attr = f' id="{elem_id}"' if elem_id else ""
     parts = [
-        f'<g class="{cls}">',
+        f'<g{id_attr} class="{cls}">',
         f'<rect x="{f(bx)}" y="{f(by)}" width="{f(fw)}" height="{f(fh)}" rx="9" '
         f'fill="{bg}" stroke="{border}" stroke-width="1.2"/>',
     ]
@@ -427,6 +441,62 @@ def tooltip_bubble(
         )
     parts.append("</g>")
     return "".join(parts)
+
+
+def foreground_tip_css(count: int, *, mark_prefix: str = "hit", tip_prefix: str = "tip") -> str:
+    """CSS that reveals each mark's own bubble, keeping every bubble on top.
+
+    SVG paints strictly in document order and has no z-index: an element
+    drawn later always covers one drawn earlier, hover state or not. The
+    old, simpler house pattern (a single rule, ``.hit:hover+.tip``) relied
+    on each bubble sitting *immediately next to* its own mark, so it broke
+    the instant another mark was drawn afterward nearby: hovering a seat
+    near the start of a hemicycle, a node near the start of a network,
+    could reveal a bubble that every later mark then painted over.
+
+    The fix is a two-part house pattern this function is the second half
+    of: (1) the caller draws every mark first, then appends every bubble
+    afterward (see :func:`tooltip_bubble`'s ``elem_id``) so the front-most
+    bubble is always the hovered one, no matter where in the drawing order
+    its own mark sits; (2) because a mark and its bubble are no longer
+    next-door neighbours, a *shared* class can no longer tell them apart,
+    so each pair needs a unique id (``hit-0``/``tip-0``, ``hit-1``/
+    ``tip-1``, ...) and its own CSS rule — this function generates exactly
+    that block, one rule per pair, so no caller hand-rolls the loop (or
+    drifts from a sibling generator's id-naming) itself.
+
+    Parameters
+    ----------
+    count : int
+        Number of mark/bubble pairs, i.e. ``id="{mark_prefix}-0"`` through
+        ``id="{mark_prefix}-{count - 1}"`` and the same range for
+        `tip_prefix`. Must match the number of marks actually drawn.
+    mark_prefix, tip_prefix : str, optional
+        The id stem shared with the caller's own ``id="{mark_prefix}-{i}"``
+        marks and ``tooltip_bubble(..., elem_id=f"{tip_prefix}-{i}")``
+        bubbles. Defaults ``"hit"``/``"tip"`` match the class names
+        already used everywhere for the underlying hover mark (``.hit``)
+        and bubble (``.tip``).
+
+    Returns
+    -------
+    str
+        `count` concatenated CSS rules, e.g. for ``count=2``:
+        ``"#hit-0:hover~#tip-0,#hit-0:focus~#tip-0{opacity:1}"
+        "#hit-1:hover~#tip-1,#hit-1:focus~#tip-1{opacity:1}"``.
+        Drop this in place of the old ``.hit:hover+.tip,.hit:focus+.tip
+        {opacity:1}`` rule; ``.tip{opacity:0;...}`` and the
+        ``prefers-reduced-motion`` override stay as they were.
+
+    Examples
+    --------
+    >>> foreground_tip_css(2)
+    '#hit-0:hover~#tip-0,#hit-0:focus~#tip-0{opacity:1}#hit-1:hover~#tip-1,#hit-1:focus~#tip-1{opacity:1}'
+    """
+    return "".join(
+        f"#{mark_prefix}-{i}:hover~#{tip_prefix}-{i},#{mark_prefix}-{i}:focus~#{tip_prefix}-{i}{{opacity:1}}"
+        for i in range(count)
+    )
 
 
 def catmull_rom_beziers(
