@@ -46,7 +46,7 @@ from typing import Any, Dict, List, Optional
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
-from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _svg import foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 
@@ -229,7 +229,7 @@ def build_svg(
         '.col:focus{outline:none}'
         '.colframe{fill:none;pointer-events:none}'
         '.tip{opacity:0;pointer-events:none;transition:opacity .12s ease}'
-        '.hit:hover+.tip,.hit:focus+.tip{opacity:1}'
+        f'{foreground_tip_css(len(rows), mark_prefix="col")}'
         '@media (prefers-reduced-motion: reduce){.tip{transition:none}}'
         + contrast_css
         + dark_css
@@ -356,7 +356,12 @@ def build_svg(
     )
 
     # --- pass 2: columns + on-column labels ----------------------
-    for col in cols:
+    # Every column's bubble is collected here and appended once, after
+    # every column, rather than right next to its own column: SVG has no
+    # z-index, so a bubble drawn in place would sit under a column drawn
+    # afterward.
+    bubbles: List[str] = []
+    for col_i, col in enumerate(cols):
         name = str(col["name"])
         pop = float(col["pop"])
         gdp_cap = float(col["gdp_cap"])
@@ -387,7 +392,7 @@ def build_svg(
         )
         iso = str(col["iso"])
         parts.append(
-            f'<path class="col hit col-{iso}" d="{path}" fill="{base_hex}" '
+            f'<path id="col-{col_i}" class="col hit col-{iso}" d="{path}" fill="{base_hex}" '
             f'tabindex="0" '
             f'role="img" aria-label="{xml_escape(tip)}"/>'
         )
@@ -397,12 +402,13 @@ def build_svg(
             tip_anchor = "end"
         else:
             tip_anchor = "middle"
-        parts.append(
+        bubbles.append(
             tooltip_bubble(
                 cxm, col_y - 16,
                 [name, f"${gdp_cap:.1f}k per capita x {_fmt_pop(pop)}", f"{_fmt_total(pop, gdp_cap)} total GDP"],
                 anchor=tip_anchor, canvas_w=width, canvas_h=height,
                 ink=ink, secondary=secondary, border="#E8E8ED",
+                elem_id=f"tip-{col_i}",
             )
         )
 
@@ -546,6 +552,11 @@ def build_svg(
         f'Width = population &#183; column widths sum to '
         f'{_fmt_pop(total_pop)} people</text>'
     )
+
+    # Every bubble renders last of all, on top of every later label too
+    # (not just later columns) -- SVG paints in document order regardless
+    # of hover state.
+    parts.extend(bubbles)
 
     # Fullscreen control per interactivity mode, just before the close.
     parts.append(fullscreen_control(width, height, mode))

@@ -35,7 +35,7 @@ from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _scale import nice_ticks_range  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY, cycle_hues  # noqa: E402
-from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _svg import foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 
@@ -149,7 +149,7 @@ def build_svg(
     parts.append(
         "<style>"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
+        f"{foreground_tip_css(n, mark_prefix='violin')}"
         "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
         "</style>"
     )
@@ -177,6 +177,11 @@ def build_svg(
     )
 
     # ---- violins ----
+    # Every violin's bubble is collected here and appended once, after
+    # every violin, rather than right next to its own violin: SVG has no
+    # z-index, so a bubble drawn in place would sit under a violin drawn
+    # afterward.
+    bubbles: List[str] = []
     for gi, g in enumerate(groups):
         samples = sorted(float(r["y"]) for r in rows if r["g"] == g)
         if not samples:
@@ -201,15 +206,16 @@ def build_svg(
         std = math.sqrt(sum((s - mean) ** 2 for s in samples) / max(1, len(samples) - 1))
         tip = f"Group {g}: median {median:.1f}, std {std:.1f}, n={len(samples)}"
         parts.append(
-            f'<path class="hit" tabindex="0" d="{path_d}" fill="{color}" fill-opacity="0.75" '
+            f'<path id="violin-{gi}" class="hit" tabindex="0" d="{path_d}" fill="{color}" fill-opacity="0.75" '
             f'stroke="{color}" stroke-width="1" role="img" aria-label="{xml_escape(tip)}"/>'
         )
-        parts.append(
+        bubbles.append(
             tooltip_bubble(
                 cx, y_for(s_max) - 16,
                 [f"Group {g}", f"median {median:.1f}", f"std {std:.1f}, n={len(samples)}"],
                 anchor="middle", canvas_w=width, canvas_h=height,
                 ink=INK, secondary=SECONDARY, border=GRIDLINE,
+                elem_id=f"tip-{gi}",
             )
         )
         my = y_for(median)
@@ -232,6 +238,7 @@ def build_svg(
         f'fill="{INK}" text-anchor="middle">Group</text>'
     )
 
+    parts.extend(bubbles)
     parts.append(fullscreen_control(width, height, mode))
     parts.append("</svg>")
     return "\n".join(parts)

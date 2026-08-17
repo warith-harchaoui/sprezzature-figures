@@ -226,7 +226,21 @@ def build_svg(
         ".legend-row { cursor: pointer; }",
         f".legend-row:focus {{ outline: 3px solid {_FOCUS}; outline-offset: 2px; }}",
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}",
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}",
+        # Each category's bubble is collected and appended once at the very
+        # end of the document, well after the grid AND the legend, rather
+        # than staying next to its own badge circle: SVG has no z-index, and
+        # a badge's bubble sits right above the first tile of its own
+        # category's run, which is exactly where a neighbouring category's
+        # tiles can start. Moving it out of the badge's own <g class="cat">
+        # means a shared class/adjacency can no longer pick the right
+        # bubble, so this keys off :has() on the shared svg root instead
+        # (already relied on two lines up for the whole-category dim
+        # effect, so it costs nothing new in renderer support).
+        "".join(
+            f"svg:has(#badge-{_slug(str(d['label']))}:hover) #tip-{_slug(str(d['label']))},"
+            f"svg:has(#badge-{_slug(str(d['label']))}:focus) #tip-{_slug(str(d['label']))}{{opacity:1}}"
+            for d in data
+        ),
         "@media (prefers-reduced-motion: reduce) { .tile { transition: none; } .tip{transition:none} }",
     ])
     # OS-adaptive overrides (additive; the default render stays byte-identical
@@ -296,6 +310,7 @@ def build_svg(
     # chart still reads under colour-vision deficiency and in pure greyscale.
     number_of = {_slug(str(d["label"])): k + 1 for k, d in enumerate(data)}
 
+    bubbles: List[str] = []
     for d in data:
         s = _slug(str(d["label"]))
         color = color_of[s]
@@ -321,15 +336,16 @@ def build_svg(
                 cx = x + _TILE / 2.0
                 cy = y + _TILE / 2.0
                 parts.append(
-                    f'<circle class="cat-{s} hit" cx="{cx:.1f}" cy="{cy:.1f}" '
+                    f'<circle id="badge-{s}" class="cat-{s} hit" cx="{cx:.1f}" cy="{cy:.1f}" '
                     f'r="14" fill="#FFFFFF" fill-opacity="0.92"/>'
                 )
-                parts.append(
+                bubbles.append(
                     tooltip_bubble(
                         cx, cy - 22,
                         [str(d["label"]), f"{d['squares']} %", f"{d['squares']} of 100 squares"],
                         anchor="middle", canvas_w=_WIDTH, canvas_h=_HEIGHT,
                         ink=_INK, secondary=_SUBTLE, border=_EMPTY,
+                        elem_id=f"tip-{s}",
                     )
                 )
                 parts.append(
@@ -382,6 +398,7 @@ def build_svg(
         parts.append('</g>')
     parts.append('</g>')
 
+    parts.extend(bubbles)
     parts.append(fullscreen_control(_WIDTH, _HEIGHT, mode))
     parts.append('</svg>')
     return "\n".join(parts)

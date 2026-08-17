@@ -51,7 +51,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import BG, INK, forced_color_patterns, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
-from _svg import hex_to_rgb, svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _svg import foreground_tip_css, hex_to_rgb, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
@@ -593,7 +593,22 @@ def build_svg(
         ".cell:focus{outline:none}",
         ".seed,.slabel{transition:opacity .18s ease}",
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}",
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}",
+        # Each cell's bubble is collected and appended once, after every
+        # cell (see the loop below), rather than staying inside its own
+        # <g class="cell">: SVG has no z-index, so a bubble drawn in
+        # place would sit under any cell drawn afterward, and cells tile
+        # edge to edge here so that is the common case, not the
+        # exception. That means a bubble is no longer a *sibling* of its
+        # own hit polygon (a `~`/`+` selector needs a shared parent), so
+        # this uses :has() instead, scoped to the shared #cells ancestor
+        # both still live under -- already relied on elsewhere in this
+        # file's own hover-dim rule below, so it costs nothing new in
+        # renderer support.
+        "".join(
+            f"#cells:has(#cell-{i}:hover) #tip-{i},"
+            f"#cells:has(#cell-{i}:focus) #tip-{i}{{opacity:1}}"
+            for i in range(len(city))
+        ),
         "@media (prefers-reduced-motion: reduce){.tip{transition:none}}",
     ]
     for slug in chain_slug.values():
@@ -712,7 +727,8 @@ def build_svg(
 
     # --- cells layer (clipped to the rounded map card) ---
     parts.append('<g id="cells" clip-path="url(#mapclip)">')
-    for (gx, gy, chain, name), cell in zip(city, cells):
+    bubbles: List[str] = []
+    for cell_i, ((gx, gy, chain, name), cell) in enumerate(zip(city, cells)):
         if len(cell) < 3:
             continue
         color = chain_color[chain]
@@ -725,22 +741,28 @@ def build_svg(
         who = name if name else f"{chain} pharmacy"
         tip = f"{who} — nearest shop for {cell_area_pct:.1f}% of the city · {chain}"
         cell_cx, cell_cy = _polygon_centroid(cell)
-        # A <g> wraps each cell so the rich hover bubble is a sibling of the
-        # hit polygon (the ``.hit:hover+.tip`` house pattern).
+        # A <g> wraps each cell so its hover/focus can dim every OTHER
+        # chain (below); the bubble is no longer inside this <g> (see
+        # the :has() rule above) so it renders after every cell, not
+        # just after its own.
         parts.append(
-            f'<g class="cell {slug}" tabindex="0" role="img" '
+            f'<g id="cell-{cell_i}" class="cell {slug}" tabindex="0" role="img" '
             f'aria-label="{xml_escape(tip)}">'
             f'<polygon class="hit" points="{_poly_points(cell)}" '
             f'fill="{color}" '
             f'stroke="{HAIRLINE}" stroke-width="2" stroke-linejoin="round"/>'
-            + tooltip_bubble(
+            '</g>'
+        )
+        bubbles.append(
+            tooltip_bubble(
                 cell_cx, cell_cy - 12,
                 [who, chain, f"nearest shop for {cell_area_pct:.1f}% of the city"],
                 anchor="middle", canvas_w=WIDTH, canvas_h=HEIGHT,
                 ink=INK, secondary=SUBINK,
+                elem_id=f"tip-{cell_i}",
             )
-            + '</g>'
         )
+    parts.extend(bubbles)
     parts.append("</g>")  # /cells
 
     # --- seed dots layer (white ring is a pure fill halo, not a dark stroke) ---

@@ -496,7 +496,19 @@ def build_svg(
             f".legend-row:focus {{ outline: 3px solid {_FOCUS}; "
             "outline-offset: 3px; border-radius: 8px; }",
             ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}",
-            ".hit:hover+.tip,.hit:focus+.tip{opacity:1}",
+            # Each word's bubble is collected and appended once, after
+            # every word (see the loop below), rather than staying next
+            # to its own word: SVG has no z-index, and a tightly packed
+            # cloud is exactly the case where a later word can reach
+            # over an earlier one's bubble. Words live inside their own
+            # per-theme <g>, so a bubble moved out of it is no longer a
+            # *sibling* of its own word (`~`/`+` need a shared parent) --
+            # this keys off :has() on the shared svg root instead.
+            "".join(
+                f"svg:has(#word-{i}:hover) #wordtip-{i},"
+                f"svg:has(#word-{i}:focus) #wordtip-{i}{{opacity:1}}"
+                for i in range(len(placed))
+            ),
             "@media (prefers-reduced-motion: reduce) { "
             ".word { transition: none; } .tip{transition:none} }",
         ]
@@ -547,6 +559,8 @@ def build_svg(
     # ---- the words, grouped by theme so one CSS rule lifts a whole group ----
     # Emit smallest-first so, in the unlikely event two padded boxes graze,
     # the bigger head word paints on top and stays fully legible.
+    word_index = {id(p): i for i, p in enumerate(placed)}
+    bubbles: List[str] = []
     for key, meta in groups.items():
         color = str(meta["color"])
         parts.append(f'<g class="grp-{key}">')
@@ -569,19 +583,21 @@ def build_svg(
             # painted string carries the theme's sign glyph so the sentiment
             # survives without colour (greyscale + colour-vision deficiency).
             weight = 700 if size >= 60 else (600 if size >= 34 else 500)
+            word_i = word_index[id(p)]
             parts.append(
-                f'<text class="word hit grp-{key}" x="{x:.1f}" y="{y:.1f}" '
+                f'<text id="word-{word_i}" class="word hit grp-{key}" x="{x:.1f}" y="{y:.1f}" '
                 f'font-size="{size:.1f}" font-weight="{weight}" '
                 f'fill="{color}" text-anchor="middle" '
                 f'dominant-baseline="central" tabindex="0" role="listitem" '
                 f'aria-label="{tip}">{_xml(display)}</text>'
             )
-            parts.append(
+            bubbles.append(
                 tooltip_bubble(
                     x, y - size / 2.0 - 16,
                     [word, meta["label"], f"{count:,} mentions ({share:.0f}%)"],
                     anchor="middle", canvas_w=_WIDTH, canvas_h=_HEIGHT,
                     ink=_INK, secondary=_SUBTLE, border=_HAIR,
+                    elem_id=f"wordtip-{word_i}",
                 )
             )
         parts.append("</g>")
@@ -615,6 +631,7 @@ def build_svg(
         )
         parts.append("</g>")
 
+    parts.extend(bubbles)
     parts.append(fullscreen_control(_WIDTH, _HEIGHT, mode))
     parts.append("</svg>")
     return "\n".join(parts)

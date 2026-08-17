@@ -32,7 +32,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _scale import nice_ticks_range  # noqa: E402
-from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _svg import foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
@@ -155,7 +155,7 @@ def build_svg(
     parts.append(
         "<style>"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
+        f"{foreground_tip_css(len(rows), mark_prefix='point')}"
         "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
         "</style>"
     )
@@ -204,21 +204,27 @@ def build_svg(
     )
 
     # ---- points ----
-    for r in rows:
+    # Every point's bubble is collected here and appended once, after
+    # every point, rather than right next to its own point: SVG has no
+    # z-index, so with this many points a bubble drawn in place would
+    # sit under any point drawn afterward nearby.
+    bubbles: List[str] = []
+    for point_i, r in enumerate(rows):
         lfc, p = float(r["lfc"]), float(r["neglogp"])
         sig = _classify(lfc, p)
         cx, cy = x_for(lfc), y_for(p)
         tip = f"log2FC {lfc:.2f}, -log10p {p:.2f} ({sig})"
         parts.append(
-            f'<circle class="hit" tabindex="0" cx="{cx:.1f}" cy="{cy:.1f}" r="3.5" fill="{colors[sig]}" '
+            f'<circle id="point-{point_i}" class="hit" tabindex="0" cx="{cx:.1f}" cy="{cy:.1f}" r="3.5" fill="{colors[sig]}" '
             f'fill-opacity="0.7" role="img" aria-label="{xml_escape(tip)}"/>'
         )
-        parts.append(
+        bubbles.append(
             tooltip_bubble(
                 cx, cy - 14,
                 [sig, f"log2FC {lfc:.2f}", f"-log10p {p:.2f}"],
                 anchor="middle", canvas_w=width, canvas_h=height,
                 ink=INK, secondary=SECONDARY, border=GRIDLINE,
+                elem_id=f"tip-{point_i}",
             )
         )
 
@@ -239,6 +245,7 @@ def build_svg(
         f'fill="{INK}" text-anchor="middle">log2 fold change</text>'
     )
 
+    parts.extend(bubbles)
     parts.append(fullscreen_control(width, height, mode))
     parts.append("</svg>")
     return "\n".join(parts)
