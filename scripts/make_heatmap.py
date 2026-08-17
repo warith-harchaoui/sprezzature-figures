@@ -36,7 +36,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import svg_example_path, write_svg  # noqa: E402
 from _style import GRIDLINE  # noqa: E402
-from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _svg import foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
@@ -241,7 +241,7 @@ def build_svg(
         style_rows.append(f"svg:has(.hour-{j}:hover) .hour-{j}{{opacity:1;}}")
     style_rows.append("@media (prefers-reduced-motion: reduce){.cell{transition:none;}}")
     style_rows.append(".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}")
-    style_rows.append(".hit:hover+.tip,.hit:focus+.tip{opacity:1}")
+    style_rows.append(foreground_tip_css(n_r * n_c, mark_prefix="cell"))
     style_rows.append("@media (prefers-reduced-motion:reduce){.tip{transition:none}}")
     parts.append("<style>\n" + "\n".join(style_rows) + "\n</style>")
 
@@ -253,7 +253,14 @@ def build_svg(
     parts.append(f'<text x="40" y="84" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>')
 
     # ---- cells (never rounded — the grid is the message) ------------------
+    # This is a dense n_r x n_c grid, exactly the layout most at risk of the
+    # z-order bug SVG's lack of a z-index causes: a bubble emitted next to
+    # its own cell would be covered by any cell drawn afterward (i.e. any
+    # cell later in the row, or any row after it). Cells draw first, bubbles
+    # are collected and appended once, last -- see _svg.foreground_tip_css's
+    # docstring for the full pattern.
     span = (vmax - vmin) or 1.0
+    tip_bubbles: List[str] = []
     for i, day in enumerate(days):
         y = grid_y + i * cell_h
         if show_cell_labels:
@@ -278,17 +285,19 @@ def build_svg(
                 share = (v / total * 100.0) if total else 0.0
                 tip = f"{day}, {span_lbl}: activity {v:.0f} ({share:.1f}% of week total)"
                 bubble_lines = [str(day), span_lbl, f"activity {v:.0f} ({share:.1f}% of week total)"]
+            cell_k = i * n_c + j
             parts.append(
-                f'<rect class="cell hit day-{i} hour-{j}" tabindex="0" x="{x:.2f}" y="{y:.2f}" '
+                f'<rect id="cell-{cell_k}" class="cell hit day-{i} hour-{j}" tabindex="0" x="{x:.2f}" y="{y:.2f}" '
                 f'width="{cell_w:.2f}" height="{cell_h:.2f}" fill="{fill}">'
                 f'<title>{xml_escape(tip)}</title></rect>'
             )
-            parts.append(
+            tip_bubbles.append(
                 tooltip_bubble(
                     x + cell_w / 2, y - 4,
                     bubble_lines,
                     anchor="middle", canvas_w=width, canvas_h=height,
                     ink=INK, secondary=SECONDARY, border=GRIDLINE,
+                    elem_id=f"tip-{cell_k}",
                 )
             )
 
@@ -344,6 +353,7 @@ def build_svg(
         f'fill="{INK}" text-anchor="middle">{xml_escape(legend_label)}</text>'
     )
 
+    parts.extend(tip_bubbles)
     parts.append(fullscreen_control(width, height, mode))
     parts.append("</svg>")
     return "\n".join(parts)
