@@ -43,7 +43,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _svg import fmt_compact, svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _svg import fmt_compact, foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from _render import render_cli, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _style import os_dark_style  # noqa: E402
@@ -364,7 +364,7 @@ def render_svg(
         ".bar:hover,.bar:focus{filter:brightness(1.07);transform:scaleY(1.04);outline:none;}"
         ".bar:focus{stroke:#1D1D1F;stroke-width:2.5;}"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
+        f"{foreground_tip_css(len(rects), mark_prefix='bar')}"
         "@media (prefers-reduced-motion: reduce){.bar{transition:none;}"
         ".bar:hover,.bar:focus{transform:none;}.tip{transition:none}}"
         "@media (prefers-contrast: more){"
@@ -435,9 +435,13 @@ def render_svg(
             f'text-anchor="end" font-family="Roboto Mono, monospace">L{d}</text>'
         )
 
-    # Bars.
+    # Bars draw first, every bubble is collected and appended once, last
+    # (SVG has no z-index; a bubble next to its own bar would be covered by
+    # any bar drawn afterward, and this is a dense stacked layout where that
+    # is easy to hit) -- see _svg.foreground_tip_css's docstring.
     rx = 11.0
-    for r in rects:
+    tip_bubbles: List[str] = []
+    for i, r in enumerate(rects):
         x = plot_x + r["x_ms"] * px_per_ms
         y = plot_y + r["depth"] * (row_h + row_gap)
         w = r["w_ms"] * px_per_ms
@@ -446,12 +450,12 @@ def render_svg(
         pct = r["ms"] / total_ms * 100.0
         tip = f'{r["name"]}  -  {r["ms"]} ms  ({pct:.0f}% of request, depth {r["depth"]})'
         parts.append(
-            f'<rect class="bar hit" tabindex="0" x="{fmt_compact(x, decimals=2)}" y="{fmt_compact(y, decimals=2)}" '
+            f'<rect id="bar-{i}" class="bar hit" tabindex="0" x="{fmt_compact(x, decimals=2)}" y="{fmt_compact(y, decimals=2)}" '
             f'width="{fmt_compact(max(w - 2.0, 1.0), decimals=2)}" height="{fmt_compact(row_h, decimals=2)}" rx="{fmt_compact(rx, decimals=2)}" '
             f'fill="{fill}" stroke="#FFFFFF" stroke-width="2">'
             f'<title>{xml_escape(tip)}</title></rect>'
         )
-        parts.append(
+        tip_bubbles.append(
             tooltip_bubble(
                 x + w / 2.0,
                 max(4.0, y - 92.0),
@@ -461,6 +465,7 @@ def render_svg(
                 ink=ink,
                 secondary=muted,
                 border=hairline,
+                elem_id=f"tip-{i}",
             )
         )
         # Two-line label (name + duration) when the bar is wide enough.
@@ -552,6 +557,7 @@ def render_svg(
         f'font-size="15" fill="{muted}">grey = off the hot path</text>'
     )
 
+    parts.extend(tip_bubbles)
     parts.append(fullscreen_control(width, height, mode))
     parts.append("</svg>")
     return "\n".join(parts)
