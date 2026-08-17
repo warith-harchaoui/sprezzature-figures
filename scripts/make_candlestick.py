@@ -31,7 +31,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _scale import log_position, log_ticks, nice_ticks_range  # noqa: E402
-from _svg import fmt_number, svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _svg import foreground_tip_css, fmt_number, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
@@ -149,7 +149,7 @@ def build_svg(
         ".candle{transition:opacity .15s ease;}"
         ".candle:hover,.candle:focus{opacity:.72;outline:none;}"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
+        + foreground_tip_css(n) +
         "@media (prefers-reduced-motion: reduce){.candle{transition:none;}"
         ".tip{transition:none}}"
         "</style>"
@@ -194,6 +194,11 @@ def build_svg(
     )
 
     # ---- candles ----
+    # Every candle is drawn first, then every hover card is appended
+    # afterward (see _svg.foreground_tip_css): SVG paints in document
+    # order regardless of hover state, so a card sitting right next to its
+    # own candle would be covered by any candle drawn later.
+    tip_cards: List[str] = []
     for i, r in enumerate(rows):
         cx = plot_x + i * bin_w + bin_w / 2
         color = COLOR_UP if r["up"] else COLOR_DOWN
@@ -204,7 +209,7 @@ def build_svg(
             f"Day {r['day']}: open {r['open']:.2f}, high {r['high']:.2f}, "
             f"low {r['low']:.2f}, close {r['close']:.2f}"
         )
-        parts.append('<g class="candle hit" tabindex="0">')
+        parts.append(f'<g id="hit-{i}" class="candle hit" tabindex="0">')
         parts.append(f'<title>{xml_escape(tip)}</title>')
         parts.append(
             f'<line x1="{cx:.1f}" y1="{y_high:.1f}" x2="{cx:.1f}" y2="{y_low:.1f}" '
@@ -227,7 +232,7 @@ def build_svg(
             f'stroke="{color}" stroke-width="1.5"/>'
         )
         parts.append("</g>")
-        parts.append(
+        tip_cards.append(
             tooltip_bubble(
                 cx, y_high - 12,
                 [
@@ -237,8 +242,10 @@ def build_svg(
                 ],
                 anchor="middle", canvas_w=width, canvas_h=height,
                 ink=INK, secondary=SECONDARY, border=GRIDLINE,
+                elem_id=f"tip-{i}",
             )
         )
+    parts.extend(tip_cards)
 
     # ---- x-axis ----
     axis_y = plot_y + plot_h
