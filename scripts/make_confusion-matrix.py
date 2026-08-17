@@ -28,7 +28,7 @@ from typing import Any, Dict, List, Optional
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import CORNERS, GRIDLINE  # noqa: E402
-from _svg import rounded_rect_path, svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _svg import foreground_tip_css, rounded_rect_path, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
@@ -185,7 +185,7 @@ def build_svg(
     parts.append(
         "<style>"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
+        + foreground_tip_css(len(classes) * len(classes)) +
         "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
         "</style>"
     )
@@ -224,6 +224,12 @@ def build_svg(
     )
 
     # Cells + row class names.
+    # Every cell is drawn first, then every hover card is appended
+    # afterward (see _svg.foreground_tip_css): SVG paints in document
+    # order regardless of hover state, so a card sitting right next to its
+    # own cell would be covered by any cell drawn later in the grid.
+    tip_cards: List[str] = []
+    idx = 0
     for i, name in enumerate(classes):
         cy = _GRID_Y + i * (_CELL + _GAP) + _CELL / 2
         parts.append(
@@ -241,11 +247,11 @@ def build_svg(
             kind = "correct" if i == j else "error"
             tip = f"Actual {name}, predicted {pred}: {count} ({kind})"
             parts.append(
-                f'<path class="hit" tabindex="0" d="{rounded_rect_path(x, y, _CELL, _CELL, tile_r, tile_r, tile_r, tile_r)}" '
+                f'<path id="hit-{idx}" class="hit" tabindex="0" d="{rounded_rect_path(x, y, _CELL, _CELL, tile_r, tile_r, tile_r, tile_r)}" '
                 f'fill="{fill}"><title>{xml_escape(tip)}</title></path>'
             )
             row_share = count / row_total * 100.0 if row_total else 0.0
-            parts.append(
+            tip_cards.append(
                 tooltip_bubble(
                     x + _CELL / 2, y - 8,
                     [
@@ -255,14 +261,17 @@ def build_svg(
                     ],
                     anchor="middle", canvas_w=width, canvas_h=height,
                     ink=_INK, secondary=_SUBTLE, border=GRIDLINE,
+                    elem_id=f"tip-{idx}",
                 )
             )
+            idx += 1
             parts.append(
                 f'<text x="{x + _CELL / 2:.1f}" y="{y + _CELL / 2 + 8:.1f}" '
                 f'font-size="24" font-weight="700" font-family="Roboto Mono, monospace" '
                 f'fill="{txt_fill}" text-anchor="middle" style="pointer-events:none">'
                 f'{count}</text>'
             )
+    parts.extend(tip_cards)
 
     parts.append(fullscreen_control(width, height, mode))
     parts.append("</svg>")

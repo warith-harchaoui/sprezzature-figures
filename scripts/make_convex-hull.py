@@ -63,7 +63,7 @@ from _style import BG, GRIDLINE, INK, leveled_colors, load_palette, os_dark_styl
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _svg import svg_open, tooltip_bubble  # noqa: E402
+from _svg import foreground_tip_css, svg_open, tooltip_bubble  # noqa: E402
 
 # ------------------------------------------------------------------
 # Canvas + house-style tokens
@@ -440,7 +440,7 @@ def build_svg(
         ".seg{transition:opacity .18s ease}",
         ".dot:focus{outline:none}",
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}",
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}",
+        foreground_tip_css(sum(len(data[seg]) for seg in SEGMENTS)),
         "@media (prefers-reduced-motion: reduce){.tip{transition:none}}",
     ]
     for _seg, slug in seg_slug.items():
@@ -610,28 +610,39 @@ def build_svg(
 
     # Points on top, each with a crisp white keyline so no dot melts into
     # its hull or a neighbour. Each carries a native tooltip + is focusable.
+    # Every point is drawn first, then every hover card is appended
+    # afterward, still inside its own segment's group (so the id-matched
+    # hover rule below still finds them as siblings) -- see
+    # _svg.foreground_tip_css: SVG paints in document order regardless of
+    # hover state, so a card sitting right next to its own point would be
+    # covered by any point drawn later in that segment.
+    hit_idx = 0
     for seg in SEGMENTS:
         color = segment_color[seg]
         slug = seg_slug[seg]
         parts.append(f'<g class="seg {slug}">')
+        seg_tip_cards: List[str] = []
         for (x, y), (px, py) in zip(data[seg], seg_px[seg]):
             spend = int(round(x))
             days = round(y, 1)
             tip = f"{seg} · ${spend}/mo · {days} active days/week"
             parts.append(
-                f'<circle class="dot {slug} hit" cx="{px:.1f}" cy="{py:.1f}" r="7.5" '
+                f'<circle id="hit-{hit_idx}" class="dot {slug} hit" cx="{px:.1f}" cy="{py:.1f}" r="7.5" '
                 f'fill="{color}" stroke="#FFFFFF" stroke-width="1.6" '
                 f'tabindex="0" role="img" aria-label="{escape(tip)}">'
                 f'<title>{escape(tip)}</title></circle>'
             )
-            parts.append(
+            seg_tip_cards.append(
                 tooltip_bubble(
                     px, py - 16,
                     [str(seg), f"${spend}/mo spend", f"{days} active days/week"],
                     anchor="middle", canvas_w=WIDTH, canvas_h=HEIGHT,
                     ink=INK, secondary=SUBINK, border=GRIDLINE,
+                    elem_id=f"tip-{hit_idx}",
                 )
             )
+            hit_idx += 1
+        parts.extend(seg_tip_cards)
         parts.append("</g>")
 
     parts.append("</g>")  # /plot

@@ -69,7 +69,7 @@ from xml.sax.saxutils import escape
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import BG, INK, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
-from _svg import hex_to_rgb as _hex_to_rgb, svg_open, tooltip_bubble  # noqa: E402
+from _svg import foreground_tip_css, hex_to_rgb as _hex_to_rgb, svg_open, tooltip_bubble  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control, hover_isolate_css  # noqa: E402
 
@@ -858,7 +858,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
         + "#packs .pkg:focus-within{opacity:1}"
         ".hit:focus{outline:none}"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
+        + foreground_tip_css(n_pkg + len(leaf_values)) +
         "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
         + adaptive
         # Additive dark mode. The default map flips the paper and all on-paper
@@ -898,6 +898,17 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
     parts.append('<g id="packs">')
 
     hero_geom: Optional[Dict[str, Any]] = None
+    # One running id counter across every ring + leaf mark in the whole
+    # packing (see _svg.foreground_tip_css for why a unique id pair is
+    # needed once tooltips no longer sit next to their own mark). Each
+    # package's own tooltips are flushed at the end of its own `.pkg-N`
+    # group (still same-parent siblings of that package's marks, which is
+    # what the CSS `~` selector requires) rather than moved out past the
+    # group entirely: a leaf tooltip drawn later, in a different package's
+    # group, must not be able to hide behind an even-later mark in *this*
+    # package, but marks in sibling packages don't overlap by construction
+    # (that is what circle-packing guarantees) so this is enough.
+    hit_idx = 0
 
     for pkg_idx, pkg in enumerate(root["children"]):  # type: ignore[index]
         pkg_color = str(pkg["color"])
@@ -910,23 +921,26 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
             f'<g class="pkg pkg-{pkg_idx}" tabindex="0" role="img" '
             f'aria-label="{escape(pkg_tip)}">'
         )
+        pkg_tip_cards: List[str] = []
         # Package container: a very pale wash of the hue + a hairline ring
         # in the hue, so nesting reads without a heavy dark border.
         parts.append(
-            f'<circle class="hit pkgring-{pkg["id"]}" tabindex="0" cx="{px:.1f}" cy="{py:.1f}" '
+            f'<circle id="hit-{hit_idx}" class="hit pkgring-{pkg["id"]}" tabindex="0" cx="{px:.1f}" cy="{py:.1f}" '
             f'r="{pr:.1f}" '
             f'fill="{_mix(pkg_color, 0.86)}" stroke="{_mix(pkg_color, 0.30)}" '
             f'stroke-width="1.5"><title>{escape(pkg_tip)}</title></circle>'
         )
         pkg_share = pkg_loc / total_lines * 100.0 if total_lines else 0.0
-        parts.append(
+        pkg_tip_cards.append(
             tooltip_bubble(
                 px, py - pr - 10,
                 [str(pkg["label"]), f"{n_mod} modules, {pkg_loc:,} lines", f"{pkg_share:.1f}% of codebase"],
                 anchor="middle", canvas_w=WIDTH, canvas_h=HEIGHT,
                 ink=INK, secondary=SUBINK, border=HAIRLINE,
+                elem_id=f"tip-{hit_idx}",
             )
         )
+        hit_idx += 1
 
         # Leaves.
         for ch in pkg["children"]:  # type: ignore[index]
@@ -935,18 +949,20 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
             fill = _leaf_fill(pkg_color, float(loc), vmin, vmax)
             leaf_tip = f'{ch["id"]} — {loc:,} lines'
             parts.append(
-                f'<circle class="hit" tabindex="0" cx="{cx:.1f}" cy="{cy:.1f}" r="{cr:.1f}" '
+                f'<circle id="hit-{hit_idx}" class="hit" tabindex="0" cx="{cx:.1f}" cy="{cy:.1f}" r="{cr:.1f}" '
                 f'fill="{fill}"><title>{escape(leaf_tip)}</title></circle>'
             )
             leaf_share = loc / total_lines * 100.0 if total_lines else 0.0
-            parts.append(
+            pkg_tip_cards.append(
                 tooltip_bubble(
                     cx, cy - cr - 10,
                     [str(ch["id"]), f"{loc:,} lines", f"{leaf_share:.1f}% of codebase"],
                     anchor="middle", canvas_w=WIDTH, canvas_h=HEIGHT,
                     ink=INK, secondary=SUBINK, border=HAIRLINE,
+                    elem_id=f"tip-{hit_idx}",
                 )
             )
+            hit_idx += 1
             # Label if it fits.
             fit = _fit_label(str(ch["label"]), loc, cr)
             if fit is not None:
@@ -978,6 +994,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
             if ch["id"] == HERO_PATH:
                 hero_geom = {"x": cx, "y": cy, "r": cr, "loc": loc, "color": pkg_color}
 
+        parts.extend(pkg_tip_cards)
         parts.append("</g>")  # .pkg
 
     parts.append("</g>")  # #packs
