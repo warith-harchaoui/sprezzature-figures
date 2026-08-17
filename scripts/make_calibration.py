@@ -61,7 +61,7 @@ from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _scale import nice_ticks  # noqa: E402
 from _style import GRIDLINE, leveled_colors, load_palette, os_dark_style  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
-from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _svg import foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 
 
 def make_data(
@@ -360,7 +360,8 @@ def build_svg(
         ".pt:focus{outline:none}"
         ".bar{cursor:pointer}"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
+        + foreground_tip_css(len(bins), mark_prefix="pt", tip_prefix="pt-tip")
+        + foreground_tip_css(len(bins), mark_prefix="bar", tip_prefix="bar-tip") +
         "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
         + adaptive
         # Light gridlines are strokes the ink map misses; darken them for a dark
@@ -513,7 +514,14 @@ def build_svg(
         """Return the marker radius for a bin ``count`` (area-proportional)."""
         return r_min + (r_max - r_min) * (count / c_max) ** 0.5
 
-    for rec in bins:
+    # Every point is drawn first, then every hover card is appended
+    # afterward (still before the "Perfect calibration" caption below, so
+    # that caption keeps landing on top of both, exactly as before) -- see
+    # _svg.foreground_tip_css: SVG paints in document order regardless of
+    # hover state, so a card sitting right next to its own point would be
+    # covered by any point drawn later.
+    pt_tip_cards: List[str] = []
+    for i, rec in enumerate(bins):
         cx = sx(rec["predicted"])
         cy = sy(rec["observed"])
         rr = radius(int(rec["count"]))
@@ -524,7 +532,7 @@ def build_svg(
             f'(gap {rec["gap"]:+.0%}, {side}); {int(rec["count"])} predictions'
         )
         parts.append(
-            f'<g class="pt hit" tabindex="0" role="img" '
+            f'<g id="pt-{i}" class="pt hit" tabindex="0" role="img" '
             f'aria-label="{xml_escape(tip)}">'
         )
         parts.append(f"<title>{xml_escape(tip)}</title>")
@@ -539,7 +547,7 @@ def build_svg(
             f'fill-opacity="0.95" stroke="#FFFFFF" stroke-width="1.4"/>'
         )
         parts.append("</g>")
-        parts.append(
+        pt_tip_cards.append(
             tooltip_bubble(
                 cx, cy - rr - 14,
                 [
@@ -549,8 +557,10 @@ def build_svg(
                 ],
                 anchor="middle", canvas_w=width, canvas_h=height,
                 ink=ink, secondary=secondary, border=GRIDLINE,
+                elem_id=f"pt-tip-{i}",
             )
         )
+    parts.extend(pt_tip_cards)
 
     # --- "perfect calibration" caption, on top of the points ------
     # Rides ON the diagonal, rotated -45 degrees so it runs parallel to
@@ -622,7 +632,8 @@ def build_svg(
     n_bins_drawn = len(bins)
     bin_w = plot_w / max(n_bins_drawn, 1)
     gutter = bin_w * 0.18
-    for rec in bins:
+    bar_tip_cards: List[str] = []
+    for i, rec in enumerate(bins):
         # Recover the bin index from the predicted mean's position so each
         # bar sits under the reliability point it explains.
         bx = sx(rec["predicted"]) - (bin_w - gutter) / 2.0
@@ -631,7 +642,7 @@ def build_svg(
         bh = h_ax_bottom - by
         tip = f'{int(rec["count"])} predictions near {rec["predicted"]:.0%}'
         parts.append(
-            f'<g class="bar hit" tabindex="0" role="img" '
+            f'<g id="bar-{i}" class="bar hit" tabindex="0" role="img" '
             f'aria-label="{xml_escape(tip)}">'
         )
         parts.append(f"<title>{xml_escape(tip)}</title>")
@@ -640,14 +651,16 @@ def build_svg(
             f'height="{bh:.1f}" rx="3" fill="{hist}" fill-opacity="0.85"/>'
         )
         parts.append("</g>")
-        parts.append(
+        bar_tip_cards.append(
             tooltip_bubble(
                 bx + bw / 2, by - 10,
                 [f'near {rec["predicted"]:.0%} predicted', f'{int(rec["count"])} predictions'],
                 anchor="middle", canvas_w=width, canvas_h=height,
                 ink=ink, secondary=secondary, border=GRIDLINE,
+                elem_id=f"bar-tip-{i}",
             )
         )
+    parts.extend(bar_tip_cards)
 
     # histogram axes: baseline + a couple of count ticks on the left.
     parts.append(
