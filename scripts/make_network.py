@@ -48,7 +48,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import BG, INK, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
-from _svg import svg_open, tooltip_bubble  # noqa: E402
+from _svg import foreground_tip_css, svg_open, tooltip_bubble  # noqa: E402
 from _textfit import text_width  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
@@ -571,7 +571,7 @@ def build_svg(
     css_lines.append(".node:focus{outline:none}")
     css_lines.append(".node circle:focus{outline:none}")
     css_lines.append(".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}")
-    css_lines.append(".hit:hover+.tip,.hit:focus+.tip{opacity:1}")
+    css_lines.append(foreground_tip_css(len(ids), mark_prefix="node", tip_prefix="node-tip"))
     css_lines.append("@media (prefers-reduced-motion: reduce){.tip{transition:none}}")
     # OS-adaptive overrides (additive; the default render is byte-identical
     # because every rule below lives inside a media query). Under
@@ -706,8 +706,14 @@ def build_svg(
     parts.append("</g>")
 
     # --- nodes ---
+    # Every node is drawn first, every one of its bubbles appended afterward
+    # (still inside #nodes, so the id-matched hover rule below still finds
+    # them as siblings): SVG paints in document order regardless of hover
+    # state, so a bubble sitting next to its own node would be covered by
+    # any node drawn after it (a dense cluster easily has this).
     parts.append('<g id="nodes">')
-    for nid in ids:
+    node_tips: List[str] = []
+    for node_i, nid in enumerate(ids):
         x, y = pos[nid]
         r = _radius(indeg[nid], max_indeg)
         color = TEAM_COLOR[team_of[nid]]
@@ -726,7 +732,7 @@ def build_svg(
         # queries below — a class on the group would not reach the circle's fill.
         team_slug = _team_slug(team_of[nid])
         parts.append(
-            f'<g class="node hit n-{slug[nid]}" tabindex="0" role="img" '
+            f'<g id="node-{node_i}" class="node hit n-{slug[nid]}" tabindex="0" role="img" '
             f'aria-label="{escape(tip)}">'
             f'<circle class="team-{team_slug}" cx="{x:.1f}" cy="{y:.1f}" '
             f'r="{r:.1f}" fill="{color}" stroke="{BG}" stroke-width="4"/>'
@@ -744,14 +750,16 @@ def build_svg(
             tip_anchor, tip_x = "start", x
         elif x > WIDTH - PLOT_PAD - 80:
             tip_anchor, tip_x = "end", x
-        parts.append(
+        node_tips.append(
             tooltip_bubble(
                 tip_x, y - r - 14,
                 tip_lines,
                 anchor=tip_anchor, canvas_w=WIDTH, canvas_h=HEIGHT,
                 ink=INK, secondary=SUBINK, border=EDGE,
+                elem_id=f"node-tip-{node_i}",
             )
         )
+    parts.extend(node_tips)
     parts.append("</g>")
 
     parts.append("</g>")  # /graph

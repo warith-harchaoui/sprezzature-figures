@@ -46,7 +46,7 @@ from _style import (  # noqa: E402
     os_dark_style,
 )
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _svg import fmt_compact, svg_open, tooltip_bubble  # noqa: E402
+from _svg import fmt_compact, foreground_tip_css, svg_open, tooltip_bubble  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
@@ -328,8 +328,8 @@ def render_svg(
         ".tile:hover,.tile:focus{filter:brightness(1.06);transform:scale(1.015);outline:none;}"
         ".tile:focus{stroke:#1D1D1F;stroke-width:2;}"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
-        "@media (prefers-reduced-motion: reduce){.tile{transition:none;}.tile:hover,.tile:focus{transform:none;}.tip{transition:none}}"
+        + foreground_tip_css(len(tiles), mark_prefix="tile", tip_prefix="tile-tip")
+        + "@media (prefers-reduced-motion: reduce){.tile{transition:none;}.tile:hover,.tile:focus{transform:none;}.tip{transition:none}}"
         + os_adaptive_style(tile_series, role="fill")
         + fcp_style
         # Additive OS dark mode: dark paper + light ink (default ink_map); the
@@ -373,21 +373,26 @@ def render_svg(
             f'stroke="{hairline}" stroke-width="1.5"/>'
         )
 
-    # Tiles, grouped so hover/focus works per rect.
+    # Tiles, grouped so hover/focus works per rect. Every tile is drawn
+    # first, every one of its bubbles appended afterward (see tile_tips
+    # below): SVG paints in document order regardless of hover state, so a
+    # bubble sitting next to its own tile would be covered by any tile
+    # drawn after it.
     rx = 5.0
-    for t in tiles:
+    tile_tips: List[str] = []
+    for tile_i, t in enumerate(tiles):
         label = (
             f"{t['device']} - {t['method']}: {t['pct']:.0f}% of {t['device']} orders "
             f"({t['device']} = {t['share']:.0f}% of all orders)"
         )
         parts.append(
-            f'<rect class="tile tile-{_method_slug(t["method"])} hit" tabindex="0" '
+            f'<rect id="tile-{tile_i}" class="tile tile-{_method_slug(t["method"])} hit" tabindex="0" '
             f'x="{fmt_compact(t["x"], decimals=2)}" y="{fmt_compact(t["y"], decimals=2)}" '
             f'width="{fmt_compact(t["w"], decimals=2)}" height="{fmt_compact(t["h"], decimals=2)}" rx="{fmt_compact(rx, decimals=2)}" '
             f'fill="{t["color"]}" stroke="#FFFFFF" stroke-width="3" '
             f'role="img" aria-label="{escape(label)}"/>'
         )
-        parts.append(
+        tile_tips.append(
             tooltip_bubble(
                 t["x"] + t["w"] / 2.0, t["y"] - 12.0,
                 [
@@ -397,6 +402,7 @@ def render_svg(
                 ],
                 anchor="middle", canvas_w=width, canvas_h=height,
                 ink=ink, secondary=muted, border=hairline,
+                elem_id=f"tile-tip-{tile_i}",
             )
         )
         # In-tile percentage label when the segment is tall + wide enough.
@@ -409,6 +415,7 @@ def render_svg(
                 f'text-anchor="middle" font-family="Roboto Mono, monospace" '
                 f'pointer-events="none">{t["pct"]:.0f}%</text>'
             )
+    parts.extend(tile_tips)
 
     # Column headers: device name + its width-share, above each column.
     for dev in devices:
