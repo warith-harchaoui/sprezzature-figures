@@ -30,7 +30,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import svg_example_path, write_raster_companions, write_svg  # noqa: E402
 from _style import load_palette, os_adaptive_style, os_dark_style, qualitative_sequence  # noqa: E402
-from _svg import point_on_circle, tooltip_bubble, xml_escape  # noqa: E402
+from _svg import foreground_tip_css, point_on_circle, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
 # ------------------------------------------------------------------
@@ -230,14 +230,19 @@ def build_svg(
         )
         + os_dark_style()
         + ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
-        "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
+        + foreground_tip_css(len(speakers))
+        + "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
         + "\n</style>"
     )
 
     # Arcs start at the top (−90°) and run clockwise.
     angle = -math.pi / 2
     labels: List[str] = []
+    # Every slice's bubble is queued into `bubbles` and appended once, after
+    # every slice is drawn, rather than right next to its own slice: SVG has
+    # no z-index, so a bubble drawn in place would be covered by any slice
+    # drawn afterward, no matter which one is hovered.
+    bubbles: List[str] = []
     ranked_names = [s["name"] for s in sorted(speakers, key=lambda s: -int(s["seconds"]))]
     for i, (spk, color) in enumerate(zip(speakers, slice_colors, strict=True)):
         secs = int(spk["seconds"])
@@ -247,16 +252,17 @@ def build_svg(
         rank = ranked_names.index(spk["name"]) + 1
         slice_tip = f"{spk['name']}: {_mmss(secs)} ({round(100 * secs / total)}%)"
         parts.append(
-            f'<path class="slice slice-{i} hit" tabindex="0" d="{_segment(a0, a1)}" fill="{color}" '
+            f'<path id="hit-{i}" class="slice slice-{i} hit" tabindex="0" d="{_segment(a0, a1)}" fill="{color}" '
             f'role="img" aria-label="{xml_escape(slice_tip)}"/>'
         )
         mid_pt_x, mid_pt_y = _pt(CX, CY, (R_OUT + R_IN) / 2.0, (a0 + a1) / 2.0)
-        parts.append(
+        bubbles.append(
             tooltip_bubble(
                 mid_pt_x, mid_pt_y - 14,
                 [spk["name"], f"{_mmss(secs)} · {round(100 * secs / total)}%", f"#{rank} of {len(speakers)} speakers"],
                 anchor="middle", canvas_w=W, canvas_h=H,
                 ink=INK, secondary=SECONDARY, border=LEADER,
+                elem_id=f"tip-{i}",
             )
         )
 
@@ -285,6 +291,7 @@ def build_svg(
         )
 
     parts.extend(labels)
+    parts.extend(bubbles)
 
     # Centre: total running time — the headline number.
     parts.append(

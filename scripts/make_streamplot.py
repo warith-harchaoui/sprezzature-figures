@@ -44,7 +44,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _labels import label_cell  # noqa: E402
 from _style import load_palette, os_dark_style  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
-from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _svg import foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 
@@ -788,8 +788,8 @@ def build_svg(
     hover_css = (
         ".hit{cursor:pointer;}"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
-        "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
+        + foreground_tip_css(len(lines))
+        + "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
     )
     parts.append(
         "<style>\n"
@@ -830,7 +830,13 @@ def build_svg(
     parts.append('<g clip-path="url(#sp-clip)">')
 
     # ---- streamlines ----
-    for line in lines:
+    # Every hit-stroke is drawn first, every tooltip bubble is appended
+    # after the loop (still inside this same clip group, so the id-matched
+    # hover rule below still finds them as siblings) -- SVG has no z-index,
+    # so a bubble sitting next to its own line would be covered by any
+    # streamline drawn after it, no matter which one is hovered.
+    tips: List[str] = []
+    for i, line in enumerate(lines):
         # Pixel-space points.
         ppts = [(sx(x), sy(y)) for (x, y) in line]
         # Mean speed sets the line's colour + width (magnitude encoding).
@@ -849,21 +855,21 @@ def build_svg(
             f'stroke-linejoin="round" opacity="0.95"/>'
         )
         # Fat transparent hit-stroke over the (thin) visible line, so the
-        # line is a realistic hover/focus target, immediately followed by
-        # its tooltip bubble -- the `.hit:hover+.tip` adjacent-sibling rule
-        # needs the two elements next to each other in document order.
+        # line is a realistic hover/focus target. Its bubble is queued into
+        # `tips` rather than appended here -- see the loop-opening comment.
         mpx, mpy = ppts[len(ppts) // 2]
         tip_label = f"Wind speed ~{v_here:.0f} km/h near ({mid[0]:.0f}, {mid[1]:.0f}) km"
         parts.append(
-            f'<path class="hit" d="{d}" fill="none" stroke="transparent" '
+            f'<path id="hit-{i}" class="hit" d="{d}" fill="none" stroke="transparent" '
             f'stroke-width="12" tabindex="0" role="img" aria-label="{xml_escape(tip_label)}"/>'
         )
-        parts.append(
+        tips.append(
             tooltip_bubble(
                 mpx, mpy - 10,
                 [f"{v_here:.0f} km/h", f"({mid[0]:.0f}, {mid[1]:.0f}) km"],
                 anchor="middle", canvas_w=_WIDTH, canvas_h=_HEIGHT,
                 ink=_INK, secondary=_SUBTLE, border=_GRID,
+                elem_id=f"tip-{i}",
             )
         )
         # Arrowheads at a regular arc-length cadence, coloured to match.
@@ -882,6 +888,7 @@ def build_svg(
             asize = 5.0 + 2.2 * t
             parts.append(_arrow(ax, ay, dx, dy, color, asize))
 
+    parts.extend(tips)
     parts.append('</g>')  # end clip group
 
     # ---- storm marker: a ring + call-out cell at the low's centre ----
