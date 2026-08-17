@@ -60,7 +60,7 @@ from _style import (  # noqa: E402
     os_adaptive_style,
     os_dark_style,
 )
-from _svg import tooltip_bubble, xml_escape  # noqa: E402
+from _svg import foreground_tip_css, tooltip_bubble, xml_escape  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
@@ -389,7 +389,10 @@ def build_svg(
         ".flows .ribbon:hover{opacity:.96;}"
         ".flows .ribbon:focus{opacity:.96;outline:none;}"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
+        # The id-paired hover rule itself can't live here: it needs the
+        # final ribbon/bin counts, only known once those loops (further
+        # down) finish. See the small <style> block appended right after
+        # them instead.
         "@media (prefers-reduced-motion: reduce){.ribbon{transition:none;}.tip{transition:none}}"
         + os_adaptive_style(
             outcome_series,
@@ -451,6 +454,14 @@ def build_svg(
     # outcome, so "teal = survived" reads from the very first axis.
     parts.append('<g class="flows">')
 
+    # Every ribbon is drawn first, every one of its tooltips appended
+    # afterward (still inside .flows, so the id-matched hover rule below
+    # still finds them as siblings): SVG paints in document order regardless
+    # of hover state, so a tooltip sitting next to its own ribbon would be
+    # covered by any ribbon drawn after it -- and ribbons routinely overlap
+    # at the bins they share.
+    ribbon_tips: List[str] = []
+    ribbon_i = 0
     for seg in range(n_axes - 1):
         a_idx, b_idx = seg, seg + 1
         _, a_cats = AXES[a_idx]
@@ -498,25 +509,34 @@ def build_svg(
             # fill stays authoritative in the default (no-preference) render.
             outcome_cls = f"rib-{outcome.lower()}"
             parts.append(
-                f'<path class="ribbon hit {outcome_cls}" tabindex="0" d="{d}" fill="{color}" '
+                f'<path id="ribbon-{ribbon_i}" class="ribbon hit {outcome_cls}" tabindex="0" d="{d}" fill="{color}" '
                 f'fill-opacity="0.55" stroke="#FFFFFF" stroke-opacity="0.9" '
                 f'stroke-width="1.0" stroke-linejoin="round" '
                 f'role="img" aria-label="{xml_escape(tip)}"/>'
             )
-            parts.append(
+            ribbon_tips.append(
                 tooltip_bubble(
                     (x0 + x1) / 2.0, (a_top + b_top) / 2.0 + h / 2.0 - 14.0,
                     [f"{a_cat} → {b_cat} → {outcome}", f"{count} people ({pct:.0f}%)"],
                     anchor="middle", canvas_w=width, canvas_h=height,
                     ink=ink, secondary=secondary, border=hairline,
+                    elem_id=f"ribbon-tip-{ribbon_i}",
                 )
             )
+            ribbon_i += 1
+    parts.extend(ribbon_tips)
     parts.append("</g>")
 
     # -- category bins + labels --------------------------------------------- #
     # Each bin is a solid Apple-palette bar so the axes read as coloured
     # "stations", never a wall of black. The outcome axis keeps the meaning
     # colours (blue = lived, red = died) to anchor the legend.
+    # Every bin is drawn first, every one of its tooltips appended afterward
+    # (see bin_tips below): SVG paints in document order regardless of hover
+    # state, so a tooltip sitting next to its own bin would be covered by any
+    # bin drawn after it.
+    bin_tips: List[str] = []
+    bin_i = 0
     for i, (_, cats) in enumerate(AXES):
         x = axis_x[i]
         for cat in cats:
@@ -526,18 +546,20 @@ def build_svg(
             pct = 100.0 * b["count"] / total
             bin_tip = f"{cat}: {int(b['count'])} people ({pct:.0f}%)"
             parts.append(
-                f'<rect class="hit" tabindex="0" x="{x:.1f}" y="{b["y0"]:.1f}" width="{bin_w}" '
+                f'<rect id="bin-{bin_i}" class="hit" tabindex="0" x="{x:.1f}" y="{b["y0"]:.1f}" width="{bin_w}" '
                 f'height="{blk_h:.1f}" rx="7" fill="{fill}" '
                 f'role="img" aria-label="{xml_escape(bin_tip)}"/>'
             )
-            parts.append(
+            bin_tips.append(
                 tooltip_bubble(
                     x + bin_w / 2.0, b["y0"] - 14.0,
                     [cat, f"{int(b['count'])} people", f"{pct:.0f}% of total"],
                     anchor="middle", canvas_w=width, canvas_h=height,
                     ink=ink, secondary=secondary, border=hairline,
+                    elem_id=f"bin-tip-{bin_i}",
                 )
             )
+            bin_i += 1
             # Label side: first axis labels LEFT, everything else RIGHT, so
             # text never overlaps ribbons.
             sub = f"{int(b['count'])} · {pct:.0f}%"
@@ -556,6 +578,13 @@ def build_svg(
                 f'font-family="{mono_family}" font-size="14" '
                 f'fill="{secondary}" text-anchor="{anchor}">{xml_escape(sub)}</text>'
             )
+    parts.extend(bin_tips)
+    parts.append(
+        "<style>"
+        + foreground_tip_css(ribbon_i, mark_prefix="ribbon", tip_prefix="ribbon-tip")
+        + foreground_tip_css(bin_i, mark_prefix="bin", tip_prefix="bin-tip")
+        + "</style>"
+    )
 
     # -- baseline rule under the plot --------------------------------------- #
     rule_y = plot_top + plot_h + 24
