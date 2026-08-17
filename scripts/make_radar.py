@@ -51,7 +51,7 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
-from _svg import fmt_compact, point_on_circle, svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _svg import foreground_tip_css, fmt_compact, point_on_circle, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _style import (  # noqa: E402
     forced_color_patterns,
@@ -337,7 +337,6 @@ def build_svg(
     parts.append(
         "<style>"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
         "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
         + os_adaptive_style(rad_series, role="both")
         + fcp_style
@@ -423,6 +422,14 @@ def build_svg(
     # dots. The light fill (opacity 0.10) tints the interior enough to read the
     # shape but never enough for two overlapping fills to muddy into grey — the
     # colour on the interior is dominated by the crisp stroke, not the fill.
+    # Every vertex bubble is collected here and drawn only once, all
+    # together, as the last thing in the document (see the `parts.extend`
+    # right before the legend): SVG has no z-index, so a bubble sitting
+    # next to its own vertex would be covered by any vertex drawn afterward
+    # (including a later series' dots). `tip_i` runs across every series so
+    # each vertex and its bubble share a unique id (`hit-N`/`tip-N`).
+    tips: List[str] = []
+    tip_i = 0
     for s_idx, subject in enumerate(series):
         color = palette[s_idx]
         name = str(subject["name"])
@@ -448,18 +455,20 @@ def build_svg(
             gap = axis_leader[i] - values[i]
             standing = "leads this axis" if gap <= 1e-9 else f"{gap:.0f} behind the leader"
             parts.append(
-                f'<g class="hit" tabindex="0" role="img" aria-label="{xml_escape(tip)}">'
+                f'<g id="hit-{tip_i}" class="hit" tabindex="0" role="img" aria-label="{xml_escape(tip)}">'
                 f'<circle cx="{fmt_compact(vx)}" cy="{fmt_compact(vy)}" r="6.5" '
                 f'fill="{color}" stroke="{_BG}" stroke-width="2.2"/></g>'
             )
-            parts.append(
+            tips.append(
                 tooltip_bubble(
                     vx, vy - 18,
                     [name, f"{axes[i]}: {values[i]:.0f}/100", standing],
                     anchor="middle", canvas_w=width, canvas_h=height,
                     ink=_INK, secondary=_SECONDARY, border=_GRID,
+                    elem_id=f"tip-{tip_i}",
                 )
             )
+            tip_i += 1
 
     # ---- legend (bottom, centred) ----------------------------------------- #
     # One coloured disk + name per series. Disks match the series colour with no
@@ -505,6 +514,9 @@ def build_svg(
         f'fill="{_SECONDARY}">Each spoke: 0 at the centre to 100 at the rim '
         f"(higher is better)</text>"
     )
+
+    parts.extend(tips)
+    parts.append(f"<style>{foreground_tip_css(tip_i)}</style>")
 
     # Fullscreen control (the top-right corner is clear; the title sits
     # top-left and the legend runs along the bottom), per interactivity mode.
