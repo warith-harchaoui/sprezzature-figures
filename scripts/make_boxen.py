@@ -41,7 +41,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 import _style
-from _svg import tooltip_bubble, viridis  # noqa: E402
+from _svg import foreground_tip_css, tooltip_bubble, viridis  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
@@ -299,10 +299,11 @@ def _boxen_group(
     samples: List[float],
     cx: float,
     half_width: float,
+    start_index: int,
     flip_label: bool = False,
     mono_family: str = "Roboto Mono, monospace",
     theme: str = "corporate",
-) -> Tuple[str, Dict[str, float]]:
+) -> Tuple[str, Dict[str, float], int]:
     """Render one category's nested-box stack as an SVG ``<g>``.
 
     Parameters
@@ -316,6 +317,14 @@ def _boxen_group(
     half_width : float
         Half the maximum box width — the innermost (widest) box spans
         ``2·half_width``; outer boxes taper toward the tail.
+    start_index : int
+        The running count of boxes drawn by every *earlier* stack, so this
+        stack's ids continue that sequence (``lv-hit-{start_index}``,
+        ``start_index + 1``, ...) instead of colliding with theirs —
+        several stacks share this function, all in one document, and
+        :func:`_svg.foreground_tip_css` needs a plain 0..N-1 sequence to
+        generate its rules from. Pass the previous call's returned box
+        count added to its own `start_index`.
     flip_label : bool, optional
         Park the p99 label in the gutter to the *left* of the stack
         instead of the right — used for the last category so its label
@@ -325,9 +334,11 @@ def _boxen_group(
 
     Returns
     -------
-    tuple of (str, dict)
-        The SVG markup for the group, and this category's
-        :func:`box_stats` (for the legend/subtitle).
+    tuple of (str, dict, int)
+        The SVG markup for the group, this category's :func:`box_stats`
+        (for the legend/subtitle), and the number of nested boxes drawn
+        (so the caller can size the document-wide :func:`_svg.foreground_tip_css`
+        call once every stack has run).
     """
     boxes = letter_values(samples)
     stats = box_stats(samples)
@@ -348,7 +359,8 @@ def _boxen_group(
     # The width tapers gently from the widest (innermost, at the median)
     # toward the tail — a monotone narrowing so the nesting reads as a
     # clean stepped pyramid, not a bulb.
-    for box in reversed(boxes):
+    lv_tips: List[str] = []
+    for local_i, box in enumerate(reversed(boxes)):
         depth = int(box["depth"])
         taper = 1.0 - 0.50 * (depth - 1) / max(1, n_boxes - 1)
         hw = half_width * taper
@@ -360,18 +372,20 @@ def _boxen_group(
             f'{label} · middle {pct:.1f}% of requests · '
             f'{_fmt_ms(box["lower"])}–{_fmt_ms(box["upper"])}'
         )
+        box_id = start_index + local_i
         parts.append(
-            f'    <rect class="lv hit" tabindex="0" x="{cx - hw:.1f}" y="{top_y:.1f}" '
+            f'    <rect id="lv-hit-{box_id}" class="lv hit" tabindex="0" x="{cx - hw:.1f}" y="{top_y:.1f}" '
             f'width="{2 * hw:.1f}" height="{h:.1f}" rx="3" '
             f'fill="{_ramp_color(depth, theme)}" stroke="{WHITE}" stroke-width="1.4">'
             f"<title>{tip}</title></rect>"
         )
-        parts.append(
+        lv_tips.append(
             tooltip_bubble(
                 cx, top_y - 6,
                 [label, f"middle {pct:.1f}% of requests",
                  f"{_fmt_ms(box['lower'])}–{_fmt_ms(box['upper'])}"],
                 canvas_w=WIDTH, canvas_h=HEIGHT, ink=INK, secondary=SUBTLE, border=GRID,
+                elem_id=f"lv-tip-{box_id}",
             )
         )
 
@@ -431,8 +445,9 @@ def _boxen_group(
         f'    <text x="{cx:.1f}" y="{PLOT_BOTTOM + 34:.1f}" font-size="18" '
         f'fill="{INK}" text-anchor="middle" font-weight="500">{label}</text>'
     )
+    parts.extend(lv_tips)
     parts.append("  </g>")
-    return "\n".join(parts), stats
+    return "\n".join(parts), stats, n_boxes
 
 
 def _y_axis(mono_family: str = "Roboto Mono, monospace") -> str:
@@ -556,6 +571,7 @@ def build_svg(
 
     groups: List[str] = []
     all_stats: List[Dict[str, float]] = []
+    total_boxes = 0
     for i, t in enumerate(tiers):
         samples = lognormal_sample(
             int(t["n"]),
@@ -564,17 +580,19 @@ def build_svg(
             seed=int(t["seed"]),
         )
         cx = PLOT_LEFT + band * (i + 0.5)
-        markup, stats = _boxen_group(
+        markup, stats, n_boxes_i = _boxen_group(
             label=str(t["label"]),
             samples=samples,
             cx=cx,
             half_width=half_width,
+            start_index=total_boxes,
             flip_label=(i == n_cat - 1),
             mono_family=mono_family,
             theme=theme,
         )
         groups.append(markup)
         all_stats.append(stats)
+        total_boxes += n_boxes_i
 
     # Subtitle takeaway: contrast the p99 tails, which is what a boxen
     # plot surfaces that a bare median hides.
@@ -631,7 +649,7 @@ def build_svg(
     {contrast}
     {dark}
     .tip{{opacity:0;pointer-events:none;transition:opacity .12s ease}}
-    .hit:hover+.tip,.hit:focus+.tip{{opacity:1}}
+    {foreground_tip_css(total_boxes, mark_prefix="lv-hit", tip_prefix="lv-tip")}
     @media (prefers-reduced-motion:reduce){{.tip{{transition:none}}}}
   </style>"""
     bg = f'  <rect width="{WIDTH}" height="{HEIGHT}" fill="{WHITE}"/>'
