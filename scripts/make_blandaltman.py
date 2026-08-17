@@ -60,7 +60,7 @@ from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _style import leveled_colors, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
-from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _svg import foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 
 
 def make_data(n: int = 90, seed: int = 7) -> List[Dict[str, float]]:
@@ -337,7 +337,11 @@ def build_svg(
         # low-contrast dark grey on a dark ground. Point white halos stay light.
         + os_dark_style(extra='[stroke="#EEEEEE"]{stroke:#2A2A2C;}')
         + ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        + ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
+        # A bubble drawn right next to its own point would be covered by
+        # any point drawn afterward (SVG paints in document order,
+        # regardless of hover) -- points draw first, bubbles last, paired
+        # by id; see _svg.foreground_tip_css.
+        + foreground_tip_css(len(data), mark_prefix="pt-hit", tip_prefix="pt-tip")
         + "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
         + "</style>"
     )
@@ -459,14 +463,15 @@ def build_svg(
     # One neutral dot per patient, each a focusable group with a native
     # tooltip and a hover / focus halo. A white keyline keeps each dot
     # crisp where the cloud overlaps — a bright keyline, never a dark ring.
-    for rec in data:
+    pt_tips: List[str] = []
+    for pt_idx, rec in enumerate(data):
         cx = sx(rec["mean"])
         cy = sy(rec["diff"])
         tip = (
             f'Mean {rec["mean"]:.0f} mmHg, wrist − arm {rec["diff"]:+.0f} mmHg'
         )
         parts.append(
-            f'<g class="pt hit" tabindex="0" role="img" '
+            f'<g id="pt-hit-{pt_idx}" class="pt hit" tabindex="0" role="img" '
             f'aria-label="{xml_escape(tip)}">'
         )
         parts.append(f"<title>{xml_escape(tip)}</title>")
@@ -480,7 +485,7 @@ def build_svg(
         )
         parts.append("</g>")
         within_loa = loa_lo <= rec["diff"] <= loa_hi
-        parts.append(
+        pt_tips.append(
             tooltip_bubble(
                 cx, cy - 18,
                 [
@@ -490,8 +495,10 @@ def build_svg(
                 ],
                 canvas_w=width, canvas_h=height, ink=ink, secondary=secondary,
                 border="#EEEEEE",
+                elem_id=f"pt-tip-{pt_idx}",
             )
         )
+    parts.extend(pt_tips)
 
     # --- proportional-bias trend line (dotted Purple) ------------
     # A quiet secondary annotation: the least-squares fit of the
