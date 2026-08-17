@@ -56,7 +56,7 @@ from typing import Any, Dict, List, Optional, Tuple
 # without the dataviz tier).
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import forced_color_patterns, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
-from _svg import point_on_circle, svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _svg import foreground_tip_css, point_on_circle, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
@@ -385,7 +385,12 @@ def build_svg(
         ".wedge:focus { outline: none; }",
         f".wedge:focus {{ stroke: {_FOCUS}; stroke-width: 2.4; }}",
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}",
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}",
+        "".join(
+            foreground_tip_css(
+                len(_MONTHS), mark_prefix=f"wedge-{c_idx}", tip_prefix=f"tip-wedge-{c_idx}"
+            )
+            for c_idx in range(len(causes))
+        ),
         "@media (prefers-reduced-motion: reduce) { .wedge { transition: none; } .tip{transition:none} }",
     ])
     # OS-adaptive overrides (additive; every rule lives inside an @media block,
@@ -494,6 +499,14 @@ def build_svg(
         k = str(cause["key"])
         color = str(cause["color"])
         parts.append(f'<g class="cause cause-{k}">')
+        # Bubbles for this cause are collected here and drawn only once,
+        # all together, right before this cause's own group closes (see
+        # `parts.extend(cause_tips)` below): SVG has no z-index, so a
+        # bubble sitting next to its own wedge would be covered by any
+        # wedge drawn afterward -- concretely, a later month's wedge for
+        # this same cause (different causes stack at different radii, so
+        # they never occlude each other).
+        cause_tips: List[str] = []
         for m_idx, month in enumerate(_MONTHS):
             v = grid[m_idx][c_idx]
             if v <= 0:
@@ -511,7 +524,7 @@ def build_svg(
             )
             share = 100.0 * v / totals[m_idx] if totals[m_idx] else 0.0
             parts.append(
-                f'<path class="wedge hit cause-{k}" tabindex="0" role="listitem" '
+                f'<path id="wedge-{c_idx}-{m_idx}" class="wedge hit cause-{k}" tabindex="0" role="listitem" '
                 f'd="{path}" fill="{color}" stroke="{_BG}" '
                 f'stroke-width="1.1" stroke-linejoin="round" '
                 f'aria-label="{tip}"/>'
@@ -519,15 +532,17 @@ def build_svg(
             wedge_mid_r = (r0 + r1) / 2.0
             wedge_mid_a = (start + end) / 2.0
             wx, wy = _polar(_CX, _CY, wedge_mid_r, wedge_mid_a)
-            parts.append(
+            cause_tips.append(
                 tooltip_bubble(
                     wx, wy - 14,
                     [f"{month}{year}", str(cause["label"]),
                      f"{v:.0f} per 1,000 ({share:.0f}% of month)"],
                     anchor="middle", canvas_w=_WIDTH, canvas_h=_HEIGHT,
                     ink=_INK, secondary=_SUBTLE, border=_GRID,
+                    elem_id=f"tip-wedge-{c_idx}-{m_idx}",
                 )
             )
+        parts.extend(cause_tips)
         parts.append('</g>')
 
     # ---- centre dot so the origin reads as a hub, not a gap ----

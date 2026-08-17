@@ -32,7 +32,7 @@ from typing import Any, Dict, List, Optional
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _svg import foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
@@ -150,7 +150,6 @@ def build_svg(
     parts.append(
         "<style>"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
         "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
         "</style>"
     )
@@ -187,39 +186,54 @@ def build_svg(
     parts.append(f'<path d="{band_d}" fill="{COLOR_BAND}" fill-opacity="0.15"/>')
 
     # ---- scatter ----
-    for x, y in zip(xs, ys):
+    # Bubbles are collected here and drawn only once, all together, after
+    # the fitted-line bubble too (see the `parts.extend` below): SVG has no
+    # z-index, so a bubble sitting next to its own point would be covered
+    # by any point drawn afterward. `i` pairs each point with its bubble
+    # (`hit-N`/`tip-N`); the fitted line gets its own single pair (`hit-line`
+    # / `tip-line`) since there's only one of it.
+    tips: List[str] = []
+    for i, (x, y) in enumerate(zip(xs, ys)):
         cx, cy = x_for(x), y_for(y)
         resid = y - predict(x)
         pt_tip = f"x = {x:.2f}, y = {y:.2f} (residual {resid:+.2f})"
         parts.append(
-            f'<circle class="hit" tabindex="0" cx="{cx:.1f}" cy="{cy:.1f}" r="3" '
+            f'<circle id="hit-{i}" class="hit" tabindex="0" cx="{cx:.1f}" cy="{cy:.1f}" r="3" '
             f'fill="{COLOR_POINT}" fill-opacity="0.55" role="img" aria-label="{xml_escape(pt_tip)}"/>'
         )
-        parts.append(
+        tips.append(
             tooltip_bubble(
                 cx, cy - 12,
                 [f"x = {x:.2f}", f"y = {y:.2f}", f"residual {resid:+.2f}"],
                 anchor="middle", canvas_w=width, canvas_h=height,
                 ink=INK, secondary=SECONDARY, border=GRIDLINE,
+                elem_id=f"tip-{i}",
             )
         )
+    n_pts = len(xs)
 
     # ---- fitted line ----
     line_pts = [(x_for(x), y_for(v)) for x, v in zip(grid_x, yhat)]
     line_d = "M " + " L ".join(f"{x:.1f},{y:.1f}" for x, y in line_pts)
     tip = f"y = {fit['intercept']:.2f} + {fit['slope']:.2f}x (n={fit['n']:.0f})"
     parts.append(
-        f'<path class="hit" tabindex="0" d="{line_d}" fill="none" stroke="{COLOR_LINE}" '
+        f'<path id="hit-line" class="hit" tabindex="0" d="{line_d}" fill="none" stroke="{COLOR_LINE}" '
         f'stroke-width="2.5" role="img" aria-label="{xml_escape(tip)}"/>'
     )
     mid_x, mid_y = line_pts[len(line_pts) // 2]
-    parts.append(
+    tips.append(
         tooltip_bubble(
             mid_x, mid_y - 16,
             ["OLS fit", f"y = {fit['intercept']:.2f} + {fit['slope']:.2f}x", f"n = {fit['n']:.0f} points"],
             anchor="middle", canvas_w=width, canvas_h=height,
             ink=INK, secondary=SECONDARY, border=GRIDLINE,
+            elem_id="tip-line",
         )
+    )
+    parts.extend(tips)
+    parts.append(
+        f"<style>{foreground_tip_css(n_pts)}"
+        f"#hit-line:hover~#tip-line,#hit-line:focus~#tip-line{{opacity:1}}</style>"
     )
 
     # ---- x-axis ----

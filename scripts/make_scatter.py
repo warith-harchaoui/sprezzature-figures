@@ -28,7 +28,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY, cycle_hues  # noqa: E402
-from _svg import fmt_number, svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _svg import foreground_tip_css, fmt_number, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 
@@ -171,8 +171,8 @@ def build_svg(
         ".pt{transition:opacity .12s ease,stroke-width .12s ease;}"
         ".pt:hover,.pt:focus{stroke-width:2.4;outline:none;}"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
-        "@media (prefers-reduced-motion: reduce){.pt{transition:none;}.tip{transition:none}}"
+        + foreground_tip_css(len(rows))
+        + "@media (prefers-reduced-motion: reduce){.pt{transition:none;}.tip{transition:none}}"
         "</style>"
     )
 
@@ -234,7 +234,15 @@ def build_svg(
 
     # ---- points, largest-first so small ones never hide under big ones ----
     ordered = sorted(rows, key=lambda r: -(float(r.get("weight") or 0)))
-    for row in ordered:
+    # Bubbles are collected here and drawn only once, all together, after
+    # the point loop (see `parts.extend(tips)` below): SVG has no z-index,
+    # so a bubble sitting next to its own point would be covered by any
+    # point drawn afterward -- points are already sorted largest-first so
+    # small ones stay visible, but a bubble is thinner than even the
+    # smallest point and would still lose to a later, larger one nearby.
+    # `i` pairs each point with its bubble (`hit-N`/`tip-N`).
+    tips: List[str] = []
+    for i, row in enumerate(ordered):
         seg = row.get("segment", segments[0] if segments else "")
         cx, cy = x_for(float(row["horsepower"])), y_for(float(row["mpg"]))
         r = r_for(float(row.get("weight") or 0))
@@ -246,7 +254,7 @@ def build_svg(
             bits.insert(0, str(seg))
         tip = ", ".join(bits)
         parts.append(
-            f'<circle class="pt hit" tabindex="0" cx="{cx:.1f}" cy="{cy:.1f}" r="{r:.1f}" '
+            f'<circle id="hit-{i}" class="pt hit" tabindex="0" cx="{cx:.1f}" cy="{cy:.1f}" r="{r:.1f}" '
             f'fill="{color}" fill-opacity="0.72" stroke="{color}" stroke-width="1.2" '
             f'role="img" aria-label="{xml_escape(tip)}"/>'
         )
@@ -254,14 +262,16 @@ def build_svg(
         tip_lines.append(f"HP {row['horsepower']:.0f}, {row['mpg']:.1f} mpg")
         if has_weight:
             tip_lines.append(f"Weight {row['weight']:.0f} kg")
-        parts.append(
+        tips.append(
             tooltip_bubble(
                 cx, cy - r - 12,
                 tip_lines,
                 anchor="middle", canvas_w=width, canvas_h=height,
                 ink=INK, secondary=SECONDARY, border=GRIDLINE,
+                elem_id=f"tip-{i}",
             )
         )
+    parts.extend(tips)
 
     # ---- segment legend ----
     if len(segments) > 1:

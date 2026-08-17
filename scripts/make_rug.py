@@ -34,7 +34,7 @@ Author
 from __future__ import annotations
 from _render import svg_example_path, write_svg  # noqa: E402
 from _style import BG, INK, SECONDARY, leveled_colors, os_adaptive_style, os_dark_style  # noqa: E402
-from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _svg import foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
@@ -244,7 +244,7 @@ def build_svg(
     parts.append(
         "<style>\n"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}\n"
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}\n"
+        + foreground_tip_css(len(samples)) + "\n"
         "@media (prefers-reduced-motion: reduce){.tip{transition:none}}\n"
         + os_adaptive_style({".rug-blue": blue}, role="both")
         + os_dark_style(extra=dark_extra)
@@ -299,24 +299,32 @@ def build_svg(
     # individual observations stay countable rather than fusing into one
     # solid blue block (no colour-on-colour blob).
     n_samples = len(samples)
+    # Ticks pile up close together by design (that's the whole point of a
+    # rug plot), so bubbles are collected here and drawn only once, all
+    # together, after every tick: SVG has no z-index, so a bubble sitting
+    # next to its own tick would be covered by any tick drawn afterward.
+    # `i` pairs each tick with its bubble (`hit-N`/`tip-N`).
+    tips: List[str] = []
     for i, v in enumerate(samples):
         px = _sx(v, lo, hi)
         pct = 100.0 * (i + 1) / n_samples if n_samples else 0.0
         tip = f"{_fmt(v)} ms"
         parts.append(
-            f'<line class="rug-blue hit" tabindex="0" x1="{px:.1f}" y1="{RUG_TOP:.1f}" x2="{px:.1f}" '
+            f'<line id="hit-{i}" class="rug-blue hit" tabindex="0" x1="{px:.1f}" y1="{RUG_TOP:.1f}" x2="{px:.1f}" '
             f'y2="{RUG_TOP + RUG_LEN:.1f}" stroke="{blue}" '
             f'stroke-width="1.8" stroke-opacity="0.68" '
             f'role="img" aria-label="{xml_escape(tip)}"/>'
         )
-        parts.append(
+        tips.append(
             tooltip_bubble(
                 px, RUG_TOP - 14,
                 [tip, f"{pct:.0f}th percentile", f"rank {i + 1} of {n_samples}"],
                 anchor="middle", canvas_w=W, canvas_h=H,
                 ink=INK, secondary=SECONDARY, border=GRID,
+                elem_id=f"tip-{i}",
             )
         )
+    parts.extend(tips)
 
     # ---- X-axis tick labels + axis title -------------------------
     label_y = RUG_TOP + RUG_LEN + 30

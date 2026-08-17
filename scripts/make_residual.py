@@ -64,7 +64,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
-from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _svg import foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 
@@ -303,7 +303,6 @@ def build_svg(
         ".pt:hover .halo,.pt:focus .halo{opacity:1}"
         ".pt:focus{outline:none}"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
         "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
         + "\n" + contrast_block + "\n"
         + os_dark_style(extra='[stroke="#EEEEEE"]{stroke:#2C2C2E;}') + "\n"
@@ -406,6 +405,14 @@ def build_svg(
     # off its neighbours and the zero rule — a bright keyline, never a dark
     # ring. Blue sits above zero (under-prediction), orange below.
     r_dot = 7.5
+    # Bubbles are collected here and drawn only once, all together, right
+    # after the scatter loop (see the `parts.extend` below): SVG has no
+    # z-index, so a bubble sitting next to its own point would be covered
+    # by any point drawn afterward. `tip_i` (only incremented for points
+    # actually drawn, skipping the clipped stragglers) pairs each point
+    # with its bubble (`hit-N`/`tip-N`).
+    tips: List[str] = []
+    tip_i = 0
     for d in data:
         f = float(d["fitted"])
         r = float(d["residual"])
@@ -417,7 +424,7 @@ def build_svg(
         sign = "+" if r >= 0 else ""
         tip = f"Fitted {int(round(f))} k$, residual {sign}{int(round(r))} k$"
         parts.append(
-            f'<g class="pt hit" tabindex="0" role="img" '
+            f'<g id="hit-{tip_i}" class="pt hit" tabindex="0" role="img" '
             f'aria-label="{xml_escape(tip)}">'
         )
         parts.append(
@@ -430,15 +437,17 @@ def build_svg(
             f'stroke-width="1.1"/>'
         )
         parts.append("</g>")
-        parts.append(
+        tips.append(
             tooltip_bubble(
                 cx, cy - 18,
                 [f"Fitted {int(round(f))} k$", f"Residual {sign}{int(round(r))} k$",
                  "Model under-predicts" if r >= 0 else "Model over-predicts"],
                 anchor="middle", canvas_w=width, canvas_h=height,
                 ink=ink, secondary=secondary, border=grid_col,
+                elem_id=f"tip-{tip_i}",
             )
         )
+        tip_i += 1
 
     # --- LOESS smoother (drawn on top) ---------------------------
     # Sample the smoother on a fine grid across the fitted range, then draw it
@@ -473,6 +482,8 @@ def build_svg(
         f'(residual &lt; 0)</text>'
     )
 
+    parts.extend(tips)
+    parts.append(f"<style>{foreground_tip_css(tip_i)}</style>")
     parts.append(fullscreen_control(width, height, mode))
     parts.append("</svg>")
     return "\n".join(parts)
