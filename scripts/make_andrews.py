@@ -61,7 +61,7 @@ from _render import svg_example_path, write_svg  # noqa: E402
 from _svg import fmt_compact  # noqa: E402
 from _style import leveled_colors, os_adaptive_style, os_dark_style, qualitative_sequence  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
-from _svg import tooltip_bubble  # noqa: E402
+from _svg import foreground_tip_css, tooltip_bubble  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 # Repo-relative default output — the one SVG artifact this figure ships.
@@ -402,7 +402,11 @@ def build_svg(
         # miss them; drop them to a low-contrast dark grey on a dark ground.
         + os_dark_style(extra='[stroke="#E5E5EA"]{stroke:#2C2C2E;}')
         + ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        + ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
+        # A bubble drawn right next to its own median curve would be covered
+        # by any curve drawn afterward (SVG paints in document order,
+        # regardless of hover) -- curves draw first, bubbles last, paired by
+        # id; see _svg.foreground_tip_css.
+        + foreground_tip_css(len(classes), mark_prefix="curve-hit", tip_prefix="curve-tip")
         + "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
         + "</style>"
     )
@@ -457,6 +461,7 @@ def build_svg(
         parts.append("</g>")
 
     # ---- per-class median curves (bold, drawn on top) --------------------- #
+    curve_tips: List[str] = []
     for ci, cls in enumerate(classes):
         colour = class_colours.get(cls, "#8E8E93")
         idx = [i for i, lab in enumerate(labels) if lab == cls]
@@ -469,19 +474,21 @@ def build_svg(
             f'stroke-width="8.5" stroke-opacity="0.9" stroke-linejoin="round"/>'
         )
         parts.append(
-            f'<path class="cls-{ci} hit" tabindex="0" d="{_poly_d(t_px, ys)}" fill="none" '
+            f'<path id="curve-hit-{ci}" class="cls-{ci} hit" tabindex="0" d="{_poly_d(t_px, ys)}" fill="none" '
             f'stroke="{colour}" stroke-width="4.2" stroke-linejoin="round">'
             f"<title>{cls} — median of {len(idx)} birds</title></path>"
         )
         mid = len(t_px) // 2
-        parts.append(
+        curve_tips.append(
             tooltip_bubble(
                 float(t_px[mid]), float(ys[mid]) - 10,
                 [str(cls), f"{len(idx)} birds", "bold line = species median"],
                 canvas_w=width, canvas_h=height, ink=_INK, secondary=_SECONDARY,
                 border=_GRIDLINE,
+                elem_id=f"curve-tip-{ci}",
             )
         )
+    parts.extend(curve_tips)
 
     # ---- axes ------------------------------------------------------------- #
     axis_y = m_top + plot_h
