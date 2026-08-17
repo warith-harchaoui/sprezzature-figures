@@ -55,7 +55,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import BG, INK, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control, hover_isolate_css  # noqa: E402
-from _svg import svg_open, tooltip_bubble  # noqa: E402
+from _svg import foreground_tip_css, svg_open, tooltip_bubble  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
 # ------------------------------------------------------------------
@@ -321,7 +321,12 @@ def build_svg(
         + forced_block
         + os_dark_style()
         + ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        + ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
+        # A bubble drawn right next to its own arc/node would be covered by
+        # any arc/node drawn afterward (SVG paints in document order,
+        # regardless of hover) -- marks draw first, bubbles last within each
+        # group, paired by id; see _svg.foreground_tip_css.
+        + foreground_tip_css(len(LINKS), mark_prefix="arc-hit", tip_prefix="arc-tip")
+        + foreground_tip_css(len(NODES), mark_prefix="node-hit", tip_prefix="node-tip")
         + "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
         + "</style>"
     )
@@ -352,6 +357,7 @@ def build_svg(
     # Painted widest-arc-last so the bridge arcs sit on top, fully opaque and
     # base-visible in the static raster (no draw-on — the arcs ARE the story).
     parts.append('<g id="arcs" fill="none" stroke-linecap="round">')
+    arc_tips: List[str] = []
     ordered = sorted(
         enumerate(LINKS),
         key=lambda item: abs(pos[item[1][0]] - pos[item[1][1]]),
@@ -374,7 +380,7 @@ def build_svg(
         # per-group hook without changing the default paint.
         arc_grp = GROUP_BRIDGE if is_bridge else grp_a
         parts.append(
-            f'<path class="arc arc-{_idx} arc-{arc_grp.lower()} hit" tabindex="0" role="img" '
+            f'<path id="arc-hit-{_idx}" class="arc arc-{_idx} arc-{arc_grp.lower()} hit" tabindex="0" role="img" '
             f'aria-label="{escape(tip)}" d="{d}" '
             f'stroke="{color}" stroke-width="{stroke_w:.2f}" '
             f'stroke-opacity="{opacity}">'
@@ -382,18 +388,21 @@ def build_svg(
         )
         arc_peak_x = (pos[a] + pos[b]) / 2.0
         arc_peak_y = BASELINE_Y - ry
-        parts.append(
+        arc_tips.append(
             tooltip_bubble(
                 arc_peak_x, arc_peak_y - 10,
                 [f"{a} & {b}", f"{w} joint paper{'s' if w != 1 else ''}"],
                 canvas_w=WIDTH, canvas_h=HEIGHT, ink=INK, secondary=SUBINK, border=HAIR,
+                elem_id=f"arc-tip-{_idx}",
             )
         )
+    parts.extend(arc_tips)
     parts.append("</g>")
 
     # --- node dots + labels ---
     parts.append('<g id="nodes">')
-    for name, grp in NODES:
+    node_tips: List[str] = []
+    for ni, (name, grp) in enumerate(NODES):
         x = pos[name]
         color = GROUP_COLOR[grp]
         r = NODE_R + (2.5 if grp == GROUP_BRIDGE else 0)
@@ -405,16 +414,17 @@ def build_svg(
         }[grp]
         tip = f"{name} — {role}, {deg} co-author{'s' if deg != 1 else ''}"
         parts.append(
-            f'<circle class="node node-{grp.lower()} hit" tabindex="0" role="img" '
+            f'<circle id="node-hit-{ni}" class="node node-{grp.lower()} hit" tabindex="0" role="img" '
             f'aria-label="{escape(tip)}" cx="{x:.2f}" cy="{BASELINE_Y}" '
             f'r="{r}" fill="{color}" stroke="{BG}" stroke-width="3">'
             f'<title>{escape(tip)}</title></circle>'
         )
-        parts.append(
+        node_tips.append(
             tooltip_bubble(
                 x, BASELINE_Y - r - 8,
                 [name, role, f"{deg} co-author{'s' if deg != 1 else ''}"],
                 canvas_w=WIDTH, canvas_h=HEIGHT, ink=INK, secondary=SUBINK, border=HAIR,
+                elem_id=f"node-tip-{ni}",
             )
         )
         # Label below the line, rotated so 11 names never collide. The
@@ -430,6 +440,7 @@ def build_svg(
             f'transform="rotate(-{LABEL_ROT} {x:.2f} {ly:.2f})">'
             f'{escape(name)}</text>'
         )
+    parts.extend(node_tips)
     parts.append("</g>")
 
     # --- group brackets + labels above the clusters ---
