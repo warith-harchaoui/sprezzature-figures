@@ -33,7 +33,7 @@ from typing import Any, Dict, List, Tuple
 from _interactive import fullscreen_control
 from _render import render_cli, svg_example_path, write_svg
 from _style import INK, SECONDARY, leveled_colors, os_adaptive_style, os_dark_style
-from _svg import tooltip_bubble, xml_escape
+from _svg import foreground_tip_css, tooltip_bubble, xml_escape
 from sprezzature_figures.fonts import chrome_stack_for_theme
 
 # ------------------------------------------------------------------
@@ -139,8 +139,18 @@ def _aggregate(data: List[Dict[str, Any]]) -> Tuple[List[str], Dict[str, Dict[st
     return order, m, made, got
 
 
-def _hover_style() -> str:
-    """CSS for the crosshair hover: cell pop, row/column highlight, dim rest."""
+def _hover_style(grid_cells: int) -> str:
+    """CSS for the crosshair hover: cell pop, row/column highlight, dim rest.
+
+    Parameters
+    ----------
+    grid_cells : int
+        Total ``rows x cols`` cell count, forwarded to
+        :func:`_svg.foreground_tip_css` -- each cell's bubble is drawn last
+        (not next to its own cell), so this many id-paired hover rules are
+        needed, one per cell, to reveal the right one. See that function's
+        docstring for why.
+    """
     return (
         ".cell,.head,.sig{transition:opacity .18s ease;}"
         ".box{transition:transform .18s ease,filter .18s ease;"
@@ -151,7 +161,7 @@ def _hover_style() -> str:
         "svg.cross .lit{opacity:1;}"
         "svg.cross .lit .box{filter:saturate(1.2);}"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
+        f"{foreground_tip_css(grid_cells, mark_prefix='cell')}"
         "@media (prefers-reduced-motion:reduce){"
         ".cell,.head,.sig,.box{transition:none;}"
         ".cell:hover .box{transform:none;}.tip{transition:none}}"
@@ -277,7 +287,7 @@ def build_svg(
     spk_series = {f".spk-{i}": color_of[name] for i, name in enumerate(order)}
     p.append(
         "<style>\n"
-        + _hover_style()
+        + _hover_style(n * n)
         + os_adaptive_style(spk_series, role="fill", forced=True, forced_keyword="Canvas")
         + os_dark_style()
         + "\n</style>"
@@ -312,6 +322,11 @@ def build_svg(
     )
 
     # Rows.
+    # Cells draw first, every bubble is collected and appended once, last
+    # (SVG has no z-index; a bubble next to its own cell would be covered by
+    # any cell drawn afterward, and this is a dense n x n grid where that is
+    # easy to hit) -- see _svg.foreground_tip_css's docstring.
+    tip_bubbles: List[str] = []
     for r, a in enumerate(order):
         yc = cy(r) + CELL / 2
         rcol = color_of[a]
@@ -343,9 +358,10 @@ def build_svg(
             op = 0.0 if v == 0 else 0.14 + 0.52 * norm
             fill = ZERO if v == 0 else color_of[b]
             klass = "cell hit" if v == 0 else f"cell hit spk-{idx[b]}"
+            cell_k = r * n + c
             tip = f"{xml_escape(b)} coupe {xml_escape(a)} × {v}" if v else f"{xml_escape(b)} ne coupe jamais {xml_escape(a)}"
             g = [
-                f'<g class="{klass}" tabindex="0" data-r="{r}" data-c="{c}"><title>{tip}</title>',
+                f'<g id="cell-{cell_k}" class="{klass}" tabindex="0" data-r="{r}" data-c="{c}"><title>{tip}</title>',
                 f'<rect class="box" x="{x + 3}" y="{y + 3}" width="{CELL - 6}" height="{CELL - 6}" rx="12" '
                 f'fill="{fill}" fill-opacity="{op:.3f}" stroke="{HAIRLINE}" stroke-width="1"/>',
             ]
@@ -361,7 +377,7 @@ def build_svg(
             bubble_lines.append(f"{v} fois" if v else "jamais (0 fois)")
             if v:
                 bubble_lines.append(f"{norm * 100:.0f}% de l'échange le plus intense")
-            p.append(
+            tip_bubbles.append(
                 tooltip_bubble(
                     x + CELL / 2,
                     max(4.0, y - 84.0),
@@ -371,6 +387,7 @@ def build_svg(
                     ink=INK,
                     secondary=SECONDARY,
                     border=HAIRLINE,
+                    elem_id=f"tip-{cell_k}",
                 )
             )
 
@@ -413,6 +430,7 @@ def build_svg(
 
     if mode == "self-contained":
         p.append(_hover_script())
+    p.extend(tip_bubbles)
     p.append(fullscreen_control(w, h, mode))
     p.append("</svg>")
     return "".join(p)
