@@ -39,7 +39,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _scale import log_position, log_ticks, nice_ticks_range  # noqa: E402
 from _style import BG, GRIDLINE, INK, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _svg import fmt_number, svg_open, tooltip_bubble  # noqa: E402
+from _svg import foreground_tip_css, fmt_number, svg_open, tooltip_bubble  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
@@ -224,7 +224,7 @@ def build_svg(
         ".bubble:hover,.bubble:focus{filter:brightness(1.08);outline:none;}",
         ".bubble:hover circle,.bubble:focus circle{stroke-width:2.4;}",
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}",
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}",
+        foreground_tip_css(len(places)),
         "@media (prefers-reduced-motion: reduce){.bubble{transition:none;}"
         ".tip{transition:none}}",
     ]
@@ -294,8 +294,15 @@ def build_svg(
     )
 
     # ---- bubbles, largest-first so small ones never hide under big ones ----
+    # Every bubble mark is drawn first, then every hover card is appended
+    # afterward (still at the same document level, so the id-matched hover
+    # rule below still finds them as siblings): SVG paints in document
+    # order regardless of hover state, so a card sitting right next to its
+    # own bubble would be covered by any bubble drawn later. See
+    # _svg.foreground_tip_css's docstring for the full pattern.
     ordered = sorted(places, key=lambda p: float(p["pop"]), reverse=True)
-    for row in ordered:
+    tip_cards: List[str] = []
+    for i, row in enumerate(ordered):
         name, region = str(row["name"]), str(row["region"])
         gdp, life, pop = float(row["gdp"]), float(row["life"]), float(row["pop"])
         cx, cy = x_for(gdp), y_for(life)
@@ -306,13 +313,13 @@ def build_svg(
             f"GDP per capita ${gdp:.0f}k, population {_fmt1(pop)}M"
         )
         parts.append(
-            f'<g class="bubble hit" tabindex="0" role="img" aria-label="{escape(tip)}">'
+            f'<g id="hit-{i}" class="bubble hit" tabindex="0" role="img" aria-label="{escape(tip)}">'
             f'<title>{escape(tip)}</title>'
             f'<circle data-region="{region}" cx="{cx:.1f}" cy="{cy:.1f}" r="{r:.1f}" '
             f'fill="{color}" fill-opacity="0.72" stroke="{color}" stroke-width="1.2"/>'
             f'</g>'
         )
-        parts.append(
+        tip_cards.append(
             tooltip_bubble(
                 cx, cy - r - 12,
                 [
@@ -323,8 +330,10 @@ def build_svg(
                 ],
                 anchor="middle", canvas_w=WIDTH, canvas_h=HEIGHT,
                 ink=INK, secondary=SUBINK, border=GRIDLINE,
+                elem_id=f"tip-{i}",
             )
         )
+    parts.extend(tip_cards)
 
     # ---- region legend (top-right) ----
     leg_x = WIDTH - right_margin + 28
