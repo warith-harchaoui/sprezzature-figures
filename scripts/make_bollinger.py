@@ -53,7 +53,7 @@ import numpy as np
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _svg import catmull_rom_beziers, fmt_compact, tooltip_bubble  # noqa: E402
+from _svg import catmull_rom_beziers, fmt_compact, foreground_tip_css, tooltip_bubble  # noqa: E402
 from _render import svg_example_path, write_svg  # noqa: E402
 from _style import leveled_colors, os_adaptive_style, os_dark_style  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
@@ -662,10 +662,15 @@ def build_svg(
     )
 
     # ---- hover tooltips: one transparent hit-column per ~2 weeks ---------- #
+    # Hit-columns draw first, bubbles last (a bubble drawn right next to its
+    # own column would be covered by any column drawn afterward -- SVG
+    # paints in document order, regardless of hover), paired by id; see
+    # _svg.foreground_tip_css.
     tips: List[str] = []
+    bubbles: List[str] = []
     stride = 10  # a column every ~2 trading weeks keeps the DOM light
     col_w = plot_w / ((n - 1 - start) / stride)
-    for d in range(start, n, stride):
+    for col_idx, d in enumerate(range(start, n, stride)):
         gx = x_of(float(d))
         pct = 0.0
         rng_w = upper[d] - lower[d]
@@ -677,19 +682,21 @@ def build_svg(
             f"{pct:.0f}% of the way up the band"
         )
         tips.append(
-            f'<rect class="hit" tabindex="0" x="{_fmt(gx - col_w / 2)}" y="{_fmt(m_top)}" '
+            f'<rect id="col-hit-{col_idx}" class="hit" tabindex="0" x="{_fmt(gx - col_w / 2)}" y="{_fmt(m_top)}" '
             f'width="{_fmt(col_w)}" height="{_fmt(plot_h)}" '
             f'fill="transparent"><title>{tip}</title></rect>'
         )
-        tips.append(
+        bubbles.append(
             tooltip_bubble(
                 gx, y_of(float(close[d])) - 12,
                 [f"Day {d - start + 1}", f"close ${close[d]:.2f}",
                  f"band ${lower[d]:.2f}–${upper[d]:.2f}", f"{pct:.0f}% up the band"],
                 canvas_w=width, canvas_h=height, ink=_INK, secondary=_SECONDARY,
                 border="#EFEFF2",
+                elem_id=f"col-tip-{col_idx}",
             )
         )
+    tips.extend(bubbles)
 
     # ---- OS-adaptive overrides -------------------------------------------- #
     # Additive; the default render is byte-for-byte unchanged because every rule
@@ -716,8 +723,8 @@ def build_svg(
     dark = os_dark_style(extra='[stroke="#EFEFF2"]{stroke:#2A2A2C;}')
     tip_css = (
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
-        "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
+        + foreground_tip_css(len(range(start, n, stride)), mark_prefix="col-hit", tip_prefix="col-tip")
+        + "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
     )
     parts.append("<style>" + adaptive + dark + tip_css + "</style>")
 
