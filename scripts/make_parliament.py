@@ -63,7 +63,7 @@ from xml.sax.saxutils import escape
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import BG, INK, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
-from _svg import point_on_circle, svg_open, tooltip_bubble  # noqa: E402
+from _svg import foreground_tip_css, point_on_circle, svg_open, tooltip_bubble  # noqa: E402
 from _labels import best_text_colour  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
@@ -397,8 +397,9 @@ def _seat_disk(
     tip_lines: list[str],
     canvas_w: float,
     canvas_h: float,
-) -> str:
-    """Return one seat dot (pure-fill disk, no dark ring) plus its hover bubble.
+    seat_index: int,
+) -> tuple[str, str]:
+    """Return one seat dot (pure-fill disk, no dark ring) and its hover bubble, separately.
 
     Parameters
     ----------
@@ -413,16 +414,27 @@ def _seat_disk(
         carries the accessible name via ``aria-label``.
     canvas_w, canvas_h : float
         Canvas size, for :func:`_svg.tooltip_bubble` edge clamping.
+    seat_index : int
+        This seat's position in the draw order, forwarded to
+        :func:`_svg.tooltip_bubble`'s ``elem_id`` and matched by
+        :func:`_svg.foreground_tip_css` in the caller's CSS block — see
+        either docstring for why: with ~130+ overlapping seats, a bubble
+        can no longer sit next to its own seat (SVG has no z-index; a
+        later seat would paint over it), so a unique id pair is what
+        still tells the hover CSS which bubble belongs to which seat.
 
     Returns
     -------
-    str
-        The SVG ``<circle>`` element (a ``.hit`` mark) immediately
-        followed by its ``<g class="tip">`` hover bubble.
+    tuple of str
+        ``(circle, bubble)``: the SVG ``<circle>`` element (a ``.hit``
+        mark, ``id="seat-{seat_index}"``) and its ``<g class="tip">``
+        hover bubble (``id="tip-{seat_index}"``), to be assembled by the
+        caller into two separate passes (all seats, then all bubbles)
+        rather than concatenated in place.
     """
     tip = " — ".join(tip_lines)
     circle = (
-        f'<circle class="seat hit p-{party_id}" cx="{x:.2f}" cy="{y:.2f}" '
+        f'<circle id="seat-{seat_index}" class="seat hit p-{party_id}" cx="{x:.2f}" cy="{y:.2f}" '
         f'r="{SEAT_R:.2f}" fill="{hue}" tabindex="0" role="img" '
         f'aria-label="{escape(tip)}"/>'
     )
@@ -430,8 +442,9 @@ def _seat_disk(
         x, y - SEAT_R - 12, tip_lines, anchor="middle",
         canvas_w=canvas_w, canvas_h=canvas_h,
         ink=INK, secondary=SUBINK, border=HAIR,
+        elem_id=f"tip-{seat_index}",
     )
-    return circle + bubble
+    return circle, bubble
 
 
 def build_svg(
@@ -513,7 +526,7 @@ def build_svg(
         css.append(f"#floor:has(.p-{party_cls}:focus) .p-{party_cls}{{opacity:1}}")
     css.append(".seat:focus{outline:none}")
     css.append(".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}")
-    css.append(".hit:hover+.tip,.hit:focus+.tip{opacity:1}")
+    css.append(foreground_tip_css(len(positions), mark_prefix="seat"))
     css.append("@media (prefers-reduced-motion: reduce){.tip{transition:none}}")
     # OS-adaptive overrides (additive; the default render is byte-identical
     # because every rule below lives inside a media query). Under
@@ -578,7 +591,13 @@ def build_svg(
     )
 
     # --- seat lattice ---
+    # Seats are drawn first, then every hover bubble is appended afterward
+    # (still inside #floor, so the id-matched hover rule below still finds
+    # them as siblings) -- see _seat_disk's docstring for why: SVG paints in
+    # document order regardless of hover state, so a bubble sitting next to
+    # its own seat would be covered by any seat drawn later in the arc.
     parts.append('<g id="floor">')
+    bubbles: List[str] = []
     for i, ((x, y), pid) in enumerate(zip(positions, assignment)):
         name, lab, seats, hue = parties[pid]
         cls = f"{pid}-{lab.lower()}"
@@ -586,7 +605,10 @@ def build_svg(
         # delegation size, so a hover answers "who is this?" — the party
         # block still lifts via CSS.
         tip_lines = [_member_name(i), name, f"{seats} seats in the chamber"]
-        parts.append(_seat_disk(x, y, hue, cls, tip_lines, WIDTH, HEIGHT))
+        circle, bubble = _seat_disk(x, y, hue, cls, tip_lines, WIDTH, HEIGHT, i)
+        parts.append(circle)
+        bubbles.append(bubble)
+    parts.extend(bubbles)
     parts.append("</g>")
 
     # --- per-party wedge labels (never colour-only) ---
