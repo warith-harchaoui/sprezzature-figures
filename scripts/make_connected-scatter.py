@@ -58,7 +58,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _style import GRIDLINE, load_palette, os_dark_style  # noqa: E402
-from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _svg import foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
 
@@ -487,7 +487,7 @@ def build_svg(
         ".wp:hover .halo,.wp:focus .halo{opacity:1}"
         ".wp:focus{outline:none}"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
+        + foreground_tip_css(len(rows)) +
         "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
         + contrast
         # Additive dark mode. A marker's end-label is white (fill="#FFFFFF") and
@@ -679,6 +679,12 @@ def build_svg(
         parts.append(arrowhead(ax, ay, ang, head_size, head_col))
 
     # --- waypoint markers + year labels --------------------------
+    # Every waypoint mark is drawn first, then every hover card is
+    # appended afterward (see _svg.foreground_tip_css): SVG paints in
+    # document order regardless of hover state, so a card sitting right
+    # next to its own waypoint would be covered by any waypoint drawn
+    # later along the path.
+    tip_cards: List[str] = []
     for i, r in enumerate(rows):
         cx, cy = px[i]
         year = int(r["year"])
@@ -693,7 +699,7 @@ def build_svg(
         )
 
         parts.append(
-            f'<g class="wp hit" tabindex="0" role="img" aria-label="{xml_escape(tip)}">'
+            f'<g id="hit-{i}" class="wp hit" tabindex="0" role="img" aria-label="{xml_escape(tip)}">'
         )
         parts.append(f"<title>{xml_escape(tip)}</title>")
 
@@ -722,14 +728,16 @@ def build_svg(
             f'fill="{fill}" stroke="#FFFFFF" stroke-width="2.5"/>'
         )
         parts.append("</g>")
-        parts.append(
+        tip_cards.append(
             tooltip_bubble(
                 cx, cy - r_dot - 12,
                 [str(year), f"{gdp:.1f}k $ per person", f"{co2:.1f} t CO2 per person"],
                 anchor="middle", canvas_w=width, canvas_h=height,
                 ink=ink, secondary=secondary, border=GRIDLINE,
+                elem_id=f"tip-{i}",
             )
         )
+    parts.extend(tip_cards)
 
     # --- year labels at the named waypoints (drawn last, on top) --
     # Placed on the ``side`` recorded in the data so labels sit clear of

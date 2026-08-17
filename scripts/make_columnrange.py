@@ -30,7 +30,7 @@ from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _scale import nice_ticks_range  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY, cycle_hues  # noqa: E402
-from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _svg import foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 
@@ -143,7 +143,7 @@ def build_svg(
         ".rangebar{transition:filter .15s ease;}"
         ".rangebar:hover,.rangebar:focus{filter:brightness(1.1);outline:none;}"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
+        + foreground_tip_css(len(months) * len(cities)) +
         "@media (prefers-reduced-motion: reduce){.rangebar{transition:none;}"
         ".tip{transition:none}}"
         "</style>"
@@ -191,6 +191,12 @@ def build_svg(
     )
 
     # ---- floating bars, grouped by month ----
+    # Every bar is drawn first, then every hover card is appended
+    # afterward (see _svg.foreground_tip_css): SVG paints in document
+    # order regardless of hover state, so a card sitting right next to its
+    # own bar would be covered by any bar drawn later.
+    tip_cards: List[str] = []
+    idx = 0
     for gi, m in enumerate(months):
         group_x0 = plot_x + gi * group_w
         offset0 = (group_w - bar_w * len(cities)) / 2
@@ -202,18 +208,21 @@ def build_svg(
             r = min(bar_w / 2.0, 4.0)
             tip = f"{c}, {m}: {low:.0f}°C to {high:.0f}°C"
             parts.append(
-                f'<rect class="rangebar hit" tabindex="0" x="{x:.1f}" y="{y_top:.1f}" '
+                f'<rect id="hit-{idx}" class="rangebar hit" tabindex="0" x="{x:.1f}" y="{y_top:.1f}" '
                 f'width="{bar_w:.1f}" height="{h:.1f}" rx="{r:.1f}" '
                 f'fill="{colors[c]}" fill-opacity="0.85"><title>{xml_escape(tip)}</title></rect>'
             )
-            parts.append(
+            tip_cards.append(
                 tooltip_bubble(
                     x + bar_w / 2, y_top - 10,
                     [f"{c}, {m}", f"low {low:.0f}°C — high {high:.0f}°C", f"span {high - low:.0f}°C"],
                     anchor="middle", canvas_w=width, canvas_h=height,
                     ink=INK, secondary=SECONDARY, border=GRIDLINE,
+                    elem_id=f"tip-{idx}",
                 )
             )
+            idx += 1
+    parts.extend(tip_cards)
 
     # ---- x-axis (month group labels) ----
     axis_y = plot_y + plot_h

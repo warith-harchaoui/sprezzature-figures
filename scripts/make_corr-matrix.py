@@ -28,7 +28,7 @@ from typing import Any, Dict, List, Optional, Tuple
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _svg import foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
@@ -143,7 +143,7 @@ def build_svg(
         ".cell:hover,.cell:focus{stroke:#1D1D1F;stroke-width:1.5;outline:none;}"
         "@media (prefers-reduced-motion: reduce){.cell{transition:none;}}"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
+        + foreground_tip_css(len(features) * len(features)) +
         "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
         "</style>"
     )
@@ -170,6 +170,12 @@ def build_svg(
         )
 
     # ---- cells + labels ----
+    # Every cell is drawn first, then every hover card is appended
+    # afterward (see _svg.foreground_tip_css): SVG paints in document
+    # order regardless of hover state, so a card sitting right next to its
+    # own cell would be covered by any cell drawn later in the grid.
+    tip_cards: List[str] = []
+    idx = 0
     for ri, a in enumerate(features):
         for ci, b in enumerate(features):
             r = lookup.get((a, b), 0.0)
@@ -181,20 +187,23 @@ def build_svg(
             direction = "positive" if r > 0 else "negative" if r < 0 else "no"
             corr_desc = "no correlation" if r == 0 else f"{strength} {direction} correlation"
             parts.append(
-                f'<rect class="cell hit" tabindex="0" x="{x:.1f}" y="{y:.1f}" width="{cell:.1f}" '
+                f'<rect id="hit-{idx}" class="cell hit" tabindex="0" x="{x:.1f}" y="{y:.1f}" width="{cell:.1f}" '
                 f'height="{cell:.1f}" fill="{_ramp_hex(r)}" stroke="{BG}" stroke-width="1">'
                 f'<title>{xml_escape(tip)}</title></rect>'
             )
-            parts.append(
+            tip_cards.append(
                 tooltip_bubble(
                     x + cell / 2, y + cell + 4, [f"{a} x {b}", f"r = {r:.2f}", corr_desc],
                     canvas_w=width, canvas_h=height, ink=INK, secondary=SECONDARY, border=GRIDLINE,
+                    elem_id=f"tip-{idx}",
                 )
             )
+            idx += 1
             parts.append(
                 f'<text x="{x + cell / 2:.1f}" y="{y + cell / 2 + 4:.1f}" font-size="12" '
                 f'font-family="{mono_family}" fill="{text_color}" text-anchor="middle">{r:.2f}</text>'
             )
+    parts.extend(tip_cards)
 
     # ---- legend ----
     ly = height - 8.0
