@@ -29,7 +29,7 @@ from typing import Any, Dict, List, Optional, Tuple
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _svg import svg_open, tooltip_bubble, viridis, xml_escape  # noqa: E402
+from _svg import foreground_tip_css, svg_open, tooltip_bubble, viridis, xml_escape  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
@@ -147,7 +147,7 @@ def build_svg(
         ".cell{transition:stroke-width .1s ease;}"
         ".cell:hover,.cell:focus{stroke:#1D1D1F;stroke-width:1.5;outline:none;}"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
+        + foreground_tip_css(len(weeks) * len(DAYS)) +
         "@media (prefers-reduced-motion: reduce){.cell{transition:none;}"
         ".tip{transition:none}}"
         "</style>"
@@ -192,6 +192,12 @@ def build_svg(
         )
 
     # ---- cells (grid marks: never rounded, per Sprezzature Corner Policy) ----
+    # Every cell is drawn first, then every hover card is appended afterward
+    # (see _svg.foreground_tip_css): SVG paints in document order regardless
+    # of hover state, so a card sitting right next to its own cell would be
+    # covered by any cell drawn later in the grid.
+    tip_cards: List[str] = []
+    idx = 0
     for wi, week in enumerate(weeks):
         for di, day in enumerate(DAYS):
             count = lookup.get((week, day), 0.0)
@@ -202,19 +208,22 @@ def build_svg(
             h = cell_h - gap
             tip = f"Week {week + 1}, {day}: {count:.0f} events"
             parts.append(
-                f'<rect class="cell hit" tabindex="0" x="{x:.1f}" y="{y:.1f}" width="{w:.1f}" height="{h:.1f}" '
+                f'<rect id="hit-{idx}" class="cell hit" tabindex="0" x="{x:.1f}" y="{y:.1f}" width="{w:.1f}" height="{h:.1f}" '
                 f'fill="{_ramp_hex(t, theme)}" stroke="{BG}" stroke-width="1">'
                 f'<title>{xml_escape(tip)}</title></rect>'
             )
             share = count / total * 100.0 if total else 0.0
-            parts.append(
+            tip_cards.append(
                 tooltip_bubble(
                     x + w / 2, y - 6,
                     [f"Week {week + 1}, {day}", f"{count:.0f} events", f"{share:.1f}% of total"],
                     anchor="middle", canvas_w=width, canvas_h=height,
                     ink=INK, secondary=SECONDARY, border=GRIDLINE,
+                    elem_id=f"tip-{idx}",
                 )
             )
+            idx += 1
+    parts.extend(tip_cards)
 
     # ---- legend: Less -> More ramp swatches ----
     ly = height - 28.0
