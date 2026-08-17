@@ -27,7 +27,7 @@ from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _scale import nice_ticks  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY, corner_radius, cycle_hues  # noqa: E402
-from _svg import bar_path, fmt_number, svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _svg import bar_path, fmt_number, foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 
@@ -187,8 +187,12 @@ def build_svg(
         "@media (prefers-reduced-motion: reduce){.bar{transition:none;}"
         ".bar:hover,.bar:focus{transform:none;}}"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
-        "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
+        # A bubble drawn right next to its own bar would be covered by any
+        # bar drawn afterward (SVG paints in document order, regardless of
+        # hover) -- bars draw first, bubbles last, paired by id; see
+        # _svg.foreground_tip_css.
+        + foreground_tip_css(len(ordered), mark_prefix="bar-hit", tip_prefix="bar-tip")
+        + "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
         "</style>"
     )
 
@@ -220,6 +224,7 @@ def build_svg(
         f'{xml_escape(y_label)}</text>'
     )
 
+    bar_tips: List[str] = []
     for i, row in enumerate(ordered):
         region = str(row["region"])
         value = float(row["value"])
@@ -233,17 +238,19 @@ def build_svg(
             continue
         path = bar_path(x, y, bar_w, h, r, side="top")
         parts.append(
-            f'<path class="bar hit" tabindex="0" d="{path}" fill="{colors.get(region, "#007AFF")}">'
+            f'<path id="bar-hit-{i}" class="bar hit" tabindex="0" d="{path}" fill="{colors.get(region, "#007AFF")}">'
             f'<title>{xml_escape(tip)}</title></path>'
         )
         rank = i + 1
-        parts.append(
+        bar_tips.append(
             tooltip_bubble(
                 x + bar_w / 2.0, y - 6,
                 [region, f"{value:.0f}", f"{share:.1f}% of total · rank {rank}/{n}"],
                 canvas_w=width, canvas_h=height, ink=INK, secondary=SECONDARY, border=GRIDLINE,
+                elem_id=f"bar-tip-{i}",
             )
         )
+    parts.extend(bar_tips)
 
     axis_y = plot_y + plot_h
     parts.append(
