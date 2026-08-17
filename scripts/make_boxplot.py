@@ -29,7 +29,7 @@ from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY  # noqa: E402
 from _scale import log_position, log_ticks, nice_ticks_range  # noqa: E402
-from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _svg import foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 COLOR_BOX = "#007AFF"
@@ -223,8 +223,14 @@ def build_svg(
         ".box{transition:filter .15s ease;}"
         ".box:hover,.box:focus{filter:brightness(1.1);outline:none;}"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
-        "@media (prefers-reduced-motion: reduce){.box{transition:none;}"
+        # A bubble drawn right next to its own box would be covered by any
+        # box drawn afterward (SVG paints in document order, regardless of
+        # hover) -- boxes draw first, bubbles last, paired by id; see
+        # _svg.foreground_tip_css. Upper-bound count (a (dept, group) cell
+        # with no stats is skipped, no box drawn) is harmless: an id with
+        # no matching mark just never fires.
+        + foreground_tip_css(len(depts) * len(groups), mark_prefix="box-hit", tip_prefix="box-tip")
+        + "@media (prefers-reduced-motion: reduce){.box{transition:none;}"
         ".tip{transition:none}}"
         "</style>"
     )
@@ -270,11 +276,13 @@ def build_svg(
 
     # ---- boxes ----
     cap = max(4.0, box_w * 0.32)  # whisker cap half-width
+    box_tips: List[str] = []
     for i, d in enumerate(depts):
         for j, gname in enumerate(groups):
             s = stats.get((d, gname))
             if not s:
                 continue
+            box_idx = i * len(groups) + j
             color = colors[j % len(colors)]
             cx = cx_for(i, j)
             x_left = cx - box_w / 2
@@ -294,11 +302,11 @@ def build_svg(
                 f"{_fmt(s['whisker_hi'])}, n={s['n']}"
             )
             parts.append(
-                f'<rect class="box hit" tabindex="0" x="{x_left:.1f}" y="{y_q3:.1f}" '
+                f'<rect id="box-hit-{box_idx}" class="box hit" tabindex="0" x="{x_left:.1f}" y="{y_q3:.1f}" '
                 f'width="{box_w:.1f}" height="{max(1.0, y_q1 - y_q3):.1f}" '
                 f'fill="{color}" fill-opacity="0.85"><title>{xml_escape(tip)}</title></rect>'
             )
-            parts.append(
+            box_tips.append(
                 tooltip_bubble(
                     cx, y_q3 - 10,
                     [
@@ -309,6 +317,7 @@ def build_svg(
                     ],
                     anchor="middle", canvas_w=width, canvas_h=height,
                     ink=INK, secondary=SECONDARY, border=GRIDLINE,
+                    elem_id=f"box-tip-{box_idx}",
                 )
             )
             parts.append(
@@ -319,6 +328,7 @@ def build_svg(
                 parts.append(
                     f'<circle cx="{cx:.1f}" cy="{y_for(o):.1f}" r="2.5" fill="none" stroke="{color}" stroke-width="1.2"/>'
                 )
+    parts.extend(box_tips)
 
     # ---- x-axis ----
     axis_y = plot_y + plot_h
