@@ -61,7 +61,7 @@ from _style import (  # noqa: E402
 )
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 from _interactive import fullscreen_control, hover_isolate_css  # noqa: E402
-from _svg import tooltip_bubble  # noqa: E402
+from _svg import foreground_tip_css, tooltip_bubble  # noqa: E402
 
 
 # --------------------------------------------------------------------------- #
@@ -388,6 +388,7 @@ def build_svg(
     # rest" pattern via the house helper (each ribbon also carries a
     # ribbon-idx-N class so the helper can target it individually).
     total_ribbons = (n_axes - 1) * len(flows)
+    total_blocks = sum(len(cats) for _, cats in AXES)
     parts.append(
         "<style>"
         + hover_isolate_css("ribbon", total_ribbons, dim=0.14)
@@ -396,7 +397,12 @@ def build_svg(
         + fcp_style
         + os_dark_style()
         + ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        + ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
+        # Every bubble is drawn after every mark in its group (SVG paints in
+        # document order, hover or not, so a bubble next to its own mark
+        # would be covered by any mark drawn later) -- ribbons and blocks
+        # each get their own id-paired rule set, see _svg.foreground_tip_css.
+        + foreground_tip_css(total_ribbons, mark_prefix="ribbon-hit", tip_prefix="ribbon-tip")
+        + foreground_tip_css(total_blocks, mark_prefix="block-hit", tip_prefix="block-tip")
         + "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
         + "</style>"
     )
@@ -453,6 +459,7 @@ def build_svg(
     # Colour: every ribbon is coloured by its final outcome, so a reader can
     # follow "green = will be retained" from the very first axis.
     parts.append('<g class="flows">')
+    ribbon_tips: List[str] = []
 
     # For deterministic stacking inside each block, sort flows by the target
     # ordering at each junction. We render both segments (0→1 and 1→2).
@@ -502,25 +509,29 @@ def build_svg(
             # stacked green (or gray) ribbons never merge into an opaque blob —
             # each path keeps a crisp edge against its neighbour.
             parts.append(
-                f'<path class="ribbon ribbon-{outcome} ribbon-{ribbon_idx} hit" '
+                f'<path id="ribbon-hit-{ribbon_idx}" class="ribbon ribbon-{outcome} ribbon-{ribbon_idx} hit" '
                 f'tabindex="0" d="{d}" '
                 f'fill="{color}" '
                 f'fill-opacity="0.46" stroke="#FFFFFF" stroke-opacity="0.85" '
                 f'stroke-width="1.1" stroke-linejoin="round">'
                 f"<title>{_esc(tip)}</title></path>"
             )
-            parts.append(
+            ribbon_tips.append(
                 tooltip_bubble(
                     mx, min(a_top, b_top) - 4,
                     [f"{a_cat} → {b_cat} → {outcome}", f"{count} users", f"{pct:.0f}% of cohort"],
                     canvas_w=width, canvas_h=height, ink=ink, secondary=secondary,
                     border="#E5E5EA",
+                    elem_id=f"ribbon-tip-{ribbon_idx}",
                 )
             )
             ribbon_idx += 1
+    parts.extend(ribbon_tips)
     parts.append("</g>")
 
     # -- category blocks + labels ------------------------------------------ #
+    block_tips: List[str] = []
+    block_idx = 0
     for i, (_, cats) in enumerate(AXES):
         x = axis_x[i]
         for cat in cats:
@@ -536,18 +547,20 @@ def build_svg(
                 block_cls = ' class="hit"'
             pct = 100.0 * b["count"] / total_records
             parts.append(
-                f'<rect{block_cls} tabindex="0" x="{x:.1f}" y="{b["y0"]:.1f}" width="{block_w}" '
+                f'<rect id="block-hit-{block_idx}"{block_cls} tabindex="0" x="{x:.1f}" y="{b["y0"]:.1f}" width="{block_w}" '
                 f'height="{blk_h:.1f}" rx="5" fill="{fill}">'
                 f"<title>{_esc(cat)}: {int(b['count'])} users</title></rect>"
             )
-            parts.append(
+            block_tips.append(
                 tooltip_bubble(
                     x + block_w / 2.0, b["y0"] - 4,
                     [str(cat), f"{int(b['count'])} users", f"{pct:.0f}% of axis total"],
                     canvas_w=width, canvas_h=height, ink=ink, secondary=secondary,
                     border="#E5E5EA",
+                    elem_id=f"block-tip-{block_idx}",
                 )
             )
+            block_idx += 1
             # Label: left/first axis labels sit to the LEFT of the block,
             # everything else to the RIGHT, so text never overlaps ribbons.
             label = f"{_esc(cat)}"
@@ -593,6 +606,7 @@ def build_svg(
         )
         lx += 30 + 13.0 * len(cat) + 40
 
+    parts.extend(block_tips)
     parts.append(fullscreen_control(width, height, mode))
     parts.append("</svg>")
     return "".join(parts)
