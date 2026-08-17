@@ -58,7 +58,7 @@ from typing import Any, Dict, List, Optional, Tuple
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _svg import fmt_compact, tooltip_bubble  # noqa: E402
+from _svg import fmt_compact, foreground_tip_css, tooltip_bubble  # noqa: E402
 from _style import os_dark_style  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
@@ -549,7 +549,13 @@ def build_svg(
             extra=".paper{fill:#0B0B0C;}[stroke=\"#D2D2D7\"]{stroke:#3A3A3C;}",
         )
         + ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        + ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
+        # A bubble drawn right next to its own bar would be covered by any
+        # bar drawn afterward in the depth-sorted painter's-algorithm order
+        # (SVG paints in document order, regardless of hover) -- bar faces
+        # keep their depth order (needed for correct 3D occlusion), bubbles
+        # draw last as a separate pass, paired by id; see
+        # _svg.foreground_tip_css.
+        + foreground_tip_css(n_rows * n_cols, mark_prefix="bar-hit", tip_prefix="bar-tip")
         + "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
         + "</style>"
     )
@@ -594,7 +600,8 @@ def build_svg(
         key=lambda rc: rc[0] + rc[1],
     )
     bars: List[str] = []
-    for r, c in order:
+    bar_tips: List[str] = []
+    for bar_idx, (r, c) in enumerate(order):
         val = z[r][c]
         t = val / z_max if z_max else 0.0
         fill = _lerp_hex(_LOW, _HIGH, t)
@@ -605,19 +612,25 @@ def build_svg(
             fill=fill, value=val, mono_family=mono_family,
         )
         # Splice the accessible per-bar tooltip in as the group's first child,
-        # and mark the group as the hover/focus hit target.
-        group = group.replace("<g>", f'<g class="hit" tabindex="0"><title>{label}</title>', 1)
+        # and mark the group as the hover/focus hit target. Bar faces stay in
+        # their depth-sorted (painter's algorithm) draw order -- only the
+        # bubble moves to a separate, later pass, so the 3D occlusion is
+        # unaffected by the foreground-tooltip fix.
+        group = group.replace(
+            "<g>", f'<g id="bar-hit-{bar_idx}" class="hit" tabindex="0"><title>{label}</title>', 1
+        )
         bars.append(group)
         cap_x, cap_y = _project(c, r, val, ox=ox, oy=oy, h_scale=h_scale)
         share = (val / z_max * 100.0) if z_max else 0.0
-        bars.append(
+        bar_tips.append(
             tooltip_bubble(
                 cap_x, cap_y - 10,
                 [f"{rows[r]} · {cols[c]}", f"${val:.0f}k", f"{share:.0f}% of tallest bar"],
                 canvas_w=width, canvas_h=height, ink=_INK, secondary=_SECONDARY, border="#D2D2D7",
+                elem_id=f"bar-tip-{bar_idx}",
             )
         )
-    parts.append(f'<g class="bars">{"".join(bars)}</g>')
+    parts.append(f'<g class="bars">{"".join(bars)}{"".join(bar_tips)}</g>')
 
     # ---- axis labels ------------------------------------------------------ #
     # Quarters (columns) label the front-right floor edge (row_max side);
