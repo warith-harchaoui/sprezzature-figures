@@ -28,7 +28,7 @@ from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _scale import log_position, log_ticks, nice_ticks  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY, cycle_hues  # noqa: E402
-from _svg import fmt_number, svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _svg import fmt_number, foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 
@@ -179,7 +179,11 @@ def build_svg(
         )
         + "@media (prefers-reduced-motion: reduce){.band{transition:none;}}"
         + ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        + ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
+        # A bubble drawn right next to its own band would be covered by any
+        # band drawn afterward (SVG paints in document order, regardless of
+        # hover) -- bands draw first, bubbles last, paired by id; see
+        # _svg.foreground_tip_css.
+        + foreground_tip_css(len(channels), mark_prefix="band-hit", tip_prefix="band-tip")
         + "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
         "</style>"
     )
@@ -230,6 +234,7 @@ def build_svg(
     )
 
     # ---- stacked bands (bottom-to-top) ----
+    band_tips: List[str] = []
     for ci, ch in enumerate(channels):
         top_pts = [(x_for(i), y_for(cum[m][ci])) for i, m in enumerate(months)]
         bottom_val_key = ci - 1
@@ -242,18 +247,20 @@ def build_svg(
         band_total = sum(lookup.get((m, ch), 0.0) for m in months)
         tip = f"{ch}: {band_total:.0f} thousand visits total over {n} months"
         parts.append(
-            f'<path class="band band-{ci} hit" tabindex="0" d="{path_d}" '
+            f'<path id="band-hit-{ci}" class="band band-{ci} hit" tabindex="0" d="{path_d}" '
             f'fill="{colors[ch]}" fill-opacity="0.82"><title>{xml_escape(tip)}</title></path>'
         )
         mid_i = n // 2
         share = (band_total / sum(totals.values()) * 100.0) if sum(totals.values()) else 0.0
-        parts.append(
+        band_tips.append(
             tooltip_bubble(
                 top_pts[mid_i][0], min(top_pts[mid_i][1], bottom_pts[mid_i][1]),
                 [ch, f"{band_total:.0f}k visits total", f"{share:.0f}% of stacked total"],
                 canvas_w=width, canvas_h=height, ink=INK, secondary=SECONDARY, border=GRIDLINE,
+                elem_id=f"band-tip-{ci}",
             )
         )
+    parts.extend(band_tips)
 
     # ---- x-axis ----
     axis_y = plot_y + plot_h
