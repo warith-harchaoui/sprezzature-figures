@@ -36,7 +36,7 @@ from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _scale import nice_ticks_range  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY, load_palette  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
-from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _svg import foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 
 
 GROUPS = ["A", "B", "C"]
@@ -167,8 +167,12 @@ def build_svg(
         ".dot:hover,.dot:focus{r:7;outline:none;}"
         "@media (prefers-reduced-motion: reduce){.dot{transition:none;}}"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
-        "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
+        # A bubble drawn right next to its own dot would be covered by any
+        # dot drawn afterward (SVG paints in document order, regardless of
+        # hover) -- dots draw first, bubbles last, paired by id; see
+        # _svg.foreground_tip_css.
+        + foreground_tip_css(len(ordered_rows), mark_prefix="dot-hit", tip_prefix="dot-tip")
+        + "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
         "</style>"
     )
     parts.append(f'<rect width="{width}" height="{height}" fill="{BG}"/>')
@@ -216,23 +220,26 @@ def build_svg(
 
     # ---- dots ----
     n_rows = len(ordered_rows)
+    dot_tips: List[str] = []
     for i, ((x, _), y, row) in enumerate(zip(items, ys, ordered_rows)):
         g = str(row["group"])
         val = float(row["value"])
         tip = f"Group {g}: {val:.1f}"
         parts.append(
-            f'<circle class="dot hit" tabindex="0" cx="{x:.1f}" cy="{y:.1f}" r="{_RADIUS:.0f}" '
+            f'<circle id="dot-hit-{i}" class="dot hit" tabindex="0" cx="{x:.1f}" cy="{y:.1f}" r="{_RADIUS:.0f}" '
             f'fill="{colors.get(g, "#8E8E93")}" stroke="{BG}" stroke-width="1">'
             f'<title>{xml_escape(tip)}</title></circle>'
         )
         percentile = (i + 1) / n_rows * 100.0 if n_rows else 0.0
-        parts.append(
+        dot_tips.append(
             tooltip_bubble(
                 x, y - _RADIUS - 6,
                 [f"Group {g}", f"value {val:.1f}", f"{percentile:.0f}th percentile overall"],
                 canvas_w=width, canvas_h=height, ink=INK, secondary=SECONDARY, border=GRIDLINE,
+                elem_id=f"dot-tip-{i}",
             )
         )
+    parts.extend(dot_tips)
 
     parts.append(fullscreen_control(width, height, mode))
     parts.append("</svg>")
