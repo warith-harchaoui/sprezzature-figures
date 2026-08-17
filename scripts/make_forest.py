@@ -59,7 +59,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _style import GRIDLINE, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
-from _svg import svg_open, tooltip_bubble  # noqa: E402
+from _svg import foreground_tip_css, svg_open, tooltip_bubble  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
 
@@ -296,7 +296,9 @@ def build_svg(
         ".row:focus{outline:none}",
         ".row:hover .rowbg,.row:focus .rowbg{fill:#F5F5F7}",
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}",
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}",
+        # +1 for the pooled diamond row, which shares this same id space
+        # (see the "row_tips" list built alongside the study-row loop).
+        foreground_tip_css(len(rows) + 1, mark_prefix="row", tip_prefix="rowtip"),
         "@media (prefers-reduced-motion:reduce){.tip{transition:none}}",
     ]
     glyph_series = {".box-sig": green, ".box-cross": blue, ".diamond": orange}
@@ -346,6 +348,13 @@ def build_svg(
     )
 
     # --- study rows ----------------------------------------------
+    # One shared bubble list for every row, study rows and the pooled
+    # diamond alike: every row is a top-level sibling with no wrapping
+    # transform, so all their bubbles can share one id space and one
+    # trailing block -- appended only once every row (studies + pooled)
+    # is drawn, so a later row's diamond/box can never cover an earlier
+    # row's bubble.
+    row_tips: List[str] = []
     for i, (s, half, w) in enumerate(zip(rows, half_sides, weights)):
         cy = first_row_y + i * row_h + row_h / 2
         cx = sx(float(s["or_"]))
@@ -372,7 +381,7 @@ def build_svg(
         # raster export. Static-at-rest avoids that failure mode entirely;
         # :hover / :focus highlighting (below) still carries the interactivity.
         parts.append(
-            f'<g class="row hit" tabindex="0" role="img" aria-label="{tip}">'
+            f'<g id="row-{i}" class="row hit" tabindex="0" role="img" aria-label="{tip}">'
         )
         parts.append(f"<title>{tip}</title>")
         # Full-width hover band for a comfortable target.
@@ -428,13 +437,14 @@ def build_svg(
             f'font-family="Roboto Mono, monospace" fill="{ink}">{est}</text>'
         )
         parts.append("</g>")
-        parts.append(
+        row_tips.append(
             tooltip_bubble(
                 cx, cy - half - 12,
                 [str(s["label"]), f'OR {float(s["or_"]):.2f} (95% CI {float(s["lo"]):.2f}-{float(s["hi"]):.2f})',
                  f'weight {pct}% - {sig_note}'],
                 anchor="middle", canvas_w=width, canvas_h=height,
                 ink=ink, secondary=secondary, border=GRIDLINE,
+                elem_id=f"rowtip-{i}",
             )
         )
 
@@ -452,8 +462,9 @@ def build_svg(
         f'Pooled random-effects OR {or_p:.2f} '
         f'(95% CI {lo_p:.2f}–{hi_p:.2f}), {pooled_het}'
     )
+    pooled_i = len(rows)
     parts.append(
-        f'<g class="row hit" tabindex="0" role="img" aria-label="{pooled_tip}">'
+        f'<g id="row-{pooled_i}" class="row hit" tabindex="0" role="img" aria-label="{pooled_tip}">'
     )
     parts.append(f"<title>{pooled_tip}</title>")
     parts.append(
@@ -479,14 +490,17 @@ def build_svg(
         f'{or_p:.2f} ({lo_p:.2f}–{hi_p:.2f})</text>'
     )
     parts.append("</g>")
-    parts.append(
+    row_tips.append(
         tooltip_bubble(
             dcx, dy - dh - 12,
             [pooled_label, f'OR {or_p:.2f} (95% CI {lo_p:.2f}-{hi_p:.2f})', pooled_het],
             anchor="middle", canvas_w=width, canvas_h=height,
             ink=ink, secondary=secondary, border=GRIDLINE,
+            elem_id=f"rowtip-{pooled_i}",
         )
     )
+    # Every row's bubble (studies + pooled) drawn only now, after every row.
+    parts.extend(row_tips)
 
     # --- x-axis (log ticks) --------------------------------------
     axis_y = axis_bottom + 8

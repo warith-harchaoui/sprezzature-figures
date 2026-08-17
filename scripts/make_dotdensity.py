@@ -57,7 +57,7 @@ from typing import Any, Dict, List, Sequence, Tuple
 # without the dataviz tier).
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
-from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _svg import foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
@@ -564,7 +564,8 @@ def build_svg(
         "@media (prefers-reduced-motion: reduce) { "
         ".dept, .dots { transition: none; } }",
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}",
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}",
+        foreground_tip_css(len(legend), mark_prefix="region", tip_prefix="regiontip"),
+        foreground_tip_css(len(legend), mark_prefix="legend-row", tip_prefix="legendtip"),
         "@media (prefers-reduced-motion:reduce){.tip{transition:none}}",
     ])
     # OS-adaptive overrides (additive; the default render stays byte-identical
@@ -646,13 +647,14 @@ def build_svg(
             sy = offset_y + (_span_py * scale) - (py - min_py) * scale
             region_dots[region].append((sx, sy))
 
-    for name, _key in legend:
+    region_tips: List[str] = []
+    for region_i, (name, _key) in enumerate(legend):
         s = _slug(name)
         color = region_color[name]
         people = region_people[name]
         dots = region_dots[name]
         parts.append(
-            f'<g class="dots rg rg-{s} hit" tabindex="0" role="listitem">'
+            f'<g id="region-{region_i}" class="dots rg rg-{s} hit" tabindex="0" role="listitem">'
             f'<title>{_xml(name)}: about {people / 1_000_000:.1f} million '
             f'residents ({len(dots)} dots)</title>'
         )
@@ -667,12 +669,16 @@ def build_svg(
         if dots:
             cx = sum(p[0] for p in dots) / len(dots)
             cy = sum(p[1] for p in dots) / len(dots)
-            parts.append(
+            region_tips.append(
                 tooltip_bubble(
                     cx, cy, [name, f"{people / 1_000_000:.1f} million residents", f"{len(dots)} dots on the map"],
                     canvas_w=_WIDTH, canvas_h=_HEIGHT, ink=_INK, secondary=_SUBTLE, border=_BORDER,
+                    elem_id=f"regiontip-{region_i}",
                 )
             )
+    # Every region's bubble drawn only after every region's dot cloud, so a
+    # later region's dots can never cover an earlier region's bubble.
+    parts.extend(region_tips)
 
     # ---- legend (right column) ----
     legend_x = _MAP_X + _MAP_W + 44.0
@@ -683,13 +689,14 @@ def build_svg(
         f'font-weight="700" fill="{_INK}">Macro-region</text>'
     )
     parts.append(f'<g transform="translate({legend_x:.1f},{legend_y:.1f})">')
+    legend_tips: List[str] = []
     for k, (name, _key) in enumerate(legend):
         s = _slug(name)
         color = region_color[name]
         cy = k * row_h
         people = region_people[name]
         parts.append(
-            f'<g class="rg rg-{s} legend-row hit" tabindex="0" role="listitem" '
+            f'<g id="legend-row-{k}" class="rg rg-{s} legend-row hit" tabindex="0" role="listitem" '
             f'transform="translate(0,{cy:.1f})">'
             f'<title>{_xml(name)}: about {people / 1_000_000:.1f} million '
             f'residents</title>'
@@ -708,13 +715,17 @@ def build_svg(
             f'{people / 1_000_000:.1f} M residents</text>'
         )
         parts.append('</g>')
-        parts.append(
+        legend_tips.append(
             tooltip_bubble(
                 40, cy + 40, anchor="start",
                 lines=[name, f"{people / 1_000_000:.1f} million residents"],
                 canvas_w=_WIDTH, canvas_h=_HEIGHT, ink=_INK, secondary=_SUBTLE, border=_BORDER,
+                elem_id=f"legendtip-{k}",
             )
         )
+    # Every legend bubble drawn only after every legend row, still inside
+    # this same translated group (its coordinates are relative to it).
+    parts.extend(legend_tips)
     parts.append('</g>')
 
     # ---- footnote / method note ----

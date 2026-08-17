@@ -55,7 +55,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _labels import label_cell, readable_on_white  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _style import load_palette, os_adaptive_style, os_dark_style  # noqa: E402
-from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _svg import foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
@@ -280,7 +280,7 @@ def build_svg(
         ".row:hover .dot,.row:focus .dot{stroke:#1D1D1F;stroke-width:2}",
         ".row:focus{outline:none}",
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}",
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}",
+        foreground_tip_css(len(rows), mark_prefix="row"),
         "@media (prefers-reduced-motion:reduce){.tip{transition:none}}",
     ]
     women_series = {".mk-women": women_col}
@@ -362,6 +362,7 @@ def build_svg(
         )
 
     # --- the dumbbells -------------------------------------------
+    row_tips: List[str] = []
     for i, rec in enumerate(rows):
         cy = first_row_cy + i * row_h
         w_val = float(rec["group_a"])
@@ -394,7 +395,7 @@ def build_svg(
             f'gap {value_prefix}{abs(gap):.2f}{value_suffix} ({gap_pct}%)'
         )
 
-        parts.append(f'<g class="row hit" tabindex="0" role="img" aria-label="{tip}">')
+        parts.append(f'<g id="row-{i}" class="row hit" tabindex="0" role="img" aria-label="{tip}">')
         parts.append(f"<title>{tip}</title>")
 
         # Full-width hover target. Transparent at rest so it never paints over
@@ -470,15 +471,19 @@ def build_svg(
         )
 
         parts.append("</g>")
-        parts.append(
+        row_tips.append(
             tooltip_bubble(
                 mid_x, chip_y - 34,
                 [category, f"{group_a_label} {value_prefix}{w_val:.0f}{value_suffix} vs "
                            f"{group_b_label} {value_prefix}{m_val:.0f}{value_suffix}",
                  f"gap {gap_sign}{value_prefix}{abs(gap):.0f}{value_suffix} ({gap_pct}%)"],
                 canvas_w=width, canvas_h=height, ink=ink, secondary=secondary, border=band,
+                elem_id=f"tip-{i}",
             )
         )
+    # Every row's bubble drawn only after every row, so a lower row can
+    # never cover an earlier row's bubble -- SVG has no z-index.
+    parts.extend(row_tips)
 
     # --- x-axis (value scale) ------------------------------------
     axis_y = plot_bottom + 22

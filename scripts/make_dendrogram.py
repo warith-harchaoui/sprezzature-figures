@@ -58,7 +58,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import BG, INK, leveled_colors, load_palette, os_dark_style  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _svg import svg_open, tooltip_bubble  # noqa: E402
+from _svg import foreground_tip_css, svg_open, tooltip_bubble  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 
 # ------------------------------------------------------------------
@@ -395,8 +395,15 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
         "#tree .cluster:hover .branch,#tree .cluster:focus-within .branch{opacity:1}"
         ".leaf-hit:focus{outline:none}"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
         "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
+        # Every bubble is drawn after every mark in its own group (spine,
+        # each cluster, the leaf row), never right next to its own mark --
+        # SVG has no z-index, so a bubble in place would be covered by any
+        # mark drawn after it. Branches and leaves are two separate id
+        # spaces (a merge and a leaf can share the same index by
+        # coincidence), so each gets its own foreground_tip_css() call.
+        + foreground_tip_css(len(MERGES), mark_prefix="branch", tip_prefix="btip")
+        + foreground_tip_css(len(LEAVES), mark_prefix="leaf", tip_prefix="ltip")
         + adaptive
         # Additive dark mode: flip paper + ink and darken the hairline gridlines
         # (a stroke the ink map misses). Cluster branch hues read on dark.
@@ -491,6 +498,11 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
     # Bucket the SVG snippets: one list per cluster + a neutral spine list.
     cluster_snippets: Dict[int, List[str]] = {i: [] for i in range(len(CLUSTER_NAMES))}
     spine_snippets: List[str] = []
+    # Bubbles for each bucket, kept apart from `cluster_snippets`/
+    # `spine_snippets` above so every mark can be drawn before any bubble
+    # once a bucket is finally emitted (see the CSS block's comment for why).
+    cluster_tips: Dict[int, List[str]] = {i: [] for i in range(len(CLUSTER_NAMES))}
+    spine_tips: List[str] = []
 
     for i, (left, right, height) in enumerate(MERGES):
         node_id = f"m{i}"
@@ -506,10 +518,12 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
             color = SPINE
             width = 2.6
             bucket = spine_snippets
+            tip_bucket = spine_tips
         else:
             color = cluster_colors[cl]
             width = 4.2
             bucket = cluster_snippets[cl]
+            tip_bucket = cluster_tips[cl]
 
         # Inverted-U elbow path: up from left child, across, down to right.
         elbow = (
@@ -522,16 +536,17 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
         tip = f"Merge at dissimilarity {height:.2f} — joins {n_leaves} lines"
         branch_cls = "branch hit" if cl is None else f"branch dg-c{cl} hit"
         bucket.append(
-            f'<path class="{branch_cls}" tabindex="0" d="{elbow}" fill="none" stroke="{color}" '
-            f'stroke-width="{width}" stroke-linecap="round" '
+            f'<path id="branch-{i}" class="{branch_cls}" tabindex="0" d="{elbow}" fill="none" '
+            f'stroke="{color}" stroke-width="{width}" stroke-linecap="round" '
             f'stroke-linejoin="round"><title>{escape(tip)}</title></path>'
         )
-        bucket.append(
+        tip_bucket.append(
             tooltip_bubble(
                 gr["x"], my + 8,
                 [f"dissimilarity {height:.2f}", f"joins {n_leaves} lines",
                  CLUSTER_NAMES[cl] if cl is not None else "above cut (unclustered)"],
                 canvas_w=WIDTH, canvas_h=HEIGHT, ink=INK, secondary=SUBINK, border=GRIDLINE,
+                elem_id=f"btip-{i}",
             )
         )
 
@@ -540,6 +555,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
     parts.append('<g id="tree">')
     parts.append('<g id="spine">')
     parts.extend(spine_snippets)
+    parts.extend(spine_tips)
     parts.append("</g>")
     for cl in range(len(CLUSTER_NAMES)):
         snippets = cluster_snippets[cl]
@@ -553,12 +569,14 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
             f'aria-label="{escape(cname)} cluster">'
         )
         parts.extend(snippets)
+        parts.extend(cluster_tips[cl])
         parts.append("</g>")
     parts.append("</g>")
 
     # --- leaf labels (rotated) + coloured leaf dots + hit targets ---
     parts.append('<g id="leaves">')
-    for label in LEAVES:
+    leaf_tips: List[str] = []
+    for leaf_i, label in enumerate(LEAVES):
         g = geometry[label]
         cl = membership[label]
         dot = cluster_colors[cl]
@@ -574,18 +592,22 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
         # while the extra bottom margin gives even the longest line room.
         ly = baseline + 26
         parts.append(
-            f'<text class="leaf-hit hit" tabindex="0" x="{_fmt(g["x"])}" y="{_fmt(ly)}" '
+            f'<text id="leaf-{leaf_i}" class="leaf-hit hit" tabindex="0" x="{_fmt(g["x"])}" y="{_fmt(ly)}" '
             f'font-size="18" fill="{INK}" text-anchor="end" '
             f'transform="rotate(-32 {_fmt(g["x"])} {_fmt(ly)})">'
             f'{escape(label)}<title>{escape(label)} — {escape(CLUSTER_NAMES[cl])}'
             f'</title></text>'
         )
-        parts.append(
+        leaf_tips.append(
             tooltip_bubble(
                 g["x"], ly + 10, [str(label), str(CLUSTER_NAMES[cl])],
                 canvas_w=WIDTH, canvas_h=HEIGHT, ink=INK, secondary=SUBINK, border=GRIDLINE,
+                elem_id=f"ltip-{leaf_i}",
             )
         )
+    # Every leaf bubble is drawn only after every leaf mark (same reasoning
+    # as the branch buckets above), still inside this same #leaves group.
+    parts.extend(leaf_tips)
     parts.append("</g>")
 
     # --- cluster legend on the right ---

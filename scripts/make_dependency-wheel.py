@@ -61,7 +61,7 @@ from xml.sax.saxutils import escape
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import BG, GRIDLINE, INK, forced_color_patterns, leveled_colors, load_palette, os_dark_style  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
-from _svg import point_on_circle, svg_open, tooltip_bubble  # noqa: E402
+from _svg import foreground_tip_css, point_on_circle, svg_open, tooltip_bubble  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 
@@ -453,6 +453,17 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
         f"#arc-{rid}:focus ~ #flows .flow{{opacity:.08}}"
         for rid in REGION_ID.values()
     )
+    # Arc bubbles: SVG has no z-index, so a bubble drawn right next to its
+    # own arc would be covered by any arc drawn after it -- every arc bubble
+    # is instead drawn after every arc (see the arc loop below), so each
+    # needs its own id-paired rule rather than the single generic
+    # ``.hit:hover+.tip`` rule that adjacency used to make possible. Arcs
+    # already carry the region's own id (``arc-nK``), so bubbles reuse it
+    # (``arctip-nK``) instead of a separate numbering scheme.
+    arc_tip_css = "".join(
+        f"#arc-{rid}:hover~#arctip-{rid},#arc-{rid}:focus~#arctip-{rid}{{opacity:1}}"
+        for rid in REGION_ID.values()
+    )
     # OS-adaptive overrides (additive; the default render is byte-for-byte
     # unchanged because every rule below lives inside a media query). Under
     # prefers-contrast each region deepens to its high-contrast hue: its node
@@ -497,8 +508,9 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
         f"{hover_rules}"
         ".flow:focus,.arc-hit:focus{outline:none}"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
         "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
+        + arc_tip_css
+        + foreground_tip_css(len(ribbons), mark_prefix="flow", tip_prefix="flowtip")
         + adaptive
         + fc_style
         # Additive dark mode: flip paper + the two ink tiers, and flip any
@@ -525,7 +537,11 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
 
     # --- node arcs FIRST so the CSS ``~`` sibling combinator can reach
     # the #flows group that follows them. Each arc is a full-wedge hit
-    # target with a stable id the hover rules key on. ---
+    # target with a stable id the hover rules key on. Every arc bubble is
+    # appended only after every arc (still at this same top level, not
+    # nested inside #flows), so a bubble can never be covered by an arc
+    # drawn after it -- SVG has no z-index. ---
+    arc_tips: List[str] = []
     for i in range(n):
         g = groups[i]
         rid = REGION_ID[g["name"]]
@@ -542,18 +558,21 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
             f'<title>{escape(arc_tip)}</title></path>'
         )
         amx, amy = _polar((R_OUTER + R_INNER) / 2.0, g["mid"])
-        parts.append(
+        arc_tips.append(
             tooltip_bubble(
                 amx, amy, [g["name"], f"{g['out']}k left, {g['in']}k arrived", f"net {sign}{net}k"],
                 canvas_w=WIDTH, canvas_h=HEIGHT, ink=INK, secondary=SUBINK, border=GRIDLINE,
+                elem_id=f"arctip-{rid}",
             )
         )
+    parts.extend(arc_tips)
 
     # --- flow ribbons (drawn after arcs; sit visually under them because
     # they attach at the inner radius). Thickest first so thin ribbons
     # layer cleanly on top. ---
     parts.append('<g id="flows">')
-    for rb in sorted(ribbons, key=lambda r: -r["value"]):
+    flow_tips: List[str] = []
+    for flow_i, rb in enumerate(sorted(ribbons, key=lambda r: -r["value"])):
         # A wider source foot and a slightly narrower target foot, plus a
         # deeper source-side pull, make each ribbon fan out where it
         # leaves and converge where it arrives — a read of direction.
@@ -567,19 +586,22 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
         dst_id = REGION_ID[dst_name]
         tip = f"{src_name} → {dst_name}: {rb['value']}k people moved"
         parts.append(
-            f'<path class="flow src-{src_id} dst-{dst_id} hit" tabindex="0" '
+            f'<path id="flow-{flow_i}" class="flow src-{src_id} dst-{dst_id} hit" tabindex="0" '
             f'role="img" aria-label="{escape(tip)}" d="{d}" '
             f'fill="{rb["color"]}" fill-opacity="0.62" '
             f'stroke="{rb["color"]}" stroke-opacity="0.28" stroke-width="0.6">'
             f'<title>{escape(tip)}</title></path>'
         )
         rmx, rmy = _polar(R_INNER * 0.92, (rb["a0"] + rb["a1"]) / 2.0)
-        parts.append(
+        flow_tips.append(
             tooltip_bubble(
                 rmx, rmy, [f"{src_name} → {dst_name}", f"{rb['value']}k people moved"],
                 canvas_w=WIDTH, canvas_h=HEIGHT, ink=INK, secondary=SUBINK, border=GRIDLINE,
+                elem_id=f"flowtip-{flow_i}",
             )
         )
+    # Every flow bubble after every flow ribbon, still inside #flows.
+    parts.extend(flow_tips)
     parts.append("</g>")
 
     # --- node labels: outside the ring, horizontal, side-anchored ---

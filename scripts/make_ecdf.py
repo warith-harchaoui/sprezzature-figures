@@ -32,7 +32,7 @@ from typing import Any, Dict, List, Optional
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _svg import svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _svg import foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
@@ -170,8 +170,8 @@ def build_svg(
     parts.append(
         "<style>"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
-        "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
+        + foreground_tip_css(1)
+        + "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
         "</style>"
     )
     parts.append(f'<rect width="{width}" height="{height}" fill="{BG}"/>')
@@ -226,13 +226,14 @@ def build_svg(
     )
     marker_tip = f"p{percentile * 100:.0f} = {p_value:.0f} ms"
     parts.append(
-        f'<circle class="hit" tabindex="0" cx="{px:.1f}" cy="{py:.1f}" r="4.5" fill="{COLOR_LINE}" '
+        f'<circle id="hit-0" class="hit" tabindex="0" cx="{px:.1f}" cy="{py:.1f}" r="4.5" fill="{COLOR_LINE}" '
         f'stroke="{BG}" stroke-width="1.5"><title>{xml_escape(marker_tip)}</title></circle>'
     )
     parts.append(
         tooltip_bubble(
             px, py + 12, [f"{percentile * 100:.0f}th percentile", f"{p_value:.0f} ms", f"{n} observations"],
             canvas_w=width, canvas_h=height, ink=INK, secondary=SECONDARY, border=GRIDLINE,
+            elem_id="tip-0",
         )
     )
 

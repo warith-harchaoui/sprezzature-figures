@@ -52,7 +52,7 @@ import numpy as np
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _svg import catmull_rom_beziers, fmt_compact, tooltip_bubble  # noqa: E402
+from _svg import catmull_rom_beziers, fmt_compact, foreground_tip_css, tooltip_bubble  # noqa: E402
 from _render import svg_example_path, write_svg  # noqa: E402
 from _style import leveled_colors, os_adaptive_style, os_dark_style  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
@@ -599,6 +599,12 @@ def build_svg(
     )
 
     # ---- hover tooltips: one transparent hit-column per month ------------- #
+    # Hit rects are transparent, so today they never visually cover a bubble
+    # even interleaved -- but every bubble is still drawn only after every
+    # hit column (own list, appended second), matching the house pattern
+    # everywhere else, so this stays correct if a later hit target ever
+    # becomes opaque.
+    hits: List[str] = []
     tips: List[str] = []
     col_w = plot_w / (n - 1)
     for i, m in enumerate(months):
@@ -609,8 +615,8 @@ def build_svg(
             f"{month_labels[i]}: actual ${actual[i]:.0f}K vs plan "
             f"${plan[i]:.0f}K — ${abs(gap):.0f}K {sign} plan"
         )
-        tips.append(
-            f'<rect class="hit" tabindex="0" x="{_fmt(gx - col_w / 2)}" y="{_fmt(m_top - 40)}" '
+        hits.append(
+            f'<rect id="hit-{i}" class="hit" tabindex="0" x="{_fmt(gx - col_w / 2)}" y="{_fmt(m_top - 40)}" '
             f'width="{_fmt(col_w)}" height="{_fmt(plot_h + 40)}" '
             f'fill="transparent"><title>{tip}</title></rect>'
         )
@@ -620,8 +626,10 @@ def build_svg(
                 [month_labels[i], f"actual ${actual[i]:.0f}K vs plan ${plan[i]:.0f}K",
                  f"${abs(gap):.0f}K {sign} plan"],
                 canvas_w=width, canvas_h=height, ink=_INK, secondary=_SECONDARY, border="#EFEFF2",
+                elem_id=f"tip-{i}",
             )
         )
+    tips = hits + tips
 
     # ---- OS-adaptive overrides (additive) --------------------------------- #
     # The default render stays byte-identical: every rule below lives inside an
@@ -636,8 +644,8 @@ def build_svg(
     diff_series = {".diff-above": _ABOVE_HUE_C, ".diff-below": _BELOW_HUE_C}
     style_block = (
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".hit:hover+.tip,.hit:focus+.tip{opacity:1}"
-        "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
+        + foreground_tip_css(n)
+        + "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
     )
     style_block += os_adaptive_style(diff_series, role="fill")
     # Additive dark mode: flip paper + the two ink tiers, and flip any multiply
