@@ -291,7 +291,7 @@ def run_shapash(model: Any, data: Any, ctx: Dict[str, Any]) -> Dict[str, Any]:
     if hasattr(model, "predict"):
         try:
             y_pred = model.predict(data)
-        except Exception:  # noqa: BLE001
+        except Exception:  # noqa: BLE001 — predictions are an optional overlay; compile below still works with y_pred=None
             pass
     xpl.compile(x=data, y_pred=y_pred)
 
@@ -304,7 +304,7 @@ def run_shapash(model: Any, data: Any, ctx: Dict[str, Any]) -> Dict[str, Any]:
 
     try:
         xpl.save(str(out / "smart_explainer.pkl"))
-    except Exception:  # noqa: BLE001
+    except Exception:  # noqa: BLE001 — pickle is a convenience artifact; the HTML report above already succeeded
         pass
 
     return {"engine": "shapash", "report": report_path.name, "files": [p.name for p in sorted(out.glob("*"))]}

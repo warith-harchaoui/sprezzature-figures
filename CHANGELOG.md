@@ -12,7 +12,7 @@
   `make_line_multi`/`build_svg` gained `x_domain`/`y_domain` (explicit axis
   bounds), `x_tick_step`/`y_tick_step` (evenly-spaced labeled ticks via the
   new `_scale.fixed_step_ticks`), and `y_minor_step` (unlabeled minor
-  gridlines, requires `y_domain`) — all five auto-exposed as CLI flags
+  gridlines, requires `y_domain`); all five auto-exposed as CLI flags
   through `_render.py`'s existing `_OPTIONAL_FLAGS` registry (including a
   new `"lo,hi"` parser for the two tuple-shaped domain flags). Left unset,
   every one of these generators renders byte-identical to before. Covered
@@ -47,7 +47,7 @@
   function and a genuine `list[dict]`-shaped `DEMO_DATA`, with caller-supplied
   data threaded through wherever the underlying renderer's geometry allows it
   (documented as accepted-but-illustrative-only on the handful where it
-  doesn't, e.g. `chord`, `arcdiagram`, `circle-packing` — a fixed, hand-tuned
+  doesn't, e.g. `chord`, `arcdiagram`, `circle-packing`: a fixed, hand-tuned
   narrative). `gapminder` / `gapminder_variants`, previously blocked on a
   missing external dataset, now ship a small embedded synthetic fallback.
   Added `scripts/_interactive.py`'s `hover_isolate_css()` so the "hover one
@@ -58,7 +58,7 @@
   generator's actual `DEMO_DATA` shape, so the Studio's role-binding UI and
   `sprezzature-figures recommend` can reach all 126, not 46.
 
-## 1.1.0 — 2026-08-06
+## [1.1.0] - 2026-08-06
 
 ### Removed
 
@@ -80,7 +80,7 @@
   `value` column (the common case from CSV/JSON input) raised `ValueError`.
   `make_area` indexed `row["channel"]` unconditionally and colored bands from
   a dict keyed to the four hardcoded demo channel names, even though
-  `channel` is declared optional in the catalog — real data with no channel
+  `channel` is declared optional in the catalog; real data with no channel
   column, or a channel value outside that fixed set, raised `KeyError`.
   Channels are now derived from whatever the data actually carries, falling
   back to a single unnamed series with no legend. Found via
@@ -132,13 +132,13 @@
 ### Added
 
 - **New figure: `interruption-matrix` ("Qui coupe qui ?").** A directed
-  "who cuts whom" heatmap for conversation analysis — rows are speakers being
+  "who cuts whom" heatmap for conversation analysis: rows are speakers being
   cut off, columns the interrupters, each cell the interruption count tinted by
   the interrupter, with row/column totals and a one-line bilan. It carries a
   crosshair hover (self-contained mode): pointing at a cell lights that
   interrupter's whole column and that interrupted's whole row and dims the rest,
   so "everyone X cut" and "everyone who cut X" light up together. Full house
-  treatment — accessibility levels, dark mode, forced-colors fallback, native
+  treatment: accessibility levels, dark mode, forced-colors fallback, native
   tooltips, `role="img"` + a computed `<desc>`. Companion to `speaking_time`;
   92 chart types now. Roles: `interrupter`, `interrupted`, `count`.
 - **Intent-aware recommendation ranking.** `sprezzature-figures recommend`
@@ -280,7 +280,7 @@
 
 ---
 
-## 1.0.1 — 2026-07-29
+## [1.0.1] - 2026-07-29
 
 ### Added
 
@@ -289,7 +289,7 @@
 
 ---
 
-## 1.0.0 — 2026-07-29
+## [1.0.0] - 2026-07-29
 
 Initial public release.
 

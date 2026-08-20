@@ -1,7 +1,7 @@
 FROM python:3.11-slim
 
 LABEL maintainer="Warith Harchaoui <warith.harchaoui@gmail.com>"
-LABEL description="sprezzature-figures: CLI + Studio server, ~95 chart types"
+LABEL description="sprezzature-figures: CLI + Studio server, 124 chart types"
 
 WORKDIR /app
 

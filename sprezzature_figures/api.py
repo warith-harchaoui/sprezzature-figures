@@ -2,7 +2,7 @@
 sprezzature-figures — FastAPI HTTP surface.
 
 Exposes :func:`sprezzature_figures.make_figure` (and the figure registry
-behind ``--list`` / ``get_figure_definition``) over HTTP, so the ~95 chart
+behind ``--list`` / ``get_figure_definition``) over HTTP, so the 124 chart
 types can be rendered from any language, not just Python.
 
 What ships here
@@ -76,7 +76,7 @@ _MEDIA_TYPES: dict[str, str] = {
 app = FastAPI(
     title="Sprezzature Figures API",
     description=(
-        "HTTP surface for sprezzature-figures: render any of ~95 "
+        "HTTP surface for sprezzature-figures: render any of 124 "
         "publication-quality chart types from JSON rows."
     ),
     version=_VERSION,

@@ -329,7 +329,7 @@ def render_dag(dag_string: str, out_dir: Path, dark: bool) -> None:
     try:
         dot.format = "png"
         dot.render(str(out_dir / "dag"), cleanup=True)
-    except Exception:  # noqa: BLE001
+    except Exception:  # noqa: BLE001 — PNG companion is best-effort; the SVG above already succeeded
         pass
 
 

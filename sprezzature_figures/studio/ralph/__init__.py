@@ -6,6 +6,11 @@ change is a typed FigureOperation, applied deterministically, then
 re-rendered. The vision model only ever judges a PNG it's shown; it never
 edits pixels.
 
+This is the in-app copilot behind Sprezzature Studio, distinct from
+``scripts/ralph_eyeball_loop.py``, the standalone CLI that runs the same
+render-critique-edit loop by hand against any visual-from-code artifact
+(HTML, Vega-Lite, TikZ, Mermaid, SVG), not just a `FigurePlan`.
+
 Author
 ------
 Warith Harchaoui <warith.harchaoui@gmail.com>

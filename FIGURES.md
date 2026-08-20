@@ -68,7 +68,7 @@ colour-vision-deficiency-safe Okabe-Ito palette); see
 | `elbow` | make_elbow.py | Model selection | Detect the elbow (knee) of a diminishing-returns curve with the Kneedle method: pick k for k-means, the number of PCA components, or `eps` for DBSCAN. An inset draws the normalised difference curve whose peak locates the elbow. |
 | `embedding_projector` | make_embedding_projector.py | Dimensionality reduction | 2-D or 3-D scatter of high-dimensional embeddings coloured by label. Use to inspect whether a learned embedding separates classes or clusters semantically. |
 | `errorbar` | make_errorbar.py | Distribution | Point estimate per category with a capped vertical bar spanning an uncertainty interval (95% CI, standard deviation, or min-max). Use for A/B test lifts, experiment arms, or survey means by cohort. |
-| `figure` | make_figure.py | — | Internal dispatcher; do not invoke directly. |
+| `figure` | make_figure.py | n/a | Internal dispatcher; do not invoke directly. |
 | `forest` | make_forest.py | Meta-analysis | Forest plot: effect size with confidence interval per study, plus a pooled diamond. Standard in systematic reviews and meta-analyses. |
 | `funnel` | make_funnel.py | Pipeline | Horizontal bars narrowing to show drop-off across sequential stages (conversion funnel, hiring, clinical trial enrolment). Percentage labels on each stage. |
 | `gantt` | make_gantt.py | Project planning | One horizontal bar per task spanning its start-end day, coloured by owning team, top-to-bottom order follows the data. The default chart for a project plan or roadmap. |

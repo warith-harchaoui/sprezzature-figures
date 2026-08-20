@@ -35,7 +35,7 @@ suite sprezzature
 
 ## Comparaison
 
-Chaque alternative est notée de 1 à 5 sur chaque critère, plus c'est mieux (⭐ faible à ⭐⭐⭐⭐⭐ le plus fort). Les scores relèvent d'un jugement raisonné, pas d'un benchmark, et chaque axe est orienté de sorte que plus d'étoiles signifie plus fort sur ce trait (pour le coût, plus d'étoiles signifie moins cher ou plus ouvert). La source lisible par machine est [`paysage.csv`](paysage.csv) : 37 outils sur 22 critères.
+Chaque alternative est notée de 1 à 5 sur chaque critère, plus c'est mieux (⭐ faible à ⭐⭐⭐⭐⭐ le plus fort). Les scores relèvent d'un jugement raisonné, pas d'un benchmark. Chaque axe est orienté de sorte que plus d'étoiles signifie plus fort sur ce trait : pour le coût, plus d'étoiles signifie moins cher ou plus ouvert. La source lisible par machine est [`paysage.csv`](paysage.csv) : 37 outils sur 22 critères.
 
 | Outil de visualisation de données | Gratuit ou open source | Étendue des types de graphiques | Qualité de publication | Facilité d'utilisation | Programmabilité | Interactif | Copilote IA en langage naturel | Contrôle qualité visuel du rendu | Local et hors ligne (sans compte) | Reproductibilité | Export en SVG PNG PDF | Personnalisation et thèmes | Flexibilité des sources de données | Maturité et communauté | Géospatial et cartes | Tableaux de bord et BI | Fonctionnalités d'accessibilité | Animé | Performance sur grands jeux de données | Intégrabilité web | Profondeur statistique et analytique | Adaptatif |
 | --- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |

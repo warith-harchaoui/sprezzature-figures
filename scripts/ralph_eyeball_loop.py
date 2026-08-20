@@ -74,6 +74,11 @@ Rendering toolchain per surface
 Run ``python ralph_eyeball_loop.py --install-tools`` to check what is
 installed and pip/npm-install what can be done automatically.
 
+Not to be confused with ``sprezzature_figures.studio.ralph``, the
+FigurePlan-editing engine behind Sprezzature Studio's in-app copilot: same
+render-critique-edit idea, different surface (any file on disk here, a
+structured ``FigurePlan`` there).
+
 Usage
 -----
 ::
