@@ -32,13 +32,12 @@ Author
 """
 
 from __future__ import annotations
-from _render import svg_example_path, write_svg  # noqa: E402
+from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _style import BG, INK, SECONDARY, leveled_colors, os_adaptive_style, os_dark_style  # noqa: E402
 from _svg import foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
-import argparse
 import math
 import random
 from pathlib import Path
@@ -371,12 +370,6 @@ def build_svg(
     return "\n".join(parts)
 
 
-def _out_path() -> Path:
-    """Resolve the canonical output path for the rug SVG."""
-    here = Path(__file__).resolve()
-    return here.parent.parent / "assets" / "svg-examples" / "rug.svg"
-
-
 def make_rug(
     data: Optional[List[Dict[str, Any]]] = None,
     *,
@@ -416,39 +409,8 @@ def make_rug(
 
 def main() -> None:
     """Render the rug plot and write the SVG artifact to disk."""
-    parser = argparse.ArgumentParser(description="Render the rug-plot SVG.")
-    parser.add_argument(
-        "--mode",
-        choices=("self-contained", "external", "static"),
-        default="self-contained",
-        help="interactivity mode of the emitted SVG (default: self-contained)",
-    )
-    parser.add_argument(
-        "--accessibility",
-        choices=(
-            "universal", "high-contrast", "monochrome",
-            "deuteranopia", "protanopia", "tritanopia",
-        ),
-        default="universal",
-        help="palette accessibility level (default: universal, the CVD-safe standard)",
-    )
-    parser.add_argument(
-        "--theme",
-        choices=("corporate", "academic"),
-        default="corporate",
-        help="visual theme: corporate (default, Roboto) or academic (LaTeX-style Latin Modern)",
-    )
-    args = parser.parse_args()
-    out = _out_path()
-    write_svg(
-        out,
-        build_svg(mode=args.mode, accessibility=args.accessibility, theme=args.theme) + "\n",
-        theme=args.theme,
-    )
+    render_cli(__file__, "rug", build_svg, description="Render the rug-plot SVG.")
 
-
-# Keep a reference to satisfy the "types imported" style; harmless.
-_TYPES: Dict[str, object] = {}
 
 if __name__ == "__main__":
     main()

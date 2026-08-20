@@ -309,6 +309,7 @@ _OPTIONAL_FLAGS: dict = {
     "title": ("--title", str, "chart title (default: the generator's own)"),
     "subtitle": ("--subtitle", str, "chart subtitle (default: the generator's own)"),
     "seed": ("--seed", int, "random seed, for generators with a stochastic demo layout"),
+    "bin_count": ("--bin-count", int, "number of histogram bins"),
     "x_label": ("--x-label", str, "x-axis title (default: the generator's own)"),
     "y_label": ("--y-label", str, "y-axis title (default: the generator's own)"),
     "log_x": ("--log-x", "flag", "use a logarithmic x-axis"),

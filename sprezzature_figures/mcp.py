@@ -51,7 +51,7 @@ mcp = FastApiMCP(
     name="sprezzature-figures",
     description=(
         "Sprezzature Figures MCP tools: list chart kinds, inspect a kind's "
-        "data-role requirements, or render one of ~95 chart types from JSON rows."
+        "data-role requirements, or render one of 124 chart types from JSON rows."
     ),
 )
 # Attach the MCP endpoint to the FastAPI app. Newer fastapi-mcp releases

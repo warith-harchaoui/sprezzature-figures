@@ -22,7 +22,6 @@ Author
 
 from __future__ import annotations
 
-import argparse
 import math
 import random
 import sys
@@ -31,7 +30,7 @@ from typing import Any, Dict, List, Optional
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
-from _render import svg_example_path, write_svg  # noqa: E402
+from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _scale import log_position, log_ticks  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY, corner_radius  # noqa: E402
 from _svg import bar_path, fmt_number, foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noqa: E402
@@ -349,27 +348,10 @@ def make_histogram(
     return write_svg(dest, svg, theme=theme)
 
 
+def main() -> None:
+    """CLI entry point: build the SVG and write it to disk."""
+    render_cli(__file__, "histogram", build_svg, description="Generate a distribution histogram (hand-authored SVG).")
+
+
 if __name__ == "__main__":
-    p = argparse.ArgumentParser(description="Generate a distribution histogram (hand-authored SVG).")
-    p.add_argument("--out", default=None)
-    p.add_argument("--title", default="Exam Score Distribution")
-    p.add_argument("--subtitle", default="Synthetic sample, 300 students")
-    p.add_argument("--width", type=int, default=760)
-    p.add_argument("--height", type=int, default=500)
-    p.add_argument("--bin-count", type=int, default=20)
-    p.add_argument("--mode", choices=("self-contained", "external", "static"), default="self-contained")
-    p.add_argument(
-        "--accessibility",
-        choices=("universal", "high-contrast", "monochrome", "deuteranopia", "protanopia", "tritanopia"),
-        default="universal",
-    )
-    p.add_argument("--x-label", default="Exam score")
-    p.add_argument("--y-label", default="Number of students")
-    p.add_argument("--log-y", action="store_true", help="use a logarithmic count axis")
-    args = p.parse_args()
-    make_histogram(
-        out=args.out, title=args.title, subtitle=args.subtitle,
-        width=args.width, height=args.height, bin_count=args.bin_count,
-        mode=args.mode, accessibility=args.accessibility,
-        x_label=args.x_label, y_label=args.y_label, log_y=args.log_y,
-    )
+    main()

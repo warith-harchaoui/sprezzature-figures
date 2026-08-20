@@ -26,7 +26,6 @@ Author
 
 from __future__ import annotations
 
-import argparse
 import random
 import sys
 from pathlib import Path
@@ -34,7 +33,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
-from _render import svg_example_path, write_svg  # noqa: E402
+from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _style import GRIDLINE  # noqa: E402
 from _svg import foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 
@@ -417,36 +416,10 @@ def make_heatmap(
     return write_svg(dest, svg, theme=theme)
 
 
+def main() -> None:
+    """CLI entry point: build the SVG and write it to disk."""
+    render_cli(__file__, "heatmap", build_svg, description="Generate a row x column heatmap (hand-authored SVG).")
+
+
 if __name__ == "__main__":
-    p = argparse.ArgumentParser(description="Generate a row x column heatmap (hand-authored SVG).")
-    p.add_argument("--out", default=None)
-    p.add_argument("--title", default="Activity by Day and Hour")
-    p.add_argument("--subtitle", default="Synthetic weekly usage pattern")
-    p.add_argument("--width", type=int, default=900)
-    p.add_argument("--height", type=int, default=400)
-    p.add_argument("--mode", choices=("self-contained", "external", "static"), default="self-contained")
-    p.add_argument(
-        "--accessibility",
-        choices=("universal", "high-contrast", "monochrome", "deuteranopia", "protanopia", "tritanopia"),
-        default="universal",
-    )
-    p.add_argument(
-        "--theme",
-        choices=("corporate", "academic"),
-        default="corporate",
-        help="visual theme: corporate (default, Roboto) or academic (LaTeX-style Latin Modern)",
-    )
-    p.add_argument(
-        "--vmin", type=float, default=None,
-        help="explicit color-scale minimum (default: this call's own data min)",
-    )
-    p.add_argument(
-        "--vmax", type=float, default=None,
-        help="explicit color-scale maximum (default: this call's own data max)",
-    )
-    args = p.parse_args()
-    make_heatmap(
-        out=args.out, title=args.title, subtitle=args.subtitle,
-        width=args.width, height=args.height, mode=args.mode, accessibility=args.accessibility,
-        theme=args.theme, vmin=args.vmin, vmax=args.vmax,
-    )
+    main()
