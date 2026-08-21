@@ -1,8 +1,8 @@
 """
 _style — house-style tokens shared by every make/audit script.
 
-Exposes the single source of truth for palette, typography, and Vega
-/ matplotlib configuration. When ``sprezzature-colors`` is co-installed
+Exposes the single source of truth for palette, typography, and
+matplotlib configuration. When ``sprezzature-colors`` is co-installed
 next to ``sprezzature-figures``, the palette is read from
 ``sprezzature-colors/references/palette.csv`` to keep make ↔ audit brand
 tokens from drifting; otherwise the module's built-in curated

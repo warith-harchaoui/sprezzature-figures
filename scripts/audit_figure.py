@@ -4,9 +4,9 @@ audit_figure
 ============
 
 Static auditor for data-science figures. Reads a Vega-Lite v5 JSON
-spec, a matplotlib-emitted SVG, or an HTML file containing
-``<figure>`` blocks, and reports the small set of data-viz mistakes
-that survive review:
+spec, a hand-authored or matplotlib-emitted SVG, or an HTML file
+containing ``<figure>`` blocks, and reports the small set of data-viz
+mistakes that survive review:
 
     missing-axis-title     dual-y-axis         truncated-baseline
     pie-3d                 rainbow-palette     cvd-unsafe
@@ -335,10 +335,10 @@ def rules_for_html(text: str, path: str) -> List[Dict[str, Any]]:
 
 
 # ------------------------------------------------------------------
-# SVG parsing (matplotlib output)
+# SVG parsing (hand-authored or matplotlib output)
 # ------------------------------------------------------------------
 def rules_for_svg(text: str, path: str) -> List[Dict[str, Any]]:
-    """Best-effort rules against a matplotlib-emitted SVG."""
+    """Best-effort rules against any SVG chart, hand-authored or matplotlib-emitted."""
     findings: List[Dict[str, Any]] = []
 
     # rainbow palette heuristic
@@ -400,9 +400,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser = make_parser(
         prog="audit_figure",
         description=(
-            "Static auditor for Vega-Lite JSON, matplotlib SVG, or HTML "
-            "with <figure> blocks. Flags the small set of data-viz "
-            "mistakes that survive review."
+            "Static auditor for Vega-Lite JSON, hand-authored or matplotlib "
+            "SVG, or HTML with <figure> blocks. Flags the small set of "
+            "data-viz mistakes that survive review."
         ),
     )
     parser.add_argument("paths", nargs="+", help="Files or directories to audit.")
