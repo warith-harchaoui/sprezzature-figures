@@ -1,12 +1,12 @@
 """
 _style — house-style tokens shared by every make/audit script.
 
-Exposes the single source of truth for palette, typography, and
-matplotlib configuration. When ``sprezzature-colors`` is co-installed
-next to ``sprezzature-figures``, the palette is read from
-``sprezzature-colors/references/palette.csv`` to keep make ↔ audit brand
-tokens from drifting; otherwise the module's built-in curated
-fallback (the same 8 saturated Apple-system hues) is used.
+Exposes the single source of truth for palette and typography tokens.
+When ``sprezzature-colors`` is co-installed next to ``sprezzature-figures``,
+the palette is read from ``sprezzature-colors/references/palette.csv``
+to keep make ↔ audit brand tokens from drifting; otherwise the module's
+built-in curated fallback (the same 8 saturated Apple-system hues) is
+used.
 
 The module is **stdlib-only**, with no numpy, matplotlib, or pandas
 at import time, so ``audit_figure.py`` can pull tokens without
@@ -820,59 +820,6 @@ def inner_radius(outer: float, gap: float) -> float:
     ``max(0, outer - gap)`` (Apple's concentric-corner rule). If the gap is at
     least the outer radius, the inner corner is square."""
     return max(0.0, outer - gap)
-
-
-# ------------------------------------------------------------------
-# Matplotlib rcParams
-# ------------------------------------------------------------------
-def matplotlib_rc(dark: bool = False) -> Dict[str, object]:
-    """Return matplotlib ``rcParams`` overrides in the sprezzature-* house style.
-
-    Parameters
-    ----------
-    dark : bool, optional
-        Toggle the dark-mode variant (background, text, grid).
-
-    Returns
-    -------
-    dict
-        Overrides ready to merge into ``matplotlib.rcParams``.
-    """
-    fg = "#F5F5F7" if dark else "#1D1D1F"
-    bg = "#1D1D1F" if dark else "#FFFFFF"
-    return {
-        "font.family": ["Roboto", "system-ui", "sans-serif"],
-        "font.sans-serif": ["Roboto", "Roboto Serif", "system-ui", "sans-serif"],
-        "font.monospace": ["Roboto Mono", "monospace"],
-        "figure.facecolor": bg,
-        "axes.facecolor": bg,
-        "axes.edgecolor": fg,
-        "axes.labelcolor": fg,
-        "axes.titlecolor": fg,
-        "xtick.color": fg,
-        "ytick.color": fg,
-        "text.color": fg,
-        "axes.spines.top": False,
-        "axes.spines.right": False,
-        "axes.grid": False,
-        "xtick.direction": "out",
-        "ytick.direction": "out",
-        "xtick.major.size": 0,
-        "ytick.major.size": 0,
-        "figure.dpi": 150,
-        "savefig.dpi": 300,
-        "axes.prop_cycle": _cycler(qualitative_sequence(8)),
-    }
-
-
-def _cycler(hexes: List[str]) -> Any:  # matplotlib cycler, typed at runtime only
-    """Build a matplotlib cycler from a hex list.
-
-    Deferred import so ``_style.py`` remains matplotlib-free at import
-    time (the auditor uses this module too).
-    """
-    from cycler import cycler  # type: ignore
-    return cycler(color=hexes)
 
 
 # ------------------------------------------------------------------

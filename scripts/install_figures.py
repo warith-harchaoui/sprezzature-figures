@@ -5,9 +5,9 @@ install_figures
 
 Idempotent installer for the three sprezzature-figures tiers:
 
-    dataviz   — matplotlib, seaborn, altair, vega_datasets, pandas
+    dataviz   — networkx, wordcloud, scikit-learn, pandas, pyyaml, shapely, pyproj
     explain   — shap, shapash, timeshap, lime, scikit-learn
-    causal    — dowhy, econml, networkx, graphviz (Python wrapper)
+    causal    — dowhy, econml
 
 The tiers are additive. ``--tier dataviz+explain`` installs the base
 plotting stack plus the explainability engines. ``--tier all`` installs
@@ -187,19 +187,7 @@ def main(argv: Optional[List[str]] = None) -> int:
             print(f"[error] install failed for tier '{tier}' (exit {rc})", file=sys.stderr)
             return rc
 
-    if "causal" in tiers:
-        _hint_graphviz_system()
     return 0
-
-
-def _hint_graphviz_system() -> None:
-    """Print a reminder that graphviz needs the system package too."""
-    print(
-        "[hint] The 'graphviz' Python package needs the system Graphviz binary. "
-        "Install via: brew install graphviz (macOS — https://brew.sh) / "
-        "apt install graphviz (Linux) / winget install graphviz (Windows).",
-        file=sys.stderr,
-    )
 
 
 if __name__ == "__main__":
