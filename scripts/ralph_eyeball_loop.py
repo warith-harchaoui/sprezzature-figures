@@ -10,7 +10,6 @@ honestly, edit the source, and loop until satisfied.
 The loop applies to every surface that produces a visual from code:
 
 * **Web pages and GUI screens** — ``.html``, ``.htm`` (Chrome headless)
-* **Data figures** — ``.vl.json``, ``.vg.json`` (Vega-Lite / Vega via vl-convert)
 * **Mathematical figures** — ``.tex``, ``.tikz`` (TikZ via tectonic / pdflatex)
 * **Flow and architecture diagrams** — ``.mmd``, ``.mermaid`` (Mermaid via mmdc)
 * **Hand-authored graphics** — ``.svg`` (rsvg-convert or ImageMagick)
@@ -60,8 +59,6 @@ Rendering toolchain per surface
 +====================+==============================================+=============================+
 | HTML / JS page     | Headless Chrome (Google Chrome or Chromium)  | https://google.com/chrome   |
 +--------------------+----------------------------------------------+-----------------------------+
-| Vega-Lite / Vega   | vl-convert-python (pure-Python wheel)        | pip install vl-convert-python|
-+--------------------+----------------------------------------------+-----------------------------+
 | Mermaid diagram    | mmdc (mermaid-cli)                           | npm install -g @mermaid-js/mermaid-cli |
 +--------------------+----------------------------------------------+-----------------------------+
 | TikZ figure        | tectonic (preferred) or pdflatex + pdftoppm  | brew install tectonic       |
@@ -89,9 +86,6 @@ Usage
     # Agent mode — mobile
     python sprezzature-figures/scripts/ralph_eyeball_loop.py web/index.html --width 375 --height 812
 
-    # Local mode — Vega spec, critique filled in by Ollama vision
-    python sprezzature-figures/scripts/ralph_eyeball_loop.py figs/histogram.vl.json --local
-
     # Local mode — Mermaid diagram, transparent canvas
     python sprezzature-figures/scripts/ralph_eyeball_loop.py docs/flow.mmd --bg transparent --local
 
@@ -110,7 +104,7 @@ Notes
   path: the same source always maps to the same assessment slot.
 * ``.private/`` is in the top-level ``.gitignore``; assessment files and
   rendered PNGs are never committed.
-* For diagram surfaces (Vega / TikZ / Mermaid / SVG), rendering is delegated
+* For diagram surfaces (TikZ / Mermaid / SVG), rendering is delegated
   to ``render_diagram.py`` in the same directory.
 * Python 3.10+.  No extra stdlib-beyond dependencies; rendering tools are
   checked and surfaced as loud errors when absent.
@@ -171,19 +165,15 @@ _CHROME_MIN_VIEWPORT: int = 500
 # Surface kinds
 # ---------------------------------------------------------------------------
 _KIND_HTML: str = "html"
-_KIND_VEGA: str = "vega"
 _KIND_TIKZ: str = "tikz"
 _KIND_MERMAID: str = "mermaid"
 _KIND_SVG: str = "svg"
 
 # Kinds delegated to render_diagram.py.
-_DIAGRAM_KINDS: frozenset[str] = frozenset({_KIND_VEGA, _KIND_TIKZ, _KIND_MERMAID, _KIND_SVG})
+_DIAGRAM_KINDS: frozenset[str] = frozenset({_KIND_TIKZ, _KIND_MERMAID, _KIND_SVG})
 
-# Suffix → kind (sorted longest-first so ".vl.json" matches before ".json").
+# Suffix → kind.
 _SUFFIX_KIND: dict[str, str] = {
-    ".vl.json":  _KIND_VEGA,
-    ".vg.json":  _KIND_VEGA,
-    ".json":     _KIND_VEGA,
     ".tex":      _KIND_TIKZ,
     ".tikz":     _KIND_TIKZ,
     ".mmd":      _KIND_MERMAID,
@@ -209,16 +199,6 @@ _TOOLS: list[dict] = [
         "brew": "google-chrome",
         "manual": "https://www.google.com/chrome/",
         "check": lambda: _chrome_path() is not None,
-    },
-    {
-        "name": "vl-convert-python",
-        "kind": _KIND_VEGA,
-        "description": "Pure-Python wheel that rasterises Vega-Lite / Vega specs.",
-        "pip": "vl-convert-python",
-        "npm": None,
-        "brew": None,
-        "manual": None,
-        "check": lambda: _importable("vl_convert"),
     },
     {
         "name": "mmdc (mermaid-cli)",
@@ -286,12 +266,6 @@ _TOOLS: list[dict] = [
 # ---------------------------------------------------------------------------
 # Tool helpers
 # ---------------------------------------------------------------------------
-def _importable(module: str) -> bool:
-    """Return True when *module* can be imported."""
-    import importlib.util
-    return importlib.util.find_spec(module) is not None
-
-
 def _chrome_path() -> Optional[str]:
     """Return the path to Chrome / Chromium, or None."""
     candidates = [
@@ -548,7 +522,7 @@ def _render_diagram(src: Path, out: Path, bg: str, dark: bool) -> None:
     Parameters
     ----------
     src : Path
-        Vega / TikZ / Mermaid / SVG source file.
+        TikZ / Mermaid / SVG source file.
     out : Path
         PNG output path.
     bg : str
@@ -621,7 +595,7 @@ def _build_critique_prompt(kind: str) -> str:
     Parameters
     ----------
     kind : str
-        Surface kind (``"html"``, ``"vega"``, etc.).
+        Surface kind (``"html"``, ``"tikz"``, etc.).
 
     Returns
     -------
@@ -832,7 +806,7 @@ def _build_parser() -> argparse.ArgumentParser:
         prog="ralph_eyeball_loop",
         description=(
             "Ralph Eyeball Loop: render a visual-from-code artifact (web page, "
-            "Vega spec, TikZ figure, Mermaid diagram, SVG) to PNG and write a "
+            "TikZ figure, Mermaid diagram, SVG) to PNG and write a "
             "gitignored assessment file. "
             "Two modes: agent (Claude Code reads the PNG) or --local (Ollama vision)."
         ),
@@ -851,7 +825,6 @@ def _build_parser() -> argparse.ArgumentParser:
         help=(
             "Visual source file: "
             ".html/.htm (web page), "
-            ".vl.json/.vg.json/.json (Vega), "
             ".tex/.tikz (TikZ), "
             ".mmd/.mermaid (Mermaid), "
             ".svg (SVG). "

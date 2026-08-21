@@ -6,57 +6,44 @@ render_diagram
 Rasterise a *declarative graphical source* to an image for the
 **Ralph Eyeball Loop** — the render → look → refine cycle documented in
 ``references/ralph-eyeball-loop.md``. The loop needs one thing this
-script provides: turn a text source you can edit (a Vega-Lite spec, a
-TikZ figure, a Mermaid diagram) into a PNG the agent can actually *look*
+script provides: turn a text source you can edit (a TikZ figure, a
+Mermaid diagram, a raw SVG) into a PNG the agent can actually *look*
 at, then critique, then edit the **original source**, then re-render.
 
-Four source kinds, detected automatically from the file (you never
-pass the kind: JSON is vega, ``<svg>`` is svg, a LaTeX preamble is tikz,
-a ``graph`` / ``%%{init}`` header is mermaid):
+Three source kinds, detected automatically from the file (you never
+pass the kind: ``<svg>`` is svg, a LaTeX preamble is tikz, a ``graph``
+/ ``%%{init}`` header is mermaid):
 
-* ``vega``    — a Vega-Lite v5 (or full Vega) JSON spec. Rasterised with
-  ``vl-convert`` (a single self-contained wheel that bundles its own
-  Vega runtime: no browser, no Node, offline). This renders the **real
-  spec that ships in the browser**, not a matplotlib re-draw, so what you
-  look at is what your readers get. Because the spec carries its own data
-  inline, the emitted ``.json`` is a reproducible, diffable file (figure + data
-  + encoding together) that a reader can re-plot from.
 * ``tikz``    — a LaTeX / TikZ figure. Compiled with ``tectonic`` (a
   single-binary TeX engine) when present, else ``pdflatex`` / ``latexmk``,
   then rasterised from PDF with ``pdftoppm`` (poppler) or ImageMagick.
 * ``mermaid`` — a Mermaid diagram. Rendered with ``mmdc`` (mermaid-cli).
 * ``svg``     — a raw, hand-authored SVG document. Rasterised with
-  ``rsvg-convert`` (librsvg) or ImageMagick. The escape hatch for figures
-  Vega cannot express: a smoothing filter, arrowhead markers, a gradient.
+  ``rsvg-convert`` (librsvg) or ImageMagick. Every chart this package's
+  own catalogue produces is already this kind; this is also the kind for
+  a smoothing filter, arrowhead markers, or a gradient a diagram needs.
+
+Vega-Lite/Vega specs are not a source kind here: this package no longer
+renders Vega anywhere (the 124-kind chart catalogue moved to
+hand-authored SVG; see ``references/figure-catalog.md``). A caller with
+an existing Vega spec must convert or re-author it as TikZ, Mermaid, or
+raw SVG before handing it to this renderer.
 
 House style, by default: every kind is themed from the **canonical
 sprezzature-colors palette** (``sprezzature-colors/references/palette.csv``, the same
 tokens documented at <https://harchaoui.org/warith/colors/>) via
 :mod:`_style`. TikZ gets a ``\\definecolor`` preamble of the base hues;
-Mermaid gets an injected ``%%{init}%%`` theme; Vega keeps whatever the
-spec's own ``config`` declares. This renderer only rasterises a
-caller-supplied external spec, it does not author Vega itself. You can
-always edit the colors afterwards: the palette is the *first* choice,
-not a lock-in.
+Mermaid gets an injected ``%%{init}%%`` theme. You can always edit the
+colors afterwards: the palette is the *first* choice, not a lock-in.
 
 Background is selectable per the embedding context:
 ``--background white`` (drop onto a light page), ``--background
 transparent`` (overlay / dark page), ``--background dark`` (house dark
 canvas), or an explicit ``#RRGGBB``. ``auto`` follows ``--dark``.
 
-Vega can also emit vector output for print (``--format svg`` / ``--format
-pdf``) at exact physical dimensions (set ``width``/``height`` in the spec
-to inches × dpi and pass ``--ppi``); PNG is the loop default.
-
 Usage
 -----
 ::
-
-    # Eyeball a Vega-Lite spec on a white page
-    python render_diagram.py fig.vl.json --background white --out fig.png
-
-    # Same spec, transparent, for a dark hero section
-    python render_diagram.py fig.vl.json --background transparent --out fig.png
 
     # A TikZ figure, palette-themed, tight-cropped PNG
     python render_diagram.py diagram.tex --out diagram.png
@@ -64,8 +51,8 @@ Usage
     # A Mermaid flowchart
     python render_diagram.py flow.mmd --background transparent --out flow.png
 
-    # Vector PDF for a journal (exact size lives in the spec's width/height)
-    python render_diagram.py fig.vl.json --format pdf --out fig.pdf
+    # A raw SVG, rasterised to PNG
+    python render_diagram.py fig.svg --background white --out fig.png
 
     # See the palette-themed source without rendering (no toolchain needed)
     python render_diagram.py diagram.tex --dry-run
@@ -73,7 +60,6 @@ Usage
 Notes
 -----
 * Python 3.10+.
-* Vega:    ``pip install vl-convert-python`` (one wheel, bundles Vega).
 * TikZ:    a TeX engine — ``tectonic`` (recommended) or a TeX Live
   ``pdflatex`` — plus ``pdftoppm`` (poppler) or ``magick`` for PNG.
 * Mermaid: ``npm install -g @mermaid-js/mermaid-cli`` (provides ``mmdc``).
@@ -112,7 +98,7 @@ _LIGHT_FG = "#1D1D1F"
 _DARK_FG = "#F5F5F7"
 
 #: Source kinds this renderer understands.
-KINDS = ("vega", "tikz", "mermaid", "svg")
+KINDS = ("tikz", "mermaid", "svg")
 
 
 # ------------------------------------------------------------------
@@ -123,35 +109,27 @@ def build_parser() -> argparse.ArgumentParser:
     parser = make_parser(
         prog="render_diagram",
         description=(
-            "Rasterise a graphical source (Vega-Lite / Vega JSON, TikZ, "
-            "Mermaid, or raw SVG) to an image for the Ralph Eyeball Loop: "
-            "render -> look -> edit the source -> re-render. The kind is "
-            "detected automatically from the file; you never pass it. "
-            "Palette-themed from sprezzature-colors; background is white / "
-            "transparent / dark selectable."
+            "Rasterise a graphical source (TikZ, Mermaid, or raw SVG) to a "
+            "PNG for the Ralph Eyeball Loop: render -> look -> edit the "
+            "source -> re-render. The kind is detected automatically from "
+            "the file; you never pass it. Palette-themed from "
+            "sprezzature-colors; background is white / transparent / dark "
+            "selectable."
         ),
         epilog=(
-            "Auto-routed by content: JSON -> vega (needs vl-convert-python); "
-            "\\documentclass / tikzpicture -> tikz (tectonic/pdflatex + "
-            "pdftoppm/magick); graph / %%{init} -> mermaid (mmdc); <svg> -> "
-            "svg (rsvg-convert / magick). SVG is the escape hatch for figures "
-            "Vega cannot express."
+            "Auto-routed by content: \\documentclass / tikzpicture -> tikz "
+            "(tectonic/pdflatex + pdftoppm/magick); graph / %%{init} -> "
+            "mermaid (mmdc); <svg> -> svg (rsvg-convert / magick)."
         ),
     )
-    parser.add_argument("source", help="Input source file (.json / .vg.json, .tex, .mmd, .svg).")
+    parser.add_argument("source", help="Input source file (.tex, .mmd, .svg).")
     parser.add_argument("--out", default=None,
                         help="Output image path. Required unless --dry-run.")
-    parser.add_argument("--format", choices=("png", "svg", "pdf"), default="png",
-                        help="Output format (Vega only; tikz/mermaid always PNG). Default: png.")
     parser.add_argument("--background", default="auto",
                         help='Canvas background: "white", "transparent", "dark", '
                              '"auto" (follow --dark), or an explicit #RRGGBB.')
     parser.add_argument("--dark", action="store_true",
                         help="Use the dark-mode house canvas / foreground.")
-    parser.add_argument("--scale", type=float, default=2.0,
-                        help="Vega PNG scale factor (2.0 = crisp / retina). Default: 2.0.")
-    parser.add_argument("--ppi", type=float, default=72.0,
-                        help="Vega pixels-per-inch for physical sizing. Default: 72.")
     parser.add_argument("--dpi", type=int, default=300,
                         help="TikZ PDF->PNG rasterisation density. Default: 300.")
     parser.add_argument("--no-theme", action="store_true",
@@ -191,13 +169,9 @@ def detect_kind(path: str, text: str) -> str:
         return "mermaid"
     if suffix.endswith(".svg"):
         return "svg"
-    if suffix.endswith((".json", ".vl.json", ".vg.json")):
-        return "vega"
-
-    # No decisive extension — route on the content. The four formats are
+    # No decisive extension — route on the content. The three formats are
     # syntactically distinct, so a first-token sniff is unambiguous: an XML
-    # document is SVG, a JSON object is a Vega spec, a LaTeX preamble is TikZ,
-    # a graph keyword is Mermaid.
+    # document is SVG, a LaTeX preamble is TikZ, a graph keyword is Mermaid.
     head = text.lstrip("﻿ \t\r\n")
     if head[:6].lower().startswith(("<?xml", "<svg")) or "<svg" in head[:400].lower():
         return "svg"
@@ -205,12 +179,10 @@ def detect_kind(path: str, text: str) -> str:
         return "tikz"
     if head.startswith("%%{init") or _looks_like_mermaid(head):
         return "mermaid"
-    if head.startswith(("{", "[")):
-        return "vega"
     raise SystemExit(
         f"Could not detect the source kind of {path!r} from its extension or "
-        "content (expected JSON=vega, <svg>=svg, \\documentclass/tikzpicture="
-        "tikz, or graph/%%{init}=mermaid)."
+        "content (expected <svg>=svg, \\documentclass/tikzpicture=tikz, or "
+        "graph/%%{init}=mermaid)."
     )
 
 
@@ -445,66 +417,6 @@ def _require(tool: str, hint: str) -> str:
 # ------------------------------------------------------------------
 # Renderers
 # ------------------------------------------------------------------
-def render_vega(source: str, out: str, fmt: str, background: Optional[str],
-                scale: float, ppi: float) -> None:
-    """Rasterise a Vega-Lite / Vega spec with ``vl-convert``.
-
-    Parameters
-    ----------
-    source : str
-        The spec as JSON text.
-    out : str
-        Output path.
-    fmt : {'png', 'svg', 'pdf'}
-        Output format.
-    background : str or None
-        Canvas background; ``None`` renders transparent.
-    scale : float
-        PNG scale factor (ignored for svg / pdf).
-    ppi : float
-        Pixels-per-inch used for physical sizing.
-
-    Raises
-    ------
-    SystemExit
-        When ``vl-convert`` is not installed or the spec is invalid.
-    """
-    try:
-        import vl_convert as vlc  # type: ignore
-    except ImportError as exc:
-        raise SystemExit(
-            "Vega rendering needs vl-convert.\n"
-            "  pip install vl-convert-python"
-        ) from exc
-
-    try:
-        spec: Dict[str, Any] = json.loads(source)
-    except json.JSONDecodeError as exc:
-        raise SystemExit(f"Input is not valid JSON: {exc}") from exc
-
-    # vl-convert has no background kwarg — it lives in the spec, and the
-    # compiled default is *white* (Vega-Lite v4+), not transparent. So a
-    # transparent canvas must be set explicitly, never left to omission.
-    if isinstance(spec.get("config"), dict):
-        spec["config"].pop("background", None)
-    spec["background"] = "transparent" if background is None else background
-
-    schema = str(spec.get("$schema", "")).lower()
-    is_vega = "schema/vega/" in schema or (spec.get("$schema") is None and "marks" in spec)
-    spec_json = json.dumps(spec, ensure_ascii=False)
-
-    if fmt == "png":
-        fn = vlc.vega_to_png if is_vega else vlc.vegalite_to_png
-        data: bytes = fn(spec_json, scale=scale, ppi=ppi)
-        Path(out).write_bytes(data)
-    elif fmt == "svg":
-        fn_svg = vlc.vega_to_svg if is_vega else vlc.vegalite_to_svg
-        Path(out).write_text(fn_svg(spec_json), encoding="utf-8")
-    else:  # pdf
-        fn_pdf = vlc.vega_to_pdf if is_vega else vlc.vegalite_to_pdf
-        Path(out).write_bytes(fn_pdf(spec_json))
-
-
 def render_tikz(source: str, out: str, dpi: int, background: Optional[str]) -> None:
     """Compile a TikZ document and rasterise the PDF to PNG.
 
@@ -624,11 +536,12 @@ def render_mermaid(source: str, out: str, background: Optional[str]) -> None:
 def render_svg(source: str, out: str, background: Optional[str]) -> None:
     """Rasterise a raw, hand-authored SVG document to PNG.
 
-    The escape hatch below Vega: when a figure needs something the Vega
-    grammar cannot express — a smoothing filter, arrowhead markers, a
-    gradient — author the SVG by hand and rasterise it here so it still
-    goes through the render → look → refine loop. Prefers ``rsvg-convert``
-    (librsvg, faithful filter support), then ImageMagick.
+    Every chart this package's own catalogue produces is already this
+    kind. When a diagram needs something a declarative grammar cannot
+    express — a smoothing filter, arrowhead markers, a gradient — author
+    the SVG by hand and rasterise it here so it still goes through the
+    render → look → refine loop. Prefers ``rsvg-convert`` (librsvg,
+    faithful filter support), then ImageMagick.
 
     Parameters
     ----------
@@ -678,7 +591,7 @@ def _run_or_die(cmd: List[str], message: str) -> None:
 # Theming dispatch (shared by --dry-run and the real render)
 # ------------------------------------------------------------------
 def themed_source(kind: str, raw: str, dark: bool, background: Optional[str], theme: bool) -> str:
-    """Return the palette-themed source for a kind (Vega is passed through).
+    """Return the palette-themed source for a kind (SVG is passed through).
 
     Parameters
     ----------
@@ -696,8 +609,8 @@ def themed_source(kind: str, raw: str, dark: bool, background: Optional[str], th
     Returns
     -------
     str
-        The themed source (or ``raw`` for Vega — its colors live in the
-        spec's own ``config``, applied on the make side).
+        The themed source (or ``raw`` for SVG — a hand-authored figure's
+        colors are already baked into its markup).
     """
     if kind == "tikz":
         return wrap_tikz_document(raw, dark, theme)
@@ -733,22 +646,11 @@ def main(argv: Optional[List[str]] = None) -> int:
         print("--out is required unless --dry-run.", file=sys.stderr)
         return 2
 
-    if kind == "vega":
-        render_vega(prepared, args.out, args.format, background, args.scale, args.ppi)
-    elif kind == "tikz":
-        if args.format != "png":
-            print("tikz supports --format png only.", file=sys.stderr)
-            return 2
+    if kind == "tikz":
         render_tikz(prepared, args.out, args.dpi, background)
     elif kind == "mermaid":
-        if args.format != "png":
-            print("mermaid supports --format png only.", file=sys.stderr)
-            return 2
         render_mermaid(prepared, args.out, background)
     else:  # svg
-        if args.format != "png":
-            print("svg supports --format png only.", file=sys.stderr)
-            return 2
         render_svg(prepared, args.out, background)
 
     print(f"wrote {args.out}", file=sys.stderr)

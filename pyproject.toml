@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "sprezzature-figures"
 version = "1.1.0"
-description = "Publication-quality data figures for the sprezzature stack: 124 hand-authored SVG chart types (no Vega), with a handful of matplotlib-based statistical outputs. Includes the Ralph Eyeball Loop for autonomous visual quality feedback."
+description = "Publication-quality data figures for the sprezzature stack: 124 hand-authored, interactive SVG chart types plus explainability, causality, and diagram rendering, all hand-authored SVG (no Vega, no matplotlib, no plotly, no seaborn). Includes the Ralph Eyeball Loop for autonomous visual quality feedback."
 readme = "README.md"
 requires-python = ">=3.10,<3.14"
 license = {text = "BSD-3-Clause"}
@@ -51,9 +51,10 @@ studio = [
     "os-helper>=1.8.0",
     "langdetect>=1.0.9",
 ]
-# Full dataviz stack (matplotlib, networkx, wordcloud, etc.)
+# Full dataviz stack (networkx, wordcloud, etc. -- the 124-kind catalogue,
+# explainability, and causality all render as hand-authored SVG; nothing
+# in this package's own code calls matplotlib)
 dataviz = [
-    "matplotlib>=3.7",
     "networkx>=3.1",
     "wordcloud>=1.9",
     "scikit-learn>=1.3",
@@ -101,7 +102,6 @@ dev = [
     "ruff",
     "build",
     "numpy>=1.24",
-    "matplotlib>=3.7",
     # headless-Chromium checks: scripts/render_gapminder_og.py, the Ralph
     # eyeball loop, gallery-interactivity verification. Needs a one-time
     # `playwright install chromium` after this installs, pip can't do that part.
