@@ -339,3 +339,35 @@ def test_make_figure_falls_back_to_deprecated_path_for_unregistered_script(tmp_p
         assert any(issubclass(w.category, DeprecationWarning) for w in caught)
     finally:
         throwaway.unlink(missing_ok=True)
+
+
+def test_resolve_scripts_dir_prefers_dedicated_name_over_generic_collision(tmp_path: Path) -> None:
+    """A third-party package can also drop a generic ``scripts/`` at the
+    root of site-packages -- unrelated to us, pure name collision. If that
+    generic name won, every figure render would silently resolve into the
+    wrong directory and fail. The dedicated ``sprezzature_figures_scripts/``
+    name can only ever be ours, so it must be preferred whenever both exist.
+    """
+    from sprezzature_figures.make_figure import _resolve_scripts_dir
+
+    generic = tmp_path / "scripts"
+    generic.mkdir()
+    (generic / "unrelated_third_party_marker.py").write_text("", encoding="utf-8")
+
+    dedicated = tmp_path / "sprezzature_figures_scripts"
+    dedicated.mkdir()
+    (dedicated / "make_bar.py").write_text("", encoding="utf-8")
+
+    assert _resolve_scripts_dir(tmp_path) == dedicated
+
+
+def test_resolve_scripts_dir_falls_back_to_generic_in_source_tree(tmp_path: Path) -> None:
+    """In the source tree, only the generic ``scripts/`` exists (the
+    dedicated name is an install-time artifact) -- must still resolve.
+    """
+    from sprezzature_figures.make_figure import _resolve_scripts_dir
+
+    generic = tmp_path / "scripts"
+    generic.mkdir()
+
+    assert _resolve_scripts_dir(tmp_path) == generic

@@ -30,18 +30,31 @@ from .catalog import list_kinds as _list_kinds
 from .catalog import resolve_kind as _resolve_kind
 from .fonts import register_all as _register_fonts
 
-# Chart generators live one level up from this package. In the source tree
-# that directory is ``scripts/``; once installed it ships (collision-free)
-# as ``sprezzature_figures_scripts/``. Resolve whichever exists.
+def _resolve_scripts_dir(pkg_parent: Path) -> Path:
+    """Find the chart-generator directory relative to *pkg_parent*.
+
+    In the source tree that directory is ``scripts/``; once installed it
+    ships (collision-free) as ``sprezzature_figures_scripts/``. Checks the
+    dedicated installed name FIRST: a bare ``scripts/`` at the root of
+    site-packages is a generic name another, unrelated package can also
+    claim, and if that collision wins here every figure render fails
+    silently. The dedicated name can only ever refer to us, so it is the
+    safe first guess; the generic ``scripts/`` is only used as a fallback
+    for the source tree, where the dedicated name never exists.
+    """
+    return next(
+        (
+            pkg_parent / name
+            for name in ("sprezzature_figures_scripts", "scripts")
+            if (pkg_parent / name).is_dir()
+        ),
+        pkg_parent / "scripts",
+    )
+
+
+# Chart generators live one level up from this package.
 _pkg_parent = Path(__file__).resolve().parent.parent
-_SCRIPTS_DIR = next(
-    (
-        _pkg_parent / name
-        for name in ("scripts", "sprezzature_figures_scripts")
-        if (_pkg_parent / name).is_dir()
-    ),
-    _pkg_parent / "scripts",
-)
+_SCRIPTS_DIR = _resolve_scripts_dir(_pkg_parent)
 
 
 def _legacy_filename_guess(kind: str) -> Path:
