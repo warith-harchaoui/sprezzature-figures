@@ -216,6 +216,9 @@ def build_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    x_axis_title: str = "Distance east (m)",
+    y_axis_title: str = "Distance north (m)",
+    legend_title: str = "Moisture",
 ) -> str:
     """Assemble the full interpolated-heatmap SVG document as a string.
 
@@ -223,6 +226,12 @@ def build_svg(
     ----------
     grid : dict of str to numpy.ndarray
         The output of :func:`_survey_grid` — ``field``, ``xs``, ``ys``.
+    x_axis_title : str, optional
+        Label under the x-axis. Defaults to ``"Distance east (m)"``.
+    y_axis_title : str, optional
+        Label beside the y-axis. Defaults to ``"Distance north (m)"``.
+    legend_title : str, optional
+        Title above the colour-ramp legend. Defaults to ``"Moisture"``.
     mode : str, optional
         Interactivity mode for the shared fullscreen control (see
         :mod:`_interactive`). Three modes: ``"self-contained"`` (default) ships
@@ -388,7 +397,7 @@ def build_svg(
         )
     parts.append(
         f'<text x="{fmt_compact(m_left + plot_w / 2, decimals=2)}" y="{fmt_compact(axis_y + 62, decimals=2)}" '
-        f'text-anchor="middle" font-size="17" fill="{_INK}">Distance east (m)</text>'
+        f'text-anchor="middle" font-size="17" fill="{_INK}">{x_axis_title}</text>'
     )
 
     # ---- y-axis (north) --------------------------------------------------- #
@@ -409,7 +418,7 @@ def build_svg(
     parts.append(
         f'<text x="32" y="{fmt_compact(m_top + plot_h / 2, decimals=2)}" text-anchor="middle" '
         f'font-size="17" fill="{_INK}" '
-        f'transform="rotate(-90 32 {fmt_compact(m_top + plot_h / 2, decimals=2)})">Distance north (m)</text>'
+        f'transform="rotate(-90 32 {fmt_compact(m_top + plot_h / 2, decimals=2)})">{y_axis_title}</text>'
     )
 
     # ---- feature annotations --------------------------------------------- #
@@ -510,7 +519,7 @@ def build_svg(
         )
     parts.append(
         f'<text x="{fmt_compact(leg_x + leg_w / 2, decimals=2)}" y="{fmt_compact(leg_top - 16, decimals=2)}" '
-        f'text-anchor="middle" font-size="15" fill="{_INK}">Moisture</text>'
+        f'text-anchor="middle" font-size="15" fill="{_INK}">{legend_title}</text>'
     )
     parts.append(
         f'<text x="{fmt_compact(leg_x + leg_w / 2, decimals=2)}" y="{fmt_compact(leg_top + leg_h + 26, decimals=2)}" '
@@ -565,6 +574,9 @@ def make_imshow_interpolated(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    x_axis_title: str = "Distance east (m)",
+    y_axis_title: str = "Distance north (m)",
+    legend_title: str = "Moisture",
 ) -> Path:
     """Render the interpolated-heatmap figure and write it to ``out``.
 
@@ -580,10 +592,15 @@ def make_imshow_interpolated(
         :data:`DEMO_DATA`. ``title`` is accepted for signature parity with
         the other generators and is unused (the headline is baked into the
         hand-authored SVG). ``theme`` is forwarded to :func:`build_svg`.
+    x_axis_title, y_axis_title, legend_title : str, optional
+        Axis and legend chrome. Forwarded to :func:`build_svg`.
     """
     rows = data if data else DEMO_DATA
     grid = _rows_to_grid(rows)
-    svg = build_svg(grid, mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(
+        grid, mode=mode, accessibility=accessibility, theme=theme,
+        x_axis_title=x_axis_title, y_axis_title=y_axis_title, legend_title=legend_title,
+    )
     dest = Path(out) if out else svg_example_path(__file__, "imshow-interpolated")
     return write_svg(dest, svg, theme=theme)
 

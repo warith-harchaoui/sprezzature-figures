@@ -244,6 +244,7 @@ def _band_geometry() -> Tuple[List[Tuple[str, int, float, float, float]], float]
 
 def build_svg(
     peaks: Optional[List[Tuple[str, float, float, str]]] = None,
+    x_axis_title: str = "Chromosome",
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -260,6 +261,8 @@ def build_svg(
         first-class data series), but every labelled peak — including any
         custom ones supplied here — is placed exactly and gets its own
         tooltip and gene label.
+    x_axis_title : str, optional
+        X-axis label (was hardcoded ``"Chromosome"``, no override).
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`.
         One of ``"self-contained"`` (default, ships a hidden-until-live
@@ -548,7 +551,7 @@ def build_svg(
     parts.append(
         f'<text x="{_PLOT_X + _PLOT_W / 2:.1f}" '
         f'y="{x_label_y + 34:.1f}" font-size="17" font-weight="600" '
-        f'fill="{_INK}" text-anchor="middle">Chromosome</text>'
+        f'fill="{_INK}" text-anchor="middle">{_xml(x_axis_title)}</text>'
     )
 
     # ---- footnote / method note ----
@@ -577,6 +580,7 @@ def make_manhattan(
     *,
     out: Optional[Path | str] = None,
     title: str = "",
+    x_axis_title: str = "Chromosome",
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -593,6 +597,8 @@ def make_manhattan(
         with the rest of the gallery and is currently a documented no-op.
     out : Path, str, or None
         Output path. Defaults to ``assets/svg-examples/manhattan.svg``.
+    x_axis_title : str, optional
+        Forwarded to :func:`build_svg`.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
     theme : str, optional
@@ -609,7 +615,7 @@ def make_manhattan(
         (str(r["chromosome"]), float(r["position_fraction"]), float(r["neg_log10p"]), str(r["gene"]))
         for r in rows
     ]
-    svg = build_svg(peaks, mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(peaks, x_axis_title=x_axis_title, mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "manhattan")
     return write_svg(dest, svg, theme=theme)
 

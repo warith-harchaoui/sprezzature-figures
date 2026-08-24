@@ -327,12 +327,17 @@ _xml = xml_escape
 # SVG assembly
 # ------------------------------------------------------------------
 def build_svg(
-    mode: str = "self-contained", accessibility: str = "universal", theme: str = "corporate"
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+    theme: str = "corporate",
+    legend_title: str = "Trips per hex",
 ) -> str:
     """Assemble the full hexbin-map SVG document as a string.
 
     Parameters
     ----------
+    legend_title : str, optional
+        Title above the colour-ramp legend. Defaults to ``"Trips per hex"``.
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`
         (``"self-contained"``, ``"external"`` or ``"static"``). Controls
@@ -503,7 +508,7 @@ def build_svg(
     parts.append(f'<g transform="translate({lx:.1f},{ly:.1f})">')
     parts.append(
         f'<text x="0" y="-24" font-size="20" font-weight="700" '
-        f'fill="{_INK}">Trips per hex</text>'
+        f'fill="{_INK}">{legend_title}</text>'
     )
     # A vertical gradient bar built from discrete swatches (self-contained,
     # no <defs> gradient needed) top = busiest.
@@ -574,6 +579,7 @@ def make_hexmap(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    legend_title: str = "Trips per hex",
 ) -> Path:
     """Render the hex tile-grid map and write it to ``out``.
 
@@ -583,7 +589,7 @@ def make_hexmap(
     ``title`` are accepted for dispatcher parity and unused. ``theme`` is
     forwarded to :func:`build_svg`.
     """
-    svg = build_svg(mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(mode=mode, accessibility=accessibility, theme=theme, legend_title=legend_title)
     dest = Path(out) if out else svg_example_path(__file__, "hexmap")
     return write_svg(dest, svg, theme=theme)
 

@@ -131,6 +131,8 @@ def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
     title: str = "Kaplan-Meier Survival",
     subtitle: str = "Estimated survival probability by arm, with 95% confidence band and censoring ticks",
+    y_axis_title: str = "Survival",
+    x_axis_title: str = "Months",
     width: int = 745,
     height: int = 480,
     mode: str = "self-contained",
@@ -147,6 +149,10 @@ def build_svg(
         to :data:`DEMO_DATA`.
     title, subtitle : str
         Chart text.
+    y_axis_title : str
+        Y-axis label (was hardcoded ``"Survival"``).
+    x_axis_title : str
+        X-axis label under the time ticks (was hardcoded ``"Months"``).
     width, height : int
         Canvas size in pixels.
     mode, accessibility : str, optional
@@ -226,7 +232,7 @@ def build_svg(
         )
     parts.append(
         f'<text x="18" y="{plot_y + plot_h / 2:.1f}" font-size="13" fill="{INK}" '
-        f'text-anchor="middle" transform="rotate(-90 18 {plot_y + plot_h / 2:.1f})">Survival</text>'
+        f'text-anchor="middle" transform="rotate(-90 18 {plot_y + plot_h / 2:.1f})">{xml_escape(y_axis_title)}</text>'
     )
 
     # ---- KM curves per arm ----
@@ -312,7 +318,7 @@ def build_svg(
         )
     parts.append(
         f'<text x="{plot_x + plot_w / 2:.1f}" y="{axis_y + 42:.1f}" font-size="13" '
-        f'fill="{INK}" text-anchor="middle">Months</text>'
+        f'fill="{INK}" text-anchor="middle">{xml_escape(x_axis_title)}</text>'
     )
 
     parts.extend(bubbles)
@@ -327,6 +333,8 @@ def make_survival_km(
     out: Optional[Path | str] = None,
     title: str = "Kaplan-Meier Survival",
     subtitle: str = "Estimated survival probability by arm, with 95% confidence band and censoring ticks",
+    y_axis_title: str = "Survival",
+    x_axis_title: str = "Months",
     width: int = 745,
     height: int = 480,
     mode: str = "self-contained",
@@ -345,6 +353,8 @@ def make_survival_km(
         ``assets/svg-examples/survival-km.svg``.
     title, subtitle : str
         Chart text.
+    y_axis_title, x_axis_title : str
+        Axis labels. Forwarded to :func:`build_svg`.
     width, height : int
         Canvas size in pixels.
     mode, accessibility : str
@@ -363,7 +373,8 @@ def make_survival_km(
     >>> p.exists()
     True
     """
-    svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
+    svg = build_svg(data, title=title, subtitle=subtitle, y_axis_title=y_axis_title,
+                     x_axis_title=x_axis_title, width=width, height=height,
                      mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "survival-km")
     return write_svg(dest, svg, theme=theme)

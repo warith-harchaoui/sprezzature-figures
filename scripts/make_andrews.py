@@ -61,7 +61,7 @@ from _render import svg_example_path, write_svg  # noqa: E402
 from _svg import fmt_compact  # noqa: E402
 from _style import leveled_colors, os_adaptive_style, os_dark_style, qualitative_sequence  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
-from _svg import foreground_tip_css, tooltip_bubble  # noqa: E402
+from _svg import foreground_tip_css, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 # Repo-relative default output — the one SVG artifact this figure ships.
@@ -257,6 +257,9 @@ def build_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    y_axis_title: str = "f(t) — Andrews series value",
+    legend_title: str = "Species",
+    term_order_label: str = "Fourier term order:",
 ) -> str:
     """Assemble the full Andrews-curves SVG document as a string.
 
@@ -266,6 +269,12 @@ def build_svg(
         ``(n_rows, n_features)`` raw measurement matrix.
     labels : list of str
         Class label per row (same length as ``x_raw``).
+    y_axis_title : str, optional
+        Rotated y-axis label (was hardcoded to the penguin-demo phrasing).
+    legend_title : str, optional
+        Header above the per-class legend swatches (was hardcoded ``"Species"``).
+    term_order_label : str, optional
+        Caption above the Fourier-term-order list in the legend column.
     mode : str, optional
         Interactivity mode for the figure (default ``"self-contained"``).
         ``"self-contained"`` embeds a self-carrying fullscreen button and the
@@ -525,7 +534,7 @@ def build_svg(
         f'<text x="{fmt_compact(y_title_x)}" y="{fmt_compact(y_title_y)}" '
         f'text-anchor="middle" font-size="17" fill="{_INK}" '
         f'transform="rotate(-90 {fmt_compact(y_title_x)} {fmt_compact(y_title_y)})">'
-        f"f(t) — Andrews series value</text>"
+        f"{xml_escape(y_axis_title)}</text>"
     )
 
     # ---- legend (right margin) -------------------------------------------- #
@@ -533,7 +542,7 @@ def build_svg(
     ly = m_top + 12
     parts.append(
         f'<text x="{fmt_compact(lx)}" y="{fmt_compact(ly)}" font-size="17" '
-        f'font-weight="700" fill="{_INK}">Species</text>'
+        f'font-weight="700" fill="{_INK}">{xml_escape(legend_title)}</text>'
     )
     for k, cls in enumerate(classes):
         colour = class_colours.get(cls, "#8E8E93")
@@ -552,7 +561,7 @@ def build_svg(
     cap_y = ly + 38 + len(classes) * 40 + 24
     parts.append(
         f'<text x="{fmt_compact(lx)}" y="{fmt_compact(cap_y)}" '
-        f'font-size="14" fill="{_SECONDARY}">Fourier term order:</text>'
+        f'font-size="14" fill="{_SECONDARY}">{xml_escape(term_order_label)}</text>'
     )
     # Wrap the term order into the right column, one feature per line.
     for i, name in enumerate(_FEATURES):
@@ -625,6 +634,9 @@ def make_andrews(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    y_axis_title: str = "f(t) — Andrews series value",
+    legend_title: str = "Species",
+    term_order_label: str = "Fourier term order:",
 ) -> Path:
     """Render the house-styled Andrews-curves figure and write the SVG to *out*.
 
@@ -659,7 +671,7 @@ def make_andrews(
     _ = title
     rows = data if data else DEMO_DATA
     x_raw, labels = _rows_to_matrix(rows)
-    svg = build_svg(x_raw, labels, mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(x_raw, labels, mode=mode, accessibility=accessibility, theme=theme, y_axis_title=y_axis_title, legend_title=legend_title, term_order_label=term_order_label)
     dest = Path(out) if out else svg_example_path(__file__, "andrews")
     return write_svg(dest, svg, theme=theme)
 

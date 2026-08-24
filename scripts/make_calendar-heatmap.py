@@ -91,6 +91,9 @@ def build_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    week_prefix: str = "Wk ",
+    scale_low_label: str = "Less",
+    scale_high_label: str = "More",
 ) -> str:
     """Assemble the full calendar heatmap SVG document as a string.
 
@@ -188,7 +191,7 @@ def build_svg(
         tx = plot_x + wi * cell_w + cell_w / 2
         parts.append(
             f'<text x="{tx:.1f}" y="{plot_y - 8:.1f}" font-size="10" fill="{SECONDARY}" '
-            f'text-anchor="middle">Wk {weeks[wi] + 1}</text>'
+            f'text-anchor="middle">{xml_escape(week_prefix)}{weeks[wi] + 1}</text>'
         )
 
     # ---- cells (grid marks: never rounded, per Sprezzature Corner Policy) ----
@@ -227,12 +230,12 @@ def build_svg(
 
     # ---- legend: Less -> More ramp swatches ----
     ly = height - 28.0
-    parts.append(f'<text x="{plot_x:.1f}" y="{ly:.1f}" font-size="11" fill="{SECONDARY}">Less</text>')
+    parts.append(f'<text x="{plot_x:.1f}" y="{ly:.1f}" font-size="11" fill="{SECONDARY}">{xml_escape(scale_low_label)}</text>')
     swatch_x = plot_x + 34.0
     for i in range(5):
         t = i / 4.0
         parts.append(f'<rect x="{swatch_x + i * 16:.1f}" y="{ly - 11:.1f}" width="12" height="12" fill="{_ramp_hex(t, theme)}"/>')
-    parts.append(f'<text x="{swatch_x + 5 * 16 + 8:.1f}" y="{ly:.1f}" font-size="11" fill="{SECONDARY}">More</text>')
+    parts.append(f'<text x="{swatch_x + 5 * 16 + 8:.1f}" y="{ly:.1f}" font-size="11" fill="{SECONDARY}">{xml_escape(scale_high_label)}</text>')
 
     parts.append(fullscreen_control(width, height, mode))
     parts.append("</svg>")
@@ -250,6 +253,9 @@ def make_calendar_heatmap(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    week_prefix: str = "Wk ",
+    scale_low_label: str = "Less",
+    scale_high_label: str = "More",
 ) -> Path:
     """Render a hand-authored calendar heatmap and write the SVG to *out*.
 
@@ -282,7 +288,7 @@ def make_calendar_heatmap(
     True
     """
     svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
-                     mode=mode, accessibility=accessibility, theme=theme)
+                     mode=mode, accessibility=accessibility, theme=theme, week_prefix=week_prefix, scale_low_label=scale_low_label, scale_high_label=scale_high_label)
     dest = Path(out) if out else svg_example_path(__file__, "calendar-heatmap")
     return write_svg(dest, svg, theme=theme)
 

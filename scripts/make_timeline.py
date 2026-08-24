@@ -248,6 +248,7 @@ def _wrap(text: str, width: int) -> List[str]:
 # ------------------------------------------------------------------
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
+    flown_legend_label: str = "Flown mission",
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -263,6 +264,9 @@ def build_svg(
         chronology; custom milestones outside that span still lay out (they
         clamp to the axis), and an unrecognised ``era`` falls back to the
         neutral secondary ink with no band.
+    flown_legend_label : str
+        Legend entry for the solid dot glyph (was hardcoded
+        ``"Flown mission"``).
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`.
         One of ``"self-contained"`` (default, ships a hidden-until-live
@@ -724,7 +728,7 @@ def build_svg(
     )
     parts.append(
         f'<text x="{lx + 24}" y="{leg_y}" font-size="16" '
-        f'fill="{secondary}">Flown mission</text>'
+        f'fill="{secondary}">{xml_escape(flown_legend_label)}</text>'
     )
     lx2 = lx + 190
     parts.append(
@@ -754,6 +758,7 @@ def make_timeline(
     *,
     out: Optional[Path | str] = None,
     title: str = "",
+    flown_legend_label: str = "Flown mission",
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -770,6 +775,8 @@ def make_timeline(
     title : str, optional
         Accepted for dispatcher parity; the timeline's own headline states
         the specific takeaway, so this is unused.
+    flown_legend_label : str
+        Legend entry for the solid dot glyph. Forwarded to :func:`build_svg`.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
     theme : str, optional
@@ -781,7 +788,8 @@ def make_timeline(
         Absolute path to the written SVG file.
     """
     del title
-    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(data, flown_legend_label=flown_legend_label,
+                     mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "timeline")
     return write_svg(dest, svg, theme=theme)
 

@@ -114,6 +114,9 @@ def _shade(t: float) -> str:
 
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
+    title: str = "Confusion matrix",
+    x_axis_label: str = "Predicted",
+    y_axis_label: str = "Actual",
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -126,6 +129,10 @@ def build_svg(
         Rows with keys ``actual``, ``predicted`` (str) and ``count`` (int),
         one per cell (see :data:`DEMO_DATA`). Class order follows first
         appearance. Defaults to a 3-class pet classifier.
+    title : str, optional
+        Chart title (was hardcoded ``"Confusion matrix"``).
+    x_axis_label, y_axis_label : str, optional
+        Column/row axis labels (was hardcoded ``"Predicted"``/``"Actual"``).
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`.
     accessibility : str, optional
@@ -194,7 +201,7 @@ def build_svg(
     # Title + subtitle (top-left, house style).
     parts.append(
         f'<text x="40" y="56" font-size="26" font-weight="600" fill="{_INK}" '
-        f'letter-spacing="-0.3">Confusion matrix</text>'
+        f'letter-spacing="-0.3">{xml_escape(title)}</text>'
     )
     parts.append(
         f'<text x="40" y="84" font-size="14" fill="{_SUBTLE}">'
@@ -205,7 +212,7 @@ def build_svg(
     parts.append(
         f'<text x="{_GRID_X + grid_w / 2:.1f}" y="{_GRID_Y - 56:.1f}" '
         f'font-size="16" font-weight="700" fill="{_INK}" text-anchor="middle">'
-        f'Predicted</text>'
+        f'{xml_escape(x_axis_label)}</text>'
     )
     # Column class names across the top.
     for j, name in enumerate(classes):
@@ -220,7 +227,7 @@ def build_svg(
     parts.append(
         f'<text x="90" y="{ax_y:.1f}" font-size="16" font-weight="700" '
         f'fill="{_INK}" text-anchor="middle" '
-        f'transform="rotate(-90 90 {ax_y:.1f})">Actual</text>'
+        f'transform="rotate(-90 90 {ax_y:.1f})">{xml_escape(y_axis_label)}</text>'
     )
 
     # Cells + row class names.
@@ -288,7 +295,9 @@ def make_confusion_matrix(
     data: Optional[List[Dict[str, Any]]] = None,
     *,
     out: Optional[Path | str] = None,
-    title: str = "",
+    title: str = "Confusion matrix",
+    x_axis_label: str = "Predicted",
+    y_axis_label: str = "Actual",
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -305,8 +314,11 @@ def make_confusion_matrix(
         Output path (.svg). Defaults to
         ``assets/svg-examples/confusion-matrix.svg``.
     title : str, optional
-        Accepted for CLI/dispatcher parity; the figure's title and
-        narrative <desc> are derived from ``data`` directly.
+        Chart title (was hardcoded ``"Confusion matrix"``, silently
+        discarded by this wrapper even though it already accepted the
+        parameter — now actually forwarded).
+    x_axis_label, y_axis_label : str, optional
+        Column/row axis labels (was hardcoded ``"Predicted"``/``"Actual"``).
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
     theme : str, optional
@@ -323,8 +335,10 @@ def make_confusion_matrix(
     >>> p.exists()
     True
     """
-    _ = title
-    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(
+        data, title=title, x_axis_label=x_axis_label, y_axis_label=y_axis_label,
+        mode=mode, accessibility=accessibility, theme=theme,
+    )
     dest = Path(out) if out else svg_example_path(__file__, "confusion-matrix")
     return write_svg(dest, svg, theme=theme)
 

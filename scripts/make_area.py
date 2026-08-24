@@ -72,6 +72,7 @@ def build_svg(
     y_label: str = "Visits (thousands)",
     log_y: bool = False,
     theme: str = "corporate",
+    legend_title: str = "Channel",
 ) -> str:
     """Assemble the full stacked-area chart SVG document as a string.
 
@@ -200,7 +201,7 @@ def build_svg(
     if len(channels) > 1:
         lx = 40.0
         ly = 100.0
-        parts.append(f'<text x="{lx:.1f}" y="{ly:.1f}" font-size="13" font-weight="700" fill="{INK}">Channel</text>')
+        parts.append(f'<text x="{lx:.1f}" y="{ly:.1f}" font-size="13" font-weight="700" fill="{INK}">{xml_escape(legend_title)}</text>')
         cursor = lx
         ly2 = ly + 22
         for i, ch in enumerate(channels):
@@ -297,6 +298,7 @@ def make_area(
     y_label: str = "Visits (thousands)",
     log_y: bool = False,
     theme: str = "corporate",
+    legend_title: str = "Channel",
 ) -> Path:
     """Render a hand-authored stacked area chart and write the SVG to *out*.
 
@@ -333,7 +335,7 @@ def make_area(
     """
     svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
                      mode=mode, accessibility=accessibility, x_label=x_label,
-                     y_label=y_label, log_y=log_y, theme=theme)
+                     y_label=y_label, log_y=log_y, theme=theme, legend_title=legend_title)
     dest = Path(out) if out else svg_example_path(__file__, "area")
     return write_svg(dest, svg, theme=theme)
 

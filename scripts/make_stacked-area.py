@@ -62,6 +62,8 @@ def build_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    y_axis_title: str = "Cost (k$)",
+    x_axis_title: str = "Month",
 ) -> str:
     """Assemble the full continuous-axis stacked area chart SVG document as a string.
 
@@ -74,6 +76,8 @@ def build_svg(
         Chart text.
     width, height : int
         Canvas size in pixels.
+    y_axis_title, x_axis_title : str, optional
+        Axis titles (were hardcoded ``"Cost (k$)"`` / ``"Month"``).
     mode, accessibility : str, optional
         Forwarded to :func:`_interactive.fullscreen_control` /
         :func:`_style.load_palette`.
@@ -174,7 +178,7 @@ def build_svg(
         )
     parts.append(
         f'<text x="18" y="{plot_y + plot_h / 2:.1f}" font-size="13" fill="{INK}" '
-        f'text-anchor="middle" transform="rotate(-90 18 {plot_y + plot_h / 2:.1f})">Cost (k$)</text>'
+        f'text-anchor="middle" transform="rotate(-90 18 {plot_y + plot_h / 2:.1f})">{xml_escape(y_axis_title)}</text>'
     )
 
     # ---- stacked bands ----
@@ -229,7 +233,7 @@ def build_svg(
         )
     parts.append(
         f'<text x="{plot_x + plot_w / 2:.1f}" y="{axis_y + 42:.1f}" font-size="13" '
-        f'fill="{INK}" text-anchor="middle">Month</text>'
+        f'fill="{INK}" text-anchor="middle">{xml_escape(x_axis_title)}</text>'
     )
 
     parts.extend(bubbles)
@@ -249,6 +253,8 @@ def make_stacked_area(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    y_axis_title: str = "Cost (k$)",
+    x_axis_title: str = "Month",
 ) -> Path:
     """Render a hand-authored continuous-axis stacked area chart and write the SVG to *out*.
 
@@ -268,6 +274,9 @@ def make_stacked_area(
         Forwarded to :func:`build_svg`.
     theme : str, optional
         Visual theme. Forwarded to :func:`build_svg`.
+    y_axis_title, x_axis_title : str, optional
+        Forwarded to :func:`build_svg` — were hardcoded ``"Cost (k$)"`` and
+        ``"Month"`` with no way to override them for non-cost data.
 
     Returns
     -------
@@ -281,7 +290,8 @@ def make_stacked_area(
     True
     """
     svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
-                     mode=mode, accessibility=accessibility, theme=theme)
+                     mode=mode, accessibility=accessibility, theme=theme,
+                     y_axis_title=y_axis_title, x_axis_title=x_axis_title)
     dest = Path(out) if out else svg_example_path(__file__, "stacked-area")
     return write_svg(dest, svg, theme=theme)
 

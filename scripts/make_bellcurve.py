@@ -61,6 +61,8 @@ def build_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    y_axis_title: str = "Probability density",
+    x_axis_title: str = "Value",
 ) -> str:
     """Assemble the full bell curve SVG document as a string.
 
@@ -154,7 +156,7 @@ def build_svg(
         )
     parts.append(
         f'<text x="20" y="{plot_y + plot_h / 2:.1f}" font-size="13" fill="{INK}" '
-        f'text-anchor="middle" transform="rotate(-90 20 {plot_y + plot_h / 2:.1f})">Probability density</text>'
+        f'text-anchor="middle" transform="rotate(-90 20 {plot_y + plot_h / 2:.1f})">{xml_escape(y_axis_title)}</text>'
     )
 
     # ---- x-axis ----
@@ -176,7 +178,7 @@ def build_svg(
         )
     parts.append(
         f'<text x="{plot_x + plot_w / 2:.1f}" y="{axis_y + 42:.1f}" font-size="13" '
-        f'fill="{INK}" text-anchor="middle">Value</text>'
+        f'fill="{INK}" text-anchor="middle">{xml_escape(x_axis_title)}</text>'
     )
 
     # ---- filled curve ----
@@ -263,6 +265,8 @@ def make_bellcurve(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    y_axis_title: str = "Probability density",
+    x_axis_title: str = "Value",
 ) -> Path:
     """Render a hand-authored bell curve figure and write the SVG to *out*.
 
@@ -305,7 +309,7 @@ def make_bellcurve(
     resolved_mean = mean if mean is not None else float(rec.get("mean", 72.4))
     resolved_std = std if std is not None else float(rec.get("std", 9.1))
     svg = build_svg(resolved_mean, resolved_std, title=title, subtitle=subtitle, width=width, height=height,
-                     mode=mode, accessibility=accessibility, theme=theme)
+                     mode=mode, accessibility=accessibility, theme=theme, y_axis_title=y_axis_title, x_axis_title=x_axis_title)
     dest = Path(out) if out else svg_example_path(__file__, "bellcurve")
     return write_svg(dest, svg, theme=theme)
 

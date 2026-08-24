@@ -592,9 +592,20 @@ def _resample_by_arclength(
 # SVG assembly
 # ------------------------------------------------------------------
 def _axis_ticks(
-    parts: List[str], sx: Callable[[float], float], sy: Callable[[float], float]
+    parts: List[str],
+    sx: Callable[[float], float],
+    sy: Callable[[float], float],
+    x_axis_title: str = "Distance east (km)",
+    y_axis_title: str = "Distance north (km)",
 ) -> None:
-    """Append the plot frame, gridless axis ticks, and axis titles."""
+    """Append the plot frame, gridless axis ticks, and axis titles.
+
+    Parameters
+    ----------
+    x_axis_title, y_axis_title : str, optional
+        Axis titles (were hardcoded ``"Distance east (km)"`` /
+        ``"Distance north (km)"``).
+    """
     # Frame rectangle.
     parts.append(
         f'<rect x="{_PLOT_X0:.1f}" y="{_PLOT_Y0:.1f}" '
@@ -633,18 +644,30 @@ def _axis_ticks(
     parts.append(
         f'<text x="{(_PLOT_X0 + _PLOT_X1) / 2:.1f}" y="{_PLOT_Y1 + 54:.1f}" '
         f'font-size="17" font-weight="600" fill="{_INK}" '
-        f'text-anchor="middle">Distance east (km)</text>'
+        f'text-anchor="middle">{xml_escape(x_axis_title)}</text>'
     )
     cy = (_PLOT_Y0 + _PLOT_Y1) / 2.0
     parts.append(
         f'<text x="34" y="{cy:.1f}" font-size="17" font-weight="600" '
         f'fill="{_INK}" text-anchor="middle" '
-        f'transform="rotate(-90 34 {cy:.1f})">Distance north (km)</text>'
+        f'transform="rotate(-90 34 {cy:.1f})">{xml_escape(y_axis_title)}</text>'
     )
 
 
-def _legend(parts: List[str], ramp: Callable[[float], str], v_min: float, v_max: float) -> None:
-    """Append the sequential speed legend (line-darkness → wind speed)."""
+def _legend(
+    parts: List[str],
+    ramp: Callable[[float], str],
+    v_min: float,
+    v_max: float,
+    legend_title: str = "Wind speed (km/h)",
+) -> None:
+    """Append the sequential speed legend (line-darkness → wind speed).
+
+    Parameters
+    ----------
+    legend_title : str, optional
+        Header above the legend (was hardcoded ``"Wind speed (km/h)"``).
+    """
     lx = _PLOT_X1 - 262.0
     ly = _PLOT_Y0 + 20.0
     bar_w = 232.0
@@ -657,7 +680,7 @@ def _legend(parts: List[str], ramp: Callable[[float], str], v_min: float, v_max:
     )
     parts.append(
         f'<text x="{lx:.1f}" y="{ly - 12:.1f}" font-size="15" '
-        f'font-weight="700" fill="{_INK}">Wind speed (km/h)</text>'
+        f'font-weight="700" fill="{_INK}">{xml_escape(legend_title)}</text>'
     )
     # Gradient swatch built from discrete stops (no <defs> gradient so
     # the auditor's stdlib parser sees plain rects).
@@ -688,6 +711,9 @@ def build_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    x_axis_title: str = "Distance east (km)",
+    y_axis_title: str = "Distance north (km)",
+    legend_title: str = "Wind speed (km/h)",
 ) -> str:
     """Assemble the full streamplot SVG document as a string.
 
@@ -699,8 +725,12 @@ def build_svg(
         "swirl_kmh", "core_radius_km", "inflow_kmh"}``. Defaults to
         :data:`DEMO_DATA`. Sets the module-level field constants for the
         duration of this call (see :func:`_apply_field_params`); the domain
-        extent, coastline framing and axis titles stay fixed to the shipped
-        coastal scene.
+        extent and coastline framing stay fixed to the shipped coastal scene.
+    x_axis_title, y_axis_title : str, optional
+        Axis titles (were hardcoded ``"Distance east (km)"`` /
+        ``"Distance north (km)"``).
+    legend_title : str, optional
+        Header above the speed legend (was hardcoded ``"Wind speed (km/h)"``).
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`
         (``"self-contained"``, ``"external"`` or ``"static"``). Controls
@@ -819,7 +849,7 @@ def build_svg(
     )
 
     # ---- axis frame + ticks ----
-    _axis_ticks(parts, sx, sy)
+    _axis_ticks(parts, sx, sy, x_axis_title=x_axis_title, y_axis_title=y_axis_title)
 
     # ---- clip streamlines to the plot rectangle ----
     parts.append(
@@ -931,7 +961,7 @@ def build_svg(
     )
 
     # ---- legend ----
-    _legend(parts, ramp, v_min, v_max)
+    _legend(parts, ramp, v_min, v_max, legend_title=legend_title)
 
     # Fullscreen control per interactivity mode, just before the close.
     parts.append(fullscreen_control(_WIDTH, _HEIGHT, mode))
@@ -947,6 +977,9 @@ def make_streamplot(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    x_axis_title: str = "Distance east (km)",
+    y_axis_title: str = "Distance north (km)",
+    legend_title: str = "Wind speed (km/h)",
 ) -> Path:
     """Render the streamplot and write the SVG to *out*.
 
@@ -965,6 +998,10 @@ def make_streamplot(
         Forwarded to :func:`build_svg`.
     theme : str, optional
         Visual theme. Forwarded to :func:`build_svg`.
+    x_axis_title, y_axis_title, legend_title : str, optional
+        Forwarded to :func:`build_svg` — were hardcoded ``"Distance east (km)"``,
+        ``"Distance north (km)"`` and ``"Wind speed (km/h)"`` with no way to
+        override them for a non-coastal-wind field.
 
     Returns
     -------
@@ -972,7 +1009,8 @@ def make_streamplot(
         Absolute path to the written SVG file.
     """
     del title
-    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme,
+                     x_axis_title=x_axis_title, y_axis_title=y_axis_title, legend_title=legend_title)
     dest = Path(out) if out else svg_example_path(__file__, "streamplot")
     return write_svg(dest, svg, theme=theme)
 

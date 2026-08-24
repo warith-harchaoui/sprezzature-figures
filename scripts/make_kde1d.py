@@ -78,6 +78,7 @@ def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
     title: str = "Estimated Density",
     subtitle: str = "Gaussian kernel density estimate",
+    y_axis_title: str = "Density",
     width: int = 620,
     height: int = 380,
     mode: str = "self-contained",
@@ -92,6 +93,8 @@ def build_svg(
         Rows with key ``x`` (numeric). Defaults to :data:`DEMO_DATA`.
     title, subtitle : str
         Chart text.
+    y_axis_title : str
+        Y-axis label (was hardcoded ``"Density"``, no override).
     width, height : int
         Canvas size in pixels.
     mode : str, optional
@@ -175,7 +178,7 @@ def build_svg(
         )
     parts.append(
         f'<text x="18" y="{plot_y + plot_h / 2:.1f}" font-size="13" fill="{INK}" '
-        f'text-anchor="middle" transform="rotate(-90 18 {plot_y + plot_h / 2:.1f})">Density</text>'
+        f'text-anchor="middle" transform="rotate(-90 18 {plot_y + plot_h / 2:.1f})">{xml_escape(y_axis_title)}</text>'
     )
 
     # ---- filled curve ----
@@ -223,6 +226,7 @@ def make_kde1d(
     out: Optional[Path | str] = None,
     title: str = "Estimated Density",
     subtitle: str = "Gaussian kernel density estimate",
+    y_axis_title: str = "Density",
     width: int = 620,
     height: int = 380,
     mode: str = "self-contained",
@@ -239,6 +243,8 @@ def make_kde1d(
         Output path (.svg). Defaults to ``assets/svg-examples/kde1d.svg``.
     title, subtitle : str
         Chart text.
+    y_axis_title : str
+        Forwarded to :func:`build_svg` (see there).
     width, height : int
         Canvas size in pixels.
     mode, accessibility : str
@@ -257,7 +263,7 @@ def make_kde1d(
     >>> p.exists()
     True
     """
-    svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
+    svg = build_svg(data, title=title, subtitle=subtitle, y_axis_title=y_axis_title, width=width, height=height,
                      mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "kde1d")
     return write_svg(dest, svg, theme=theme)

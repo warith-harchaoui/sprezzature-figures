@@ -137,6 +137,8 @@ def build_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    row_label_header: str = "Trial",
+    estimate_header: str = "OR (95% CI)",
 ) -> str:
     """Assemble the full forest-plot SVG string.
 
@@ -148,6 +150,11 @@ def build_svg(
         custom data is passed, the pooled diamond is recomputed from it (a
         simple inverse-variance-weighted average on the log scale) rather
         than using the shipped example's fixed :data:`POOLED` summary.
+    row_label_header : str, optional
+        Header above the left study-label column. Defaults to ``"Trial"``.
+    estimate_header : str, optional
+        Header above the right numeric-estimate column. Defaults to
+        ``"OR (95% CI)"``.
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`
         (``"self-contained"``, ``"external"`` or ``"static"``). Defaults to
@@ -324,11 +331,11 @@ def build_svg(
     # --- column headers ------------------------------------------
     parts.append(
         f'<text x="{m_left}" y="{header_y}" font-size="11.5" font-weight="700" '
-        f'fill="{secondary}">Trial</text>'
+        f'fill="{secondary}">{row_label_header}</text>'
     )
     parts.append(
         f'<text x="{est_x}" y="{header_y}" font-size="11.5" font-weight="700" '
-        f'fill="{secondary}">OR (95% CI)</text>'
+        f'fill="{secondary}">{estimate_header}</text>'
     )
     # "Favours" annotations sit under the panel, flanking the null.
     # (drawn later with the axis so they align with the ticks)
@@ -549,6 +556,8 @@ def make_forest(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    row_label_header: str = "Trial",
+    estimate_header: str = "OR (95% CI)",
 ) -> Path:
     """Render the meta-analysis forest plot and write it to ``out``.
 
@@ -569,6 +578,8 @@ def make_forest(
         Forwarded to :func:`build_svg`.
     theme : str, optional
         Visual theme. Forwarded to :func:`build_svg`.
+    row_label_header, estimate_header : str, optional
+        Column headers. Forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -576,7 +587,14 @@ def make_forest(
         Absolute path to the written SVG file.
     """
     _ = title  # accepted for dispatcher parity; see docstring
-    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(
+        data,
+        mode=mode,
+        accessibility=accessibility,
+        theme=theme,
+        row_label_header=row_label_header,
+        estimate_header=estimate_header,
+    )
     dest = Path(out) if out else svg_example_path(__file__, "forest")
     return write_svg(dest, svg, theme=theme)
 

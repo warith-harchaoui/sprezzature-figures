@@ -61,6 +61,8 @@ def build_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    y_axis_title: str = "Share of revenue",
+    x_axis_title: str = "Quarter",
 ) -> str:
     """Assemble the full 100%-stacked bar chart SVG document as a string.
 
@@ -74,6 +76,8 @@ def build_svg(
         Chart text.
     width, height : int
         Canvas size in pixels.
+    y_axis_title, x_axis_title : str, optional
+        Axis titles (were hardcoded ``"Share of revenue"`` / ``"Quarter"``).
     mode, accessibility : str, optional
         Forwarded to :func:`_interactive.fullscreen_control` /
         :func:`_style.load_palette`.
@@ -159,7 +163,7 @@ def build_svg(
         )
     parts.append(
         f'<text x="18" y="{plot_y + plot_h / 2:.1f}" font-size="13" fill="{INK}" '
-        f'text-anchor="middle" transform="rotate(-90 18 {plot_y + plot_h / 2:.1f})">Share of revenue</text>'
+        f'text-anchor="middle" transform="rotate(-90 18 {plot_y + plot_h / 2:.1f})">{xml_escape(y_axis_title)}</text>'
     )
 
     # ---- bars ----
@@ -214,7 +218,7 @@ def build_svg(
         )
     parts.append(
         f'<text x="{plot_x + plot_w / 2:.1f}" y="{axis_y + 42:.1f}" font-size="13" '
-        f'fill="{INK}" text-anchor="middle">Quarter</text>'
+        f'fill="{INK}" text-anchor="middle">{xml_escape(x_axis_title)}</text>'
     )
 
     parts.extend(bubbles)
@@ -234,6 +238,8 @@ def make_stacked_bar(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    y_axis_title: str = "Share of revenue",
+    x_axis_title: str = "Quarter",
 ) -> Path:
     """Render a hand-authored 100%-stacked bar chart and write the SVG to *out*.
 
@@ -252,6 +258,9 @@ def make_stacked_bar(
         Forwarded to :func:`build_svg`.
     theme : str, optional
         Visual theme. Forwarded to :func:`build_svg`.
+    y_axis_title, x_axis_title : str, optional
+        Forwarded to :func:`build_svg` — were hardcoded ``"Share of revenue"``
+        and ``"Quarter"`` with no way to override them for non-quarterly data.
 
     Returns
     -------
@@ -265,7 +274,8 @@ def make_stacked_bar(
     True
     """
     svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
-                     mode=mode, accessibility=accessibility, theme=theme)
+                     mode=mode, accessibility=accessibility, theme=theme,
+                     y_axis_title=y_axis_title, x_axis_title=x_axis_title)
     dest = Path(out) if out else svg_example_path(__file__, "stacked-bar")
     return write_svg(dest, svg, theme=theme)
 

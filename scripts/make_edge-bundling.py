@@ -405,11 +405,23 @@ def _edge_control_points(
 # ------------------------------------------------------------------
 # SVG emission
 # ------------------------------------------------------------------
-def build_svg(mode: str = "self-contained", accessibility: str = "universal", theme: str = "corporate") -> str:
+def build_svg(
+    mode: str = "self-contained", accessibility: str = "universal", theme: str = "corporate",
+    stat_card_label: str = "Dependencies into", stat_card_value_label: str = "Auth",
+) -> str:
     """Assemble the full edge-bundling SVG document as a string.
 
     Parameters
     ----------
+    stat_card_label : str
+        Caption above the callout stat card (was hardcoded ``"Dependencies
+        into"``).
+    stat_card_value_label : str
+        The named subsystem the stat card highlights (was hardcoded
+        ``"Auth"``) — this generator has no ``data`` parameter (EDGES/
+        subsystems are fixed demo constants), so this only renames the
+        label; it does not recompute which subsystem actually has the
+        highest in-degree.
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`.
         One of ``"self-contained"`` (default, ships a hidden-until-live
@@ -660,12 +672,12 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
     )
     parts.append(
         f'<text x="{bx + 24}" y="{by + 34}" font-size="16" '
-        f'fill="{SUBINK}">Dependencies into</text>'
+        f'fill="{SUBINK}">{stat_card_label}</text>'
     )
     parts.append(
         f'<text x="{bx + 24}" y="{by + 76}" '
         f'font-family="{mono_family}" font-size="40" font-weight="700" '
-        f'fill="{subsys_color["Auth"]}">Auth · {auth_in}</text>'
+        f'fill="{subsys_color["Auth"]}">{stat_card_value_label} · {auth_in}</text>'
     )
     parts.append(
         f'<text x="{bx + 24}" y="{by + 102}" font-size="15" '
@@ -690,6 +702,8 @@ def make_edge_bundling(
     *,
     out: Optional[Path | str] = None,
     title: str = "",
+    stat_card_label: str = "Dependencies into",
+    stat_card_value_label: str = "Auth",
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -714,6 +728,8 @@ def make_edge_bundling(
     title : str, optional
         Accepted for dispatcher/CLI parity; unused, since the chart's
         title is fixed prose.
+    stat_card_label, stat_card_value_label : str
+        Callout stat-card caption/value label. Forwarded to :func:`build_svg`.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
     theme : str, optional
@@ -725,7 +741,8 @@ def make_edge_bundling(
         Absolute path to the written SVG file.
     """
     _ = data, title  # accepted for dispatcher parity; see docstring
-    svg = build_svg(mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(mode=mode, accessibility=accessibility, theme=theme,
+                     stat_card_label=stat_card_label, stat_card_value_label=stat_card_value_label)
     dest = Path(out) if out else svg_example_path(__file__, "edge-bundling")
     return write_svg(dest, svg, theme=theme)
 

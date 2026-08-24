@@ -50,7 +50,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _render import svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _style import os_dark_style  # noqa: E402
-from _svg import color_ramp, fmt_compact  # noqa: E402
+from _svg import color_ramp, fmt_compact, xml_escape  # noqa: E402
 from _svg import VIRIDIS_STOPS as _VIRIDIS  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
@@ -260,6 +260,9 @@ def build_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    x_axis_title: str = "Time (seconds)",
+    y_axis_title: str = "Frequency (Hz)",
+    legend_title: str = "Power",
 ) -> str:
     """Assemble the full spectrogram SVG document as a string.
 
@@ -269,6 +272,10 @@ def build_svg(
         The output of :func:`_stft_db` — ``power_db``, ``times``, ``freqs``.
     sr : int
         Sample rate in hertz (used only for annotation).
+    x_axis_title, y_axis_title : str, optional
+        Axis titles (were hardcoded ``"Time (seconds)"`` / ``"Frequency (Hz)"``).
+    legend_title : str, optional
+        Header above the colour ramp legend (was hardcoded ``"Power"``).
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`.
         One of ``"self-contained"`` (default, ships a hidden-until-live
@@ -441,7 +448,7 @@ def build_svg(
         )
     parts.append(
         f'<text x="{fmt_compact(m_left + plot_w / 2, decimals=2)}" y="{fmt_compact(axis_y + 62, decimals=2)}" '
-        f'text-anchor="middle" font-size="17" fill="{_INK}">Time (seconds)</text>'
+        f'text-anchor="middle" font-size="17" fill="{_INK}">{xml_escape(x_axis_title)}</text>'
     )
 
     # ---- y-axis (frequency) ----------------------------------------------- #
@@ -465,7 +472,7 @@ def build_svg(
     parts.append(
         f'<text x="30" y="{fmt_compact(m_top + plot_h / 2, decimals=2)}" text-anchor="middle" '
         f'font-size="17" fill="{_INK}" '
-        f'transform="rotate(-90 30 {fmt_compact(m_top + plot_h / 2, decimals=2)})">Frequency (Hz)</text>'
+        f'transform="rotate(-90 30 {fmt_compact(m_top + plot_h / 2, decimals=2)})">{xml_escape(y_axis_title)}</text>'
     )
 
     # ---- annotations on the features ------------------------------------- #
@@ -551,7 +558,7 @@ def build_svg(
         )
     parts.append(
         f'<text x="{fmt_compact(leg_x + leg_w / 2, decimals=2)}" y="{fmt_compact(leg_top - 14, decimals=2)}" '
-        f'text-anchor="middle" font-size="15" fill="{_INK}">Power</text>'
+        f'text-anchor="middle" font-size="15" fill="{_INK}">{xml_escape(legend_title)}</text>'
     )
     parts.append(
         f'<text x="{fmt_compact(leg_x + leg_w / 2, decimals=2)}" y="{fmt_compact(leg_top + leg_h + 24, decimals=2)}" '
@@ -618,6 +625,9 @@ def make_spectrogram(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    x_axis_title: str = "Time (seconds)",
+    y_axis_title: str = "Frequency (Hz)",
+    legend_title: str = "Power",
 ) -> Path:
     """Synthesise the clip, compute its STFT, and write the spectrogram SVG.
 
@@ -638,6 +648,9 @@ def make_spectrogram(
         Forwarded to :func:`build_svg`.
     theme : str, optional
         Visual theme. Forwarded to :func:`build_svg`.
+    x_axis_title, y_axis_title, legend_title : str, optional
+        Forwarded to :func:`build_svg` — were hardcoded ``"Time (seconds)"``,
+        ``"Frequency (Hz)"`` and ``"Power"`` with no way to override them.
 
     Returns
     -------
@@ -647,7 +660,8 @@ def make_spectrogram(
     del title
     signal, sr = _synthesise_clip(data, seed=seed)
     stft = _stft_db(signal, sr)
-    svg = build_svg(stft, sr, mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(stft, sr, mode, accessibility=accessibility, theme=theme,
+                     x_axis_title=x_axis_title, y_axis_title=y_axis_title, legend_title=legend_title)
     dest = Path(out) if out else svg_example_path(__file__, "spectrogram")
     return write_svg(dest, svg, theme=theme)
 

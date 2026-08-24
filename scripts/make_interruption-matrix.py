@@ -199,6 +199,8 @@ def _hover_script() -> str:
 
 def build_svg(
     data: List[Dict[str, Any]] | None = None,
+    row_total_label: str = "Σ subies",
+    col_total_label: str = "Σ commises",
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -211,6 +213,12 @@ def build_svg(
         Directed pairs ``{"interrupter", "interrupted", "count"}``. Defaults to
         :data:`DEMO_DATA` (the No Priors episode). The speaker set is the union
         of the names; the matrix and its margins are derived by :func:`_aggregate`.
+    row_total_label : str
+        Header of the row-totals column (interruptions each speaker suffered).
+        Defaults to ``"Σ subies"`` (was hardcoded, no override).
+    col_total_label : str
+        Row label of the column-totals row (interruptions each speaker made).
+        Defaults to ``"Σ commises"`` (was hardcoded, no override).
     mode : str, optional
         Interactivity mode forwarded to :func:`_interactive.fullscreen_control`
         and gating the crosshair-hover script (``"self-contained"`` default,
@@ -318,7 +326,7 @@ def build_svg(
         )
     p.append(
         f'<text x="{cx(n) + CELL / 2:.1f}" y="{top - 16}" text-anchor="middle" font-size="14" '
-        f'font-weight="700" fill="{INK}">Σ subies</text>'
+        f'font-weight="700" fill="{INK}">{xml_escape(row_total_label)}</text>'
     )
 
     # Rows.
@@ -405,7 +413,7 @@ def build_svg(
     yb = cy(n)
     p.append(
         f'<text x="{left - 22:.1f}" y="{yb + CELL / 2:.1f}" text-anchor="end" dominant-baseline="central" '
-        f'font-size="14" font-weight="700" fill="{INK}">Σ commises</text>'
+        f'font-size="14" font-weight="700" fill="{INK}">{xml_escape(col_total_label)}</text>'
     )
     for c, b in enumerate(order):
         x = cx(c)
@@ -441,6 +449,8 @@ def make_interruption_matrix(
     *,
     out: "Path | str | None" = None,
     title: str = "",
+    row_total_label: str = "Σ subies",
+    col_total_label: str = "Σ commises",
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -452,9 +462,13 @@ def make_interruption_matrix(
     figure. ``data`` is directed pairs
     ``{"interrupter", "interrupted", "count"}``; omit it for the built-in demo.
     ``title`` is accepted for signature parity and unused (the headline is baked
-    into the figure). ``theme`` is forwarded to :func:`build_svg`.
+    into the figure). ``row_total_label``/``col_total_label`` forwarded to
+    :func:`build_svg` (see there). ``theme`` is forwarded to :func:`build_svg`.
     """
-    svg = build_svg(data=data, mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(
+        data=data, row_total_label=row_total_label, col_total_label=col_total_label,
+        mode=mode, accessibility=accessibility, theme=theme,
+    )
     dest = Path(out) if out else svg_example_path(__file__, "interruption-matrix")
     return write_svg(dest, svg, theme=theme)
 

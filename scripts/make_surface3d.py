@@ -110,6 +110,7 @@ def _rows_to_grid(rows: List[Dict[str, float]]) -> Tuple[np.ndarray, np.ndarray,
 
 def build_svg(
     data: Optional[List[Dict[str, float]]] = None,
+    z_axis_title: str = "Height",
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -121,6 +122,8 @@ def build_svg(
     data : list of dict or None
         Row records with ``x``, ``y`` and ``z``, forming a complete
         rectangular grid. Defaults to :data:`DEMO_DATA`.
+    z_axis_title : str
+        Label above the height colour-bar legend (was hardcoded ``"Height"``).
     mode, accessibility : str
         Forwarded to :func:`_interactive.fullscreen_control` /
         palette selection (accessibility is a documented no-op here — see
@@ -238,7 +241,7 @@ def build_svg(
     )
     parts.append(
         f'<text x="{lx:.0f}" y="{lt - 14:.0f}" font-size="15" font-weight="700" '
-        f'fill="{_INK}">Height</text>'
+        f'fill="{_INK}">{z_axis_title}</text>'
     )
     parts.append(
         f'<rect x="{lx:.0f}" y="{lt:.0f}" width="{lw:.0f}" height="{lb - lt:.0f}" '
@@ -261,6 +264,7 @@ def make_surface3d(
     *,
     out: Optional[Path | str] = None,
     title: str = "",
+    z_axis_title: str = "Height",
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -277,6 +281,8 @@ def make_surface3d(
     title : str, optional
         Accepted for dispatcher parity; the figure's own headline is fixed,
         so this is unused.
+    z_axis_title : str
+        Label above the height colour-bar legend. Forwarded to :func:`build_svg`.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
     theme : str, optional
@@ -288,7 +294,7 @@ def make_surface3d(
         Absolute path to the written SVG file.
     """
     del title
-    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(data, z_axis_title=z_axis_title, mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "surface3d")
     return write_svg(dest, svg, theme=theme)
 

@@ -472,7 +472,8 @@ def _ring_path(ring: Ring, lat0: float, fit: Tuple[float, float, float, float, f
 # Build
 # ------------------------------------------------------------------
 def build_svg(
-    mode: str = "self-contained", accessibility: str = "universal", theme: str = "corporate"
+    mode: str = "self-contained", accessibility: str = "universal", theme: str = "corporate",
+    legend_title: str = "Macro-region",
 ) -> str:
     """Assemble the full dot-density-map SVG document as a string.
 
@@ -491,6 +492,8 @@ def build_svg(
         Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
         the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
         See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
+    legend_title : str, optional
+        Header text above the region legend (was hardcoded ``"Macro-region"``).
 
     Returns
     -------
@@ -686,7 +689,7 @@ def build_svg(
     row_h = 62.0
     parts.append(
         f'<text x="{legend_x:.1f}" y="{legend_y - 34:.1f}" font-size="17" '
-        f'font-weight="700" fill="{_INK}">Macro-region</text>'
+        f'font-weight="700" fill="{_INK}">{_xml(legend_title)}</text>'
     )
     parts.append(f'<g transform="translate({legend_x:.1f},{legend_y:.1f})">')
     legend_tips: List[str] = []
@@ -746,6 +749,7 @@ def make_dotdensity(
     *,
     out: "Path | str | None" = None,
     title: str = "",
+    legend_title: str = "Macro-region",
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -756,9 +760,11 @@ def make_dotdensity(
     ``make-figure dotdensity`` and the Studio work like every other figure. The
     demo geography (French departments) and values are baked into the
     hand-authored SVG, so ``data`` and ``title`` are accepted for dispatcher
-    parity and unused. ``theme`` is forwarded to :func:`build_svg`.
+    parity and unused. ``legend_title`` overrides the region-legend header
+    (was hardcoded ``"Macro-region"``). ``theme`` is forwarded to
+    :func:`build_svg`.
     """
-    svg = build_svg(mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(mode=mode, accessibility=accessibility, theme=theme, legend_title=legend_title)
     dest = Path(out) if out else svg_example_path(__file__, "dotdensity")
     return write_svg(dest, svg, theme=theme)
 

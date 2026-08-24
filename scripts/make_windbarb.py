@@ -425,6 +425,8 @@ def _airmass_color(lon: float, lat: float, warm: str, cold: str) -> str:
 # ------------------------------------------------------------------
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
+    airmass_label: str = "Airmass",
+    cold_front_label: str = "Cold front",
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -438,6 +440,12 @@ def build_svg(
         the meteorological "from" bearing) and ``speed`` (knots). Defaults
         to :data:`DEMO_DATA`. The cold-front glyph, coastline and airmass
         call-outs are fixed to the shipped Northeast-seaboard story.
+    airmass_label : str
+        Legend header above the airmass colour key (was hardcoded
+        ``"Airmass"``).
+    cold_front_label : str
+        Legend header above the cold-front symbol row (was hardcoded
+        ``"Cold front"``).
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`
         (``"self-contained"``, ``"external"`` or ``"static"``). Defaults to
@@ -643,7 +651,7 @@ def build_svg(
     parts.extend(_airmass_labels(fit, warm, cold))
 
     # ---- legend panel (right column): decode the barb symbols ----
-    parts.extend(_legend(warm, cold, front_col))
+    parts.extend(_legend(warm, cold, front_col, airmass_label, cold_front_label))
 
     # ---- footnote / method note ----
     parts.append(
@@ -812,7 +820,10 @@ def _airmass_labels(fit: Tuple[float, float, float, float], warm: str, cold: str
     return out
 
 
-def _legend(warm: str, cold: str, front_col: str) -> List[str]:
+def _legend(
+    warm: str, cold: str, front_col: str,
+    airmass_label: str = "Airmass", cold_front_label: str = "Cold front",
+) -> List[str]:
     """Return the legend panel decoding the barb symbols and airmasses.
 
     A right-hand column: three worked barb examples (5, 25 and 65 kt),
@@ -872,7 +883,7 @@ def _legend(warm: str, cold: str, front_col: str) -> List[str]:
     # Airmass colour key.
     out.append(
         f'<text x="{lx:.1f}" y="{ey + 4:.1f}" font-size="16" font-weight="700" '
-        f'fill="{_INK}">Airmass</text>'
+        f'fill="{_INK}">{_xml(airmass_label)}</text>'
     )
     key = [
         (warm, "Warm sector", "southwesterly, ahead of front"),
@@ -899,7 +910,7 @@ def _legend(warm: str, cold: str, front_col: str) -> List[str]:
     # Cold-front symbol row.
     out.append(
         f'<text x="{lx:.1f}" y="{ky + 6:.1f}" font-size="16" font-weight="700" '
-        f'fill="{_INK}">Cold front</text>'
+        f'fill="{_INK}">{_xml(cold_front_label)}</text>'
     )
     fy = ky + 34.0
     fx0, fx1 = lx + 6.0, lx + 96.0
@@ -925,6 +936,8 @@ def make_windbarb(
     *,
     out: Optional[Path | str] = None,
     title: str = "",
+    airmass_label: str = "Airmass",
+    cold_front_label: str = "Cold front",
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -941,6 +954,8 @@ def make_windbarb(
     title : str, optional
         Accepted for dispatcher parity; the plot's own headline states the
         specific takeaway, so this is unused.
+    airmass_label, cold_front_label : str
+        Legend headers. Forwarded to :func:`build_svg`.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
     theme : str, optional
@@ -952,7 +967,8 @@ def make_windbarb(
         Absolute path to the written SVG file.
     """
     del title
-    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(data, airmass_label=airmass_label, cold_front_label=cold_front_label,
+                     mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "windbarb")
     return write_svg(dest, svg, theme=theme)
 

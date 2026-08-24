@@ -54,7 +54,7 @@ from xml.sax.saxutils import escape
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import BG, GRIDLINE, INK, forced_color_patterns, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
-from _svg import foreground_tip_css, point_on_circle, svg_open, tooltip_bubble  # noqa: E402
+from _svg import foreground_tip_css, point_on_circle, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control, hover_isolate_css  # noqa: E402
 
@@ -391,7 +391,10 @@ def _compute_layout(team_color: Optional[Dict[str, str]] = None) -> Tuple[Dict[i
 # ------------------------------------------------------------------
 # SVG emission
 # ------------------------------------------------------------------
-def build_svg(mode: str = "self-contained", accessibility: str = "universal", theme: str = "corporate") -> str:
+def build_svg(
+    mode: str = "self-contained", accessibility: str = "universal", theme: str = "corporate",
+    hub_label: str = "Platform reviewed", hub_sublabel: str = "given vs received",
+) -> str:
     """Assemble the full chord-diagram SVG document as a string.
 
     Parameters
@@ -409,6 +412,11 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
         Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
         the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
         See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
+    hub_label, hub_sublabel : str, optional
+        The two lines of the centre hub annotation (was hardcoded
+        "Platform reviewed" / "given vs received", tied to the demo's
+        "Platform" team) — override if adapting the fixed illustrative
+        layout for a different named hub.
 
     Returns
     -------
@@ -596,7 +604,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
     )
     parts.append(
         f'<text x="{CX:.1f}" y="{CY - 24:.1f}" text-anchor="middle" '
-        f'font-size="18" fill="{SUBINK}">Platform reviewed</text>'
+        f'font-size="18" fill="{SUBINK}">{xml_escape(hub_label)}</text>'
     )
     parts.append(
         f'<text x="{CX:.1f}" y="{CY + 18:.1f}" text-anchor="middle" '
@@ -605,7 +613,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
     )
     parts.append(
         f'<text x="{CX:.1f}" y="{CY + 48:.1f}" text-anchor="middle" '
-        f'font-size="18" fill="{SUBINK}">given vs received</text>'
+        f'font-size="18" fill="{SUBINK}">{xml_escape(hub_sublabel)}</text>'
     )
 
     # --- footnote: read the hover affordance ---
@@ -633,6 +641,8 @@ def make_chord(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    hub_label: str = "Platform reviewed",
+    hub_sublabel: str = "given vs received",
 ) -> Path:
     """Render the house-styled chord diagram and write the SVG to *out*.
 
@@ -666,7 +676,7 @@ def make_chord(
     True
     """
     _ = data, title
-    svg = build_svg(mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(mode=mode, accessibility=accessibility, theme=theme, hub_label=hub_label, hub_sublabel=hub_sublabel)
     dest = Path(out) if out else svg_example_path(__file__, "chord")
     return write_svg(dest, svg, theme=theme)
 

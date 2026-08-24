@@ -39,7 +39,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _scale import log_position, log_ticks, nice_ticks_range  # noqa: E402
 from _style import BG, GRIDLINE, INK, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _svg import foreground_tip_css, fmt_number, svg_open, tooltip_bubble  # noqa: E402
+from _svg import foreground_tip_css, fmt_number, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
@@ -135,6 +135,8 @@ def build_svg(
     y_label: str = "Life expectancy (years)",
     log_x: bool = False,
     theme: str = "corporate",
+    region_legend_title: str = "Region",
+    size_legend_title: str = "Population (M)",
 ) -> str:
     """Assemble the full bubble-chart SVG document as a string.
 
@@ -340,7 +342,7 @@ def build_svg(
     leg_y = 132.0
     parts.append(
         f'<text x="{leg_x:.1f}" y="{leg_y:.1f}" font-size="13" font-weight="700" '
-        f'fill="{INK}">Region</text>'
+        f'fill="{INK}">{xml_escape(region_legend_title)}</text>'
     )
     for i, region in enumerate(REGION_ORDER):
         ry = leg_y + 26 + i * 26
@@ -356,7 +358,7 @@ def build_svg(
     size_leg_y = leg_y + 26 + len(REGION_ORDER) * 26 + 30
     parts.append(
         f'<text x="{leg_x:.1f}" y="{size_leg_y:.1f}" font-size="13" font-weight="700" '
-        f'fill="{INK}">Population (M)</text>'
+        f'fill="{INK}">{xml_escape(size_legend_title)}</text>'
     )
     size_anchors = [pop_max, pop_max / 3]
     cursor_y = size_leg_y + 22
@@ -394,6 +396,8 @@ def make_bubble(
     y_label: str = "Life expectancy (years)",
     log_x: bool = False,
     theme: str = "corporate",
+    region_legend_title: str = "Region",
+    size_legend_title: str = "Population (M)",
 ) -> Path:
     """Render the house-styled Gapminder-style bubble chart and write it to *out*.
 
@@ -429,7 +433,7 @@ def make_bubble(
     """
     _ = title
     svg = build_svg(data, mode=mode, accessibility=accessibility,
-                     x_label=x_label, y_label=y_label, log_x=log_x, theme=theme)
+                     x_label=x_label, y_label=y_label, log_x=log_x, theme=theme, region_legend_title=region_legend_title, size_legend_title=size_legend_title)
     dest = Path(out) if out else svg_example_path(__file__, "bubble")
     return write_svg(dest, svg, theme=theme)
 

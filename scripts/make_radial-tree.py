@@ -407,6 +407,7 @@ def _wrap_subtitle(text: str, max_chars: int = 108) -> List[str]:
 
 def build_svg(
     nodes: List[Node] = NODES,
+    legend_title: str = "PILLARS",
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -419,6 +420,8 @@ def build_svg(
         ``(id, label, parent)`` tuples; defaults to the module-level
         :data:`NODES`. See :func:`_rows_to_nodes` for the row-record shape
         callers reshape into this.
+    legend_title : str, optional
+        Header above the legend swatches (was hardcoded ``"PILLARS"``).
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`.
         One of ``"self-contained"`` (default, ships a hidden-until-live
@@ -584,7 +587,7 @@ def build_svg(
     parts.append("</g>")  # #tree
 
     # --- pillar legend (bottom-left) ---
-    _emit_legend(parts, pillar_color, nodes, mono_family=mono_family)
+    _emit_legend(parts, pillar_color, nodes, mono_family=mono_family, legend_title=legend_title)
 
     # --- footnote: read the affordances ---
     parts.append(
@@ -740,6 +743,7 @@ def _emit_legend(
     pillar_color: Optional[Dict[str, str]] = None,
     nodes: List[Node] = NODES,
     mono_family: str = FONT_MONO,
+    legend_title: str = "PILLARS",
 ) -> None:
     """Emit the pillar legend as a small swatch column, bottom-left.
 
@@ -750,6 +754,8 @@ def _emit_legend(
     pillar_color : dict of str to str, optional
         ``{pillar_id: hex}`` colour map; defaults to the module-level
         :data:`PILLAR_COLOR` (the universal palette).
+    legend_title : str, optional
+        Header above the legend swatches (was hardcoded ``"PILLARS"``).
     nodes : list of Node, optional
         ``(id, label, parent)`` tuples used to count each pillar's subtree
         size; defaults to the module-level :data:`NODES`.
@@ -780,7 +786,7 @@ def _emit_legend(
     parts.append('<g id="legend">')
     parts.append(
         f'<text x="{lx:.1f}" y="{ly:.1f}" font-size="14" font-weight="700" '
-        f'letter-spacing="0.8" fill="{SUBINK}">PILLARS</text>'
+        f'letter-spacing="0.8" fill="{SUBINK}">{escape(legend_title)}</text>'
     )
     ry = ly + 26
     for pid in order:
@@ -806,6 +812,7 @@ def make_radial_tree(
     *,
     out: Optional[Path | str] = None,
     title: str = "",
+    legend_title: str = "PILLARS",
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -823,6 +830,8 @@ def make_radial_tree(
     title : str, optional
         Accepted for signature parity; the figure's headline is baked into
         the takeaway text (unused).
+    legend_title : str, optional
+        Forwarded to :func:`build_svg` — was hardcoded ``"PILLARS"``.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
     theme : str, optional
@@ -836,7 +845,7 @@ def make_radial_tree(
     _ = title
     rows = data if data else DEMO_DATA
     nodes = _rows_to_nodes(rows)
-    svg = build_svg(nodes, mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(nodes, legend_title=legend_title, mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "radial-tree")
     return write_svg(dest, svg, theme=theme)
 

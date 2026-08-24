@@ -100,6 +100,8 @@ def build_svg(
     percentile: float = 0.9,
     title: Optional[str] = None,
     subtitle: str = "Cumulative distribution of request latency",
+    y_axis_title: str = "Cumulative share",
+    x_axis_title: str = "Latency (ms)",
     width: int = 745,
     height: int = 420,
     mode: str = "self-contained",
@@ -120,6 +122,11 @@ def build_svg(
         finish under V ms" from the data and ``percentile``.
     subtitle : str
         Chart subtitle.
+    y_axis_title : str
+        Y-axis label (was hardcoded ``"Cumulative share"``).
+    x_axis_title : str
+        X-axis label (was hardcoded ``"Latency (ms)"`` — pass an explicit
+        label when plotting a sample that isn't latency).
     width, height : int
         Canvas size in pixels.
     mode : str, optional
@@ -195,7 +202,7 @@ def build_svg(
         )
     parts.append(
         f'<text x="18" y="{plot_y + plot_h / 2:.1f}" font-size="13" fill="{INK}" '
-        f'text-anchor="middle" transform="rotate(-90 18 {plot_y + plot_h / 2:.1f})">Cumulative share</text>'
+        f'text-anchor="middle" transform="rotate(-90 18 {plot_y + plot_h / 2:.1f})">{xml_escape(y_axis_title)}</text>'
     )
 
     # ---- percentile reference line ----
@@ -262,7 +269,7 @@ def build_svg(
         val += step
     parts.append(
         f'<text x="{plot_x + plot_w / 2:.1f}" y="{axis_y + 42:.1f}" font-size="13" '
-        f'fill="{INK}" text-anchor="middle">Latency (ms)</text>'
+        f'fill="{INK}" text-anchor="middle">{xml_escape(x_axis_title)}</text>'
     )
 
     parts.append(fullscreen_control(width, height, mode))
@@ -277,6 +284,8 @@ def make_ecdf(
     percentile: float = 0.9,
     title: Optional[str] = None,
     subtitle: str = "Cumulative distribution of request latency",
+    y_axis_title: str = "Cumulative share",
+    x_axis_title: str = "Latency (ms)",
     width: int = 745,
     height: int = 420,
     mode: str = "self-contained",
@@ -298,6 +307,8 @@ def make_ecdf(
         finish under V ms" from the data and ``percentile``.
     subtitle : str
         Chart subtitle.
+    y_axis_title, x_axis_title : str
+        Axis labels. Forwarded to :func:`build_svg` — see there for defaults.
     width, height : int
         Canvas size in pixels.
     mode, accessibility : str
@@ -316,7 +327,8 @@ def make_ecdf(
     >>> p.exists()
     True
     """
-    svg = build_svg(data, percentile=percentile, title=title, subtitle=subtitle, width=width, height=height,
+    svg = build_svg(data, percentile=percentile, title=title, subtitle=subtitle,
+                     y_axis_title=y_axis_title, x_axis_title=x_axis_title, width=width, height=height,
                      mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "ecdf")
     return write_svg(dest, svg, theme=theme)
