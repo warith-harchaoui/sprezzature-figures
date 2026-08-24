@@ -70,7 +70,11 @@ def _city_colors(
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
     title: str = "Monthly Temperature Range by City",
-    subtitle: str = "Mean daily low to mean daily high, degrees Celsius, 30-year climate normal",
+    subtitle: str = "",
+    y_axis_title: str = "Value",
+    x_axis_title: str = "Month",
+    legend_title: str = "Series",
+    unit: str = "",
     width: int = 845,
     height: int = 519,
     mode: str = "self-contained",
@@ -82,10 +86,30 @@ def build_svg(
     Parameters
     ----------
     data : list of dict or None
-        Rows with keys ``city``, ``month``, ``low``, ``high``. Defaults to
-        :data:`DEMO_DATA`.
+        Rows with keys ``city`` (the series/group label — despite the name,
+        any grouping category, not necessarily a city), ``month`` (the
+        x-axis position label — any ordered category, not necessarily a
+        calendar month), ``low``, ``high``, and optionally ``sort`` (an
+        orderable key controlling x-axis position; falls back to calendar-
+        month ordering when every row omits it, for :data:`DEMO_DATA`
+        backward compatibility). Defaults to :data:`DEMO_DATA`.
     title, subtitle : str
-        Chart text.
+        Chart text. ``subtitle`` defaults to empty — the original hardcoded
+        weather caption ("Mean daily low to mean daily high...") leaked into
+        every non-weather chart until this was generalised; pass it
+        explicitly when actually plotting temperature ranges.
+    y_axis_title : str
+        Y-axis label (was hardcoded ``"Temperature (°C)"``).
+    legend_title : str
+        Legend header above the series swatches (was hardcoded ``"City"``).
+    x_axis_title : str
+        X-axis label under the group ticks. Defaults to ``"Month"`` (the
+        historical default, since ``month`` is still the row key for x-axis
+        position); pass an explicit label when the x-axis is not calendar
+        months.
+    unit : str
+        Appended to values in tooltips/hover cards (e.g. ``"°C"``, ``"€"``).
+        Empty by default (was hardcoded ``"°C"``).
     width, height : int
         Canvas size in pixels.
     mode, accessibility : str, optional
@@ -103,12 +127,34 @@ def build_svg(
     """
     mono_family = mono_stack_for_theme(theme)
     rows = data if data else DEMO_DATA
+    if data is None:
+        # DEMO_DATA is specifically European city temperature ranges — fill
+        # in the weather-flavoured captions when the caller didn't override
+        # them, rather than showing an empty subtitle/generic "Value"/unit-
+        # less tooltip on the one dataset where the domain-specific text is
+        # actually correct. Any caller passing real `data` gets the general
+        # defaults untouched.
+        subtitle = subtitle or "Mean daily low to mean daily high, degrees Celsius, 30-year climate normal"
+        if y_axis_title == "Value":
+            y_axis_title = "Temperature (°C)"
+        if legend_title == "Series":
+            legend_title = "City"
+        unit = unit or "°C"
     seen_cities: List[str] = []
     for r in rows:
         if r["city"] not in seen_cities:
             seen_cities.append(r["city"])
     cities = [c for c in CITIES if c in seen_cities] + [c for c in seen_cities if c not in CITIES]
-    months = sorted({r["month"] for r in rows}, key=lambda m: MONTHS.index(m) if m in MONTHS else 0)
+    if rows and all("sort" in r for r in rows):
+        # Real ordering key, not a guess: without it, any x-axis label outside
+        # the demo's ["Jan","Apr","Jul","Oct"] silently sorted by dict/set
+        # iteration order (Python's set has no defined order) — reproduced
+        # for real with ISO date labels ("2026-07-01" etc.), rendered as
+        # Jul/Sep/Aug instead of Jul/Aug/Sep.
+        sort_by_month = {r["month"]: r["sort"] for r in rows}
+        months = sorted({r["month"] for r in rows}, key=lambda m: sort_by_month[m])
+    else:
+        months = sorted({r["month"] for r in rows}, key=lambda m: MONTHS.index(m) if m in MONTHS else 0)
     colors = _city_colors(cities, accessibility, theme=theme)
 
     lookup: Dict[tuple, tuple] = {(r["city"], r["month"]): (float(r["low"]), float(r["high"])) for r in rows}
@@ -118,7 +164,19 @@ def build_svg(
     pad = (y_max - y_min) * 0.08
     y0, y1 = y_min - pad, y_max + pad
 
-    plot_x, plot_y = 60.0, 150.0
+    # Left margin sized to the actual tick labels, not a fixed 60px: a fixed
+    # margin fit "Temperature (°C)" + 2-3 digit values, but collided with the
+    # rotated y-axis title on wide values (6-digit currency amounts) —
+    # reproduced for real (data_dataviz.py::_columnrange_data, sev7n) with
+    # "300000"-style labels overlapping "Chiffre d'affaires (€)". Computed
+    # once here (reused below for the actual gridlines) rather than after
+    # plot_x is already fixed.
+    y_tick_vals = [t for t in nice_ticks_range(y0, y1, n=6) if y0 - 1e-9 <= t <= y1 + 1e-9]
+    max_tick_chars = max((len(f"{v:.0f}") for v in y_tick_vals), default=4)
+    tick_label_w = max_tick_chars * 6.5  # ~monospace digit width at font-size 11
+    title_band_w = 24.0  # rotated y-axis title occupies a narrow vertical band, not zero-width
+    plot_x = max(60.0, title_band_w + tick_label_w + 16.0)
+    plot_y = 150.0
     right_margin, bottom_reserved = 30.0, 70.0
     plot_w = width - plot_x - right_margin
     plot_h = height - plot_y - bottom_reserved
@@ -133,9 +191,9 @@ def build_svg(
     parts.append(svg_open(width, height, "cr-title", "cr-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="cr-title">{xml_escape(title)}</title>')
     parts.append(
-        f'<desc id="cr-desc">Floating-bar range chart of {len(cities)} cities across '
-        f'{n_groups} months, each bar spanning its mean daily low to mean daily high '
-        f'in degrees Celsius. Range: {y_min:.0f} to {y_max:.0f}.</desc>'
+        f'<desc id="cr-desc">Floating-bar range chart of {len(cities)} series across '
+        f'{n_groups} positions, each bar spanning its low to high value{" in " + unit if unit else ""}. '
+        f'Range: {y_min:.0f} to {y_max:.0f}.</desc>'
     )
 
     parts.append(
@@ -158,7 +216,7 @@ def build_svg(
 
     # ---- legend ----
     lx, ly = 40.0, 100.0
-    parts.append(f'<text x="{lx:.1f}" y="{ly:.1f}" font-size="13" font-weight="700" fill="{INK}">City</text>')
+    parts.append(f'<text x="{lx:.1f}" y="{ly:.1f}" font-size="13" font-weight="700" fill="{INK}">{xml_escape(legend_title)}</text>')
     cursor = lx
     ly2 = ly + 22
     for c in cities:
@@ -169,11 +227,9 @@ def build_svg(
         cursor += 18 + 7.2 * len(c) + 20
 
     # ---- y-axis gridlines ----
-    # Nice round tick values (see _scale.nice_ticks_range) instead of raw
-    # sixths of the padded [y0, y1] span, which produced labels like
-    # -8/-1/7/14/22/30/37. Clipped back to [y0, y1] so no gridline is drawn
-    # outside the plot rectangle.
-    y_tick_vals = [t for t in nice_ticks_range(y0, y1, n=6) if y0 - 1e-9 <= t <= y1 + 1e-9]
+    # y_tick_vals computed earlier (alongside plot_x sizing) — nice round
+    # tick values (see _scale.nice_ticks_range) instead of raw sixths of the
+    # padded [y0, y1] span, which produced labels like -8/-1/7/14/22/30/37.
     for val in y_tick_vals:
         ty = y_for(val)
         parts.append(
@@ -187,7 +243,7 @@ def build_svg(
     parts.append(
         f'<text x="18" y="{plot_y + plot_h / 2:.1f}" font-size="13" fill="{INK}" '
         f'text-anchor="middle" transform="rotate(-90 18 {plot_y + plot_h / 2:.1f})">'
-        f'Temperature (°C)</text>'
+        f'{xml_escape(y_axis_title)}</text>'
     )
 
     # ---- floating bars, grouped by month ----
@@ -206,7 +262,7 @@ def build_svg(
             y_top, y_bot = y_for(high), y_for(low)
             h = max(1.0, y_bot - y_top)
             r = min(bar_w / 2.0, 4.0)
-            tip = f"{c}, {m}: {low:.0f}°C to {high:.0f}°C"
+            tip = f"{c}, {m}: {low:.0f}{unit} to {high:.0f}{unit}"
             parts.append(
                 f'<rect id="hit-{idx}" class="rangebar hit" tabindex="0" x="{x:.1f}" y="{y_top:.1f}" '
                 f'width="{bar_w:.1f}" height="{h:.1f}" rx="{r:.1f}" '
@@ -215,7 +271,7 @@ def build_svg(
             tip_cards.append(
                 tooltip_bubble(
                     x + bar_w / 2, y_top - 10,
-                    [f"{c}, {m}", f"low {low:.0f}°C — high {high:.0f}°C", f"span {high - low:.0f}°C"],
+                    [f"{c}, {m}", f"low {low:.0f}{unit} — high {high:.0f}{unit}", f"span {high - low:.0f}{unit}"],
                     anchor="middle", canvas_w=width, canvas_h=height,
                     ink=INK, secondary=SECONDARY, border=GRIDLINE,
                     elem_id=f"tip-{idx}",
@@ -238,7 +294,7 @@ def build_svg(
         )
     parts.append(
         f'<text x="{plot_x + plot_w / 2:.1f}" y="{axis_y + 44:.1f}" font-size="13" '
-        f'fill="{INK}" text-anchor="middle">Month</text>'
+        f'fill="{INK}" text-anchor="middle">{xml_escape(x_axis_title)}</text>'
     )
 
     parts.append(fullscreen_control(width, height, mode))
@@ -251,7 +307,11 @@ def make_columnrange(
     *,
     out: Optional[Path | str] = None,
     title: str = "Monthly Temperature Range by City",
-    subtitle: str = "Mean daily low to mean daily high, degrees Celsius, 30-year climate normal",
+    subtitle: str = "",
+    y_axis_title: str = "Value",
+    x_axis_title: str = "Month",
+    legend_title: str = "Series",
+    unit: str = "",
     width: int = 845,
     height: int = 519,
     mode: str = "self-contained",
@@ -263,12 +323,15 @@ def make_columnrange(
     Parameters
     ----------
     data : list[dict[str, Any]] or None
-        Rows with keys ``city``, ``month``, ``low``, ``high``. Defaults to
-        DEMO_DATA (European city temperature ranges).
+        Rows with keys ``city``, ``month``, ``low``, ``high``, optionally
+        ``sort``. Defaults to DEMO_DATA (European city temperature ranges).
     out : Path, str, or None
         Output path (.svg). Defaults to ``assets/svg-examples/columnrange.svg``.
     title, subtitle : str
-        Chart text.
+        Chart text. ``subtitle`` defaults to empty (see :func:`build_svg`).
+    y_axis_title, x_axis_title, legend_title, unit : str
+        Forwarded to :func:`build_svg` — see there for the generalisation
+        this makes over the original weather-only hardcoded strings.
     width, height : int
         Canvas size in pixels.
     mode, accessibility : str
@@ -287,8 +350,9 @@ def make_columnrange(
     >>> p.exists()
     True
     """
-    svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
-                     mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(data, title=title, subtitle=subtitle, y_axis_title=y_axis_title,
+                     x_axis_title=x_axis_title, legend_title=legend_title, unit=unit,
+                     width=width, height=height, mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "columnrange")
     return write_svg(dest, svg, theme=theme)
 
