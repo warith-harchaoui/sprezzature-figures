@@ -486,7 +486,10 @@ def _scale_bar(x0: float, y0: float, cell_px: float, mono_family: str = "Roboto 
 # SVG assembly
 # ------------------------------------------------------------------
 def build_svg(
-    mode: str = "self-contained", accessibility: str = "universal", theme: str = "corporate"
+    mode: str = "self-contained", accessibility: str = "universal", theme: str = "corporate",
+    river_label: str = "River",
+    park_label: str = "Central Park",
+    legend_title: str = "Incidents per cell",
 ) -> str:
     """Assemble the full binned-grid-map SVG document as a string.
 
@@ -643,12 +646,12 @@ def build_svg(
         f'<text x="{riv_lx:.1f}" y="{riv_ly:.1f}" font-size="15" '
         f'fill="#7E97BD" font-style="italic" transform="rotate(30 '
         f'{riv_lx:.1f} {riv_ly:.1f})" text-anchor="middle" '
-        f'letter-spacing="0.5">River</text>'
+        f'letter-spacing="0.5">{xml_escape(river_label)}</text>'
     )
     parts.append(
         f'<text x="{park_lx:.1f}" y="{park_ly:.1f}" font-size="15" '
         f'fill="#5E9C6E" font-style="italic" text-anchor="middle" '
-        f'letter-spacing="0.5">Central Park</text>'
+        f'letter-spacing="0.5">{xml_escape(park_label)}</text>'
     )
 
     # ---- binned-grid layer ----
@@ -694,7 +697,7 @@ def build_svg(
     parts.append(f'<g transform="translate({lx:.1f},{ly:.1f})">')
     parts.append(
         f'<text x="0" y="-24" font-size="20" font-weight="700" '
-        f'fill="{_INK}">Incidents per cell</text>'
+        f'fill="{_INK}">{xml_escape(legend_title)}</text>'
     )
     # A vertical ramp built from discrete swatches (self-contained, no
     # <defs> gradient) — top swatch = busiest.
@@ -772,6 +775,9 @@ def make_binned_grid_map(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    river_label: str = "River",
+    park_label: str = "Central Park",
+    legend_title: str = "Incidents per cell",
 ) -> Path:
     """Render the binned-grid map and write it to ``out``.
 
@@ -784,7 +790,7 @@ def make_binned_grid_map(
     dispatcher parity and not threaded into the render. ``theme`` is
     forwarded to :func:`build_svg`.
     """
-    svg = build_svg(mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(mode=mode, accessibility=accessibility, theme=theme, river_label=river_label, park_label=park_label, legend_title=legend_title)
     dest = Path(out) if out else svg_example_path(__file__, "binned-grid-map")
     return write_svg(dest, svg, theme=theme)
 

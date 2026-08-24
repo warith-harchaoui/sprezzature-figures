@@ -155,6 +155,7 @@ def _set_totals(sets: List[str], combinations: List[Tuple[Tuple[str, ...], int]]
 
 def build_svg(
     data: Optional[List[Dict[str, object]]] = None,
+    set_size_title: str = "Set size (k)",
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -166,6 +167,9 @@ def build_svg(
     data : list of dict or None
         Rows with keys ``sets`` (list of member-set-name strings) and
         ``count`` (int). Defaults to :data:`DEMO_DATA`.
+    set_size_title : str
+        Header above the set-size bar panel (was hardcoded
+        ``"Set size (k)"``).
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`
         (``"self-contained"``, ``"external"`` or ``"static"``). Defaults to
@@ -346,7 +350,7 @@ def build_svg(
     # ---- set-size panel header ----
     parts.append(
         f'<text x="{left_pad:.0f}" y="{matrix_y0 - 16:.1f}" font-size="15" '
-        f'fill="{_SUBTLE}">Set size (k)</text>'
+        f'fill="{_SUBTLE}">{_xml(set_size_title)}</text>'
     )
 
     # ---- set-size bars + set-name labels (left panel) ----
@@ -459,6 +463,7 @@ def make_upset(
     *,
     out: Optional[Path | str] = None,
     title: str = "",
+    set_size_title: str = "Set size (k)",
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -475,6 +480,8 @@ def make_upset(
     title : str, optional
         Accepted for dispatcher parity; the plot's own headline states the
         specific takeaway, so this is unused.
+    set_size_title : str
+        Header above the set-size bar panel. Forwarded to :func:`build_svg`.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
     theme : str, optional
@@ -486,7 +493,8 @@ def make_upset(
         Absolute path to the written SVG file.
     """
     del title
-    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(data, set_size_title=set_size_title,
+                     mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "upset")
     return write_svg(dest, svg, theme=theme)
 

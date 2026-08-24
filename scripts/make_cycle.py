@@ -253,7 +253,10 @@ DEMO_DATA: List[Dict[str, Any]] = [
 ]
 
 
-def build_svg(mode: str = "self-contained", accessibility: str = "universal", theme: str = "corporate") -> str:
+def build_svg(
+    mode: str = "self-contained", accessibility: str = "universal", theme: str = "corporate",
+    hub_label: str = "ONE FIELD", hub_title: str = "Winter wheat",
+) -> str:
     """Assemble the full cycle-wheel SVG document as a string.
 
     Parameters
@@ -271,6 +274,9 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
         Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
         the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
         See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
+    hub_label, hub_title : str, optional
+        The two centre-hub lines (was hardcoded ``"ONE FIELD"``/``"Winter
+        wheat"``).
 
     Returns
     -------
@@ -505,11 +511,11 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
     parts.append(
         f'<text x="{_CX}" y="{_CY - 16:.1f}" font-size="17" '
         f'font-family="Roboto Mono, monospace" fill="{_SUBTLE}" '
-        f'text-anchor="middle" letter-spacing="2">ONE FIELD</text>'
+        f'text-anchor="middle" letter-spacing="2">{_xml(hub_label)}</text>'
     )
     parts.append(
         f'<text x="{_CX}" y="{_CY + 14:.1f}" font-size="30" font-weight="700" '
-        f'fill="{_INK}" text-anchor="middle">Winter wheat</text>'
+        f'fill="{_INK}" text-anchor="middle">{_xml(hub_title)}</text>'
     )
     parts.append(
         f'<text x="{_CX}" y="{_CY + 42:.1f}" font-size="16" fill="{_SUBTLE}" '
@@ -575,6 +581,8 @@ def make_cycle(
     *,
     out: Optional[Path | str] = None,
     title: str = "",
+    hub_label: str = "ONE FIELD",
+    hub_title: str = "Winter wheat",
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -599,6 +607,9 @@ def make_cycle(
     title : str, optional
         Accepted for dispatcher/CLI parity; unused, since the chart's
         title is fixed prose.
+    hub_label, hub_title : str, optional
+        The two centre-hub lines (was hardcoded ``"ONE FIELD"``/``"Winter
+        wheat"``).
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
     theme : str, optional
@@ -610,7 +621,7 @@ def make_cycle(
         Absolute path to the written SVG file.
     """
     _ = data, title  # accepted for dispatcher parity; see docstring
-    svg = build_svg(mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(mode=mode, accessibility=accessibility, theme=theme, hub_label=hub_label, hub_title=hub_title)
     dest = Path(out) if out else svg_example_path(__file__, "cycle")
     return write_svg(dest, svg, theme=theme)
 

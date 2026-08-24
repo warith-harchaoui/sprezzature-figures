@@ -671,11 +671,23 @@ _CALLOUTS: List[Tuple[str, float, float, str]] = [
 # ------------------------------------------------------------------
 # Build
 # ------------------------------------------------------------------
-def build_svg(mode: str = "self-contained", accessibility: str = "universal", theme: str = "corporate") -> str:
+def build_svg(
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+    theme: str = "corporate",
+    headline_stat_label: str = "Ring of Fire",
+    ramp_legend_title: str = "Earthquakes per hexagon",
+) -> str:
     """Assemble the full geographic-hexbin-map SVG document as a string.
 
     Parameters
     ----------
+    headline_stat_label : str, optional
+        Large headline caption over the bottom-left stat callout. Defaults
+        to ``"Ring of Fire"`` (the demo's earthquake-catalogue framing).
+    ramp_legend_title : str, optional
+        Title above the horizontal colour-ramp legend. Defaults to
+        ``"Earthquakes per hexagon"``.
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`
         (``"self-contained"``, ``"external"`` or ``"static"``). Defaults to
@@ -894,7 +906,10 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
     parts.append('</g>')
 
     # ---- sequential legend + stat callout (bottom band) ----
-    parts.extend(_legend_and_stat(red, ramp_max, true_max, total, active, theme=theme))
+    parts.extend(_legend_and_stat(
+        red, ramp_max, true_max, total, active, theme=theme,
+        headline_stat_label=headline_stat_label, ramp_legend_title=ramp_legend_title,
+    ))
 
     # ---- footnote / method note ----
     parts.append(
@@ -915,6 +930,8 @@ def _legend_and_stat(
     total: int,
     active: int,
     theme: str = "corporate",
+    headline_stat_label: str = "Ring of Fire",
+    ramp_legend_title: str = "Earthquakes per hexagon",
 ) -> List[str]:
     """Return the horizontal legend ramp plus a headline stat, bottom-left.
 
@@ -932,6 +949,10 @@ def _legend_and_stat(
         Number of non-empty hexagons.
     theme : str, optional
         Forwarded to :func:`_ramp`.
+    headline_stat_label : str, optional
+        Large headline caption text. Defaults to ``"Ring of Fire"``.
+    ramp_legend_title : str, optional
+        Title above the colour ramp. Defaults to ``"Earthquakes per hexagon"``.
 
     Returns
     -------
@@ -946,7 +967,7 @@ def _legend_and_stat(
     # Share of quakes captured by the busiest 10% of active hexes.
     out.append(
         f'<text x="{lx:.1f}" y="{ly + 30:.1f}" font-size="52" font-weight="700" '
-        f'fill="{red}">Ring of Fire</text>'
+        f'fill="{red}">{headline_stat_label}</text>'
     )
     out.append(
         f'<text x="{lx:.1f}" y="{ly + 56:.1f}" font-size="17" fill="{_SUBTLE}">'
@@ -962,7 +983,7 @@ def _legend_and_stat(
     seg_w = 40.0
     out.append(
         f'<text x="{ramp_x:.1f}" y="{ramp_y - 12:.1f}" font-size="16.5" '
-        f'font-weight="700" fill="{_INK}">Earthquakes per hexagon</text>'
+        f'font-weight="700" fill="{_INK}">{ramp_legend_title}</text>'
     )
     for i in range(n_seg):
         t = i / (n_seg - 1)
@@ -993,6 +1014,8 @@ def make_hexbin_map(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    headline_stat_label: str = "Ring of Fire",
+    ramp_legend_title: str = "Earthquakes per hexagon",
 ) -> Path:
     """Render the geographic hexbin map and write it to ``out``.
 
@@ -1001,7 +1024,10 @@ def make_hexbin_map(
     demo geography and values are baked into the hand-authored SVG, so ``data``
     and ``title`` are accepted for dispatcher parity and unused.
     """
-    svg = build_svg(mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(
+        mode=mode, accessibility=accessibility, theme=theme,
+        headline_stat_label=headline_stat_label, ramp_legend_title=ramp_legend_title,
+    )
     dest = Path(out) if out else svg_example_path(__file__, "hexbin-map")
     return write_svg(dest, svg, theme=theme)
 

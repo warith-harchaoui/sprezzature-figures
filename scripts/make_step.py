@@ -50,6 +50,8 @@ def build_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    y_axis_title: str = "Value",
+    x_axis_title: str = "Step",
 ) -> str:
     """Assemble the full step chart SVG document as a string.
 
@@ -61,6 +63,8 @@ def build_svg(
         Chart text.
     width, height : int
         Canvas size in pixels.
+    y_axis_title, x_axis_title : str, optional
+        Axis titles (were hardcoded ``"Value"`` / ``"Step"``).
     mode : str, optional
         Forwarded to :func:`_interactive.fullscreen_control`.
     accessibility : str, optional
@@ -135,7 +139,7 @@ def build_svg(
         )
     parts.append(
         f'<text x="18" y="{plot_y + plot_h / 2:.1f}" font-size="13" fill="{INK}" '
-        f'text-anchor="middle" transform="rotate(-90 18 {plot_y + plot_h / 2:.1f})">Value</text>'
+        f'text-anchor="middle" transform="rotate(-90 18 {plot_y + plot_h / 2:.1f})">{xml_escape(y_axis_title)}</text>'
     )
 
     # ---- step-after path ----
@@ -185,7 +189,7 @@ def build_svg(
         )
     parts.append(
         f'<text x="{plot_x + plot_w / 2:.1f}" y="{axis_y + 42:.1f}" font-size="13" '
-        f'fill="{INK}" text-anchor="middle">Step</text>'
+        f'fill="{INK}" text-anchor="middle">{xml_escape(x_axis_title)}</text>'
     )
 
     parts.extend(bubbles)
@@ -205,6 +209,8 @@ def make_step(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    y_axis_title: str = "Value",
+    x_axis_title: str = "Step",
 ) -> Path:
     """Render a hand-authored step chart and write the SVG to *out*.
 
@@ -222,6 +228,9 @@ def make_step(
         Forwarded to :func:`build_svg`.
     theme : str, optional
         Visual theme. Forwarded to :func:`build_svg`.
+    y_axis_title, x_axis_title : str, optional
+        Forwarded to :func:`build_svg` — were hardcoded ``"Value"`` and
+        ``"Step"`` with no way to override them for non-generic data.
 
     Returns
     -------
@@ -235,7 +244,8 @@ def make_step(
     True
     """
     svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
-                     mode=mode, accessibility=accessibility, theme=theme)
+                     mode=mode, accessibility=accessibility, theme=theme,
+                     y_axis_title=y_axis_title, x_axis_title=x_axis_title)
     dest = Path(out) if out else svg_example_path(__file__, "step")
     return write_svg(dest, svg, theme=theme)
 

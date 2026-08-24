@@ -212,6 +212,8 @@ def _loess(
 
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
+    above_annotation: str = "Normal under-states P",
+    below_annotation: str = "Normal over-states P",
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -227,6 +229,11 @@ def build_svg(
 
     Parameters
     ----------
+    above_annotation, below_annotation : str, optional
+        Sub-labels under "Above the line" / "Below the line" naming which
+        reference distribution is being tested (default: Normal — was
+        hardcoded). Swap these when the theoretical CDF being P-P-plotted
+        against isn't the Normal, to keep the statistical claim accurate.
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`
         (``"self-contained"``, ``"external"`` or ``"static"``). Defaults to
@@ -524,7 +531,7 @@ def build_svg(
     )
     parts.append(
         f'<text class="pp-above" x="{sx(0.075):.1f}" y="{sy(0.90) + 32:.1f}" font-size="22" '
-        f'fill="{above}" text-anchor="start">Normal under-states P</text>'
+        f'fill="{above}" text-anchor="start">{xml_escape(above_annotation)}</text>'
     )
     parts.append(
         f'<text class="pp-below" x="{sx(0.925):.1f}" y="{sy(0.16):.1f}" font-size="26" '
@@ -533,7 +540,7 @@ def build_svg(
     )
     parts.append(
         f'<text class="pp-below" x="{sx(0.925):.1f}" y="{sy(0.16) + 32:.1f}" font-size="22" '
-        f'fill="{below}" text-anchor="end">Normal over-states P</text>'
+        f'fill="{below}" text-anchor="end">{xml_escape(below_annotation)}</text>'
     )
 
     parts.append(fullscreen_control(width, height, mode))
@@ -546,6 +553,8 @@ def make_ppplot(
     *,
     out: Optional[Path | str] = None,
     title: str = "",
+    above_annotation: str = "Normal under-states P",
+    below_annotation: str = "Normal over-states P",
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -563,6 +572,8 @@ def make_ppplot(
     title : str, optional
         Accepted for signature parity; the figure's headline is baked into
         the diagnostic narrative (unused).
+    above_annotation, below_annotation : str, optional
+        Forwarded to :func:`build_svg`.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
     theme : str, optional
@@ -574,7 +585,14 @@ def make_ppplot(
         Absolute path to the written SVG file.
     """
     _ = title
-    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(
+        data,
+        above_annotation=above_annotation,
+        below_annotation=below_annotation,
+        mode=mode,
+        accessibility=accessibility,
+        theme=theme,
+    )
     dest = Path(out) if out else svg_example_path(__file__, "ppplot")
     return write_svg(dest, svg, theme=theme)
 

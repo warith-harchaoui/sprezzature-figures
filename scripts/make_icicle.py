@@ -267,11 +267,14 @@ def render_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    legend_title: str = "Colour",
 ) -> str:
     """Assemble the full icicle / flame-graph SVG document as a string.
 
     Parameters
     ----------
+    legend_title : str, optional
+        Title above the colour-key legend. Defaults to ``"Colour"``.
     tree : dict or None
         A call-tree node shaped like :data:`TREE` (``name``, ``ms``,
         ``children``). Defaults to :data:`TREE`. When a custom tree is
@@ -521,7 +524,7 @@ def render_svg(
     lx = plot_x
     parts.append(
         f'<text x="{fmt_compact(lx, decimals=2)}" y="{fmt_compact(legend_y, decimals=2)}" font-size="15" font-weight="700" '
-        f'fill="{ink}">Colour</text>'
+        f'fill="{ink}">{legend_title}</text>'
     )
 
     # Blue root swatch.
@@ -607,6 +610,7 @@ def make_icicle(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    legend_title: str = "Colour",
 ) -> Path:
     """Render the icicle / flame-graph figure and write the SVG to *out*.
 
@@ -624,6 +628,8 @@ def make_icicle(
         Forwarded to :func:`render_svg`.
     theme : str, optional
         Visual theme. Forwarded to :func:`render_svg`.
+    legend_title : str, optional
+        Title above the colour-key legend. Forwarded to :func:`render_svg`.
 
     Returns
     -------
@@ -633,7 +639,7 @@ def make_icicle(
     _ = title
     rows = data if data else DEMO_DATA
     tree = _rows_to_tree(rows) or TREE
-    svg = render_svg(tree, mode=mode, accessibility=accessibility, theme=theme)
+    svg = render_svg(tree, mode=mode, accessibility=accessibility, theme=theme, legend_title=legend_title)
     dest = Path(__file__).resolve().parent.parent / "assets" / "svg-examples" / "icicle.svg"
     dest = Path(out) if out else dest
     return write_svg(dest, svg, theme=theme)

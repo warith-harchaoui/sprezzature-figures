@@ -76,6 +76,8 @@ def build_svg(
     diagonal: bool = False,
     square: bool = False,
     theme: str = "corporate",
+    segment_legend_title: str = "Segment",
+    weight_legend_title: str = "Weight (kg)",
 ) -> str:
     """Assemble the full scatter plot SVG document as a string.
 
@@ -88,6 +90,12 @@ def build_svg(
         Chart text.
     width, height : int
         Canvas size in pixels.
+    segment_legend_title : str, optional
+        Header above the colour-segment legend (was hardcoded ``"Segment"``).
+    weight_legend_title : str, optional
+        Header above the size legend shown when ``weight`` values are present
+        (was hardcoded ``"Weight (kg)"``) — pass a label matching whatever
+        ``weight`` actually encodes for non-vehicle data.
     mode, accessibility : str, optional
         Forwarded to :func:`_interactive.fullscreen_control` /
         :func:`_style.load_palette`.
@@ -277,7 +285,7 @@ def build_svg(
     if len(segments) > 1:
         leg_x = width - right_margin + 28
         leg_y = 118.0
-        parts.append(f'<text x="{leg_x:.1f}" y="{leg_y:.1f}" font-size="13" font-weight="700" fill="{INK}">Segment</text>')
+        parts.append(f'<text x="{leg_x:.1f}" y="{leg_y:.1f}" font-size="13" font-weight="700" fill="{INK}">{xml_escape(segment_legend_title)}</text>')
         for i, seg in enumerate(segments):
             ry = leg_y + 26 + i * 26
             parts.append(f'<circle cx="{leg_x + 7:.1f}" cy="{ry - 5:.1f}" r="7" fill="{colors[seg]}" fill-opacity="0.85"/>')
@@ -285,7 +293,7 @@ def build_svg(
 
         if has_weight:
             size_leg_y = leg_y + 26 + len(segments) * 26 + 30
-            parts.append(f'<text x="{leg_x:.1f}" y="{size_leg_y:.1f}" font-size="13" font-weight="700" fill="{INK}">Weight (kg)</text>')
+            parts.append(f'<text x="{leg_x:.1f}" y="{size_leg_y:.1f}" font-size="13" font-weight="700" fill="{INK}">{xml_escape(weight_legend_title)}</text>')
             cursor_y = size_leg_y + 22
             # Bracket the *actual* weight range in the plotted data (not an
             # arbitrary fraction of the max) -- a legend value smaller than
@@ -322,6 +330,8 @@ def make_scatter(
     diagonal: bool = False,
     square: bool = False,
     theme: str = "corporate",
+    segment_legend_title: str = "Segment",
+    weight_legend_title: str = "Weight (kg)",
 ) -> Path:
     """Render a hand-authored scatter plot and write the SVG to *out*.
 
@@ -340,6 +350,9 @@ def make_scatter(
         Forwarded to :func:`build_svg`.
     theme : str, optional
         Visual theme. Forwarded to :func:`build_svg`.
+    segment_legend_title, weight_legend_title : str, optional
+        Forwarded to :func:`build_svg` — were hardcoded ``"Segment"`` and
+        ``"Weight (kg)"`` with no way to override them for non-vehicle data.
 
     Returns
     -------
@@ -354,7 +367,8 @@ def make_scatter(
     """
     svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
                      mode=mode, accessibility=accessibility, x_label=x_label, y_label=y_label,
-                     diagonal=diagonal, square=square, theme=theme)
+                     diagonal=diagonal, square=square, theme=theme,
+                     segment_legend_title=segment_legend_title, weight_legend_title=weight_legend_title)
     dest = Path(out) if out else svg_example_path(__file__, "scatter")
     return write_svg(dest, svg, theme=theme)
 

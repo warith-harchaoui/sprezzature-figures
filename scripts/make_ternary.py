@@ -232,8 +232,18 @@ def _grid_lines() -> List[str]:
     return lines
 
 
-def _axis_labels() -> List[str]:
+def _axis_labels(
+    clay_label: str = "Clay",
+    sand_label: str = "Sand",
+    silt_label: str = "Silt",
+) -> List[str]:
     """Build the three corner titles and the per-edge percentage ticks.
+
+    Parameters
+    ----------
+    clay_label, sand_label, silt_label : str
+        Text for the top, bottom-left and bottom-right triangle corners
+        (was hardcoded ``"Clay"`` / ``"Sand"`` / ``"Silt"``).
 
     Returns
     -------
@@ -244,15 +254,15 @@ def _axis_labels() -> List[str]:
     # Corner titles.
     parts.append(
         f'<text x="{_APEX_X:.1f}" y="{_APEX_Y - 26:.1f}" font-size="23" '
-        f'font-weight="700" fill="{_INK}" text-anchor="middle">Clay</text>'
+        f'font-weight="700" fill="{_INK}" text-anchor="middle">{_xml(clay_label)}</text>'
     )
     parts.append(
         f'<text x="{_LEFT_X - 10:.1f}" y="{_BASE_Y + 48:.1f}" font-size="23" '
-        f'font-weight="700" fill="{_INK}" text-anchor="start">Sand</text>'
+        f'font-weight="700" fill="{_INK}" text-anchor="start">{_xml(sand_label)}</text>'
     )
     parts.append(
         f'<text x="{_RIGHT_X + 10:.1f}" y="{_BASE_Y + 48:.1f}" font-size="23" '
-        f'font-weight="700" fill="{_INK}" text-anchor="end">Silt</text>'
+        f'font-weight="700" fill="{_INK}" text-anchor="end">{_xml(silt_label)}</text>'
     )
 
     # Percentage ticks along each edge (every 20 %), as small mono labels.
@@ -288,6 +298,10 @@ def _axis_labels() -> List[str]:
 
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
+    legend_title: str = "Texture class",
+    clay_label: str = "Clay",
+    sand_label: str = "Sand",
+    silt_label: str = "Silt",
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -299,6 +313,12 @@ def build_svg(
     data : list of dict or None
         Rows with keys ``class``, ``sand``, ``silt`` and ``clay`` (each row
         summing to 100). Defaults to :data:`DEMO_DATA`.
+    legend_title : str
+        Header above the texture-class legend (was hardcoded
+        ``"Texture class"``).
+    clay_label, sand_label, silt_label : str
+        Text for the triangle's top, bottom-left and bottom-right corners
+        (was hardcoded ``"Clay"`` / ``"Sand"`` / ``"Silt"``).
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`
         (``"self-contained"`` / ``"external"`` / ``"static"``). Defaults to
@@ -421,7 +441,7 @@ def build_svg(
     )
 
     # ---- axis / corner labels + ticks ----
-    parts.extend(_axis_labels())
+    parts.extend(_axis_labels(clay_label, sand_label, silt_label))
 
     # ---- sample markers, grouped by texture class ----
     # Each point's bubble is queued and appended after every point *in its
@@ -468,7 +488,7 @@ def build_svg(
     parts.append(f'<g transform="translate({legend_x:.1f},{legend_y:.1f})">')
     parts.append(
         f'<text x="0" y="-16" font-size="16" font-weight="700" '
-        f'fill="{_SUBTLE}">Texture class</text>'
+        f'fill="{_SUBTLE}">{_xml(legend_title)}</text>'
     )
     for k, d in enumerate(grouped):
         s = _slug(str(d["label"]))
@@ -508,6 +528,10 @@ def make_ternary(
     *,
     out: Optional[Path | str] = None,
     title: str = "",
+    legend_title: str = "Texture class",
+    clay_label: str = "Clay",
+    sand_label: str = "Sand",
+    silt_label: str = "Silt",
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -524,6 +548,10 @@ def make_ternary(
     title : str, optional
         Accepted for dispatcher parity; the plot's own headline states the
         specific takeaway, so this is unused.
+    legend_title : str
+        Header above the texture-class legend. Forwarded to :func:`build_svg`.
+    clay_label, sand_label, silt_label : str
+        Triangle corner labels. Forwarded to :func:`build_svg`.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
     theme : str, optional
@@ -535,7 +563,11 @@ def make_ternary(
         Absolute path to the written SVG file.
     """
     del title
-    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(
+        data, legend_title=legend_title, clay_label=clay_label,
+        sand_label=sand_label, silt_label=silt_label,
+        mode=mode, accessibility=accessibility, theme=theme,
+    )
     dest = Path(out) if out else svg_example_path(__file__, "ternary")
     return write_svg(dest, svg, theme=theme)
 

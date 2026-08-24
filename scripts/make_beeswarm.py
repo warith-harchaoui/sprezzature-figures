@@ -57,13 +57,30 @@ def _make_demo_data() -> List[Dict[str, Any]]:
 DEMO_DATA: List[Dict[str, Any]] = _make_demo_data()
 
 
-def _swarm_positions(items: List[Tuple[float, float]], center_y: float, radius: float) -> List[float]:
+def _swarm_positions(
+    items: List[Tuple[float, float]], center_y: float, radius: float,
+    max_offset: Optional[float] = None,
+) -> List[float]:
     """Greedy collision-avoidance layout: return one y per (x, _) in *items*.
 
     Processes points in the given order, trying ``center_y`` first, then
     alternating offsets of increasing magnitude, accepting the first
     position that does not overlap (in Euclidean distance) any
     already-placed point whose x is within one diameter.
+
+    Parameters
+    ----------
+    max_offset : float, optional
+        Cap on how far a point may be pushed from ``center_y``. A locally
+        dense cluster of x-values (many points sharing nearly the same x)
+        otherwise pushes the offset outward without bound: fine when a
+        band has generous headroom, but a caller with a fixed row height
+        (a multi-row swarm, one band per category) needs points to stay
+        inside their own band rather than spill into a neighbour's. Once
+        the offset would exceed this cap, the point is clamped to the
+        boundary and placed there, overlap accepted, rather than pushed
+        further out. ``None`` (default) preserves the original unbounded
+        behaviour.
     """
     step = radius * 1.9
     placed: List[Tuple[float, float]] = []
@@ -72,13 +89,18 @@ def _swarm_positions(items: List[Tuple[float, float]], center_y: float, radius: 
         offset = 0
         tried = 0
         while True:
-            candidate = center_y if offset == 0 else center_y + (step * ((offset + 1) // 2) * (1 if offset % 2 else -1))
+            raw_candidate = center_y if offset == 0 else center_y + (step * ((offset + 1) // 2) * (1 if offset % 2 else -1))
+            at_bound = max_offset is not None and abs(raw_candidate - center_y) >= max_offset
+            candidate = (
+                center_y + max_offset * (1 if raw_candidate >= center_y else -1)
+                if at_bound else raw_candidate
+            )
             collision = any(
                 (x - px) ** 2 + (candidate - py) ** 2 < (2 * radius) ** 2
                 for px, py in placed
                 if abs(x - px) < 2 * radius
             )
-            if not collision or tried > 400:
+            if not collision or tried > 400 or at_bound:
                 placed.append((x, candidate))
                 ys.append(candidate)
                 break
@@ -96,6 +118,8 @@ def build_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    group_prefix: str = "Group ",
+    y_axis_title: str = "Value",
 ) -> str:
     """Assemble the full beeswarm plot SVG document as a string.
 
@@ -187,7 +211,7 @@ def build_svg(
     cursor = lx
     for g in groups:
         parts.append(f'<circle cx="{cursor + 6:.1f}" cy="{ly - 4:.1f}" r="6" fill="{colors[g]}"/>')
-        parts.append(f'<text x="{cursor + 20:.1f}" y="{ly:.1f}" font-size="12" fill="{INK}">Group {xml_escape(g)}</text>')
+        parts.append(f'<text x="{cursor + 20:.1f}" y="{ly:.1f}" font-size="12" fill="{INK}">{xml_escape(group_prefix)}{xml_escape(g)}</text>')
         cursor += 20 + 7.0 * (len(g) + 6) + 22
 
     # ---- x-axis ----
@@ -215,7 +239,7 @@ def build_svg(
         )
     parts.append(
         f'<text x="{plot_x + plot_w / 2:.1f}" y="{axis_y + 42:.1f}" font-size="13" '
-        f'fill="{INK}" text-anchor="middle">Value</text>'
+        f'fill="{INK}" text-anchor="middle">{xml_escape(y_axis_title)}</text>'
     )
 
     # ---- dots ----
@@ -257,6 +281,8 @@ def make_beeswarm(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    group_prefix: str = "Group ",
+    y_axis_title: str = "Value",
 ) -> Path:
     """Render a hand-authored beeswarm plot and write the SVG to *out*.
 
@@ -288,7 +314,7 @@ def make_beeswarm(
     True
     """
     svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
-                     mode=mode, accessibility=accessibility, theme=theme)
+                     mode=mode, accessibility=accessibility, theme=theme, group_prefix=group_prefix, y_axis_title=y_axis_title)
     dest = Path(out) if out else svg_example_path(__file__, "beeswarm")
     return write_svg(dest, svg, theme=theme)
 

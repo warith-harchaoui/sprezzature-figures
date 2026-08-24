@@ -53,7 +53,7 @@ import numpy as np
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _svg import catmull_rom_beziers, fmt_compact, foreground_tip_css, tooltip_bubble  # noqa: E402
+from _svg import catmull_rom_beziers, fmt_compact, foreground_tip_css, tooltip_bubble, xml_escape  # noqa: E402
 from _render import svg_example_path, write_svg  # noqa: E402
 from _style import leveled_colors, os_adaptive_style, os_dark_style  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
@@ -285,6 +285,8 @@ def build_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    squeeze_label: str = "The squeeze",
+    price_legend_label: str = "Daily close",
 ) -> str:
     """Assemble the full Bollinger-band SVG document as a string.
 
@@ -510,7 +512,7 @@ def build_svg(
     ann.append(
         f'<text class="bo-squeeze-txt" x="{_fmt(sx)}" y="{_fmt(s_lbl_y - 16)}" '
         f'text-anchor="middle" '
-        f'font-size="17" font-weight="700" fill="{_SQUEEZE_HUE_C}">The squeeze</text>'
+        f'font-size="17" font-weight="700" fill="{_SQUEEZE_HUE_C}">{xml_escape(squeeze_label)}</text>'
     )
     ann.append(
         f'<text x="{_fmt(sx)}" y="{_fmt(s_lbl_y + 2)}" text-anchor="middle" '
@@ -646,7 +648,7 @@ def build_svg(
     )
     legend.append(
         f'<text x="{_fmt(lx + 34)}" y="{_fmt(ly)}" font-size="15" '
-        f'fill="{_INK}">Daily close</text>'
+        f'fill="{_INK}">{xml_escape(price_legend_label)}</text>'
     )
     # MA line swatch.
     lx += 156
@@ -816,6 +818,8 @@ def make_bollinger(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    squeeze_label: str = "The squeeze",
+    price_legend_label: str = "Daily close",
 ) -> Path:
     """Render the house-styled Bollinger-band chart and write the SVG to *out*.
 
@@ -853,7 +857,7 @@ def make_bollinger(
     _ = title
     rows = data if data else DEMO_DATA
     price_data = _rows_to_close(rows)
-    svg = build_svg(price_data, window=window, n_sigma=n_sigma, mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(price_data, window=window, n_sigma=n_sigma, mode=mode, accessibility=accessibility, theme=theme, squeeze_label=squeeze_label, price_legend_label=price_legend_label)
     dest = Path(out) if out else svg_example_path(__file__, "bollinger")
     return write_svg(dest, svg, theme=theme)
 

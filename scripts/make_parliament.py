@@ -63,7 +63,7 @@ from xml.sax.saxutils import escape
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import BG, INK, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
-from _svg import foreground_tip_css, point_on_circle, svg_open, tooltip_bubble  # noqa: E402
+from _svg import foreground_tip_css, point_on_circle, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from _labels import best_text_colour  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
@@ -449,6 +449,7 @@ def _seat_disk(
 
 def build_svg(
     parties: Optional[List[Tuple[str, str, int, str]]] = None,
+    readout_label: str = "Largest bloc",
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -461,6 +462,9 @@ def build_svg(
         ``(name, short_label, seats, hex_hue)`` in seating order (already
         resolved to a concrete hex — see :func:`_parties`). Defaults to
         ``_parties(accessibility)`` (the illustrative election result).
+    readout_label : str, optional
+        Heading above the centre seat-count readout (was hardcoded
+        ``"Largest bloc"``).
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`
         (``"self-contained"``, ``"external"`` or ``"static"``). Controls
@@ -663,7 +667,7 @@ def build_svg(
     hub_cy = (pocket_top + pocket_bot) / 2.0
     parts.append(
         f'<text x="{CX:.1f}" y="{hub_cy - 46:.1f}" text-anchor="middle" '
-        f'font-size="18" letter-spacing="0.4" fill="{SUBINK}">Largest bloc</text>'
+        f'font-size="18" letter-spacing="0.4" fill="{SUBINK}">{xml_escape(readout_label)}</text>'
     )
     parts.append(
         f'<text x="{CX:.1f}" y="{hub_cy + 12:.1f}" text-anchor="middle" '
@@ -747,6 +751,7 @@ def make_parliament(
     *,
     out: Optional[Path | str] = None,
     title: str = "",
+    readout_label: str = "Largest bloc",
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -763,6 +768,8 @@ def make_parliament(
         gallery and is currently a documented no-op.
     out : Path, str, or None
         Output path. Defaults to ``assets/svg-examples/parliament.svg``.
+    readout_label : str, optional
+        Forwarded to :func:`build_svg`.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
     theme : str, optional
@@ -777,7 +784,7 @@ def make_parliament(
     if not data:
         # No data supplied: match main()/the shipped CLI exactly (build_svg
         # resolves _parties(accessibility) itself).
-        svg = build_svg(None, mode=mode, accessibility=accessibility, theme=theme)
+        svg = build_svg(None, readout_label=readout_label, mode=mode, accessibility=accessibility, theme=theme)
     else:
         palette = load_palette(accessibility, theme=theme)
         resolved = [
@@ -787,7 +794,7 @@ def make_parliament(
             )
             for r in data
         ]
-        svg = build_svg(resolved, mode=mode, accessibility=accessibility, theme=theme)
+        svg = build_svg(resolved, readout_label=readout_label, mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "parliament")
     return write_svg(dest, svg, theme=theme)
 

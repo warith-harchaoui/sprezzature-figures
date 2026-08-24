@@ -299,6 +299,7 @@ _xml = xml_escape
 
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
+    legend_title: str = "Cause of death",
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -310,6 +311,9 @@ def build_svg(
     data : list of dict, optional
         Rows with ``month``, ``cause`` and ``value`` keys; see
         :func:`_grid_from_rows`. Defaults to :data:`DEMO_DATA`.
+    legend_title : str, optional
+        Header above the legend (was hardcoded ``"Cause of death"``) — pass
+        a label matching whatever ``cause`` actually encodes for non-mortality data.
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`
         (``"self-contained"`` / ``"external"`` / ``"static"``). Defaults to
@@ -585,7 +589,7 @@ def build_svg(
     row_h = 60.0
     parts.append(
         f'<text x="{legend_x:.0f}" y="{legend_y - 34:.0f}" font-size="18" '
-        f'font-weight="700" fill="{_INK}">Cause of death</text>'
+        f'font-weight="700" fill="{_INK}">{_xml(legend_title)}</text>'
     )
     parts.append(f'<g transform="translate({legend_x:.1f},{legend_y:.1f})">')
     for c_idx, cause in enumerate(causes):
@@ -648,6 +652,7 @@ def make_rose(
     *,
     out: Optional[Path | str] = None,
     title: str = "",
+    legend_title: str = "Cause of death",
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -666,6 +671,9 @@ def make_rose(
     title : str, optional
         Accepted for signature parity; the figure's headline is baked into
         the historical narrative (unused).
+    legend_title : str, optional
+        Forwarded to :func:`build_svg` — was hardcoded ``"Cause of death"``
+        with no way to override it for data where ``cause`` means something else.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
     theme : str, optional
@@ -677,7 +685,7 @@ def make_rose(
         Absolute path to the written SVG file.
     """
     _ = title
-    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(data, legend_title=legend_title, mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "rose")
     return write_svg(dest, svg, theme=theme)
 

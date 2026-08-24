@@ -359,6 +359,8 @@ def arrowhead(
 
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
+    start_label: str = "Start",
+    end_label: str = "Now",
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -371,6 +373,9 @@ def build_svg(
         Time-ordered waypoints, each ``{"year", "gdp", "co2", "label",
         "side"}`` (see :data:`DEMO_DATA`). Defaults to the illustrative
         United Kingdom decoupling trajectory.
+    start_label, end_label : str, optional
+        Legend labels for the first/last waypoint markers (was hardcoded
+        ``"Start"``/``"Now"``, each followed by the computed year).
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`
         (``"self-contained"``, ``"external"`` or ``"static"``). Defaults to
@@ -525,7 +530,7 @@ def build_svg(
     )
     parts.append(
         f'<text x="{m_left + 2 * lr + 12:.1f}" y="{leg_y + 7:.1f}" '
-        f'font-size="22" fill="{ink}">Start {rows[0]["year"]}</text>'
+        f'font-size="22" fill="{ink}">{xml_escape(start_label)} {rows[0]["year"]}</text>'
     )
     leg_x2 = m_left + 210
     parts.append(
@@ -534,7 +539,7 @@ def build_svg(
     )
     parts.append(
         f'<text x="{leg_x2 + 2 * lr + 12:.1f}" y="{leg_y + 7:.1f}" '
-        f'font-size="22" fill="{ink}">Now {rows[-1]["year"]}</text>'
+        f'font-size="22" fill="{ink}">{xml_escape(end_label)} {rows[-1]["year"]}</text>'
     )
     # A short "direction of time" cue with an arrow glyph.
     dir_x = leg_x2 + 260
@@ -845,6 +850,8 @@ def make_connected_scatter(
     *,
     out: Optional[Path | str] = None,
     title: str = "",
+    start_label: str = "Start",
+    end_label: str = "Now",
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -863,6 +870,9 @@ def make_connected_scatter(
     title : str, optional
         Accepted for CLI/dispatcher parity; this figure's title narrates
         the decoupling trend and stays fixed.
+    start_label, end_label : str, optional
+        Legend labels for the first/last waypoint markers (was hardcoded
+        ``"Start"``/``"Now"``).
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
     theme : str, optional
@@ -880,7 +890,7 @@ def make_connected_scatter(
     True
     """
     _ = title
-    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(data, start_label=start_label, end_label=end_label, mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "connected-scatter")
     return write_svg(dest, svg, theme=theme)
 

@@ -313,6 +313,7 @@ def _legend_glyph(shape: str, cx: float, cy: float, r: float, fill: str, cls: st
 
 def build_svg(
     rows: "List[Dict[str, Any]] | None" = None, mode: str = "self-contained",
+    legend_title: str = "Cell chemistry",
     theme: str = "corporate",
 ) -> str:
     """Assemble the full SPLOM SVG string.
@@ -332,6 +333,8 @@ def build_svg(
         Defaults to :func:`make_rows`'s illustrative battery-cell fleet. Any
         number of distinct ``chemistry`` values is accepted; the three hues
         and marker shapes cycle for a fourth group and beyond.
+    legend_title : str, optional
+        Legend heading (was hardcoded ``"Cell chemistry"``).
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`
         (``"self-contained"``, ``"external"`` or ``"static"``). In
@@ -473,7 +476,7 @@ def build_svg(
     leg_y = 192
     parts.append(
         f'<text x="{m_left}" y="{leg_y - 22}" font-size="19" font-weight="600" '
-        f'fill="{INK}">Cell chemistry</text>'
+        f'fill="{INK}">{xml_escape(legend_title)}</text>'
     )
     leg_x = float(m_left)
     for i, name in enumerate(chem_names):
@@ -688,6 +691,7 @@ def make_pairplot(
     *,
     out: Optional[Path | str] = None,
     title: str = "",
+    legend_title: str = "Cell chemistry",
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -706,6 +710,8 @@ def make_pairplot(
         documented no-op here.
     out : Path, str, or None
         Output path. Defaults to ``assets/svg-examples/pairplot.svg``.
+    legend_title : str, optional
+        Forwarded to :func:`build_svg`.
     mode : str
         Forwarded to :func:`build_svg`.
     theme : str, optional
@@ -718,7 +724,7 @@ def make_pairplot(
     """
     _ = title, accessibility
     rows = data if data else DEMO_DATA
-    svg = build_svg(rows, mode=mode, theme=theme)
+    svg = build_svg(rows, mode=mode, legend_title=legend_title, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "pairplot")
     return write_svg(dest, svg, theme=theme)
 

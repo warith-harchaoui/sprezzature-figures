@@ -311,7 +311,10 @@ def _fmt(v: float) -> str:
     return f"{v:.1f}"
 
 
-def build_svg(mode: str = "self-contained", accessibility: str = "universal", theme: str = "corporate") -> str:
+def build_svg(
+    mode: str = "self-contained", accessibility: str = "universal", theme: str = "corporate",
+    legend_title: str = "CLUSTERS",
+) -> str:
     """Assemble the full dendrogram SVG document as a string.
 
     Parameters
@@ -329,6 +332,8 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
         Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
         the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
         See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
+    legend_title : str, optional
+        Header text above the cluster legend (was hardcoded ``"CLUSTERS"``).
 
     Returns
     -------
@@ -616,7 +621,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
     parts.append('<g id="legend">')
     parts.append(
         f'<text x="{legend_x:.1f}" y="{legend_y:.1f}" font-size="15" '
-        f'font-weight="700" letter-spacing="0.7" fill="{SUBINK}">CLUSTERS</text>'
+        f'font-weight="700" letter-spacing="0.7" fill="{SUBINK}">{legend_title}</text>'
     )
     ry = legend_y + 34
     for cl, cname in enumerate(CLUSTER_NAMES):
@@ -665,6 +670,7 @@ def make_dendrogram(
     *,
     out: Optional[Path | str] = None,
     title: str = "",
+    legend_title: str = "CLUSTERS",
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -689,6 +695,8 @@ def make_dendrogram(
     title : str, optional
         Accepted for dispatcher/CLI parity; unused, since the chart's
         title is fixed prose.
+    legend_title : str, optional
+        Header text above the cluster legend (was hardcoded ``"CLUSTERS"``).
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
     theme : str, optional
@@ -700,7 +708,7 @@ def make_dendrogram(
         Absolute path to the written SVG file.
     """
     _ = data, title  # accepted for dispatcher parity; see docstring
-    svg = build_svg(mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(mode=mode, accessibility=accessibility, theme=theme, legend_title=legend_title)
     dest = Path(out) if out else svg_example_path(__file__, "dendrogram")
     return write_svg(dest, svg, theme=theme)
 

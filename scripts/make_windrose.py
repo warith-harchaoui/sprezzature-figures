@@ -260,6 +260,7 @@ _xml = xml_escape
 
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
+    legend_title: str = "Wind speed",
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -272,6 +273,8 @@ def build_svg(
         Rows with keys ``direction`` (one of the 16 compass points),
         ``band`` (a speed-band label from :func:`_speed_bands`) and
         ``value`` (percent of hours). Defaults to :data:`DEMO_DATA`.
+    legend_title : str
+        Header above the speed-band legend (was hardcoded ``"Wind speed"``).
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`
         (``"self-contained"``, ``"external"`` or ``"static"``). Controls
@@ -516,7 +519,7 @@ def build_svg(
     row_h = 46.0
     parts.append(
         f'<text x="{legend_x:.0f}" y="{legend_y - 32:.0f}" font-size="18" '
-        f'font-weight="700" fill="{_INK}">Wind speed</text>'
+        f'font-weight="700" fill="{_INK}">{_xml(legend_title)}</text>'
     )
     parts.append(f'<g transform="translate({legend_x:.1f},{legend_y:.1f})">')
     for k, band in enumerate(bands):
@@ -571,6 +574,7 @@ def make_windrose(
     *,
     out: Optional[Path | str] = None,
     title: str = "",
+    legend_title: str = "Wind speed",
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -587,6 +591,8 @@ def make_windrose(
     title : str, optional
         Accepted for dispatcher parity; the rose's own headline states the
         specific takeaway, so this is unused.
+    legend_title : str
+        Header above the speed-band legend. Forwarded to :func:`build_svg`.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
     theme : str, optional
@@ -598,7 +604,8 @@ def make_windrose(
         Absolute path to the written SVG file.
     """
     del title
-    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(data, legend_title=legend_title,
+                     mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "windrose")
     return write_svg(dest, svg, theme=theme)
 

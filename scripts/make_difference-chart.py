@@ -281,6 +281,9 @@ def build_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    actual_label: str = "Actual",
+    plan_label: str = "Plan",
+    shortfall_label: str = "Behind plan (shortfall)",
 ) -> str:
     """Assemble the full difference-chart SVG document as a string.
 
@@ -288,6 +291,12 @@ def build_svg(
     ----------
     data : dict of str to numpy.ndarray
         ``{"plan": ..., "actual": ...}``; 12 monthly values each, Jan → Dec.
+    actual_label, plan_label : str, optional
+        End-of-line labels for the two series (was hardcoded ``"Actual"`` /
+        ``"Plan"``).
+    shortfall_label : str, optional
+        Legend text for the below-plan gap colour (was hardcoded
+        ``"Behind plan (shortfall)"``).
     mode : str, optional
         Interactivity mode for the figure (default ``"self-contained"``).
         ``"self-contained"`` embeds a self-carrying fullscreen button and the
@@ -550,7 +559,7 @@ def build_svg(
     )
     end_labels.append(
         f'<text x="{_fmt(lbl_x)}" y="{_fmt(ay - 4)}" font-size="18" '
-        f'font-weight="700" fill="{_ACTUAL_LINE_C}">Actual</text>'
+        f'font-weight="700" fill="{_ACTUAL_LINE_C}">{actual_label}</text>'
     )
     end_labels.append(
         f'<text x="{_fmt(lbl_x)}" y="{_fmt(ay + 17)}" font-size="14" '
@@ -564,7 +573,7 @@ def build_svg(
     )
     end_labels.append(
         f'<text x="{_fmt(lbl_x)}" y="{_fmt(py_ - 4)}" font-size="18" '
-        f'font-weight="700" fill="#5A5A5F">Plan</text>'
+        f'font-weight="700" fill="#5A5A5F">{plan_label}</text>'
     )
     end_labels.append(
         f'<text x="{_fmt(lbl_x)}" y="{_fmt(py_ + 17)}" font-size="14" '
@@ -595,7 +604,7 @@ def build_svg(
     )
     legend.append(
         f'<text x="{_fmt(lx2 + sw + 8)}" y="{_fmt(ly)}" font-size="15" '
-        f'fill="{_INK}">Behind plan (shortfall)</text>'
+        f'fill="{_INK}">{shortfall_label}</text>'
     )
 
     # ---- hover tooltips: one transparent hit-column per month ------------- #
@@ -675,6 +684,9 @@ def make_difference_chart(
     *,
     out: Optional[Path | str] = None,
     title: str = "",
+    actual_label: str = "Actual",
+    plan_label: str = "Plan",
+    shortfall_label: str = "Behind plan (shortfall)",
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -695,6 +707,8 @@ def make_difference_chart(
     title : str, optional
         Accepted for dispatcher/CLI parity; unused, since the chart's
         title is fixed prose.
+    actual_label, plan_label, shortfall_label : str, optional
+        Forwarded to :func:`build_svg`.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
     theme : str, optional
@@ -708,7 +722,10 @@ def make_difference_chart(
     _ = title  # accepted for dispatcher parity; see docstring
     rows = data if data else DEMO_DATA
     series = _rows_to_series(rows)
-    svg = build_svg(series, mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(
+        series, mode=mode, accessibility=accessibility, theme=theme,
+        actual_label=actual_label, plan_label=plan_label, shortfall_label=shortfall_label,
+    )
     dest = Path(out) if out else svg_example_path(__file__, "difference-chart")
     return write_svg(dest, svg, theme=theme)
 

@@ -46,7 +46,7 @@ from _style import (  # noqa: E402
     os_dark_style,
 )
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _svg import fmt_compact, foreground_tip_css, svg_open, tooltip_bubble  # noqa: E402
+from _svg import fmt_compact, foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
@@ -225,6 +225,8 @@ def build_tiles(
 def render_svg(
     devices: Optional[List[Dict[str, Any]]] = None,
     composition: Optional[Dict[str, Dict[str, float]]] = None,
+    y_axis_title: str = "Share within device",
+    legend_title: str = "Payment method",
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -242,6 +244,10 @@ def render_svg(
         :data:`COMPOSITION`; only the payment methods already in
         :data:`METHODS` are drawn (a custom device missing a method is
         simply treated as 0 for that segment).
+    y_axis_title : str, optional
+        Vertical axis label (was hardcoded ``"Share within device"``).
+    legend_title : str, optional
+        Legend heading (was hardcoded ``"Payment method"``).
     mode : str, optional
         Interactivity mode for the shared fullscreen control (see
         :mod:`_interactive`). Three modes: ``"self-contained"`` (default) ships
@@ -358,7 +364,7 @@ def render_svg(
     axis_cy = plot_y + plot_h / 2.0
     parts.append(
         f'<text x="{fmt_compact(axis_cx, decimals=2)}" y="{fmt_compact(axis_cy, decimals=2)}" font-size="18" fill="{muted}" '
-        f'text-anchor="middle" transform="rotate(-90 {fmt_compact(axis_cx, decimals=2)} {fmt_compact(axis_cy, decimals=2)})">Share within device</text>'
+        f'text-anchor="middle" transform="rotate(-90 {fmt_compact(axis_cx, decimals=2)} {fmt_compact(axis_cy, decimals=2)})">{xml_escape(y_axis_title)}</text>'
     )
 
     # Vertical percentage ticks on the left (0 / 25 / 50 / 75 / 100 %).
@@ -443,7 +449,7 @@ def render_svg(
     colors = method_colors(accessibility)
     parts.append(
         f'<text x="{fmt_compact(legend_x, decimals=2)}" y="{fmt_compact(legend_y - 20, decimals=2)}" font-size="18" font-weight="700" '
-        f'fill="{ink}">Payment method</text>'
+        f'fill="{ink}">{xml_escape(legend_title)}</text>'
     )
     for i, method in enumerate(METHODS):
         row_y = legend_y + i * 42.0
@@ -498,6 +504,8 @@ def make_mosaic(
     *,
     out: Optional[Path | str] = None,
     title: str = "",
+    y_axis_title: str = "Share within device",
+    legend_title: str = "Payment method",
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -513,6 +521,8 @@ def make_mosaic(
         is currently a documented no-op.
     out : Path, str, or None
         Output path. Defaults to ``assets/svg-examples/mosaic.svg``.
+    y_axis_title, legend_title : str, optional
+        Forwarded to :func:`render_svg`.
     mode, accessibility : str
         Forwarded to :func:`render_svg`.
     theme : str, optional
@@ -526,7 +536,15 @@ def make_mosaic(
     _ = title
     rows = data if data else DEMO_DATA
     devices, composition = _rows_to_mosaic(rows)
-    svg = render_svg(devices=devices, composition=composition, mode=mode, accessibility=accessibility, theme=theme)
+    svg = render_svg(
+        devices=devices,
+        composition=composition,
+        y_axis_title=y_axis_title,
+        legend_title=legend_title,
+        mode=mode,
+        accessibility=accessibility,
+        theme=theme,
+    )
     dest = Path(out) if out else svg_example_path(__file__, "mosaic")
     return write_svg(dest, svg, theme=theme)
 

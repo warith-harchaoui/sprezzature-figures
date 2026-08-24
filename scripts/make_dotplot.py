@@ -141,6 +141,8 @@ def build_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    within_label: str = "Within target",
+    tail_label: str = "Long tail",
 ) -> str:
     """Assemble the full Wilkinson dot-plot SVG string.
 
@@ -149,6 +151,9 @@ def build_svg(
     data : list of dict or None
         Rows with an ``hours`` key (first-response time). Defaults to
         :data:`DEMO_DATA` (equivalently, :data:`RESPONSE_HOURS`).
+    within_label, tail_label : str, optional
+        Legend labels for the two dot colours (was hardcoded
+        ``"Within target"`` / ``"Long tail"``).
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`
         (``"self-contained"``, ``"external"`` or ``"static"``). Controls
@@ -351,7 +356,7 @@ def build_svg(
     )
     parts.append(
         f'<text x="{lx_blue + 16:.1f}" y="{ly + 6:.1f}" font-size="18" '
-        f'fill="{ink}">Within target</text>'
+        f'fill="{ink}">{within_label}</text>'
     )
     parts.append(
         f'<circle class="dot-tail" cx="{lx_red:.1f}" cy="{ly:.1f}" '
@@ -359,7 +364,7 @@ def build_svg(
     )
     parts.append(
         f'<text x="{lx_red + 16:.1f}" y="{ly + 6:.1f}" font-size="18" '
-        f'fill="{ink}">Long tail</text>'
+        f'fill="{ink}">{tail_label}</text>'
     )
 
     # Fullscreen control per interactivity mode, just before the close.
@@ -373,6 +378,8 @@ def make_dotplot(
     *,
     out: Optional[Path | str] = None,
     title: str = "",
+    within_label: str = "Within target",
+    tail_label: str = "Long tail",
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -390,6 +397,8 @@ def make_dotplot(
     title : str, optional
         Accepted for dispatcher/CLI parity; unused, since the chart's
         title is fixed prose.
+    within_label, tail_label : str, optional
+        Forwarded to :func:`build_svg`.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
     theme : str, optional
@@ -401,7 +410,10 @@ def make_dotplot(
         Absolute path to the written SVG file.
     """
     _ = title  # accepted for dispatcher parity; see docstring
-    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(
+        data, mode=mode, accessibility=accessibility, theme=theme,
+        within_label=within_label, tail_label=tail_label,
+    )
     dest = Path(out) if out else svg_example_path(__file__, "dotplot")
     return write_svg(dest, svg, theme=theme)
 

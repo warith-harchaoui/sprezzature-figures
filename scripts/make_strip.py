@@ -63,6 +63,8 @@ def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
     title: str = "Response by Dose",
     subtitle: str = "Each dot is one observation, jittered within its group",
+    y_axis_title: str = "Response",
+    x_axis_title: str = "Group",
     width: int = 620,
     height: int = 480,
     mode: str = "self-contained",
@@ -78,6 +80,10 @@ def build_svg(
         to :data:`DEMO_DATA`.
     title, subtitle : str
         Chart text.
+    y_axis_title : str
+        Y-axis label (was hardcoded ``"Response"``).
+    x_axis_title : str
+        X-axis label under the group ticks (was hardcoded ``"Group"``).
     width, height : int
         Canvas size in pixels.
     mode, accessibility : str, optional
@@ -156,7 +162,7 @@ def build_svg(
         )
     parts.append(
         f'<text x="18" y="{plot_y + plot_h / 2:.1f}" font-size="13" fill="{INK}" '
-        f'text-anchor="middle" transform="rotate(-90 18 {plot_y + plot_h / 2:.1f})">Response</text>'
+        f'text-anchor="middle" transform="rotate(-90 18 {plot_y + plot_h / 2:.1f})">{xml_escape(y_axis_title)}</text>'
     )
 
     # ---- strips ----
@@ -207,7 +213,7 @@ def build_svg(
         )
     parts.append(
         f'<text x="{plot_x + plot_w / 2:.1f}" y="{axis_y + 42:.1f}" font-size="13" '
-        f'fill="{INK}" text-anchor="middle">Group</text>'
+        f'fill="{INK}" text-anchor="middle">{xml_escape(x_axis_title)}</text>'
     )
 
     parts.extend(bubbles)
@@ -222,6 +228,8 @@ def make_strip(
     out: Optional[Path | str] = None,
     title: str = "Response by Dose",
     subtitle: str = "Each dot is one observation, jittered within its group",
+    y_axis_title: str = "Response",
+    x_axis_title: str = "Group",
     width: int = 620,
     height: int = 480,
     mode: str = "self-contained",
@@ -239,6 +247,8 @@ def make_strip(
         Output path (.svg). Defaults to ``assets/svg-examples/strip.svg``.
     title, subtitle : str
         Chart text.
+    y_axis_title, x_axis_title : str
+        Axis labels. Forwarded to :func:`build_svg`.
     width, height : int
         Canvas size in pixels.
     mode, accessibility : str
@@ -257,7 +267,8 @@ def make_strip(
     >>> p.exists()
     True
     """
-    svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
+    svg = build_svg(data, title=title, subtitle=subtitle, y_axis_title=y_axis_title,
+                     x_axis_title=x_axis_title, width=width, height=height,
                      mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "strip")
     return write_svg(dest, svg, theme=theme)

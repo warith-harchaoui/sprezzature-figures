@@ -194,6 +194,9 @@ def make_data(n: int = 4000, base_rate: float = 0.18, seed: int = 11) -> Dict[st
 
 def build_svg(
     curve: "List[Dict[str, Any]] | None" = None,
+    model_label: str = "Model",
+    perfect_model_label: str = "Perfect model",
+    random_baseline_label: str = "Random baseline",
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -217,6 +220,10 @@ def build_svg(
         (top-20% marker) and the perfect model's prevalence kink are both
         *derived from this curve* rather than re-simulated, so a caller
         supplying real gain-curve data still gets an accurate marker.
+    model_label, perfect_model_label, random_baseline_label : str
+        On-plot direct labels for the three curves (were hardcoded, no
+        override — the underlying data contract's ``"series"`` vocabulary
+        above is unrelated and unaffected, only these display strings).
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`
         (``"self-contained"``, ``"external"`` or ``"static"``). Defaults to
@@ -427,7 +434,7 @@ def build_svg(
     # Perfect model: label near its kink, above the flat top.
     parts.append(
         f'<text x="{kx + 14:.1f}" y="{ky - 14:.1f}" font-size="21" '
-        f'font-weight="600" fill="{perfect_c}">Perfect model</text>'
+        f'font-weight="600" fill="{perfect_c}">{xml_escape(perfect_model_label)}</text>'
     )
     # Random baseline: label riding the diagonal in the lower-right.
     rb_x, rb_y = sx(0.72), sy(0.72)
@@ -435,13 +442,13 @@ def build_svg(
         f'<text x="{rb_x + 6:.1f}" y="{rb_y + 30:.1f}" font-size="21" '
         f'font-weight="600" fill="{baseline_c}" '
         f'transform="rotate(-40 {rb_x + 6:.1f} {rb_y + 30:.1f})">'
-        f'Random baseline</text>'
+        f'{xml_escape(random_baseline_label)}</text>'
     )
     # Model: label at the curve's right end, where it plateaus near 100 %.
     mlx, mly = model_pts[-1]
     parts.append(
         f'<text x="{sx(mlx) - 8:.1f}" y="{sy(mly) - 18:.1f}" font-size="23" '
-        f'font-weight="700" fill="{model_c}" text-anchor="end">Model</text>'
+        f'font-weight="700" fill="{model_c}" text-anchor="end">{xml_escape(model_label)}</text>'
     )
 
     # --- operating-point guides + marker + call-out --------------
@@ -581,6 +588,9 @@ def make_liftgain(
     *,
     out: "Path | str | None" = None,
     title: str = "",
+    model_label: str = "Model",
+    perfect_model_label: str = "Perfect model",
+    random_baseline_label: str = "Random baseline",
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -597,6 +607,8 @@ def make_liftgain(
         no-op.
     out : Path, str, or None
         Output path. Defaults to ``assets/svg-examples/liftgain.svg``.
+    model_label, perfect_model_label, random_baseline_label : str
+        Curve end-labels. Forwarded to :func:`build_svg`.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
     theme : str, optional
@@ -609,7 +621,15 @@ def make_liftgain(
     """
     _ = title
     rows = data if data else DEMO_DATA
-    svg = build_svg(rows, mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(
+        rows,
+        model_label=model_label,
+        perfect_model_label=perfect_model_label,
+        random_baseline_label=random_baseline_label,
+        mode=mode,
+        accessibility=accessibility,
+        theme=theme,
+    )
     dest = Path(out) if out else svg_example_path(__file__, "liftgain")
     return write_svg(dest, svg, theme=theme)
 

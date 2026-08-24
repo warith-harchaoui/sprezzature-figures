@@ -90,6 +90,8 @@ def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
     title: str = "Normal Q-Q Plot",
     subtitle: str = "Sorted sample vs. theoretical normal quantiles",
+    y_axis_title: str = "Sample quantile",
+    x_axis_title: str = "Theoretical quantile",
     width: int = 520,
     height: int = 520,
     mode: str = "self-contained",
@@ -104,6 +106,12 @@ def build_svg(
         Rows with key ``sample`` (numeric). Defaults to :data:`DEMO_DATA`.
     title, subtitle : str
         Chart text.
+    y_axis_title, x_axis_title : str, optional
+        Axis labels (were hardcoded ``"Sample quantile"`` / ``"Theoretical
+        quantile"``). The reference distribution the theoretical quantiles
+        come from is Normal by construction (see ``title``/``subtitle``);
+        keep the axis wording consistent with whatever distribution the
+        caller is actually testing against.
     width, height : int
         Canvas size in pixels.
     mode : str, optional
@@ -185,11 +193,11 @@ def build_svg(
         )
     parts.append(
         f'<text x="20" y="{plot_y + plot_h / 2:.1f}" font-size="13" fill="{INK}" '
-        f'text-anchor="middle" transform="rotate(-90 20 {plot_y + plot_h / 2:.1f})">Sample quantile</text>'
+        f'text-anchor="middle" transform="rotate(-90 20 {plot_y + plot_h / 2:.1f})">{xml_escape(y_axis_title)}</text>'
     )
     parts.append(
         f'<text x="{plot_x + plot_w / 2:.1f}" y="{plot_y + plot_h + 42:.1f}" font-size="13" '
-        f'fill="{INK}" text-anchor="middle">Theoretical quantile</text>'
+        f'fill="{INK}" text-anchor="middle">{xml_escape(x_axis_title)}</text>'
     )
 
     # ---- reference y=x line ----
@@ -240,6 +248,8 @@ def make_qqplot(
     out: Optional[Path | str] = None,
     title: str = "Normal Q-Q Plot",
     subtitle: str = "Sorted sample vs. theoretical normal quantiles",
+    y_axis_title: str = "Sample quantile",
+    x_axis_title: str = "Theoretical quantile",
     width: int = 520,
     height: int = 520,
     mode: str = "self-contained",
@@ -256,6 +266,8 @@ def make_qqplot(
         Output path (.svg). Defaults to ``assets/svg-examples/qqplot.svg``.
     title, subtitle : str
         Chart text.
+    y_axis_title, x_axis_title : str, optional
+        Forwarded to :func:`build_svg`.
     width, height : int
         Canvas size in pixels.
     mode, accessibility : str
@@ -274,8 +286,12 @@ def make_qqplot(
     >>> p.exists()
     True
     """
-    svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
-                     mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(
+        data, title=title, subtitle=subtitle,
+        y_axis_title=y_axis_title, x_axis_title=x_axis_title,
+        width=width, height=height,
+        mode=mode, accessibility=accessibility, theme=theme,
+    )
     dest = Path(out) if out else svg_example_path(__file__, "qqplot")
     return write_svg(dest, svg, theme=theme)
 

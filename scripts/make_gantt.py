@@ -102,6 +102,7 @@ def build_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    x_axis_title: str = "Day",
 ) -> str:
     """Assemble the full Gantt chart SVG document as a string.
 
@@ -112,6 +113,8 @@ def build_svg(
         ``team`` (str). Defaults to :data:`DEMO_DATA`.
     title, subtitle : str
         Chart text.
+    x_axis_title : str, optional
+        Label under the x-axis. Defaults to ``"Day"``.
     width, height : int
         Canvas size in pixels.
     mode, accessibility : str, optional
@@ -196,7 +199,7 @@ def build_svg(
         val += step
     parts.append(
         f'<text x="{plot_x + plot_w / 2:.1f}" y="{plot_y + plot_h + 42:.1f}" font-size="13" '
-        f'fill="{INK}" text-anchor="middle">Day</text>'
+        f'fill="{INK}" text-anchor="middle">{xml_escape(x_axis_title)}</text>'
     )
 
     # ---- task bars ----
@@ -259,6 +262,7 @@ def make_gantt(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    x_axis_title: str = "Day",
 ) -> Path:
     """Render a hand-authored Gantt chart and write the SVG to *out*.
 
@@ -271,6 +275,8 @@ def make_gantt(
         Output path (.svg). Defaults to ``assets/svg-examples/gantt.svg``.
     title, subtitle : str
         Chart text.
+    x_axis_title : str, optional
+        Label under the x-axis. Defaults to ``"Day"``.
     width, height : int
         Canvas size in pixels.
     mode, accessibility : str
@@ -290,7 +296,8 @@ def make_gantt(
     True
     """
     svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
-                     mode=mode, accessibility=accessibility, theme=theme)
+                     mode=mode, accessibility=accessibility, theme=theme,
+                     x_axis_title=x_axis_title)
     dest = Path(out) if out else svg_example_path(__file__, "gantt")
     return write_svg(dest, svg, theme=theme)
 

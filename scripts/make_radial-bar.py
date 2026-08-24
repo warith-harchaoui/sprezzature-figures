@@ -220,6 +220,7 @@ def _fmt_trips(n: int) -> str:
 
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
+    peak_badge_label: str = "TWO PEAKS",
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -231,6 +232,10 @@ def build_svg(
     data : list of dict, optional
         Rows with ``hour`` (int, 0-23) and ``trips`` (numeric) keys.
         Defaults to :data:`DEMO_DATA`.
+    peak_badge_label : str, optional
+        Small badge above the centre readout (was hardcoded ``"TWO PEAKS"``
+        regardless of how many peaks the data actually has). Pass an
+        explicit label when the data's peak count differs from two.
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`
         (``"self-contained"`` / ``"external"`` / ``"static"``). Defaults to
@@ -451,7 +456,7 @@ def build_svg(
     parts.append(
         f'<text x="{_CX:.0f}" y="{_CY - 52:.0f}" font-size="16" '
         f'font-weight="600" fill="{_SUBTLE}" text-anchor="middle" '
-        f'letter-spacing="1.5">TWO PEAKS</text>'
+        f'letter-spacing="1.5">{_xml(peak_badge_label)}</text>'
     )
     parts.append(
         f'<text class="rb-peak" x="{_CX:.0f}" y="{_CY - 8:.0f}" font-size="46" '
@@ -519,6 +524,7 @@ def make_radial_bar(
     *,
     out: Optional[Path | str] = None,
     title: str = "",
+    peak_badge_label: str = "TWO PEAKS",
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -535,6 +541,9 @@ def make_radial_bar(
     title : str, optional
         Accepted for signature parity; the figure's headline is baked into
         the takeaway text (unused).
+    peak_badge_label : str, optional
+        Forwarded to :func:`build_svg` — was hardcoded ``"TWO PEAKS"`` with
+        no way to override it for data with a different peak count.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
     theme : str, optional
@@ -546,7 +555,7 @@ def make_radial_bar(
         Absolute path to the written SVG file.
     """
     _ = title
-    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(data, peak_badge_label=peak_badge_label, mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "radial-bar")
     return write_svg(dest, svg, theme=theme)
 

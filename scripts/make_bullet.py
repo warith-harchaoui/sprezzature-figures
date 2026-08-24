@@ -199,6 +199,7 @@ def build_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    bands_label: str = "Bands:",
 ) -> str:
     """Assemble the full KPI bullet-graph SVG string.
 
@@ -520,7 +521,7 @@ def build_svg(
     labels = ["Poor", "Satisfactory", "Good"]
     parts.append(
         f'<text x="{m_left}" y="{cap_y + 4:.1f}" font-size="16" '
-        f'fill="{secondary}">Bands:</text>'
+        f'fill="{secondary}">{xml_escape(bands_label)}</text>'
     )
     for j, lab in enumerate(labels):
         sxp = cap_x + j * 190
@@ -561,6 +562,7 @@ def make_bullet(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    bands_label: str = "Bands:",
 ) -> Path:
     """Render the house-styled KPI bullet-graph panel and write it to *out*.
 
@@ -592,7 +594,7 @@ def make_bullet(
     True
     """
     _ = title
-    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme, bands_label=bands_label)
     dest = Path(out) if out else svg_example_path(__file__, "bullet")
     return write_svg(dest, svg, theme=theme)
 

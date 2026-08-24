@@ -748,7 +748,10 @@ def _text_color_for(fill: str) -> str:
     return "#FFFFFF" if lum < 0.58 else INK
 
 
-def build_svg(mode: str = "self-contained", accessibility: str = "universal", theme: str = "corporate") -> str:
+def build_svg(
+    mode: str = "self-contained", accessibility: str = "universal", theme: str = "corporate",
+    legend_title: str = "PACKAGES BY SHARE",
+) -> str:
     """Assemble the full circle-packing SVG document as a string.
 
     Parameters
@@ -1009,7 +1012,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
         _emit_hero_callout(parts, hero_geom, mono_family)
 
     # --- legend + footnote ---
-    _emit_legend(parts, root, mono_family)
+    _emit_legend(parts, root, mono_family, legend_title)
     parts.append(
         f'<text x="{margin_left}" y="{HEIGHT - 26}" font-size="15" '
         f'fill="{SUBINK}">Circle area is proportional to lines of code. '
@@ -1117,7 +1120,7 @@ def _emit_hero_callout(parts: List[str], hero: Dict[str, Any], mono_family: str)
     parts.append("</g>")
 
 
-def _emit_legend(parts: List[str], root: Dict[str, Any], mono_family: str) -> None:
+def _emit_legend(parts: List[str], root: Dict[str, Any], mono_family: str, legend_title: str = "PACKAGES BY SHARE") -> None:
     """Emit the package legend as a swatch column, bottom-left.
 
     Each row: a hue swatch, the package name, and its share of the total
@@ -1131,7 +1134,7 @@ def _emit_legend(parts: List[str], root: Dict[str, Any], mono_family: str) -> No
     parts.append('<g id="legend">')
     parts.append(
         f'<text x="{lx:.1f}" y="{ly:.1f}" font-size="14" font-weight="700" '
-        f'letter-spacing="0.8" fill="{SUBINK}">PACKAGES BY SHARE</text>'
+        f'letter-spacing="0.8" fill="{SUBINK}">{legend_title}</text>'
     )
     ry = ly + 28
     # Sort packages by total lines, descending.
@@ -1173,6 +1176,7 @@ def make_circle_packing(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    legend_title: str = "PACKAGES BY SHARE",
 ) -> Path:
     """Render the house-styled circle-packing diagram and write the SVG to *out*.
 
@@ -1194,6 +1198,9 @@ def make_circle_packing(
         Forwarded to :func:`build_svg`.
     theme : str, optional
         Visual theme. Forwarded to :func:`build_svg`.
+    legend_title : str, optional
+        Legend header above the package-share swatch column (was
+        hardcoded ``"PACKAGES BY SHARE"``).
 
     Returns
     -------
@@ -1207,7 +1214,7 @@ def make_circle_packing(
     True
     """
     _ = data, title
-    svg = build_svg(mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(mode=mode, accessibility=accessibility, theme=theme, legend_title=legend_title)
     dest = Path(out) if out else svg_example_path(__file__, "circle-packing")
     return write_svg(dest, svg, theme=theme)
 
