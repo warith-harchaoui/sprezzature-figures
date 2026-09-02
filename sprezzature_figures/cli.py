@@ -95,12 +95,14 @@ else:
             click.echo("Run `sprezzature-figures list` to see available kinds.", err=True)
             raise SystemExit(1)
 
+        mapping: dict[str, str] = {}
         if data_path:
             from .data_source import apply_mapping, load_records, load_stdin_records, parse_mapping
 
             try:
                 data = load_stdin_records() if data_path == "-" else load_records(data_path)
-                data = apply_mapping(data, parse_mapping(list(mappings)))
+                mapping = parse_mapping(list(mappings))
+                data = apply_mapping(data, mapping)
             except (FileNotFoundError, ValueError) as exc:
                 click.echo(f"Error reading --data: {exc}", err=True)
                 raise SystemExit(1) from exc
@@ -118,6 +120,12 @@ else:
         kwargs: dict = {"title": title}
         if out:
             kwargs["out"] = out
+        if data_path:
+            # User data must not inherit the demo chrome (subtitle, axis titles).
+            from .make_figure import user_data_chrome_kwargs
+
+            for key, value in user_data_chrome_kwargs(canonical, mapping).items():
+                kwargs.setdefault(key, value)
 
         try:
             result = make_figure(kind, data, **kwargs)
