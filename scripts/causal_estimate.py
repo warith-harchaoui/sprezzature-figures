@@ -303,16 +303,22 @@ def _refuter_verdict(name: str, original: float, new: float) -> str:
 # DAG rendering — hand-authored SVG, no graphviz, no Vega, no matplotlib
 # ------------------------------------------------------------------
 def _parse_dag_string(dag_string: str) -> "tuple[List[str], List[tuple]]":
-    """Extract node ids and (source, target) edges from a DoWhy/GML DAG string.
+    """Extract node ids and (source, target) edges from a DoWhy DAG string.
 
-    A minimal parse — only node ids and edges are needed for layout, not
-    the full GML grammar.
+    ``--dag path/to/dag.dot`` and a hand-written DOT ``--dag-string`` are
+    both documented as accepted input, so this parses both dialects DoWhy
+    itself accepts: GML (``node [ id "X" ]`` / ``edge [ source "X" target
+    "Y" ]``) and Graphviz DOT (``X -> Y``). A minimal parse — only node
+    ids and edges are needed for layout, not the full grammar of either
+    format.
     """
     import re as _re
     node_pattern = r'node\s*\[\s*id\s+"?(\w+)"?'
     edge_pattern = r'edge\s*\[\s*source\s+"?(\w+)"?\s+target\s+"?(\w+)"?'
+    dot_edge_pattern = r'(\w+)\s*->\s*(\w+)'
     nodes = set(_re.findall(node_pattern, dag_string))
     edges = _re.findall(edge_pattern, dag_string)
+    edges += _re.findall(dot_edge_pattern, dag_string)
     # A DOT-converted graph (or a hand-written DAG string) can reference a
     # node only from an edge, with no separate ``node [...]`` block for
     # it; include those too so the layout never drops a node silently.
@@ -563,11 +569,23 @@ def render_forest_plot(summary: Dict[str, Any], out_dir: Path, dark: bool) -> No
         )
         parts.append(f'<circle cx="{vx:.1f}" cy="{cy:.1f}" r="5.5" fill="{blue}" stroke="{bg}" stroke-width="1.5"/>')
         parts.append("</g>")
-        anchor = "start" if value >= 0 else "end"
-        label_x = vx + (14 if value >= 0 else -14)
+        # Placing the value label on the side the sign suggests (left of a
+        # negative dot, right of a positive one) collides with the
+        # row-label column whenever the dot itself lands close to m_left:
+        # a value near zero (floating-point refuter noise like -1e-16) or a
+        # large-magnitude negative value near the plot's left edge both do
+        # this. Only place the label to the left when its own rendered
+        # width still clears the row-label column; otherwise default to
+        # the right, where there is nothing else to collide with.
+        value_str = f"{value:+.3g}"
+        label_w = len(value_str) * 11 * 0.62  # mono glyph-width heuristic, see _labels.py
+        row_label_edge = m_left - 12
+        fits_left = (vx - 14 - label_w) > (row_label_edge + 8)
+        anchor = "end" if (value < 0 and fits_left) else "start"
+        label_x = vx - 14 if anchor == "end" else vx + 14
         parts.append(
             f'<text x="{label_x:.1f}" y="{cy + 4:.1f}" font-size="11" '
-            f'font-family="{mono_family}" fill="{fg}" text-anchor="{anchor}">{value:+.3g}</text>'
+            f'font-family="{mono_family}" fill="{fg}" text-anchor="{anchor}">{value_str}</text>'
         )
 
     for frac in (0.0, 0.25, 0.5, 0.75, 1.0):

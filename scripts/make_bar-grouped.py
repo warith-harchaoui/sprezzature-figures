@@ -94,8 +94,18 @@ def _region_colors(
     # and Green (#28CD41, ~160) -- positions 2 and 3 of the default cycle,
     # adjacent bars in every group here -- collapse to the same shade once
     # desaturated. Blue/Brown/Yellow spread luminance ~106/68/200, so every
-    # bar in a group stays distinguishable in grayscale.
-    return cycle_hues(regions, accessibility, hues=['Blue', 'Brown', 'Yellow'], theme=theme)
+    # bar in a group stays distinguishable in grayscale. This 3-hue list
+    # matches DEMO_DATA's 3 regions, but real caller data (this generator
+    # is reachable with arbitrary --data via make-figure, and the catalog's
+    # own max_recommended_categories is 8) routinely has more: cycling a
+    # 3-hue list past its length silently reassigns an earlier region's
+    # exact color to a later one, which is a worse failure than losing the
+    # grayscale-separation guarantee for the >3 case. Fall back to
+    # cycle_hues' full default cycle (4 hues) once there are more than 3
+    # regions, same as every other caller of cycle_hues in this repo.
+    if len(regions) <= 3:
+        return cycle_hues(regions, accessibility, hues=['Blue', 'Brown', 'Yellow'], theme=theme)
+    return cycle_hues(regions, accessibility, theme=theme)
 
 
 def build_svg(

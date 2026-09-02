@@ -139,12 +139,16 @@ from best_engine_ai_helper.llm import chat as _llm_chat
 # Paths — resolved at import time so the script works from any cwd
 # ---------------------------------------------------------------------------
 _SCRIPT_DIR: Path = Path(__file__).resolve().parent      # sprezzature-figures/scripts/
-_FIGURES_ROOT: Path = _SCRIPT_DIR.parent                 # sprezzature-figures/
-_REPO_ROOT: Path = _FIGURES_ROOT.parent                  # sprezzature/ (project root)
+_FIGURES_ROOT: Path = _SCRIPT_DIR.parent                 # sprezzature-figures/ (this package's own root)
 _RENDER_DIAGRAM: Path = _SCRIPT_DIR / "render_diagram.py"
 
 # Gitignored output directory (covered by .private/ in the top-level .gitignore).
-_PRIVATE_LOOP_DIR: Path = _REPO_ROOT / ".private" / "ralph-loop"
+# This package ships standalone (its own repo, own .gitignore): the root for
+# .private/ is this package's own root, not a parent monorepo. An earlier
+# version of this file assumed the pre-extraction monorepo layout
+# (sprezzature/sprezzature-figures/scripts/) and went one directory too far
+# up, landing in the user's home directory instead of this repo.
+_PRIVATE_LOOP_DIR: Path = _FIGURES_ROOT / ".private" / "ralph-loop"
 
 # ---------------------------------------------------------------------------
 # qwen3-vl:8b — the one authorized VLM for the whole sprezzature-* repo's
