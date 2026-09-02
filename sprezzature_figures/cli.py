@@ -100,8 +100,10 @@ else:
             from .data_source import apply_mapping, load_records, load_stdin_records, parse_mapping
 
             try:
+                from .make_figure import resolve_role_mapping
+
                 data = load_stdin_records() if data_path == "-" else load_records(data_path)
-                mapping = parse_mapping(list(mappings))
+                mapping = resolve_role_mapping(canonical, parse_mapping(list(mappings)))
                 data = apply_mapping(data, mapping)
             except (FileNotFoundError, ValueError) as exc:
                 click.echo(f"Error reading --data: {exc}", err=True)
@@ -132,8 +134,14 @@ else:
         except (ValueError, AttributeError, FileNotFoundError, RuntimeError) as exc:
             click.echo(f"Error rendering {kind!r}: {exc}", err=True)
             if data_path:
+                from .make_figure import describe_required_roles
+
+                roles = describe_required_roles(canonical)
+                if roles:
+                    click.echo(f"{canonical} requires: {roles}.", err=True)
                 click.echo(
-                    "If your columns don't match the figure's roles, bind them with --map role=column.",
+                    "If your columns don't match the figure's roles, bind them with "
+                    "--map role=column (the role's name or its label both work).",
                     err=True,
                 )
             raise SystemExit(1) from exc

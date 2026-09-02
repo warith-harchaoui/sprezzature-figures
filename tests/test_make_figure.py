@@ -24,9 +24,11 @@ import pytest
 
 from sprezzature_figures.catalog import list_kinds as registry_list_kinds
 from sprezzature_figures.make_figure import (
+    describe_required_roles,
     get_figure_definition,
     list_kinds,
     make_figure,
+    resolve_role_mapping,
     validate_figure_input,
 )
 
@@ -371,3 +373,24 @@ def test_resolve_scripts_dir_falls_back_to_generic_in_source_tree(tmp_path: Path
     generic.mkdir()
 
     assert _resolve_scripts_dir(tmp_path) == generic
+
+
+def test_resolve_role_mapping_accepts_role_labels() -> None:
+    """--map keys may use a role's discoverable label instead of its
+    historical name: 'Category' (any case) resolves to bar's 'region'.
+    Exact role names and unknown keys pass through untouched."""
+    assert resolve_role_mapping("bar", {"Category": "month"}) == {"region": "month"}
+    assert resolve_role_mapping("bar", {"category": "m", "value": "v"}) == {
+        "region": "m",
+        "value": "v",
+    }
+    assert resolve_role_mapping("bar", {"region": "m"}) == {"region": "m"}
+    assert resolve_role_mapping("bar", {"nonsense": "m"}) == {"nonsense": "m"}
+
+
+def test_describe_required_roles_lists_names_and_labels() -> None:
+    """The CLI error hint names every required role with its label, so a
+    wrong --map guess surfaces the accepted keys."""
+    desc = describe_required_roles("bar")
+    assert "region" in desc and "Category" in desc and "value" in desc
+    assert describe_required_roles("no-such-kind") == ""
