@@ -138,6 +138,52 @@ def _filter_kwargs_for(fn: Any, kwargs: dict[str, Any]) -> dict[str, Any]:
     return {k: v for k, v in kwargs.items() if k in params}
 
 
+def describe_required_roles(kind: str) -> str:
+    """One-line, human-readable list of a kind's required data roles.
+
+    E.g. for ``bar``: ``"region (Category, categorical), value (Value,
+    numeric)"``. Empty string when the kind is unknown or declares no
+    roles. Used by the CLI error hints so a user who guessed the wrong
+    ``--map`` key sees every accepted role at once.
+    """
+    canonical = _resolve_kind(kind)
+    if canonical is None:
+        return ""
+    definition = _get_figure_definition(canonical)
+    return ", ".join(
+        f"{r.name} ({r.label}, {'/'.join(r.accepted_types) or 'any'})"
+        for r in definition.required_roles
+    )
+
+
+def resolve_role_mapping(kind: str, mapping: dict[str, str]) -> dict[str, str]:
+    """Translate ``--map`` keys given as role *labels* into role names.
+
+    Role names are historical (``bar`` calls its category ``region``,
+    after its demo data); the label (``Category``) is the discoverable
+    half. Accept either, case-insensitively: a key matching exactly one
+    role's label is rewritten to that role's name. Keys already naming a
+    role, or matching no label (or an ambiguous one), pass through
+    untouched.
+    """
+    canonical = _resolve_kind(kind)
+    if canonical is None or not mapping:
+        return mapping
+    definition = _get_figure_definition(canonical)
+    names = {r.name for r in definition.required_roles + definition.optional_roles}
+    by_label: dict[str, list[str]] = {}
+    for r in definition.required_roles + definition.optional_roles:
+        by_label.setdefault(r.label.lower(), []).append(r.name)
+    resolved: dict[str, str] = {}
+    for key, column in mapping.items():
+        if key not in names:
+            candidates = by_label.get(key.lower(), [])
+            if len(candidates) == 1:
+                key = candidates[0]
+        resolved[key] = column
+    return resolved
+
+
 def user_data_chrome_kwargs(
     kind: str, mapping: dict[str, str] | None = None
 ) -> dict[str, Any]:
@@ -194,7 +240,10 @@ def validate_figure_input(
             issues.append(
                 ValidationIssue(
                     field=role.name,
-                    message=f"required role {role.name!r} not found in data rows for kind={kind!r}",
+                    message=(
+                        f"required role {role.name!r} ({role.label}) not found "
+                        f"in data rows for kind={kind!r}"
+                    ),
                     severity="error",
                 )
             )
@@ -397,7 +446,7 @@ def main() -> None:
 
         try:
             data = load_stdin_records() if args.data == "-" else load_records(args.data)
-            mapping = parse_mapping(args.map)
+            mapping = resolve_role_mapping(canonical, parse_mapping(args.map))
             data = apply_mapping(data, mapping)
         except (FileNotFoundError, ValueError) as exc:
             print(f"Error reading --data: {exc}", file=sys.stderr)
@@ -426,8 +475,12 @@ def main() -> None:
     except (ValueError, AttributeError, FileNotFoundError, RuntimeError) as exc:
         print(f"Error rendering {args.kind!r}: {exc}", file=sys.stderr)
         if args.data:
+            roles = describe_required_roles(canonical)
+            if roles:
+                print(f"{canonical} requires: {roles}.", file=sys.stderr)
             print(
-                "If your columns don't match the figure's roles, bind them with --map role=column.",
+                "If your columns don't match the figure's roles, bind them with "
+                "--map role=column (the role's name or its label both work).",
                 file=sys.stderr,
             )
         sys.exit(1)
