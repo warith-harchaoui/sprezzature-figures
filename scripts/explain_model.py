@@ -235,7 +235,17 @@ def _write_shap_beeswarm_svg(
 
     n_features = len(top_idx)
     n_points = shap_values.values.shape[0]
-    width, row_h = 820, 34
+    # _swarm_positions only offsets a point vertically, never horizontally, so
+    # a row's readable capacity is set by its height alone. The catalogue's
+    # own make_beeswarm.py demo carries 24 points per band at radius 5.0 in a
+    # much taller canvas; an explain run routinely has hundreds of rows to
+    # explain, so both a taller band and a point cap keep the swarm shape
+    # (the entire point of a beeswarm) legible instead of collapsing into a
+    # dense, mostly-overlapping column at the greedy layout's collision cap.
+    max_points_per_row = 150
+    subsampled = n_points > max_points_per_row
+    width = 820
+    row_h = 34 if not subsampled else 56
     plot_x, plot_y = 190.0, 70.0
     right_margin, bottom_reserved = 40.0, 60.0
     plot_w = width - plot_x - right_margin
@@ -253,11 +263,16 @@ def _write_shap_beeswarm_svg(
     parts: List[str] = []
     parts.append(svg_open(width, height, "shap-bee-title", "shap-bee-desc", font_family=chrome_family))
     parts.append('<title id="shap-bee-title">SHAP value distribution by feature</title>')
+    sample_note = (
+        f", a random sample of {max_points_per_row} of {n_points} rows shown so the swarm shape stays legible"
+        if subsampled else ""
+    )
     parts.append(
         f'<desc id="shap-bee-desc">Beeswarm of SHAP values for the top {n_features} features, '
-        'one row per feature ranked by importance, coloured by each point’s raw feature value.</desc>'
+        f'one row per feature ranked by importance, coloured by each point’s raw feature value{sample_note}.</desc>'
     )
-    total_dots = n_features * n_points
+    plotted_points = min(n_points, max_points_per_row)
+    total_dots = n_features * plotted_points
     parts.append(
         "<style>"
         ".dot{transition:r .12s ease;}"
@@ -278,6 +293,13 @@ def _write_shap_beeswarm_svg(
         f'stroke="{INK}" stroke-width="1" opacity="0.35"/>'
     )
 
+    # Same subsampled instances across every feature row, not a fresh sample
+    # per row, so a point's colour/position is comparable across bands.
+    row_idx = (
+        np.random.default_rng(42).choice(n_points, size=max_points_per_row, replace=False)
+        if subsampled else np.arange(n_points)
+    )
+
     tips: List[str] = []
     tip_i = 0
     for row_i, feat_idx in enumerate(top_idx):
@@ -286,13 +308,13 @@ def _write_shap_beeswarm_svg(
             f'<text x="{plot_x - 12:.1f}" y="{cy + 4:.1f}" font-size="12" fill="{INK}" '
             f'text-anchor="end">{xml_escape(str(feat_names[feat_idx]))}</text>'
         )
-        vals = shap_values.values[:, feat_idx]
-        raw = shap_values.data[:, feat_idx] if hasattr(shap_values, "data") else vals
+        vals = shap_values.values[row_idx, feat_idx]
+        raw = shap_values.data[row_idx, feat_idx] if hasattr(shap_values, "data") else vals
         raw_min, raw_max = float(np.min(raw)), float(np.max(raw))
         raw_span = (raw_max - raw_min) or 1.0
         order = list(np.argsort(vals))
         items = [(x_for(float(vals[j])), 0.0) for j in order]
-        ys = _swarm_positions(items, cy, radius)
+        ys = _swarm_positions(items, cy, radius, max_offset=row_h / 2.0 - radius - 1.0)
         for (x, _), y, j in zip(items, ys, order):
             t = (float(raw[j]) - raw_min) / raw_span
             color = color_ramp(t, ramp_stops)
@@ -630,7 +652,9 @@ def run_shapash(model: Any, data: Any, ctx: Dict[str, Any]) -> Dict[str, Any]:
     y_pred = None
     if hasattr(model, "predict"):
         try:
-            y_pred = model.predict(explain_rows)
+            # Shapash's own check_y() requires a one-column Series/DataFrame,
+            # not the bare ndarray most sklearn-style .predict() methods return.
+            y_pred = pd.Series(model.predict(explain_rows), index=getattr(explain_rows, "index", None), name="pred")
         except Exception:  # noqa: BLE001 — predictions are an optional overlay; compile below still works with y_pred=None
             pass
     xpl.compile(x=explain_rows, y_pred=y_pred, contributions=contributions)
