@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import argparse
 import importlib.util
+import inspect
 import sys
 import warnings
 from pathlib import Path
@@ -29,6 +30,7 @@ from .catalog import get_figure_definition as _get_figure_definition
 from .catalog import list_kinds as _list_kinds
 from .catalog import resolve_kind as _resolve_kind
 from .fonts import register_all as _register_fonts
+
 
 def _resolve_scripts_dir(pkg_parent: Path) -> Path:
     """Find the chart-generator directory relative to *pkg_parent*.
@@ -118,6 +120,55 @@ def list_kinds(status: str | None = None) -> list[str]:
     True
     """
     return _list_kinds(status=status)  # type: ignore[arg-type]
+
+
+def _filter_kwargs_for(fn: Any, kwargs: dict[str, Any]) -> dict[str, Any]:
+    """Drop kwargs the generator's signature does not accept.
+
+    Chrome-text kwargs (``subtitle``, ``x_label``, ...) are shared
+    vocabulary but not a universal contract: a couple of generators take
+    none of them, and axis labels only exist on axis-bearing charts.
+    """
+    try:
+        params = inspect.signature(fn).parameters
+    except (TypeError, ValueError):
+        return kwargs
+    if any(p.kind is p.VAR_KEYWORD for p in params.values()):
+        return kwargs
+    return {k: v for k, v in kwargs.items() if k in params}
+
+
+def user_data_chrome_kwargs(
+    kind: str, mapping: dict[str, str] | None = None
+) -> dict[str, Any]:
+    """Chrome-text overrides for rendering *user* data instead of DEMO_DATA.
+
+    Generators fall back to demo captions when chrome kwargs are omitted
+    (e.g. make_bar's "Quarterly figures" subtitle and "Region" axis title);
+    that chrome belongs to the built-in demo data only. Suppresses the demo
+    subtitle, and titles the axes after the user's own columns when the
+    role binding is unambiguous. ``mapping`` is the ``{role: column}`` dict
+    from ``--map`` (columns already carrying a role name need no entry).
+    """
+    mapping = mapping or {}
+    kwargs: dict[str, Any] = {"subtitle": ""}
+    canonical = _resolve_kind(kind)
+    if canonical is None:
+        return kwargs
+    definition = _get_figure_definition(canonical)
+    category_roles = [
+        r for r in definition.required_roles if "numeric" not in r.accepted_types
+    ]
+    numeric_roles = [
+        r for r in definition.required_roles if "numeric" in r.accepted_types
+    ]
+    if len(category_roles) == 1:
+        role = category_roles[0]
+        kwargs["x_label"] = mapping.get(role.name, role.name)
+    if len(numeric_roles) == 1:
+        role = numeric_roles[0]
+        kwargs["y_label"] = mapping.get(role.name, role.name)
+    return kwargs
 
 
 def validate_figure_input(
@@ -217,7 +268,7 @@ def make_figure(kind: str, data: list[dict[str, Any]], **kwargs: Any) -> Path:
                 raise AttributeError(
                     f"Script {legacy_path.name} has no function named {fn_name!r}."
                 )
-            return Path(fn(data, **kwargs))
+            return Path(fn(data, **_filter_kwargs_for(fn, kwargs)))
         available = _list_kinds()
         raise ValueError(
             f"No script for kind={kind!r}. Available ({len(available)}): {', '.join(available)}"
@@ -256,7 +307,7 @@ def make_figure(kind: str, data: list[dict[str, Any]], **kwargs: Any) -> Path:
             f"{definition.callable_name!r} (kind={canonical!r}, status={definition.status!r})."
         )
 
-    result = fn(data, **kwargs)
+    result = fn(data, **_filter_kwargs_for(fn, kwargs))
     result_path = Path(result).resolve()
     if not result_path.exists():
         raise RuntimeError(
@@ -340,12 +391,14 @@ def main() -> None:
         print("Run `make-figure --list` to see available kinds.", file=sys.stderr)
         sys.exit(1)
 
+    mapping: dict[str, str] = {}
     if args.data:
         from .data_source import apply_mapping, load_records, load_stdin_records, parse_mapping
 
         try:
             data = load_stdin_records() if args.data == "-" else load_records(args.data)
-            data = apply_mapping(data, parse_mapping(args.map))
+            mapping = parse_mapping(args.map)
+            data = apply_mapping(data, mapping)
         except (FileNotFoundError, ValueError) as exc:
             print(f"Error reading --data: {exc}", file=sys.stderr)
             sys.exit(1)
@@ -363,6 +416,10 @@ def main() -> None:
     kwargs: dict[str, Any] = {"title": args.title}
     if args.out:
         kwargs["out"] = args.out
+    if args.data:
+        # User data must not inherit the demo chrome (subtitle, axis titles).
+        for key, value in user_data_chrome_kwargs(canonical, mapping).items():
+            kwargs.setdefault(key, value)
 
     try:
         result = make_figure(args.kind, data, **kwargs)
