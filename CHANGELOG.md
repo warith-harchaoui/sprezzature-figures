@@ -30,7 +30,97 @@
   other Geospatial-category kinds that share `assets/geo/` (`dotdensity`,
   `hexbin-map`, `spike-map`) stayed here, unaffected.
 
+- **matplotlib, Vega, and graphviz, entirely.** The last three third-party
+  plotting/layout backends are gone: `explain_model.py`'s SHAP/TimeSHAP/
+  Shapash paths now reuse the catalogue's own `make_bar`/`make_waterfall`
+  generators plus two bespoke SVG plots (beeswarm, dependence scatter)
+  built from the shared `_svg.py`/`_style.py` primitives; `causal_estimate.py`'s
+  DAG is a hand-written layered (Sugiyama-style) SVG layout instead of
+  `graphviz.Digraph`, and its forest plot is hand-authored SVG instead of
+  a matplotlib figure; `render_diagram.py`/`ralph_eyeball_loop.py` drop
+  the "vega" source kind entirely (`tikz`/`mermaid`/`svg` remain).
+  `pyproject.toml` no longer declares matplotlib in any extra.
+  `tests/test_no_third_party_plotting.py` grep-guards the migrated
+  scripts against these imports returning.
+
 ### Fixed
+
+- **93 unparameterized-chrome-text bugs across 54 generators.** Axis
+  titles, legend headers, and unit labels were hardcoded as f-string
+  literals with no matching parameter, so a generator plotting real
+  (non-demo) data could silently keep its demo chrome: the bug was first
+  caught in `make_columnrange` (a revenue chart still labeled "Temperature
+  (°C)" / "City", plus a hardcoded month-order list that scrambled real
+  date labels outside `["Jan","Apr","Jul","Oct"]`, and a fixed left margin
+  that let the y-axis title collide with wide tick labels). Generalized
+  into a permanent static check, `scripts/audit_generator_hardcoded_text.py`,
+  then every one of the 93 warnings it found was fixed by exposing the
+  chrome text as caller-overridable keyword parameters. The audit now
+  reports 0 warnings across `scripts/`.
+
+- **CLI/API renders no longer leak demo captions into real data.**
+  Passing `--data` only ever set the title, so generators fell back to
+  their demo subtitle and axis captions regardless (any CSV rendered as a
+  bar chart kept the "Quarterly figures" subtitle and "Region" axis
+  label). `make_figure()` now suppresses the demo subtitle and titles the
+  axes from the user's own column names via the role binding, and filters
+  keyword arguments against each generator's actual signature before
+  calling it.
+
+- **Causal DAG parsing, forest-plot label collisions, and SHAP/Shapash
+  rendering bugs.** `causal_estimate.py`'s `--dag`/`--dag-string` now
+  correctly parses hand-written Graphviz DOT (`X -> Y`), not only GML, as
+  both flags already documented; forest-plot value labels now measure
+  their own rendered width before deciding which side of the dot to sit
+  on, instead of switching purely on the value's sign (which collided
+  with the row-label column for a near-zero or a large-negative value).
+  `explain_model.py`'s SHAP beeswarm caps at 150 subsampled points per
+  row so the swarm shape stays legible past `--n-explain 300`, and
+  `run_shapash` wraps `model.predict()`'s raw ndarray in a named
+  `pd.Series` before handing it to Shapash's `compile()`, which otherwise
+  raised `ValueError`. `make_bar-grouped.py`'s `_region_colors()` only
+  curated 3 hues; a 4th real region wrapped the cycle and collided with
+  the 1st in color, now falls back to the full default `cycle_hues` cycle
+  beyond 3 regions.
+
+- **Studio ingest/recommendation: currency misclassification, missed
+  data-quality warnings, DB-driver types, and a recommendation-limit tie
+  break (TAB-03/TAB-05).** `_CURRENCY_NAME_RE` matched `eur`/`usd`/`gbp`
+  as a free substring, so a French column named `valeur` ("value") was
+  classified `currency` instead of `numeric` purely because it contains
+  "eur", which fed a wrong chart-recommendation goal; the codes are now
+  delimited (`(^|_)(usd|eur|gbp)($|_)`). `profile_dataframe` computed
+  `null_count`/quantile stats per column but never turned them into
+  warnings, so a file with missing values, IQR outliers, or duplicate
+  rows produced an empty warning list; `_data_quality_warnings` now
+  surfaces all three from the stats already collected. A `DataFrame`
+  built from raw DB driver rows (`pd.DataFrame(psycopg_rows)`) keeps
+  `decimal.Decimal`/`datetime.date` values as plain Python objects, so
+  `is_numeric_dtype`/`is_datetime64_any_dtype` both reported `False` on
+  columns that were unambiguously numbers or dates, cascading into a
+  wrong recommendation goal and, in one observed case, a column binding
+  that silently plotted the wrong column entirely; `_coerce_db_driver_types`
+  now recasts all-Decimal and all-date `object` columns before profiling.
+  Finally, `recommend_figures(limit=...)` truncated its tied candidate
+  list before breaking the tie by goal, which could drop the one kind
+  that actually answers the request (a datetime+measure trend losing
+  "line" to an alphabetically-earlier tied kind); it now accepts an
+  optional `goal` and passes it through to `rank()` before truncating.
+
+- **`_SCRIPTS_DIR` resolution no longer loses to an unrelated same-named
+  folder.** An installed environment with any third-party `scripts/`
+  directory earlier in the search path than the dedicated
+  `sprezzature_figures_scripts/` package made every figure resolve
+  silently to the wrong place. The dedicated name is now searched first,
+  with the generic `scripts/` name kept only as a fallback for running
+  from the source tree, where the dedicated name never exists.
+
+- **`--map` accepts a role's label, not only its historical key.** Role
+  names predate the current chrome (e.g. `bar`'s category role is still
+  called `region`, after its original demo data), so `--map category=month`
+  now binds correctly instead of requiring the internal key; a failed
+  render lists every required role together with its label and accepted
+  types, instead of naming only the first one missing.
 
 - **`_scale.fixed_step_ticks` no longer overshoots `hi`.** When `step` did
   not evenly divide `hi - lo` (e.g. a 24-hour axis ticked every 3 units
