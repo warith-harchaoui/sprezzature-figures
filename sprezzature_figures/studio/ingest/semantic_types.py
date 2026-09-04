@@ -26,8 +26,15 @@ _LAT_NAME_RE = re.compile(r"(^|_)lat(itude)?($|_)", re.IGNORECASE)
 _LON_NAME_RE = re.compile(r"(^|_)lon(gitude)?($|_)", re.IGNORECASE)
 _ID_NAME_RE = re.compile(r"(^|_)(id|uuid|guid)($|_)", re.IGNORECASE)
 _PERCENT_NAME_RE = re.compile(r"pct|percent|%|rate$|ratio$", re.IGNORECASE)
+# Les codes devise à 3 lettres doivent être délimités (^|_ ... $|_) : en
+# sous-chaîne libre, "eur" matche n'importe quel mot français qui le
+# contient (valeur, employeur, longueur, hauteur, ingénieur...), classant
+# à tort la colonne "currency" au lieu de "numeric" -- bug réel mesuré :
+# une colonne "valeur" faisait échouer la sélection de graphique (ecdf
+# choisi au lieu de line pour une tendance temporelle), cf. TAB-03.
 _CURRENCY_NAME_RE = re.compile(
-    r"price|cost|revenue|amount|salary|budget|spend|usd|eur|gbp", re.IGNORECASE
+    r"price|cost|revenue|amount|salary|budget|spend|(^|_)(usd|eur|gbp)($|_)",
+    re.IGNORECASE,
 )
 
 _IDENTIFIER_UNIQUE_RATIO = 0.98

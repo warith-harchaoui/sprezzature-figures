@@ -114,6 +114,33 @@ def test_rank_and_recommend_are_deterministic_and_bounded() -> None:
     assert all(d.kind in compatible for d in top)  # never recommends the incompatible
 
 
+def test_recommend_figures_without_goal_can_truncate_before_the_tie_breaks(
+) -> None:
+    """Regression (TAB-03): a datetime+measure profile is compatible with
+    several univariate-distribution kinds (area/dotplot/ecdf/histogram/
+    kde1d/line/qqplot/rug) that all tie at the readability-only score of
+    1.0 -- without `goal`, `recommend_figures(limit=5)` truncates that tied
+    list in registry order, which can drop "line" (the one kind that
+    actually answers a trend question) before any caller ever sees it.
+    """
+    profile = _profile([_dt("date"), _num("value")])
+    without_goal = {d.kind for d in recommend_figures(profile, limit=5)}
+    assert "line" not in without_goal, (
+        "if this starts failing, registry order changed and the bug this "
+        "test guards against may no longer reproduce without `goal` -- "
+        "recommend_figures(goal=...) below is still the fix to rely on"
+    )
+
+
+def test_recommend_figures_with_goal_keeps_the_matching_kind_inside_the_limit() -> None:
+    """The actual fix (TAB-03) : passing `goal` breaks the tie *before*
+    truncating, so "line" survives limit=5 for a trend request even though
+    it would not on registry order alone (previous test)."""
+    profile = _profile([_dt("date"), _num("value")])
+    with_goal = [d.kind for d in recommend_figures(profile, limit=5, goal="trend")]
+    assert with_goal[0] == "line"
+
+
 # A profile compatible with both a Comparison figure (bar: cat+num) and a
 # Relationship figure (scatter: num+num), so a goal can reorder them.
 def _mixed_profile() -> DatasetProfile:

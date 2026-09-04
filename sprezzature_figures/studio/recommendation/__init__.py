@@ -33,12 +33,27 @@ from .scoring import infer_goal, rank, score
 
 
 def recommend_figures(
-    profile: DatasetProfile, *, limit: int = 3, status: str | None = "stable"
+    profile: DatasetProfile,
+    *,
+    limit: int = 3,
+    status: str | None = "stable",
+    goal: str | None = None,
 ) -> list[FigureDefinition]:
     """The top `limit` figure kinds this dataset can fill, best first. Feed the
     result to `assistant.recommend.explain_recommendations` for LLM titles and
-    tradeoffs, or show it directly when no model is available."""
-    return [definition for definition, _score in rank(profile, status=status)[:limit]]
+    tradeoffs, or show it directly when no model is available.
+
+    Pass `goal` (the user's `UserIntent.analytical_goal`, or the output of
+    `infer_goal(profile)` when no LLM intent is available yet) so `rank()`
+    breaks the readability tie *before* truncating to `limit` -- omitting it
+    here silently drops well-fitting kinds whose readability score ties at
+    1.0 with everything else once the list is cut to `limit` (bug found in
+    api-bureautique's chart route: a datetime+measure trend request lost
+    "line" to alphabetically-earlier "ecdf"/"histogram" every time, because
+    the caller learned the goal via an LLM call made *after* this truncation
+    already happened).
+    """
+    return [definition for definition, _score in rank(profile, status=status, goal=goal)[:limit]]
 
 
 __all__ = [

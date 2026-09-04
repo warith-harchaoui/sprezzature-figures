@@ -84,6 +84,13 @@ def sample_xlsx(tmp_path: Path) -> Path:
         (pd.Series(["https://a.com", "https://b.com", "http://c.org"]), "link", "url"),
         (pd.Series([48.85, 40.71, 51.50, -33.87]), "latitude", "latitude"),
         (pd.Series([2.35, -74.0, -0.12, 151.2]), "longitude", "longitude"),
+        # Regression (TAB-03) : "eur"/"usd"/"gbp" doivent être délimités par
+        # (^|_)...($|_), pas matchés en sous-chaîne libre -- "valeur" contient
+        # "eur" mais n'est pas une colonne devise (bug réel : chart-type
+        # sélectionné via ecdf au lieu de line, la colonne étant classée
+        # "currency" au lieu de "numeric").
+        (pd.Series([1000.0, 1200.0, 1500.0, 1800.0]), "valeur", "numeric"),
+        (pd.Series([1000.0, 1200.0, 1500.0, 1800.0]), "montant_eur", "currency"),
         (pd.Series([f"user_{i}" for i in range(50)]), "user_id", "identifier"),
         (
             pd.Series([f"this is a fairly unique free-text sentence number {i}" for i in range(50)]),
@@ -101,6 +108,8 @@ def sample_xlsx(tmp_path: Path) -> Path:
         "url",
         "latitude_by_name_and_range",
         "longitude_by_name_and_range",
+        "french_word_containing_eur_is_not_currency",
+        "delimited_eur_suffix_is_currency",
         "identifier_by_name_and_uniqueness",
         "free_text_high_cardinality",
     ],
@@ -235,3 +244,87 @@ def test_profile_dataframe_structural_warnings() -> None:
         source_name="empty_col.csv",
     )
     assert any("entirely empty" in w.message and w.column == "b" for w in empty_col.warnings)
+
+
+def test_profile_dataframe_data_quality_warnings() -> None:
+    """Regression (TAB-05): a null value, an outlier, and a duplicate row must
+    each surface as a warning -- previously `warnings` stayed empty despite
+    `null_count`/`quantiles` already holding everything needed to detect them.
+    """
+    df = pd.DataFrame(
+        {
+            "amount": [10.0, 11.0, 12.0, 10.5, 11.5, 9.5, 10.0, 5000.0, None],
+            "region": ["North", "South", "East", "West", "North", "South", "East", "West", "North"],
+        }
+    )
+    # Duplicate the first row so a duplicate row is present.
+    df = pd.concat([df, df.iloc[[0]]], ignore_index=True)
+
+    profile = profile_dataframe(df, dataset_id="d1", fingerprint="f", source_name="anomalies.csv")
+
+    assert any("manquante" in w.message and w.column == "amount" for w in profile.warnings), profile.warnings
+    assert any("aberrante" in w.message and w.column == "amount" for w in profile.warnings), profile.warnings
+    assert any("double" in w.message and w.column is None for w in profile.warnings), profile.warnings
+
+
+def test_profile_dataframe_clean_data_has_no_data_quality_warnings() -> None:
+    """A dataset with no nulls, no outliers, and no duplicate rows must not
+    manufacture false positives."""
+    df = pd.DataFrame({"amount": [10.0, 11.0, 12.0, 10.5, 11.5], "region": ["N", "S", "E", "W", "N"]})
+    profile = profile_dataframe(df, dataset_id="d1", fingerprint="f", source_name="clean.csv")
+    assert profile.warnings == []
+
+
+def test_profile_dataframe_recognizes_psycopg_decimal_columns_as_numeric() -> None:
+    """Regression: rows built from real psycopg SQL results (a raw list of
+    dicts, `pd.DataFrame(rows)`, not `read_csv`) keep `decimal.Decimal`
+    values in an `object`-dtype column -- `is_numeric_dtype` used to report
+    False on that column even though every value is a number, so a monthly
+    revenue total was classified "text"/"categorical" instead of "numeric",
+    which cascaded into a wrong chart-recommendation goal and a column
+    binding that plotted the wrong column entirely."""
+    from decimal import Decimal
+
+    rows = [{"month": m, "total_revenue": Decimal(str(200000 + m * 1000))} for m in range(1, 13)]
+    df = pd.DataFrame(rows)
+    profile = profile_dataframe(df, dataset_id="d1", fingerprint="f", source_name="psycopg.json")
+    col = profile.column("total_revenue")
+    assert col is not None
+    assert col.physical_dtype == "float64"
+    assert col.semantic_type in ("numeric", "currency")
+    assert col.minimum == 201000.0
+    assert col.maximum == 212000.0
+
+
+def test_profile_dataframe_recognizes_psycopg_date_columns_as_datetime() -> None:
+    """Regression: a psycopg SQL `DATE`/`TIMESTAMP` result column holds raw
+    `datetime.date` objects in an `object`-dtype column when the frame is
+    built from a list of row dicts -- `is_datetime64_any_dtype` used to
+    report False, and `min()`/`max()` on that column crashed `ColumnProfile`
+    construction outright (Pydantic expects `float | str`, got a bare
+    `datetime.date`)."""
+    from datetime import date
+
+    rows = [{"period": date(2024, m, 1), "value": float(m)} for m in range(1, 13)]
+    df = pd.DataFrame(rows)
+    profile = profile_dataframe(df, dataset_id="d1", fingerprint="f", source_name="psycopg.json")
+    col = profile.column("period")
+    assert col is not None
+    assert col.physical_dtype.startswith("datetime64")
+    assert col.semantic_type == "datetime"
+    # pandas coerces `date` to `Timestamp` (datetime precision): isoformat()
+    # keeps the "T00:00:00" time component even for a date-only source value.
+    assert col.minimum == pd.Timestamp(date(2024, 1, 1)).isoformat()
+    assert col.maximum == pd.Timestamp(date(2024, 12, 1)).isoformat()
+
+
+def test_profile_dataframe_leaves_genuine_text_columns_alone() -> None:
+    """The Decimal/date coercion must not touch a column that is actually
+    plain text just because every value happens to look number-like as a
+    string -- only real Decimal/date instances trigger the coercion."""
+    df = pd.DataFrame({"code": ["1", "2", "3"], "label": ["North", "South", "East"]})
+    profile = profile_dataframe(df, dataset_id="d1", fingerprint="f", source_name="text.csv")
+    code = profile.column("code")
+    assert code is not None
+    assert code.physical_dtype == "object"
+    assert code.semantic_type in ("categorical", "text")
