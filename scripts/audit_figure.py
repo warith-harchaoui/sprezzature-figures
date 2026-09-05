@@ -364,15 +364,59 @@ def rules_for_svg(text: str, path: str) -> List[Dict[str, Any]]:
             "radius-over-cap", "warning",
             f"rx over the 16px corner cap: {', '.join(f'{v:g}' for v in over)}", path))
 
+    # Tick labels that are raw, unformatted magnitudes: "1000000" instead of
+    # "1M" or "1 000 000". Found by eyeballing a real revenue chart whose y-axis
+    # read 200000 / 400000 / 600000 — legible only after counting zeros, which
+    # is exactly the work a chart is supposed to remove. Five digits is the
+    # threshold because four-digit years ("2024") are legitimate tick labels.
+    bare = sorted({
+        m for m in re.findall(r">\s*(\d{5,})\s*<", text)
+        if not (len(m) == 4 and m.startswith(("19", "20")))
+    }, key=len, reverse=True)
+    if len(bare) >= 3:
+        findings.append(make_finding(
+            "unformatted-tick", "warning",
+            "axis ticks are raw magnitudes with no separator or unit suffix "
+            f"({', '.join(bare[:3])}...): a reader has to count digits",
+            path))
+
+    # Tick labels left as ISO dates. A time axis reading "2024-07-01" twenty-four
+    # times, rotated to fit, is machine output shown to a human: "juil. 2024" or
+    # "Jul 2024" carries the same information in half the width.
+    iso = re.findall(r">\s*(\d{4}-\d{2}-\d{2})\s*<", text)
+    if len(iso) >= 4:
+        findings.append(make_finding(
+            "iso-date-tick", "warning",
+            f"{len(iso)} tick labels are raw ISO dates ({iso[0]}...): format them "
+            "for a reader, not for a machine",
+            path))
+
     return findings
 
 
 # ------------------------------------------------------------------
 # Formatting
 # ------------------------------------------------------------------
-def format_human(findings: List[Dict[str, Any]]) -> str:
-    """Human-readable finding summary."""
+def format_human(findings: List[Dict[str, Any]], kinds: Optional[set] = None) -> str:
+    """Human-readable finding summary.
+
+    ``kinds`` carries which input types were actually audited, so a clean
+    result can say what it covered. Without it, a bare "clean" on an SVG reads
+    as "audited and fine" when most rules simply do not apply: the dual-axis,
+    truncated-baseline, missing-title and polarity checks all need the
+    Vega-Lite spec, not its rendering. A verification that overstates itself is
+    worse than no verification, because it stops the reader from looking.
+    """
     if not findings:
+        if kinds and not kinds <= {"json"}:
+            reduced = ", ".join(sorted(kinds - {"json"}))
+            return (
+                f"no finding among the rules that apply to {reduced}. "
+                "Rules needing the Vega-Lite spec (dual-y-axis, truncated-baseline, "
+                "missing-axis-title, missing-polarity) were NOT checked: audit the "
+                "spec, not only its rendering. And no static rule replaces looking "
+                "at the image."
+            )
         return "clean"
     lines = []
     counts = {"error": 0, "warning": 0, "info": 0}
@@ -450,7 +494,10 @@ def main(argv: Optional[List[str]] = None) -> int:
     only = {s.strip() for s in args.only.split(",") if s.strip()}
 
     all_findings: List[Dict[str, Any]] = []
+    # Which input types were seen, so the clean message can state its coverage.
+    kinds: set = set()
     for p in iter_files(args.paths):
+        kinds.add(p.suffix.lower().lstrip("."))
         findings = audit_one(p)
         for f in findings:
             if only and f["rule"] not in only:
@@ -462,7 +509,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     if args.json:
         print(format_json(all_findings))
     else:
-        print(format_human(all_findings))
+        print(format_human(all_findings, kinds))
 
     errors = sum(1 for f in all_findings if f["severity"] == "error")
     warnings = sum(1 for f in all_findings if f["severity"] == "warning")
