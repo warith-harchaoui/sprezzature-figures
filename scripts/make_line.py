@@ -28,7 +28,7 @@ from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _scale import log_position, log_ticks, nice_ticks  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY, cycle_hues  # noqa: E402
-from _svg import foreground_tip_css, fmt_number, svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _svg import foreground_tip_css, fmt_magnitude, fmt_number, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 
@@ -267,10 +267,14 @@ def build_svg(
             f'stroke="{GRIDLINE}" stroke-width="1"/>'
         )
         # fmt_number only for log ticks (decade values can be fractional,
-        # e.g. 0.1 -- a plain :.0f} would truncate them to "0"); the linear
-        # branch keeps its original :.0f} so the default (non-log) render
-        # is unchanged.
-        tick_label = fmt_number(tick) if log_y else f"{tick:.0f}"
+        # e.g. 0.1 -- a plain :.0f} would truncate them to "0"). The linear
+        # branch now compacts large magnitudes: a revenue axis used to read
+        # 200000 / 400000 / 600000, legible only after counting zeros, which
+        # is the work a chart exists to remove. Found by rendering a real
+        # revenue chart and looking at it. Below 10 000, fmt_magnitude
+        # delegates to fmt_number, so small-value charts render exactly as
+        # before and a year stays a year.
+        tick_label = fmt_number(tick) if log_y else fmt_magnitude(tick, language)
         parts.append(
             f'<text x="{plot_x - 10:.1f}" y="{ty + 4:.1f}" font-size="11" font-family="{mono_family}" '
             f'fill="{SECONDARY}" text-anchor="end">{tick_label}</text>'

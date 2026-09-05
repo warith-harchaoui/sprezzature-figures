@@ -269,6 +269,70 @@ def fmt_number(v: float) -> str:
     return f"{v:g}"
 
 
+def fmt_magnitude(v: float, lang: str = "en") -> str:
+    """Format a large axis tick compactly: ``1200000`` becomes ``1.2M``.
+
+    Why this exists. :func:`fmt_number` settles *precision* but never
+    *magnitude*, so a revenue axis renders ``200000 / 400000 / 600000``. That
+    is legible only after counting zeros, which is exactly the work a chart
+    exists to remove — found by rendering a real revenue chart and looking at
+    it rather than at its code.
+
+    Below ``10_000`` this delegates to :func:`fmt_number` unchanged. Four
+    digits and fewer are read at a glance, and a year (``2024``) must never
+    become ``2k``.
+
+    Parameters
+    ----------
+    v : float
+        The value to label.
+    lang : str
+        ``"fr"`` uses the decimal comma and a space before the suffix, as
+        French typography requires; anything else keeps the English form.
+
+    Returns
+    -------
+    str
+        A compact label, or :func:`fmt_number`'s output below the threshold.
+
+    Examples
+    --------
+    >>> fmt_magnitude(1200000)
+    '1.2M'
+    >>> fmt_magnitude(800000)
+    '800k'
+    >>> fmt_magnitude(1200000, lang="fr")
+    '1,2 M'
+    >>> fmt_magnitude(2024)
+    '2024'
+    >>> fmt_magnitude(-1500000)
+    '-1.5M'
+    >>> fmt_magnitude(999999)
+    '1M'
+    """
+    av = abs(v)
+    if av < 10_000:
+        return fmt_number(v)
+
+    # The unit is picked from the value ROUNDED to one decimal, not from the raw
+    # value: 999_999 rounds to 1000.0k, which should read "1M" and not "1000k".
+    # Comparing before rounding put it one unit too low.
+    for seuil, suffixe in ((1e12, "T"), (1e9, "G"), (1e6, "M"), (1e3, "k")):
+        if round(av / seuil, 1) >= 1:
+            reduit = v / seuil
+            # One decimal only when it carries information: 1.2M is worth the
+            # character, 1.0M is not.
+            # The decimal is judged on the ROUNDED value, not the raw one:
+            # 999_999 / 1e6 is 0.999999, which is not integral, yet its label
+            # is "1M" and the ".0" carries nothing.
+            arrondi = round(reduit, 1)
+            texte = f"{reduit:.0f}" if abs(reduit) >= 100 or arrondi == int(arrondi) else f"{reduit:.1f}"
+            if lang == "fr":
+                return f"{texte.replace('.', ',')} {suffixe}"
+            return f"{texte}{suffixe}"
+    return fmt_number(v)
+
+
 def rounded_rect_path(
     x: float, y: float, w: float, h: float,
     r_tl: float = 0.0, r_tr: float = 0.0, r_br: float = 0.0, r_bl: float = 0.0,
