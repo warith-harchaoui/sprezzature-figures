@@ -394,3 +394,58 @@ def test_describe_required_roles_lists_names_and_labels() -> None:
     desc = describe_required_roles("bar")
     assert "region" in desc and "Category" in desc and "value" in desc
     assert describe_required_roles("no-such-kind") == ""
+
+
+# ---------------------------------------------------------------------------
+#  Lisibilité des graduations
+#
+#  Trouvé en rendant un vrai graphique de chiffre d'affaires et en le
+#  REGARDANT : l'axe affichait 200000 / 400000 / 600000, lisible seulement
+#  après avoir compté les zéros, ce qui est précisément le travail qu'un
+#  graphique existe pour supprimer.
+# ---------------------------------------------------------------------------
+
+
+def test_un_axe_de_grandes_valeurs_est_compacte():
+    from _svg import fmt_magnitude
+
+    assert fmt_magnitude(1_200_000) == "1.2M"
+    assert fmt_magnitude(800_000) == "800k"
+    assert fmt_magnitude(1_000_000_000) == "1G"
+
+
+def test_une_annee_reste_une_annee():
+    # Le seuil est à dix mille précisément pour que 2024 ne devienne pas 2k :
+    # quatre chiffres se lisent d'un coup d'œil et un millésime n'est pas une
+    # grandeur à compacter.
+    from _svg import fmt_magnitude
+
+    assert fmt_magnitude(2024) == "2024"
+    assert fmt_magnitude(1500) == "1500"
+
+
+def test_la_decimale_napparait_que_si_elle_apporte_quelque_chose():
+    # 999 999 se lit « 1M » : le « .0 » de « 1.0M » ne porte aucune
+    # information. Le jugement se fait sur la valeur ARRONDIE, pas sur la
+    # valeur brute, qui n'est jamais entière ici.
+    from _svg import fmt_magnitude
+
+    assert fmt_magnitude(999_999) == "1M"
+    assert fmt_magnitude(1_000_000) == "1M"
+    assert fmt_magnitude(1_250_000) == "1.2M"
+
+
+def test_le_francais_prend_la_virgule_et_lespace():
+    from _svg import fmt_magnitude
+
+    assert fmt_magnitude(1_200_000, lang="fr") == "1,2 M"
+    assert fmt_magnitude(800_000, lang="fr") == "800 k"
+
+
+def test_les_petites_valeurs_rendent_exactement_comme_avant():
+    # Garde-fou de non-régression : sous le seuil, le formateur délègue à
+    # l'ancien, donc aucun graphique à petites valeurs ne change d'aspect.
+    from _svg import fmt_magnitude, fmt_number
+
+    for v in (0, 0.031, 4.5, 12.3, 999, 9999):
+        assert fmt_magnitude(v) == fmt_number(v), v
