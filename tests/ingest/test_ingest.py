@@ -326,5 +326,9 @@ def test_profile_dataframe_leaves_genuine_text_columns_alone() -> None:
     profile = profile_dataframe(df, dataset_id="d1", fingerprint="f", source_name="text.csv")
     code = profile.column("code")
     assert code is not None
-    assert code.physical_dtype == "object"
+    # pandas 2 reports a string column as "object"; pandas 3 reports "str".
+    # Either spelling means the same thing here, which is that the coercion
+    # left the column textual, so the test accepts both rather than pinning
+    # the assertion to one pandas generation.
+    assert code.physical_dtype in ("object", "str")
     assert code.semantic_type in ("categorical", "text")
