@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 2.0.0 (2026-09-11): every figure is authored as SVG, and the package says so
+
+Major, because three things a caller could reach for are gone. Each named
+or served a charting library this stack has not used for some time: the
+code had moved on and the surface had not.
+
 ### Removed
 
 - **`scripts/_vl.py`**, a Vega-Lite spec helper imported by nothing.
@@ -20,6 +26,15 @@
   chart grammar, not a rendering. Passing a directory now expands to
   `.svg`/`.html`/`.htm` only. **This is a breaking change for anyone
   auditing a `.json` spec with this tool.**
+- **Roboto Serif from the distributed package.** It was 12.2 MB of an
+  18.6 MB wheel, and nothing asks for it: `THEMES["corporate"]` is
+  sans+mono, `THEMES["academic"]` is Latin Modern, and no module
+  references the `serif` face key. The web app self-hosts its own copy.
+  The faces stay in the source tree, so a checkout is unchanged;
+  `available_faces()` reports eight of the ten face keys in a wheel
+  install rather than all ten, and
+  `font_data_uri("serif")` — which nothing called — now raises. The wheel
+  drops from 11.5 MB to 3.2 MB, 18.6 MB unpacked to 6.4 MB.
 - Unused declared dependencies: `wordcloud`, `vega_datasets`, `altair`,
   `cycler`, `matplotlib` and `seaborn` from the `dataviz` tier, and
   `graphviz` from `causal`. None was imported anywhere. `pydot` stays —
@@ -45,6 +60,11 @@
 
 ### Fixed
 
+- **The Latin Modern fonts shipped without their licence.** The wheel's
+  `package-data` matched `OFL-*.txt`, which covers the three Roboto
+  licences but not `GUST-FONT-LICENSE-LatinModern.txt`, so four faces
+  went out with no accompanying terms. The licence now travels with the
+  fonts it covers.
 - `make_donut.py`'s docstring read "not with Vega or no matplotlib", a
   mangled sentence from an earlier automated pass.
 
