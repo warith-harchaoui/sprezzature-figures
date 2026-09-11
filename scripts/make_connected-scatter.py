@@ -10,8 +10,8 @@ decoupled, and that hook is the whole story. It reads better than a
 grouped line chart because the reader follows one thread through the
 (x, y) plane instead of mentally cross-referencing two axes over time.
 
-This generator builds the SVG by hand (no matplotlib / seaborn / plotly,
-no Vega) so the smooth path, the direction arrowheads riding the line,
+This generator builds the SVG by hand so the smooth path, the direction
+arrowheads riding the line,
 the year labels placed only at inflections, and the emphasised
 start / end markers are all under our control. It matches the sprezzature-*
 house style: Roboto, the Apple-ish palette, rounded corners, ink

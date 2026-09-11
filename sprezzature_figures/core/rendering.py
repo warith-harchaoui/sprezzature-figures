@@ -25,7 +25,7 @@ from ..catalog.models import ValidationIssue
 from ..make_figure import get_figure_definition, make_figure
 
 # Renderers whose source artifact needs conversion to get a PNG preview.
-_SVG_LIKE_RENDERERS = {"vega_lite", "vega", "svg"}
+_SVG_LIKE_RENDERERS = {"svg"}
 
 # Kinds whose generator accepts a `language` kwarg ("en"/"fr") and switches
 # its own title/subtitle/axis/legend text accordingly. Every generator still
@@ -111,8 +111,7 @@ def render_preview(source_path: Path, preview_path: Path, *, renderer: str) -> P
     preview_path : Path
         Where to write the PNG preview.
     renderer : str
-        The FigureDefinition's declared renderer ("vega_lite", "vega",
-        "svg", "matplotlib", "html").
+        The FigureDefinition's declared renderer ("svg" or "html").
 
     Raises
     ------
@@ -123,8 +122,6 @@ def render_preview(source_path: Path, preview_path: Path, *, renderer: str) -> P
     if renderer in _SVG_LIKE_RENDERERS:
         svg_text = source_path.read_text(encoding="utf-8")
         return atomic_write_bytes(preview_path, svg_to_png_bytes(svg_text))
-    if renderer == "matplotlib" and source_path.suffix.lower() == ".png":
-        return atomic_write_bytes(preview_path, source_path.read_bytes())
     if source_path.suffix.lower() == ".png":
         return atomic_write_bytes(preview_path, source_path.read_bytes())
     raise ValueError(

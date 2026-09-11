@@ -21,8 +21,8 @@ skewed sample, the empirical-vs-theoretical points bow into a smooth S /
 arc that pulls clearly off the diagonal: the classic tell that a
 symmetric law is the wrong shape for skewed data.
 
-This generator builds the SVG by hand (no matplotlib / seaborn / plotly,
-no Vega) so the tolerance band, the 45-degree reference line, the two
+This generator builds the SVG by hand so the tolerance band, the
+45-degree reference line, the two
 point clusters (coloured by which side of the diagonal they fall on, and
 labelled directly so the split survives greyscale), and the smooth trend
 arc are all under our control. The signed split uses blue (empirical above

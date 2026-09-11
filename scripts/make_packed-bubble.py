@@ -11,8 +11,8 @@ Here the categories are programming languages, the circle area is each
 language's share of developers who use it, and the fill colour marks the
 language family (systems, web-frontend, data / scientific, and so on).
 
-Vega-Lite has no circle-packing primitive, so the figure is built as an
-SVG string by hand. The pack is a deterministic, pure-Python
+The figure is built as an SVG string by hand. The pack is a
+deterministic, pure-Python
 collision-relaxation: bubbles are seeded on a spiral in descending size
 order, then a few dozen relaxation passes push overlapping pairs apart
 and pull every bubble gently toward the cluster centroid, so the result

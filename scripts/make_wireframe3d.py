@@ -4,12 +4,11 @@
 A 3D wireframe draws a surface ``z = f(x, y)`` as a lattice of mesh lines,
 the constant-``x`` and constant-``y`` grid curves projected onto the page,
 so the reader reads the shape of a two-argument function from its silhouette
-alone, without a filled/shaded solid. It is the matplotlib
-``Axes3D.plot_wireframe`` idiom; R, seaborn, and plotly have no first-class
-equivalent, so a hand-built SVG is the natural home for it here.
+alone, without a filled/shaded solid. It has no first-class equivalent
+in this house style, so a hand-built SVG is its natural home here.
 
-This module builds the SVG string **by hand** (no matplotlib / seaborn /
-plotly, no Vega): it samples the surface on a regular grid, rotates the
+This module builds the SVG string **by hand**: it samples the surface
+on a regular grid, rotates the
 lattice in 3D, projects it with a simple perspective camera, sorts the mesh
 segments back-to-front (painter's algorithm) and paints them in the sprezzature-*
 house style: Roboto type, the Apple-system palette, ink ``#1D1D1F`` on a

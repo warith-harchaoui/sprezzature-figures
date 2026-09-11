@@ -8,9 +8,8 @@ the caller's data (typically chronological or dependency order), so the
 staircase shape of overlapping bars reads as the project's critical path
 at a glance. The default chart for a project plan or roadmap.
 
-Previously rendered via Vega-Lite (an ``x``/``x2`` bar mark, ``vl_convert``);
-this module now paints each bar by hand, not with Vega or matplotlib. Every
-bar carries a native ``<title>`` tooltip with its exact span and duration.
+This module paints each bar by hand. Every bar carries a native
+``<title>`` tooltip with its exact span and duration.
 
 Author
 ------

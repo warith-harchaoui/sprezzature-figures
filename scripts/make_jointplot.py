@@ -5,12 +5,11 @@ make_jointplot — a scatter with marginal distributions as hand-authored SVG.
 A **joint plot** shows the *joint* relation of two continuous variables in a
 central scatter and each *marginal* distribution as a histogram glued to the
 matching edge: the x-variable's histogram sits on the top rail, the
-y-variable's on the right rail. This is the seaborn ``jointplot`` / R
-``ggExtra`` capability: one panel that answers both "how do these two move
-together?" and "how is each one spread?" at the same time.
+y-variable's on the right rail. One panel answers both "how do these two
+move together?" and "how is each one spread?" at the same time.
 
-This generator builds the SVG by hand (no matplotlib / seaborn / plotly, no
-Vega) so the central scatter, the two marginal histograms, the fitted trend
+This generator builds the SVG by hand so the central scatter, the two
+marginal histograms, the fitted trend
 line, and the shared numeric windows that glue the marginals to the scatter
 edges are all under our control. It matches the sprezzature-* house style: Roboto,
 the Apple-ish palette, rounded corners, ink ``#1D1D1F``, secondary
@@ -241,7 +240,7 @@ def build_svg(
     # --- marginal histograms -------------------------------------
     # ~14 buckets over each window: fine enough to show the sleep symmetry and
     # the reaction-time upper tail, coarse enough that each bar has presence
-    # (the reference Vega spec nice-binned to a similar count).
+    # (a nice-step binning lands on a similar count).
     n_bins = 14
     top_hist = histogram(sleep, x_min, x_max, n_bins)
     right_hist = histogram(rt, y_min, y_max, n_bins)

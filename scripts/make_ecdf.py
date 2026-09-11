@@ -10,11 +10,8 @@ directly off the curve. A dashed reference line at a chosen percentile
 Typical uses: request-latency SLOs, exam-score distributions, any sample
 where percentile thresholds matter more than the shape's name.
 
-Previously rendered via Vega-Lite (a ``window`` + ``joinaggregate`` +
-``calculate`` transform chain producing a step-after line, plus a rule
-layer for the percentile marker; ``vl_convert``); this module now sorts
-and accumulates the values itself and paints the step path by hand, not
-with Vega or matplotlib. The curve carries a native ``<title>`` tooltip.
+This module sorts and accumulates the values itself and paints the step
+path by hand. The curve carries a native ``<title>`` tooltip.
 
 Author
 ------

@@ -7,11 +7,9 @@ chart for understanding a distribution's shape, spread, and skew. Typical
 uses: exam score distributions, response time distributions, order value
 distributions.
 
-Previously rendered via Vega-Lite (``vl_convert``); this module now bins the
-data itself (a small "nice-step" binning routine, the same idea Vega's own
-binning uses: round the bin width to 1/2/5x10^k so edges read as friendly
-numbers) and paints the bars by hand, with no Vega and no matplotlib. Each bar
-carries a native ``<title>`` tooltip with its exact bin range, count and
+This module bins the data itself (a small "nice-step" binning routine:
+round the bin width to 1/2/5x10^k so edges read as friendly numbers) and
+paints the bars by hand. Each bar carries a native ``<title>`` tooltip with its exact bin range, count and
 share of the sample, and rounds only its free (top) end per the Sprezzature
 Corner Policy: the baseline stays flat so every bar visibly starts at zero.
 
@@ -51,8 +49,8 @@ DEMO_DATA: List[Dict[str, Any]] = _make_demo_data()
 
 
 def _nice_step(raw_step: float) -> float:
-    """Round ``raw_step`` up to a friendly 1/2/5 x 10^k bin width (Vega's own
-    binning follows the same rule so the axis reads in round numbers)."""
+    """Round ``raw_step`` up to a friendly 1/2/5 x 10^k bin width, so the
+    axis reads in round numbers."""
     if raw_step <= 0:
         return 1.0
     power = 10.0 ** math.floor(math.log10(raw_step))

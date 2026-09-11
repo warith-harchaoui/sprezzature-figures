@@ -24,10 +24,9 @@ begins again. The form follows the crop-rotation plates in the *Mémo
 visuel d'agronomie* (Dunod, 2024); the calendar here is an illustrative
 single-crop year, not a transcription of that book's data.
 
-The SVG is built by hand, with no matplotlib, seaborn, plotly, or
-Vega, because a directed ring of proportional annular arcs with radial
-labels and a flow arrow is not a native Vega-Lite mark and reads far more
-cleanly authored directly. It follows the tokens from :mod:`_style`: the
+The SVG is built by hand, because a directed ring of proportional
+annular arcs with radial labels and a flow arrow reads far more cleanly
+authored directly. It follows the tokens from :mod:`_style`: the
 Apple-ish palette (here mapped so each arc's hue also nods at its season:
 amber autumn, cool winter, green spring, gold summer, earth-brown bare
 soil), Roboto typography, ink ``#1D1D1F`` on a white ground, well-sat

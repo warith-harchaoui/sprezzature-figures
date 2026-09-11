@@ -4,10 +4,10 @@ make_residual — a residual-vs-fitted diagnostic scatter as hand-authored SVG.
 
 A **residual plot** scatters the residuals of a regression (observed minus
 predicted) against the model's fitted values, anchored by a zero reference
-line and overlaid with a smoothed trend of the residuals. This is the seaborn
-``residplot`` capability: the single diagnostic a modeller reaches for to
-ask "is anything left in the residuals?". A well-specified model leaves them
-scattered as a shapeless, constant-width band around zero.
+line and overlaid with a smoothed trend of the residuals. It is the
+single diagnostic a modeller reaches for to ask "is anything left in the
+residuals?". A well-specified model leaves them scattered as a
+shapeless, constant-width band around zero.
 
 This figure deliberately shows the opposite: the fake data comes from a model
 fit *linearly* to a relationship that curves, so the residuals bow into a
@@ -16,8 +16,8 @@ right: the two classic tells of a mis-specified mean and non-constant
 variance. The smoothed trend line makes the curvature impossible to miss,
 which is the whole point of the plot.
 
-This generator builds the SVG by hand (no matplotlib / seaborn / plotly, no
-Vega) so the residual scatter, the dashed zero rule, the locally-weighted
+This generator builds the SVG by hand so the residual scatter, the
+dashed zero rule, the locally-weighted
 (LOESS) smoother, and the sign-coloured points are all under our control. It
 matches the sprezzature-* house style: Roboto, the Apple-ish palette, rounded
 corners, ink ``#1D1D1F``, secondary ``#6E6E73``, white background, white
@@ -136,9 +136,8 @@ def loess(
 
     For each grid point it fits a tricube-weighted degree-1 local regression
     using the nearest ``frac`` of the data, giving the smooth structural curve
-    that turns a vague residual cloud into an unmistakable U. This is the same
-    smoother Vega's ``loess`` transform applies, hand-rolled here so the SVG
-    carries only the resulting polyline.
+    that turns a vague residual cloud into an unmistakable U. The smoother
+    is hand-rolled here so the SVG carries only the resulting polyline.
 
     Parameters
     ----------

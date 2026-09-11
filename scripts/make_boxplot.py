@@ -7,10 +7,8 @@ category using the standard Tukey box-and-whisker convention. Typical
 uses: salary distribution by department, response time by service, test
 scores by class.
 
-Previously rendered via Vega-Lite's native ``boxplot`` mark; this module
-now computes the five-number summary and outliers itself and paints the
-box, whiskers, and outlier points by hand, not with Vega or matplotlib.
-Every box carries a native ``<title>`` tooltip with its exact quartiles.
+This module computes the five-number summary and outliers itself and
+paints the box, whiskers, and outlier points by hand. Every box carries a native ``<title>`` tooltip with its exact quartiles.
 
 Author
 ------
@@ -54,7 +52,7 @@ DEMO_DATA: List[Dict[str, Any]] = _make_demo_data()
 
 
 def _quantile(sorted_vals: List[float], q: float) -> float:
-    """Linear-interpolation quantile (matches numpy's default / Vega-Lite's)."""
+    """Linear-interpolation quantile (matches numpy's default)."""
     if not sorted_vals:
         return 0.0
     pos = q * (len(sorted_vals) - 1)

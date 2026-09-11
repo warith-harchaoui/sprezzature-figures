@@ -1,7 +1,7 @@
 """
 sprezzature_figures — publication-quality data figures.
 
-84+ chart types rendered via Vega-Lite, full Vega, or matplotlib/SVG.
+124 chart types, every one a hand-authored SVG.
 Every chart is callable as a library function and as a CLI command.
 The Ralph Eyeball Loop provides autonomous visual quality feedback.
 

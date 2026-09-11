@@ -27,7 +27,7 @@ Optional extras (combine as needed, e.g. `"sprezzature-figures[cli,dataviz]"`):
 | Extra | Adds |
 |-------|------|
 | `[cli]` | the Click twin of the always-installed `make-figure` CLI |
-| `[dataviz]` | matplotlib / networkx / wordcloud / shapely / pyproj / pyyaml, needed for the small set of matplotlib-based generators (causal inference, explainability) |
+| `[dataviz]` | networkx / scikit-learn / pandas / shapely / pyproj / pyyaml — the data side (tables, geometry, models) behind the catalogue, causal inference and explainability; nothing here draws |
 | `[studio]` | Sprezzature Studio: the NiceGUI app + Ralph copilot (see below) |
 | `[api]` | FastAPI HTTP surface (see below) |
 | `[mcp]` | MCP (Model Context Protocol) tool surface on top of `[api]`, for calling this library from an AI assistant (see below) |

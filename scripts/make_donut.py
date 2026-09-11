@@ -10,10 +10,8 @@ Typical uses: traffic by acquisition channel, budget by category, votes by
 candidate: any small (2-6 category) part-of-whole breakdown where a bar
 chart would waste the "whole" framing a donut gives for free.
 
-Previously rendered via Vega-Lite (``vl_convert``, a layered ``arc`` +
-``text`` mark with a ``theta`` encoding); this module now computes the
-wedge angles itself and paints the annulus by hand, not with Vega or no
-matplotlib. Every wedge carries a native ``<title>`` tooltip.
+This module computes the wedge angles itself and paints the annulus by
+hand. Every wedge carries a native ``<title>`` tooltip.
 
 Author
 ------

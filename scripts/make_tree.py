@@ -9,8 +9,7 @@ answers "how does this whole break into parts, and how deep does any
 branch go?" more directly than an indented list, because the eye reads
 depth as horizontal distance and siblings as a vertical stack.
 
-Vega-Lite has no native tidy-tree mark, so this figure is built as an
-SVG string by hand rather than through ``vl_convert``. The layout is a
+This figure is built as an SVG string by hand. The layout is a
 **left-to-right Reingold–Tilford tidy tree**:
 
 * every node sits in a column ("depth") fixed by its distance from the

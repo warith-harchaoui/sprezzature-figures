@@ -24,10 +24,9 @@ address. The tallest peaks are labelled with a plausible nearby gene and
 carry a native ``<title>`` tooltip (chromosome, base-pair position,
 p-value) so the figure is lightly interactive with **no JavaScript**.
 
-The module builds the SVG string by hand: no matplotlib / seaborn /
-plotly, and no Vega (tens of thousands of scattered points with a custom
-genomic x-axis are authored far more directly and compactly as raw SVG).
-It follows the sprezzature-* house style pulled from :mod:`_style`: the
+The module builds the SVG string by hand: tens of thousands of
+scattered points with a custom genomic x-axis are authored far more
+directly and compactly as raw SVG. It follows the sprezzature-* house style pulled from :mod:`_style`: the
 Apple-ish saturated palette, Roboto typography, ink ``#1D1D1F`` on
 secondary ``#6E6E73`` on a white background, a takeaway title, and a
 one-line subtitle. All variant positions and p-values are drawn from a

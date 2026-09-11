@@ -10,9 +10,8 @@ because the reader follows the elbow connectors down the hierarchy and
 reads span-of-control (how many boxes hang off a node) and headcount
 (printed in each box) at a glance.
 
-Vega-Lite has no native node-link tree mark, so this figure is built as
-an SVG string by hand rather than through ``vl_convert``. The layout is
-a **top-down tidy tree**:
+This figure is built as an SVG string by hand. The layout is a
+**top-down tidy tree**:
 
 * every node sits on a row ("depth") fixed by its distance from the
   chief executive, so the whole VP layer lines up and the whole team

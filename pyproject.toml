@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "sprezzature-figures"
 version = "1.1.0"
-description = "Publication-quality data figures for the sprezzature stack: 124 hand-authored, interactive SVG chart types plus explainability, causality, and diagram rendering, all hand-authored SVG (no Vega, no matplotlib, no plotly, no seaborn). Includes the Ralph Eyeball Loop for autonomous visual quality feedback."
+description = "Publication-quality data figures for the sprezzature stack: 124 hand-authored, interactive SVG chart types plus explainability, causality, and diagram rendering, every one authored as SVG directly. Includes the Ralph Eyeball Loop for autonomous visual quality feedback."
 readme = "README.md"
 requires-python = ">=3.10,<3.14"
 license = {text = "BSD-3-Clause"}
@@ -51,12 +51,11 @@ studio = [
     "os-helper>=1.8.0",
     "langdetect>=1.0.9",
 ]
-# Full dataviz stack (networkx, wordcloud, etc. -- the 124-kind catalogue,
-# explainability, and causality all render as hand-authored SVG; nothing
-# in this package's own code calls matplotlib)
+# Data-side support for the 124-kind catalogue, explainability and
+# causality. Nothing here draws: every figure is authored as SVG directly,
+# so this tier is tables, geometry and models only.
 dataviz = [
     "networkx>=3.1",
-    "wordcloud>=1.9",
     "scikit-learn>=1.3",
     "pandas>=2.0",
     "pyyaml>=6",

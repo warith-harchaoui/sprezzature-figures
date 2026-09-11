@@ -10,10 +10,8 @@ the sub-category totals within a period AND each sub-category's trend
 across periods. Typical uses: sales by region and quarter, survey scores
 by cohort and year, headcount by department and site.
 
-Previously rendered via Vega-Lite (``x`` + ``xOffset`` encoding,
-``vl_convert``); this module now computes the two-level band layout
-itself and paints each bar by hand, not with Vega or matplotlib. Every bar
-carries a native ``<title>`` tooltip.
+This module computes the two-level band layout itself and paints each
+bar by hand. Every bar carries a native ``<title>`` tooltip.
 
 Author
 ------

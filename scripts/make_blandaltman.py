@@ -13,12 +13,12 @@ methods rise and fall together; this plot shows whether they actually
 magnitude of the measurement, and how wide a band contains 95 % of the
 disagreements.
 
-This generator builds the SVG **by hand**, with no matplotlib, seaborn,
-plotly, or Vega, so the shaded limits-of-agreement band, the bias and
-limit rules with their right-hand value chips, the difference scatter,
-and the proportional-bias trend line are all under our control and can
-carry the house interactivity (per-point tooltips, a fullscreen button)
-that a rasterised Vega spec cannot. It matches the sprezzature-* house style:
+This generator builds the SVG **by hand**, so the shaded
+limits-of-agreement band, the bias and limit rules with their
+right-hand value chips, the difference scatter, and the
+proportional-bias trend line are all under our control and can carry
+the house interactivity (per-point tooltips, a fullscreen button) that
+a rasterised image cannot. It matches the sprezzature-* house style:
 Roboto, the Apple-ish palette, rounded corners, ink ``#1D1D1F``,
 secondary ``#6E6E73``, white background, bright white keylines (never
 dark rings).

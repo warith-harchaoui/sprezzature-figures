@@ -10,10 +10,8 @@ random jitter) and correspondingly quicker to read for a modest sample
 size per category. Typical uses: dose-response data, raw measurements
 behind a box plot, any small-to-medium sample split by category.
 
-Previously rendered via Vega-Lite (a ``calculate: "random()"`` transform
-feeding an ``xOffset`` encoding, ``vl_convert``). This module now jitters
-each point itself (a seeded RNG, reproducible across renders) and paints
-every dot by hand: no Vega, no matplotlib. Every dot carries a native
+This module jitters each point itself (a seeded RNG, reproducible
+across renders) and paints every dot by hand. Every dot carries a native
 ``<title>`` tooltip.
 
 Author

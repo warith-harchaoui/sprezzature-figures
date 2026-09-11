@@ -4,7 +4,8 @@
 # to fall out of sync when a dependency's version bound changes.
 #
 # cli     — the `click`-based CLI twin of the always-installed argparse one
-# dataviz — the matplotlib-based generators (causal inference, explainability)
+# dataviz — the data-side tier behind the generators, causal inference
+#           and explainability (tables, geometry, models; nothing draws)
 # studio  — the NiceGUI app (chat-driven figure editing, Ralph eyeball loop)
 -e .[cli,dataviz,studio]
 

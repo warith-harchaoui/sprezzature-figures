@@ -29,9 +29,9 @@ state (greyed curve, no marker, no inset, a plain-language reason) rather
 than forcing a possibly-spurious point estimate onto noisy or structureless
 data.
 
-The generator builds the SVG string by hand (no matplotlib / Vega) so the
-elbow marker, the split between steep gains and diminishing returns, and the
-inset signal are all placed deliberately. House style follows ``_style.py``:
+The generator builds the SVG string by hand so the elbow marker, the
+split between steep gains and diminishing returns, and the inset signal
+are all placed deliberately. House style follows ``_style.py``:
 Roboto type, the Apple-system palette, ink ``#1D1D1F`` on white, a
 start-anchored takeaway title. Every data point carries a native ``<title>``
 tooltip; an additive dark-mode block flips the paper without touching the data

@@ -8,9 +8,9 @@ to keep make ↔ audit brand tokens from drifting; otherwise the module's
 built-in curated fallback (the same 8 saturated Apple-system hues) is
 used.
 
-The module is **stdlib-only**, with no numpy, matplotlib, or pandas
-at import time, so ``audit_figure.py`` can pull tokens without
-installing the dataviz tier.
+The module is **stdlib-only**, with no numpy or pandas at import time,
+so ``audit_figure.py`` can pull tokens without installing the dataviz
+tier.
 
 Author
 ------

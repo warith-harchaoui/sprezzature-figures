@@ -10,11 +10,9 @@ event, without it happening). Comparing two arms' curves, which drops
 faster, whether the bands overlap, is the core visual of clinical-trial
 and reliability-engineering reporting.
 
-Previously rendered via Vega-Lite (the estimator computed offline, a
-layered step-after ``area`` + ``line``, ``vl_convert``). This module now
-computes the Kaplan-Meier estimator itself: the product-limit formula
-for the survival function, Greenwood's formula for its variance, and
-paints both layers plus censoring ticks by hand. No Vega, no matplotlib,
+This module computes the Kaplan-Meier estimator itself: the
+product-limit formula for the survival function, Greenwood's formula for
+its variance, and paints both layers plus censoring ticks by hand, with
 no lifelines. The curve carries a native ``<title>`` tooltip.
 
 Author

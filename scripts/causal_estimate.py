@@ -27,7 +27,7 @@ drawn with arrows and no loops back on themselves (a directed acyclic graph,
 DAG) so DoWhy can read off which variables to control for. Pass one of:
 
 * ``--dag path/to/dag.gml`` — GraphML file.
-* ``--dag path/to/dag.dot`` — Graphviz DOT.
+* ``--dag path/to/dag.dot`` — DOT graph file.
 * ``--dag-string 'graph[directed 1 ...]'`` — DoWhy inline string.
 
 Output
@@ -37,8 +37,8 @@ Writes to ``<out>/``:
 
 * ``effect.json`` — point estimate, CI, refutation deltas.
 * ``dag.svg`` — the causal graph as a hand-authored SVG: a layered
-  (Sugiyama-style) left-to-right layout computed in pure Python, no
-  graphviz, no Vega, no matplotlib.
+  (Sugiyama-style) left-to-right layout computed in pure Python, with no
+  external layout engine.
 * ``forest_plot.svg`` — hand-authored SVG comparing the point estimate
   against each refuter's delta.
 
@@ -300,7 +300,7 @@ def _refuter_verdict(name: str, original: float, new: float) -> str:
 
 
 # ------------------------------------------------------------------
-# DAG rendering — hand-authored SVG, no graphviz, no Vega, no matplotlib
+# DAG rendering — hand-authored SVG, no external layout engine
 # ------------------------------------------------------------------
 def _parse_dag_string(dag_string: str) -> "tuple[List[str], List[tuple]]":
     """Extract node ids and (source, target) edges from a DoWhy DAG string.
@@ -308,7 +308,7 @@ def _parse_dag_string(dag_string: str) -> "tuple[List[str], List[tuple]]":
     ``--dag path/to/dag.dot`` and a hand-written DOT ``--dag-string`` are
     both documented as accepted input, so this parses both dialects DoWhy
     itself accepts: GML (``node [ id "X" ]`` / ``edge [ source "X" target
-    "Y" ]``) and Graphviz DOT (``X -> Y``). A minimal parse — only node
+    "Y" ]``) and DOT (``X -> Y``). A minimal parse — only node
     ids and edges are needed for layout, not the full grammar of either
     format.
     """
@@ -492,7 +492,7 @@ def render_dag(dag_string: str, out_dir: Path, dark: bool) -> None:
 
 
 # ------------------------------------------------------------------
-# Forest plot — hand-authored SVG, no matplotlib
+# Forest plot — hand-authored SVG
 # ------------------------------------------------------------------
 def render_forest_plot(summary: Dict[str, Any], out_dir: Path, dark: bool) -> None:
     """Render a compact forest plot of the effect and refutation deltas as SVG."""

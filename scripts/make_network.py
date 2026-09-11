@@ -8,8 +8,7 @@ whom, and who sits at the centre?" far better than an adjacency matrix or
 a list of pairs, because the eye reads clusters, hubs, and bridges
 directly from the layout.
 
-Vega-Lite has no force simulation, so this figure is built as an SVG
-string by hand rather than through ``vl_convert``. The layout is a small,
+This figure is built as an SVG string by hand. The layout is a small,
 deterministic force-directed relaxation computed in pure Python (no
 scientific stack): nodes repel each other (Coulomb-like), edges pull
 their endpoints together (Hooke-like springs), and a gentle gravity keeps

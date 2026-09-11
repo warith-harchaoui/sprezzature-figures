@@ -7,7 +7,7 @@
 
 [![logo](assets/logo.png)](https://sprezzature.ai/)
 
-124 types de graphiques de qualité publication, presque tous en SVG écrit à la main (aucun Vega), avec une poignée de générateurs matplotlib pour des sorties statistiques (inférence causale, explicabilité), utilisables comme bibliothèque Python ou en ligne de commande.
+124 types de graphiques de qualité publication, tous en SVG écrit à la main, y compris les sorties statistiques (inférence causale, explicabilité), utilisables comme bibliothèque Python ou en ligne de commande.
 
 Fait partie de la suite [sprezzature](https://sprezzature.ai/).
 
@@ -28,7 +28,7 @@ Extras optionnels (combinables, ex. `"sprezzature-figures[cli,dataviz]"`) :
 | Extra | Ajoute |
 |-------|--------|
 | `[cli]` | l'interface Click, jumelle de la CLI `make-figure` toujours installée |
-| `[dataviz]` | matplotlib / networkx / wordcloud / shapely / pyproj / pyyaml, nécessaires à la poignée de générateurs matplotlib (inférence causale, explicabilité) |
+| `[dataviz]` | networkx / scikit-learn / pandas / shapely / pyproj / pyyaml — le côté données (tableaux, géométrie, modèles) derrière le catalogue, l'inférence causale et l'explicabilité ; rien ici ne dessine |
 | `[studio]` | Sprezzature Studio : l'application NiceGUI + le copilote Ralph (voir plus bas) |
 | `[api]` | Surface HTTP FastAPI (voir plus bas) |
 | `[mcp]` | Surface d'outils MCP (_Model Context Protocol_) au-dessus de `[api]`, pour appeler cette bibliothèque depuis un assistant IA (voir plus bas) |

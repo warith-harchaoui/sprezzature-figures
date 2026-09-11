@@ -14,16 +14,14 @@ meant to jump out of the raster: the biggest words are *grind* and
 *quiet*, so people mostly love how it works, while the largest complaint
 word is *noisy*, the one recurring gripe.
 
-This module builds the SVG string by hand: no matplotlib / seaborn /
-wordcloud / plotly, and no Vega, because a collision-free
-Archimedean-spiral packing of variable-size glyphs is not a native
-Vega-Lite mark and is far cleaner authored directly. Placement is fully
+This module builds the SVG string by hand, because a collision-free
+Archimedean-spiral packing of variable-size glyphs is far cleaner
+authored directly. Placement is fully
 offline and deterministic: words are laid biggest-first, each one walked
 outward along an Archimedean spiral until its axis-aligned bounding box
 clears every word already placed (plus a small breathing margin), so the
 finished cloud has **zero overlaps**. The result is a denser, calmer
-spiral than the Highcharts / ECharts word clouds it improves on, in the
-sprezzature-* house style pulled from :mod:`_style`: the Apple-ish saturated
+spiral than the usual word cloud, in the sprezzature-* house style pulled from :mod:`_style`: the Apple-ish saturated
 palette used as three semantic groups, Roboto typography, ink
 ``#1D1D1F`` on a white background, a takeaway title, and a one-line
 subtitle.

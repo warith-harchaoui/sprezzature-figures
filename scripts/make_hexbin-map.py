@@ -18,10 +18,9 @@ the Pacific rim, from the Andes up through Alaska and the Aleutians, down
 past Japan, the Philippines and Indonesia to Tonga, while the continental
 interiors stay almost empty.
 
-The module builds the SVG string by hand, with no matplotlib, seaborn, plotly,
-or Vega (a hexagonal lattice clipped to a projected coastline, with a
-count legend and place labels, is authored far more directly as raw SVG). It
-follows the sprezzature-* house style pulled from :mod:`_style`: a single-hue
+The module builds the SVG string by hand: a hexagonal lattice clipped
+to a projected coastline, with a count legend and place labels, is
+authored far more directly as raw SVG. It follows the sprezzature-* house style pulled from :mod:`_style`: a single-hue
 sequential ramp keyed to the palette's Red, Roboto typography, ink
 ``#1D1D1F`` on secondary ``#6E6E73`` on a white background, rounded-corner
 legend, a takeaway title, and a one-line subtitle.

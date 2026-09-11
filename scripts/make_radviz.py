@@ -19,13 +19,12 @@ is a *class-separation* read at a glance: if the coloured clouds pull
 apart toward different rims, the raw features already carry the signal a
 classifier would exploit; if they pile up in the middle, they do not.
 
-The plot is built **by hand** as an SVG string: Vega-Lite has no
-RadViz mark, and hand SVG lets each anchor and each point carry its own
-``<title>`` tooltip and a CSS ``:hover`` lift. The figure is a clean
-**static** poster: a RadViz projection is a settled spring layout, so
-there is nothing a motion intro would reveal that the resting picture
-does not already show. No matplotlib, seaborn, or plotly. Running the
-module writes the SVG artifact.
+The plot is built **by hand** as an SVG string, which lets each anchor
+and each point carry its own ``<title>`` tooltip and a CSS ``:hover``
+lift. The figure is a clean **static** poster: a RadViz projection is a
+settled spring layout, so there is nothing a motion intro would reveal
+that the resting picture does not already show. Running the module
+writes the SVG artifact.
 
 The data is synthetic but communicative: three wheat-kernel varieties
 (Kama, Rosa, Canadian) described by seven geometric measurements, the

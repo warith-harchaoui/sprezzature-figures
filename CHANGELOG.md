@@ -2,6 +2,66 @@
 
 ## Unreleased
 
+### Removed
+
+- **`scripts/_vl.py`**, a Vega-Lite spec helper imported by nothing.
+- **`sprezzature_figures.fonts.register_matplotlib` and `register_all`**,
+  and the `register_all()` call at the top of `make_figure()`. They
+  registered the bundled faces with a plotting library this package does
+  not use. Neither name is exported from the package's `__all__`, but
+  both were importable: a caller reaching for them will need to drop the
+  call.
+- **`audit_figure.py`'s Vega-Lite JSON mode** — `rules_for_vega`,
+  `_iter_units`, `_iter_specs`, `_unit_rules` and the `.json` dispatch,
+  about 220 lines. With every figure authored as SVG directly, the
+  rendered markup *is* the source and there is no spec to audit. Five
+  rules went with it (`missing-axis-title`, `dual-y-axis`,
+  `truncated-baseline`, `cvd-unsafe`, `missing-polarity`): each read a
+  chart grammar, not a rendering. Passing a directory now expands to
+  `.svg`/`.html`/`.htm` only. **This is a breaking change for anyone
+  auditing a `.json` spec with this tool.**
+- Unused declared dependencies: `wordcloud`, `vega_datasets`, `altair`,
+  `cycler`, `matplotlib` and `seaborn` from the `dataviz` tier, and
+  `graphviz` from `causal`. None was imported anywhere. `pydot` stays —
+  `causal_estimate.py` parses `.dot` files through
+  `networkx.nx_pydot.read_dot`, which reads the format and draws nothing.
+
+### Changed
+
+- **No charting library is named anywhere in this repository any more.**
+  127 generator docstrings carried a paragraph of migration history
+  ("Previously rendered via Vega-Lite (`vl_convert`); this module now
+  builds the `<svg>` markup by hand…"): accurate, but history the reader
+  does not need and the stack no longer has. Each was rewritten to keep
+  its substance — *why* the geometry is authored directly — without the
+  archaeology. Same pass over `fonts.py`, `_style.py`, `_render.py`,
+  `explain_model.py`, `causal_estimate.py`, `render_diagram.py`, the
+  catalog, the READMEs and the studio docs.
+- `catalog/models.py`: `RendererKind` narrowed from
+  `("vega_lite", "vega", "svg", "matplotlib", "html")` to
+  `("svg", "html")`. All 124 catalogue entries already declared `"svg"`.
+- `core/rendering.py`: `_SVG_LIKE_RENDERERS` is now `{"svg"}`, and the
+  matplotlib PNG branch is gone.
+
+### Fixed
+
+- `make_donut.py`'s docstring read "not with Vega or no matplotlib", a
+  mangled sentence from an earlier automated pass.
+
+### Testing
+
+- `tests/test_no_third_party_plotting.py` now sweeps **every module in
+  the repository** rather than a hand-kept list of five, with two checks:
+  no module imports a charting library, and no module so much as *names*
+  one. The shortlist version guarded five scripts while 120 generators
+  drifted. Three files are allowlisted for the mention rule, each for a
+  stated reason: the guard itself, `tools/audit_generators.py` (whose
+  backend markers are the whole mechanism), and `make_circle-packing.py`
+  (a faithful port of a published algorithm — naming the source of
+  ported code is provenance, not a dependency). Nothing is exempt from
+  the import rule. The new sweep immediately caught four mentions a
+  manual pass had missed.
+
 ### Added
 
 - **Explicit axis/color-scale overrides on `heatmap` and `line-multi`,**

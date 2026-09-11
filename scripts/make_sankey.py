@@ -8,8 +8,7 @@ quantity go, and how much is lost at each hop?" better than any bar or
 pie chart, because the eye reads the width of a ribbon as a magnitude
 and follows it across the whole cascade.
 
-Vega-Lite has no native Sankey mark, so this figure is built as an SVG
-string by hand rather than through ``vl_convert``. The layout is a
+This figure is built as an SVG string by hand. The layout is a
 left-to-right layered graph:
 
 * **Nodes** are stacked vertical bars, one column ("layer") per stage

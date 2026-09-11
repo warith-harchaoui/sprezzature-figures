@@ -65,8 +65,8 @@ regenerating the catalogue re-applies these, so they survive a rebuild.
 
 1. Write `scripts/make_<kind>.py` following the contract above (copy the
    pattern of an existing hand-authored-SVG generator, e.g. `make_bar.py`
-   or `make_waffle.py`). House policy: hand-authored SVG only, no Vega and
-   no matplotlib.
+   or `make_waffle.py`). House policy: hand-authored SVG only — we author
+   the markup directly, never through a charting library.
 2. Add a row to `FIGURES.md` (kind, category, one-line "when to use").
 3. Add a `HAND_ROLES` entry in `tools/build_figures_catalog.py` naming the
    figure's required/optional data roles, **using the exact field names

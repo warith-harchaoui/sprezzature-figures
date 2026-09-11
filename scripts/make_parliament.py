@@ -10,11 +10,9 @@ delegation, and a single radial gap plus a majority line answers the
 only question that matters on election night: did anyone clear the bar
 to govern alone, and if not, which coalitions can?
 
-Vega-Lite has no native hemicycle mark (the seat lattice is a bespoke
-polar packing, not a scatter over a shared scale), so the figure is
-built as an SVG string by hand. The layout is the classic one used by
-parliaments and by the Highcharts *item chart* that inspired this piece,
-but rendered more carefully:
+The seat lattice is a bespoke polar packing, not a scatter over a
+shared scale, so the figure is built as an SVG string by hand. The
+layout is the classic one used by parliaments, rendered more carefully:
 
 * **Seat lattice** — a fixed number of concentric rows fills the
   half-annulus between an inner and an outer radius. Each row holds as

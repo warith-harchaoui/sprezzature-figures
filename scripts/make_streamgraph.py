@@ -10,8 +10,8 @@ distortion a fixed baseline forces onto the upper bands. It is the natural chart
 for part-to-whole quantities that morph over time: market share, genre
 popularity, ticket categories.
 
-This module builds the SVG string **by hand** (no matplotlib / seaborn /
-plotly, no Vega): it computes the Lee-Byron *wiggle* baseline, lays each genre
+This module builds the SVG string **by hand**: it computes the Lee-Byron
+*wiggle* baseline, lays each genre
 as a stacked ribbon with smooth Catmull-Rom spline edges, paints them in the
 Apple-system house palette, and drops a bold label straight onto each band at
 its thickest, most stable point. Native ``<title>`` tooltips give per-genre

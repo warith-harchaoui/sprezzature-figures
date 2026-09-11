@@ -10,12 +10,10 @@ heavy/light tails at a glance, far more sensitively than a histogram's
 silhouette. The standard diagnostic for "is this residual/measurement
 sample approximately Gaussian".
 
-Previously rendered via Vega-Lite (theoretical quantiles computed offline
-against a reference line, ``vl_convert``). This module now computes the
-theoretical normal quantiles itself, using Acklam's rational approximation of
-the inverse normal CDF (no scipy), and paints both the points and the
-reference line by hand. No Vega, no matplotlib. Every point carries a
-native ``<title>`` tooltip.
+This module computes the theoretical normal quantiles itself, using
+Acklam's rational approximation of the inverse normal CDF (no scipy),
+and paints both the points and the reference line by hand. Every point
+carries a native ``<title>`` tooltip.
 
 Author
 ------

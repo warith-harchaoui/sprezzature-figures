@@ -8,9 +8,9 @@ by how much, and when did the lead flip?" faster than two plain lines, because
 the eye reads the coloured area as a running surplus / deficit rather than
 having to mentally subtract one curve from the other at every point.
 
-This module builds the SVG string **by hand** (no matplotlib / seaborn /
-plotly, no Vega): the trick a plotting library makes awkward is the two-colour
-fill of the *inter-curve* region, which we get cleanly with a pair of SVG
+This module builds the SVG string **by hand**: the tricky part is the
+two-colour fill of the *inter-curve* region, which we get cleanly with a
+pair of SVG
 ``clipPath`` half-planes: the above-hue area is clipped to "actual is on top",
 and the below-hue area to "plan is on top", so the two colours meet exactly on
 every crossing with no overlap and no seam. The two curves ride on top as crisp

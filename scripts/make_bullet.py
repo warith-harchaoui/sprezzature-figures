@@ -14,10 +14,8 @@ Each row packs four coordinated marks onto one horizontal scale:
 
 Five KPIs are stacked and left-aligned so the eye sweeps one column of
 measure bars and instantly sees which lag their target. This generator
-builds the SVG string by hand (no matplotlib / seaborn / plotly, no
-Vega) because the four-mark-per-row packing and the per-row independent
-scales are cleaner to place directly than to coax out of a layered
-grammar. It matches the sprezzature-* house style: Roboto, the Apple-ish
+builds the SVG string by hand because the four-mark-per-row packing and
+the per-row independent scales are cleaner to place directly. It matches the sprezzature-* house style: Roboto, the Apple-ish
 palette, rounded corners, ink ``#1D1D1F``, secondary ``#6E6E73``, white
 background.
 

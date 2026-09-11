@@ -11,8 +11,8 @@ across many categories at once, and it beats a grouped bar chart because
 the bars there force the reader to mentally subtract two heights while
 here the distance is the message.
 
-This generator builds the SVG string by hand (no matplotlib / seaborn /
-plotly, no Vega) so the sorting-by-gap, the endpoint value labels, and
+This generator builds the SVG string by hand so the sorting-by-gap, the
+endpoint value labels, and
 the side-aware label harmony are fully under our control, and matches the
 sprezzature-* house style: Roboto, the Apple-ish palette, rounded corners, ink
 ``#1D1D1F``, secondary ``#6E6E73``, white background.
@@ -108,7 +108,7 @@ def company_median(rows: List[Dict[str, Any]]) -> float:
 
 
 def _nice_range(vmin: float, vmax: float, tick_count: int = 5) -> tuple[float, float, List[float]]:
-    """A d3-style "nice numbers" axis range and tick list covering
+    """A "nice numbers" axis range and tick list covering
     [vmin, vmax] with roughly `tick_count` round-number ticks.
     """
     span = max(vmax - vmin, 1e-9)

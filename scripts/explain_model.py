@@ -179,8 +179,8 @@ def pick_engine(model: Any, data: Any) -> str:
 # ------------------------------------------------------------------
 # Hand-authored SVG rendering
 #
-# No matplotlib, no Vega, no plotly, no seaborn anywhere in this module
-# (see references/figure-catalog.md for the house policy). The summary
+# Everything here is hand-authored SVG (see references/figure-catalog.md
+# for the house policy). The summary
 # bar and the per-row waterfall reuse the catalogue's own generators
 # (``make_bar.py``, ``make_waterfall.py``) since their data shape is a
 # genuine fit; the beeswarm and dependence scatter are bespoke, built
@@ -505,10 +505,10 @@ def _write_shap_waterfall_svg(shap_values: Any, row_idx: int, feat_names: List[s
 def _write_static_explanation_report(out: Path, title: str, sections: List[Any]) -> Path:
     """Assemble a static HTML report embedding hand-authored SVG figures.
 
-    A simplified, static equivalent of Shapash's own multi-tab plotly
-    dashboard, not a feature-for-feature clone: one page, one figure per
-    section, no client-side interactivity beyond each SVG's own native
-    CSS hover tooltips.
+    A simplified, static equivalent of Shapash's own multi-tab dashboard,
+    not a feature-for-feature clone: one page, one figure per section, no
+    client-side interactivity beyond each SVG's own native CSS hover
+    tooltips.
     """
     figures = []
     for heading, svg_path in sections:
@@ -620,8 +620,9 @@ def run_shap(model: Any, data: Any, ctx: Dict[str, Any]) -> Dict[str, Any]:
 def run_shapash(model: Any, data: Any, ctx: Dict[str, Any]) -> Dict[str, Any]:
     """Compute contributions via Shapash, render a static hand-authored-SVG report.
 
-    Shapash's own ``generate_report()`` is a plotly-backed multi-tab
-    dashboard; it is never called. ``SmartExplainer`` still does real
+    Shapash's own ``generate_report()`` renders a multi-tab dashboard
+    through its own charting stack; it is never called, because every
+    figure here is authored as SVG directly. ``SmartExplainer`` still does real
     work here: its ``compile()`` step runs Shapash's own consistency
     checks against the SHAP contributions this function computes, and
     the compiled object is saved for whatever downstream Shapash tooling
@@ -723,8 +724,8 @@ def run_timeshap(model: Any, data: Any, ctx: Dict[str, Any]) -> Dict[str, Any]:
 
     # local_report returns a dict of dataframes (pruning / event / feature /
     # cell level attributions); the plotting entry points in
-    # timeshap.plot are never called (they are matplotlib-backed), so the
-    # frames below are re-plotted by hand instead.
+    # timeshap.plot are never called (they bring their own charting stack),
+    # so the frames below are re-plotted by hand instead.
     report = local_report(
         model_fn,
         pruning_dict,

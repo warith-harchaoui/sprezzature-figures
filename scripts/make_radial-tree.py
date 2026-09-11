@@ -14,10 +14,9 @@ arc between two rings) rather than drawn as straight spokes, which keeps
 sibling bundles visually separate and reads as an organic "branching"
 shape instead of a wheel of radii.
 
-Vega-Lite has no native tree/radial-tree mark (the layout is a recursive
-angular assignment, not a data-to-mark mapping), so this figure is built
-as an SVG string by hand rather than through ``vl_convert``. The layout
-is the classic radial Reingold–Tilford variant:
+The layout is a recursive angular assignment, not a data-to-mark
+mapping, so this figure is built as an SVG string by hand. It is the
+classic radial Reingold–Tilford variant:
 
 * a post-order pass gives every **leaf** the next free slice of the
   angular range; each internal node is centred on the angular span of

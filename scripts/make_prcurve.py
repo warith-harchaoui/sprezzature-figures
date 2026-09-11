@@ -28,8 +28,8 @@ takeaway ("well above chance") is unmistakable. Faint **iso-F1 contours**
 (curves of constant F1 score) arc through the plot so a reader can read
 each operating point's F1 straight off the background.
 
-This generator builds the SVG by hand (no matplotlib / seaborn / plotly,
-no Vega) so the two curves are separated by more than hue: each carries a
+This generator builds the SVG by hand so the two curves are separated
+by more than hue: each carries a
 dash pattern and a distinct end marker, plus an inline direct label with
 its AP. That keeps them apart under deuteranopia and in greyscale. The
 figure matches the sprezzature-* house style: Roboto, the Apple-ish palette,

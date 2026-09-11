@@ -18,9 +18,9 @@ jumps out of the packing the instant you look at it: one package,
 ``services/``, holds nearly half the codebase, and a single 2,410-line
 module inside it (``payments.py``) is the biggest ball on the board.
 
-Vega-Lite has no pack layout (the geometry is a recursive
-circle-enclosure solve, not a data-to-mark mapping), so this is built as an
-SVG string by hand. The layout is the classic two-step used by D3:
+The geometry is a recursive circle-enclosure solve, not a data-to-mark
+mapping, so this is built as an SVG string by hand. The layout is the
+classic two-step:
 
 * **pack siblings** — place a set of circles of given radii so they touch
   without overlapping, growing an active *sprezzature chain* around the packed

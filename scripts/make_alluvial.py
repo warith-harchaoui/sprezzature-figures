@@ -7,9 +7,8 @@ changes its *category membership* as it flows across several ordered
 axes. Unlike a Sankey (which shows one-way volume between arbitrary
 nodes), every record here is present at *every* axis, so each vertical
 stack sums to the same total and the ribbons only ever re-partition the
-same 100 %. matplotlib and seaborn have no primitive for this; plotly
-exposes it as ``parcats`` and R as ``ggalluvial``. This module builds the
-SVG string by hand, drawing each ribbon as a smooth cubic-Bézier curve
+same 100 %. This module builds the SVG string by hand, drawing each
+ribbon as a smooth cubic-Bézier curve
 between the stacked category blocks it connects, so the result is
 dependency-light, reproducible, and natively interactive (CSS ``:hover``
 plus native ``<title>`` tooltips, no JavaScript).

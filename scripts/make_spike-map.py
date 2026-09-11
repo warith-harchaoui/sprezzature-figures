@@ -18,10 +18,10 @@ is the shape of the century's urban century: the tallest skyline stands
 over East and South Asia (Tokyo, Delhi, Shanghai) while the Americas,
 Africa and Europe carry shorter, sparser spikes.
 
-The module builds the SVG string by hand: no matplotlib / seaborn /
-plotly, and no Vega (a projected basemap overlaid with hundreds of
-hand-placed spikes, a size legend, and side-aware city labels is
-authored far more directly and compactly as raw SVG). It follows the
+The module builds the SVG string by hand: a projected basemap overlaid
+with hundreds of hand-placed spikes, a size legend, and side-aware city
+labels is authored far more directly and compactly as raw SVG. It
+follows the
 sprezzature-* house style pulled from :mod:`_style`: the Apple-ish saturated
 palette, Roboto typography, ink ``#1D1D1F`` on secondary ``#6E6E73`` on
 a white background, rounded-corner legend chips, a takeaway title, and a

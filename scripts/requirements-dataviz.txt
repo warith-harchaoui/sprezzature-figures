@@ -1,14 +1,12 @@
-# Base dataviz tier — required for make_figure.py PNG/SVG output.
-# audit_figure.py itself needs only stdlib + PyYAML, so this file is
-# not required for auditing.
+# Base dataviz tier — required for make_figure.py SVG output. Nothing
+# here draws: every figure is authored as SVG directly, so this tier is
+# tables, geometry and models only. audit_figure.py itself needs only
+# stdlib + PyYAML, so this file is not required for auditing.
 
 pandas>=2.0
-matplotlib>=3.7
-seaborn>=0.13
-altair>=5.0
-vega_datasets>=0.9
+networkx>=3.1
+scikit-learn>=1.3
 PyYAML>=6.0
-cycler>=0.12
 
 # Situation-map generator (make_situation_map.py): runtime projection of any
 # region + geometry ops (clip, coastline buffer for bathymetry, boundary casing).

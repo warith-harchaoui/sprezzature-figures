@@ -24,8 +24,8 @@ marker sits at that operating point, with dropped guide lines and a
 direct call-out stating both the gain and the lift over random. That is
 the number a campaign owner budgets against.
 
-This generator builds the SVG by hand (no matplotlib / seaborn / plotly,
-no Vega) so the shaded "gain over random" band, the three curves, the
+This generator builds the SVG by hand so the shaded "gain over random"
+band, the three curves, the
 operating-point guides, and the direct curve labels are all under our
 control. Curves are distinguished by **more than hue**: the model curve
 is a thick solid line with an end-label, the perfect-model envelope is a

@@ -20,12 +20,12 @@ between the curve and the diagonal is the miscalibration the plot exists
 to expose, summarised as an Expected Calibration Error (ECE) in the
 subtitle.
 
-This generator builds the SVG **by hand**, with no matplotlib, seaborn,
-plotly, or Vega, so the tolerance ribbon, the 45-degree reference line,
-the per-bin gap stems, the reliability points sized by bin count, the
-confidence histogram below, and the in-plot annotations are all under
-our control and can carry the house interactivity (per-mark tooltips, a
-fullscreen button) that a rasterised Vega spec cannot. It matches the
+This generator builds the SVG **by hand**, so the tolerance ribbon, the
+45-degree reference line, the per-bin gap stems, the reliability points
+sized by bin count, the confidence histogram below, and the in-plot
+annotations are all under our control and can carry the house
+interactivity (per-mark tooltips, a fullscreen button) that a
+rasterised image cannot. It matches the
 sprezzature-* house style: Roboto, the Apple-ish palette, rounded corners, ink
 ``#1D1D1F``, secondary ``#6E6E73``, white background, bright white
 keylines (never dark rings).
