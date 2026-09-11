@@ -1,0 +1,102 @@
+name: publish
+
+# Publishes sdist + wheel to PyPI through Trusted Publishing: GitHub mints a
+# short-lived OIDC token for this exact workflow, PyPI verifies it against the
+# publisher registered for the project, and no long-lived API token exists
+# anywhere — not on a laptop, not in repository secrets.
+#
+# Registered publisher on PyPI (Manage project -> Publishing):
+#   owner        warith-harchaoui
+#   repository   sprezzature-figures
+#   workflow     publish.yml
+#   environment  pypi
+# All four have to match or PyPI rejects the upload.
+
+"on":
+  push:
+    tags:
+      - "v*.*.*"
+  # Lets an already-tagged version be published without cutting a new tag —
+  # the run has to be dispatched from a ref whose tree carries this file.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build and check the distributions
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install the build tooling
+        run: |
+          python -m pip install --upgrade pip
+          pip install build twine
+
+      - name: Build sdist + wheel
+        run: python -m build
+
+      # A tag says which version it is; pyproject.toml says which version was
+      # built. Publishing is irreversible and a PyPI version number cannot be
+      # reused, so the two are compared before anything leaves the runner.
+      - name: Tag and package version must agree
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          tag="${REF_NAME#v}"
+          built=$(ls dist/*.tar.gz | sed -E 's/.*-([0-9][^-]*)\.tar\.gz/\1/')
+          echo "tag=$tag built=$built"
+          if [ "$tag" != "$built" ]; then
+            echo "::error::tag v$tag does not match the built version $built" >&2
+            exit 1
+          fi
+
+      - name: Check the metadata
+        run: twine check dist/*
+
+      - name: Show what will be published
+        run: |
+          ls -lh dist/
+          python - <<'PY'
+          import zipfile, glob
+          w = glob.glob("dist/*.whl")[0]
+          with zipfile.ZipFile(w) as zf:
+              infos = zf.infolist()
+          total = sum(i.file_size for i in infos)
+          print(f"{w}: {len(infos)} files, {total/1e6:.2f} MB unpacked")
+          PY
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: distributions
+          path: dist/
+
+  publish:
+    name: Publish to PyPI
+    needs: build
+    runs-on: ubuntu-latest
+    # A dedicated environment is what the registered publisher is pinned to,
+    # and it is where a protection rule (required reviewer) can be added later
+    # without touching this file.
+    environment:
+      name: pypi
+      url: https://pypi.org/p/sprezzature-figures
+    permissions:
+      # The only privilege this job gets, and the whole point of the split:
+      # the OIDC-capable job downloads an artifact and uploads it. It never
+      # runs the project's own build or test code.
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: distributions
+          path: dist/
+
+      - uses: pypa/gh-action-pypi-publish@release/v1
