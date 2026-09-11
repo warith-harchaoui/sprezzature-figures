@@ -11,8 +11,8 @@ blue ramp (darkest = most examples, so the correct diagonal stands out) with the
 count printed in each, a small gap between cells (a tile grid, gently rounded per
 the Sprezzature Corner Policy), and generous breathing room around the grid.
 
-The SVG is built by hand, with no matplotlib or Vega, so it matches the other hero
-figures and carries a native ``<title>`` per cell plus an accessible
+The SVG is built by hand, so it matches the other hero figures and
+carries a native ``<title>`` per cell plus an accessible
 ``<title>``/``<desc>``.
 
 Author

@@ -12,10 +12,8 @@ at once. Typical uses: exam scores across three classes, response times
 across experiment arms, salaries across departments: anywhere a
 histogram would hide individual outliers and a box plot would hide shape.
 
-Previously rendered via full Vega (``vl_convert``, a ``force`` transform
-running a collide + x + y simulation); this module now runs a
-deterministic greedy collision-avoidance placement itself and paints
-each dot by hand, not with Vega or matplotlib. Every dot carries a native
+This module runs a deterministic greedy collision-avoidance placement
+itself and paints each dot by hand. Every dot carries a native
 ``<title>`` tooltip.
 
 Author

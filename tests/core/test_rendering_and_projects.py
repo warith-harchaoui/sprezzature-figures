@@ -91,15 +91,15 @@ def test_iteration_allocation_and_manifest_persistence() -> None:
 
 @pytest.mark.slow
 @pytest.mark.parametrize(
-    "kind, data, is_vega",
+    "kind, data",
     [
-        # Vega-Lite kind renders through the spec pipeline.
-        ("bar", [{"region": "North", "value": 42}, {"region": "South", "value": 28}], True),
-        # Hand-authored SVG kind (no tabular data) uses the SVG path.
-        ("waffle", None, False),
+        # Data-driven kind: rows bind to the generator's roles.
+        ("bar", [{"region": "North", "value": 42}, {"region": "South", "value": 28}]),
+        # Kind whose dataset is baked into the generator, so no rows to pass.
+        ("waffle", None),
     ],
 )
-def test_render_figure_to_project_writes_only_inside_iteration_dir(kind, data, is_vega) -> None:
+def test_render_figure_to_project_writes_only_inside_iteration_dir(kind, data) -> None:
     project_dir = create_project(f"render {kind}")
     iteration_dir = allocate_iteration_dir(project_dir)
     result = render_figure_to_project(
@@ -115,11 +115,13 @@ def test_render_figure_to_project_writes_only_inside_iteration_dir(kind, data, i
     assert iteration_dir in result.source_path.parents
     assert iteration_dir in result.preview_path.parents
 
-    if is_vega:
-        assert result.source_path.suffix == ".svg"
-        assert result.preview_path.suffix == ".png"
-        assert result.mime_type == "image/svg+xml"
-        assert result.width > 0 and result.height > 0
+    # Every kind is a hand-authored SVG, so the artifact pair is the same
+    # shape whichever generator ran: the source is the markup, the preview
+    # is its raster.
+    assert result.source_path.suffix == ".svg"
+    assert result.preview_path.suffix == ".png"
+    assert result.mime_type == "image/svg+xml"
+    assert result.width > 0 and result.height > 0
 
 
 def test_render_preview_rejects_unknown_renderer(tmp_path: Path) -> None:

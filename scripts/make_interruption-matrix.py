@@ -17,8 +17,8 @@ so "everyone X cut" and "everyone who cut X" light up together. Hovering a name
 header does the same for that speaker. It is pure enhancement: the numbers are
 printed in every cell, so the figure reads fully as a static image too.
 
-Pure-Python, hand-built SVG string (no Vega, no matplotlib) so the grid geometry
-and the hover wiring can be placed exactly.
+Pure-Python, hand-built SVG string, so the grid geometry and the hover
+wiring can be placed exactly.
 
 Author
 ------

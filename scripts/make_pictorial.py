@@ -12,10 +12,9 @@ is being counted before reading a single label. This is the pictorial's
 defining trait, and what sets it apart from the waffle (which uses
 plain squares).
 
-This module builds the SVG string by hand: no matplotlib / seaborn /
-plotly, and no Vega, because a clipped repeated-glyph grid with a
-partial last icon is a layout Vega-Lite cannot express cleanly. It
-follows the sprezzature-* house style pulled from :mod:`_style`: the
+This module builds the SVG string by hand, because a clipped
+repeated-glyph grid with a partial last icon is a layout that has to be
+placed exactly. It follows the sprezzature-* house style pulled from :mod:`_style`: the
 Apple-ish saturated palette, Roboto typography, ink ``#1D1D1F`` on a
 white background, rounded forms, a takeaway title, and a one-line
 subtitle. A clear legend states the unit ("one figure = 5 people").

@@ -10,8 +10,8 @@ are side-aware (right labels left-aligned, left labels right-aligned) so
 the spacing stays harmonious all the way round. The hole carries the
 total running time: the headline number.
 
-Pure-Python, hand-built SVG string (no Vega, no matplotlib) so the label
-geometry can be placed exactly. Big canvas by design.
+Pure-Python, hand-built SVG string, so the label geometry can be placed
+exactly. Big canvas by design.
 
 Author
 ------

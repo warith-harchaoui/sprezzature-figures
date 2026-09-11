@@ -8,9 +8,9 @@ encodes that category's share of the grand total; within a column the stacked
 tile is therefore proportional to a joint frequency (width times height), which
 lets a reader compare both marginals and the cells in a single view.
 
-Vega-Lite has no native Marimekko mark (rect widths cannot be data-driven off a
-running cumulative on the same axis without pre-computation), so the figure is
-assembled as a hand-authored SVG string. The output matches the sprezzature-figures
+Rect widths are data-driven off a running cumulative on the same axis,
+so the figure is assembled as a hand-authored SVG string. The output
+matches the sprezzature-figures
 house style: Roboto typography, the Apple-system palette from
 :mod:`_style`, ink ``#1D1D1F`` on a white ground, rounded corners, native
 ``<title>`` tooltips, and a CSS ``:hover`` lift with a ``prefers-reduced-motion``

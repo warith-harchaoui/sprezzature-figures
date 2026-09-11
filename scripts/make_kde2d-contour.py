@@ -13,12 +13,10 @@ the raw data visible, so the reader can check the smoothing against the
 points it summarises. Typical use: the 2-D density of two continuous
 variables, showing where a bivariate sample concentrates.
 
-Previously rendered via full Vega (the ``kde2d`` transform onto a grid,
-then ``isocontour`` for marching-squares-style contour extraction,
-``vl_convert``). This module now computes the 2-D KDE itself (numpy,
-already a core dependency) and runs its own marching-squares contour
-extraction: no Vega, no matplotlib, no scipy, no d3-contour. Each
-contour ring carries a native ``<title>`` tooltip with its density level.
+This module computes the 2-D KDE itself (numpy, already a core
+dependency) and runs its own marching-squares contour extraction, with
+no scipy. Each contour ring carries a native ``<title>`` tooltip with
+its density level.
 
 Author
 ------

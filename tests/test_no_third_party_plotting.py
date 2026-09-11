@@ -1,7 +1,17 @@
 """
-Guards against matplotlib / Vega / plotly / seaborn re-entering the
-scripts that were migrated to hand-authored SVG: explain_model.py,
-causal_estimate.py, render_diagram.py, ralph_eyeball_loop.py, _style.py.
+Guards against matplotlib / Vega / plotly / seaborn / graphviz re-entering
+this package. Every figure here is authored as SVG directly, so a charting
+library appearing anywhere in the source is a regression, not a choice.
+
+Two sweeps, both over the whole tree rather than a hand-kept shortlist
+(the shortlist version of this file guarded five scripts while 120 others
+drifted):
+
+* :func:`test_no_forbidden_imports` — no module imports one.
+* :func:`test_no_plotting_library_mentions` — no module or shipped doc so
+  much as names one, outside :data:`MENTION_ALLOWLIST`. That is what keeps
+  the docstrings from quietly re-acquiring "previously rendered via ..."
+  paragraphs the next time a generator is touched.
 
 Rendering tests (SHAP explanations, the causal DAG, the forest plot) are
 marked @pytest.mark.slow (they fit a real model / run real SVG assembly)
@@ -32,21 +42,76 @@ _FORBIDDEN_IMPORT = re.compile(
     re.MULTILINE,
 )
 
-_MIGRATED_SCRIPTS = (
-    "explain_model.py",
-    "causal_estimate.py",
-    "render_diagram.py",
-    "ralph_eyeball_loop.py",
-    "_style.py",
+_REPO_ROOT = Path(__file__).resolve().parent.parent
+
+#: Every Python module that ships: the generators and shared helpers under
+#: ``scripts/``, plus the library package. Collected by walking the tree, so
+#: a new generator is covered the moment it lands.
+_SOURCE_FILES = tuple(
+    sorted(
+        p
+        for p in [
+            *_SCRIPTS_DIR.rglob("*.py"),
+            *(_REPO_ROOT / "sprezzature_figures").rglob("*.py"),
+        ]
+        if "__pycache__" not in p.parts
+    )
+)
+
+#: Any spelling of a charting library, in prose or in code. ``pydot`` is
+#: absent on purpose: it parses the DOT *format* for ``--dag x.dot`` and
+#: draws nothing, unlike the ``graphviz`` binding beside it in the list.
+_MENTION = re.compile(
+    r"vega|vl_convert|vl-convert|plotly|matplotlib|pyplot|seaborn|bokeh"
+    r"|altair|graphviz|\bd3\b|chart\.js|highcharts|echarts",
+    re.IGNORECASE,
+)
+
+#: Files allowed to name a charting library, and why. Two legitimate
+#: reasons only: a guard that must name what it forbids, and a competitive
+#: landscape that must name what it is compared against. Paths are relative
+#: to the repo root.
+MENTION_ALLOWLIST: frozenset[str] = frozenset(
+    {
+        # This file: it cannot forbid a name without writing it.
+        "tests/test_no_third_party_plotting.py",
+        # Classifies a generator by backend so a non-conforming one is
+        # flagged; the markers are the whole mechanism.
+        "tools/audit_generators.py",
+        # Its pack layout is a faithful port of a published algorithm whose
+        # reference implementation is d3's ``packSiblings`` / ``packEnclose``.
+        # Naming the source of ported code is provenance, not a dependency,
+        # and stripping it while keeping the code would be the dishonest half.
+        "scripts/make_circle-packing.py",
+    }
 )
 
 
-@pytest.mark.parametrize("filename", _MIGRATED_SCRIPTS)
-def test_no_forbidden_imports(filename: str) -> None:
-    """None of the migrated scripts import matplotlib / vl_convert / graphviz / plotly / seaborn."""
-    text = (_SCRIPTS_DIR / filename).read_text(encoding="utf-8")
-    match = _FORBIDDEN_IMPORT.search(text)
-    assert match is None, f"{filename} still imports a forbidden plotting library: {match.group(0)!r}"
+@pytest.mark.parametrize("path", _SOURCE_FILES, ids=lambda p: p.name)
+def test_no_forbidden_imports(path: Path) -> None:
+    """No shipped module imports matplotlib / vl_convert / graphviz / plotly / seaborn."""
+    relative = path.relative_to(_REPO_ROOT).as_posix()
+    # Nothing is exempt from the import rule: the allowlist buys the right to
+    # *name* a library in prose, never to import one.
+    match = _FORBIDDEN_IMPORT.search(path.read_text(encoding="utf-8"))
+    assert match is None, f"{relative} imports a forbidden plotting library: {match.group(0)!r}"
+
+
+@pytest.mark.parametrize("path", _SOURCE_FILES, ids=lambda p: p.name)
+def test_no_plotting_library_mentions(path: Path) -> None:
+    """
+    No shipped module so much as names a charting library.
+
+    An import guard alone let 120 generators keep paragraphs like
+    "previously rendered via Vega-Lite (``vl_convert``); this module now
+    builds the ``<svg>`` markup by hand" — accurate history, but history
+    the reader does not need and the stack no longer has.
+    """
+    relative = path.relative_to(_REPO_ROOT).as_posix()
+    if relative in MENTION_ALLOWLIST:
+        pytest.skip(f"{relative} is allowlisted")
+    hits = sorted({m.group(0).lower() for m in _MENTION.finditer(path.read_text(encoding="utf-8"))})
+    assert not hits, f"{relative} names a charting library: {', '.join(hits)}"
 
 
 def test_render_diagram_kinds_drop_vega() -> None:

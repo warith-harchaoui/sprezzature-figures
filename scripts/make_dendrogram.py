@@ -10,10 +10,9 @@ the more different the two branches it unites, so a horizontal "cut"
 at any height yields a flat clustering, and the vertical gap below a
 cut tells you how stable that grouping is.
 
-Vega-Lite has no native dendrogram mark (the merge geometry is a
-recursive layout, not a data-to-mark mapping), so this figure is built
-as an SVG string by hand rather than through ``vl_convert``. The layout
-is the classic *rectangular* (elbow) dendrogram:
+The merge geometry is a recursive layout, not a data-to-mark mapping,
+so this figure is built as an SVG string by hand. The layout is the
+classic *rectangular* (elbow) dendrogram:
 
 * **Leaves** are placed at evenly spaced x-positions along the bottom.
 * Each **merge** is an inverted-U elbow: two vertical risers climb from

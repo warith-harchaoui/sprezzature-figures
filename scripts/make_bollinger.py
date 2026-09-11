@@ -9,11 +9,11 @@ sharp directional move; when price pushes through a band, the **breakout** is th
 trade traders wait for. The shaded envelope turns "how volatile is this, and
 where is price relative to its own recent range?" into a single glance.
 
-This module builds the SVG string **by hand** (no matplotlib / seaborn / plotly,
-no Vega): the shaded band between two smoothed curves, the squeeze / breakout
-call-outs, and the side-aware end labels are all things a plotting library makes
-fiddly, whereas a hand-authored path gives us exact control over where the fill
-meets each curve and where every annotation lands. Both band edges and the price
+This module builds the SVG string **by hand**: the shaded band between
+two smoothed curves, the squeeze / breakout call-outs, and the
+side-aware end labels are all fiddly to place indirectly, whereas a
+hand-authored path gives us exact control over where the fill meets
+each curve and where every annotation lands. Both band edges and the price
 line ride the same Catmull-Rom smoothing so the shaded region hugs the rendered
 curves with no seam.
 

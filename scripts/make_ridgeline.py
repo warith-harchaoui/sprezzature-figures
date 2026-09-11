@@ -4,11 +4,10 @@
 A ridgeline plot stacks one kernel-density curve per group along a shared
 horizontal axis, offsetting each curve vertically so a reader can scan the
 silhouette top-to-bottom to see how a whole distribution (not just its mean)
-shifts from group to group. It is the R ``ggridges`` / matplotlib ``joypy``
-/ seaborn ``FacetGrid`` KDE idiom.
+shifts from group to group.
 
-This module builds the SVG string **by hand** (no matplotlib / seaborn /
-plotly, no Vega): it estimates each group's density with a Gaussian kernel
+This module builds the SVG string **by hand**: it estimates each
+group's density with a Gaussian kernel
 (numpy only), lays the curves out on a shared axis, and paints them as
 filled paths in the sprezzature-* house style: Roboto type, the Apple-system
 palette, ink ``#1D1D1F`` on a white ground, rounded framing. Each ridge

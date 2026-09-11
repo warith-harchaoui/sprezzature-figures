@@ -5794,7 +5794,7 @@
     "label": "Surface3D",
     "aliases": [],
     "category": "3-D surface",
-    "description": "Static isometric 3-D surface for z = f(x, y): depth-sorted mesh quads shaded by height with a height legend. Hand-authored SVG (no matplotlib).",
+    "description": "Static isometric 3-D surface for z = f(x, y): depth-sorted mesh quads shaded by height with a height legend. Hand-authored SVG.",
     "intents": [],
     "status": "stable",
     "renderer": "svg",

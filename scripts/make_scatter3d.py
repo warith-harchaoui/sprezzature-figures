@@ -4,13 +4,11 @@
 A 3D scatter plots each observation as a point in three continuous
 dimensions ``(x, y, z)`` and projects the cloud onto the page, so the
 reader sees whether the classes separate in space that no single 2D
-panel reveals. It is the matplotlib ``Axes3D.scatter`` / R
-``scatterplot3d`` / plotly ``scatter3d`` idiom; seaborn has no
-first-class equivalent, so a hand-built SVG is the natural home for it
-here.
+panel reveals. It has no first-class equivalent in this house style, so
+a hand-built SVG is its natural home here.
 
-This module builds the SVG string **by hand** (no matplotlib / seaborn /
-plotly, no Vega). The single artifact it writes is BOTH:
+This module builds the SVG string **by hand**. The single artifact it
+writes is BOTH:
 
 * a complete **still** figure: every point, the axis gizmo, the legend
   and the header are fully drawn at a fixed three-quarter viewing angle,
@@ -19,7 +17,7 @@ plotly, no Vega). The single artifact it writes is BOTH:
 * an **interactive** figure: a small vanilla-JavaScript block embedded
   in a ``<script>`` element re-projects the cloud live so the reader can
   **drag** to rotate, **scroll** to zoom, and **hover** a point for a
-  tooltip. No external library (no d3 / three / plotly); the projection
+  tooltip. No external library at all; the projection
   math mirrors :func:`_rotate` / :func:`_project` exactly, so the first
   interactive frame is pixel-identical to the server-rendered still.
 

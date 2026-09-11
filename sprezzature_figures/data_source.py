@@ -76,7 +76,7 @@ def _load_csv_pandas(path: Path) -> list[dict[str, Any]] | None:
         # Empty or unsniffable file: let the stdlib path produce the
         # canonical "no data rows" / delimiter fallback behaviour.
         return None
-    # NaN -> None so JSON-shaped consumers and Vega see nulls, not float('nan').
+    # NaN -> None so JSON-shaped consumers see nulls, not float('nan').
     return df.where(df.notna(), None).to_dict(orient="records")
 
 

@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
 """Generate a publication-quality *interpolated heatmap* (imshow) as a standalone SVG.
 
-An interpolated heatmap is the matplotlib ``imshow(..., interpolation="bilinear")``
-idiom: a coarse 2-D scalar field is displayed as a smooth, continuous image rather
-than a mosaic of hard cells. Each output pixel is a bilinear blend of its four
+An interpolated heatmap displays a coarse 2-D scalar field as a smooth,
+continuous image rather than a mosaic of hard cells. Each output pixel is a bilinear blend of its four
 nearest measured samples, so the grid dissolves into gradients and the underlying
 field reads as one continuous surface, the way a physical measurement actually
 varies in space.
 
-This module builds the SVG string **by hand** (no matplotlib / seaborn / plotly,
-no Vega): it synthesises a small, communicative measurement grid with numpy, a
+This module builds the SVG string **by hand**: it synthesises a small,
+communicative measurement grid with numpy, a
 soil-moisture survey over a research field with a wet hollow, a drier ridge, and
 a damp irrigation seam, then performs the bilinear up-sampling *itself* in numpy
 (no SVG blur filter) and paints the smooth result as a dense mosaic of tiny crisp

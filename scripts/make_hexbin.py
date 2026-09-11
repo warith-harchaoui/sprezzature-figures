@@ -9,12 +9,10 @@ a smoother density surface than a raw scatter once point count climbs
 into the thousands. Typical uses: overplotted scatter data, 2-D density
 of any two continuous variables.
 
-Previously rendered via Vega-Lite (points pre-binned offline into hexagon
-centres + counts, then drawn with a fixed hexagon-shaped point mark,
-``vl_convert``); this module now runs the binning itself, axial hex-grid
-assignment via the standard flat-top axial-round algorithm, on raw
-scatter points, and paints true hexagon cells by hand. No Vega, no
-matplotlib. Every cell carries a native ``<title>`` tooltip with its count.
+This module runs the binning itself, axial hex-grid assignment via the
+standard flat-top axial-round algorithm, on raw scatter points, and
+paints true hexagon cells by hand. Every cell carries a native
+``<title>`` tooltip with its count.
 
 Author
 ------

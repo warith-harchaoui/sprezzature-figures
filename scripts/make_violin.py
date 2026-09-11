@@ -11,11 +11,9 @@ centre of each violin. Typical uses: comparing distribution shape across
 experiment arms, cohorts, or any small set of groups where shape itself
 carries information.
 
-Previously rendered via Vega-Lite (a column-faceted, horizontally
-mirrored ``area`` mark over pre-computed KDE points, ``vl_convert``);
-this module now computes the Gaussian KDE itself and paints each
-mirrored violin by hand: no Vega, no matplotlib, no scipy. Every violin
-carries a native ``<title>`` tooltip with its median and spread.
+This module computes the Gaussian KDE itself and paints each mirrored
+violin by hand, with no scipy. Every violin carries a native ``<title>``
+tooltip with its median and spread.
 
 Author
 ------

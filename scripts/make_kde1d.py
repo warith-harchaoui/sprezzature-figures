@@ -14,10 +14,9 @@ curve) keeps the shape readable without a legend. Typical use: any single
 numeric sample where a histogram's bin edges would distract from the
 shape itself.
 
-Previously rendered via Vega-Lite (the ``density`` transform, ``vl_convert``).
-This module now computes the kernel density estimate itself and paints the
-filled curve by hand: no Vega, no matplotlib, no scipy. The curve carries
-a native ``<title>`` tooltip.
+This module computes the kernel density estimate itself and paints the
+filled curve by hand, with no scipy. The curve carries a native
+``<title>`` tooltip.
 
 Author
 ------

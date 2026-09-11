@@ -28,10 +28,10 @@ freshening" every mariner on that coast knows. The barbs make the shift
 legible at a glance: the staffs pivot roughly 180° and the tallies grow
 from a few barbs to pennants as the gale fills in behind the front.
 
-The module builds the SVG string by hand: no matplotlib / seaborn /
-plotly, and no Vega (angled staffs with tallied pennants and barbs, a
-curved front glyph with triangle teeth, and side-aware station labels
-are authored far more directly and compactly as raw SVG). It follows the
+The module builds the SVG string by hand: angled staffs with tallied
+pennants and barbs, a curved front glyph with triangle teeth, and
+side-aware station labels are authored far more directly and compactly
+as raw SVG. It follows the
 sprezzature-* house style from :mod:`_style`: the Apple-ish palette, Roboto
 typography, ink ``#1D1D1F`` on secondary ``#6E6E73`` on a white
 background, a rounded-corner legend, a takeaway title and a one-line

@@ -11,12 +11,10 @@ no generator produces it, it is not in FIGURES.md, and ``make_figure()``
 cannot reach it. It is a one-off marketing quadrant, not a reusable chart
 type.
 
-It used to be hand-authored Vega (then, briefly, a hand-rolled SVG replica of
-that Vega layout). Both are gone. The actual tool for this job now is
-``standpoint`` (https://github.com/warith-harchaoui/standpoint), a
-positioning-map library built on the same PCA idea, which emits a direct,
-hand-authored, interactive SVG of its own (``to_svg``, no Vega anywhere), so
-this script is now a thin call into it against the committed source table,
+The tool for this job is ``standpoint``
+(https://github.com/warith-harchaoui/standpoint), a positioning-map library
+built on the same PCA idea, which emits a direct, hand-authored, interactive
+SVG of its own (``to_svg``), so this script is a thin call into it against the committed source table,
 ``landscape.csv`` (37 tools by 22 criteria, with sprezzature-figures as the
 reference row). ``standpoint`` is a dev-time tool for regenerating this one
 asset, not a runtime dependency of the shipped package (it is not listed in

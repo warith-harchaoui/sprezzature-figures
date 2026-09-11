@@ -12,9 +12,9 @@ collapses into a handful of legible flows between subsystems. It answers
 cross-cutting couplings?" far better than a straight-line node-link
 graph, whose edges cross indiscriminately and hide the structure.
 
-Vega-Lite has no bundling mark (the curve routing needs a tree walk and
-a B-spline), so this figure is built as an SVG string by hand rather
-than through ``vl_convert``. The layout is the classic Holten (2006) one:
+The curve routing needs a tree walk and a B-spline, so this figure is
+built as an SVG string by hand. The layout is the classic Holten (2006)
+one:
 
 * **Hierarchy** — a two-level tree: a root, one node per subsystem, and
   one leaf per module. Leaves are placed on a circle, grouped by

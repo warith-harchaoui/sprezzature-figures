@@ -13,9 +13,8 @@ whom" around the ring. It answers reallocation / migration / hand-off
 questions ("where did this region's people go?", "how was the budget
 moved between departments?") at a glance.
 
-Vega-Lite has no native circular-sankey mark, so this figure is built as
-an SVG string by hand rather than through ``vl_convert``. The layout is
-the classic wheel:
+This figure is built as an SVG string by hand. The layout is the
+classic wheel:
 
 * **Node arcs** — each node owns a wedge of the ring whose angular span
   is proportional to that node's *throughput* (everything it sends plus

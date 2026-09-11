@@ -9,8 +9,8 @@ its nearest neighbours, so "which things does the model think are alike?"
 becomes a hover instead of a table lookup. Items that mean similar things
 land near each other; a point's closest neighbours are its semantic kin.
 
-This module builds the SVG string **by hand** (no d3 / three / plotly,
-no Vega). The single artifact it writes is BOTH:
+This module builds the SVG string **by hand**. The single artifact it
+writes is BOTH:
 
 * a complete **still** figure — every word is a coloured dot on a
   poster-scale canvas, a handful of representative words per cluster carry
@@ -476,9 +476,8 @@ def _script_svg(
 ) -> str:
     """Emit the ``<script>`` that makes the still figure interactive.
 
-    The controller is deliberately framework-free ES5/ES6 (no d3 / three /
-    plotly) and drives the projector's signature interaction on top of the
-    already-drawn still:
+    The controller is deliberately framework-free ES5/ES6 and drives the
+    projector's signature interaction on top of the already-drawn still:
 
     * **hover / focus / tap a point** — highlight it, draw thin curved
       connector lines to its ``k`` nearest neighbours, reveal the focused

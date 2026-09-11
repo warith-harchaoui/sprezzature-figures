@@ -16,8 +16,7 @@ model assigned (occasional, regular, power users). The takeaway is that
 the three segments carve out clearly distinct, barely-touching regions —
 the value/engagement plane really does split into three.
 
-Vega-Lite has no hull primitive, so the figure is hand-authored SVG. The
-hull is computed offline with a pure-Python **Graham scan** (no scipy, no
+The figure is hand-authored SVG. The hull is computed offline with a pure-Python **Graham scan** (no scipy, no
 numpy geometry): sort by polar angle about the lowest point, then walk the
 stack keeping only left turns. To beat the reference libraries on looks,
 each hull is then (1) offset outward by a fixed padding so the boundary

@@ -14,9 +14,9 @@ tells is that a single un-cached database query (``fetch_user_orders`` →
 ``run_sql``) eats almost half of the whole request: the widest tower in the
 graph, and exactly the bar an engineer would click to fix first.
 
-Vega-Lite has no native partition / icicle mark (rect widths must be laid out
-from a cumulative running offset the grammar cannot express on one axis), so the
-figure is assembled as a hand-authored SVG string. It follows the sprezzature-figures
+Rect widths are laid out from a cumulative running offset along one
+axis, so the figure is assembled as a hand-authored SVG string. It
+follows the sprezzature-figures
 house style: Roboto typography, ink ``#1D1D1F`` on white, a warm depth-graded
 "flame" ramp, rounded corners, native ``<title>`` tooltips, and a CSS ``:hover``
 lift guarded by ``prefers-reduced-motion``.

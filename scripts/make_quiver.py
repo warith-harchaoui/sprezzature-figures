@@ -9,10 +9,9 @@ pattern at a glance rather than a table of (dx, dy) numbers. Typical
 uses: fluid-flow or wind-field snapshots, gradient fields, any function
 that assigns a direction and magnitude to every point in a plane.
 
-Previously rendered via Vega-Lite (a rotated triangle point mark,
-``vl_convert``). This module now computes the field and paints each
-rotated triangle by hand: no Vega, no matplotlib. Every arrow carries a
-native ``<title>`` tooltip with its exact vector and magnitude.
+This module computes the field and paints each rotated triangle by
+hand. Every arrow carries a native ``<title>`` tooltip with its exact
+vector and magnitude.
 
 Author
 ------

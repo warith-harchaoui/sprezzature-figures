@@ -20,10 +20,8 @@ of. The reader sees at a glance that the pale-blue disease band swamps
 the red wounds band, and that the whole rose shrinks dramatically once
 Nightingale's sanitary commission arrives.
 
-The SVG is built by hand: no matplotlib / seaborn / plotly, and no
-Vega, because equal-angle annular sectors keyed to a calendar are not a
-native Vega-Lite mark and read far more cleanly authored directly. It
-follows the tokens from :mod:`_style`: the Apple-ish palette, Roboto
+The SVG is built by hand, because equal-angle annular sectors keyed to
+a calendar read far more cleanly authored directly. It follows the tokens from :mod:`_style`: the Apple-ish palette, Roboto
 typography, ink ``#1D1D1F`` on a white ground, rounded joins, a
 takeaway title and a one-line subtitle.
 

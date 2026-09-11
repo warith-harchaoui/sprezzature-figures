@@ -11,9 +11,7 @@ ribbon is coloured by a single **outcome** variable, so the reader can
 follow that outcome (here: *survived* vs *did not*) all the way across
 the diagram and watch which category combinations concentrate it.
 
-This is the chart Plotly ships as ``go.Parcats``. Neither matplotlib nor
-seaborn has a primitive for it. This module builds the SVG by hand:
-segmented category bars with rounded ends at each axis, joined by cubic
+This module builds the SVG by hand: segmented category bars with rounded ends at each axis, joined by cubic
 Bézier ribbons, so the output is dependency-light, reproducible, and
 natively interactive (CSS ``:hover`` + native ``<title>`` tooltips, no
 JavaScript).

@@ -9,10 +9,9 @@ where a raw stacked bar's differing bar heights would otherwise get in
 the way. Typical uses: revenue mix by quarter, survey answer distribution
 by cohort, market share by region.
 
-Previously rendered via Vega-Lite (``stack: "normalize"``, ``vl_convert``).
-This module now normalises each bar to 100% itself and paints every
-segment by hand: no Vega, no matplotlib. Every segment carries a native
-``<title>`` tooltip with its exact share.
+This module normalises each bar to 100% itself and paints every segment
+by hand. Every segment carries a native ``<title>`` tooltip with its
+exact share.
 
 Author
 ------

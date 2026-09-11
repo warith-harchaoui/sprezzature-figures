@@ -9,9 +9,8 @@ out it is (the standard deviation), and how likely each range of values is
 (area under the curve). Annotating the mean and one-sigma bands makes the
 68-95-99.7 rule tangible.
 
-Previously rendered via Vega-Lite (``vl_convert``); this module now samples
-the PDF itself and paints the filled curve plus annotation lines by hand
--- no Vega, no matplotlib.
+This module samples the PDF itself and paints the filled curve plus
+annotation lines by hand.
 
 Author
 ------

@@ -9,12 +9,11 @@ where the fit is least certain. The scatter stays visible underneath so
 the reader can judge the fit's plausibility directly. The default chart
 for "is there a linear trend here, and how sure are we".
 
-Previously rendered via Vega-Lite (the regression computed offline, three
-layers: band, scatter, line; ``vl_convert``). This module now runs the
-OLS fit itself (closed-form least squares, residual standard error, the
-standard formula for the standard error of the mean prediction) and
-paints all three layers by hand. No Vega, no matplotlib, no scipy. The
-fitted line carries a native ``<title>`` tooltip with the fit equation.
+This module runs the OLS fit itself (closed-form least squares,
+residual standard error, the standard formula for the standard error of
+the mean prediction) and paints all three layers -- band, scatter, line
+-- by hand, with no scipy. The fitted line carries a native ``<title>``
+tooltip with the fit equation.
 
 Author
 ------

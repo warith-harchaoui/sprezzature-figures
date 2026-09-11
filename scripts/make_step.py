@@ -9,10 +9,8 @@ value constant until it changes, then jumps. Typical uses: inventory
 level after each transaction, a state machine's value over discrete
 steps, a price that only updates on trade, any piecewise-constant series.
 
-Previously rendered via Vega-Lite (``interpolate: "step-after"``,
-``vl_convert``). This module now builds the step path itself and paints
-it by hand: no Vega, no matplotlib. Every point carries a native
-``<title>`` tooltip.
+This module builds the step path itself and paints it by hand. Every
+point carries a native ``<title>`` tooltip.
 
 Author
 ------

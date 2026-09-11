@@ -4,9 +4,9 @@ make_surface3d — a hand-authored 3-D surface as a static isometric SVG.
 
 A single central peak sampled on a regular grid, rotated in 3-D, projected with
 a light perspective camera, and drawn as depth-sorted filled quads shaded by
-height (a blue ramp), with a thin mesh and a height legend. No matplotlib, no
-Vega: the geometry is computed directly and emitted as SVG, exactly like the
-sibling 3-D heroes (wireframe3d / scatter3d / bar3d).
+height (a blue ramp), with a thin mesh and a height legend. The geometry
+is computed directly and emitted as SVG, exactly like the sibling 3-D
+heroes (wireframe3d / scatter3d / bar3d).
 
 Author
 ------

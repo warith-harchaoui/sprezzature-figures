@@ -23,11 +23,8 @@ This module is deliberately **stdlib-only** at import time, meaning it
 imports nothing beyond Python's own standard library (only
 ``base64``/``functools``/``pathlib``, no third-party package). That matters
 because ``scripts/_svg.py`` must stay importable even without the
-``dataviz`` extra installed (the optional dependency group that pulls in
-heavier plotting libraries), and this module is one of the things it
-depends on. The optional Matplotlib integration
-(:func:`register_matplotlib`) imports its target library lazily and does
-nothing if that library is not installed. The rasteriser, the component
+``dataviz`` extra installed, and this module is one of the things it
+depends on. The rasteriser, the component
 that turns an SVG into pixels (``resvg_py``), keeps no persistent
 font-directory registration of its own; callers pass
 :data:`RESVG_FONT_DIRS` as the ``font_dirs`` keyword on each
@@ -151,7 +148,7 @@ _FACES: dict[str, dict[str, str]] = {
 # The faces figures actually set as font-family (see _svg.py svg_open());
 # Roboto Serif is a publication/editorial option (references/publication-
 # presets.md) that no generator currently uses under the corporate theme, so
-# it is registered for matplotlib/the web app but not embedded by default.
+# it ships for the web app but is not embedded by default.
 DEFAULT_SVG_FACES: tuple[str, ...] = ("sans", "mono")
 
 #: theme name -> (embedded SVG faces, chrome-text stack, tick/value-label
@@ -260,61 +257,13 @@ def web_font_faces_css(url_prefix: str, keys: tuple[str, ...] = tuple(_FACES)) -
     return "".join(rules)
 
 
-_matplotlib_registered = False
-
-
-def register_matplotlib() -> bool:
-    """Register every bundled face with matplotlib's font manager and make
-    Roboto/Roboto Serif/Roboto Mono the default sans/serif/monospace
-    families, so matplotlib-based generators use the real bundled glyphs
-    instead of whatever happens to be installed system-wide. Also sets
-    ``svg.fonttype = "path"`` so any matplotlib SVG output bakes glyphs as
-    vector paths -- correct on any viewer, with no font file needed at all.
-
-    No-ops (returns False) if matplotlib is not installed -- this module
-    must stay usable from the font-independent scripts/_svg.py path.
-    Idempotent: safe to call on every render.
-    """
-    global _matplotlib_registered
-    if _matplotlib_registered:
-        return True
-    try:
-        import matplotlib as mpl
-        from matplotlib import font_manager as fm
-    except ImportError:
-        return False
-
-    for key in _FACES:
-        path = font_path(key)
-        if path.exists():
-            fm.fontManager.addfont(str(path))
-
-    mpl.rcParams["font.family"] = "sans-serif"
-    mpl.rcParams["font.sans-serif"] = ["Roboto", "DejaVu Sans"]
-    mpl.rcParams["font.serif"] = ["Roboto Serif", "DejaVu Serif"]
-    mpl.rcParams["font.monospace"] = ["Roboto Mono", "DejaVu Sans Mono"]
-    mpl.rcParams["svg.fonttype"] = "path"
-    _matplotlib_registered = True
-    return True
-
-
 # ``resvg_py.svg_to_bytes(..., font_dirs=RESVG_FONT_DIRS)`` -- passed on each
-# call (resvg has no persistent global font database to register into, unlike
-# the vl_convert rasteriser this replaced). Covers faces that are registered
-# for matplotlib/the web app but never embedded into every generated SVG
-# (Roboto Serif -- see :data:`DEFAULT_SVG_FACES`); the embedded-font path
-# already makes every generator's own render font-independent without this.
+# call, because resvg keeps no persistent global font database to register
+# into. Covers the faces the web app uses but that are never embedded into
+# every generated SVG (Roboto Serif -- see :data:`DEFAULT_SVG_FACES`); the
+# embedded-font path already makes every generator's own render
+# font-independent without this.
 RESVG_FONT_DIRS: tuple[str, ...] = (str(FONTS_DIR),)
-
-
-def register_all() -> None:
-    """Register the bundled fonts with every renderer available in the
-    current environment. Safe to call unconditionally and repeatedly (each
-    integration is independently idempotent and no-ops if its library isn't
-    installed) -- the natural place to call this is once at the top of
-    :func:`sprezzature_figures.make_figure.make_figure`.
-    """
-    register_matplotlib()
 
 
 def available_faces() -> Sequence[str]:

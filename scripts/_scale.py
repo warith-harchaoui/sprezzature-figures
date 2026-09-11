@@ -133,7 +133,7 @@ def nice_ticks(max_val: float, n: int = 4) -> list[float]:
     but produces label values like ``23``/``46``/``69``/``92`` —
     arithmetically even, but not numbers a reader can scan or do quick mental
     math with. This is the classic "nice numbers for graph labels" fix
-    (Heckbert 1990 / the same idea behind D3's ``scale.nice()``): round the
+    (Heckbert 1990, the "nice numbers" rule): round the
     overall span up to a nice ceiling, then pick a nice step near
     ``ceiling / n``, so ticks land on ``0``/``20``/``40``/``60``/``80``/
     ``100`` instead of ``0``/``23``/``46``/``69``/``92``. Because the step is

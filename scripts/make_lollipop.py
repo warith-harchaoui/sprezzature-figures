@@ -8,9 +8,8 @@ The thin stem draws less ink than a filled bar while keeping the same
 "length encodes value" reading, so it suits a longer category list or a
 report where restraint matters more than a bar's visual weight.
 
-Previously rendered via Vega-Lite (a layered ``rule`` + ``point`` mark,
-``vl_convert``). This module now paints both by hand: no Vega, no
-matplotlib. Every lollipop carries a native ``<title>`` tooltip.
+This module paints both by hand. Every lollipop carries a native
+``<title>`` tooltip.
 
 Author
 ------

@@ -10,8 +10,8 @@ up as a mirror-image area in a contrasting hue. The result packs the readable
 punch of a tall area chart into a strip a few pixels high, so a whole fleet of
 series stacks into one screen and outliers pop out by colour weight alone.
 
-This module builds the SVG string **by hand** (no matplotlib / seaborn /
-plotly, no Vega): it lays each series into its own banded row, paints the bands
+This module builds the SVG string **by hand**: it lays each series into
+its own banded row, paints the bands
 as increasingly saturated house-palette blues (above baseline) and reds
 (below), and adds native ``<title>`` hover tooltips, no JavaScript. A horizon
 chart is a dense static comparison; motion adds nothing a still cannot already

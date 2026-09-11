@@ -9,9 +9,8 @@ greyscale and every colour-vision deficiency without a second encoding).
 Typical uses: activity by day-of-week x hour, correlation matrices, A/B test
 results by cohort x variant.
 
-Previously rendered via Vega-Lite (``vl_convert``); this module now builds
-the ``<svg>`` markup by hand, with no Vega and no matplotlib, so it matches
-the other hero figures and every cell carries a native ``<title>`` tooltip with
+This module builds the ``<svg>`` markup by hand, so it matches the
+other hero figures and every cell carries a native ``<title>`` tooltip with
 its exact reading ("Tue, 09:00-10:00: activity 58, 4.2% of week total").
 Per the Sprezzature Corner Policy, grid cells never round (``rx`` stays at
 0: the grid *is* the message); hovering a cell dims every other cell and

@@ -9,8 +9,7 @@ category-by-category matrix far better than a grid of numbers or a
 grouped bar chart, because the eye reads ribbon width as magnitude and
 the ring makes every pairwise relationship visible at once.
 
-Vega-Lite has no native chord mark, so this figure is built as an SVG
-string by hand rather than through ``vl_convert``. The layout is the
+This figure is built as an SVG string by hand. The layout is the
 classic circular one:
 
 * **Group arcs** — each category owns a wedge of the ring; the wedge's

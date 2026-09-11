@@ -10,9 +10,8 @@ part's share. It is the natural chart for compositional data, where the
 three numbers are *not independent* (they always sum to 100 %) so a
 Cartesian scatter would double-count and mislead.
 
-This module builds the SVG string by hand (no matplotlib / seaborn /
-plotly, and no Vega, since Vega-Lite has no first-class ternary geometry, so
-the barycentric projection is authored directly). It follows the
+This module builds the SVG string by hand: the barycentric projection is
+authored directly. It follows the
 sprezzature-* house style pulled from :mod:`_style`: the Apple-ish saturated
 palette, Roboto typography, ink ``#1D1D1F`` on a white background,
 rounded markers, a takeaway title, and a one-line subtitle.

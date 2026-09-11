@@ -3,16 +3,16 @@
 
 A 3D bar chart raises a solid box at each cell of a two-way categorical
 grid, the box height encoding a single quantity ``z = f(row, col)``. It is
-the matplotlib ``Axes3D.bar3d`` idiom; R, seaborn, and plotly have no
-first-class equivalent in this house style, so a hand-built SVG is the
-natural home for it here. It is used *sparingly*: a 3D bar field trades
+a rare shape with no first-class equivalent in this house style, so a
+hand-built SVG is its natural home here. It is used *sparingly*: a 3D
+bar field trades
 some readability for the "landscape" gestalt of a rows x cols surface, and
 earns its keep only when the reader is meant to feel the overall relief of
 the grid (which rows/cols are tall, where the ridge runs) rather than read
 exact values off an axis.
 
-This module builds the SVG string **by hand** (no matplotlib / seaborn /
-plotly, no Vega): each grid cell is projected with a fixed axonometric
+This module builds the SVG string **by hand**: each grid cell is
+projected with a fixed axonometric
 (oblique-isometric) camera, every bar is drawn as three shaded quadrilateral
 faces (top, left, right) so the solid reads as a solid, and the whole field
 is painted back-to-front (painter's algorithm) so nearer bars correctly

@@ -5,8 +5,7 @@ A radar chart plots several **quantitative criteria** as spokes radiating from a
 common centre; each subject (a product, a city, a team) becomes a closed polygon
 whose vertices sit on the spokes. Its whole reason to exist is *profile
 comparison at a glance*: you see the **shape** of a subject's strengths and
-weaknesses, and you see where two subjects trade places. It is the R
-``fmsb::radarchart`` / matplotlib ``polar`` / plotly ``scatterpolar`` idiom.
+weaknesses, and you see where two subjects trade places.
 
 The classic failure mode of the chart is **colour-on-colour**: two translucent
 filled polygons overlap into a muddy grey blob and no series stays readable.
@@ -14,8 +13,8 @@ This generator sidesteps that entirely: each series is a **thick coloured
 outline** with **vertex dots** and only a *very light* fill, so overlaps never
 turn grey and every profile stays traceable to its legend colour.
 
-This module builds the SVG string **by hand** (no matplotlib / seaborn /
-plotly, no Vega): it lays out the angular spokes, draws concentric grid rings
+This module builds the SVG string **by hand**: it lays out the angular
+spokes, draws concentric grid rings
 with a rounded radial scale, and paints one outlined polygon per subject. The
 figure is deliberately **static**: the shape *is* the insight, and a still
 renders it in full. Everything is in the sprezzature-* house style: Roboto type, the

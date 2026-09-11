@@ -12,8 +12,8 @@ each cell is the neighbourhood for which *that* pharmacy is the closest
 one to walk to. The eye reads the chains as coloured territories first,
 then the individual shops as labelled dots.
 
-Vega-Lite has no Voronoi primitive, so the figure is built as an SVG
-string by hand. The tessellation is an offline, pure-Python
+The figure is built as an SVG string by hand. The tessellation is an
+offline, pure-Python
 half-plane clip: each cell starts as the whole map rectangle and is
 sliced by the perpendicular bisector between its seed and every other
 seed, keeping the seed's side each time (the Sutherland–Hodgman

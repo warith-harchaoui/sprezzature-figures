@@ -9,12 +9,12 @@ eyeball, all at once, which variables move together, which separate the groups,
 and where the outliers hide: the multivariate answer to "just plot the data".
 
 This generator assembles **one self-contained Scalable Vector Graphics (SVG)**
-figure by hand (no matplotlib / seaborn / plotly, no Vega). Building the string
-directly is what lets the figure carry the house fullscreen control and the
-``mode`` interactivity argument, and keeps the whole grid (data, scales,
-markers) under our control. The data lives *inside* this file, so the figure is
-reproducible from this module alone: no charting library, no notebook, no build
-step.
+figure by hand. Building the string directly is what lets the figure
+carry the house fullscreen control and the ``mode`` interactivity
+argument, and keeps the whole grid (data, scales, markers) under our
+control. The data lives *inside* this file, so the figure is
+reproducible from this module alone: no charting library, no notebook,
+no build step.
 
 The illustrative dataset is a fleet of production **electric-vehicle battery
 cells** binned by chemistry (three families of lithium-ion cell). Four measured

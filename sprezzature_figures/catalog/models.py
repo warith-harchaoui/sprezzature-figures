@@ -13,7 +13,7 @@ from typing import Any, Literal
 from pydantic import BaseModel, Field
 
 FigureStatus = Literal["stable", "experimental", "legacy", "unavailable"]
-RendererKind = Literal["vega_lite", "vega", "svg", "matplotlib", "html"]
+RendererKind = Literal["svg", "html"]
 ColumnType = Literal[
     "numeric",
     "categorical",

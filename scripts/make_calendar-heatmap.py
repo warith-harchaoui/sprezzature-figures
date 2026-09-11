@@ -9,8 +9,7 @@ survives greyscale and every colour-vision deficiency without a second
 encoding. Typical uses: commit activity, daily active users, habit
 tracking, any daily count viewed over months at a glance.
 
-Previously rendered via Vega-Lite (``vl_convert``); this module now
-builds the ``<svg>`` grid by hand, not with Vega or matplotlib. Grid cells
+This module builds the ``<svg>`` grid by hand. Grid cells
 never round (Sprezzature Corner Policy: grids stay square) and every
 cell carries a native ``<title>`` tooltip with its exact count.
 

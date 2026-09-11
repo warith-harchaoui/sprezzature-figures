@@ -13,9 +13,9 @@ column sits the **pooled diamond**: its centre is the random-effects
 summary estimate and its width is the summary CI, the single number
 the whole analysis exists to produce.
 
-The generator builds the SVG string by hand (no matplotlib / seaborn /
-plotly, no Vega) so the log-scale geometry, the weight-scaled boxes,
-and the diamond are fully under our control, and matches the sprezzature-*
+The generator builds the SVG string by hand so the log-scale geometry,
+the weight-scaled boxes, and the diamond are fully under our control,
+and matches the sprezzature-*
 house style: Roboto, the Apple-ish palette, rounded corners, ink
 ``#1D1D1F``, secondary ``#6E6E73``, white background. Every row and the
 pooled diamond draw fully settled, at rest (a load-time fade-in was tried

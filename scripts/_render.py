@@ -223,10 +223,10 @@ def _svg_to_png_bytes(svg: str) -> bytes:
     """Rasterise a complete SVG document to PNG bytes at :func:`_render_scale`.
 
     ``resvg_py`` (a thin wrapper around the Rust ``resvg`` crate) is the
-    house rasteriser: it needs no browser, no Node, and no Vega runtime, and
-    it renders exactly the static markup the hand-authored generators emit
-    (embedded ``@font-face`` fonts, gradients, filters) rather than
-    re-interpreting a chart grammar.
+    house rasteriser: it needs no browser and no Node, and it renders
+    exactly the static markup the hand-authored generators emit (embedded
+    ``@font-face`` fonts, gradients, filters) rather than re-interpreting a
+    chart grammar.
     """
     import resvg_py
 

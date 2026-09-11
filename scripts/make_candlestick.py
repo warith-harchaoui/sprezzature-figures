@@ -10,10 +10,8 @@ and magnitude of the move. The default chart for daily price data in
 finance, and equally usable for any open/high/low/close-shaped series
 (sensor readings, auction prices).
 
-Previously rendered via Vega-Lite (a layered ``rule`` + ``bar`` mark,
-``vl_convert``); this module now paints both layers by hand, not with
-Vega or matplotlib. Every candle carries a native ``<title>`` tooltip with all
-four values.
+This module paints both layers by hand. Every candle carries a native
+``<title>`` tooltip with all four values.
 
 Author
 ------

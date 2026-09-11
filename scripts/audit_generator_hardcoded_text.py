@@ -16,9 +16,9 @@ axis chrome, because there was no parameter to override it with. Fixed by
 hand in that one generator; this script makes the check mechanical so the
 same bug class does not quietly recur in any of the other generators.
 
-``audit_figure.py`` (the sibling tool) audits *rendered* Vega-Lite JSON /
-SVG / HTML for a different rule set (missing axis titles, dual y-axes,
-rainbow palettes...) — it cannot see this bug, because a hardcoded
+``audit_figure.py`` (the sibling tool) audits *rendered* SVG / HTML for a
+different rule set (missing axis titles, dual y-axes, rainbow
+palettes...) — it cannot see this bug, because a hardcoded
 literal renders as perfectly valid, well-formed SVG text. This script
 reads the *generator source* instead, where the absence of a parameter is
 visible.

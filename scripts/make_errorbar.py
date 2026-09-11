@@ -9,10 +9,8 @@ The default chart for "here's the number, and here's how sure we are"
 across a handful of groups: A/B test lifts, experiment arms, survey
 means by cohort.
 
-Previously rendered via Vega-Lite (a layered ``rule`` + ``point`` mark,
-``vl_convert``); this module now paints the whisker, caps, and point by
-hand, not with Vega or matplotlib. Every error bar carries a native
-``<title>`` tooltip with the mean and interval.
+This module paints the whisker, caps, and point by hand. Every error
+bar carries a native ``<title>`` tooltip with the mean and interval.
 
 Author
 ------

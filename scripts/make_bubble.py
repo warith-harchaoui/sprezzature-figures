@@ -4,12 +4,9 @@ make_bubble — publication-quality bubble chart as hand-authored SVG.
 
 The classic Gapminder-style bubble chart: each point is one place, x is
 GDP per capita, y is life expectancy, the bubble's *area* is population,
-and colour marks the region. Replaces the Vega-Lite render this figure
-used to ship as (``assets/vega-examples/bubble.vl.json``): house policy
-is hand-authored SVG only (see ``no-matplotlib`` / no-new-Vega-Lite),
-and the Vega-Lite version carried no per-point identity: every bubble
-was anonymous, so hovering told a reader nothing beyond what the axes
-already show. This version gives every bubble a name.
+and colour marks the region. House policy is hand-authored SVG only,
+and every bubble here carries its own name: an anonymous bubble tells a
+reader nothing on hover beyond what the axes already show.
 
 Data is synthetic and the place names are invented (not real countries)
 so nothing here is mistakable for real economic or demographic

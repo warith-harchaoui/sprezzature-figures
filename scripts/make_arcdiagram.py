@@ -19,9 +19,8 @@ only person with co-authors in *both* groups. Her two long arcs sweeping
 across the diagram are the single bridge between the two worlds: remove
 her, and the collaboration graph falls into two disconnected halves.
 
-Vega-Lite has no native arc-diagram mark, so the figure is built as an SVG
-string by hand rather than through ``vl_convert``. House style follows
-``_style.py`` / ``bar.vl.json``: Roboto type, the Apple-system categorical
+The figure is built as an SVG string by hand. House style follows
+``_style.py``: Roboto type, the Apple-system categorical
 palette, ink ``#1D1D1F`` on white, rounded label treatment, a
 start-anchored title plus a one-line takeaway subtitle.
 

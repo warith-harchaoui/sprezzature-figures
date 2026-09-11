@@ -15,8 +15,8 @@ lets the needle *settle* into place (it starts already on the dial at a
 plausible reading, then eases to the final value, never sweeping in
 from nothing), so the static raster is always a correct, complete gauge.
 
-Pure-Python, hand-built SVG string (no Vega, no matplotlib) because the
-arc/needle/tick geometry has to be placed exactly. Big canvas by design.
+Pure-Python, hand-built SVG string, because the arc/needle/tick
+geometry has to be placed exactly. Big canvas by design.
 
 Author
 ------

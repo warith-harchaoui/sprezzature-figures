@@ -6,9 +6,8 @@ A rug plot draws one short tick per raw observation along an axis, so
 the reader sees the *actual* 1-D sample (every value, every gap, every
 cluster) instead of a smoothed summary that hides them. This figure
 pairs a soft kernel-density silhouette (the "shape") with the rug (the
-"truth") underneath it, the classic seaborn ``rugplot`` + ``kdeplot``
-combination, so the density curve is always anchored to the data that
-produced it.
+"truth") underneath it, so the density curve is always anchored to the
+data that produced it.
 
 The example data are API response times for a checkout endpoint. The
 rug makes the story legible at a glance: a dense band of fast requests
