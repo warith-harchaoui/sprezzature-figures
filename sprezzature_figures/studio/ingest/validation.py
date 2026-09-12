@@ -3,7 +3,7 @@ Pre-flight checks on an upload before it's read at all (plan §5.4).
 
 Author
 ------
-Warith Harchaoui <warith.harchaoui@gmail.com>
+Warith HARCHAOUI <warith.harchaoui@gmail.com>
 """
 
 from __future__ import annotations

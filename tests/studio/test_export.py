@@ -8,7 +8,7 @@ behind on the original machine (per the project's internal design plan,
 
 Author
 ------
-Warith Harchaoui <warith.harchaoui@gmail.com>
+Warith HARCHAOUI <warith.harchaoui@gmail.com>
 """
 
 from __future__ import annotations

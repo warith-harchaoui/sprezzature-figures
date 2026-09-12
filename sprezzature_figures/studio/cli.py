@@ -3,7 +3,7 @@ CLI entry point for the ``sprezzature-studio`` command.
 
 Author
 ------
-Warith Harchaoui <warith.harchaoui@gmail.com>
+Warith HARCHAOUI <warith.harchaoui@gmail.com>
 """
 
 from __future__ import annotations

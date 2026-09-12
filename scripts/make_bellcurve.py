@@ -14,7 +14,7 @@ annotation lines by hand.
 
 Author
 ------
-`Warith Harchaoui, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
+`Warith HARCHAOUI, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
 """
 
 from __future__ import annotations
@@ -53,7 +53,7 @@ def _normal_pdf(x: float, mean: float, std: float) -> float:
 def build_svg(
     mean: float = 72.4,
     std: float = 9.1,
-    title: str = "Distribution of Student Exam Scores",
+    title: str = "Two exam results in three fall between 63 and 82",
     subtitle: str = "Normal distribution fitted to 1,840 exam results; shaded area = one standard deviation around the mean",
     width: int = 845,
     height: int = 519,
@@ -257,7 +257,7 @@ def make_bellcurve(
     mean: Optional[float] = None,
     std: Optional[float] = None,
     out: Optional[Path | str] = None,
-    title: str = "Distribution of Student Exam Scores",
+    title: str = "Two exam results in three fall between 63 and 82",
     subtitle: str = "Normal distribution fitted to 1,840 exam results; shaded area = one standard deviation around the mean",
     width: int = 845,
     height: int = 519,

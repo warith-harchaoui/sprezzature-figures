@@ -30,7 +30,7 @@ in ``RalphResult.notes`` (plan §11.4, §16.4).
 
 Author
 ------
-Warith Harchaoui <warith.harchaoui@gmail.com>
+Warith HARCHAOUI <warith.harchaoui@gmail.com>
 """
 
 from __future__ import annotations

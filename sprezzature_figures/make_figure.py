@@ -12,7 +12,7 @@ Importable as a library and exposed as the ``make-figure`` CLI command.
 
 Author
 ------
-Warith Harchaoui <warith.harchaoui@gmail.com>
+Warith HARCHAOUI <warith.harchaoui@gmail.com>
 """
 
 from __future__ import annotations

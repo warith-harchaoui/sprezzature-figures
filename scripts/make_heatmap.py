@@ -20,7 +20,7 @@ compare" both readable at a glance, guarded by ``prefers-reduced-motion``.
 
 Author
 ------
-`Warith Harchaoui, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
+`Warith HARCHAOUI, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
 """
 
 from __future__ import annotations
@@ -120,7 +120,7 @@ def _prepare_grid(
 
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
-    title: str = "Activity by Day and Hour",
+    title: str = "The eight-o'clock peak runs at twice the daily average",
     subtitle: str = "Synthetic weekly usage pattern",
     width: int = 900,
     height: int = 400,
@@ -361,7 +361,7 @@ def make_heatmap(
     data: Optional[List[Dict[str, Any]]] = None,
     *,
     out: Optional[Path | str] = None,
-    title: str = "Activity by Day and Hour",
+    title: str = "The eight-o'clock peak runs at twice the daily average",
     subtitle: str = "Synthetic weekly usage pattern",
     width: int = 900,
     height: int = 400,

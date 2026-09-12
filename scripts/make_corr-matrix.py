@@ -15,7 +15,7 @@ This module paints both layers by hand. Every cell carries a native
 
 Author
 ------
-`Warith Harchaoui, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
+`Warith HARCHAOUI, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
 """
 
 from __future__ import annotations
@@ -77,8 +77,8 @@ DEMO_DATA: List[Dict[str, Any]] = [
 
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
-    title: str = "Feature Correlation",
-    subtitle: str = "Pairwise Pearson correlation coefficient",
+    title: str = "Weight moves with everything else",
+    subtitle: str = "Pairwise Pearson r · weight holds both extremes: −0.87 with mpg, +0.89 with disp",
     width: int = 460,
     height: int = 460,
     mode: str = "self-contained",
@@ -224,8 +224,8 @@ def make_corr_matrix(
     data: Optional[List[Dict[str, Any]]] = None,
     *,
     out: Optional[Path | str] = None,
-    title: str = "Feature Correlation",
-    subtitle: str = "Pairwise Pearson correlation coefficient",
+    title: str = "Weight moves with everything else",
+    subtitle: str = "Pairwise Pearson r · weight holds both extremes: −0.87 with mpg, +0.89 with disp",
     width: int = 460,
     height: int = 460,
     mode: str = "self-contained",

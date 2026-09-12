@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-render_gapminder_og — social-preview PNGs for the Hans Rosling tribute pages.
+render_gapminder_og — social-preview PNGs for the Hans ROSLING tribute pages.
 
 The animated tribute lives in an SVG, which social networks can't use as a link
 preview, so we rasterise one spread-out frame (year 2019) of each language's SVG
@@ -11,7 +11,7 @@ chosen by seeking the SMIL animation, something static renderers can't do.
 
 Author
 ------
-`Warith Harchaoui, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
+`Warith HARCHAOUI, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
 """
 
 from __future__ import annotations

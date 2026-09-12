@@ -20,7 +20,7 @@ filled curve by hand, with no scipy. The curve carries a native
 
 Author
 ------
-`Warith Harchaoui, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
+`Warith HARCHAOUI, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
 """
 
 from __future__ import annotations
@@ -75,7 +75,7 @@ def _silverman_bandwidth(samples: List[float]) -> float:
 
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
-    title: str = "Estimated Density",
+    title: str = "Nineteen readings in twenty land between 4 and 8",
     subtitle: str = "Gaussian kernel density estimate",
     y_axis_title: str = "Density",
     width: int = 620,
@@ -223,7 +223,7 @@ def make_kde1d(
     data: Optional[List[Dict[str, Any]]] = None,
     *,
     out: Optional[Path | str] = None,
-    title: str = "Estimated Density",
+    title: str = "Nineteen readings in twenty land between 4 and 8",
     subtitle: str = "Gaussian kernel density estimate",
     y_axis_title: str = "Density",
     width: int = 620,

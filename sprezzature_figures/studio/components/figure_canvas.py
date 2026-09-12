@@ -3,7 +3,7 @@ Center pane: the current figure's rendered preview (plan §13.1 "Figure").
 
 Author
 ------
-Warith Harchaoui <warith.harchaoui@gmail.com>
+Warith HARCHAOUI <warith.harchaoui@gmail.com>
 """
 
 from __future__ import annotations

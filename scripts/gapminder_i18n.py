@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-gapminder_i18n — French translations for the Hans Rosling tribute chart.
+gapminder_i18n — French translations for the Hans ROSLING tribute chart.
 
 Keeps ``make_gapminder.py`` bilingual: the same real data, rendered once in
 English and once in idiomatic French (axes, legend, region names, and every
@@ -9,7 +9,7 @@ English name (which is often identical in French, e.g. ``France``, ``Canada``).
 
 Author
 ------
-`Warith Harchaoui, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
+`Warith HARCHAOUI, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
 """
 
 from __future__ import annotations
@@ -21,18 +21,18 @@ REGIONS_FR = {
 
 # Interface strings, keyed by a stable identifier used in make_gapminder.py.
 LABELS_FR = {
-    "title_link": "Hommage à Hans Rosling",
+    "title_link": "Hommage à Hans ROSLING",
     "title_rest": " &#8212; Santé et richesse des nations &#8212; 1950&#8211;2025",
     "subtitle": "Chaque bulle représente un pays. Sa taille indique la population et sa couleur la région.",
     "x_axis": "PIB par habitant (échelle log) &#8594;",
     "y_axis": "Espérance de vie (années) &#8594;",
     "legend_region": "RÉGION",
     "legend_population": "POPULATION",
-    "data_link": "Données en hommage à Hans Rosling",
-    "title_a11y": "Hommage à Hans Rosling — Santé et richesse des nations",
+    "data_link": "Données en hommage à Hans ROSLING",
+    "title_a11y": "Hommage à Hans ROSLING — Santé et richesse des nations",
     "pop_1b": "1 milliard", "pop_250m": "250 millions", "pop_50m": "50 millions",
     "desc": (
-        "Graphique à bulles animé en hommage à Hans Rosling, à partir de données réelles pour "
+        "Graphique à bulles animé en hommage à Hans ROSLING, à partir de données réelles pour "
         "tous les pays, une image par année de 1950 à 2025. Chaque bulle est un pays : "
         "l'horizontale est le PIB par habitant (échelle log), la verticale l'espérance de vie, "
         "l'aire la population, la couleur la région du monde. Un compteur d'années défile année par "

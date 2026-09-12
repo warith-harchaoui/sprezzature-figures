@@ -15,7 +15,7 @@ bar by hand. Every bar carries a native ``<title>`` tooltip.
 
 Author
 ------
-`Warith Harchaoui, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
+`Warith HARCHAOUI, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
 """
 
 from __future__ import annotations
@@ -53,7 +53,7 @@ DEMO_DATA: List[Dict[str, Any]] = [
 # them.
 _STRINGS: Dict[str, Dict[str, str]] = {
     "en": {
-        "title": "Sales by Region and Quarter",
+        "title": "The North took the lead after Q1 and never gave it back",
         "subtitle": "Units sold per region, by quarter",
         "legend_heading": "Region",
         "axis_units": "Units",
@@ -65,7 +65,7 @@ _STRINGS: Dict[str, Dict[str, str]] = {
         "tooltip_template": "{region}, {period}: {value:.0f}",
     },
     "fr": {
-        "title": "Ventes par région et par trimestre",
+        "title": "Le Nord a pris la tête après le T1 et ne l'a plus rendue",
         "subtitle": "Unités vendues par région, par trimestre",
         "legend_heading": "Région",
         "axis_units": "Unités",

@@ -5,7 +5,7 @@ line; falls back to comma/semicolon for plain CSV-shaped paste.
 
 Author
 ------
-Warith Harchaoui <warith.harchaoui@gmail.com>
+Warith HARCHAOUI <warith.harchaoui@gmail.com>
 """
 
 from __future__ import annotations

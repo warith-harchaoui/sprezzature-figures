@@ -17,7 +17,7 @@ carries a native ``<title>`` per cell plus an accessible
 
 Author
 ------
-`Warith Harchaoui, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
+`Warith HARCHAOUI, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
 """
 
 from __future__ import annotations
@@ -114,7 +114,7 @@ def _shade(t: float) -> str:
 
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
-    title: str = "Confusion matrix",
+    title: str = "Foxes get called dogs more often than any other mistake",
     x_axis_label: str = "Predicted",
     y_axis_label: str = "Actual",
     mode: str = "self-contained",
@@ -295,7 +295,7 @@ def make_confusion_matrix(
     data: Optional[List[Dict[str, Any]]] = None,
     *,
     out: Optional[Path | str] = None,
-    title: str = "Confusion matrix",
+    title: str = "Foxes get called dogs more often than any other mistake",
     x_axis_label: str = "Predicted",
     y_axis_label: str = "Actual",
     mode: str = "self-contained",

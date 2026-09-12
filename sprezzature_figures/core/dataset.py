@@ -5,7 +5,7 @@ before any figure is chosen. Populated by sprezzature_figures.studio.ingest
 
 Author
 ------
-Warith Harchaoui <warith.harchaoui@gmail.com>
+Warith HARCHAOUI <warith.harchaoui@gmail.com>
 """
 
 from __future__ import annotations

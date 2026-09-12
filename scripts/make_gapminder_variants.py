@@ -37,7 +37,7 @@ here so the follow-country readout reports the right quantity for each scale
 
 Author
 ------
-`Warith Harchaoui, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
+`Warith HARCHAOUI, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
 """
 
 from __future__ import annotations
@@ -221,7 +221,7 @@ FERTILITY = Variant(
     xfmt=baby_tick, yfmt=year_tick,
     fr_header=["pays", "annee", "region", "fecondite", "esperanceDeVie", "population"],
     labels_en={
-        "title_link": "Tribute to Hans Rosling",
+        "title_link": "Tribute to Hans ROSLING",
         "title_rest": " &#8212; 1950&#8211;2025",
         "subtitle": "Each bubble is a country with size for population and color for region",
         "x_axis": "&#8592; Fertility rate (births per woman)",
@@ -231,7 +231,7 @@ FERTILITY = Variant(
         "title_a11y": "Fertility rate and life expectancy",
         "pop_1b": "1 billion", "pop_250m": "250 million", "pop_50m": "50 million",
         "desc": (
-            "An animated bubble chart in homage to Hans Rosling, one frame per year from 1950 to "
+            "An animated bubble chart in homage to Hans ROSLING, one frame per year from 1950 to "
             "2025. Each bubble is a country: horizontal is the fertility rate (births per woman, "
             "falling from right to left), vertical is life expectancy, area is population, colour is "
             "world region. As the years tick by the whole cloud sweeps up and to the left: families "
@@ -244,7 +244,7 @@ FERTILITY = Variant(
             "merge. Recent years are part-projected."),
     },
     labels_fr={
-        "title_link": "Hommage à Hans Rosling",
+        "title_link": "Hommage à Hans ROSLING",
         "title_rest": " &#8212; 1950&#8211;2025",
         "subtitle": "Chaque bulle représente un pays. Sa taille indique la population et sa couleur la région.",
         "x_axis": "&#8592; Indice de fécondité (naissances par femme)",
@@ -254,7 +254,7 @@ FERTILITY = Variant(
         "title_a11y": "Indice de fécondité et espérance de vie",
         "pop_1b": "1 milliard", "pop_250m": "250 millions", "pop_50m": "50 millions",
         "desc": (
-            "Graphique à bulles animé en hommage à Hans Rosling, une image par année de 1950 à 2025. "
+            "Graphique à bulles animé en hommage à Hans ROSLING, une image par année de 1950 à 2025. "
             "Chaque bulle est un pays : l'horizontale est l'indice de fécondité (naissances par femme, "
             "qui décroît de droite à gauche), la verticale l'espérance de vie, l'aire la population, "
             "la couleur la région du monde. Au fil des années tout le nuage glisse vers le haut et la "
@@ -281,7 +281,7 @@ INCOME_SURVIVAL = Variant(
     xfmt=money, yfmt=surv_tick,
     fr_header=["pays", "annee", "region", "survieEnfant", "pibParHabitant", "population"],
     labels_en={
-        "title_link": "Tribute to Hans Rosling",
+        "title_link": "Tribute to Hans ROSLING",
         "title_rest": " &#8212; 1950&#8211;2025",
         "subtitle": "Each bubble is a country with size for population and color for region",
         "x_axis": "GDP per capita ($, log scale) &#8594;",
@@ -291,7 +291,7 @@ INCOME_SURVIVAL = Variant(
         "title_a11y": "GDP per capita and child survival",
         "pop_1b": "1 billion", "pop_250m": "250 million", "pop_50m": "50 million",
         "desc": (
-            "An animated bubble chart in homage to Hans Rosling, one frame per year from 1950 to "
+            "An animated bubble chart in homage to Hans ROSLING, one frame per year from 1950 to "
             "2025. Each bubble is a country: horizontal is GDP per capita on a log scale, vertical is "
             "the share of children who reach their fifth birthday, area is population, colour is world "
             "region. The vertical axis uses a spread scale so that 90, 99 and 99.9 percent are evenly "
@@ -303,7 +303,7 @@ INCOME_SURVIVAL = Variant(
             "are part-projected."),
     },
     labels_fr={
-        "title_link": "Hommage à Hans Rosling",
+        "title_link": "Hommage à Hans ROSLING",
         "title_rest": " &#8212; 1950&#8211;2025",
         "subtitle": "Chaque bulle représente un pays. Sa taille indique la population et sa couleur la région.",
         "x_axis": "PIB par habitant ($, échelle log) &#8594;",
@@ -313,7 +313,7 @@ INCOME_SURVIVAL = Variant(
         "title_a11y": "PIB par habitant et survie des enfants",
         "pop_1b": "1 milliard", "pop_250m": "250 millions", "pop_50m": "50 millions",
         "desc": (
-            "Graphique à bulles animé en hommage à Hans Rosling, une image par année de 1950 à 2025. "
+            "Graphique à bulles animé en hommage à Hans ROSLING, une image par année de 1950 à 2025. "
             "Chaque bulle est un pays : l'horizontale est le PIB par habitant en échelle logarithmique, "
             "la verticale la part des enfants qui atteignent leur cinquième anniversaire, l'aire la "
             "population, la couleur la région du monde. L'axe vertical utilise une échelle étalée pour "

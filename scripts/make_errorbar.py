@@ -14,7 +14,7 @@ bar carries a native ``<title>`` tooltip with the mean and interval.
 
 Author
 ------
-`Warith Harchaoui, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
+`Warith HARCHAOUI, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
 """
 
 from __future__ import annotations
@@ -62,7 +62,7 @@ DEMO_DATA: List[Dict[str, Any]] = [
 
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
-    title: str = "Mean with 95% Interval",
+    title: str = "D clearly beats C — but B and C could be the same",
     subtitle: str = "Point estimate per group, capped bar spans the confidence interval",
     y_axis_title: str = "Value",
     x_axis_title: str = "Group",
@@ -216,7 +216,7 @@ def make_errorbar(
     data: Optional[List[Dict[str, Any]]] = None,
     *,
     out: Optional[Path | str] = None,
-    title: str = "Mean with 95% Interval",
+    title: str = "D clearly beats C — but B and C could be the same",
     subtitle: str = "Point estimate per group, capped bar spans the confidence interval",
     y_axis_title: str = "Value",
     x_axis_title: str = "Group",

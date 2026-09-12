@@ -4,7 +4,7 @@ overridable options, and preview before the user commits (plan §5.1).
 
 Author
 ------
-Warith Harchaoui <warith.harchaoui@gmail.com>
+Warith HARCHAOUI <warith.harchaoui@gmail.com>
 """
 
 from __future__ import annotations

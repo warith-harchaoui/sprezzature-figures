@@ -13,7 +13,7 @@ This module paints both by hand. Every lollipop carries a native
 
 Author
 ------
-`Warith Harchaoui, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
+`Warith HARCHAOUI, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
 """
 
 from __future__ import annotations
@@ -33,9 +33,14 @@ from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_the
 COLOR_STEM = "#C7C7CC"
 COLOR_DOT = "#007AFF"
 
+#: Unplanned downtime by root cause. Real categories rather than
+#: alpha/beta/gamma: a lollipop chart is chosen when the *ranking* is the
+#: message, and a ranking of Greek letters carries none. The same five
+#: values, attached to something a reader can weigh.
 DEMO_DATA: List[Dict[str, Any]] = [
-    {"c": "alpha", "v": 28}, {"c": "beta", "v": 55}, {"c": "gamma", "v": 43},
-    {"c": "delta", "v": 91}, {"c": "epsilon", "v": 62},
+    {"c": "Config change", "v": 91}, {"c": "Failed deploy", "v": 62},
+    {"c": "Capacity limit", "v": 55}, {"c": "Third party", "v": 43},
+    {"c": "Hardware fault", "v": 28},
 ]
 
 # Chrome text (Studio detects "en"/"fr" from the imported CSV's column
@@ -68,8 +73,8 @@ def _strings(language: str) -> Dict[str, str]:
 
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
-    title: str = "Score by Group",
-    subtitle: str = "Categories sorted largest to smallest",
+    title: str = "Config changes cause the most downtime",
+    subtitle: str = "Hours by root cause, last four quarters — more than hardware and third parties combined",
     width: int = 620,
     height: int = 420,
     mode: str = "self-contained",
@@ -221,8 +226,8 @@ def make_lollipop(
     data: Optional[List[Dict[str, Any]]] = None,
     *,
     out: Optional[Path | str] = None,
-    title: str = "Score by Group",
-    subtitle: str = "Categories sorted largest to smallest",
+    title: str = "Config changes cause the most downtime",
+    subtitle: str = "Hours by root cause, last four quarters — more than hardware and third parties combined",
     width: int = 620,
     height: int = 420,
     mode: str = "self-contained",

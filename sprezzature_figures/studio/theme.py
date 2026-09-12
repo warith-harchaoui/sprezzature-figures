@@ -17,7 +17,7 @@ build step: one `<style>` block injected once at app startup (see
 
 Author
 ------
-Warith Harchaoui <warith.harchaoui@gmail.com>
+Warith HARCHAOUI <warith.harchaoui@gmail.com>
 """
 
 from __future__ import annotations

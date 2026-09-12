@@ -21,7 +21,7 @@ Running the module writes the SVG to
 
 Author
 ------
-`Warith Harchaoui, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
+`Warith HARCHAOUI, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
 """
 
 from __future__ import annotations
@@ -201,7 +201,7 @@ def build_svg(
     def r_for(pop: float) -> float:
         return r_min + (r_max - r_min) * math.sqrt(max(pop, 0.0) / pop_max)
 
-    title_txt = "Wealth, longevity, and population"
+    title_txt = "The richest places here outlive the poorest by seventeen years"
     subtitle_txt = "Synthetic sample · invented place names, not real countries"
     desc_txt = (
         f"Bubble chart of {len(places)} synthetic places. The horizontal axis is "

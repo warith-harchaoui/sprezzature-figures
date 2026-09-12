@@ -12,7 +12,7 @@ paints the box, whiskers, and outlier points by hand. Every box carries a native
 
 Author
 ------
-`Warith Harchaoui, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
+`Warith HARCHAOUI, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
 """
 
 from __future__ import annotations
@@ -76,7 +76,7 @@ def _five_number_summary(values: List[float]) -> Dict[str, Any]:
 
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
-    title: str = "Salary Distribution by Department",
+    title: str = "Engineering's median salary is nearly double Support's",
     subtitle: str = "Synthetic sample, thousands of EUR",
     width: int = 745,
     height: int = 505,
@@ -354,7 +354,7 @@ def make_boxplot(
     data: Optional[List[Dict[str, Any]]] = None,
     *,
     out: Optional[Path | str] = None,
-    title: str = "Salary Distribution by Department",
+    title: str = "Engineering's median salary is nearly double Support's",
     subtitle: str = "Synthetic sample, thousands of EUR",
     width: int = 745,
     height: int = 505,

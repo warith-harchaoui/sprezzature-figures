@@ -17,7 +17,7 @@ shipped stylesheet itself. To make a new usage pass, add the class to
 
 Author
 ------
-Warith Harchaoui <warith.harchaoui@gmail.com>
+Warith HARCHAOUI <warith.harchaoui@gmail.com>
 """
 
 from __future__ import annotations

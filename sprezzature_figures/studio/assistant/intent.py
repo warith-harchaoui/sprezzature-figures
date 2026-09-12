@@ -4,7 +4,7 @@ into a structured UserIntent (plan §10.1). Never sees raw data rows.
 
 Author
 ------
-Warith Harchaoui <warith.harchaoui@gmail.com>
+Warith HARCHAOUI <warith.harchaoui@gmail.com>
 """
 
 from __future__ import annotations

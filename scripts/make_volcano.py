@@ -16,7 +16,7 @@ a native ``<title>`` tooltip.
 
 Author
 ------
-`Warith Harchaoui, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
+`Warith HARCHAOUI, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
 """
 
 from __future__ import annotations
@@ -74,8 +74,8 @@ def _classify(lfc: float, neglogp: float) -> str:
 
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
-    title: str = "Differential Expression",
-    subtitle: str = "log2 fold change vs. significance, thresholds dashed",
+    title: str = "Seventy-six of 280 genes clear both thresholds",
+    subtitle: str = "log2 fold change against significance · 42 up, 34 down · thresholds dashed",
     width: int = 620,
     height: int = 520,
     mode: str = "self-contained",
@@ -253,8 +253,8 @@ def make_volcano(
     data: Optional[List[Dict[str, Any]]] = None,
     *,
     out: Optional[Path | str] = None,
-    title: str = "Differential Expression",
-    subtitle: str = "log2 fold change vs. significance, thresholds dashed",
+    title: str = "Seventy-six of 280 genes clear both thresholds",
+    subtitle: str = "log2 fold change against significance · 42 up, 34 down · thresholds dashed",
     width: int = 620,
     height: int = 520,
     mode: str = "self-contained",

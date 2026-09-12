@@ -15,7 +15,7 @@ Sprezzature Corner Policy (a range bar has no baseline, both ends are free).
 
 Author
 ------
-`Warith Harchaoui, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
+`Warith HARCHAOUI, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
 """
 
 from __future__ import annotations
@@ -68,8 +68,8 @@ def _city_colors(
 
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
-    title: str = "Monthly Temperature Range by City",
-    subtitle: str = "",
+    title: str = "Athens at its January coldest is warmer than Stockholm at its warmest",
+    subtitle: str = "Monthly low-to-high temperature range, °C",
     y_axis_title: str = "Value",
     x_axis_title: str = "Month",
     legend_title: str = "Series",
@@ -305,8 +305,8 @@ def make_columnrange(
     data: Optional[List[Dict[str, Any]]] = None,
     *,
     out: Optional[Path | str] = None,
-    title: str = "Monthly Temperature Range by City",
-    subtitle: str = "",
+    title: str = "Athens at its January coldest is warmer than Stockholm at its warmest",
+    subtitle: str = "Monthly low-to-high temperature range, °C",
     y_axis_title: str = "Value",
     x_axis_title: str = "Month",
     legend_title: str = "Series",

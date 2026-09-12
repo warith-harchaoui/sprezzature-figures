@@ -17,7 +17,7 @@ no lifelines. The curve carries a native ``<title>`` tooltip.
 
 Author
 ------
-`Warith Harchaoui, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
+`Warith HARCHAOUI, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
 """
 
 from __future__ import annotations
@@ -127,8 +127,8 @@ def _arm_colors(
 
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
-    title: str = "Kaplan-Meier Survival",
-    subtitle: str = "Estimated survival probability by arm, with 95% confidence band and censoring ticks",
+    title: str = "The treatment arm reaches its median five months later",
+    subtitle: str = "Survival probability by arm · 32 events in each of 45 patients · 95 % band, censoring ticks",
     y_axis_title: str = "Survival",
     x_axis_title: str = "Months",
     width: int = 745,
@@ -329,8 +329,8 @@ def make_survival_km(
     data: Optional[List[Dict[str, Any]]] = None,
     *,
     out: Optional[Path | str] = None,
-    title: str = "Kaplan-Meier Survival",
-    subtitle: str = "Estimated survival probability by arm, with 95% confidence band and censoring ticks",
+    title: str = "The treatment arm reaches its median five months later",
+    subtitle: str = "Survival probability by arm · 32 events in each of 45 patients · 95 % band, censoring ticks",
     y_axis_title: str = "Survival",
     x_axis_title: str = "Months",
     width: int = 745,

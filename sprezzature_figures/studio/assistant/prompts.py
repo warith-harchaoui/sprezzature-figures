@@ -6,7 +6,7 @@ are short: the interesting logic lives in what gets fed to them
 
 Author
 ------
-Warith Harchaoui <warith.harchaoui@gmail.com>
+Warith HARCHAOUI <warith.harchaoui@gmail.com>
 """
 
 from __future__ import annotations

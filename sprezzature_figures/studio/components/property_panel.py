@@ -5,7 +5,7 @@ Each change is applied as a `SetStyleOption` and re-rendered by the editor.
 
 Author
 ------
-Warith Harchaoui <warith.harchaoui@gmail.com>
+Warith HARCHAOUI <warith.harchaoui@gmail.com>
 """
 
 from __future__ import annotations

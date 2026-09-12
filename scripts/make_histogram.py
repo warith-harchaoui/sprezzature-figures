@@ -15,7 +15,7 @@ Corner Policy: the baseline stays flat so every bar visibly starts at zero.
 
 Author
 ------
-`Warith Harchaoui, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
+`Warith HARCHAOUI, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
 """
 
 from __future__ import annotations
@@ -89,8 +89,8 @@ def _fmt_edge(v: float) -> str:
 
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
-    title: str = "Exam Score Distribution",
-    subtitle: str = "Synthetic sample, 300 students",
+    title: str = "Not one of the 300 results fell below 50",
+    subtitle: str = "Synthetic sample, 300 students — mean 70, standard deviation 7",
     width: int = 760,
     height: int = 500,
     bin_count: int = 20,
@@ -291,8 +291,8 @@ def make_histogram(
     data: Optional[List[Dict[str, Any]]] = None,
     *,
     out: Optional[Path | str] = None,
-    title: str = "Exam Score Distribution",
-    subtitle: str = "Synthetic sample, 300 students",
+    title: str = "Not one of the 300 results fell below 50",
+    subtitle: str = "Synthetic sample, 300 students — mean 70, standard deviation 7",
     width: int = 760,
     height: int = 500,
     bin_count: int = 20,
