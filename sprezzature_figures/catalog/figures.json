@@ -1,5 +1,70 @@
 [
   {
+    "kind": "ablation_matrix",
+    "label": "Ablation matrix",
+    "aliases": [
+      "ablation",
+      "ablation study",
+      "ablation-matrix"
+    ],
+    "category": "Model evaluation",
+    "description": "Ablation study: one row per model variant, a dot matrix showing which components that variant keeps, and one metric panel per metric sharing the same row axis. Use to show which parts of a model earn their place; hovering a row highlights it across every panel at once.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "svg",
+    "module": "scripts/make_ablation_matrix.py",
+    "callable_name": "make_ablation_matrix",
+    "required_roles": [
+      {
+        "name": "components",
+        "label": "Components kept",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "metric",
+        "label": "Metric",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "value",
+        "label": "Value",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [
+      {
+        "name": "error",
+        "label": "Half-width of the interval",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": false
+      }
+    ],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 1120,
+    "default_height": 668,
+    "options_schema": {},
+    "warnings": [
+      "Default output path falls back to a shared assets/ directory"
+    ]
+  },
+  {
     "kind": "alluvial",
     "label": "Alluvial",
     "aliases": [],
@@ -338,7 +403,7 @@
     "label": "Bar3D",
     "aliases": [],
     "category": "Comparison",
-    "description": "3-D bar chart for a 2-D categorical grid (row \u00d7 column \u2192 height). Use only when a third dimension adds genuine information; prefer grouped or stacked bar for most comparisons.",
+    "description": "3-D bar chart for a 2-D categorical grid (row × column → height). Use only when a third dimension adds genuine information; prefer grouped or stacked bar for most comparisons.",
     "intents": [],
     "status": "stable",
     "renderer": "svg",
@@ -434,7 +499,7 @@
     "label": "Bellcurve",
     "aliases": [],
     "category": "Distribution",
-    "description": "Overlay a fitted Normal curve on a histogram. Use to test whether a sample is approximately Gaussian or to annotate mean \u00b1 \u03c3 reference lines for a report audience.",
+    "description": "Overlay a fitted Normal curve on a histogram. Use to test whether a sample is approximately Gaussian or to annotate mean ± σ reference lines for a report audience.",
     "intents": [],
     "status": "stable",
     "renderer": "svg",
@@ -586,7 +651,7 @@
     "label": "Bollinger",
     "aliases": [],
     "category": "Finance",
-    "description": "Time-series price line with Bollinger Bands (rolling mean \u00b1 2\u03c3). Use to visualise volatility regimes and overbought/oversold signals in financial or sensor data.",
+    "description": "Time-series price line with Bollinger Bands (rolling mean ± 2σ). Use to visualise volatility regimes and overbought/oversold signals in financial or sensor data.",
     "intents": [],
     "status": "stable",
     "renderer": "svg",
@@ -698,7 +763,7 @@
     "label": "Boxplot",
     "aliases": [],
     "category": "Distribution",
-    "description": "Box plot summarising median, quartiles, and outliers per category (Tukey 1.5\u00d7IQR rule). Use for salary by department, response time by service, scores by class.",
+    "description": "Box plot summarising median, quartiles, and outliers per category (Tukey 1.5×IQR rule). Use for salary by department, response time by service, scores by class.",
     "intents": [],
     "status": "stable",
     "renderer": "svg",
@@ -1239,7 +1304,7 @@
     "label": "Columnrange",
     "aliases": [],
     "category": "Range",
-    "description": "Vertical bars spanning from a low to a high value per category. Use for temperature ranges, salary bands, confidence intervals, or any per-group min\u2013max.",
+    "description": "Vertical bars spanning from a low to a high value per category. Use for temperature ranges, salary bands, confidence intervals, or any per-group min–max.",
     "intents": [],
     "status": "stable",
     "renderer": "svg",
@@ -1768,6 +1833,88 @@
     ]
   },
   {
+    "kind": "diffusion_trajectory",
+    "label": "Diffusion trajectory",
+    "aliases": [
+      "diffusion",
+      "diffusion-trajectory",
+      "noise schedule"
+    ],
+    "category": "Dimensionality reduction",
+    "description": "Animated view of a point cloud carried through a diffusion model's noise schedule, forward then back, with a fixed nearest-neighbour graph drawn so the structure being destroyed stays visible. Use to show what a noise schedule does to a manifold.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "svg",
+    "module": "scripts/make_diffusion_trajectory.py",
+    "callable_name": "make_diffusion_trajectory",
+    "required_roles": [
+      {
+        "name": "step",
+        "label": "Diffusion step",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "point",
+        "label": "Point id",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "x",
+        "label": "X",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "y",
+        "label": "Y",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [
+      {
+        "name": "value",
+        "label": "Colour value",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": false
+      },
+      {
+        "name": "sigma",
+        "label": "Noise level",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": false
+      }
+    ],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 980,
+    "default_height": 774,
+    "options_schema": {},
+    "warnings": [
+      "Default output path falls back to a shared assets/ directory",
+      "Animated: a PNG export captures one frame only"
+    ]
+  },
+  {
     "kind": "donut",
     "label": "Donut",
     "aliases": [],
@@ -1904,7 +2051,7 @@
     "label": "Dumbbell",
     "aliases": [],
     "category": "Change",
-    "description": "Two dots connected by a line per category (before vs. after). Use for clear before\u2013after or group-A vs. group-B comparison across many categories.",
+    "description": "Two dots connected by a line per category (before vs. after). Use for clear before–after or group-A vs. group-B comparison across many categories.",
     "intents": [],
     "status": "stable",
     "renderer": "svg",
@@ -2652,7 +2799,7 @@
     "label": "Heatmap",
     "aliases": [],
     "category": "Matrix / Image",
-    "description": "Row \u00d7 column matrix with cell color encoding a numeric value. Use for activity by day-of-week \u00d7 hour, correlation matrices, or cohort \u00d7 variant test results.",
+    "description": "Row × column matrix with cell color encoding a numeric value. Use for activity by day-of-week × hour, correlation matrices, or cohort × variant test results.",
     "intents": [],
     "status": "stable",
     "renderer": "svg",
@@ -3489,7 +3636,7 @@
     "label": "Manhattan",
     "aliases": [],
     "category": "Genomics / Statistics",
-    "description": "Manhattan plot: \u2212log\u2081\u2080(p-value) vs. genomic position. The standard chart for genome-wide association study (GWAS) results.",
+    "description": "Manhattan plot: −log₁₀(p-value) vs. genomic position. The standard chart for genome-wide association study (GWAS) results.",
     "intents": [],
     "status": "stable",
     "renderer": "svg",
@@ -3542,6 +3689,80 @@
     "options_schema": {},
     "warnings": [
       "Default output path falls back to a shared assets/ directory"
+    ]
+  },
+  {
+    "kind": "manifold_path",
+    "label": "Manifold path",
+    "aliases": [
+      "gradient ascent",
+      "manifold",
+      "manifold-path"
+    ],
+    "category": "3-D surface",
+    "description": "A walk across a two-coordinate objective surface, animated along the path it actually took, with the global optimum marked whether or not the walk reaches it. Use to show how an optimiser behaves, including where it stalls.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "svg",
+    "module": "scripts/make_manifold_path.py",
+    "callable_name": "make_manifold_path",
+    "required_roles": [
+      {
+        "name": "series",
+        "label": "Series (surface or path)",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "x",
+        "label": "X",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "y",
+        "label": "Y",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "z",
+        "label": "Height",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [
+      {
+        "name": "step",
+        "label": "Step along the path",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": false
+      }
+    ],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 940,
+    "default_height": 784,
+    "options_schema": {},
+    "warnings": [
+      "Default output path falls back to a shared assets/ directory",
+      "Animated: a PNG export captures one frame only"
     ]
   },
   {
@@ -3688,7 +3909,7 @@
       "org_chart"
     ],
     "category": "Hierarchy",
-    "description": "Top-down organisation chart. Use for reporting structures, software architecture layers, or any strict parent\u2013child hierarchy.",
+    "description": "Top-down organisation chart. Use for reporting structures, software architecture layers, or any strict parent–child hierarchy.",
     "intents": [],
     "status": "stable",
     "renderer": "svg",
@@ -4469,7 +4690,7 @@
     "label": "Radar",
     "aliases": [],
     "category": "Multivariate",
-    "description": "Radar / spider chart: multiple quantitative axes radiating from a common centre. Use for comparing a small number of entities across 4\u20138 dimensions.",
+    "description": "Radar / spider chart: multiple quantitative axes radiating from a common centre. Use for comparing a small number of entities across 4–8 dimensions.",
     "intents": [],
     "status": "stable",
     "renderer": "svg",
@@ -4997,7 +5218,7 @@
     "label": "Sankey",
     "aliases": [],
     "category": "Flow",
-    "description": "Sankey diagram: flows between nodes with width proportional to volume. Use for energy balance, budget allocation, or any source \u2192 sink flow across categories.",
+    "description": "Sankey diagram: flows between nodes with width proportional to volume. Use for energy balance, budget allocation, or any source → sink flow across categories.",
     "intents": [],
     "status": "stable",
     "renderer": "svg",
@@ -5322,7 +5543,7 @@
     "label": "Spectrogram",
     "aliases": [],
     "category": "Signal",
-    "description": "Frequency \u00d7 time heatmap of a signal's energy. Use for audio, seismic, or any time-varying spectral data.",
+    "description": "Frequency × time heatmap of a signal's energy. Use for audio, seismic, or any time-varying spectral data.",
     "intents": [],
     "status": "stable",
     "renderer": "svg",
@@ -5742,7 +5963,7 @@
     "label": "Sunburst",
     "aliases": [],
     "category": "Hierarchy",
-    "description": "Radial treemap: nested rings for hierarchical data. Use when two or three levels of hierarchy need to be read simultaneously (e.g., budget by department \u2192 team \u2192 line item).",
+    "description": "Radial treemap: nested rings for hierarchical data. Use when two or three levels of hierarchy need to be read simultaneously (e.g., budget by department → team → line item).",
     "intents": [],
     "status": "stable",
     "renderer": "svg",
@@ -6075,7 +6296,7 @@
     "label": "Treemap",
     "aliases": [],
     "category": "Hierarchy / Composition",
-    "description": "Nested rectangles where area encodes a numeric value. Use for part-of-whole data with a two-level hierarchy (e.g., market capitalisation by sector \u2192 company).",
+    "description": "Nested rectangles where area encodes a numeric value. Use for part-of-whole data with a two-level hierarchy (e.g., market capitalisation by sector → company).",
     "intents": [],
     "status": "stable",
     "renderer": "svg",
