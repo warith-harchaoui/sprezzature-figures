@@ -11,7 +11,9 @@ of any two continuous variables.
 
 This module runs the binning itself, axial hex-grid assignment via the
 standard flat-top axial-round algorithm, on raw scatter points, and
-paints true hexagon cells by hand. Every cell carries a native
+paints true hexagon cells by hand. The lattice is laid out in screen
+pixels rather than data units, so the cells tile exactly however the two
+axes are scaled against each other. Every cell carries a native
 ``<title>`` tooltip with its count.
 
 Author
@@ -97,6 +99,11 @@ def _make_demo_data() -> List[Dict[str, Any]]:
 DEMO_DATA: List[Dict[str, Any]] = _make_demo_data()
 
 _SQRT3 = math.sqrt(3.0)
+
+#: Hexagons across the plot width. A bin count is a *visual* setting -- it says
+#: how finely to chop the picture -- so it is counted across the canvas rather
+#: than per data unit.
+_GRID_COLUMNS = 22
 
 
 def _axial_round(q: float, r: float) -> Tuple[int, int]:
@@ -188,10 +195,6 @@ def build_svg(
     plot_h = height - plot_y - bottom_reserved
 
     data_span_x = (x_max - x_min) or 1.0
-    hex_size = data_span_x / 22.0
-
-    counts = _hex_bin(points, hex_size)
-    max_count = max(counts.values()) if counts else 1
 
     def x_for(v: float) -> float:
         return plot_x + (v - x_min) / data_span_x * plot_w
@@ -199,10 +202,19 @@ def build_svg(
     def y_for(v: float) -> float:
         return plot_y + plot_h - (v - y_min) / ((y_max - y_min) or 1.0) * plot_h
 
-    # Scale factor from data units to screen pixels (assume roughly
-    # isotropic mapping is close enough for a hex plot's visual purpose).
-    px_per_unit_x = plot_w / data_span_x
-    hex_size_px = hex_size * px_per_unit_x
+    # Bin on the *screen* lattice, not the data one.
+    #
+    # The two axes rarely map data to pixels at the same rate -- this demo
+    # window is 73 px per x-unit against 31 px per y-unit -- so a lattice laid
+    # out in data units and then painted with one pixel radius taken from x
+    # cannot tile: consecutive rows land at 42% of the spacing the drawn
+    # hexagon needs, and every cell swallows most of its neighbours above and
+    # below. Binning in pixels makes the tiling exact whatever the axes'
+    # aspect ratio, and it is what a bin count means to a reader anyway:
+    # cells across the picture, not cells per data unit.
+    hex_size_px = plot_w / (1.5 * _GRID_COLUMNS)
+    counts = _hex_bin([(x_for(px), y_for(py)) for px, py in points], hex_size_px)
+    max_count = max(counts.values()) if counts else 1
 
     parts: List[str] = []
     parts.append(svg_open(width, height, "hex-title", "hex-desc", font_family=chrome_stack_for_theme(theme)))
@@ -260,14 +272,23 @@ def build_svg(
     # _svg.foreground_tip_css's docstring for the full pattern.
     tip_bubbles: List[str] = []
     for i, ((q, r), count) in enumerate(counts.items()):
-        hx, hy = _hex_center(q, r, hex_size)
-        cx, cy = x_for(x_min + hx), y_for(y_min + hy)
-        corners = _hex_corners(cx, cy, hex_size_px * 1.02)
+        # The lattice is already in pixels, so a cell centre needs no further
+        # mapping -- and the hexagon is drawn at exactly the radius it was
+        # binned at, which is what makes neighbours share edges instead of
+        # covering each other.
+        cx, cy = _hex_center(q, r, hex_size_px)
+        corners = _hex_corners(cx, cy, hex_size_px)
         d = "M " + " L ".join(f"{px:.1f},{py:.1f}" for px, py in corners) + " Z"
         t = count / max_count
+        fill = _ramp_hex(t, theme)
         tip = f"{count} point{'s' if count != 1 else ''} in this cell"
+        # Abutting polygons antialias against the background along their shared
+        # edge and leave a pale seam. A hairline stroke in the cell's own
+        # colour fills it, where the old trick -- inflating every hexagon 2% --
+        # closed the seam by making the cells overlap.
         parts.append(
-            f'<path id="hex-{i}" class="hex hit" tabindex="0" d="{d}" fill="{_ramp_hex(t, theme)}">'
+            f'<path id="hex-{i}" class="hex hit" tabindex="0" d="{d}" fill="{fill}" '
+            f'stroke="{fill}" stroke-width="0.75">'
             f'<title>{xml_escape(tip)}</title></path>'
         )
         tip_bubbles.append(
