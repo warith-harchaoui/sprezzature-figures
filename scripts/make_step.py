@@ -41,8 +41,8 @@ DEMO_DATA: List[Dict[str, Any]] = [
 
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
-    title: str = "Cumulative State Changes",
-    subtitle: str = "Step-after interpolation: the value holds until it changes",
+    title: str = "The backlog never came back down to where it started",
+    subtitle: str = "Open incidents at end of day — a count holds until something happens to it",
     width: int = 745,
     height: int = 420,
     mode: str = "self-contained",
@@ -200,8 +200,8 @@ def make_step(
     data: Optional[List[Dict[str, Any]]] = None,
     *,
     out: Optional[Path | str] = None,
-    title: str = "Cumulative State Changes",
-    subtitle: str = "Step-after interpolation: the value holds until it changes",
+    title: str = "The backlog never came back down to where it started",
+    subtitle: str = "Open incidents at end of day — a count holds until something happens to it",
     width: int = 745,
     height: int = 420,
     mode: str = "self-contained",

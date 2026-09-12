@@ -68,8 +68,8 @@ def _ols_fit(xs: List[float], ys: List[float]) -> Dict[str, float]:
 
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
-    title: str = "A Clear Positive Trend",
-    subtitle: str = "Linear fit with 95% confidence band",
+    title: str = "One variable explains 85 % of the variation",
+    subtitle: str = "Linear fit with 95 % confidence band · slope 1.24, r² = 0.85",
     width: int = 745,
     height: int = 480,
     mode: str = "self-contained",
@@ -174,7 +174,7 @@ def build_svg(
         )
     parts.append(
         f'<text x="18" y="{plot_y + plot_h / 2:.1f}" font-size="13" fill="{INK}" '
-        f'text-anchor="middle" transform="rotate(-90 18 {plot_y + plot_h / 2:.1f})">y</text>'
+        f'text-anchor="middle" transform="rotate(-90 18 {plot_y + plot_h / 2:.1f})">Sales (thousands of EUR)</text>'
     )
 
     # ---- confidence band ----
@@ -251,7 +251,7 @@ def build_svg(
         )
     parts.append(
         f'<text x="{plot_x + plot_w / 2:.1f}" y="{axis_y + 42:.1f}" font-size="13" '
-        f'fill="{INK}" text-anchor="middle">x</text>'
+        f'fill="{INK}" text-anchor="middle">Advertising spend (thousands of EUR)</text>'
     )
 
     parts.append(fullscreen_control(width, height, mode))
@@ -263,8 +263,8 @@ def make_regression_ci_band(
     data: Optional[List[Dict[str, Any]]] = None,
     *,
     out: Optional[Path | str] = None,
-    title: str = "A Clear Positive Trend",
-    subtitle: str = "Linear fit with 95% confidence band",
+    title: str = "One variable explains 85 % of the variation",
+    subtitle: str = "Linear fit with 95 % confidence band · slope 1.24, r² = 0.85",
     width: int = 745,
     height: int = 480,
     mode: str = "self-contained",

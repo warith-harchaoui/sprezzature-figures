@@ -42,10 +42,10 @@ from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 # ``list[dict[str, Any]]`` shape (``name`` + ``seconds``).
 # ------------------------------------------------------------------
 DEMO_DATA: List[Dict[str, Any]] = [
-    {"name": "Alice Nguyen", "seconds": 984},   # 16:24 · 41 %
-    {"name": "Marc Dubois", "seconds": 648},     # 10:48 · 27 %
-    {"name": "Sofia Rossi", "seconds": 432},     # 07:12 · 18 %
-    {"name": "Karim Haddad", "seconds": 336},    # 05:36 · 14 %
+    {"name": "Alice NGUYEN", "seconds": 984},   # 16:24 · 41 %
+    {"name": "Marc DUBOIS", "seconds": 648},     # 10:48 · 27 %
+    {"name": "Sofia ROSSI", "seconds": 432},     # 07:12 · 18 %
+    {"name": "Karim HADDAD", "seconds": 336},    # 05:36 · 14 %
 ]
 
 def _slice_colors(accessibility: str = "universal", n: int = 4, theme: str = "corporate") -> List[str]:
@@ -188,13 +188,13 @@ def build_svg(
         f"({round(100 * int(s['seconds']) / total)} %)"
         for s in speakers
     )
-    a11y_title = "Qui a parlé, et combien de temps"
+    a11y_title = "Who spoke, and for how long"
     a11y_desc = (
         "Anneau (donut) du temps de parole par intervenant sur une table "
-        "ronde de 40 minutes. Chaque part est un intervenant, étiquetée à "
-        "l'extérieur de l'anneau avec son nom, sa durée (mm:ss) et sa part "
+        "40-minute round table. Each slice is one participant, labelled "
+        "outside the ring with a name, a duration (mm:ss) and a share of the "
         f"du total en pourcentage : {ranked}. Le centre affiche le temps "
-        "total, 40:00. Données illustratives."
+        "total, 40:00. Illustrative data."
     )
 
     parts: List[str] = [
@@ -206,9 +206,9 @@ def build_svg(
         f'<rect width="{W}" height="{H}" fill="#FFFFFF"/>',
         # Title block.
         f'<text x="60" y="66" font-size="30" font-weight="700" fill="{INK}">'
-        f"Qui a parlé, et combien de temps</text>",
+        f"Who spoke, and for how long</text>",
         f'<text x="60" y="98" font-size="18" fill="{SECONDARY}">'
-        f"Temps de parole par intervenant · table ronde de 40 min</text>",
+        f"Speaking time per participant · a 40-minute round table</text>",
     ]
 
     # OS-adaptive overrides (additive, all inside @media so the default render
@@ -300,7 +300,7 @@ def build_svg(
     )
     parts.append(
         f'<text x="{CX}" y="{CY + 30}" font-size="19" fill="{SECONDARY}" '
-        f'text-anchor="middle">temps total</text>'
+        f'text-anchor="middle">total time</text>'
     )
     parts.append(fullscreen_control(W, H, mode))
     parts.append("</svg>")
