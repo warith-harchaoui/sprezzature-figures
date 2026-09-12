@@ -44,15 +44,15 @@ def _make_demo_data() -> List[Dict[str, Any]]:
     rng = random.Random(43)
     rows: List[Dict[str, Any]] = []
     for _ in range(70):
-        rows.append({"g": "A", "y": round(rng.gauss(50.0, 6.0), 2)})
+        rows.append({"g": "National carrier", "y": round(rng.gauss(50.0, 6.0), 2)})
     for _ in range(70):
         # Widest spread, and a touch bimodal.
         base = rng.gauss(50.0, 13.0)
         if rng.random() < 0.35:
             base += rng.choice([-14.0, 14.0])
-        rows.append({"g": "B", "y": round(base, 2)})
+        rows.append({"g": "Marketplace couriers", "y": round(base, 2)})
     for _ in range(70):
-        rows.append({"g": "C", "y": round(rng.gauss(55.0, 4.5), 2)})
+        rows.append({"g": "Own fleet", "y": round(rng.gauss(55.0, 4.5), 2)})
     return rows
 
 
@@ -80,8 +80,8 @@ def _group_colors(
 
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
-    title: str = "Group B Has the Widest Spread",
-    subtitle: str = "Distribution shape by group (mirrored kernel density)",
+    title: str = "Same delivery time on average, four times the variability",
+    subtitle: str = "Minutes from dispatch to doorstep — the width is how often it goes wrong",
     y_axis_title: str = "Value",
     x_axis_title: str = "Group",
     width: int = 620,
@@ -252,8 +252,8 @@ def make_violin(
     data: Optional[List[Dict[str, Any]]] = None,
     *,
     out: Optional[Path | str] = None,
-    title: str = "Group B Has the Widest Spread",
-    subtitle: str = "Distribution shape by group (mirrored kernel density)",
+    title: str = "Same delivery time on average, four times the variability",
+    subtitle: str = "Minutes from dispatch to doorstep — the width is how often it goes wrong",
     y_axis_title: str = "Value",
     x_axis_title: str = "Group",
     width: int = 620,

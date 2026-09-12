@@ -1,5 +1,5 @@
 """
-make_interruption-matrix — a directed "Qui coupe qui ?" interruption heatmap.
+make_interruption-matrix — a directed "who talks over whom" interruption heatmap.
 
 Turns a set of directed interruption counts (speaker B cut speaker A, N times)
 into an asymmetric speaker×speaker matrix: each **column** is an interrupter
@@ -37,18 +37,18 @@ from _svg import foreground_tip_css, tooltip_bubble, xml_escape
 from sprezzature_figures.fonts import chrome_stack_for_theme
 
 # ------------------------------------------------------------------
-#  — the "No Priors" episode with Andrej Karpathy
-# (host duo Sarah Guo + Elad Gil). One row per directed pair: the
+#  — the "No Priors" episode with Andrej KARPATHY
+# (host duo Sarah GUO + Elad GIL). One row per directed pair: the
 # interrupter cut the interrupted `count` times. The union of names
 # is the speaker set; the matrix is built from these pairs.
 # ------------------------------------------------------------------
 DEMO_DATA: List[Dict[str, Any]] = [
-    {"interrupter": "Sarah Guo", "interrupted": "Andrej Karpathy", "count": 20},
-    {"interrupter": "Andrej Karpathy", "interrupted": "Sarah Guo", "count": 13},
-    {"interrupter": "Elad Gil", "interrupted": "Andrej Karpathy", "count": 10},
-    {"interrupter": "Andrej Karpathy", "interrupted": "Elad Gil", "count": 8},
-    {"interrupter": "Sarah Guo", "interrupted": "Elad Gil", "count": 2},
-    {"interrupter": "Elad Gil", "interrupted": "Sarah Guo", "count": 2},
+    {"interrupter": "Sarah GUO", "interrupted": "Andrej KARPATHY", "count": 20},
+    {"interrupter": "Andrej KARPATHY", "interrupted": "Sarah GUO", "count": 13},
+    {"interrupter": "Elad GIL", "interrupted": "Andrej KARPATHY", "count": 10},
+    {"interrupter": "Andrej KARPATHY", "interrupted": "Elad GIL", "count": 8},
+    {"interrupter": "Sarah GUO", "interrupted": "Elad GIL", "count": 2},
+    {"interrupter": "Elad GIL", "interrupted": "Sarah GUO", "count": 2},
 ]
 
 HAIRLINE = "#ECECEC"
@@ -65,8 +65,8 @@ GUTTER = 156   # room for the right-aligned row names + colour chip
 TOP = 236      # room for title, subtitle and the rotated column names
 MARGIN = 48
 PAD_B = 86     # bottom band for the Σ row + the one-line "bilan"
-SUBTITLE = "Colonne = coupe la parole · ligne = se fait couper · case = nombre de coupures"
-TITLE = "Qui coupe qui ?"
+SUBTITLE = "Column interrupts · row gets interrupted · cell counts the interruptions"
+TITLE = "Who talks over whom"
 
 
 def _text_w(text: str, size: float) -> float:
@@ -199,8 +199,8 @@ def _hover_script() -> str:
 
 def build_svg(
     data: List[Dict[str, Any]] | None = None,
-    row_total_label: str = "Σ subies",
-    col_total_label: str = "Σ commises",
+    row_total_label: str = "Σ taken",
+    col_total_label: str = "Σ made",
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -215,10 +215,10 @@ def build_svg(
         of the names; the matrix and its margins are derived by :func:`_aggregate`.
     row_total_label : str
         Header of the row-totals column (interruptions each speaker suffered).
-        Defaults to ``"Σ subies"`` (was hardcoded, no override).
+        Defaults to ``"Σ taken"`` (was hardcoded, no override).
     col_total_label : str
         Row label of the column-totals row (interruptions each speaker made).
-        Defaults to ``"Σ commises"`` (was hardcoded, no override).
+        Defaults to ``"Σ made"`` (was hardcoded, no override).
     mode : str, optional
         Interactivity mode forwarded to :func:`_interactive.fullscreen_control`
         and gating the crosshair-hover script (``"self-contained"`` default,
@@ -266,18 +266,18 @@ def build_svg(
     top_target = max(order, key=lambda s: got[s])
     hot = max(((a, b, m[a][b]) for a in order for b in order if a != b), key=lambda t: t[2])
     a11y_desc = (
-        f"Matrice orientée des interruptions entre {n} intervenants. Chaque "
+        f"Directed interruption matrix across {n} speakers. Each "
         "colonne est un intervenant qui coupe la parole, chaque ligne un "
-        "intervenant qui se fait couper ; une case indique combien de fois la "
-        "personne en colonne a coupé la personne en ligne, teintée dans la "
-        "couleur de l'interrupteur avec une opacité proportionnelle au nombre. "
+        "speaker being interrupted; a cell gives how many times the "
+        "person in a column interrupted the person in that row; the cell is tinted in the "
+        "interrupter's colour, with opacity proportional to the count. "
         "La diagonale est vide. La colonne de droite totalise les interruptions "
-        "subies par ligne, la ligne du bas les interruptions commises par "
-        f"colonne. {xml_escape(top_cutter)} coupe le plus ({made[top_cutter]} "
-        f"fois), {xml_escape(top_target)} se fait couper le plus "
-        f"({got[top_target]} fois) ; l'échange le plus fréquent est "
+        "taken per row, the bottom row the interruptions made per "
+        f"column. {xml_escape(top_cutter)} interrupts most ({made[top_cutter]} "
+        f"times), {xml_escape(top_target)} is interrupted most "
+        f"({got[top_target]} times); the most frequent exchange is "
         f"{xml_escape(hot[1])} coupant {xml_escape(hot[0])} {hot[2]} fois. "
-        "Données illustratives."
+        "Illustrative data."
     )
 
     p: List[str] = [
@@ -384,7 +384,7 @@ def build_svg(
             bubble_lines = [f"{b} coupe {a}"]
             bubble_lines.append(f"{v} fois" if v else "jamais (0 fois)")
             if v:
-                bubble_lines.append(f"{norm * 100:.0f}% de l'échange le plus intense")
+                bubble_lines.append(f"{norm * 100:.0f}% of the busiest exchange")
             tip_bubbles.append(
                 tooltip_bubble(
                     x + CELL / 2,
@@ -431,9 +431,9 @@ def build_svg(
     p.append(
         f'<text x="{w / 2:.1f}" y="{by:.1f}" text-anchor="middle" font-size="15" fill="{SECONDARY}">'
         f'<tspan font-weight="700" fill="{color_of[top_cutter]}">{xml_escape(top_cutter)}</tspan>'
-        f" coupe le plus ({made[top_cutter]}) · "
+        f" interrupts most ({made[top_cutter]}) · "
         f'<tspan font-weight="700" fill="{color_of[top_target]}">{xml_escape(top_target)}</tspan>'
-        f" se fait le plus couper ({got[top_target]})</text>"
+        f" is interrupted most ({got[top_target]})</text>"
     )
 
     if mode == "self-contained":
@@ -449,8 +449,8 @@ def make_interruption_matrix(
     *,
     out: "Path | str | None" = None,
     title: str = "",
-    row_total_label: str = "Σ subies",
-    col_total_label: str = "Σ commises",
+    row_total_label: str = "Σ taken",
+    col_total_label: str = "Σ made",
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
