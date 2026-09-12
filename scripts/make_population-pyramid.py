@@ -14,7 +14,7 @@ native ``<title>`` tooltip with its absolute share.
 
 Author
 ------
-`Warith Harchaoui, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
+`Warith HARCHAOUI, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
 """
 
 from __future__ import annotations
@@ -51,7 +51,7 @@ def _sex_colors(accessibility: str = "universal", theme: str = "corporate") -> D
 
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
-    title: str = "Population by Age and Sex",
+    title: str = "Above 75, women outnumber men three to two",
     subtitle: str = "Share of total population (%), by age band",
     width: int = 620,
     height: int = 480,
@@ -220,7 +220,7 @@ def make_population_pyramid(
     data: Optional[List[Dict[str, Any]]] = None,
     *,
     out: Optional[Path | str] = None,
-    title: str = "Population by Age and Sex",
+    title: str = "Above 75, women outnumber men three to two",
     subtitle: str = "Share of total population (%), by age band",
     width: int = 620,
     height: int = 480,

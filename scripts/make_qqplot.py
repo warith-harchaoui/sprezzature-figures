@@ -17,7 +17,7 @@ carries a native ``<title>`` tooltip.
 
 Author
 ------
-`Warith Harchaoui, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
+`Warith HARCHAOUI, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
 """
 
 from __future__ import annotations
@@ -86,8 +86,8 @@ DEMO_DATA: List[Dict[str, Any]] = _make_demo_data()
 
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
-    title: str = "Normal Q-Q Plot",
-    subtitle: str = "Sorted sample vs. theoretical normal quantiles",
+    title: str = "The sample is normal enough to sit on the line",
+    subtitle: str = "Sorted sample against theoretical normal quantiles",
     y_axis_title: str = "Sample quantile",
     x_axis_title: str = "Theoretical quantile",
     width: int = 520,
@@ -244,8 +244,8 @@ def make_qqplot(
     data: Optional[List[Dict[str, Any]]] = None,
     *,
     out: Optional[Path | str] = None,
-    title: str = "Normal Q-Q Plot",
-    subtitle: str = "Sorted sample vs. theoretical normal quantiles",
+    title: str = "The sample is normal enough to sit on the line",
+    subtitle: str = "Sorted sample against theoretical normal quantiles",
     y_axis_title: str = "Sample quantile",
     x_axis_title: str = "Theoretical quantile",
     width: int = 520,

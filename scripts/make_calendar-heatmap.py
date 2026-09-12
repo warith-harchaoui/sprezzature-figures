@@ -15,7 +15,7 @@ cell carries a native ``<title>`` tooltip with its exact count.
 
 Author
 ------
-`Warith Harchaoui, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
+`Warith HARCHAOUI, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
 """
 
 from __future__ import annotations
@@ -83,7 +83,7 @@ DEMO_DATA: List[Dict[str, Any]] = _make_demo_data()
 
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
-    title: str = "Daily Activity",
+    title: str = "Weekends run at a third of the weekday rate",
     subtitle: str = "Events per day over 18 weeks",
     width: int = 620,
     height: int = 300,
@@ -245,7 +245,7 @@ def make_calendar_heatmap(
     data: Optional[List[Dict[str, Any]]] = None,
     *,
     out: Optional[Path | str] = None,
-    title: str = "Daily Activity",
+    title: str = "Weekends run at a third of the weekday rate",
     subtitle: str = "Events per day over 18 weeks",
     width: int = 620,
     height: int = 300,

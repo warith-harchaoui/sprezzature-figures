@@ -12,7 +12,7 @@ per the Sprezzature Corner Policy.
 
 Author
 ------
-`Warith Harchaoui, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
+`Warith HARCHAOUI, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
 """
 
 from __future__ import annotations
@@ -46,7 +46,7 @@ DEMO_DATA: List[Dict[str, Any]] = [
 # -- they render exactly as the caller's data/columns give them.
 _STRINGS: Dict[str, Dict[str, str]] = {
     "en": {
-        "title": "Revenue by Region",
+        "title": "The North brings in nearly four times what the West does",
         "subtitle": "Quarterly figures",
         "axis_value": "Value",
         "axis_category": "Region",
@@ -55,7 +55,7 @@ _STRINGS: Dict[str, Dict[str, str]] = {
         "tooltip_template": "{region}: {value:.0f} ({share:.1f}% of total)",
     },
     "fr": {
-        "title": "Chiffre d'affaires par région",
+        "title": "Le Nord rapporte près de quatre fois plus que l'Ouest",
         "subtitle": "Chiffres trimestriels",
         "axis_value": "Valeur",
         "axis_category": "Région",

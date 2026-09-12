@@ -7,7 +7,7 @@ this Click twin is available with the ``[cli]`` extra.
 
 Author
 ------
-Warith Harchaoui <warith.harchaoui@gmail.com>
+Warith HARCHAOUI <warith.harchaoui@gmail.com>
 """
 
 from __future__ import annotations

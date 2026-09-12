@@ -15,7 +15,7 @@ participants drop out at each step.
 
 Author
 ------
-`Warith Harchaoui, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
+`Warith HARCHAOUI, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
 """
 
 from __future__ import annotations
@@ -79,8 +79,8 @@ DEMO_DATA: List[Dict[str, Any]] = [
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
     *,
-    title: str = "Product-Led Growth Funnel — Q3 2024",
-    subtitle: str = "Count of users reaching each conversion stage",
+    title: str = "Seven visits in a thousand end as a paying customer",
+    subtitle: str = "Count of users reaching each stage — the very first fall is the steepest",
     theme: str = "corporate",
 ) -> str:
     """Render the funnel chart as an SVG string.
@@ -245,8 +245,8 @@ def make_funnel(
     data: List[Dict[str, Any]] | None = None,
     *,
     out: Path | str | None = None,
-    title: str = "Product-Led Growth Funnel — Q3 2024",
-    subtitle: str = "Count of users reaching each conversion stage",
+    title: str = "Seven visits in a thousand end as a paying customer",
+    subtitle: str = "Count of users reaching each stage — the very first fall is the steepest",
     width: int = WIDTH,
     height: int = HEIGHT,
     theme: str = "corporate",

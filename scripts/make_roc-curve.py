@@ -20,7 +20,7 @@ solid ring of overlapping hit targets.
 
 Author
 ------
-`Warith Harchaoui, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
+`Warith HARCHAOUI, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
 """
 
 from __future__ import annotations
@@ -134,8 +134,10 @@ def build_svg(
     mono_family = mono_stack_for_theme(theme)
     rows = data if data else DEMO_DATA
     points, point_thresholds, auc = _roc_curve(rows)
-    title = f"ROC Curve — AUC {auc:.2f}"
-    subtitle = "True-positive rate vs. false-positive rate across all thresholds"
+    # AUC *is* this probability, which is the one reading of the number a
+    # reader can act on; "AUC 0.88" alone means nothing without it.
+    title = f"Ranked correctly {auc * 100:.0f} % of the time"
+    subtitle = f"AUC {auc:.2f} · true-positive against false-positive rate"
 
     plot_x, plot_y = 70.0, 118.0
     right_margin, bottom_reserved = 30.0, 60.0

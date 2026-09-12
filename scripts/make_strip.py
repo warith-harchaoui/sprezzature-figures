@@ -16,7 +16,7 @@ across renders) and paints every dot by hand. Every dot carries a native
 
 Author
 ------
-`Warith Harchaoui, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
+`Warith HARCHAOUI, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
 """
 
 from __future__ import annotations
@@ -59,7 +59,7 @@ def _group_colors(
 
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
-    title: str = "Response by Dose",
+    title: str = "Response climbs with dose — but the groups still overlap",
     subtitle: str = "Each dot is one observation, jittered within its group",
     y_axis_title: str = "Response",
     x_axis_title: str = "Group",
@@ -224,7 +224,7 @@ def make_strip(
     data: Optional[List[Dict[str, Any]]] = None,
     *,
     out: Optional[Path | str] = None,
-    title: str = "Response by Dose",
+    title: str = "Response climbs with dose — but the groups still overlap",
     subtitle: str = "Each dot is one observation, jittered within its group",
     y_axis_title: str = "Response",
     x_axis_title: str = "Group",

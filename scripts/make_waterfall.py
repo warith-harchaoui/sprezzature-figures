@@ -16,7 +16,7 @@ without a legend.
 
 Author
 ------
-`Warith Harchaoui, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
+`Warith HARCHAOUI, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
 """
 
 from __future__ import annotations
@@ -97,7 +97,7 @@ def _y_axis_ticks(y_min: float, y_max: float, n: int = 6) -> List[float]:
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
     *,
-    title: str = "FY-2024 Operating Income Bridge",
+    title: str = "Operating income rose 28 %, with R&D the biggest single drag",
     subtitle: str = "Millions of EUR, FY-2023 → FY-2024",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -344,7 +344,7 @@ def make_waterfall(
     data: List[Dict[str, Any]] | None = None,
     *,
     out: Path | str | None = None,
-    title: str = "FY-2024 Operating Income Bridge",
+    title: str = "Operating income rose 28 %, with R&D the biggest single drag",
     subtitle: str = "Millions of EUR, FY-2023 → FY-2024",
     width: int = WIDTH,
     height: int = HEIGHT,

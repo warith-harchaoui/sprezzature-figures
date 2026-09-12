@@ -12,7 +12,7 @@ native ``<title>`` tooltip with its exact reading.
 
 Author
 ------
-`Warith Harchaoui, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
+`Warith HARCHAOUI, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
 """
 
 from __future__ import annotations
@@ -64,7 +64,7 @@ def _segment_colors(
 
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
-    title: str = "Horsepower vs. Fuel Economy",
+    title: str = "Premium cars make 2.5× the power on half the fuel economy",
     subtitle: str = "Synthetic sample, sized by weight, colored by segment",
     width: int = 845,
     height: int = 519,
@@ -318,7 +318,7 @@ def make_scatter(
     data: Optional[List[Dict[str, Any]]] = None,
     *,
     out: Optional[Path | str] = None,
-    title: str = "Horsepower vs. Fuel Economy",
+    title: str = "Premium cars make 2.5× the power on half the fuel economy",
     subtitle: str = "Synthetic sample, sized by weight, colored by segment",
     width: int = 845,
     height: int = 519,

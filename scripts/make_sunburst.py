@@ -20,7 +20,7 @@ exact value.
 
 Author
 ------
-`Warith Harchaoui, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
+`Warith HARCHAOUI, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
 """
 
 from __future__ import annotations
@@ -49,7 +49,7 @@ REGIONS = ["Americas", "Asia Pacific", "Europe", "Middle East & Africa"]
 # caller's data uses.
 _STRINGS: Dict[str, Dict[str, str]] = {
     "en": {
-        "title": "Global R&D Investment by Region and Country — 2023",
+        "title": "Asia Pacific outspends Europe two to one on R&D",
         "subtitle": "Total expenditure in billions of USD; arc length proportional to investment",
         "legend_header": "Region",
         "desc_template": (
@@ -58,7 +58,7 @@ _STRINGS: Dict[str, Dict[str, str]] = {
         ),
     },
     "fr": {
-        "title": "Investissement mondial en R&D par région et pays — 2023",
+        "title": "L'Asie-Pacifique dépense le double de l'Europe en R&D",
         "subtitle": "Dépense totale en milliards de dollars ; la longueur d'arc est proportionnelle à l'investissement",
         "legend_header": "Région",
         "desc_template": (

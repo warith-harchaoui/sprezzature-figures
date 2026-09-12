@@ -15,7 +15,7 @@ This module paints both layers by hand. Every candle carries a native
 
 Author
 ------
-`Warith Harchaoui, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
+`Warith HARCHAOUI, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
 """
 
 from __future__ import annotations
@@ -60,7 +60,7 @@ DEMO_DATA: List[Dict[str, Any]] = _make_demo_data()
 
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
-    title: str = "Daily Price (Open, High, Low, Close)",
+    title: str = "Up 11 % in five days, then down 20 % over the rest of the month",
     subtitle: str = "20 trading days, synthetic series",
     width: int = 745,
     height: int = 480,
@@ -274,7 +274,7 @@ def make_candlestick(
     data: Optional[List[Dict[str, Any]]] = None,
     *,
     out: Optional[Path | str] = None,
-    title: str = "Daily Price (Open, High, Low, Close)",
+    title: str = "Up 11 % in five days, then down 20 % over the rest of the month",
     subtitle: str = "20 trading days, synthetic series",
     width: int = 745,
     height: int = 480,

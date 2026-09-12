@@ -13,7 +13,7 @@ its line while dimming the rest.
 
 Author
 ------
-`Warith Harchaoui, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
+`Warith HARCHAOUI, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
 """
 
 from __future__ import annotations
@@ -83,7 +83,7 @@ def _series_colors(
 
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
-    title: str = "Monthly Revenue by Product Line",
+    title: str = "Software grew fastest, but hardware is still the biggest line",
     subtitle: str = "Monthly figures, thousands of EUR",
     width: int = 845,
     height: int = 519,
@@ -354,7 +354,7 @@ def make_line(
     data: Optional[List[Dict[str, Any]]] = None,
     *,
     out: Optional[Path | str] = None,
-    title: str = "Monthly Revenue by Product Line",
+    title: str = "Software grew fastest, but hardware is still the biggest line",
     subtitle: str = "Monthly figures, thousands of EUR",
     width: int = 845,
     height: int = 519,

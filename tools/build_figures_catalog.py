@@ -10,7 +10,7 @@ every run, so regenerating from FIGURES.md never silently drops it.
 
 Author
 ------
-Warith Harchaoui <warith.harchaoui@gmail.com>
+Warith HARCHAOUI <warith.harchaoui@gmail.com>
 """
 
 from __future__ import annotations

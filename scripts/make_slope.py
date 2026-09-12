@@ -14,7 +14,7 @@ carries a native ``<title>`` tooltip with both values and the change.
 
 Author
 ------
-`Warith Harchaoui, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
+`Warith HARCHAOUI, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
 """
 
 from __future__ import annotations
@@ -34,12 +34,17 @@ from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 ITEMS = ["Alpha", "Beta", "Gamma", "Delta", "Epsilon"]
 PERIODS = ["2023", "2024"]
 
+#: Support satisfaction by channel. A slope chart earns its keep on a
+#: *crossing*, and these numbers have one: live chat starts well below phone
+#: and ends well above it. Named channels rather than Alpha/Beta/Gamma
+#: because a reader cannot tell whether a Greek letter crossing another
+#: matters, and the whole point of the chart is that this crossing does.
 DEMO_DATA: List[Dict[str, Any]] = [
-    {"item": "Alpha", "period": "2023", "v": 42}, {"item": "Alpha", "period": "2024", "v": 55},
-    {"item": "Beta", "period": "2023", "v": 60}, {"item": "Beta", "period": "2024", "v": 48},
-    {"item": "Gamma", "period": "2023", "v": 35}, {"item": "Gamma", "period": "2024", "v": 61},
-    {"item": "Delta", "period": "2023", "v": 51}, {"item": "Delta", "period": "2024", "v": 52},
-    {"item": "Epsilon", "period": "2023", "v": 28}, {"item": "Epsilon", "period": "2024", "v": 40},
+    {"item": "Live chat", "period": "2023", "v": 35}, {"item": "Live chat", "period": "2024", "v": 61},
+    {"item": "Phone", "period": "2023", "v": 60}, {"item": "Phone", "period": "2024", "v": 48},
+    {"item": "Email", "period": "2023", "v": 42}, {"item": "Email", "period": "2024", "v": 55},
+    {"item": "Help centre", "period": "2023", "v": 51}, {"item": "Help centre", "period": "2024", "v": 52},
+    {"item": "Community forum", "period": "2023", "v": 28}, {"item": "Community forum", "period": "2024", "v": 40},
 ]
 
 
@@ -56,8 +61,8 @@ def _item_colors(
 
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
-    title: str = "Score Change 2023 to 2024",
-    subtitle: str = "One line per item, connecting its value at each period",
+    title: str = "Live chat overtook phone in one year",
+    subtitle: str = "Customers satisfied by support channel, % · phone was the only one to fall",
     width: int = 480,
     height: int = 520,
     mode: str = "self-contained",
@@ -206,8 +211,8 @@ def make_slope(
     data: Optional[List[Dict[str, Any]]] = None,
     *,
     out: Optional[Path | str] = None,
-    title: str = "Score Change 2023 to 2024",
-    subtitle: str = "One line per item, connecting its value at each period",
+    title: str = "Live chat overtook phone in one year",
+    subtitle: str = "Customers satisfied by support channel, % · phone was the only one to fall",
     width: int = 480,
     height: int = 520,
     mode: str = "self-contained",

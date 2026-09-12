@@ -389,4 +389,4 @@ BSD 3-Clause. See [LICENSE](https://github.com/warith-harchaoui/sprezzature-figu
 
 ## Author
 
-Warith Harchaoui · warith.harchaoui@gmail.com · [harchaoui.org/warith/sprezzature](https://sprezzature.ai/)
+Warith HARCHAOUI · warith.harchaoui@gmail.com · [harchaoui.org/warith/sprezzature](https://sprezzature.ai/)

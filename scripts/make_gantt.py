@@ -13,7 +13,7 @@ This module paints each bar by hand. Every bar carries a native
 
 Author
 ------
-`Warith Harchaoui, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
+`Warith HARCHAOUI, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
 """
 
 from __future__ import annotations
@@ -94,8 +94,8 @@ def _team_colors(
 
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
-    title: str = "Project Schedule",
-    subtitle: str = "One bar per task, spanning its start and end day",
+    title: str = "Every task starts before the one before it has finished",
+    subtitle: str = "One bar per task, spanning its start and end day — 33 days end to end",
     width: int = 745,
     height: int = 420,
     mode: str = "self-contained",
@@ -254,8 +254,8 @@ def make_gantt(
     data: Optional[List[Dict[str, Any]]] = None,
     *,
     out: Optional[Path | str] = None,
-    title: str = "Project Schedule",
-    subtitle: str = "One bar per task, spanning its start and end day",
+    title: str = "Every task starts before the one before it has finished",
+    subtitle: str = "One bar per task, spanning its start and end day — 33 days end to end",
     width: int = 745,
     height: int = 420,
     mode: str = "self-contained",

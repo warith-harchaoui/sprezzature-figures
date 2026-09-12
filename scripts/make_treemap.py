@@ -15,7 +15,7 @@ a native ``<title>`` tooltip with its exact value.
 
 Author
 ------
-`Warith Harchaoui, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
+`Warith HARCHAOUI, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
 """
 
 from __future__ import annotations
@@ -52,7 +52,7 @@ CATEGORY_COLORS: Dict[str, str] = {
 # uses.
 _STRINGS: Dict[str, Dict[str, str]] = {
     "en": {
-        "title": "IT Cloud Spending by Service — FY 2024",
+        "title": "Infrastructure and applications take 55 % of the cloud bill",
         "subtitle": "Annual spend in thousands of EUR; area proportional to budget",
         "desc_template": (
             "Treemap of {n_parents} domains and {n_children} services. "
@@ -60,7 +60,7 @@ _STRINGS: Dict[str, Dict[str, str]] = {
         ),
     },
     "fr": {
-        "title": "Dépenses cloud IT par service — exercice 2024",
+        "title": "Infrastructure et applications absorbent 55 % de la facture cloud",
         "subtitle": "Dépense annuelle en milliers d'euros ; l'aire est proportionnelle au budget",
         "desc_template": (
             "Treemap de {n_parents} domaines et {n_children} services. "

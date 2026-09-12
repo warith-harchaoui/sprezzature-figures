@@ -16,7 +16,7 @@ Built by hand to match the other hero figures, with a native
 
 Author
 ------
-`Warith Harchaoui, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
+`Warith HARCHAOUI, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
 """
 
 from __future__ import annotations
@@ -171,11 +171,11 @@ def build_svg(
     # Title + subtitle.
     parts.append(
         f'<text x="40" y="56" font-size="26" font-weight="600" fill="{_INK}" '
-        f'letter-spacing="-0.3">Cars by class across four metrics</text>'
+        f'letter-spacing="-0.3">The classes separate on every measure but acceleration</text>'
     )
     parts.append(
         f'<text x="40" y="84" font-size="14" fill="{_SUBTLE}">'
-        f'Three classes traced over four measures · each line is one car</text>'
+        f'Three classes over four measures · no overlap in economy, power or weight</text>'
     )
 
     # Legend (top, under the subtitle).

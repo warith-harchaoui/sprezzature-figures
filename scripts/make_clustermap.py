@@ -18,7 +18,7 @@ each axis by hand -- no scipy. Every cell carries a native ``<title>`` tooltip.
 
 Author
 ------
-`Warith Harchaoui, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
+`Warith HARCHAOUI, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
 """
 
 from __future__ import annotations
@@ -154,7 +154,7 @@ def _dendrogram_positions(
 
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
-    title: str = "Clustered Expression Matrix",
+    title: str = "The samples fall into two blocks the clustering finds on its own",
     subtitle: str = "Rows and columns reordered by average-linkage hierarchical clustering",
     width: int = 620,
     height: int = 560,
@@ -354,7 +354,7 @@ def make_clustermap(
     data: Optional[List[Dict[str, Any]]] = None,
     *,
     out: Optional[Path | str] = None,
-    title: str = "Clustered Expression Matrix",
+    title: str = "The samples fall into two blocks the clustering finds on its own",
     subtitle: str = "Rows and columns reordered by average-linkage hierarchical clustering",
     width: int = 620,
     height: int = 560,

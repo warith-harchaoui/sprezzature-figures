@@ -13,7 +13,7 @@ hover rule lifts the hovered band's opacity while dimming the rest.
 
 Author
 ------
-`Warith Harchaoui, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
+`Warith HARCHAOUI, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
 """
 
 from __future__ import annotations
@@ -61,8 +61,8 @@ def _channel_colors(
 
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
-    title: str = "Website Traffic by Channel",
-    subtitle: str = "Monthly visits, thousands",
+    title: str = "Social went from the smallest channel to the second largest",
+    subtitle: str = "Monthly visits, thousands — total traffic more than doubled over the year",
     width: int = 845,
     height: int = 519,
     mode: str = "self-contained",
@@ -287,8 +287,8 @@ def make_area(
     data: Optional[List[Dict[str, Any]]] = None,
     *,
     out: Optional[Path | str] = None,
-    title: str = "Website Traffic by Channel",
-    subtitle: str = "Monthly visits, thousands",
+    title: str = "Social went from the smallest channel to the second largest",
+    subtitle: str = "Monthly visits, thousands — total traffic more than doubled over the year",
     width: int = 845,
     height: int = 519,
     mode: str = "self-contained",

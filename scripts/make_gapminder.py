@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-make_gapminder — build the animated Gapminder bubble chart (Hans Rosling homage).
+make_gapminder — build the animated Gapminder bubble chart (Hans ROSLING homage).
 
 Reads the **real** crunched dataset (``assets/data/tribute-hans-rosling-1950-2025.csv``: income,
 life expectancy and population per country, **one row per country per year,
@@ -17,7 +17,7 @@ bubble, and a big year counter ticks every year behind the cloud.
 
 Author
 ------
-`Warith Harchaoui, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
+`Warith HARCHAOUI, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
 """
 
 from __future__ import annotations
@@ -35,17 +35,17 @@ from sprezzature_figures.fonts import chrome_stack_for_theme
 
 # English interface strings, mirroring LABELS_FR so the builder is fully bilingual.
 LABELS_EN = {
-    "title_link": "Tribute to Hans Rosling",
+    "title_link": "Tribute to Hans ROSLING",
     "title_rest": " &#8212; Health and Wealth of Nations &#8212; 1950&#8211;2025",
     "subtitle": "Each bubble is a country with size for population and color for region",
     "x_axis": "GDP per capita ($, log scale) &#8594;",
     "y_axis": "Life expectancy (years) &#8594;",
     "legend_region": "REGION", "legend_population": "POPULATION",
-    "data_link": "Tribute to Hans Rosling Data",
-    "title_a11y": "Tribute to Hans Rosling — Health and Wealth of Nations",
+    "data_link": "Tribute to Hans ROSLING Data",
+    "title_a11y": "Tribute to Hans ROSLING — Health and Wealth of Nations",
     "pop_1b": "1 billion", "pop_250m": "250 million", "pop_50m": "50 million",
     "desc": (
-        "An animated bubble chart in homage to Hans Rosling, built from real data for all countries, "
+        "An animated bubble chart in homage to Hans ROSLING, built from real data for all countries, "
         "one frame per year from 1950 to 2025. Each bubble is a country: horizontal is GDP per capita "
         "(log scale), vertical is life expectancy, area is population, colour is world region. "
         "A year counter ticks year by year as the bubbles sweep up and to the right — Asia (red) moves "
