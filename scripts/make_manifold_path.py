@@ -377,6 +377,7 @@ def build_svg(
     )
     parts.append(
         f'<text x="{bx + 16:.1f}" y="{by + 4:.1f}" font-size="12.5" font-weight="600" '
+        f'paint-order="stroke" stroke="{BG}" stroke-width="3.5" stroke-linejoin="round" '
         f'fill="{best_hue}">global optimum {best[2]:.2f}</text>'
     )
 
@@ -395,7 +396,8 @@ def build_svg(
         )
     parts.append(
         f'<text x="{screen_path[-1][0] + 14:.1f}" y="{screen_path[-1][1] + 20:.1f}" '
-        f'font-size="12.5" font-weight="600" fill="{INK}">settles at {reached:.2f} '
+        f'font-size="12.5" font-weight="600" paint-order="stroke" stroke="{BG}" '
+        f'stroke-width="3.5" stroke-linejoin="round" fill="{INK}">settles at {reached:.2f} '
         f'({shortfall:.0f}% short)</text>'
     )
 
