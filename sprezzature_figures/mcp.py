@@ -79,25 +79,59 @@ else:
         mcp.mount()
 
 
-    def main() -> None:
+    def main(argv: "list[str] | None" = None) -> None:
         """
         Entry point for the ``sprezzature-figures-mcp`` console script.
 
-        Boots the FastAPI app (which now serves both the ``/…`` HTTP routes
-        and the MCP endpoint) with ``uvicorn`` in single-worker mode. Meant
-        for local / container usage; behind a real load balancer use
-        ``uvicorn`` / ``gunicorn`` directly.
+        Serves the FastAPI app — which carries both the HTTP routes and the
+        MCP endpoint — with ``uvicorn``, in single-worker mode. Meant for
+        local or container use; behind a real load balancer, run ``uvicorn``
+        or ``gunicorn`` directly.
+
+        Arguments are parsed before anything is bound, so ``--help`` answers
+        instead of starting a server and hanging.
+
+        Parameters
+        ----------
+        argv : list of str or None, optional
+            Arguments to parse. ``None`` reads ``sys.argv``.
         """
+        import argparse
         import os
+
+        parser = argparse.ArgumentParser(
+            prog="sprezzature-figures-mcp",
+            description=(
+                "Serve the sprezzature-figures MCP tools over HTTP. Every tool is a "
+                "route on the same FastAPI app, with the MCP endpoint "
+                "mounted beside them."
+            ),
+            formatter_class=argparse.RawDescriptionHelpFormatter,
+            epilog=(
+                "Defaults come from SPREZZATURE_FIGURES_HOST and "
+                "SPREZZATURE_FIGURES_PORT when those are set.\n"
+                "The host defaults to 127.0.0.1: pass --host 0.0.0.0 to "
+                "accept connections from outside this machine."
+            ),
+        )
+        parser.add_argument(
+            "--host",
+            default=os.environ.get("SPREZZATURE_FIGURES_HOST", "127.0.0.1"),
+            help="Interface to bind (default: %(default)s).",
+        )
+        parser.add_argument(
+            "--port",
+            type=int,
+            default=int(os.environ.get("SPREZZATURE_FIGURES_PORT", "8000")),
+            help="Port to bind (default: %(default)s).",
+        )
+        args = parser.parse_args(argv)
 
         import uvicorn
 
-        host = os.environ.get("SPREZZATURE_FIGURES_HOST", "0.0.0.0")
-        port = int(os.environ.get("SPREZZATURE_FIGURES_PORT", "8000"))
         # Single worker: the figure registry and generator-module cache
         # (sys.modules) are process-local state, so multiple workers would
-        # each pay the same import cost independently rather than sharing it.
-        uvicorn.run(app, host=host, port=port, workers=1)
+        uvicorn.run(app, host=args.host, port=args.port, workers=1)
 
 if __name__ == "__main__":  # pragma: no cover
     main()
