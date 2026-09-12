@@ -78,7 +78,7 @@ DEMO_DATA: List[Dict[str, Any]] = [
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
     title: str = "Weight moves with everything else",
-    subtitle: str = "Pairwise Pearson r · weight holds both extremes: −0.87 with mpg, +0.89 with disp",
+    subtitle: str = "Pairwise Pearson r · weight sits at both extremes",
     width: int = 460,
     height: int = 460,
     mode: str = "self-contained",
@@ -225,7 +225,7 @@ def make_corr_matrix(
     *,
     out: Optional[Path | str] = None,
     title: str = "Weight moves with everything else",
-    subtitle: str = "Pairwise Pearson r · weight holds both extremes: −0.87 with mpg, +0.89 with disp",
+    subtitle: str = "Pairwise Pearson r · weight sits at both extremes",
     width: int = 460,
     height: int = 460,
     mode: str = "self-contained",

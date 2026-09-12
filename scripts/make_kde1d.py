@@ -211,7 +211,7 @@ def build_svg(
         )
     parts.append(
         f'<text x="{plot_x + plot_w / 2:.1f}" y="{axis_y + 42:.1f}" font-size="13" '
-        f'fill="{INK}" text-anchor="middle">x</text>'
+        f'fill="{INK}" text-anchor="middle">Session length (minutes)</text>'
     )
 
     parts.append(fullscreen_control(width, height, mode))

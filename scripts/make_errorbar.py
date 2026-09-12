@@ -53,19 +53,19 @@ def _nice_step(span: float, target_ticks: int = 5) -> float:
     return nice_fraction * (10.0**exponent)
 
 DEMO_DATA: List[Dict[str, Any]] = [
-    {"g": "A", "mean": 40, "lo": 34, "hi": 46},
-    {"g": "B", "mean": 55, "lo": 47, "hi": 63},
-    {"g": "C", "mean": 48, "lo": 43, "hi": 53},
-    {"g": "D", "mean": 67, "lo": 57, "hi": 77},
+    {"g": "Control", "mean": 40, "lo": 34, "hi": 46},
+    {"g": "Email nudge", "mean": 55, "lo": 47, "hi": 63},
+    {"g": "In-app prompt", "mean": 48, "lo": 43, "hi": 53},
+    {"g": "Both", "mean": 67, "lo": 57, "hi": 77},
 ]
 
 
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
-    title: str = "D clearly beats C — but B and C could be the same",
-    subtitle: str = "Point estimate per group, capped bar spans the confidence interval",
-    y_axis_title: str = "Value",
-    x_axis_title: str = "Group",
+    title: str = "Two nudges cannot be told apart from one",
+    subtitle: str = "Activation rate by treatment, % · the bar spans the 95 % confidence interval",
+    y_axis_title: str = "Activation rate (%)",
+    x_axis_title: str = "Treatment",
     width: int = 620,
     height: int = 420,
     mode: str = "self-contained",
@@ -216,10 +216,10 @@ def make_errorbar(
     data: Optional[List[Dict[str, Any]]] = None,
     *,
     out: Optional[Path | str] = None,
-    title: str = "D clearly beats C — but B and C could be the same",
-    subtitle: str = "Point estimate per group, capped bar spans the confidence interval",
-    y_axis_title: str = "Value",
-    x_axis_title: str = "Group",
+    title: str = "Two nudges cannot be told apart from one",
+    subtitle: str = "Activation rate by treatment, % · the bar spans the 95 % confidence interval",
+    y_axis_title: str = "Activation rate (%)",
+    x_axis_title: str = "Treatment",
     width: int = 620,
     height: int = 420,
     mode: str = "self-contained",
