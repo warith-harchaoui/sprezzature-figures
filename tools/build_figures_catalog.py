@@ -31,6 +31,114 @@ _ROW_RE = re.compile(r"^\|\s*`([^`]+)`\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*([
 # make_<kind>(data, *, out, title) -> Path contract (§3.1 required_roles).
 # Every other figure defaults to no declared roles until it is adapted.
 HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
+    "ablation_matrix": {
+        "required_roles": [
+            {
+                "name": "components",
+                "label": "Components kept",
+                "accepted_types": ["categorical"],
+                "required": True,
+            },
+            {
+                "name": "metric",
+                "label": "Metric",
+                "accepted_types": ["categorical"],
+                "required": True,
+            },
+            {
+                "name": "value",
+                "label": "Value",
+                "accepted_types": ["numeric"],
+                "required": True,
+            },
+        ],
+        "optional_roles": [
+            {
+                "name": "error",
+                "label": "Half-width of the interval",
+                "accepted_types": ["numeric"],
+                "required": False,
+            },
+        ],
+    },
+    "diffusion_trajectory": {
+        "required_roles": [
+            {
+                "name": "step",
+                "label": "Diffusion step",
+                "accepted_types": ["numeric"],
+                "required": True,
+            },
+            {
+                "name": "point",
+                "label": "Point id",
+                "accepted_types": ["numeric"],
+                "required": True,
+            },
+            {
+                "name": "x",
+                "label": "X",
+                "accepted_types": ["numeric"],
+                "required": True,
+            },
+            {
+                "name": "y",
+                "label": "Y",
+                "accepted_types": ["numeric"],
+                "required": True,
+            },
+        ],
+        "optional_roles": [
+            {
+                "name": "value",
+                "label": "Colour value",
+                "accepted_types": ["numeric"],
+                "required": False,
+            },
+            {
+                "name": "sigma",
+                "label": "Noise level",
+                "accepted_types": ["numeric"],
+                "required": False,
+            },
+        ],
+    },
+    "manifold_path": {
+        "required_roles": [
+            {
+                "name": "series",
+                "label": "Series (surface or path)",
+                "accepted_types": ["categorical"],
+                "required": True,
+            },
+            {
+                "name": "x",
+                "label": "X",
+                "accepted_types": ["numeric"],
+                "required": True,
+            },
+            {
+                "name": "y",
+                "label": "Y",
+                "accepted_types": ["numeric"],
+                "required": True,
+            },
+            {
+                "name": "z",
+                "label": "Height",
+                "accepted_types": ["numeric"],
+                "required": True,
+            },
+        ],
+        "optional_roles": [
+            {
+                "name": "step",
+                "label": "Step along the path",
+                "accepted_types": ["numeric"],
+                "required": False,
+            },
+        ],
+    },
     "alluvial": {
         "required_roles": [
             {

@@ -4,14 +4,15 @@ Reproducible audit of every `scripts/make_*.py` generator against the
 `make_<kind>(data, *, out, title, ...) -> Path` contract the dispatcher
 expects. Regenerate with `python tools/audit_generators.py --render`.
 
-- **stable**: 124
+- **stable**: 127
 - **experimental**: 0
 - **legacy**: 0
 - **unavailable**: 0
-- **total**: 124
+- **total**: 127
 
 | kind | status | reachable | callable | demo_data | render | errors |
 |---|---|---|---|---|---|---|
+| `ablation_matrix` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `alluvial` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `andrews` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `arcdiagram` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
@@ -43,6 +44,7 @@ expects. Regenerate with `python tools/audit_generators.py --render`.
 | `dendrogram` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `dependency-wheel` | stable | **no** | yes | yes | passed | make_figure('dependency-wheel') cannot resolve to make_dependency-wheel.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
 | `difference-chart` | stable | **no** | yes | yes | passed | make_figure('difference-chart') cannot resolve to make_difference-chart.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
+| `diffusion_trajectory` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `donut` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `dotdensity` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `dotplot` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
@@ -77,6 +79,7 @@ expects. Regenerate with `python tools/audit_generators.py --render`.
 | `liquid-gauge` | stable | **no** | yes | yes | passed | make_figure('liquid-gauge') cannot resolve to make_liquid-gauge.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
 | `lollipop` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `manhattan` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `manifold_path` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `mosaic` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `network` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `org-chart` | stable | **no** | yes | yes | passed | make_figure('org-chart') cannot resolve to make_org-chart.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |

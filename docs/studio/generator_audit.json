@@ -1,11 +1,35 @@
 {
   "summary": {
-    "stable": 124,
+    "stable": 127,
     "experimental": 0,
     "legacy": 0,
     "unavailable": 0
   },
   "generators": [
+    {
+      "kind": "ablation_matrix",
+      "filename": "make_ablation_matrix.py",
+      "hyphenated_kind": false,
+      "dispatcher_reachable_by_kind": true,
+      "importable": true,
+      "import_error": null,
+      "expected_callable": "make_ablation_matrix",
+      "callable_exists": true,
+      "demo_data_exists": true,
+      "demo_data_len": 36,
+      "accepts_data": true,
+      "accepts_out": true,
+      "accepts_title": true,
+      "renderer": "svg",
+      "writes_hardcoded_path": true,
+      "hardcoded_dimensions": true,
+      "render_test": "passed",
+      "render_error": null,
+      "status": "stable",
+      "errors": [
+        "Default output path falls back to a shared assets/ directory"
+      ]
+    },
     {
       "kind": "alluvial",
       "filename": "make_alluvial.py",
@@ -757,6 +781,30 @@
       "status": "stable",
       "errors": [
         "make_figure('difference-chart') cannot resolve to make_difference-chart.py: hyphen/underscore normalisation looks for a different filename",
+        "Default output path falls back to a shared assets/ directory"
+      ]
+    },
+    {
+      "kind": "diffusion_trajectory",
+      "filename": "make_diffusion_trajectory.py",
+      "hyphenated_kind": false,
+      "dispatcher_reachable_by_kind": true,
+      "importable": true,
+      "import_error": null,
+      "expected_callable": "make_diffusion_trajectory",
+      "callable_exists": true,
+      "demo_data_exists": true,
+      "demo_data_len": 760,
+      "accepts_data": true,
+      "accepts_out": true,
+      "accepts_title": true,
+      "renderer": "svg",
+      "writes_hardcoded_path": true,
+      "hardcoded_dimensions": true,
+      "render_test": "passed",
+      "render_error": null,
+      "status": "stable",
+      "errors": [
         "Default output path falls back to a shared assets/ directory"
       ]
     },
@@ -1575,6 +1623,30 @@
       "renderer": "svg",
       "writes_hardcoded_path": true,
       "hardcoded_dimensions": false,
+      "render_test": "passed",
+      "render_error": null,
+      "status": "stable",
+      "errors": [
+        "Default output path falls back to a shared assets/ directory"
+      ]
+    },
+    {
+      "kind": "manifold_path",
+      "filename": "make_manifold_path.py",
+      "hyphenated_kind": false,
+      "dispatcher_reachable_by_kind": true,
+      "importable": true,
+      "import_error": null,
+      "expected_callable": "make_manifold_path",
+      "callable_exists": true,
+      "demo_data_exists": true,
+      "demo_data_len": 1200,
+      "accepts_data": true,
+      "accepts_out": true,
+      "accepts_title": true,
+      "renderer": "svg",
+      "writes_hardcoded_path": true,
+      "hardcoded_dimensions": true,
       "render_test": "passed",
       "render_error": null,
       "status": "stable",
