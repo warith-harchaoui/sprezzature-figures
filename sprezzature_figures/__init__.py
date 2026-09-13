@@ -12,9 +12,10 @@ Warith HARCHAOUI <warith.harchaoui@gmail.com>
 
 from __future__ import annotations
 
+from .darkmode import to_dark
 from .make_figure import get_figure_definition, list_kinds, make_figure, validate_figure_input
 
-__all__ = ["make_figure", "get_figure_definition", "list_kinds", "validate_figure_input"]
+__all__ = ["make_figure", "get_figure_definition", "list_kinds", "validate_figure_input", "to_dark"]
 
 __version__ = "2.0.0"
 __author__ = "Warith HARCHAOUI"
