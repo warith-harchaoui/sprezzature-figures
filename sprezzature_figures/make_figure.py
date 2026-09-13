@@ -270,6 +270,10 @@ def make_figure(kind: str, data: list[dict[str, Any]], **kwargs: Any) -> Path:
     **kwargs
         Forwarded to the underlying make function. Common options:
         ``out`` (output path), ``title`` (chart title), ``width``, ``height``.
+        ``dark`` (bool): render for a DARK canvas -- transparent background and
+        lightened chrome so the figure reads on a dark surface. Handled by
+        make_figure itself (SVG output), not passed to the generator; see
+        :mod:`sprezzature_figures.darkmode`.
 
     Returns
     -------
@@ -295,6 +299,10 @@ def make_figure(kind: str, data: list[dict[str, Any]], **kwargs: Any) -> Path:
     >>> path.exists()
     True
     """
+    # ``dark`` is a make_figure-level option, not a per-generator argument: pop
+    # it before the kwargs ever reach a figure script (which would reject it),
+    # and apply it to the rendered SVG at the end (see :mod:`.darkmode`).
+    dark = bool(kwargs.pop("dark", False))
     canonical = _resolve_kind(kind)
     if canonical is None:
         legacy_path = _legacy_filename_guess(kind)
@@ -315,7 +323,14 @@ def make_figure(kind: str, data: list[dict[str, Any]], **kwargs: Any) -> Path:
                 raise AttributeError(
                     f"Script {legacy_path.name} has no function named {fn_name!r}."
                 )
-            return Path(fn(data, **_filter_kwargs_for(fn, kwargs)))
+            legacy_out = Path(fn(data, **_filter_kwargs_for(fn, kwargs)))
+            if dark and legacy_out.suffix.lower() == ".svg":
+                from .darkmode import to_dark
+
+                legacy_out.write_text(
+                    to_dark(legacy_out.read_text(encoding="utf-8")), encoding="utf-8"
+                )
+            return legacy_out
         available = _list_kinds()
         raise ValueError(
             f"No script for kind={kind!r}. Available ({len(available)}): {', '.join(available)}"
@@ -360,6 +375,12 @@ def make_figure(kind: str, data: list[dict[str, Any]], **kwargs: Any) -> Path:
         raise RuntimeError(
             f"make_figure({canonical!r}) did not produce an output file at {result_path}"
         )
+    if dark and result_path.suffix.lower() == ".svg":
+        from .darkmode import to_dark
+
+        result_path.write_text(
+            to_dark(result_path.read_text(encoding="utf-8")), encoding="utf-8"
+        )
     return result_path
 
 
@@ -387,6 +408,11 @@ def main() -> None:
         help="Output file path. The extension picks the format: .svg, .png, .pdf, .jpg, or .html.",
     )
     parser.add_argument("--title", default="", help="Chart title.")
+    parser.add_argument(
+        "--dark",
+        action="store_true",
+        help="Render for a dark canvas: transparent background + lightened chrome (SVG output).",
+    )
     parser.add_argument(
         "--scale",
         type=float,
@@ -461,6 +487,8 @@ def main() -> None:
         os.environ["SPREZZATURE_RENDER_SCALE"] = repr(args.scale)
 
     kwargs: dict[str, Any] = {"title": args.title}
+    if args.dark:
+        kwargs["dark"] = True
     if args.out:
         kwargs["out"] = args.out
     if args.data:
