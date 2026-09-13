@@ -39,6 +39,12 @@ _RAMP: Tuple[Tuple[float, str], ...] = (
 )
 
 
+#: Shortest arrow, as a fraction of the longest. Magnitude reads by length,
+#: but a zero-magnitude node still has a direction worth showing, so the
+#: scale starts here rather than at nothing.
+_MIN_LEN_FRACTION = 0.30
+
+
 def _ramp_hex(t: float, theme: str = "corporate") -> str:
     """Sample the sequential ramp at position ``t`` in ``[0, 1]``.
 
@@ -124,9 +130,9 @@ def build_svg(
 
     plot_x, plot_y = 40.0, 118.0
     right_margin = 40.0
-    # 64px (not a plain 40px caption margin): the bottom row's arrowheads can
-    # extend a full tri_max past their own row centre (a vertex can rotate to
-    # point straight down), so a narrower margin let the bottom row's largest
+    # 64px (not a plain 40px caption margin): the bottom row's arrows can
+    # reach half their length past their own row centre (one can rotate to
+    # point straight down), so a narrower margin let the bottom row's longest
     # arrows overlap the magnitude legend directly beneath the grid (found
     # via the Ralph Eyeball Loop).
     bottom_reserved = 64.0
@@ -134,7 +140,9 @@ def build_svg(
     plot_h = height - plot_y - bottom_reserved
     n_cols = len(set(xs))
     cell_w = plot_w / max(1, n_cols - 1) if n_cols > 1 else plot_w
-    tri_max = min(cell_w, plot_h / max(1, len(set(ys)) - 1)) * 0.42
+    # The longest arrow spans most of the gap between two nodes, so the field
+    # reads as continuous flow without neighbours running into each other.
+    arrow_max = min(cell_w, plot_h / max(1, len(set(ys)) - 1)) * 0.86
 
     def x_for(v: float) -> float:
         return plot_x + (v - x_min) / ((x_max - x_min) or 1.0) * plot_w
@@ -173,33 +181,49 @@ def build_svg(
         fx, fy = float(r["fx"]), float(r["fy"])
         mag = math.hypot(fx, fy)
         t = mag / max_mag
-        # A 3px floor left near-zero-magnitude arrows (the vortex core, where
-        # direction is most delicate) both tiny AND near-white-filled
-        # (ramp's t=0 stop is #EAF3FF) -- functionally invisible against the
-        # white canvas. Raise the floor so every arrow stays a legible
-        # shape regardless of magnitude.
-        size = 5.5 + t * (tri_max - 5.5)
+        # Arrow length carries the magnitude, which is what the subtitle
+        # promises and what makes this a quiver plot rather than a field of
+        # coloured darts. A floor keeps the near-zero arrows at the vortex
+        # core legible: that is where direction is most delicate, and the
+        # ramp's t=0 stop (#EAF3FF) is nearly the canvas colour, so a glyph
+        # shrinking toward nothing there would vanish twice over.
+        length = _MIN_LEN_FRACTION * arrow_max + t * (1.0 - _MIN_LEN_FRACTION) * arrow_max
+        head_len = min(length * 0.42, arrow_max * 0.34)
+        head_half = head_len * 0.52
+        shaft_half = min(head_half * 0.34, arrow_max * 0.055)
         cx, cy = x_for(x), y_for(y)
         # Screen-space rotation: y is flipped between data (up-positive) and
-        # SVG (down-positive), so the visual angle is atan2(-fy, fx); a
-        # triangle authored pointing along +x at rotation 0 then lands on
-        # the field's true direction once flipped and rotated.
+        # SVG (down-positive), so the visual angle is atan2(-fy, fx); an arrow
+        # authored pointing along +x at rotation 0 then lands on the field's
+        # true direction once flipped and rotated.
         angle_deg = math.degrees(math.atan2(-fy, fx))
-        points = f"{size:.1f},0 {-size * 0.55:.1f},{size * 0.55:.1f} {-size * 0.55:.1f},{-size * 0.55:.1f}"
+        # One closed outline -- shaft and head in a single polygon -- so the
+        # fill and the silhouette stroke stay in register at every size. The
+        # arrow is centred on its node, as the triangle was, which keeps the
+        # lattice reading as a lattice and the tooltip anchored where it was.
+        tail, tip_x = -length / 2.0, length / 2.0
+        base = tip_x - head_len
+        points = " ".join(
+            f"{px:.1f},{py:.1f}"
+            for px, py in (
+                (tail, shaft_half), (base, shaft_half), (base, head_half), (tip_x, 0.0),
+                (base, -head_half), (base, -shaft_half), (tail, -shaft_half),
+            )
+        )
         tip = f"({x:.0f}, {y:.0f}): vector ({fx:.1f}, {fy:.1f}), magnitude {mag:.2f}"
         parts.append(
             f'<g id="hit-{i}" class="hit" transform="translate({cx:.1f},{cy:.1f}) rotate({angle_deg:.1f})" '
             f'tabindex="0" role="img" aria-label="{xml_escape(tip)}">'
             # Stroke was previously BG (white-on-white -- invisible); a
-            # low-opacity ink edge keeps every triangle's silhouette
-            # readable even at the pale end of the magnitude ramp.
+            # low-opacity ink edge keeps every arrow's silhouette readable
+            # even at the pale end of the magnitude ramp.
             f'<polygon points="{points}" fill="{_ramp_hex(t, theme)}" stroke="{INK}" '
             f'stroke-opacity="0.22" stroke-width="0.75"/>'
             f'</g>'
         )
         tips.append(
             tooltip_bubble(
-                cx, cy - tri_max / 2 - 14,
+                cx, cy - arrow_max / 2 - 14,
                 [f"({x:.0f}, {y:.0f})", f"vector ({fx:.1f}, {fy:.1f})", f"magnitude {mag:.2f} ({t * 100:.0f}% of peak)"],
                 anchor="middle", canvas_w=width, canvas_h=height,
                 ink=INK, secondary=SECONDARY, border=GRIDLINE,
