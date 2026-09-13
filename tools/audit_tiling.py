@@ -36,11 +36,11 @@ import math
 import re
 import sys
 from collections import defaultdict
+from collections.abc import Callable
 from pathlib import Path
-from typing import List, Tuple
 
-Point = Tuple[float, float]
-Polygon = List[Point]
+Point = tuple[float, float]
+Polygon = list[Point]
 
 # A closed path of straight segments: "M x,y L x,y … Z", the shape every
 # hand-authored cell in this stack is written as.
@@ -51,9 +51,9 @@ _RECT = re.compile(
 )
 
 
-def _polygons(svg: str) -> List[Polygon]:
+def _polygons(svg: str) -> list[Polygon]:
     """Every closed straight-edged shape in the document, as a point list."""
-    out: List[Polygon] = []
+    out: list[Polygon] = []
     for body in _PATH.findall(svg):
         pts: Polygon = []
         for token in re.split(r"[\sL]+", body.strip()):
@@ -83,6 +83,30 @@ def _area(poly: Polygon) -> float:
     return abs(total) / 2.0
 
 
+def _half_plane(
+    ax: float, ay: float, ex: float, ey: float, sign: float
+) -> Callable[[Point], float]:
+    """Signed distance to the edge through ``(ax, ay)`` along ``(ex, ey)``.
+
+    Positive on the side ``sign`` was measured from — the clipper's inside.
+    """
+
+    def edge(p: Point) -> float:
+        return sign * (ex * (p[1] - ay) - ey * (p[0] - ax))
+
+    return edge
+
+
+def _cross(p: Point, q: Point, edge: Callable[[Point], float]) -> Point:
+    """Where the segment ``p``-``q`` meets the edge ``edge`` measures from."""
+    dx, dy = q[0] - p[0], q[1] - p[1]
+    denominator = edge(q) - edge(p)
+    if abs(denominator) < 1e-12:
+        return q
+    s = -edge(p) / denominator
+    return (p[0] + dx * s, p[1] + dy * s)
+
+
 def _clip(subject: Polygon, clipper: Polygon) -> Polygon:
     """Sutherland-Hodgman: the part of ``subject`` inside convex ``clipper``."""
     # "Inside" is the side the clipper's own centre falls on. Deciding it from
@@ -100,31 +124,22 @@ def _clip(subject: Polygon, clipper: Polygon) -> Polygon:
         ex, ey = bx - ax, by - ay
         sign = 1.0 if ex * (cy - ay) - ey * (cx - ax) >= 0 else -1.0
 
-        def edge(p: Point) -> float:
-            return sign * (ex * (p[1] - ay) - ey * (p[0] - ax))
-
-        def cross(p: Point, q: Point) -> Point:
-            dx, dy = q[0] - p[0], q[1] - p[1]
-            denominator = edge(q) - edge(p)
-            if abs(denominator) < 1e-12:
-                return q
-            s = -edge(p) / denominator
-            return (p[0] + dx * s, p[1] + dy * s)
+        edge = _half_plane(ax, ay, ex, ey, sign)
 
         clipped: Polygon = []
         for j in range(len(output)):
             current, previous = output[j], output[j - 1]
             if edge(current) >= -1e-9:
                 if edge(previous) < -1e-9:
-                    clipped.append(cross(previous, current))
+                    clipped.append(_cross(previous, current, edge))
                 clipped.append(current)
             elif edge(previous) >= -1e-9:
-                clipped.append(cross(previous, current))
+                clipped.append(_cross(previous, current, edge))
         output = clipped
     return output
 
 
-def _bbox(poly: Polygon) -> Tuple[float, float, float, float]:
+def _bbox(poly: Polygon) -> tuple[float, float, float, float]:
     xs = [p[0] for p in poly]
     ys = [p[1] for p in poly]
     return min(xs), min(ys), max(xs), max(ys)
