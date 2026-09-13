@@ -179,9 +179,63 @@ class RedrawResponse(BaseModel):
     figure_base64: str = Field(description="The rendered figure, base64-encoded.")
 
 
-@app.get("/health", tags=["meta"], operation_id="health")
+class RecommendRequest(BaseModel):
+    """Body for ``POST /recommend``."""
+
+    data: list[dict[str, Any]] = Field(
+        description="The rows you want to chart. One flat object per record."
+    )
+    limit: int = Field(default=5, ge=1, le=50, description="How many candidates to return.")
+    goal: (
+        Literal[
+            "comparison",
+            "trend",
+            "distribution",
+            "composition",
+            "relationship",
+            "flow",
+            "hierarchy",
+            "geography",
+            "model_evaluation",
+        ]
+        | None
+    ) = Field(
+        default=None,
+        description=(
+            "What the reader should take away. Supply it whenever you can: without a "
+            "goal many kinds tie at the top, because readability alone rarely separates "
+            "them."
+        ),
+    )
+
+
+class FigureCandidate(BaseModel):
+    """One chart kind this data can fill, with the columns already bound."""
+
+    kind: str = Field(description="Pass this to `render_figure`.")
+    score: float = Field(description="Readability score for this data, higher is better.")
+    bindings: dict[str, str] = Field(
+        default_factory=dict,
+        description=(
+            "role -> your column name. Rename your columns to the role names (or send "
+            "both) so `render_figure` can find them."
+        ),
+    )
+
+
+@app.get(
+    "/health",
+    tags=["meta"],
+    operation_id="health",
+    summary="Check that this figure server is up",
+)
 def health() -> dict:
-    """Simple liveness probe -- no dependency check, just proves the app is up."""
+    """Liveness probe: proves the process is answering, nothing more.
+
+    Call this only to diagnose a connection problem. It checks no
+    dependency, so a healthy answer does not promise that a render will
+    succeed.
+    """
     return {"status": "ok"}
 
 
@@ -191,26 +245,76 @@ def root() -> RedirectResponse:
     return RedirectResponse(url="/docs")
 
 
-@app.get("/kinds", tags=["meta"], operation_id="list_kinds")
+@app.get(
+    "/kinds",
+    tags=["meta"],
+    operation_id="list_kinds",
+    summary="List every chart type this server can draw",
+)
 def kinds(
     status: Literal["stable", "experimental", "legacy", "unavailable"] | None = None,
 ) -> list[str]:
-    """List registered chart kinds, optionally filtered by ``status``."""
+    """The catalogue of chart kinds, as canonical names.
+
+    Call this FIRST whenever you do not already know the exact kind name
+    you need: `render_figure` takes a name from this list, not a free
+    description, and guessing one that does not exist fails the call. The
+    catalogue is a closed set of 127 hand-authored chart types, not an
+    x/y/kind combinator.
+
+    Pass `status="stable"` for the render-verified subset. Once you have a
+    name, `get_kind` tells you which columns its rows must carry.
+    """
     return list_kinds(status=status)
 
 
-@app.get("/kinds/{kind}", tags=["meta"], response_model=FigureDefinition, operation_id="get_kind")
+@app.get(
+    "/kinds/{kind}",
+    tags=["meta"],
+    response_model=FigureDefinition,
+    operation_id="get_kind",
+    summary="Show which columns one chart type needs",
+)
 def kind_definition(kind: str) -> FigureDefinition:
-    """Full registry entry for one chart kind: data roles, renderer, default size, …"""
+    """Everything the registry knows about one kind: its data roles first.
+
+    Call this BEFORE `render_figure` when you are unsure how to shape the
+    rows. `required_roles` names the keys every row must carry (a bar chart
+    wants `region` and `value`, not `x` and `y`); `optional_roles` may be
+    left out and the figure still renders. Also carries aliases, default
+    canvas size, and which output formats the kind supports.
+
+    Accepts a kind name or any of its aliases, case-insensitively, with
+    hyphens, underscores and spaces interchangeable.
+    """
     canonical = resolve_kind(kind)
     if canonical is None:
         raise HTTPException(status_code=404, detail=f"No such kind: {kind!r}. See GET /kinds.")
     return get_figure_definition(canonical)
 
 
-@app.post("/render/{kind}", tags=["actions"], operation_id="render_figure")
+@app.post(
+    "/render/{kind}",
+    tags=["actions"],
+    operation_id="render_figure",
+    summary="Draw a chart from rows of data",
+)
 def render(kind: str, body: RenderRequest = RenderRequest()) -> Response:
-    """Render a chart and return the file bytes with the matching Content-Type."""
+    """Render one of 127 chart types and return the file bytes.
+
+    This is the tool for "chart this", "plot this", "draw me a bar chart /
+    treemap / sankey", "visualise this data", "make a figure". You supply
+    the rows; the house palette, typography and layout are applied here.
+
+    `kind` must be a name from `list_kinds`. Shape the rows to that kind's
+    `required_roles` (`get_kind` lists them) -- a row is a flat object whose
+    keys are role names. Omit `data` entirely to render that kind's built-in
+    demo rows, which is the fast way to show someone what a kind looks like
+    before committing real data to it.
+
+    Do NOT use this to improve a chart that already exists as a picture:
+    that is `redraw_figure`.
+    """
     canonical = resolve_kind(kind)
     if canonical is None:
         raise HTTPException(status_code=404, detail=f"No such kind: {kind!r}. See GET /kinds.")
@@ -246,14 +350,35 @@ def render(kind: str, body: RenderRequest = RenderRequest()) -> Response:
     return Response(content=content, media_type=media_type)
 
 
-@app.post("/redraw", tags=["actions"], operation_id="redraw_figure")
+@app.post(
+    "/redraw",
+    tags=["actions"],
+    operation_id="redraw_figure",
+    summary="Redraw someone else's chart from a picture of it",
+)
 def redraw_route(body: RedrawRequest) -> RedrawResponse:
-    """Redraw a chart from a picture of it, and say what was changed and why.
+    """Take an image of an existing chart and draw it properly, with reasons.
 
-    A picture of a chart carries its design legibly and its numbers rarely.
-    This reads the design -- what kind of chart it is, what makes it hard to
-    read -- and never invents the numbers: send ``data`` for a real figure,
-    or read ``data_origin`` to see that you got the redesign on sample rows.
+    This is the tool for "here is a screenshot of a chart, make it better",
+    "redraw this", "my colleague sent me this graph, it is unreadable",
+    "what is wrong with this chart". Send the picture base64-encoded in
+    `image_base64` (PNG, JPEG, GIF, WebP or SVG; a screenshot is the usual
+    case). A vision model reads what kind of chart it is and what costs the
+    reader effort; the figure is then drawn in the house style.
+
+    YOU MUST READ `data_origin` BEFORE PRESENTING THE RESULT. A picture of a
+    chart carries its design legibly and its numbers rarely, so this never
+    guesses values:
+
+    - `your-data` -- you sent rows. The real figure.
+    - `read-from-image` -- the values were printed on the original and read
+      back. Approximate; say so.
+    - `demo` -- nothing was readable, so the figure carries the kind's
+      SAMPLE rows. Tell the user these are not their numbers and ask for
+      the data. Never present it as their figure.
+
+    `changes` lists what the redraw does differently, costliest first --
+    report those, they are the answer to "why is this better".
     """
     import base64
     import binascii
@@ -306,3 +431,58 @@ def redraw_route(body: RedrawRequest) -> RedrawResponse:
         media_type=_MEDIA_TYPES[body.format],
         figure_base64=base64.b64encode(payload).decode("ascii"),
     )
+
+
+@app.post(
+    "/recommend",
+    tags=["meta"],
+    operation_id="recommend_figures",
+    summary="Rank the chart types this data can fill",
+)
+def recommend(body: RecommendRequest) -> list[FigureCandidate]:
+    """Which of the 127 kinds suit these rows, best first, with columns bound.
+
+    This is the tool for "which chart should I use for this?", "what fits my
+    data?", "quel graphique pour ces données ?" -- and the one to reach for
+    before `render_figure` whenever the user has not named a chart type. It
+    beats guessing from `list_kinds`: the filter is deterministic (no model),
+    it only returns kinds your columns can actually fill, and each candidate
+    arrives with its role bindings worked out.
+
+    Send `goal` when the request implies one. "How do these regions compare"
+    is `comparison`; "how has this moved" is `trend`; "what is this made of"
+    is `composition`.
+
+    Needs the profiling stack (`sprezzature-figures[studio]`); answers 503
+    with what to install when it is absent.
+    """
+    try:
+        import pandas as pd
+
+        from .studio.ingest.profiler import profile_dataframe
+        from .studio.recommendation import assign_columns, rank
+    except ImportError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                "recommend needs the profiling stack. Install "
+                "'sprezzature-figures[studio]' (or [dataviz]). "
+                f"({exc})"
+            ),
+        ) from exc
+
+    if not body.data:
+        raise HTTPException(status_code=422, detail="data is empty; send at least one row.")
+
+    profile = profile_dataframe(
+        pd.DataFrame(body.data), dataset_id="api", fingerprint="api", source_name="api"
+    )
+    ranked = rank(profile, goal=body.goal)
+    return [
+        FigureCandidate(
+            kind=definition.kind,
+            score=round(float(score), 4),
+            bindings=assign_columns(definition, profile) or {},
+        )
+        for definition, score in ranked[: body.limit]
+    ]
