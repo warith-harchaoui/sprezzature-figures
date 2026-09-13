@@ -9,7 +9,7 @@ annotations on all public functions and classes.
 
 - `ruff check` with zero warnings, `ruff format` applied, for
   `sprezzature_figures/` and `tools/` only. `pyproject.toml`'s
-  `[tool.ruff] extend-exclude` deliberately leaves out `scripts/` (the 124
+  `[tool.ruff] extend-exclude` deliberately leaves out `scripts/` (the 127
   `make_<kind>.py` chart generators) and `tests/`. Reason: `scripts/`
   keeps the older `List`/`Dict`/`Tuple` typing style and hand-formatted
   f-strings on purpose, so that two sibling generators stay easy to diff
@@ -88,7 +88,7 @@ the formatter on them.
   and have their own job or opt-in path (see `.github/workflows/ci.yml`).
 - A change to `scripts/*.py` should also pass
   `python tools/audit_generators.py --render` (see CONTRIBUTING.md): that
-  tool is what actually exercises all 124 generators end to end. There is
+  tool is what actually exercises all 127 generators end to end. There is
   no separate unit test per generator to keep in sync by hand.
 - No mocking of file I/O or rendering. Tests exercise the real dispatcher,
   the same code path a real caller would run.
