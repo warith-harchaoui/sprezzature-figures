@@ -3,8 +3,8 @@ sprezzature-figures — Model Context Protocol (MCP) surface.
 
 Adapter that exposes the FastAPI app defined in :mod:`sprezzature_figures.api`
 as MCP tools so any MCP-aware host (agent runtimes, IDE integrations,
-custom shells) can call ``kinds`` / ``kind_definition`` / ``render`` as
-first-class tools. Uses :mod:`fastapi_mcp`
+custom shells) can call ``kinds`` / ``kind_definition`` / ``render`` /
+``redraw`` as first-class tools. Uses :mod:`fastapi_mcp`
 (https://github.com/tadata-org/fastapi_mcp): one line wraps the whole
 existing HTTP surface, so the same route definitions serve both plain HTTP
 callers and MCP hosts without being written twice.
@@ -22,7 +22,7 @@ Then run the MCP server::
 Usage Example
 -------------
 >>> # Register the MCP endpoint in your client. It publishes:
->>> #   health / kinds / kind_definition / render
+>>> #   health / kinds / kind_definition / render / redraw
 >>> # …with the same argument names as the FastAPI routes.
 
 Author
@@ -66,7 +66,8 @@ else:
         name="sprezzature-figures",
         description=(
             "Sprezzature Figures MCP tools: list chart kinds, inspect a kind's "
-            "data-role requirements, or render one of 124 chart types from JSON rows."
+            "data-role requirements, render one of 124 chart types from JSON rows, or "
+            "redraw a chart from a picture of it."
         ),
     )
     # Attach the MCP endpoint to the FastAPI app. Newer fastapi-mcp releases

@@ -141,6 +141,65 @@ classer d'abord les figures qui servent ce but analytique. Sans cette option,
 de nombreux types se retrouvent à égalité en tête, car la seule lisibilité les
 départage rarement ; c'est le but qui rend le classement décisif.
 
+### À partir de l'image du graphique de quelqu'un d'autre
+
+On vous envoie la capture d'écran d'un graphique pénible à lire, en vous
+demandant de faire mieux. `redraw` s'occupe de la lecture : un modèle de
+vision regarde l'image, dit de quel type de graphique il s'agit et ce qui
+coûte des efforts au lecteur ; la figure, elle, est dessinée ici.
+
+```bash
+sprezzature-figures redraw leur-graphique.png --out le-notre.svg
+
+# Avec vos vrais chiffres — le seul mode dont la sortie mérite d'être publiée
+sprezzature-figures redraw leur-graphique.png --data ventes.csv --out le-notre.svg
+
+# Passer outre le choix du modèle
+sprezzature-figures redraw leur-graphique.png --kind bar --language fr
+```
+
+```python
+from sprezzature_figures import redraw
+
+resultat = redraw("leur-graphique.png", out="le-notre.svg", data=lignes, language="fr")
+resultat.kind          # 'bar'
+resultat.data_origin   # 'your-data'
+resultat.changes       # ce qui change, le plus coûteux d'abord
+```
+
+L'image d'un graphique porte deux choses, et avec des certitudes très
+différentes. Le **dessin** — quel type de graphique, de quoi il parle, ce
+qu'il coûte à lire — se lit dans les pixels. Les **données**, en général,
+non : un graphique tracé sans étiquettes de valeurs ne contient pas ses
+propres chiffres, et un modèle à qui on les demande quand même en produira,
+parce que c'est ce que font les modèles.
+
+Donc `redraw` ne devine jamais, et chaque résultat dit ce qu'il a obtenu :
+
+| `data_origin` | Ce que vous avez |
+|---|---|
+| `your-data` | Vous avez fourni les lignes. L'image n'a servi qu'au dessin. La vraie figure. |
+| `read-from-image` | Les chiffres étaient imprimés sur l'original et ont été relus. Approximatifs, et la figure le dit sur elle-même. |
+| `demo` | Rien de lisible. La **refonte** sur des données d'exemple — le bon type de graphique et la typographie de la maison, légendée comme telle. À regarder ; pas à publier. |
+
+Cette mention est écrite sur la figure elle-même, dans un bandeau ajouté sous
+le dessin, et pas seulement renvoyée à l'appelant : le SVG survit à l'appel
+de fonction et sera regardé par quelqu'un qui n'aura rien vu de tout cela.
+
+L'entrée accepte PNG, JPEG, GIF, WebP ou SVG — une capture d'écran fait
+l'affaire. Un PDF est refusé nommément, en disant quoi faire à la place. Il
+faut un modèle de vision : l'extra `[local]` et un [Ollama](https://ollama.com)
+qui tourne, comme tous les appels de modèle de la suite.
+
+Ce qu'on peut attendre du modèle qu'on lui donne : un modèle de vision 7B sur
+un portable met environ 90 secondes, trouve sans faute le type de graphique et
+le texte imprimé sur l'image, et relève un ou deux des défauts de lecture. Les
+champs de jugement (`what_it_shows`, un titre qui dit le résultat) sont là où
+un modèle plus grand justifie son coût — quand ils reviennent vides, la refonte
+reprend le titre de l'original plutôt que d'en inventer un.
+
+---
+
 ---
 
 ## Catalogue des graphiques
@@ -326,13 +385,23 @@ curl -X POST http://localhost:8000/render/treemap -o treemap.svg
 curl -X POST http://localhost:8000/render/bar -H 'Content-Type: application/json' \
      -d '{"data": [{"region": "North", "value": 42}], "title": "Mon graphique"}' -o bar.svg
 
+# Refaire le graphique de quelqu'un d'autre à partir de son image
+curl -X POST http://localhost:8000/redraw -H 'Content-Type: application/json' \
+     -d "{\"image_base64\": \"$(base64 < leur-graphique.png)\"}" | jq -r .data_origin
+
 # Documentation OpenAPI complète
 open http://localhost:8000/docs
 ```
 
+`POST /redraw` répond du JSON plutôt que des octets : la figure arrive
+encodée en base64 dans `figure_base64`, à côté du diagnostic qui la
+justifie (`kind`, `data_origin`, `changes`, `reading`). Lire `data_origin`
+avant de se servir de la figure, c'est tout l'intérêt — voir
+[À partir de l'image du graphique de quelqu'un d'autre](#à-partir-de-limage-du-graphique-de-quelquun-dautre).
+
 La surface MCP (`sprezzature-figures[api,mcp]`) expose ces mêmes routes
-comme autant d'outils MCP (`list_kinds`, `get_kind`, `render_figure`) sur
-`/mcp`, dans la même app FastAPI.
+comme autant d'outils MCP (`list_kinds`, `get_kind`, `render_figure`,
+`redraw_figure`) sur `/mcp`, dans la même app FastAPI.
 [fastapi-mcp](https://github.com/tadata-org/fastapi_mcp) enveloppe toute
 la surface HTTP en une seule ligne, les routes ne sont donc jamais
 dupliquées :

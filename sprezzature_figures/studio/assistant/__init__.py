@@ -18,12 +18,15 @@ from .client import BestEngineLLMClient, LLMClient, default_client
 from .edit import propose_edit
 from .fake_client import FakeLLMClient, FakeLLMTimeout
 from .intent import analyze_intent
+from .read_chart import ChartReadingError, read_chart
 from .recommend import explain_recommendations
 from .repair import LLMResponseError, validate_or_repair
 from .schemas import (
+    ChartReading,
     EditorialSuggestion,
     EditProposal,
     FigureRecommendation,
+    ReadSeries,
     RecommendationSet,
     VisualCritique,
     VisualIssue,
@@ -31,6 +34,8 @@ from .schemas import (
 
 __all__ = [
     "BestEngineLLMClient",
+    "ChartReading",
+    "ChartReadingError",
     "EditProposal",
     "EditorialSuggestion",
     "FakeLLMClient",
@@ -38,6 +43,7 @@ __all__ = [
     "FigureRecommendation",
     "LLMClient",
     "LLMResponseError",
+    "ReadSeries",
     "RecommendationSet",
     "VisualCritique",
     "VisualIssue",
@@ -45,5 +51,6 @@ __all__ = [
     "default_client",
     "explain_recommendations",
     "propose_edit",
+    "read_chart",
     "validate_or_repair",
 ]

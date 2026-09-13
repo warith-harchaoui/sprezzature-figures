@@ -129,6 +129,104 @@ class EditorialSuggestion(BaseModel):
     )
 
 
+class ReadSeries(BaseModel):
+    """One series a vision model could pick out of a picture of a chart.
+
+    ``values`` is the part that must never be invented: a chart drawn without
+    data labels does not carry its numbers, and a model that guesses them
+    produces a figure that looks authoritative and is wrong.
+    """
+
+    name: str = Field(
+        default="",
+        description="The series name as printed in the image (legend entry or axis title); empty if unlabelled.",
+    )
+    role: str = Field(
+        default="",
+        description=(
+            "Which data role of the chosen chart kind this series fills, copied exactly "
+            "from the role list you were given; empty if you are not sure."
+        ),
+    )
+    labels: list[str] = Field(
+        default_factory=list,
+        description=(
+            "Category or x-axis labels, in the order they appear left to right. "
+            "Empty when the axis is continuous or the labels are illegible."
+        ),
+    )
+    values: list[float] = Field(
+        default_factory=list,
+        description=(
+            "Only the values you can ACTUALLY READ in the image -- printed data labels, "
+            "or bars you can measure confidently against a gridded axis, aligned with "
+            "labels. Leave this EMPTY rather than estimating: a wrong number is worse "
+            "than no number."
+        ),
+    )
+
+
+class ChartReading(BaseModel):
+    """What a vision model can honestly recover from a picture of a chart.
+
+    Two things, and they are recovered with very different confidence: the
+    **design** (what kind of chart it is, what it is about, what makes it hard
+    to read) is legible from pixels; the **data** usually is not. The schema
+    keeps them apart so the caller can be truthful about which it got.
+    """
+
+    kind: str = Field(
+        description=(
+            "The chart kind that would show this same thing well, copied EXACTLY from "
+            "the candidate list you were given -- never a kind outside it. When the "
+            "original is a poor choice for what it shows, name the better kind, not the "
+            "one that is drawn."
+        )
+    )
+    kind_confidence: Literal["high", "medium", "low"] = Field(
+        default="medium",
+        description="How sure you are of that kind, from what is actually visible.",
+    )
+    drawn_as: str = Field(
+        default="",
+        description="What the original is drawn as, in your own words (e.g. 'two stacked panels, line above, spiky bars below').",
+    )
+    what_it_shows: str = Field(
+        default="",
+        description="One sentence: the subject of the chart, as a reader would state it.",
+    )
+    title: str = Field(default="", description="The title printed on the image, verbatim; empty if none.")
+    subtitle: str = Field(default="", description="The subtitle or standfirst printed on the image, verbatim; empty if none.")
+    x_label: str = Field(default="", description="The horizontal axis title as printed; empty if none.")
+    y_label: str = Field(default="", description="The vertical axis title as printed; empty if none.")
+    suggested_title: str = Field(
+        default="",
+        description=(
+            "A title that states the RESULT rather than the contents -- what the reader "
+            "should walk away knowing. Only if the image supports it; else empty."
+        ),
+    )
+    series: list[ReadSeries] = Field(
+        default_factory=list, description="The series you can identify, in legend order."
+    )
+    values_are_readable: bool = Field(
+        default=False,
+        description=(
+            "True ONLY if the numbers in `series[].values` are read from printed labels "
+            "or an unambiguous gridded axis. False whenever you are inferring them from "
+            "mark size or position."
+        ),
+    )
+    issues: list[VisualIssue] = Field(
+        default_factory=list,
+        description=(
+            "What makes this figure harder to read than it needs to be, most costly "
+            "first. Judge the reading load, not the analysis: a correct chart can still "
+            "be exhausting to read."
+        ),
+    )
+
+
 class VisualCritique(BaseModel):
     """Ralph's verdict on one rendered PNG (plan §10.3). Built here, not in
     the ralph/ package, because it's an LLM output contract like the other

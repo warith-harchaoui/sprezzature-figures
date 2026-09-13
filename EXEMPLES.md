@@ -75,6 +75,36 @@ data = [
 path = make_figure("wordcloud", data, out="nuage_mots.png")
 ```
 
+## Refaire le graphique de quelqu'un d'autre à partir de son image
+
+```python
+from sprezzature_figures import redraw
+
+# Une capture d'écran, et les chiffres que vous avez vraiment
+resultat = redraw(
+    "leur-graphique.png",
+    out="le-notre.svg",
+    data=[{"region": "Nord", "value": 61}, {"region": "Sud", "value": 39}],
+    language="fr",
+)
+print(resultat.kind)         # 'bar' — ce que le modèle de vision a reconnu
+print(resultat.data_origin)  # 'your-data' — les chiffres sont les vôtres
+for changement in resultat.changes:
+    print("-", changement)   # ce qui change, le plus coûteux d'abord
+
+# Sans données sous la main : la refonte sur des lignes d'exemple, légendée
+maquette = redraw("leur-graphique.png", out="maquette.svg", language="fr")
+maquette.data_origin         # 'demo' — à regarder, pas à publier
+```
+
+```bash
+sprezzature-figures redraw leur-graphique.png --out le-notre.svg --data ventes.csv
+sprezzature-figures redraw leur-graphique.png --kind treemap --language fr
+```
+
+Nécessite un modèle de vision (`pip install 'sprezzature-figures[local]'` et un
+Ollama qui tourne). Accepte PNG, JPEG, GIF, WebP et SVG.
+
 ## Lister tous les types disponibles
 
 ```python

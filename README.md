@@ -141,6 +141,64 @@ the figures that serve that goal first. Without it, many kinds tie at the top
 because readability alone rarely separates them; the goal is what makes the
 ranking decisive.
 
+### From a picture of somebody else's chart
+
+You are sent a screenshot of a chart that is hard to read, and asked to make
+it better. `redraw` does the reading: a vision model looks at the picture,
+says what kind of chart it is and what costs the reader effort, and the
+figure is drawn here.
+
+```bash
+sprezzature-figures redraw theirs.png --out ours.svg
+
+# With your real numbers -- the mode whose output is worth publishing
+sprezzature-figures redraw theirs.png --data sales.csv --out ours.svg
+
+# Override what the model chose
+sprezzature-figures redraw theirs.png --kind bar --title "Exports carry the quarter"
+```
+
+```python
+from sprezzature_figures import redraw
+
+result = redraw("theirs.png", out="ours.svg", data=rows)
+result.kind          # 'bar'
+result.data_origin   # 'your-data'
+result.changes       # what it does differently, costliest first
+```
+
+A picture of a chart carries two things, and carries them with very different
+confidence. The **design** — what kind of chart it is, what it is about, what
+it costs the reader — is legible from pixels. The **data** usually is not: a
+chart drawn without data labels does not contain its own numbers, and a model
+asked for them anyway will produce some, because that is what models do.
+
+So `redraw` never guesses, and every result says which one it got:
+
+| `data_origin` | What you have |
+|---|---|
+| `your-data` | You passed rows. The image supplied only the design. The real figure. |
+| `read-from-image` | The numbers were printed on the original and read back. Approximate, and the figure says so on its face. |
+| `demo` | Nothing readable. The **redesign** on sample data — the right chart type and the house typography, captioned as such. Look at it; do not publish it. |
+
+That caption is written onto the figure itself, in a strip grown below the
+drawing, not just returned to the caller: the SVG outlives the function call
+and will be looked at by someone who never saw it.
+
+Input can be PNG, JPEG, GIF, WebP or SVG — a screenshot is the usual case. A
+PDF is refused by name, with what to do instead. Needs a vision model: the
+`[local]` extra plus a running [Ollama](https://ollama.com), same as every
+other model call in the suite.
+
+What to expect from the model you run it on: a 7B vision model on a laptop
+takes about 90 seconds, reliably gets the chart kind and the text printed on
+the image, and reports one or two of the reading problems. The judgement
+fields (`what_it_shows`, a title that states the result) are where a bigger
+model earns its keep — when they come back empty, the redraw falls back to
+the original's own title rather than inventing one.
+
+---
+
 ---
 
 ## Chart catalogue
@@ -321,13 +379,23 @@ curl -X POST http://localhost:8000/render/treemap -o treemap.svg
 curl -X POST http://localhost:8000/render/bar -H 'Content-Type: application/json' \
      -d '{"data": [{"region": "North", "value": 42}], "title": "My chart"}' -o bar.svg
 
+# Redraw somebody else's chart from a picture of it
+curl -X POST http://localhost:8000/redraw -H 'Content-Type: application/json' \
+     -d "{\"image_base64\": \"$(base64 < theirs.png)\"}" | jq -r .data_origin
+
 # Full OpenAPI docs
 open http://localhost:8000/docs
 ```
 
+`POST /redraw` answers JSON rather than file bytes: the figure arrives
+base64-encoded in `figure_base64`, next to the diagnosis that justified it
+(`kind`, `data_origin`, `changes`, `reading`). Reading `data_origin` before
+using the figure is the point — see
+[From a picture of somebody else's chart](#from-a-picture-of-somebody-elses-chart).
+
 The MCP surface (`sprezzature-figures[api,mcp]`) exposes the exact same
-routes as MCP tools (`list_kinds`, `get_kind`, `render_figure`) at `/mcp`
-on the same FastAPI app.
+routes as MCP tools (`list_kinds`, `get_kind`, `render_figure`,
+`redraw_figure`) at `/mcp` on the same FastAPI app.
 [fastapi-mcp](https://github.com/tadata-org/fastapi_mcp) wraps the whole
 HTTP surface in one line, so the route definitions are never duplicated:
 
