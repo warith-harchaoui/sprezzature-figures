@@ -419,7 +419,7 @@ def build_svg(
             x = m_left + i * cell_w
             parts.append(
                 f'<rect x="{fmt_compact(x, decimals=2)}" y="{fmt_compact(y, decimals=2)}" '
-                f'width="{fmt_compact(cell_w + 0.6, decimals=2)}" height="{fmt_compact(cell_h + 0.6, decimals=2)}" '
+                f'width="{fmt_compact(cell_w, decimals=2)}" height="{fmt_compact(cell_h, decimals=2)}" '
                 f'fill="{colour}"/>'
             )
     parts.append("</g>")
