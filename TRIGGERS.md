@@ -21,6 +21,12 @@ Natural-language phrases that should invoke `sprezzature-figures`.
 - "produce a waffle chart"
 - "run the eyeball loop on this figure"
 - "QA this chart visually"
+- "redraw this chart"
+- "make this ugly chart better"
+- "here is a screenshot of a chart, can you improve it"
+- "my colleague sent me this graph, make it readable"
+- "rebuild this figure with your tool"
+- "what is wrong with this chart?"
 
 ## Français
 
@@ -38,6 +44,12 @@ Natural-language phrases that should invoke `sprezzature-figures`.
 - "générer un nuage de mots"
 - "dessiner un graphe de réseau"
 - "visualiser ces plongements"
+- "refaire ce graphique"
+- "rendre ce graphique plus lisible"
+- "voici une capture d'un graphique, tu peux l'améliorer ?"
+- "un collègue m'a envoyé ce graphe, rends-le lisible"
+- "reconstruire cette figure avec ton outil"
+- "qu'est-ce qui ne va pas dans ce graphique ?"
 - "produire un diagramme en gaufre"
 - "passer la boucle Eyeball sur cette figure"
 - "contrôle qualité visuel de ce graphique"

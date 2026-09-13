@@ -147,6 +147,113 @@ else:
             raise SystemExit(1) from exc
         click.echo(result)
 
+    @main.command("redraw")
+    @click.argument("image", type=click.Path(exists=True, dir_okay=False))
+    @click.option(
+        "--out",
+        default=None,
+        help="Output file path. The extension picks the format: .svg, .png, .pdf, .jpg, or .html. "
+        "Defaults to <kind>-redrawn.svg.",
+    )
+    @click.option(
+        "--data",
+        "data_path",
+        default=None,
+        type=click.Path(exists=True, dir_okay=False, allow_dash=True),
+        help="Your real rows (.csv/.tsv/.json/.jsonl). Without this you get the redesign "
+        "on sample data -- the right chart, not your numbers.",
+    )
+    @click.option(
+        "--map",
+        "mappings",
+        multiple=True,
+        metavar="ROLE=COLUMN",
+        help="Bind a figure role to a column of --data when they differ (repeatable).",
+    )
+    @click.option(
+        "--kind",
+        default=None,
+        help="Skip the model's choice of chart type and redraw as this one.",
+    )
+    @click.option("--title", default=None, help="Override the title.")
+    @click.option(
+        "--hint",
+        default="",
+        help="Anything you want to tell the model about the image (what it is, what it should show).",
+    )
+    @click.option(
+        "--language",
+        default="en",
+        type=click.Choice(["en", "fr"]),
+        show_default=True,
+        help="Language of the provenance caption written onto the figure.",
+    )
+    def redraw_cmd(
+        image: str,
+        out: str | None,
+        data_path: str | None,
+        mappings: tuple[str, ...],
+        kind: str | None,
+        title: str | None,
+        hint: str,
+        language: str,
+    ) -> None:
+        """Redraw the chart in IMAGE as a sprezzature figure.
+
+        IMAGE is a picture of somebody's existing chart -- a screenshot is the
+        usual case. A vision model reads what it is and what makes it hard to
+        read; the figure is then drawn here.
+
+        The numbers are the honest part. Pass --data and you get a real figure.
+        Without it you get the redesign on sample data, captioned as such: this
+        never guesses numbers off a picture.
+        """
+        from .redraw import redraw
+
+        rows = None
+        if data_path:
+            from .data_source import apply_mapping, load_records, load_stdin_records, parse_mapping
+
+            try:
+                rows = load_stdin_records() if data_path == "-" else load_records(data_path)
+                if mappings:
+                    rows = apply_mapping(rows, parse_mapping(list(mappings)))
+            except (FileNotFoundError, ValueError) as exc:
+                click.echo(f"Error reading --data: {exc}", err=True)
+                raise SystemExit(1) from exc
+        elif mappings:
+            click.echo("--map only applies with --data.", err=True)
+            raise SystemExit(1)
+
+        try:
+            result = redraw(
+                image,
+                out=out,
+                data=rows,
+                kind=kind,
+                title=title,
+                hint=hint,
+                language=language,
+            )
+        except (ValueError, FileNotFoundError, RuntimeError) as exc:
+            click.echo(f"Error redrawing {image!r}: {exc}", err=True)
+            raise SystemExit(1) from exc
+        except ImportError as exc:
+            click.echo(
+                "redraw needs a vision model. Install with: "
+                "pip install 'sprezzature-figures[local]' and make sure Ollama is running.",
+                err=True,
+            )
+            raise SystemExit(1) from exc
+
+        click.echo(f"{result.kind} -> {result.output}  (data: {result.data_origin})")
+        if result.changes:
+            click.echo("What it does differently:")
+            for change in result.changes:
+                click.echo(f"  - {change}")
+        for warning in result.warnings:
+            click.echo(f"note: {warning}", err=True)
+
     @main.command("recommend")
     @click.option(
         "--data",

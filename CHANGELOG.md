@@ -2,6 +2,33 @@
 
 ## Unreleased
 
+### Added
+
+- **`redraw()` — a picture of somebody else's chart in, a sprezzature figure
+  out.** A vision model reads the image; the figure is drawn here. Reachable
+  from every surface: `from sprezzature_figures import redraw`,
+  `sprezzature-figures redraw theirs.png`, `POST /redraw`, and the
+  `redraw_figure` MCP tool that route derives.
+
+  The design decision is what the mode is for. A picture of a chart carries
+  its **design** legibly and its **data** almost never, so the two are kept
+  apart and every result says which it got: `data_origin` is `your-data`
+  (you passed rows), `read-from-image` (the numbers were printed on the
+  original and read back, approximate), or `demo` (nothing readable — the
+  redesign on the kind's sample rows, a mock-up to react to). It never
+  guesses numbers off a picture.
+
+  The provenance caption is stamped onto the figure itself, in a strip grown
+  below the drawing after rendering. Passing it as a subtitle would have
+  silently dropped it on 79 of the 127 kinds, whose generators declare no
+  `subtitle` parameter — an uncaptioned mock-up that looks like a result is
+  the one failure this mode cannot have. For the same reason, a `demo`
+  redraw does not inherit the original's axis titles or standfirst: they
+  describe columns the sample rows do not have.
+
+  The model may only name a kind from the candidate list it was handed, the
+  rule already applied to figure recommendations.
+
 ## 2.1.0 (2026-09-13): three figures were drawing something other than what they claimed
 
 ### Fixed

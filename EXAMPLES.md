@@ -73,6 +73,35 @@ data = [
 path = make_figure("wordcloud", data, out="cloud.png")
 ```
 
+## Redraw somebody else's chart from a picture of it
+
+```python
+from sprezzature_figures import redraw
+
+# A screenshot, and the numbers you actually have
+result = redraw(
+    "their-chart.png",
+    out="ours.svg",
+    data=[{"region": "North", "value": 61}, {"region": "South", "value": 39}],
+)
+print(result.kind)         # 'bar' -- what the vision model saw
+print(result.data_origin)  # 'your-data' -- the numbers are yours, not read off pixels
+for change in result.changes:
+    print("-", change)     # what the redraw does differently, costliest first
+
+# No data to hand: you get the redesign on sample rows, captioned as such
+mockup = redraw("their-chart.png", out="mockup.svg")
+mockup.data_origin         # 'demo' -- look at it, don't publish it
+```
+
+```bash
+sprezzature-figures redraw their-chart.png --out ours.svg --data sales.csv
+sprezzature-figures redraw their-chart.png --kind treemap --language fr
+```
+
+Needs a vision model (`pip install 'sprezzature-figures[local]'` and a running
+Ollama). Accepts PNG, JPEG, GIF, WebP and SVG.
+
 ## List all available kinds
 
 ```python

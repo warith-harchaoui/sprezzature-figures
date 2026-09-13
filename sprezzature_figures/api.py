@@ -16,6 +16,10 @@ What ships here
   directly (``Content-Type`` set from the requested format). Body omits
   ``data`` to fall back to that figure's built-in demo rows, same as
   ``make-figure <kind>`` with no ``--data``.
+- ``POST /redraw`` — send a picture of somebody else's chart and get it
+  back redrawn here, with the diagnosis that justified each change. Needs
+  a vision model (the ``[local]`` extra plus a running Ollama); answers
+  503 with what to install when there isn't one.
 
 Install the extra to get the runtime dependencies::
 
@@ -118,6 +122,63 @@ class RenderRequest(BaseModel):
     )
 
 
+class RedrawRequest(BaseModel):
+    """Body for ``POST /redraw``."""
+
+    image_base64: str = Field(
+        description=(
+            "The picture of the chart to redraw, base64-encoded. PNG, JPEG, GIF, WebP "
+            "or SVG; a screenshot is the usual case."
+        )
+    )
+    data: list[dict[str, Any]] | None = Field(
+        default=None,
+        description=(
+            "Your real rows, keyed by the target kind's role names. Omit and you get "
+            "the redesign on sample data -- the right chart, not your numbers."
+        ),
+    )
+    kind: str | None = Field(
+        default=None, description="Skip the model's choice of chart type and use this one."
+    )
+    title: str | None = Field(default=None, description="Override the title.")
+    hint: str = Field(
+        default="", description="Anything worth telling the model about the image."
+    )
+    language: Literal["en", "fr"] = Field(
+        default="en", description="Language of the provenance caption written onto the figure."
+    )
+    format: Literal["svg", "png", "pdf", "jpg", "html"] = Field(
+        default="svg", description="Output format of the returned figure."
+    )
+    options: dict[str, Any] = Field(
+        default_factory=dict, description="Extra generator-specific kwargs forwarded as-is."
+    )
+
+
+class RedrawResponse(BaseModel):
+    """What ``POST /redraw`` answers: the figure, and where it came from."""
+
+    kind: str = Field(description="The canonical chart kind it was drawn as.")
+    data_origin: Literal["your-data", "read-from-image", "demo"] = Field(
+        description=(
+            "Where the numbers came from. 'demo' means this is the redesign on sample "
+            "data -- look at it, do not publish it."
+        )
+    )
+    changes: list[str] = Field(
+        default_factory=list, description="What this redraw does differently, costliest first."
+    )
+    warnings: list[str] = Field(
+        default_factory=list, description="What to know before trusting this figure."
+    )
+    reading: dict[str, Any] = Field(
+        default_factory=dict, description="The full ChartReading the vision model returned."
+    )
+    media_type: str = Field(description="Content type of `figure_base64`.")
+    figure_base64: str = Field(description="The rendered figure, base64-encoded.")
+
+
 @app.get("/health", tags=["meta"], operation_id="health")
 def health() -> dict:
     """Simple liveness probe -- no dependency check, just proves the app is up."""
@@ -183,3 +244,65 @@ def render(kind: str, body: RenderRequest = RenderRequest()) -> Response:
 
     media_type = _MEDIA_TYPES[body.format]
     return Response(content=content, media_type=media_type)
+
+
+@app.post("/redraw", tags=["actions"], operation_id="redraw_figure")
+def redraw_route(body: RedrawRequest) -> RedrawResponse:
+    """Redraw a chart from a picture of it, and say what was changed and why.
+
+    A picture of a chart carries its design legibly and its numbers rarely.
+    This reads the design -- what kind of chart it is, what makes it hard to
+    read -- and never invents the numbers: send ``data`` for a real figure,
+    or read ``data_origin`` to see that you got the redesign on sample rows.
+    """
+    import base64
+    import binascii
+
+    try:
+        image = base64.b64decode(body.image_base64, validate=True)
+    except (binascii.Error, ValueError) as exc:
+        raise HTTPException(status_code=422, detail=f"image_base64 is not base64: {exc}") from exc
+
+    try:
+        from .redraw import redraw as _redraw
+    except ImportError as exc:  # pragma: no cover - dependency guard
+        raise HTTPException(status_code=503, detail=f"redraw is unavailable: {exc}") from exc
+
+    suffix = f".{body.format}"
+    with tempfile.TemporaryDirectory(prefix="sprezzature-figures-redraw-") as tmp:
+        out_path = Path(tmp) / f"redrawn{suffix}"
+        try:
+            result = _redraw(
+                image,
+                out=out_path,
+                data=body.data,
+                kind=body.kind,
+                title=body.title,
+                hint=body.hint,
+                language=body.language,
+                **body.options,
+            )
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+        except ImportError as exc:
+            raise HTTPException(
+                status_code=503,
+                detail=(
+                    "redraw needs a vision model. Install "
+                    "'sprezzature-figures[local]' and run Ollama. "
+                    f"({exc})"
+                ),
+            ) from exc
+        except (FileNotFoundError, RuntimeError) as exc:
+            raise HTTPException(status_code=500, detail=str(exc)) from exc
+        payload = result.output.read_bytes()
+
+    return RedrawResponse(
+        kind=result.kind,
+        data_origin=result.data_origin,
+        changes=result.changes,
+        warnings=result.warnings,
+        reading=result.reading.model_dump() if result.reading is not None else {},
+        media_type=_MEDIA_TYPES[body.format],
+        figure_base64=base64.b64encode(payload).decode("ascii"),
+    )
