@@ -79,7 +79,7 @@ else:
         mcp.mount()
 
 
-    def main(argv: "list[str] | None" = None) -> None:
+    def main(argv: list[str] | None = None) -> None:
         """
         Entry point for the ``sprezzature-figures-mcp`` console script.
 
