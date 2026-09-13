@@ -178,3 +178,42 @@ def test_render_concurrent_scale_does_not_race() -> None:
     (w1, _), = sizes_at_1x
     (w3, _), = sizes_at_3x
     assert w3 == w1 * 3
+
+
+# ---------------------------------------------------------------------------
+# POST /recommend -- the tool that keeps an agent from guessing among 127 kinds
+# ---------------------------------------------------------------------------
+
+ROWS = [
+    {"region": "North", "value": 42},
+    {"region": "South", "value": 28},
+    {"region": "East", "value": 19},
+    {"region": "West", "value": 11},
+]
+
+
+def test_recommend_ranks_kinds_with_their_bindings() -> None:
+    pytest.importorskip("pandas")
+    resp = client.post("/recommend", json={"data": ROWS, "goal": "comparison", "limit": 4})
+    assert resp.status_code == 200, resp.text
+    candidates = resp.json()
+    assert 1 <= len(candidates) <= 4
+    # Bindings are the point: an agent should not have to work out which of
+    # its columns fills which role before calling render_figure.
+    top = candidates[0]
+    assert top["kind"] in ("bar", "lollipop", "pareto")
+    assert set(top["bindings"].values()) <= {"region", "value"}
+    assert candidates == sorted(candidates, key=lambda c: -c["score"])
+
+
+def test_recommend_refuses_empty_data() -> None:
+    pytest.importorskip("pandas")
+    resp = client.post("/recommend", json={"data": []})
+    assert resp.status_code == 422
+    assert "at least one row" in resp.text
+
+
+def test_recommend_limit_is_bounded() -> None:
+    resp = client.post("/recommend", json={"data": ROWS, "limit": 0})
+    assert resp.status_code == 422
+

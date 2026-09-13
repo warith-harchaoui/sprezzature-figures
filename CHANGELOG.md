@@ -29,6 +29,26 @@
   The model may only name a kind from the candidate list it was handed, the
   rule already applied to figure recommendations.
 
+- **`POST /recommend` / the `recommend_figures` MCP tool.** The deterministic
+  compatibility + readability ranking the CLI already ran, over HTTP. An agent
+  handed 127 kind names and no guidance guesses; this hands back the ones the
+  rows can actually fill, each with its role bindings resolved.
+
+### Changed
+
+- **Every MCP tool now carries a written summary and a description saying when
+  to call it.** FastAPI derives a missing `summary` from the function name, so
+  the headline an MCP host displayed for `redraw_route` was "Redraw Route",
+  for `kinds` "Kinds", for `kind_definition` "Kind Definition". That headline
+  is most of what an agent reads when choosing between tools from several
+  servers. Two tests now fail the build if a summary is the default or a
+  description is too short to route on.
+- **`TRIGGERS.md` is now a routing document rather than a list of phrases.**
+  Enumerating chart names cannot generalise — the catalogue is open-ended and
+  grows. The vocabulary of *intent* is closed, so the file routes on that: the
+  nine goals `recommend_figures` accepts, the three shapes a chart request
+  arrives in, and what to call on each surface for each.
+
 ## 2.1.0 (2026-09-13): three figures were drawing something other than what they claimed
 
 ### Fixed

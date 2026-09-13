@@ -393,9 +393,17 @@ base64-encoded in `figure_base64`, next to the diagnosis that justified it
 using the figure is the point — see
 [From a picture of somebody else's chart](#from-a-picture-of-somebody-elses-chart).
 
+`POST /recommend` ranks which chart kinds your rows can fill, each with its
+role bindings already worked out — the same deterministic ranking the CLI's
+`recommend` command runs, over HTTP. It is the route to call before
+`/render/{kind}` whenever nobody has named a chart type.
+
 The MCP surface (`sprezzature-figures[api,mcp]`) exposes the exact same
-routes as MCP tools (`list_kinds`, `get_kind`, `render_figure`,
-`redraw_figure`) at `/mcp` on the same FastAPI app.
+routes as MCP tools (`list_kinds`, `get_kind`, `recommend_figures`,
+`render_figure`, `redraw_figure`) at `/mcp` on the same FastAPI app. Each
+carries a written summary and a description saying **when** to call it —
+see [TRIGGERS.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/TRIGGERS.md)
+for the routing rules an agent should follow.
 [fastapi-mcp](https://github.com/tadata-org/fastapi_mcp) wraps the whole
 HTTP surface in one line, so the route definitions are never duplicated:
 

@@ -399,9 +399,17 @@ justifie (`kind`, `data_origin`, `changes`, `reading`). Lire `data_origin`
 avant de se servir de la figure, c'est tout l'intérêt — voir
 [À partir de l'image du graphique de quelqu'un d'autre](#à-partir-de-limage-du-graphique-de-quelquun-dautre).
 
+`POST /recommend` classe les types de graphiques que vos lignes peuvent
+remplir, chacun avec ses rôles déjà associés à vos colonnes — le même
+classement déterministe que la commande `recommend`, mais en HTTP. C'est la
+route à appeler avant `/render/{kind}` quand personne n'a nommé de type.
+
 La surface MCP (`sprezzature-figures[api,mcp]`) expose ces mêmes routes
-comme autant d'outils MCP (`list_kinds`, `get_kind`, `render_figure`,
-`redraw_figure`) sur `/mcp`, dans la même app FastAPI.
+comme autant d'outils MCP (`list_kinds`, `get_kind`, `recommend_figures`,
+`render_figure`, `redraw_figure`) sur `/mcp`, dans la même app FastAPI.
+Chacun porte un résumé écrit à la main et une description qui dit **quand**
+l'appeler — voir [TRIGGERS.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/TRIGGERS.md)
+pour les règles d'aiguillage qu'un agent doit suivre.
 [fastapi-mcp](https://github.com/tadata-org/fastapi_mcp) enveloppe toute
 la surface HTTP en une seule ligne, les routes ne sont donc jamais
 dupliquées :
