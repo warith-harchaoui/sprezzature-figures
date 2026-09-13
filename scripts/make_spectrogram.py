@@ -50,7 +50,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _render import svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _style import os_dark_style  # noqa: E402
-from _svg import color_ramp, fmt_compact, xml_escape  # noqa: E402
+from _svg import color_ramp, fmt_compact, raster_row_rects, xml_escape  # noqa: E402
 from _svg import VIRIDIS_STOPS as _VIRIDIS  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
@@ -413,15 +413,12 @@ def build_svg(
     for j in range(n_freq):
         y = m_top + plot_h - (j + 1) * cell_h
         row = power_db[j]
-        for i in range(n_frames):
-            norm = (float(row[i]) - db_lo) / span
-            colour = _ramp_hex(norm)
-            x = m_left + i * cell_w
-            parts.append(
-                f'<rect x="{fmt_compact(x, decimals=2)}" y="{fmt_compact(y, decimals=2)}" '
-                f'width="{fmt_compact(cell_w, decimals=2)}" height="{fmt_compact(cell_h, decimals=2)}" '
-                f'fill="{colour}"/>'
-            )
+        colours = [_ramp_hex((float(v) - db_lo) / span) for v in row]
+        # One rect per run of equal colour, not one per cell. A spectrogram is
+        # mostly floor and held tones, so the same colour repeats along a row
+        # for long stretches; merging those runs is lossless and drops this
+        # document from 60 000 rects to about 9 000.
+        parts.extend(raster_row_rects(colours, m_left, y, cell_w, cell_h))
     parts.append("</g>")
 
     # ---- plot border ------------------------------------------------------ #
