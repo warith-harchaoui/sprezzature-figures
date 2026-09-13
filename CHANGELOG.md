@@ -2,6 +2,43 @@
 
 ## Unreleased
 
+## 2.1.0 (2026-09-13): three figures were drawing something other than what they claimed
+
+### Fixed
+
+- **`hexbin`** binned on a lattice laid out in data units, then painted every
+  cell with one pixel radius taken from the x axis. The two axes do not map
+  data to pixels at the same rate, so rows landed at 42% of the spacing the
+  drawn hexagon needs and each cell swallowed most of its neighbours. Binning
+  now happens on the screen lattice, so the tiling is exact whatever the
+  aspect ratio.
+- **`quiver`** drew a bare triangle per node, sized by magnitude. Its subtitle
+  promised "length follows magnitude"; nothing carried length, and the channel
+  a vector field is read by was missing. Arrows now have shafts, and length
+  runs from 30% to 100% of the node spacing.
+- **`spectrogram`** and **`imshow-interpolated`** inflated every cell by
+  0.6-0.7px to hide an anti-aliasing seam their group already prevents with
+  `shape-rendering="crispEdges"`. On cells that small it was 15-23% of their
+  width, so each bled into its neighbour. Cells now use their exact footprint.
+
+### Changed
+
+- **`_svg.raster_row_rects`** merges each run of equal colours in a raster row
+  into one rect. Lossless. `spectrogram.svg` drops from 4.5 MB to 1.06 MB with
+  the render unchanged pixel for pixel; `imshow-interpolated.svg`, whose ramp
+  is now snapped to 64 levels so runs can form at all, from 2.7 MB to 982 KB.
+  The quantisation was measured: at most 7/255 difference on any channel.
+- **`FIGURES.md`** said 124 chart types; there are 127. The same stale count
+  was in `README.md`, `LISEZMOI.md`, `LANDSCAPE.md`, `PAYSAGE.md`,
+  `TRIGGERS.md` and `CODING.md`. The registry itself was already correct.
+
+### Added
+
+- **`tools/audit_tiling.py`** measures overlap between congruent cells in a
+  rendered figure. Reading generators for lattice defects does not work — the
+  pixels-per-unit factor is spelled differently in every file — so this checks
+  the output instead. Calibrated on hexbin: 64% before its fix, 0.0% after.
+
 ## 2.0.0 (2026-09-11): every figure is authored as SVG, and the package says so
 
 Major, because three things a caller could reach for are gone. Each named
