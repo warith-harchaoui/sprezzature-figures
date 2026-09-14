@@ -217,3 +217,33 @@ def test_recommend_limit_is_bounded() -> None:
     resp = client.post("/recommend", json={"data": ROWS, "limit": 0})
     assert resp.status_code == 422
 
+
+
+def test_check_render_route_reports_a_dropped_title() -> None:
+    """
+    The route exists, and it catches the failure that needs a caller's intent.
+
+    `check_render` shipped as a library function only: no CLI, no route, no MCP
+    tool. A capability an agent cannot reach is a capability it does not have,
+    and this one exists precisely so that an agent without a vision model can
+    still refuse to hand back an illegible figure.
+    """
+    import tempfile
+    from pathlib import Path
+
+    from sprezzature_figures import make_figure
+
+    with tempfile.TemporaryDirectory() as tmp:
+        svg = make_figure("bar", ROWS, out=str(Path(tmp) / "bar.svg")).read_text(
+            encoding="utf-8"
+        )
+
+    clean = client.post("/check_render", json={"svg": svg})
+    assert clean.status_code == 200, clean.text
+    assert clean.json() == [], "the demo bar chart should pass every rule"
+
+    dropped = client.post(
+        "/check_render", json={"svg": svg, "expected_title": "A title nobody rendered"}
+    )
+    assert dropped.status_code == 200, dropped.text
+    assert [f["check"] for f in dropped.json()] == ["title_ignored"]

@@ -351,3 +351,60 @@ else:
             ]
             result = make_figure(top.kind, bound, out=render_out)
             click.echo(f"rendered top recommendation ({top.kind}) -> {result}")
+
+    @main.command("check")
+    @click.argument("svg", type=click.Path(exists=True, dir_okay=False, allow_dash=True))
+    @click.option(
+        "--dark",
+        is_flag=True,
+        help="The figure was rendered for a dark canvas. Adds the dark-mode rules: "
+        "no light ink left behind, no large light surface in the middle of it.",
+    )
+    @click.option(
+        "--expect-title",
+        "expected_title",
+        default=None,
+        help="Title you asked the generator for. Reported missing if no text carries "
+        "it, which is how you catch a generator that ignored the parameter.",
+    )
+    @click.option(
+        "--forbid",
+        "forbidden",
+        multiple=True,
+        metavar="TEXT",
+        help="A string that must not appear, on top of the demo chrome already known "
+        "(repeatable). Pass your own placeholders here.",
+    )
+    def check_cmd(
+        svg: str, dark: bool, expected_title: str | None, forbidden: tuple[str, ...]
+    ) -> None:
+        """Check a rendered SVG for the failures that are decidable from markup.
+
+        The Ralph Eyeball Loop answers "does this read?" by showing the PNG to a
+        vision model. This asks the same questions from the source alone, so a
+        service with a text-only model, or none, can still refuse to ship an
+        illegible figure: colliding labels, text off the canvas, leftover demo
+        chrome, a light card on a dark page, a title the generator dropped.
+
+        Exit code 1 on any finding, so it works as a pre-commit or CI gate.
+        Judgements of taste are not here and never will be.
+        """
+        import sys as _sys
+        from pathlib import Path
+
+        from .render_checks import check_render
+
+        source = _sys.stdin.read() if svg == "-" else Path(svg).read_text(encoding="utf-8")
+        findings = check_render(
+            source, dark=dark, expected_title=expected_title, forbidden_text=forbidden
+        )
+        if not findings:
+            click.echo(f"{svg}: nothing to report.")
+            return
+
+        click.echo(f"{svg}: {len(findings)} finding(s)", err=True)
+        for finding in findings:
+            click.echo(f"  {finding.check}: {finding.message}", err=True)
+            if finding.detail:
+                click.echo(f"    {finding.detail}", err=True)
+        raise SystemExit(1)

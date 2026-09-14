@@ -48,13 +48,35 @@ from dataclasses import dataclass
 
 __all__ = ["RenderFinding", "check_render"]
 
+
+def _text_width(text: str, size: float) -> float:
+    """
+    Rendered width of `text` at `size`, in pixels.
+
+    Measured with ``scripts/_textfit.text_width`` — the same calibrated
+    per-character table the generators lay out with, so a string the generator
+    fitted cannot be reported here as overflowing. That agreement is the whole
+    point: a checker that measures differently from the thing it checks
+    invents failures, which is exactly what a flat ratio did.
+
+    Falls back to the flat ratio when the generators' helper is not importable
+    (this module must work against an SVG from anywhere, not only one this
+    package rendered).
+    """
+    try:
+        from ._textfit_bridge import text_width
+    except Exception:  # pragma: no cover - exercised only without scripts/
+        return len(text) * size * _GLYPH_WIDTH_RATIO
+    return float(text_width(text, size))
+
+
 _SVG_NS = "{http://www.w3.org/2000/svg}"
 
-#: Mean glyph advance as a fraction of the font size, for the house sans
-#: (Roboto). Measured across mixed-case Latin text; digits and uppercase run
-#: wider, lowercase narrower. Under-estimating would invent collisions, so
-#: the value sits at the low end of the observed range and the overlap test
-#: additionally requires a real, visible overlap before reporting.
+#: Fallback mean glyph advance as a fraction of the font size, used only when
+#: ``scripts/_textfit.py`` cannot be imported. A flat ratio is a poor measure:
+#: at 0.52 it made "The North brings in nearly four times what the West does"
+#: 757 px wide when Roboto renders it at 640, and reported the demo bar chart
+#: as overflowing a canvas it fits with 65 px to spare.
 _GLYPH_WIDTH_RATIO = 0.52
 
 #: Two labels whose estimated boxes overlap by less than this many pixels are
@@ -124,7 +146,7 @@ class _Label:
 
     @property
     def width(self) -> float:
-        return len(self.text) * self.size * _GLYPH_WIDTH_RATIO
+        return _text_width(self.text, self.size)
 
     @property
     def box(self) -> tuple[float, float]:
