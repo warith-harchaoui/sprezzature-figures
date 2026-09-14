@@ -449,3 +449,39 @@ def test_les_petites_valeurs_rendent_exactement_comme_avant():
 
     for v in (0, 0.031, 4.5, 12.3, 999, 9999):
         assert fmt_magnitude(v) == fmt_number(v), v
+
+
+def _pareto_svg(**kwargs) -> str:
+    """Rend un Pareto en mémoire, pour lire ses deux premières lignes de texte."""
+    import tempfile
+    from pathlib import Path as _Path
+
+    from sprezzature_figures import make_figure
+
+    donnees = [{"reason": f"c{i}", "count": 10 - i} for i in range(6)]
+    with tempfile.TemporaryDirectory() as dossier:
+        sortie = _Path(dossier) / "pareto.svg"
+        make_figure("pareto", donnees, out=str(sortie), **kwargs)
+        return sortie.read_text(encoding="utf-8")
+
+
+def test_pareto_honours_a_caller_title_and_keeps_its_takeaway():
+    """`title` était un no-op documenté sur ce générateur.
+
+    Un Pareto isolé a raison de titrer son constat (« 5 des 6 catégories
+    concentrent 87 % du total »). Mais intégré à une application, il est lu
+    sous la question qui l'a produit, et un appelant qui passe un titre voit
+    le sien ignoré : c'est ce qui s'est vu sur un portail, un graphique de
+    chiffre d'affaires titré par une statistique sur lui-même.
+
+    Le titre de l'appelant passe donc en tête et le constat descend d'une
+    ligne, à la place d'un sous-titre générique qui en disait moins.
+    """
+    defaut = _pareto_svg(language="fr")
+    assert "catégories concentrent" in defaut, "sans titre, le constat reste en tête"
+    assert "Catégories triées par volume" in defaut
+
+    nomme = _pareto_svg(language="fr", title="Chiffre d'affaires par client")
+    assert "Chiffre d&#39;affaires par client" in nomme or "Chiffre d'affaires par client" in nomme
+    assert "catégories concentrent" in nomme, "le constat n'est pas perdu, il descend"
+    assert "Catégories triées par volume" not in nomme, "le sous-titre générique cède la place"

@@ -51,3 +51,43 @@ def test_make_figure_default_is_light_unchanged():
         make_figure("bar", [{"region": "A", "value": 3}], out=str(p))
         svg = p.read_text(encoding="utf-8")
     assert "#1D1D1F" in svg  # light default keeps dark ink
+
+
+def test_to_dark_darkens_light_panels_and_dims_their_gridlines():
+    """A light plot panel is a SURFACE, not ink.
+
+    Left alone it stayed white-ish on a dark canvas, and a Pareto read as a
+    light card dropped onto a dark page. The gridlines drawn over it are
+    white on purpose — white separates marks on #F5F5F7 — and glare once the
+    panel goes dark, so they dim with it. Both values are the ones the
+    generators already use in their own prefers-color-scheme block.
+    """
+    svg = ('<svg width="200" height="100"><rect width="200" height="100" fill="#FFFFFF"/>'
+           '<rect x="10" y="10" width="180" height="80" fill="#F5F5F7" rx="10"/>'
+           '<line class="pa-grid" x1="10" y1="20" x2="190" y2="20" stroke="#FFFFFF"/>'
+           '<circle class="halo" stroke="#FFFFFF"/>'
+           '<text fill="#1D1D1F">titre</text></svg>')
+    out = to_dark(svg)
+    assert 'fill="#17171A"' in out, "le panneau clair doit devenir une surface sombre"
+    assert 'fill="#F5F5F7" rx="10"' not in out
+    assert 'class="pa-grid" x1="10" y1="20" x2="190" y2="20" stroke="#2C2C30"' in out
+    assert 'class="halo" stroke="#FFFFFF"' in out, "un halo blanc reste blanc"
+    # L'encre near-white produite par la passe de chrome ne doit pas être
+    # reprise pour un panneau : le texte reste lisible.
+    assert 'fill="#F5F5F7">titre</text>' in out
+    assert to_dark(out) == out, "idempotent"
+
+
+def test_pareto_dark_has_no_light_card_left():
+    with tempfile.TemporaryDirectory() as t:
+        p = Path(t) / "pareto.svg"
+        make_figure("pareto", [{"reason": f"c{i}", "count": 10 - i} for i in range(6)],
+                    out=str(p), dark=True)
+        svg = p.read_text(encoding="utf-8")
+    import re
+
+    panneaux_clairs = re.findall(r'<rect\b[^>]*fill="#F5F5F7"', svg)
+    assert not panneaux_clairs, "plus de panneau clair au milieu du graphique"
+    assert 'fill="#17171A"' in svg
+    # Le near-white subsiste, mais comme ENCRE de texte, ce qui est le but.
+    assert re.search(r'<text\b[^>]*fill="#F5F5F7"', svg)
