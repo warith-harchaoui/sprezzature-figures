@@ -23,7 +23,7 @@ pass the kind: ``<svg>`` is svg, a LaTeX preamble is tikz, a ``graph``
   own catalogue produces is already this kind; this is also the kind for
   a smoothing filter, arrowhead markers, or a gradient a diagram needs.
 
-Chart specs are not a source kind here: the 124-kind chart catalogue is
+Chart specs are not a source kind here: the 127-kind chart catalogue is
 hand-authored SVG throughout (see ``references/figure-catalog.md``). A
 caller holding a declarative chart spec must re-author it as TikZ,
 Mermaid, or raw SVG before handing it to this renderer.

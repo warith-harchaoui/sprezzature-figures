@@ -1,8 +1,18 @@
 # Changelog
 
-## Unreleased
+## 2.2.0 (2026-09-14): a chart you were sent, tools an agent can choose between, and a dark canvas
 
 ### Added
+
+- **`dark=True` — the same figure, drawn for a dark canvas.** The
+  full-canvas white rectangle is dropped so the figure sits transparent on
+  whatever is behind it, and the chrome (ink, secondary text, gridlines) is
+  lightened. Series colours are untouched, and so is the white that carries
+  meaning — a label printed on a coloured bar. Reachable as
+  `make_figure(..., dark=True)`, `--dark` on the CLI, and `to_dark()` for an
+  SVG you already have. Applied centrally in `make_figure` for SVG output and
+  popped before the generator runs, so no generator learns a second palette.
+  The light rendering is unchanged byte for byte.
 
 - **`redraw()` — a picture of somebody else's chart in, a sprezzature figure
   out.** A vision model reads the image; the figure is drawn here. Reachable

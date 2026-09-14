@@ -44,7 +44,7 @@ app starts and stays usable even with no model configured; see
 [DATA_PRIVACY.md](DATA_PRIVACY.md)).
 
 Everything in this directory documents the Studio specifically. For the
-figure-rendering library itself (`make_figure()`, the 124-generator
+figure-rendering library itself (`make_figure()`, the 127-generator
 catalogue, the CLI), see the top-level [README.md](../../README.md) /
 [FIGURES.md](../../FIGURES.md).
 
@@ -78,7 +78,7 @@ catalogue, the CLI), see the top-level [README.md](../../README.md) /
 
 The library, catalogue, dispatcher, ingest pipeline, core domain models, LLM
 client, Ralph engine, NiceGUI app, and iteration history/export are all built
-and tested. All 124 registered chart types are `status="stable"` (render-verified
+and tested. All 127 registered chart types are `status="stable"` (render-verified
 end to end, see [GENERATOR_AUDIT.md](GENERATOR_AUDIT.md)); a status is always
 recorded explicitly rather than a kind being silently assumed to work. The
 `FigurePlan`'s transformations (filter / sort / aggregate

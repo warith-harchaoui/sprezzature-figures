@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sprezzature-figures"
-version = "2.1.0"
-description = "Publication-quality data figures for the sprezzature stack: 124 hand-authored, interactive SVG chart types plus explainability, causality, and diagram rendering, every one authored as SVG directly. Includes the Ralph Eyeball Loop for autonomous visual quality feedback."
+version = "2.2.0"
+description = "Publication-quality data figures for the sprezzature stack: 127 hand-authored, interactive SVG chart types plus explainability, causality, and diagram rendering, every one authored as SVG directly. Includes the Ralph Eyeball Loop for autonomous visual quality feedback."
 readme = "README.md"
 requires-python = ">=3.10,<3.14"
 license = "BSD-3-Clause"
@@ -51,7 +51,7 @@ studio = [
     "os-helper>=1.8.0",
     "langdetect>=1.0.9",
 ]
-# Data-side support for the 124-kind catalogue, explainability and
+# Data-side support for the 127-kind catalogue, explainability and
 # causality. Nothing here draws: every figure is authored as SVG directly,
 # so this tier is tables, geometry and models only.
 dataviz = [
