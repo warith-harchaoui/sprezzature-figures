@@ -16,6 +16,7 @@ from __future__ import annotations
 from .darkmode import to_dark
 from .make_figure import get_figure_definition, list_kinds, make_figure, validate_figure_input
 from .redraw import RedrawResult, redraw
+from .render_checks import RenderFinding, check_render
 
 __all__ = [
     "make_figure",
@@ -23,6 +24,8 @@ __all__ = [
     "list_kinds",
     "validate_figure_input",
     "to_dark",
+    "check_render",
+    "RenderFinding",
     "redraw",
     "RedrawResult",
 ]

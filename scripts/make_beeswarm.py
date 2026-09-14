@@ -107,6 +107,30 @@ def _swarm_positions(
     return ys
 
 
+#: Chrome bilingue. Le français d'abord, parce que c'est la langue dans
+#: laquelle ces figures sont d'abord servies ; l'anglais ensuite, pour tout
+#: le reste. Une langue inconnue retombe sur l'anglais, jamais sur un
+#: mélange des deux.
+_CHROME = {
+    "fr": {
+        "group_prefix": "Groupe ", "y_axis_title": "Valeur",
+        "desc": ("Nuage d'abeilles de {n} observations réparties en {g} groupes, "
+                 "de {mini:.1f} à {maxi:.1f}. Survolez un point pour sa valeur exacte."),
+        "info_groupe": "Groupe {g} : {v:.1f}",
+        "info_valeur": "valeur {v:.1f}",
+        "info_centile": "{p:.0f}e centile de l'ensemble",
+    },
+    "en": {
+        "group_prefix": "Group ", "y_axis_title": "Value",
+        "desc": ("Beeswarm of {n} observations across {g} groups, ranging "
+                 "{mini:.1f} to {maxi:.1f}. Hover or focus a dot for its exact value."),
+        "info_groupe": "Group {g}: {v:.1f}",
+        "info_valeur": "value {v:.1f}",
+        "info_centile": "{p:.0f}th percentile overall",
+    },
+}
+
+
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
     title: str = "Response Times Overlap Across Three Cohorts",
@@ -116,8 +140,9 @@ def build_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
-    group_prefix: str = "Group ",
-    y_axis_title: str = "Value",
+    group_prefix: str = "",
+    y_axis_title: str = "",
+    language: str = "en",
 ) -> str:
     """Assemble the full beeswarm plot SVG document as a string.
 
@@ -159,12 +184,23 @@ def build_svg(
     hue_order = [palette.get("Brown", "#A52A2A"), palette.get("Blue", "#007AFF"), palette.get("Green", "#34C759")]
     colors = {g: hue_order[i % len(hue_order)] for i, g in enumerate(groups)}
 
+    # Chrome dans la langue demandée, sauf si l'appelant a donné le sien.
+    chrome = _CHROME.get(language.lower()[:2], _CHROME["en"])
+    group_prefix = group_prefix or chrome["group_prefix"]
+    y_axis_title = y_axis_title or chrome["y_axis_title"]
+
     values = [float(r["value"]) for r in rows]
     v_min, v_max = min(values), max(values)
     pad = (v_max - v_min) * 0.06 or 1.0
 
     plot_x, plot_y = 60.0, 150.0
-    right_margin, bottom_reserved = 30.0, 60.0
+    # Ce qui est réservé sous la zone de tracé doit contenir TOUT ce qui s'y
+    # dessine : l'axe (plot bas + 34), ses graduations (+20) et son titre
+    # (+42). Réserver 60 px pour 76 px de contenu écrivait le titre d'axe
+    # hors du canevas, où il est tout simplement coupé -- y compris sur le
+    # rendu de démonstration de ce fichier, pendant des mois, parce que rien
+    # ne regardait l'image produite.
+    right_margin, bottom_reserved = 30.0, 88.0
     plot_w = width - plot_x - right_margin
     plot_h = height - plot_y - bottom_reserved
     center_y = plot_y + plot_h / 2.0
@@ -180,8 +216,9 @@ def build_svg(
     parts.append(svg_open(width, height, "bee-title", "bee-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="bee-title">{xml_escape(title)}</title>')
     parts.append(
-        f'<desc id="bee-desc">Beeswarm of {len(rows)} observations across {len(groups)} groups, '
-        f'ranging {v_min:.1f} to {v_max:.1f}. Hover or focus a dot for its exact value.</desc>'
+        f'<desc id="bee-desc">'
+        f'{xml_escape(chrome["desc"].format(n=len(rows), g=len(groups), mini=v_min, maxi=v_max))}'
+        f'</desc>'
     )
     parts.append(
         "<style>"
@@ -205,12 +242,39 @@ def build_svg(
     parts.append(f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>')
 
     # ---- legend ----
+    #
+    # La légende s'écrivait sur une seule ligne, en avançant un curseur sans
+    # jamais regarder la largeur : au-delà de quelques groupes, les entrées
+    # sortaient du canevas et disparaissaient. Elle revient donc à la ligne,
+    # et si le nombre de groupes dépasse ce que la bande peut contenir, elle
+    # le DIT au lieu de laisser croire qu'elle les montre tous.
     lx, ly = 40.0, 104.0
-    cursor = lx
-    for g in groups:
-        parts.append(f'<circle cx="{cursor + 6:.1f}" cy="{ly - 4:.1f}" r="6" fill="{colors[g]}"/>')
-        parts.append(f'<text x="{cursor + 20:.1f}" y="{ly:.1f}" font-size="12" fill="{INK}">{xml_escape(group_prefix)}{xml_escape(g)}</text>')
-        cursor += 20 + 7.0 * (len(g) + 6) + 22
+    _LEGEND_LINE_H = 20.0
+    _LEGEND_MAX_LINES = 2
+    cursor, ligne = lx, 0
+    restants, fin_derniere_ligne = 0, lx
+    for index, g in enumerate(groups):
+        largeur = 20 + 7.0 * (len(str(g)) + len(group_prefix)) + 22
+        if cursor + largeur > width - right_margin:
+            if ligne + 1 >= _LEGEND_MAX_LINES:
+                # Plus de place : on s'arrête ici et on annonce le reste à la
+                # suite de la DERNIÈRE entrée écrite, pas au début de la ligne
+                # suivante, où le marqueur se poserait sur une entrée déjà là.
+                restants = len(groups) - index
+                break
+            ligne += 1
+            cursor = lx
+        y = ly + ligne * _LEGEND_LINE_H
+        parts.append(f'<circle cx="{cursor + 6:.1f}" cy="{y - 4:.1f}" r="6" fill="{colors[g]}"/>')
+        parts.append(f'<text x="{cursor + 20:.1f}" y="{y:.1f}" font-size="12" fill="{INK}">{xml_escape(group_prefix)}{xml_escape(g)}</text>')
+        cursor += largeur
+        fin_derniere_ligne = cursor
+    if restants:
+        y = ly + ligne * _LEGEND_LINE_H
+        parts.append(
+            f'<text x="{fin_derniere_ligne:.1f}" y="{y:.1f}" font-size="12" '
+            f'fill="{SECONDARY}">+{restants}</text>'
+        )
 
     # ---- x-axis ----
     axis_y = plot_y + plot_h + 34.0
@@ -246,7 +310,7 @@ def build_svg(
     for i, ((x, _), y, row) in enumerate(zip(items, ys, ordered_rows)):
         g = str(row["group"])
         val = float(row["value"])
-        tip = f"Group {g}: {val:.1f}"
+        tip = chrome["info_groupe"].format(g=g, v=val)
         parts.append(
             f'<circle id="dot-hit-{i}" class="dot hit" tabindex="0" cx="{x:.1f}" cy="{y:.1f}" r="{_RADIUS:.0f}" '
             f'fill="{colors.get(g, "#8E8E93")}" stroke="{BG}" stroke-width="1">'
@@ -256,7 +320,8 @@ def build_svg(
         dot_tips.append(
             tooltip_bubble(
                 x, y - _RADIUS - 6,
-                [f"Group {g}", f"value {val:.1f}", f"{percentile:.0f}th percentile overall"],
+                [f'{chrome["group_prefix"]}{g}', chrome["info_valeur"].format(v=val),
+                 chrome["info_centile"].format(p=percentile)],
                 canvas_w=width, canvas_h=height, ink=INK, secondary=SECONDARY, border=GRIDLINE,
                 elem_id=f"dot-tip-{i}",
             )
@@ -279,8 +344,9 @@ def make_beeswarm(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
-    group_prefix: str = "Group ",
-    y_axis_title: str = "Value",
+    group_prefix: str = "",
+    y_axis_title: str = "",
+    language: str = "en",
 ) -> Path:
     """Render a hand-authored beeswarm plot and write the SVG to *out*.
 
@@ -312,7 +378,7 @@ def make_beeswarm(
     True
     """
     svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
-                     mode=mode, accessibility=accessibility, theme=theme, group_prefix=group_prefix, y_axis_title=y_axis_title)
+                     mode=mode, accessibility=accessibility, theme=theme, group_prefix=group_prefix, y_axis_title=y_axis_title, language=language)
     dest = Path(out) if out else svg_example_path(__file__, "beeswarm")
     return write_svg(dest, svg, theme=theme)
 

@@ -128,7 +128,24 @@ def build_svg(
         f'font-family="{chrome_family}" '
         f'style="background:{BG};max-width:100%;height:auto">'
     )
-    lines.append(f'<desc>{escape(subtitle)}</desc>')
+    # Description accessible DÉRIVÉE DES DONNÉES, pas du sous-titre. Un
+    # appelant qui rend ses propres données passe un sous-titre vide (le
+    # sous-titre de démonstration parlerait de l'exemple, pas de ses
+    # données) : la description partait donc vide, et un lecteur d'écran
+    # n'annonçait plus rien du contenu. Ce que la figure MONTRE ne dépend
+    # d'aucun texte fourni, il se déduit des étapes.
+    if data:
+        premiere, derniere = data[0], data[-1]
+        depart, arrivee = float(premiere["count"]), float(derniere["count"])
+        taux = (arrivee / depart * 100) if depart else 0.0
+        resume = (
+            f"Funnel of {len(data)} stages, from {premiere['stage']} "
+            f"({depart:,.0f}) to {derniere['stage']} ({arrivee:,.0f}), "
+            f"{taux:.1f}% of the first stage."
+        )
+    else:
+        resume = "Empty funnel."
+    lines.append(f'<desc>{escape(subtitle or resume)}</desc>')
     lines.append(
         "<style>"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"

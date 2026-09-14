@@ -50,18 +50,38 @@ def _normal_pdf(x: float, mean: float, std: float) -> float:
     return math.exp(-0.5 * z * z) / (std * math.sqrt(2.0 * math.pi))
 
 
+#: Chrome bilingue : le français d'abord, l'anglais ensuite. Les phrases de
+#: TITRE parlent d'un examen, c'est-à-dire du jeu de démonstration : elles ne
+#: sont servies que lorsque la figure rend ce jeu-là.
+_CHROME = {
+    "fr": {
+        "y_axis_title": "Densité de probabilité",
+        "x_axis_title": "Valeur",
+        "title": "Deux résultats d'examen sur trois tombent entre 63 et 82",
+        "subtitle": "Loi normale ajustée sur 1 840 résultats d'examen ; zone ombrée = un écart-type autour de la moyenne",
+    },
+    "en": {
+        "y_axis_title": "Probability density",
+        "x_axis_title": "Value",
+        "title": "Two exam results in three fall between 63 and 82",
+        "subtitle": "Normal distribution fitted to 1,840 exam results; shaded area = one standard deviation around the mean",
+    },
+}
+
+
 def build_svg(
     mean: float = 72.4,
     std: float = 9.1,
-    title: str = "Two exam results in three fall between 63 and 82",
-    subtitle: str = "Normal distribution fitted to 1,840 exam results; shaded area = one standard deviation around the mean",
+    title: str = "",
+    subtitle: str = "",
     width: int = 845,
     height: int = 519,
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
-    y_axis_title: str = "Probability density",
-    x_axis_title: str = "Value",
+    language: str = "en",
+    y_axis_title: str = "",
+    x_axis_title: str = "",
 ) -> str:
     """Assemble the full bell curve SVG document as a string.
 
@@ -88,6 +108,14 @@ def build_svg(
     str
         A complete, standalone SVG document.
     """
+
+    # Chrome dans la langue demandée, sauf pour ce que l'appelant a fourni.
+    chrome = _CHROME.get(language.lower()[:2], _CHROME["en"])
+    y_axis_title = y_axis_title or chrome["y_axis_title"]
+    x_axis_title = x_axis_title or chrome["x_axis_title"]
+    title = title or chrome["title"]
+    subtitle = subtitle or chrome["subtitle"]
+
     _ = accessibility
     mono_family = mono_stack_for_theme(theme)
     n_points = 200
@@ -116,7 +144,14 @@ def build_svg(
     parts: List[str] = []
     parts.append(svg_open(width, height, "bc-title", "bc-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="bc-title">{xml_escape(title)}</title>')
-    parts.append(f'<desc id="bc-desc">{xml_escape(subtitle)}</desc>')
+    # Description accessible dérivée des données quand l'appelant n'a pas de
+    # sous-titre à donner : un sous-titre vide (le cas dès qu'on rend des
+    # données autres que celles de la démonstration) laissait la figure
+    # muette pour un lecteur d'écran.
+    resume = subtitle or (
+        f"Normal distribution, mean {mean:.1f}, standard deviation {std:.1f}."
+    )
+    parts.append(f'<desc id="bc-desc">{xml_escape(resume)}</desc>')
     # House hover-tooltip pattern (previously absent from this generator --
     # every mark had a bare native <title> but no .hit/.tip reveal, no
     # :hover/:focus CSS at all, and no reduced-motion guard, unlike the rest
@@ -257,15 +292,16 @@ def make_bellcurve(
     mean: Optional[float] = None,
     std: Optional[float] = None,
     out: Optional[Path | str] = None,
-    title: str = "Two exam results in three fall between 63 and 82",
-    subtitle: str = "Normal distribution fitted to 1,840 exam results; shaded area = one standard deviation around the mean",
+    title: str = "",
+    subtitle: str = "",
     width: int = 845,
     height: int = 519,
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
-    y_axis_title: str = "Probability density",
-    x_axis_title: str = "Value",
+    language: str = "en",
+    y_axis_title: str = "",
+    x_axis_title: str = "",
 ) -> Path:
     """Render a hand-authored bell curve figure and write the SVG to *out*.
 
@@ -308,7 +344,7 @@ def make_bellcurve(
     resolved_mean = mean if mean is not None else float(rec.get("mean", 72.4))
     resolved_std = std if std is not None else float(rec.get("std", 9.1))
     svg = build_svg(resolved_mean, resolved_std, title=title, subtitle=subtitle, width=width, height=height,
-                     mode=mode, accessibility=accessibility, theme=theme, y_axis_title=y_axis_title, x_axis_title=x_axis_title)
+                     mode=mode, accessibility=accessibility, theme=theme, y_axis_title=y_axis_title, x_axis_title=x_axis_title, language=language)
     dest = Path(out) if out else svg_example_path(__file__, "bellcurve")
     return write_svg(dest, svg, theme=theme)
 

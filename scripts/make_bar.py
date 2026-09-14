@@ -155,9 +155,19 @@ def build_svg(
     plot_x = max(64.0, 10 + tick_label_w + 24)
     right_margin, bottom_reserved = 32.0, 70.0
     plot_w = width - plot_x - right_margin
-    plot_h = height - plot_y - bottom_reserved
     n = len(ordered)
     bin_w = plot_w / n if n else plot_w
+
+    # Des étiquettes de catégorie trop larges pour l'espace d'une barre sont
+    # inclinées plus bas (elles ne peuvent pas être décimées : chaque barre a
+    # besoin de la sienne). Une étiquette inclinée descend, donc le canevas
+    # grandit d'autant, sinon le titre d'axe finit hors cadre et disparaît.
+    etiquettes = [str(row["region"]) for row in ordered]
+    largeur_max = max((len(e) for e in etiquettes), default=0) * 13 * 0.55
+    incliner = largeur_max + 6 > bin_w
+    descente = min(largeur_max * 0.57, 70.0) if incliner else 0.0
+    height = height + descente
+    plot_h = height - plot_y - bottom_reserved - descente
     bar_w = max(1.0, bin_w * 0.6)
 
     def y_for(v: float) -> float:
@@ -256,14 +266,31 @@ def build_svg(
         f'<line x1="{plot_x:.1f}" y1="{axis_y:.1f}" x2="{plot_x + plot_w:.1f}" y2="{axis_y:.1f}" '
         f'stroke="{INK}" stroke-width="1.2"/>'
     )
+    # Chaque barre a besoin de SON étiquette : contrairement à un axe
+    # temporel, on ne peut pas en imprimer une sur trois sans rendre les
+    # barres anonymes. Quand elles ne tiennent pas côte à côte, on les
+    # incline plutôt que de les laisser se chevaucher — c'est ce qui se
+    # passait avec des identifiants de clients, imprimés les uns sur les
+    # autres jusqu'à former une bouillie.
     for i, row in enumerate(ordered):
         tx = plot_x + i * bin_w + bin_w / 2
-        parts.append(
-            f'<text x="{tx:.1f}" y="{axis_y + 20:.1f}" font-size="13" fill="{INK}" '
-            f'text-anchor="middle">{xml_escape(str(row["region"]))}</text>'
-        )
+        etiquette = xml_escape(etiquettes[i])
+        if incliner:
+            parts.append(
+                f'<text x="{tx:.1f}" y="{axis_y + 18:.1f}" font-size="13" fill="{INK}" '
+                f'text-anchor="end" transform="rotate(-35 {tx:.1f} {axis_y + 18:.1f})">'
+                f'{etiquette}</text>'
+            )
+        else:
+            parts.append(
+                f'<text x="{tx:.1f}" y="{axis_y + 20:.1f}" font-size="13" fill="{INK}" '
+                f'text-anchor="middle">{etiquette}</text>'
+            )
+    # Le titre d'axe descend quand les étiquettes sont inclinées, sans quoi il
+    # passerait dessous et se superposerait à leurs descendantes.
+    titre_axe_y = axis_y + 44 + descente
     parts.append(
-        f'<text x="{plot_x + plot_w / 2:.1f}" y="{axis_y + 44:.1f}" font-size="14" '
+        f'<text x="{plot_x + plot_w / 2:.1f}" y="{titre_axe_y:.1f}" font-size="14" '
         f'fill="{INK}" text-anchor="middle">{xml_escape(x_label)}</text>'
     )
 

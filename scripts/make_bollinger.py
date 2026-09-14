@@ -53,7 +53,10 @@ import numpy as np
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _svg import catmull_rom_beziers, fmt_compact, foreground_tip_css, tooltip_bubble, xml_escape  # noqa: E402
+from _svg import (  # noqa: E402
+    catmull_rom_beziers, fmt_compact, foreground_tip_css, tooltip_bubble,
+    wrap_no_orphan, xml_escape,
+)
 from _render import svg_example_path, write_svg  # noqa: E402
 from _style import leveled_colors, os_adaptive_style, os_dark_style  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
@@ -278,6 +281,39 @@ def _band_path(
 # --------------------------------------------------------------------------- #
 # SVG assembly                                                                 #
 # --------------------------------------------------------------------------- #
+#: Chrome bilingue, français d'abord. Les phrases de titre décrivent le jeu
+#: de démonstration (une année de Bourse) et ne sortent que pour lui ; le
+#: reste (légendes, bandes, mois) sert quelles que soient les données.
+_CHROME = {
+    "fr": {
+        "titre": "Un resserrement de fin d'été a comprimé l'amplitude, puis le cours est sorti par le haut",
+        "sous_titre": "Cours de clôture, moyenne mobile à {window} jours et bandes de Bollinger à ±{sigma} écarts-types",
+        "legende_bas": "une année de Bourse &#183; cours de clôture quotidien en dollars",
+        "squeeze": "Le resserrement",
+        "squeeze_caption": "amplitude des bandes au plus bas de l'année",
+        "bande_haute": "Bande haute", "bande_basse": "Bande basse",
+        "cloture": "Clôture", "moyenne": "moyenne {window} j",
+        "bande_sigma": "bande ±{sigma}σ", "legende_prix": "Clôture quotidienne",
+        "legende_moyenne": "moyenne mobile {window} jours",
+        "mois": ["janv.", "févr.", "mars", "avr.", "mai", "juin",
+                 "juil.", "août", "sept.", "oct.", "nov.", "déc."],
+    },
+    "en": {
+        "titre": "A late-summer squeeze coiled the range, then price broke out to the upside",
+        "sous_titre": "Daily close with a {window}-day moving average and Bollinger bands at ±{sigma} standard deviations",
+        "legende_bas": "one trading year &#183; daily closing price in US dollars",
+        "squeeze": "The squeeze",
+        "squeeze_caption": "band width at its yearly low",
+        "bande_haute": "Upper band", "bande_basse": "Lower band",
+        "cloture": "Close", "moyenne": "{window}-day avg",
+        "bande_sigma": "±{sigma}σ band", "legende_prix": "Daily close",
+        "legende_moyenne": "{window}-day moving average",
+        "mois": ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                 "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+    },
+}
+
+
 def build_svg(
     data: Dict[str, np.ndarray],
     window: int = 20,
@@ -285,8 +321,10 @@ def build_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
-    squeeze_label: str = "The squeeze",
-    price_legend_label: str = "Daily close",
+    squeeze_label: str = "",
+    squeeze_caption: str = "",
+    language: str = "en",
+    price_legend_label: str = "",
 ) -> str:
     """Assemble the full Bollinger-band SVG document as a string.
 
@@ -347,6 +385,14 @@ def build_svg(
     _BREAKOUT_HUE_C = _role_colours["breakout"]
 
     close = data["close"]
+    # Une fenêtre plus longue que la série ne laisse AUCUN jour complet : les
+    # bandes sont alors entièrement NaN et le calcul de l'échelle s'arrêtait
+    # sur « zero-size array to reduction operation fmin », c'est-à-dire une
+    # exception nue au milieu d'un rendu. Une série courte est une donnée
+    # valide, pas une erreur : on raccourcit la fenêtre à ce que la série
+    # peut porter, avec un plancher de trois jours en deçà duquel une bande
+    # de Bollinger ne veut plus rien dire.
+    window = max(3, min(window, len(close) // 2))
     bands = _rolling_bands(close, window=window, n_sigma=n_sigma)
     middle, upper, lower, bwidth = bands["middle"], bands["upper"], bands["lower"], bands["width"]
     n = len(close)
@@ -354,12 +400,31 @@ def build_svg(
     # First index with a full window — every band starts here.
     start = window - 1
 
+    # ---- chrome et hauteur d'en-tête -------------------------------------- #
+    #
+    # L'en-tête se MESURE avant de poser la géométrie. Sa hauteur dépend de la
+    # langue : une même phrase traduite prend souvent une ligne de plus, et
+    # tant que le haut du tracé était une constante, ce sont la légende puis
+    # l'annotation qui se faisaient écraser.
+    chrome = _CHROME.get(language.lower()[:2], _CHROME["en"])
+    sigma_txt = f"{n_sigma:g}"
+    squeeze_label = squeeze_label or chrome["squeeze"]
+    squeeze_caption = squeeze_caption or chrome["squeeze_caption"]
+    price_legend_label = price_legend_label or chrome["legende_prix"]
+    title = chrome["titre"]
+    subtitle = chrome["sous_titre"].format(window=window, sigma=sigma_txt)
+    titre_lignes = wrap_no_orphan(title, 62)
+    sous_titre_lignes = wrap_no_orphan(subtitle, 96)
+    entete_bas = 70 + 36 * len(titre_lignes) + 24 * len(sous_titre_lignes)
+
     # ---- canvas geometry -------------------------------------------------- #
     # Poster-scale: wide enough for a trading year to breathe, tall enough that
     # the +/-2 sigma envelope is a comfortable shape rather than a sliver.
     width, height = 1280, 800
     m_left, m_right = 92, 214
-    m_top, m_bottom = 208, 92
+    # Le tracé commence sous l'en-tête, la légende et l'annotation : 208 px
+    # suffisent au cas anglais d'origine, jamais moins.
+    m_top, m_bottom = max(208, entete_bas + 104), 92
     plot_w = width - m_left - m_right
     plot_h = height - m_top - m_bottom
 
@@ -403,11 +468,6 @@ def build_svg(
     defs: List[str] = []
 
     # ---- header ----------------------------------------------------------- #
-    title = "A late-summer squeeze coiled the range, then price broke out to the upside"
-    subtitle = (
-        "Daily close with a 20-day moving average and Bollinger bands at "
-        "±2 standard deviations"
-    )
     parts.append(
         f'<svg role="img" aria-label="{title}" '
         f'xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" '
@@ -424,18 +484,27 @@ def build_svg(
         f"marked in green.</desc>"
     )
     parts.append(f'<rect width="{width}" height="{height}" rx="18" fill="{_BG}"/>')
+    # Le titre était posé sur UNE ligne, à une ordonnée fixe, calibrée sur sa
+    # version anglaise. La même phrase en français est plus longue — c'est la
+    # règle, pas l'exception — et sortait du cadre. On la replie, et ce qui
+    # suit descend d'autant.
+    ligne_y = 70
+    for ligne in titre_lignes:
+        parts.append(
+            f'<text x="{m_left}" y="{ligne_y}" font-size="30" '
+            f'font-weight="700" fill="{_INK}">{xml_escape(ligne)}</text>'
+        )
+        ligne_y += 36
+    ligne_y += 2
+    for ligne in sous_titre_lignes:
+        parts.append(
+            f'<text x="{m_left}" y="{ligne_y}" font-size="18" '
+            f'fill="{_SECONDARY}">{xml_escape(ligne)}</text>'
+        )
+        ligne_y += 24
     parts.append(
-        f'<text x="{m_left}" y="70" font-size="30" '
-        f'font-weight="700" fill="{_INK}">{title}</text>'
-    )
-    parts.append(
-        f'<text x="{m_left}" y="104" font-size="18" '
-        f'fill="{_SECONDARY}">{subtitle}</text>'
-    )
-    parts.append(
-        f'<text x="{m_left}" y="128" font-size="15" '
-        f'fill="{_SECONDARY}">one trading year &#183; '
-        f'daily closing price in US dollars</text>'
+        f'<text x="{m_left}" y="{ligne_y}" font-size="15" '
+        f'fill="{_SECONDARY}">{chrome["legende_bas"]}</text>'
     )
 
     # ---- horizontal $5 gridlines ------------------------------------------ #
@@ -504,19 +573,27 @@ def build_svg(
     # Leader up to a two-line amber label sitting in the gap between the legend
     # row and the plot's top edge, so it crowds neither.
     s_lbl_y = m_top - 14
+    # L'étiquette est CENTRÉE sur le jour repéré. Quand ce jour tombe au bord
+    # du tracé — ce qui arrive dès que la série est courte — la moitié
+    # gauche du texte sortait du canevas et se faisait couper. On rentre donc
+    # le point d'ancrage de la demi-largeur du texte, le trait de rappel
+    # restant, lui, sur le jour concerné : c'est lui qui désigne, pas le
+    # texte.
+    demi_texte = max(len(squeeze_label), len(squeeze_caption)) * 14 * 0.55 / 2
+    sx_texte = min(max(sx, m_left + demi_texte), width - m_right - demi_texte)
     ann.append(
         f'<line x1="{_fmt(sx)}" y1="{_fmt(s_up_y - 6)}" x2="{_fmt(sx)}" '
         f'y2="{_fmt(s_lbl_y + 8)}" stroke="{_SQUEEZE_HUE_C}" stroke-width="1.4" '
         f'stroke-dasharray="2 4"/>'
     )
     ann.append(
-        f'<text class="bo-squeeze-txt" x="{_fmt(sx)}" y="{_fmt(s_lbl_y - 16)}" '
+        f'<text class="bo-squeeze-txt" x="{_fmt(sx_texte)}" y="{_fmt(s_lbl_y - 16)}" '
         f'text-anchor="middle" '
         f'font-size="17" font-weight="700" fill="{_SQUEEZE_HUE_C}">{xml_escape(squeeze_label)}</text>'
     )
     ann.append(
-        f'<text x="{_fmt(sx)}" y="{_fmt(s_lbl_y + 2)}" text-anchor="middle" '
-        f'font-size="14" fill="{_SECONDARY}">band width at its yearly low</text>'
+        f'<text x="{_fmt(sx_texte)}" y="{_fmt(s_lbl_y + 2)}" text-anchor="middle" '
+        f'font-size="14" fill="{_SECONDARY}">{xml_escape(squeeze_caption)}</text>'
     )
 
     # ---- breakout call-out ------------------------------------------------ #
@@ -554,7 +631,7 @@ def build_svg(
     # ---- month axis ------------------------------------------------------- #
     # Twelve evenly spaced month ticks across the trading year.
     axis_y = m_top + plot_h
-    month_labels = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    month_labels = chrome["mois"] or ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
                     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
     axis_bits: List[str] = [
         f'<line x1="{_fmt(m_left)}" y1="{_fmt(axis_y)}" '
@@ -582,13 +659,13 @@ def build_svg(
     # than ``gap`` px below its predecessor, so the whole stack stays legible
     # and none collide even when the close ends hard against the upper band.
     rows: List[Dict[str, Any]] = [
-        {"name": "Upper band", "y": upper_pts[-1][1], "ax": upper_pts[-1][0],
+        {"name": chrome["bande_haute"], "y": upper_pts[-1][1], "ax": upper_pts[-1][0],
          "colour": _BAND_EDGE_C, "val": float(upper[-1]), "bold": False, "cls": "bo-edge"},
-        {"name": "Close", "y": price_pts[-1][1], "ax": price_pts[-1][0],
+        {"name": chrome["cloture"], "y": price_pts[-1][1], "ax": price_pts[-1][0],
          "colour": _PRICE_LINE_C, "val": float(close[-1]), "bold": True, "cls": ""},
-        {"name": "20-day avg", "y": middle_pts[-1][1], "ax": middle_pts[-1][0],
+        {"name": chrome["moyenne"].format(window=window), "y": middle_pts[-1][1], "ax": middle_pts[-1][0],
          "colour": _MA_LINE_C, "val": float(middle[-1]), "bold": False, "cls": "bo-ma"},
-        {"name": "Lower band", "y": lower_pts[-1][1], "ax": lower_pts[-1][0],
+        {"name": chrome["bande_basse"], "y": lower_pts[-1][1], "ax": lower_pts[-1][0],
          "colour": _BAND_EDGE_C, "val": float(lower[-1]), "bold": False, "cls": "bo-edge"},
     ]
     rows.sort(key=lambda r: r["y"])
@@ -626,7 +703,10 @@ def build_svg(
 
     # ---- legend ----------------------------------------------------------- #
     legend: List[str] = []
-    ly = 150.0
+    # La légende suit l'en-tête au lieu d'être posée à une hauteur écrite
+    # d'avance : un titre qui prend deux lignes (ce qui arrive dès que la
+    # phrase est traduite) venait sinon s'écrire par-dessus.
+    ly = max(150.0, entete_bas + 22)
     lx = m_left
     # Band swatch.
     legend.append(
@@ -637,7 +717,7 @@ def build_svg(
     )
     legend.append(
         f'<text x="{_fmt(lx + 34)}" y="{_fmt(ly)}" font-size="15" '
-        f'fill="{_INK}">±2σ band</text>'
+        f'fill="{_INK}">{xml_escape(chrome["bande_sigma"].format(sigma=sigma_txt))}</text>'
     )
     # Price line swatch.
     lx += 148
@@ -660,7 +740,7 @@ def build_svg(
     )
     legend.append(
         f'<text x="{_fmt(lx + 34)}" y="{_fmt(ly)}" font-size="15" '
-        f'fill="{_INK}">20-day moving average</text>'
+        f'fill="{_INK}">{xml_escape(chrome["legende_moyenne"].format(window=window))}</text>'
     )
 
     # ---- hover tooltips: one transparent hit-column per ~2 weeks ---------- #
@@ -818,8 +898,10 @@ def make_bollinger(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
-    squeeze_label: str = "The squeeze",
-    price_legend_label: str = "Daily close",
+    squeeze_label: str = "",
+    squeeze_caption: str = "",
+    language: str = "en",
+    price_legend_label: str = "",
 ) -> Path:
     """Render the house-styled Bollinger-band chart and write the SVG to *out*.
 
@@ -857,7 +939,7 @@ def make_bollinger(
     _ = title
     rows = data if data else DEMO_DATA
     price_data = _rows_to_close(rows)
-    svg = build_svg(price_data, window=window, n_sigma=n_sigma, mode=mode, accessibility=accessibility, theme=theme, squeeze_label=squeeze_label, price_legend_label=price_legend_label)
+    svg = build_svg(price_data, window=window, n_sigma=n_sigma, mode=mode, accessibility=accessibility, theme=theme, squeeze_label=squeeze_label, squeeze_caption=squeeze_caption, price_legend_label=price_legend_label, language=language)
     dest = Path(out) if out else svg_example_path(__file__, "bollinger")
     return write_svg(dest, svg, theme=theme)
 
