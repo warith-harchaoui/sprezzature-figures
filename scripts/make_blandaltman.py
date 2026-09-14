@@ -60,7 +60,11 @@ from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _style import leveled_colors, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
-from _svg import foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _scale import nice_ticks_range  # noqa: E402
+from _svg import (  # noqa: E402
+    fmt_number, foreground_tip_css, svg_open, tooltip_bubble, wrap_no_orphan,
+    xml_escape,
+)
 
 
 def make_data(n: int = 90, seed: int = 7) -> List[Dict[str, float]]:
@@ -177,11 +181,58 @@ def _linear_fit(xs: List[float], ys: List[float]) -> tuple[float, float]:
     return float(slope), float(intercept)
 
 
+#: Chrome bilingue, français d'abord. Les formulations qui nomment un
+#: poignet, un brassard ou une pression systolique décrivent le jeu de
+#: démonstration : elles ne sortent que pour lui.
+_CHROME = {
+    "fr": {
+        "titre_demo": "Le tensiomètre de poignet et le brassard sont-ils d'accord ?",
+        "explication_demo": "Graphique de Bland-Altman. Chaque point est un patient : son écart (poignet − bras) face à la moyenne des deux méthodes.",
+        "explication": "Graphique de Bland-Altman : chaque point est un sujet, son écart entre les deux méthodes face à leur moyenne.",
+        "lignes": "Trait plein = biais moyen ({bias}). Traits pointillés = limites d'agrément à 95 % ({lo} à {hi}).",
+        "constat_demo": "Biais sous zéro, nuage penchant vers la droite : le poignet sous-estime, et d'autant plus que la pression monte",
+        "axe_x_demo": "Moyenne des deux méthodes — pression systolique",
+        "axe_x": "Moyenne des deux méthodes",
+        "axe_y_demo": "Écart entre les méthodes — poignet − bras",
+        "axe_y": "Écart entre les deux méthodes",
+        "biais": "Biais",
+    },
+    "en": {
+        "titre_demo": "Do the wrist monitor and the arm cuff agree?",
+        "explication_demo": "Bland-Altman plot. Each dot is one patient: its difference (wrist − arm) against the two methods’ mean.",
+        "explication": "Bland-Altman plot: each dot is one subject, its difference between the two methods against their mean.",
+        "lignes": "Solid line = mean bias ({bias}). Dashed lines = 95% limits of agreement ({lo} to {hi}).",
+        "constat_demo": "Bias below zero, cloud tilting down to the right: the wrist reads low, worse at higher pressure",
+        "axe_x_demo": "Mean of the two methods — systolic pressure",
+        "axe_x": "Mean of the two methods",
+        "axe_y_demo": "Difference between methods — wrist − arm",
+        "axe_y": "Difference between the two methods",
+        "biais": "Bias",
+    },
+}
+
+
+def _tick_label(valeur: float) -> str:
+    """Étiquette de graduation : entière quand la valeur l'est.
+
+    ``nice_ticks_range`` rend des flottants, et « 80.0 » sous un axe de
+    valeurs entières est du bruit, en plus d'être plus large donc plus
+    prompt à chevaucher sa voisine.
+    """
+    return f"{valeur:.0f}" if abs(valeur - round(valeur)) < 1e-9 else f"{valeur:.1f}"
+
+
 def build_svg(
     data: Optional[List[Dict[str, float]]] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    title: str = "",
+    subtitle: str = "",
+    unit: str = "",
+    x_axis_title: str = "",
+    y_axis_title: str = "",
+    language: str = "en",
 ) -> str:
     """Assemble the full Bland-Altman SVG string.
 
@@ -272,13 +323,29 @@ def build_svg(
     plot_h = height - m_top - m_bottom
 
     # --- axis ranges (headroom so nothing clips) -----------------
-    # x-window: the observed mean-pressure range, padded so nothing sits
-    # on the axis. y-window kept symmetric so the zero rule sits near
-    # mid-height and the downward tilt is obvious.
-    x_min, x_max = 92.0, 188.0
-    y_min, y_max = -22.0, 14.0
-    x_ticks = [100, 120, 140, 160, 180]
-    y_ticks = [-18, -12, -6, 0, 6, 12]
+    #
+    # Les deux fenêtres étaient ÉCRITES EN DUR pour le jeu de démonstration
+    # (92..188 en abscisse, -22..14 en ordonnée). Sur d'autres mesures, les
+    # points et surtout les deux limites d'agrément — qui sont l'objet même
+    # d'un Bland-Altman — tombaient hors du cadre, et la pastille de valeur
+    # partait au-dessus du canevas. Les fenêtres se calculent donc sur les
+    # données, en incluant toujours les limites et le zéro, qui sont les
+    # repères de lecture.
+    moyennes = [float(r["mean"]) for r in data] or [0.0]
+    ecarts = [float(r["diff"]) for r in data] or [0.0]
+    marge_x = (max(moyennes) - min(moyennes)) * 0.06 or 1.0
+    x_min, x_max = min(moyennes) - marge_x, max(moyennes) + marge_x
+    bornes_y = ecarts + [loa_lo, loa_hi, bias, 0.0]
+    marge_y = (max(bornes_y) - min(bornes_y)) * 0.12 or 1.0
+    y_min, y_max = min(bornes_y) - marge_y, max(bornes_y) + marge_y
+    # Les graduations « rondes » débordent volontiers la fenêtre demandée :
+    # on cale donc la fenêtre SUR elles, plutôt que de dessiner des
+    # graduations hors du cadre (une étiquette apparaissait à gauche de
+    # l'axe, à l'extérieur du canevas).
+    x_ticks = nice_ticks_range(x_min, x_max, n=5)
+    y_ticks = nice_ticks_range(y_min, y_max, n=6)
+    x_min, x_max = min(x_ticks + [x_min]), max(x_ticks + [x_max])
+    y_min, y_max = min(y_ticks + [y_min]), max(y_ticks + [y_max])
 
     def sx(v: float) -> float:
         """Map mean systolic pressure (mmHg) to an x pixel coordinate."""
@@ -350,25 +417,54 @@ def build_svg(
     parts.append(f'<rect width="{width}" height="{height}" fill="#FFFFFF"/>')
 
     # --- title + subtitle (the takeaway) -------------------------
-    parts.append(
-        f'<text x="{m_left}" y="88" font-size="40" font-weight="700" '
-        f'fill="{ink}">Do the wrist monitor and the arm cuff agree?</text>'
+    #
+    # Le titre et la première ligne d'explication étaient écrits en dur, sur
+    # le sujet du jeu de démonstration (un tensiomètre de poignet contre un
+    # brassard). Rendus sur les données de quelqu'un d'autre, ils parlaient
+    # de patients à qui voulait comparer deux mesures d'autre chose. Ils
+    # deviennent donc des paramètres, servis par défaut à la démonstration
+    # seule.
+    demo = data is None
+    chrome = _CHROME.get(language.lower()[:2], _CHROME["en"])
+    unit = unit or ("mmHg" if data is None else "")
+    # Les titres d'axes nommaient la pression systolique et le poignet : le
+    # sujet de la démonstration. Ils deviennent neutres dès que les données
+    # viennent d'ailleurs, et paramétrables dans tous les cas.
+    suffixe = f" ({unit})" if unit else ""
+    x_axis_title = x_axis_title or (
+        (chrome["axe_x_demo"] if demo else chrome["axe_x"]) + suffixe
     )
-    parts.append(
-        f'<text x="{m_left}" y="134" font-size="23" fill="{secondary}">'
-        f'Bland-Altman plot. Each dot is one patient: its difference '
-        f'(wrist − arm) against the two methods’ mean.</text>'
+    y_axis_title = y_axis_title or (
+        (chrome["axe_y_demo"] if demo else chrome["axe_y"]) + suffixe
     )
-    parts.append(
-        f'<text x="{m_left}" y="166" font-size="23" fill="{secondary}">'
-        f'Solid line = mean bias ({bias:+.1f} mmHg). Dashed lines = 95% '
-        f'limits of agreement ({loa_lo:+.1f} to {loa_hi:+.1f} mmHg).</text>'
+    headline = title or (chrome["titre_demo"] if demo else "")
+    explication = subtitle or (
+        chrome["explication_demo"] if demo else chrome["explication"]
     )
-    parts.append(
-        f'<text x="{m_left}" y="198" font-size="23" fill="{secondary}">'
-        f'Bias below zero, cloud tilting down to the right: the wrist reads '
-        f'low, worse at higher pressure</text>'
-    )
+    if headline:
+        parts.append(
+            f'<text x="{m_left}" y="88" font-size="40" font-weight="700" '
+            f'fill="{ink}">{xml_escape(headline)}</text>'
+        )
+    # Les lignes d'explication étaient posées à des ordonnées fixes, chacune
+    # sur une seule ligne, et écrites pour des valeurs à deux chiffres. Sur
+    # d'autres données, les nombres s'allongent et la ligne sortait du
+    # canevas. On les REPLIE toutes, et on les empile à la suite plutôt qu'à
+    # des positions écrites d'avance.
+    unite = f" {unit}" if unit else ""
+    lignes = [explication, chrome["lignes"].format(
+        bias=f"{bias:+.1f}{unite}", lo=f"{loa_lo:+.1f}{unite}", hi=f"{loa_hi:+.1f}{unite}",
+    )]
+    if demo:
+        lignes.append(chrome["constat_demo"])
+    ordonnee = 134
+    for paragraphe in lignes:
+        for ligne in wrap_no_orphan(paragraphe, 62):
+            parts.append(
+                f'<text x="{m_left}" y="{ordonnee}" font-size="23" '
+                f'fill="{secondary}">{xml_escape(ligne)}</text>'
+            )
+            ordonnee += 30
 
     # --- limits-of-agreement band (drawn first, under everything) -
     band_top = sy(loa_hi)
@@ -424,14 +520,14 @@ def build_svg(
         parts.append(
             f'<text x="{plot_x - 16:.1f}" y="{gy + 7:.1f}" font-size="20" '
             f'font-family="{mono_family}" fill="{ink}" '
-            f'text-anchor="end">{t:+d}</text>'
+            f'text-anchor="end">{_tick_label(t)}</text>'
         )
 
     # --- axis titles ---------------------------------------------
     parts.append(
         f'<text x="{plot_x + plot_w / 2:.1f}" y="{ax_bottom + 78:.1f}" '
         f'font-size="23" fill="{ink}" text-anchor="middle">'
-        f'Mean of the two methods — systolic pressure (mmHg)</text>'
+        f'{xml_escape(x_axis_title)}</text>'
     )
     ytitle_x = 48
     ytitle_y = plot_y + plot_h / 2
@@ -439,7 +535,7 @@ def build_svg(
         f'<text x="{ytitle_x:.1f}" y="{ytitle_y:.1f}" font-size="23" '
         f'fill="{ink}" text-anchor="middle" '
         f'transform="rotate(-90 {ytitle_x:.1f} {ytitle_y:.1f})">'
-        f'Difference between methods — wrist − arm (mmHg)</text>'
+        f'{xml_escape(y_axis_title)}</text>'
     )
 
     # --- zero rule (dashed grey) + its caption -------------------
@@ -527,7 +623,7 @@ def build_svg(
     # white plate so the number stays crisp over the point cloud.
     ref_lines = [
         (loa_hi, loac, "+1.96 SD", f"{loa_hi:+.1f}", True, "ba-loa"),
-        (bias, biasc, "Bias", f"{bias:+.1f}", False, "ba-bias"),
+        (bias, biasc, chrome["biais"], f"{bias:+.1f}", False, "ba-bias"),
         (loa_lo, loac, "−1.96 SD", f"{loa_lo:+.1f}", True, "ba-loa"),
     ]
     for yval, col, name, num, dashed, cls in ref_lines:
@@ -565,6 +661,11 @@ def make_blandaltman(
     *,
     out: Optional[Path | str] = None,
     title: str = "",
+    subtitle: str = "",
+    unit: str = "",
+    x_axis_title: str = "",
+    y_axis_title: str = "",
+    language: str = "en",
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -597,8 +698,11 @@ def make_blandaltman(
     >>> p.exists()
     True
     """
-    _ = title
-    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(
+        data, mode=mode, accessibility=accessibility, theme=theme, title=title,
+        subtitle=subtitle, unit=unit, x_axis_title=x_axis_title,
+        y_axis_title=y_axis_title, language=language,
+    )
     dest = Path(out) if out else svg_example_path(__file__, "blandaltman")
     return write_svg(dest, svg, theme=theme)
 

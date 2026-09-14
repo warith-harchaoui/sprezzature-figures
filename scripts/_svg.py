@@ -888,3 +888,123 @@ def raster_row_rects(
         )
         start = i
     return out
+
+
+def tick_label_step(
+    labels: Sequence[str],
+    plot_w: float,
+    *,
+    font_size: float = 11.0,
+    glyph_ratio: float = 0.62,
+    gap: float = 8.0,
+) -> int:
+    """How many ticks to skip so that axis labels stop colliding.
+
+    Returns ``1`` when every label fits, ``2`` to print one in two, and so
+    on. A categorical axis cannot invent room: past a certain number of
+    labels the only honest choices are to print fewer of them or to print
+    illegible mush, and mush is not a choice.
+
+    The width estimate uses the MONO ratio by default, because tick labels
+    are set in the house monospace, where every glyph is the same width. A
+    caller drawing ticks in the sans passes the sans ratio.
+
+    Parameters
+    ----------
+    labels : sequence of str
+        Every tick label, in axis order.
+    plot_w : float
+        Width of the plotting area the ticks span.
+    font_size, glyph_ratio, gap : float
+        Type size, mean glyph advance as a fraction of it, and the minimum
+        blank space left between two neighbouring labels.
+    """
+    n = len(labels)
+    if n < 2 or plot_w <= 0:
+        return 1
+    espace_par_tick = plot_w / (n - 1)
+    largeur_max = max((len(str(label)) for label in labels), default=0) * font_size * glyph_ratio
+    besoin = largeur_max + gap
+    if besoin <= espace_par_tick:
+        return 1
+    return int(besoin // espace_par_tick) + 1
+
+
+def visible_tick_indices(
+    labels: Sequence[str],
+    xs: Sequence[float],
+    *,
+    font_size: float = 11.0,
+    glyph_ratio: float = 0.62,
+    gap: float = 8.0,
+) -> list:
+    """Which tick labels can be printed without any two of them touching.
+
+    ``tick_label_step`` divides the axis evenly, which is right when the
+    labels are the same length and wrong as soon as they are not: printing
+    one in three can still collide if the widest label falls next to another
+    wide one. This function decides label by label, from the real positions.
+
+    The FIRST and the LAST are kept whenever they fit: an axis whose ends
+    are unlabelled tells the reader nothing about the range it covers. The
+    ones between are taken greedily, left to right, each accepted only if it
+    clears both its printed left neighbour and the last label.
+
+    Returns the indices to draw, in axis order.
+    """
+    n = len(labels)
+    if n == 0 or len(xs) != n:
+        return list(range(n))
+
+    def largeur(i: int) -> float:
+        return len(str(labels[i])) * font_size * glyph_ratio
+
+    def boite(i: int) -> tuple:
+        """Emprise réelle de l'étiquette, ancrage compris.
+
+        Les extrêmes sont rentrés vers l'intérieur par :func:`edge_anchor`,
+        donc la première occupe tout l'espace À DROITE de sa graduation et la
+        dernière tout l'espace à gauche. Calculer ces deux-là comme centrées
+        sous-estimait leur emprise de moitié, et laissait passer un
+        chevauchement de quelques pixels avec leur voisine.
+        """
+        if i == 0:
+            return xs[0], xs[0] + largeur(0)
+        if i == n - 1:
+            return xs[n - 1] - largeur(n - 1), xs[n - 1]
+        demi = largeur(i) / 2.0
+        return xs[i] - demi, xs[i] + demi
+
+    if n == 1:
+        return [0]
+
+    gardes = [0]
+    dernier_bord_droit = boite(0)[1]
+    bord_gauche_dernier = boite(n - 1)[0]
+    for i in range(1, n - 1):
+        gauche, droite = boite(i)
+        if gauche < dernier_bord_droit + gap:
+            continue
+        if droite > bord_gauche_dernier - gap:
+            continue
+        gardes.append(i)
+        dernier_bord_droit = droite
+    if bord_gauche_dernier >= dernier_bord_droit + gap:
+        gardes.append(n - 1)
+    return gardes
+
+
+def edge_anchor(index: int, count: int, default: str = "middle") -> str:
+    """Anchor a tick label so the first and last stay inside the canvas.
+
+    A label centred on the first or last tick sticks out by half its width,
+    which the renderer then clips. Anchoring the extremes inward costs
+    nothing and is what a careful chart does by hand.
+    """
+    if count <= 1:
+        return default
+    if index == 0:
+        return "start"
+    if index == count - 1:
+        return "end"
+    return default

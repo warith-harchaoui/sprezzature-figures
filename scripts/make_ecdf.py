@@ -92,18 +92,36 @@ def _percentile(sorted_vals: List[float], p: float) -> float:
     return sorted_vals[lo] + (sorted_vals[hi] - sorted_vals[lo]) * frac
 
 
+#: Chrome bilingue, français d'abord. Le sous-titre et le titre d'abscisse
+#: décrivent la latence de requêtes, sujet du jeu de démonstration : servis
+#: seulement quand c'est lui qu'on rend.
+_CHROME = {
+    "fr": {
+        "subtitle": "Distribution cumulée de la latence des requêtes",
+        "y_axis_title": "Part cumulée",
+        "x_axis_title": "Latence (ms)",
+    },
+    "en": {
+        "subtitle": "Cumulative distribution of request latency",
+        "y_axis_title": "Cumulative share",
+        "x_axis_title": "Latency (ms)",
+    },
+}
+
+
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
     percentile: float = 0.9,
     title: Optional[str] = None,
-    subtitle: str = "Cumulative distribution of request latency",
-    y_axis_title: str = "Cumulative share",
-    x_axis_title: str = "Latency (ms)",
+    subtitle: str = "",
+    y_axis_title: str = "",
+    x_axis_title: str = "",
     width: int = 745,
     height: int = 420,
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    language: str = "en",
 ) -> str:
     """Assemble the full ECDF SVG document as a string.
 
@@ -141,6 +159,13 @@ def build_svg(
     str
         A complete, standalone SVG document.
     """
+
+    # Chrome dans la langue demandée, sauf pour ce que l'appelant a fourni.
+    chrome = _CHROME.get(language.lower()[:2], _CHROME["en"])
+    subtitle = subtitle or chrome["subtitle"]
+    y_axis_title = y_axis_title or chrome["y_axis_title"]
+    x_axis_title = x_axis_title or chrome["x_axis_title"]
+
     _ = accessibility
     mono_family = mono_stack_for_theme(theme)
     rows = data if data else DEMO_DATA
@@ -280,14 +305,15 @@ def make_ecdf(
     out: Optional[Path | str] = None,
     percentile: float = 0.9,
     title: Optional[str] = None,
-    subtitle: str = "Cumulative distribution of request latency",
-    y_axis_title: str = "Cumulative share",
-    x_axis_title: str = "Latency (ms)",
+    subtitle: str = "",
+    y_axis_title: str = "",
+    x_axis_title: str = "",
     width: int = 745,
     height: int = 420,
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    language: str = "en",
 ) -> Path:
     """Render a hand-authored ECDF and write the SVG to *out*.
 
@@ -326,7 +352,7 @@ def make_ecdf(
     """
     svg = build_svg(data, percentile=percentile, title=title, subtitle=subtitle,
                      y_axis_title=y_axis_title, x_axis_title=x_axis_title, width=width, height=height,
-                     mode=mode, accessibility=accessibility, theme=theme)
+                     mode=mode, accessibility=accessibility, theme=theme, language=language)
     dest = Path(out) if out else svg_example_path(__file__, "ecdf")
     return write_svg(dest, svg, theme=theme)
 

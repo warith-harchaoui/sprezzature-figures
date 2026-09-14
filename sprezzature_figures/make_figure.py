@@ -183,8 +183,25 @@ def resolve_role_mapping(kind: str, mapping: dict[str, str]) -> dict[str, str]:
     return resolved
 
 
+#: Noms de rôle du catalogue, en français. Les rôles sont un vocabulaire
+#: FERMÉ (``region``, ``value``, ``month``...), écrit en anglais dans la
+#: définition des figures : servis tels quels comme titres d'axes, ils
+#: mettaient de l'anglais sous une figure rendue en français. La table ne
+#: traduit que ce vocabulaire-là, jamais les données de l'appelant.
+_ROLE_LABELS_FR = {
+    "region": "Région", "value": "Valeur", "month": "Mois", "day": "Jour",
+    "week": "Semaine", "year": "Année", "quarter": "Trimestre",
+    "category": "Catégorie", "count": "Effectif", "share": "Part",
+    "score": "Score", "name": "Nom", "label": "Libellé", "group": "Groupe",
+    "stage": "Étape", "date": "Date", "time": "Temps", "x": "x", "y": "y",
+    "mean": "Moyenne", "diff": "Écart", "std": "Écart-type", "close": "Clôture",
+    "hours": "Heures", "parent": "Parent", "source": "Source", "target": "Cible",
+    "price": "Prix", "quantity": "Quantité", "rate": "Taux", "total": "Total",
+}
+
+
 def user_data_chrome_kwargs(
-    kind: str, mapping: dict[str, str] | None = None
+    kind: str, mapping: dict[str, str] | None = None, language: str = "en"
 ) -> dict[str, Any]:
     """Chrome-text overrides for rendering *user* data instead of DEMO_DATA.
 
@@ -207,13 +224,49 @@ def user_data_chrome_kwargs(
     numeric_roles = [
         r for r in definition.required_roles if "numeric" in r.accepted_types
     ]
+    def libelle(nom: str) -> str:
+        propose = mapping.get(nom, nom)
+        if propose != nom:  # l'appelant a nommé sa colonne : on n'y touche pas
+            return propose
+        if language.lower().startswith("fr"):
+            return _ROLE_LABELS_FR.get(nom, nom)
+        return nom
+
     if len(category_roles) == 1:
-        role = category_roles[0]
-        kwargs["x_label"] = mapping.get(role.name, role.name)
+        kwargs["x_label"] = libelle(category_roles[0].name)
     if len(numeric_roles) == 1:
-        role = numeric_roles[0]
-        kwargs["y_label"] = mapping.get(role.name, role.name)
+        kwargs["y_label"] = libelle(numeric_roles[0].name)
     return kwargs
+
+
+def _without_demo_chrome(
+    kind: str, data: list[dict[str, Any]] | None, kwargs: dict[str, Any]
+) -> dict[str, Any]:
+    """Fill the chrome kwargs a caller left empty, so demo chrome cannot show.
+
+    Every generator carries captions written for ITS OWN demo data: a
+    subtitle ("Quarterly figures"), axis titles ("Region", "Value"). They are
+    the right thing to print when the generator renders its demo. Printed
+    over somebody else's data they are simply false, and false chrome is
+    worse than none: it affirms.
+
+    The CLI has always suppressed them through
+    :func:`user_data_chrome_kwargs`. Library callers had to know to do the
+    same, and one that did not shipped a revenue chart subtitled "Quarterly
+    figures". The knowledge belongs here, once, rather than in every caller.
+
+    Only kwargs the caller did NOT set are filled: an explicit subtitle or
+    axis title always wins, including an explicitly empty one.
+    """
+    if not data:
+        # No caller data means the generator renders its own demo, where the
+        # demo chrome is exactly right.
+        return kwargs
+    rempli = dict(kwargs)
+    langue = str(kwargs.get("language") or "en")
+    for cle, valeur in user_data_chrome_kwargs(kind, language=langue).items():
+        rempli.setdefault(cle, valeur)
+    return rempli
 
 
 def validate_figure_input(
@@ -369,7 +422,7 @@ def make_figure(kind: str, data: list[dict[str, Any]], **kwargs: Any) -> Path:
             f"{definition.callable_name!r} (kind={canonical!r}, status={definition.status!r})."
         )
 
-    result = fn(data, **_filter_kwargs_for(fn, kwargs))
+    result = fn(data, **_filter_kwargs_for(fn, _without_demo_chrome(canonical, data, kwargs)))
     result_path = Path(result).resolve()
     if not result_path.exists():
         raise RuntimeError(

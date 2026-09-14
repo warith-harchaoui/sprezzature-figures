@@ -39,7 +39,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import GRIDLINE, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _svg import foreground_tip_css, svg_open, tooltip_bubble  # noqa: E402
+from _svg import foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
 
@@ -86,6 +86,36 @@ RESPONSE_HOURS: List[float] = _response_hours()
 #: Row-record view of :data:`RESPONSE_HOURS`, the shape the ``make_<kind>``
 #: contract asks for: one dict per ticket with its first-response time.
 DEMO_DATA: List[Dict[str, Any]] = [{"hours": h} for h in RESPONSE_HOURS]
+
+#: Prose écrite POUR ce jeu de démonstration, et pour lui seul. Servie tant
+#: que l'appelant ne fournit ni titre ni données ; jamais imprimée sur les
+#: données d'un tiers, qui ne mesure pas des tickets de support.
+#: Chrome bilingue, français d'abord. Les phrases de titre décrivent le jeu
+#: de démonstration (des tickets de support) : elles ne sortent que pour lui.
+_CHROME = {
+    "fr": {
+        "titre": "La plupart des tickets reçoivent une réponse dans l'heure qui suit",
+        "sous_titre": "{pct} % des {n} tickets passent sous la cible de 4 heures ; une fine traîne rouge s'étire",
+        "cible": "cible de 4 heures",
+        "axe": "Délai de première réponse (heures, plus bas vaut mieux)",
+        "dans_la_cible": "Dans la cible",
+        "traine": "Traîne",
+        "info_valeur": "{v:.1f} h de délai",
+        "info_depasse": "au-delà de la cible de 4 heures",
+        "info_dans": "dans la cible de 4 heures",
+    },
+    "en": {
+        "titre": "Most tickets get a reply within hours",
+        "sous_titre": "{pct}% of {n} support tickets clear the 4-hour target; a thin red tail drags on",
+        "cible": "4-hour target",
+        "axe": "First-response time (hours, lower is better)",
+        "dans_la_cible": "Within target",
+        "traine": "Long tail",
+        "info_valeur": "{v:.1f} h response time",
+        "info_depasse": "past 4-hour target",
+        "info_dans": "within 4-hour target",
+    },
+}
 
 
 # ------------------------------------------------------------------
@@ -140,8 +170,11 @@ def build_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
-    within_label: str = "Within target",
-    tail_label: str = "Long tail",
+    within_label: str = "",
+    tail_label: str = "",
+    title: str = "",
+    subtitle: str = "",
+    language: str = "en",
 ) -> str:
     """Assemble the full Wilkinson dot-plot SVG string.
 
@@ -224,16 +257,25 @@ def build_svg(
     within = sum(1 for v in response_hours if v <= target)
     pct_within = round(100 * within / n)
 
+    # Chrome dans la langue demandée ; ce que l'appelant a fourni l'emporte.
+    chrome = _CHROME.get(language.lower()[:2], _CHROME["en"])
+    within_label = within_label or chrome["dans_la_cible"]
+    tail_label = tail_label or chrome["traine"]
+
     parts.append(svg_open(width, height, "dp-title", "dp-desc", font_family=chrome_stack_for_theme(theme)))
-    parts.append(
-        '<title id="dp-title">Support ticket first-response times, one dot per '
-        'ticket</title>'
+    # Nom et description accessibles : dérivés des données, jamais d'une
+    # prose écrite pour le jeu de démonstration. Un lecteur d'écran doit
+    # entendre ce que la figure montre, pas ce qu'elle montrait en exemple.
+    nom_accessible = title or (
+        "Support ticket first-response times, one dot per ticket"
+        if (data is None or data is DEMO_DATA)
+        else "Dot plot, one dot per observation"
     )
+    parts.append(f'<title id="dp-title">{xml_escape(nom_accessible)}</title>')
     parts.append(
-        f'<desc id="dp-desc">Wilkinson dot plot of {n} first-response times in '
-        f'hours. Each dot is one ticket, binned every {bin_width} h and stacked. '
-        f'{pct_within}% of tickets were answered within the 4-hour target '
-        f'(blue); the {n - within} past it form the long tail (red).</desc>'
+        f'<desc id="dp-desc">Wilkinson dot plot of {n} values. Each dot is one '
+        f'observation, binned every {bin_width} and stacked. {pct_within}% fall '
+        f'within the target ({within}); the {n - within} past it form the tail.</desc>'
     )
 
     # Focus ring for keyboard users landing on an interactive dot. The
@@ -265,15 +307,30 @@ def build_svg(
     parts.append(f'<rect width="{width}" height="{height}" fill="#FFFFFF"/>')
 
     # --- title + subtitle (the takeaway) -------------------------
-    parts.append(
-        f'<text x="{m_left}" y="60" font-size="32" font-weight="700" '
-        f'fill="{ink}">Most tickets get a reply within hours</text>'
+    #
+    # Les deux phrases par défaut parlent de tickets de support, parce que
+    # c'est ce que montre le jeu de démonstration de ce fichier. Elles
+    # étaient écrites en dur : rendues sur les données de quelqu'un d'autre,
+    # elles affirmaient des choses fausses sur un sujet sans rapport. Un
+    # appelant peut désormais les remplacer, et quand il fournit ses propres
+    # données sans rien dire, on n'affirme rien du tout : mieux vaut une
+    # figure sans phrase qu'une phrase sur les tickets de quelqu'un qui
+    # mesure autre chose.
+    demo = data is None or data is DEMO_DATA
+    headline = title or (chrome["titre"] if demo else "")
+    sous_titre = subtitle or (
+        chrome["sous_titre"].format(pct=pct_within, n=n) if demo else ""
     )
-    parts.append(
-        f'<text x="{m_left}" y="96" font-size="20" fill="{secondary}">'
-        f'{pct_within}% of {n} support tickets clear the 4-hour target; a '
-        f'thin red tail drags on</text>'
-    )
+    if headline:
+        parts.append(
+            f'<text x="{m_left}" y="60" font-size="32" font-weight="700" '
+            f'fill="{ink}">{xml_escape(headline)}</text>'
+        )
+    if sous_titre:
+        parts.append(
+            f'<text x="{m_left}" y="96" font-size="20" fill="{secondary}">'
+            f'{xml_escape(sous_titre)}</text>'
+        )
 
     # --- target line + label -------------------------------------
     tx = sx(target)
@@ -284,7 +341,7 @@ def build_svg(
     )
     parts.append(
         f'<text x="{tx + 10:.1f}" y="{m_top - 14:.1f}" font-size="17" '
-        f'fill="{secondary}">4-hour target</text>'
+        f'fill="{secondary}">{xml_escape(chrome["cible"])}</text>'
     )
 
     # --- baseline (value axis) -----------------------------------
@@ -302,7 +359,7 @@ def build_svg(
     parts.append(
         f'<text x="{m_left + plot_w / 2:.1f}" y="{baseline_y + 72:.1f}" '
         f'font-size="20" fill="{ink}" text-anchor="middle">'
-        f'First-response time (hours, lower is better)</text>'
+        f'{xml_escape(chrome["axe"])}</text>'
     )
 
     # --- the dots ------------------------------------------------
@@ -332,7 +389,7 @@ def build_svg(
             dot_tips.append(
                 tooltip_bubble(
                     cx + r + 8, cy - 20, anchor="start",
-                    lines=[f"{v:.1f} h response time", "past 4-hour target" if over else "within 4-hour target"],
+                    lines=[chrome["info_valeur"].format(v=v), chrome["info_depasse"] if over else chrome["info_dans"]],
                     canvas_w=width, canvas_h=height, ink=ink, secondary=secondary, border=GRIDLINE,
                     elem_id=f"tip-{dot_i}",
                 )
@@ -377,8 +434,10 @@ def make_dotplot(
     *,
     out: Optional[Path | str] = None,
     title: str = "",
-    within_label: str = "Within target",
-    tail_label: str = "Long tail",
+    subtitle: str = "",
+    within_label: str = "",
+    tail_label: str = "",
+    language: str = "en",
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -408,10 +467,10 @@ def make_dotplot(
     Path
         Absolute path to the written SVG file.
     """
-    _ = title  # accepted for dispatcher parity; see docstring
     svg = build_svg(
         data, mode=mode, accessibility=accessibility, theme=theme,
-        within_label=within_label, tail_label=tail_label,
+        within_label=within_label, tail_label=tail_label, title=title,
+        subtitle=subtitle, language=language,
     )
     dest = Path(out) if out else svg_example_path(__file__, "dotplot")
     return write_svg(dest, svg, theme=theme)

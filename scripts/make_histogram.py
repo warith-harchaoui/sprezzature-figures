@@ -87,19 +87,39 @@ def _fmt_edge(v: float) -> str:
     return f"{v:.0f}" if abs(v - round(v)) < 1e-6 else f"{v:.1f}"
 
 
+#: Chrome bilingue, français d'abord. Titre, sous-titre et libellés d'axes
+#: parlent de copies d'examen : c'est le jeu de démonstration, et eux seuls
+#: le décrivent correctement.
+_CHROME = {
+    "fr": {
+        "title": "Aucun des 300 résultats n'est tombé sous 50",
+        "subtitle": "Échantillon synthétique, 300 copies — moyenne 70, écart-type 7",
+        "x_label": "Note d'examen",
+        "y_label": "Nombre de copies",
+    },
+    "en": {
+        "title": "Not one of the 300 results fell below 50",
+        "subtitle": "Synthetic sample, 300 students — mean 70, standard deviation 7",
+        "x_label": "Exam score",
+        "y_label": "Number of students",
+    },
+}
+
+
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
-    title: str = "Not one of the 300 results fell below 50",
-    subtitle: str = "Synthetic sample, 300 students — mean 70, standard deviation 7",
+    title: str = "",
+    subtitle: str = "",
     width: int = 760,
     height: int = 500,
     bin_count: int = 20,
     mode: str = "self-contained",
     accessibility: str = "universal",
-    x_label: str = "Exam score",
-    y_label: str = "Number of students",
+    x_label: str = "",
+    y_label: str = "",
     log_y: bool = False,
     theme: str = "corporate",
+    language: str = "en",
 ) -> str:
     """Assemble the full histogram SVG document as a string.
 
@@ -138,6 +158,14 @@ def build_svg(
     str
         A complete, standalone SVG document.
     """
+
+    # Chrome dans la langue demandée, sauf pour ce que l'appelant a fourni.
+    chrome = _CHROME.get(language.lower()[:2], _CHROME["en"])
+    title = title or chrome["title"]
+    subtitle = subtitle or chrome["subtitle"]
+    x_label = x_label or chrome["x_label"]
+    y_label = y_label or chrome["y_label"]
+
     _ = accessibility  # single-series bars; no categorical hues to re-level
     mono_family = mono_stack_for_theme(theme)
     rows = data if data else DEMO_DATA
@@ -291,17 +319,18 @@ def make_histogram(
     data: Optional[List[Dict[str, Any]]] = None,
     *,
     out: Optional[Path | str] = None,
-    title: str = "Not one of the 300 results fell below 50",
-    subtitle: str = "Synthetic sample, 300 students — mean 70, standard deviation 7",
+    title: str = "",
+    subtitle: str = "",
     width: int = 760,
     height: int = 500,
     bin_count: int = 20,
     mode: str = "self-contained",
     accessibility: str = "universal",
-    x_label: str = "Exam score",
-    y_label: str = "Number of students",
+    x_label: str = "",
+    y_label: str = "",
     log_y: bool = False,
     theme: str = "corporate",
+    language: str = "en",
 ) -> Path:
     """Render a hand-authored histogram and write the SVG to *out*.
 
@@ -341,6 +370,7 @@ def make_histogram(
         data, title=title, subtitle=subtitle, width=width, height=height,
         bin_count=bin_count, mode=mode, accessibility=accessibility,
         x_label=x_label, y_label=y_label, log_y=log_y, theme=theme,
+        language=language,
     )
     dest = Path(out) if out else svg_example_path(__file__, "histogram")
     return write_svg(dest, svg, theme=theme)

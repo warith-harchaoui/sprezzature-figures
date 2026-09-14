@@ -27,7 +27,10 @@ from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _scale import log_position, log_ticks, nice_ticks  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY, cycle_hues  # noqa: E402
-from _svg import fmt_number, foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _svg import (  # noqa: E402
+    edge_anchor, fmt_number, foreground_tip_css, svg_open, tooltip_bubble,
+    visible_tick_indices, xml_escape,
+)
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 
@@ -268,10 +271,18 @@ def build_svg(
         f'<line x1="{plot_x:.1f}" y1="{axis_y:.1f}" x2="{plot_x + plot_w:.1f}" y2="{axis_y:.1f}" '
         f'stroke="{INK}" stroke-width="1.2"/>'
     )
+    # Une étiquette par graduation ne tient que si les étiquettes sont
+    # courtes ET peu nombreuses. Avec vingt-trois identifiants de clients,
+    # elles se chevauchaient jusqu'à l'illisible et la dernière débordait du
+    # canevas. On en imprime donc une sur N, N calculé à partir de la place
+    # réellement disponible, et on rentre les extrêmes vers l'intérieur.
+    visibles = set(visible_tick_indices(months, [x_for(i) for i in range(len(months))]))
     for i, m in enumerate(months):
+        if i not in visibles:
+            continue
         parts.append(
             f'<text x="{x_for(i):.1f}" y="{axis_y + 20:.1f}" font-size="11" font-family="{mono_family}" '
-            f'fill="{SECONDARY}" text-anchor="middle">{xml_escape(m)}</text>'
+            f'fill="{SECONDARY}" text-anchor="{edge_anchor(i, len(months))}">{xml_escape(m)}</text>'
         )
     parts.append(
         f'<text x="{plot_x + plot_w / 2:.1f}" y="{axis_y + 42:.1f}" font-size="13" '
