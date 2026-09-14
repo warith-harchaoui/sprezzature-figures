@@ -235,6 +235,7 @@ def build_svg(
     accessibility: str = "universal",
     language: str = "en",
     theme: str = "corporate",
+    title: str = "",
 ) -> str:
     """Assemble the full Pareto-chart SVG string.
 
@@ -396,14 +397,24 @@ def build_svg(
     )
 
     # --- title + subtitle (the takeaway) -------------------------
-    headline = strings["headline"].format(n_vital=n_vital, n=n, cross_cum=cross_cum)
+    #
+    # The headline is normally the TAKEAWAY, computed from the data ("5 of 6
+    # categories drive 87% of the total"). A caller who passes ``title``
+    # names the SUBJECT instead, and the subject belongs on top: a chart
+    # embedded in an application is read under the question that produced it,
+    # not under a statistic about itself. The takeaway then takes the second
+    # line, replacing the generic subtitle — it says more about this data
+    # than that sentence ever did, so nothing is lost by the swap.
+    takeaway = strings["headline"].format(n_vital=n_vital, n=n, cross_cum=cross_cum)
+    headline = title.strip() or takeaway
+    second_line = takeaway if title.strip() else strings["subtitle"]
     parts.append(
         f'<text x="{m_left}" y="80" font-size="42" font-weight="700" '
         f'fill="{ink}">{xml_escape(headline)}</text>'
     )
     parts.append(
         f'<text x="{m_left}" y="124" font-size="24" fill="{secondary}">'
-        f'{xml_escape(strings["subtitle"])}</text>'
+        f'{xml_escape(second_line)}</text>'
     )
     caption = strings["caption"].format(total=total, n=n)
     parts.append(
@@ -674,8 +685,11 @@ def make_pareto(
     ----------
     data : list[dict[str, Any]] or None
         Raw tallies, each ``{"reason": str, "count": int}``. Defaults to
-        :data:`DEMO_DATA`. ``title`` is accepted for signature parity with
-        the rest of the gallery and is currently a documented no-op.
+        :data:`DEMO_DATA`.
+    title : str, optional
+        Headline. Empty (the default) keeps the computed takeaway on top,
+        which is what a standalone Pareto wants. Passing one puts the
+        caller's subject on top and moves the takeaway to the second line.
     out : Path, str, or None
         Output path. Defaults to ``assets/svg-examples/pareto.svg``.
     mode, accessibility : str
@@ -692,9 +706,11 @@ def make_pareto(
     Path
         Absolute path to the written SVG file.
     """
-    _ = title
     rows = data if data else DEMO_DATA
-    svg = build_svg(rows, mode=mode, accessibility=accessibility, language=language, theme=theme)
+    svg = build_svg(
+        rows, mode=mode, accessibility=accessibility, language=language,
+        theme=theme, title=title,
+    )
     dest = Path(out) if out else svg_example_path(__file__, "pareto")
     return write_svg(dest, svg, theme=theme)
 
