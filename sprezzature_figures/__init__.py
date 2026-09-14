@@ -30,6 +30,6 @@ __all__ = [
     "RedrawResult",
 ]
 
-__version__ = "2.2.0"
+__version__ = "2.3.0"
 __author__ = "Warith HARCHAOUI"
 __email__ = "warith.harchaoui@gmail.com"

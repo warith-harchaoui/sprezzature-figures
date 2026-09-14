@@ -1,5 +1,55 @@
 # Changelog
 
+## 2.3.0 (2026-09-14): a figure proved legible without a vision model
+
+### Added
+
+- **`check_render()` — the questions the eyeball loop asks, answered from the
+  SVG source.** The Ralph Eyeball Loop decides "does this read?" by showing the
+  PNG to a vision model, and that answer only exists where such a model does. A
+  service with a text-only LLM, or none, still ships figures and cannot have
+  someone look at each one. This asks the same questions from the markup and
+  answers them the same way every time: do labels collide, does text run off
+  the canvas, did a generator's demo chrome ("Region", "Quarterly figures")
+  survive into a real render, is a dark figure actually dark or is there a
+  light card in the middle of it, is the caller's title on the figure, is there
+  an accessible title and description.
+
+  It makes no judgement of taste and never will. It replaces the eyeball on
+  questions of **fact**, which is most of what goes wrong: the failures seen in
+  production were overlapping ticks, a leftover template title, and a white
+  panel on a dark page — every one decidable from the markup.
+
+  On all five surfaces: `from sprezzature_figures import check_render`,
+  `sprezzature-figures check fig.svg` (exit 1 on any finding, so it gates a
+  commit), `POST /check_render`, the `check_render` MCP tool derived from that
+  route, and a row in the skill.
+
+- **`tests/test_render_matrix.py`** renders the catalogue the way an
+  application does — rows in, profile, recommend, bind, render — over datasets
+  that reproduce the shapes that broke in production: identifiers long enough
+  to collide on an axis, more categories than an axis holds, French labels with
+  accents, decimals from a database driver. Every render then goes through
+  `check_render`.
+
+### Fixed
+
+- **The checker measured text differently from the generators, and invented a
+  defect.** It estimated width as `len(text) × size × 0.52`. On the demo bar
+  chart's standfirst at 26 px that gives 757 px, where Roboto renders 640 —
+  so the reference figure was reported as overflowing a canvas it fits with
+  65 px to spare. A false positive destroys the only thing that makes such a
+  module worth having, which is that a failure is worth acting on.
+
+  Width now comes from `scripts/_textfit.py`'s calibrated per-character table —
+  the one the generators lay out with — so a string the generator fitted cannot
+  be reported here as overflowing. Agreement by construction rather than by two
+  independent guesses. The flat ratio survives only as a fallback for an SVG
+  this package did not render.
+
+- No light card on a dark page, and a title the caller asked for is honoured
+  (`make_pareto`).
+
 ## 2.2.0 (2026-09-14): a chart you were sent, tools an agent can choose between, and a dark canvas
 
 ### Added

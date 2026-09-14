@@ -225,3 +225,37 @@ def test_le_chrome_suit_la_langue_demandee(kind: str) -> None:
             assert attendu in rendu, f"{kind} en {langue} : « {attendu} » attendu"
             autre = _TEMOINS[kind]["en" if langue == "fr" else "fr"]
             assert autre not in rendu, f"{kind} en {langue} : « {autre} » ne devrait pas y être"
+
+
+def test_le_verificateur_mesure_comme_les_generateurs() -> None:
+    """
+    La largeur d'un texte vient de ``_textfit``, pas d'un ratio plat.
+
+    Le module estimait d'abord chaque texte à ``len(texte) × taille × 0.52``.
+    Sur le standfirst du graphique en barres de démonstration — « The North
+    brings in nearly four times what the West does », 26 px — cela donnait
+    757 px là où Roboto en rend 640, et la figure était déclarée débordante
+    d'un canevas où elle tient avec 65 px de marge.
+
+    Un vérificateur qui mesure autrement que ce qu'il vérifie invente des
+    défauts, et un faux positif détruit exactement ce qui fait la valeur du
+    module : qu'un échec vaille la peine qu'on s'en occupe. Il utilise
+    maintenant la table calibrée par caractère dont les générateurs se servent
+    pour composer, si bien qu'une chaîne que le générateur a fait tenir ne peut
+    plus être signalée ici.
+    """
+    from sprezzature_figures.render_checks import _text_width
+
+    texte = "The North brings in nearly four times what the West does"
+    largeur = _text_width(texte, 26)
+
+    # Mesuré sur les vraies métriques de la Roboto embarquée : 639.6 px.
+    assert 600 <= largeur <= 660, (
+        f"{largeur:.1f} px pour un texte que Roboto rend à 639.6 px. "
+        "En dessous, le vérificateur rate des débordements ; au-dessus, il en "
+        "invente — c'est ce qu'a fait le ratio plat de 0.52 (757 px)."
+    )
+    assert largeur < 705, (
+        "le standfirst du graphique de démonstration doit tenir dans les 705 px "
+        "disponibles, sinon la figure de référence est signalée comme cassée"
+    )

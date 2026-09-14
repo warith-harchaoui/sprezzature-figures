@@ -179,6 +179,41 @@ class RedrawResponse(BaseModel):
     figure_base64: str = Field(description="The rendered figure, base64-encoded.")
 
 
+class CheckRenderRequest(BaseModel):
+    """Body for ``POST /check_render``."""
+
+    svg: str = Field(description="The rendered SVG source to check.")
+    dark: bool = Field(
+        default=False,
+        description=(
+            "True when the figure was rendered for a dark canvas. Adds the "
+            "dark-mode rules: no light ink left behind, no large light surface."
+        ),
+    )
+    expected_title: str | None = Field(
+        default=None,
+        description=(
+            "Title you asked the generator for. Reported as missing if no text "
+            "element carries it, which catches a generator that ignored it."
+        ),
+    )
+    forbidden_text: list[str] = Field(
+        default_factory=list,
+        description=(
+            "Strings that must not appear, on top of the demo chrome already "
+            "known. A caller that knows its own placeholders passes them here."
+        ),
+    )
+
+
+class RenderFindingOut(BaseModel):
+    """One thing wrong with a rendered figure."""
+
+    check: str = Field(description="Rule that fired.")
+    message: str = Field(description="What is wrong, in one sentence.")
+    detail: str = Field(default="", description="Where, when the rule can say.")
+
+
 class RecommendRequest(BaseModel):
     """Body for ``POST /recommend``."""
 
@@ -485,4 +520,43 @@ def recommend(body: RecommendRequest) -> list[FigureCandidate]:
             bindings=assign_columns(definition, profile) or {},
         )
         for definition, score in ranked[: body.limit]
+    ]
+
+
+@app.post(
+    "/check_render",
+    tags=["meta"],
+    operation_id="check_render",
+    summary="Find what is wrong with a rendered figure, without looking at it",
+)
+def check_render_route(body: CheckRenderRequest) -> list[RenderFindingOut]:
+    """Check a rendered SVG for the failures that are decidable from its markup.
+
+    The Ralph Eyeball Loop answers "does this read?" by showing the PNG to a
+    vision model. This asks the same questions from the source alone, so an
+    agent with a text-only model, or none, can still refuse to hand back an
+    illegible figure: labels colliding, text running off the canvas, leftover
+    demo chrome ("Region", "Quarterly figures") in a real render, a light card
+    in the middle of a dark-mode figure, a title the generator dropped.
+
+    Reach for it after `render_figure` whenever the result goes to someone
+    other than you. An empty list means every rule passed; it does **not** mean
+    the figure is beautiful, or that the chart type suits the question. Those
+    are judgements and this makes none — use the eyeball loop for them.
+
+    Pass `dark` when you rendered for a dark canvas, and `expected_title` when
+    you asked for a title: a generator that silently ignores the parameter is
+    the failure this catches that nothing else does.
+    """
+    from .render_checks import check_render
+
+    findings = check_render(
+        body.svg,
+        dark=body.dark,
+        expected_title=body.expected_title,
+        forbidden_text=tuple(body.forbidden_text),
+    )
+    return [
+        RenderFindingOut(check=f.check, message=f.message, detail=f.detail or "")
+        for f in findings
     ]
