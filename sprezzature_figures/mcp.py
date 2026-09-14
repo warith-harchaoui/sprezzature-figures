@@ -66,7 +66,7 @@ else:
         name="sprezzature-figures",
         description=(
             "Sprezzature Figures MCP tools: list chart kinds, inspect a kind's "
-            "data-role requirements, render one of 124 chart types from JSON rows, or "
+            "data-role requirements, render one of 127 chart types from JSON rows, or "
             "redraw a chart from a picture of it."
         ),
     )
