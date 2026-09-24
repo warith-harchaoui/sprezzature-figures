@@ -661,17 +661,32 @@ def _rows_to_series(rows: List[Dict[str, Any]]) -> Dict[str, np.ndarray]:
     :data:`DEMO_DATA` carries) or a long/tidy shape (``{"label", "hour",
     "value"}``, one row per sample) so a caller supplying tidy data still
     works. Series order follows first appearance in ``rows``.
+
+    A row whose values are missing or ``None`` is SKIPPED rather than fatal.
+    The membership test used to be ``"values" in row``, which is true for a
+    key present but null -- exactly what a database yields for an empty
+    aggregate. The comprehension then iterated over ``None`` and the whole
+    render died with a TypeError, turning "nothing to plot for this series"
+    into an internal error for the caller. Observed 2026-09-25 through a
+    text-to-SQL result carrying one empty series.
     """
     order: List[str] = []
     packed: Dict[str, List[float]] = {}
     tidy: Dict[str, Dict[int, float]] = {}
     for row in rows:
+        if row is None or row.get("label") is None:
+            continue
         label = str(row["label"])
-        if "values" in row:
+        if row.get("values") is not None:
             if label not in packed:
                 order.append(label)
             packed[label] = [float(v) for v in row["values"]]
         else:
+            # Même prudence pour la forme longue : une ligne sans abscisse ni
+            # valeur n'est pas une donnée incomplète, c'est une absence de
+            # donnée, et elle ne doit pas faire tomber le rendu des autres.
+            if row.get("hour") is None or row.get("value") is None:
+                continue
             if label not in tidy:
                 tidy[label] = {}
                 order.append(label)
