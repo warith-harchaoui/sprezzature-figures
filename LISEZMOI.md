@@ -445,4 +445,4 @@ BSD 3-Clause. Voir [LICENSE](LICENSE).
 
 ## Auteur
 
-Warith HARCHAOUI · warith.harchaoui@gmail.com · [harchaoui.org/warith/sprezzature](https://sprezzature.ai/)
+Warith HARCHAOUI · warith.harchaoui@gmail.com · [sprezzature.ai](https://sprezzature.ai/)
