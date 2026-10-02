@@ -38,9 +38,14 @@ try:
     from fastapi_mcp import FastApiMCP
 except ImportError:  # pragma: no cover - dependency guard
 
-    def main() -> None:
+    def main(argv: list[str] | None = None) -> None:
         """
         Entry point when the MCP extra is not installed.
+
+        Takes the same ``argv`` as the real entry point and ignores it:
+        the two variants are reached through the same console script, so
+        a caller that passes arguments must not get a ``TypeError`` from
+        the branch that happens to be missing a dependency.
 
         Says which extra is missing and stops. Reaching an MCP
         command without the ``[mcp]`` extra needs a one-line fix,
