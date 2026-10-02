@@ -477,7 +477,10 @@ def build_svg(
     )
 
     # --- inset: the Kneedle difference curve (the "how"), clear case only ---
-    if is_clear:
+    # Guarded on the data rather than on `is_clear`: the two always agree
+    # (`diff` is assigned exactly in the `is_clear` branch above), but only
+    # this form says so where the value is used.
+    if diff is not None and elbow_i is not None:
         _emit_inset(
             p, diff, elbow_i, curve_hue, accent, strings, mono_family,
             detection_rate=detection_rate, null_p_value=null_p_value,

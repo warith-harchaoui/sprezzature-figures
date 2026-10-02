@@ -284,7 +284,11 @@ def _band_path(
 #: Chrome bilingue, français d'abord. Les phrases de titre décrivent le jeu
 #: de démonstration (une année de Bourse) et ne sortent que pour lui ; le
 #: reste (légendes, bandes, mois) sert quelles que soient les données.
-_CHROME = {
+# Annotated rather than inferred: the inner dicts are deliberately mixed --
+# eleven strings and one list of month abbreviations -- so inference joins
+# the values into `Sequence[str]`, and `chrome["sous_titre"].format(...)`
+# then looks like calling `.format` on a list. `Any` states the mix.
+_CHROME: Dict[str, Dict[str, Any]] = {
     "fr": {
         "titre": "Un resserrement de fin d'été a comprimé l'amplitude, puis le cours est sorti par le haut",
         "sous_titre": "Cours de clôture, moyenne mobile à {window} jours et bandes de Bollinger à ±{sigma} écarts-types",

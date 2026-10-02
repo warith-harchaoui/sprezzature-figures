@@ -146,9 +146,10 @@ def build_svg(
     buckets: Dict[tuple, List[float]] = {(d, g): [] for d in depts for g in groups}
     for r in rows:
         d = str(r["department"])
-        g = str(r.get("group", "")) if grouped else None
-        if (d, g) in buckets:
-            buckets[(d, g)].append(float(r["salary"]))
+        # Optional like `groups` above: None is the ungrouped bucket key.
+        key_g: Optional[str] = str(r.get("group", "")) if grouped else None
+        if (d, key_g) in buckets:
+            buckets[(d, key_g)].append(float(r["salary"]))
     stats = {key: _five_number_summary(v) for key, v in buckets.items() if v}
 
     all_vals = [v for vals in buckets.values() for v in vals]

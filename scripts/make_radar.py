@@ -104,7 +104,7 @@ _DASH_PATTERNS: Tuple[str, ...] = ("", "16,8", "3,5")
 # --------------------------------------------------------------------------- #
 #                                                             #
 # --------------------------------------------------------------------------- #
-def _sample_scores() -> Dict[str, object]:
+def _sample_scores() -> Dict[str, Any]:
     """Return the illustrative radar dataset: 3 databases × 6 criteria.
 
     Scores are on a 0–100 "higher is better" scale (each raw metric already
@@ -258,7 +258,7 @@ def build_svg(
         A complete, self-contained SVG document.
     """
     data = data if data is not None else _rows_to_radar_data(DEMO_DATA)
-    axes: List[str] = list(data["axes"])           # type: ignore[arg-type]
+    axes: List[str] = list(data["axes"])
     series: List[Dict[str, Any]] = list(data["series"])
     n = len(axes)
 
@@ -432,7 +432,7 @@ def build_svg(
     for s_idx, subject in enumerate(series):
         color = palette[s_idx]
         name = str(subject["name"])
-        values: List[float] = [float(v) for v in subject["values"]]  # type: ignore[union-attr]
+        values: List[float] = [float(v) for v in subject["values"]]
         dash = _DASH_PATTERNS[s_idx % len(_DASH_PATTERNS)]
         dash_attr = f' stroke-dasharray="{dash}"' if dash else ""
 

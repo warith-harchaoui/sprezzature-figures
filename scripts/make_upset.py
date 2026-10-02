@@ -43,7 +43,7 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 # The house-style palette lives in _style (stdlib-only, safe to import
 # without the dataviz tier).
@@ -78,7 +78,7 @@ _FOCUS: str = "#0A4DA0"     # focus-ring blue
 #: is people we can only reach by email, and the healthy "Email + Mobile
 #: app" overlap is the second — the multi-channel core the growth team
 #: wants to grow.
-DEMO_DATA: List[Dict[str, object]] = [
+DEMO_DATA: List[Dict[str, Any]] = [
     {"sets": ["Email"], "count": 62},
     {"sets": ["Email", "Mobile app"], "count": 48},
     {"sets": ["Email", "Mobile app", "Web app"], "count": 31},
@@ -105,7 +105,7 @@ _xml = xml_escape
 
 
 def _reshape(
-    data: "Optional[List[Dict[str, object]]]" = None,
+    data: "Optional[List[Dict[str, Any]]]" = None,
 ) -> Tuple[List[str], List[Tuple[Tuple[str, ...], int]]]:
     """Reshape row records into ``(sets, combinations)`` for the plot.
 
@@ -126,11 +126,11 @@ def _reshape(
     sets: List[str] = []
     combos: List[Tuple[Tuple[str, ...], int]] = []
     for row in rows:
-        members = tuple(str(m) for m in row["sets"])  # type: ignore[union-attr]
+        members = tuple(str(m) for m in row["sets"])
         for m in members:
             if m not in sets:
                 sets.append(m)
-        combos.append((members, int(row["count"])))  # type: ignore[arg-type]
+        combos.append((members, int(row["count"])))
     return sets, combos
 
 
@@ -154,7 +154,7 @@ def _set_totals(sets: List[str], combinations: List[Tuple[Tuple[str, ...], int]]
 
 
 def build_svg(
-    data: Optional[List[Dict[str, object]]] = None,
+    data: Optional[List[Dict[str, Any]]] = None,
     set_size_title: str = "Set size (k)",
     mode: str = "self-contained",
     accessibility: str = "universal",
@@ -459,7 +459,7 @@ def build_svg(
 
 
 def make_upset(
-    data: Optional[List[Dict[str, object]]] = None,
+    data: Optional[List[Dict[str, Any]]] = None,
     *,
     out: Optional[Path | str] = None,
     title: str = "",

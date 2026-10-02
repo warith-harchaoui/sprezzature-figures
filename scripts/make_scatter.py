@@ -252,7 +252,10 @@ def build_svg(
     for i, row in enumerate(ordered):
         seg = row.get("segment", segments[0] if segments else "")
         cx, cy = x_for(float(row["horsepower"])), y_for(float(row["mpg"]))
-        r = r_for(float(row.get("weight") or 0))
+        # `radius`, not `r`: `r` is a data row in the loops above
+        # (`r["horsepower"]`, `r.get("weight")`), and both names lived in
+        # the same function.
+        radius = r_for(float(row.get("weight") or 0))
         color = colors.get(seg, colors[segments[0]] if segments else "#007AFF")
         bits = [f"Horsepower {row['horsepower']:.0f}", f"Fuel economy {row['mpg']:.1f} mpg"]
         if has_weight:
@@ -261,7 +264,7 @@ def build_svg(
             bits.insert(0, str(seg))
         tip = ", ".join(bits)
         parts.append(
-            f'<circle id="hit-{i}" class="pt hit" tabindex="0" cx="{cx:.1f}" cy="{cy:.1f}" r="{r:.1f}" '
+            f'<circle id="hit-{i}" class="pt hit" tabindex="0" cx="{cx:.1f}" cy="{cy:.1f}" r="{radius:.1f}" '
             f'fill="{color}" fill-opacity="0.72" stroke="{color}" stroke-width="1.2" '
             f'role="img" aria-label="{xml_escape(tip)}"/>'
         )
@@ -271,7 +274,7 @@ def build_svg(
             tip_lines.append(f"Weight {row['weight']:.0f} kg")
         tips.append(
             tooltip_bubble(
-                cx, cy - r - 12,
+                cx, cy - radius - 12,
                 tip_lines,
                 anchor="middle", canvas_w=width, canvas_h=height,
                 ink=INK, secondary=SECONDARY, border=GRIDLINE,
@@ -300,14 +303,14 @@ def build_svg(
             # circle no bubble in the plot ever matches, which misleads
             # rather than calibrates the eye.
             for val in (w_max, w_min):
-                r = r_for(val)
-                cy = cursor_y + r
-                parts.append(f'<circle cx="{leg_x + r_max:.1f}" cy="{cy:.1f}" r="{r:.1f}" fill="none" stroke="{SECONDARY}" stroke-width="1"/>')
+                radius = r_for(val)
+                cy = cursor_y + radius
+                parts.append(f'<circle cx="{leg_x + r_max:.1f}" cy="{cy:.1f}" r="{radius:.1f}" fill="none" stroke="{SECONDARY}" stroke-width="1"/>')
                 parts.append(
                     f'<text x="{leg_x + r_max * 2 + 10:.1f}" y="{cy + 4:.1f}" font-size="12" '
                     f'font-family="{mono_family}" fill="{SECONDARY}">{val:.0f}</text>'
                 )
-                cursor_y = cy + r + 8
+                cursor_y = cy + radius + 8
 
     parts.append(fullscreen_control(width, height, mode))
     parts.append("</svg>")

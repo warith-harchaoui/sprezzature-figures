@@ -89,10 +89,15 @@ def _swarm_positions(
         while True:
             raw_candidate = center_y if offset == 0 else center_y + (step * ((offset + 1) // 2) * (1 if offset % 2 else -1))
             at_bound = max_offset is not None and abs(raw_candidate - center_y) >= max_offset
-            candidate = (
-                center_y + max_offset * (1 if raw_candidate >= center_y else -1)
-                if at_bound else raw_candidate
-            )
+            # Written as a statement, not a conditional expression: `at_bound`
+            # already implies `max_offset is not None`, but only a reader can
+            # see that through the intermediate variable. Repeating the test
+            # costs nothing at runtime and states the precondition where it is
+            # used.
+            if max_offset is not None and at_bound:
+                candidate = center_y + max_offset * (1 if raw_candidate >= center_y else -1)
+            else:
+                candidate = raw_candidate
             collision = any(
                 (x - px) ** 2 + (candidate - py) ** 2 < (2 * radius) ** 2
                 for px, py in placed

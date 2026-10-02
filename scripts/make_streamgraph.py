@@ -39,7 +39,7 @@ Author
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Dict, List, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 import numpy as np
 
@@ -140,7 +140,7 @@ def _sample_genre_share() -> Tuple[np.ndarray, List[str], np.ndarray]:
     return years, genres, volume
 
 
-def _demo_rows() -> List[Dict[str, object]]:
+def _demo_rows() -> List[Dict[str, Any]]:
     """Flatten :func:`_sample_genre_share` into row records for `DEMO_DATA`."""
     years, genres, volume = _sample_genre_share()
     return [
@@ -154,11 +154,11 @@ def _demo_rows() -> List[Dict[str, object]]:
 #: per (year, genre) cell with ``year`` (int), ``genre`` (str, bottom-to-top
 #: stacking order preserved by first-seen order) and ``value`` (float,
 #: billions of streams that year).
-DEMO_DATA: List[Dict[str, object]] = _demo_rows()
+DEMO_DATA: List[Dict[str, Any]] = _demo_rows()
 
 
 def _rows_to_matrix(
-    rows: List[Dict[str, object]],
+    rows: List[Dict[str, Any]],
 ) -> Tuple[np.ndarray, List[str], np.ndarray]:
     """Reshape ``{"year", "genre", "value"}`` row records into a matrix.
 
@@ -175,7 +175,7 @@ def _rows_to_matrix(
         stacking order), ``years`` sorted ascending, ``volume`` a
         ``(n_genres, n_years)`` array (missing cells default to ``0.0``).
     """
-    years_sorted = sorted({int(r["year"]) for r in rows})  # type: ignore[arg-type]
+    years_sorted = sorted({int(r["year"]) for r in rows})
     year_idx = {y: i for i, y in enumerate(years_sorted)}
     genres: List[str] = []
     for r in rows:
@@ -185,7 +185,7 @@ def _rows_to_matrix(
     genre_idx = {g: i for i, g in enumerate(genres)}
     volume = np.zeros((len(genres), len(years_sorted)))
     for r in rows:
-        volume[genre_idx[str(r["genre"])], year_idx[int(r["year"])]] = float(r["value"])  # type: ignore[arg-type]
+        volume[genre_idx[str(r["genre"])], year_idx[int(r["year"])]] = float(r["value"])
     return np.array(years_sorted), genres, volume
 
 
@@ -707,7 +707,7 @@ def _genre_tip(genre: str, years: np.ndarray, series: np.ndarray) -> str:
 # CLI                                                                          #
 # --------------------------------------------------------------------------- #
 def make_streamgraph(
-    data: Optional[List[Dict[str, object]]] = None,
+    data: Optional[List[Dict[str, Any]]] = None,
     *,
     out: Optional[Path | str] = None,
     title: str = "",
@@ -719,7 +719,7 @@ def make_streamgraph(
 
     Parameters
     ----------
-    data : list[dict[str, object]] or None
+    data : list[dict[str, Any]] or None
         Rows with keys ``year``, ``genre`` and ``value``. Defaults to
         :data:`DEMO_DATA`.
     out : Path, str, or None

@@ -34,7 +34,7 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 # The house-style palette lives in _style (stdlib-only, safe to import
 # without the dataviz tier).
@@ -79,7 +79,7 @@ _FOCUS: str = "#0A4DA0"     # focus-ring blue
 #: **Cloud** platforms (Amazon Web Services / Google Cloud / Azure). The
 #: seven rows are the disjoint tallies, so they sum to the number of
 #: respondents who know at least one of the three.
-DEMO_DATA: List[Dict[str, object]] = [
+DEMO_DATA: List[Dict[str, Any]] = [
     {"sets": ["Python"], "count": 96},                    # Python only
     {"sets": ["SQL"], "count": 74},                        # SQL only
     {"sets": ["Cloud"], "count": 58},                       # Cloud only
@@ -97,9 +97,9 @@ _SET_HUES = ("Blue", "Green", "Orange")
 
 def _dataset(
     accessibility: str = "universal",
-    data: "Optional[List[Dict[str, object]]]" = None,
+    data: "Optional[List[Dict[str, Any]]]" = None,
     theme: str = "corporate",
-) -> Dict[str, object]:
+) -> Dict[str, Any]:
     """Reshape row records into the internal three-set / seven-region shape.
 
     Parameters
@@ -128,7 +128,7 @@ def _dataset(
     # Discover the three set names in first-seen order across the rows.
     names: List[str] = []
     for row in rows:
-        for name in row["sets"]:  # type: ignore[union-attr]
+        for name in row["sets"]:
             if name not in names:
                 names.append(str(name))
     if len(names) != 3:
@@ -160,8 +160,8 @@ def _dataset(
     # by the sorted letters of the row's set membership (e.g. "AB", "ABC").
     regions: Dict[str, int] = {}
     for row in rows:
-        key = "".join(sorted(name_to_letter[str(n)] for n in row["sets"]))  # type: ignore[union-attr]
-        regions[key] = regions.get(key, 0) + int(row["count"])  # type: ignore[arg-type]
+        key = "".join(sorted(name_to_letter[str(n)] for n in row["sets"]))
+        regions[key] = regions.get(key, 0) + int(row["count"])
     for key in ("A", "B", "C", "AB", "AC", "BC", "ABC"):
         regions.setdefault(key, 0)
     return {"sets": sets, "regions": regions}
@@ -204,7 +204,7 @@ _xml = xml_escape
 
 
 def build_svg(
-    data: Optional[List[Dict[str, object]]] = None,
+    data: Optional[List[Dict[str, Any]]] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -237,8 +237,8 @@ def build_svg(
         A complete, standalone SVG document.
     """
     shaped = _dataset(accessibility, data, theme=theme)
-    sets: Dict[str, Dict[str, object]] = shaped["sets"]  # type: ignore[assignment]
-    regions: Dict[str, int] = shaped["regions"]  # type: ignore[assignment]
+    sets: Dict[str, Dict[str, Any]] = shaped["sets"]
+    regions: Dict[str, int] = shaped["regions"]
     centroids = _region_centroids()
 
     totals = {ltr: _set_total(regions, ltr) for ltr in ("A", "B", "C")}
@@ -477,7 +477,7 @@ def build_svg(
 
 
 def make_venn(
-    data: Optional[List[Dict[str, object]]] = None,
+    data: Optional[List[Dict[str, Any]]] = None,
     *,
     out: "Optional[Path | str]" = None,
     title: str = "",

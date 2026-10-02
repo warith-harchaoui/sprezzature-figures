@@ -177,22 +177,25 @@ def build_svg(
     idx = 0
     for ri, a in enumerate(features):
         for ci, b in enumerate(features):
-            r = lookup.get((a, b), 0.0)
+            # `corr`, not `r`: `r` is a data row in the loops above
+            # (`r["a"]`, `float(r["r"])`), and the two met in the same
+            # function. This one is the correlation coefficient.
+            corr = lookup.get((a, b), 0.0)
             x = plot_x + ci * cell
             y = plot_y + ri * cell
-            text_color = "#FFFFFF" if abs(r) > 0.6 else INK
-            tip = f"{a} x {b}: r = {r:.2f}"
-            strength = "strong" if abs(r) >= 0.6 else "moderate" if abs(r) >= 0.3 else "weak"
-            direction = "positive" if r > 0 else "negative" if r < 0 else "no"
-            corr_desc = "no correlation" if r == 0 else f"{strength} {direction} correlation"
+            text_color = "#FFFFFF" if abs(corr) > 0.6 else INK
+            tip = f"{a} x {b}: r = {corr:.2f}"
+            strength = "strong" if abs(corr) >= 0.6 else "moderate" if abs(corr) >= 0.3 else "weak"
+            direction = "positive" if corr > 0 else "negative" if corr < 0 else "no"
+            corr_desc = "no correlation" if corr == 0 else f"{strength} {direction} correlation"
             parts.append(
                 f'<rect id="hit-{idx}" class="cell hit" tabindex="0" x="{x:.1f}" y="{y:.1f}" width="{cell:.1f}" '
-                f'height="{cell:.1f}" fill="{_ramp_hex(r)}" stroke="{BG}" stroke-width="1">'
+                f'height="{cell:.1f}" fill="{_ramp_hex(corr)}" stroke="{BG}" stroke-width="1">'
                 f'<title>{xml_escape(tip)}</title></rect>'
             )
             tip_cards.append(
                 tooltip_bubble(
-                    x + cell / 2, y + cell + 4, [f"{a} x {b}", f"r = {r:.2f}", corr_desc],
+                    x + cell / 2, y + cell + 4, [f"{a} x {b}", f"r = {corr:.2f}", corr_desc],
                     canvas_w=width, canvas_h=height, ink=INK, secondary=SECONDARY, border=GRIDLINE,
                     elem_id=f"tip-{idx}",
                 )
@@ -200,7 +203,7 @@ def build_svg(
             idx += 1
             parts.append(
                 f'<text x="{x + cell / 2:.1f}" y="{y + cell / 2 + 4:.1f}" font-size="12" '
-                f'font-family="{mono_family}" fill="{text_color}" text-anchor="middle">{r:.2f}</text>'
+                f'font-family="{mono_family}" fill="{text_color}" text-anchor="middle">{corr:.2f}</text>'
             )
     parts.extend(tip_cards)
 
@@ -211,8 +214,8 @@ def build_svg(
     swatch_x = lx0 + 22.0
     n_swatches = 9
     for i in range(n_swatches):
-        r = -1.0 + 2.0 * i / (n_swatches - 1)
-        parts.append(f'<rect x="{swatch_x + i * 14:.1f}" y="{ly - 10:.1f}" width="12" height="11" fill="{_ramp_hex(r)}" stroke="#E5E5EA" stroke-width="0.5"/>')
+        corr = -1.0 + 2.0 * i / (n_swatches - 1)
+        parts.append(f'<rect x="{swatch_x + i * 14:.1f}" y="{ly - 10:.1f}" width="12" height="11" fill="{_ramp_hex(corr)}" stroke="#E5E5EA" stroke-width="0.5"/>')
     parts.append(f'<text x="{swatch_x + n_swatches * 14 + 6:.1f}" y="{ly:.1f}" font-size="10" fill="{SECONDARY}">+1</text>')
 
     parts.append(fullscreen_control(width, height, mode))

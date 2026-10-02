@@ -537,12 +537,14 @@ def build_svg(
     # from the nearest dot -- the white halo (paint-order: stroke) still
     # covers the rare close call, but this keeps close calls rare.
     best_t, best_clearance = 0.72, -1.0
-    for t in (0.55, 0.62, 0.69, 0.76, 0.83, 0.90):
-        cand_x = x0p + (x1p - x0p) * t
-        cand_y = y0p + (y1p - y0p) * t - 15
+    # `frac`, not `t`: `t` is an axis tick value in the loops above. This is
+    # a fraction along the fitted line.
+    for frac in (0.55, 0.62, 0.69, 0.76, 0.83, 0.90):
+        cand_x = x0p + (x1p - x0p) * frac
+        cand_y = y0p + (y1p - y0p) * frac - 15
         clearance = min(math.hypot(cand_x - px, cand_y - py) for px, py in dot_px)
         if clearance > best_clearance:
-            best_t, best_clearance = t, clearance
+            best_t, best_clearance = frac, clearance
     tl_x = x0p + (x1p - x0p) * best_t
     tl_y = y0p + (y1p - y0p) * best_t - 15
     ang = math.degrees(math.atan2(y1p - y0p, x1p - x0p))

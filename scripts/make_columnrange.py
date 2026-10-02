@@ -260,11 +260,12 @@ def build_svg(
             x = group_x0 + offset0 + ci * bar_w
             y_top, y_bot = y_for(high), y_for(low)
             h = max(1.0, y_bot - y_top)
-            r = min(bar_w / 2.0, 4.0)
+            # `corner`, not `r`: `r` is a data row in the loops above.
+            corner = min(bar_w / 2.0, 4.0)
             tip = f"{c}, {m}: {low:.0f}{unit} to {high:.0f}{unit}"
             parts.append(
                 f'<rect id="hit-{idx}" class="rangebar hit" tabindex="0" x="{x:.1f}" y="{y_top:.1f}" '
-                f'width="{bar_w:.1f}" height="{h:.1f}" rx="{r:.1f}" '
+                f'width="{bar_w:.1f}" height="{h:.1f}" rx="{corner:.1f}" '
                 f'fill="{colors[c]}" fill-opacity="0.85"><title>{xml_escape(tip)}</title></rect>'
             )
             tip_cards.append(

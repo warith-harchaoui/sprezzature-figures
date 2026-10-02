@@ -92,7 +92,7 @@ _FOCUS: str = "#0A4DA0"    # focus-ring blue
 _START_DEG: float = 0.0
 
 
-def _phases(accessibility: str = "universal") -> List[Dict[str, object]]:
+def _phases(accessibility: str = "universal") -> List[Dict[str, Any]]:
     """Return the ordered phases of the winter-wheat year, with seasonal hues.
 
     Each phase is one act of the crop year, in the order the loop sweeps
