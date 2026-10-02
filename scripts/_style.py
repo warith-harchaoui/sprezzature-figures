@@ -640,7 +640,7 @@ def emotion_to_hex(emotion: str) -> Optional[str]:
         Hex string, or ``None`` when the label is not in the palette.
     """
     target = emotion.strip().lower()
-    for base, meta in load_semantic_palette().items():
+    for _base, meta in load_semantic_palette().items():
         if meta["emotion"].lower() == target:
             return meta["hex"]
     fallback = {k.lower(): v for k, v in _FALLBACK_EMOTIONS.items()}

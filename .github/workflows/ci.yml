@@ -34,7 +34,10 @@ jobs:
 
       - name: Lint
         if: matrix.python-version == '3.12'
-        run: ruff check sprezzature_figures tools tests
+        # `ruff check .` and not a hand-listed set of directories: the list
+        # left out scripts/, four fifths of the package, and named tests/,
+        # which the config excluded anyway. Both are linted now.
+        run: ruff check .
 
       - name: "Fast tests (default: excludes slow + packaging)"
         run: python -m pytest -q

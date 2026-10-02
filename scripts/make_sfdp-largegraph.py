@@ -297,7 +297,7 @@ def layout(
     cool = temp / (iterations + 1)
 
     # Precompute a flat edge array for the attraction loop.
-    for step in range(iterations):
+    for _step in range(iterations):
         disp = [[0.0, 0.0] for _ in range(n)]
 
         # Repulsion between every ordered pair. O(n^2) is fine at n~320.

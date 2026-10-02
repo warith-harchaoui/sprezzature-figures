@@ -72,6 +72,7 @@ from __future__ import annotations
 
 import math
 import textwrap
+from typing import Callable, Sequence, Tuple
 from typing import List as _List
 
 # Function words that must never be left stranded at the end of a wrapped line
@@ -103,7 +104,6 @@ def wrap_no_orphan(text: str, width: int) -> _List[str]:
                 lines[i + 1] = f"{moved} {lines[i + 1]}"
                 changed = True
     return [ln for ln in lines if ln] or [""]
-from typing import Callable, Sequence, Tuple
 
 try:
     from sprezzature_figures.fonts import DEFAULT_SVG_FACES, svg_font_defs

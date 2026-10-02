@@ -116,7 +116,6 @@ Author
 from __future__ import annotations
 
 import argparse
-import base64
 import hashlib
 import json
 import shutil
@@ -652,7 +651,7 @@ def _vlm_critique(png_path: Path, kind: str) -> str:
             "  Start it with:  ollama serve\n"
             f"  Pull the model: ollama pull {_VISION_MODEL}\n"
             f"  Error: {exc}"
-        )
+        ) from exc
 
 
 # ---------------------------------------------------------------------------

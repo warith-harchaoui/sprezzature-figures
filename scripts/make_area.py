@@ -206,7 +206,7 @@ def build_svg(
         parts.append(f'<text x="{lx:.1f}" y="{ly:.1f}" font-size="13" font-weight="700" fill="{INK}">{xml_escape(legend_title)}</text>')
         cursor = lx
         ly2 = ly + 22
-        for i, ch in enumerate(channels):
+        for ch in channels:
             parts.append(f'<circle cx="{cursor + 6:.1f}" cy="{ly2 - 5:.1f}" r="6" fill="{colors[ch]}"/>')
             parts.append(f'<text x="{cursor + 18:.1f}" y="{ly2:.1f}" font-size="12" fill="{INK}">{xml_escape(ch)}</text>')
             cursor += 18 + 7.2 * len(ch) + 22
