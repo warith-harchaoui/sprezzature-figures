@@ -46,7 +46,7 @@ FONT_MONO = "Roboto Mono, ui-monospace, monospace"
 # The canonical source is sprezzature-colors/references/palette.csv, which
 # projects each hex onto four semantic axes: **Emotion**, **Concepts**,
 # **PsychologyPositive**, **PsychologyNegative**. The full mapping is
-# documented at <https://harchaoui.org/warith/colors/>. When the CSV is
+# documented at <https://deraison.ai/colors/>. When the CSV is
 # available, :func:`load_semantic_palette` reads it. This fallback is
 # used only when neither ``sprezzature-colors`` nor ``SPREZZATURE_COLORS_PALETTE``
 # can be resolved.
@@ -101,7 +101,7 @@ _ACADEMIC_PALETTE: Dict[str, str] = {
 
 #: Emotion → hex fallback, mirroring the ``Emotion`` column of the
 #: sprezzature-colors CSV. Anger / Sadness / Joy etc. Source:
-#: <https://harchaoui.org/warith/colors/>.
+#: <https://deraison.ai/colors/>.
 _FALLBACK_EMOTIONS: Dict[str, str] = {
     "Anger":     "#FF3B30",
     "Surprise":  "#FF9500",
@@ -573,7 +573,7 @@ def load_semantic_palette() -> Dict[str, Dict[str, Any]]:
     Reads every column of ``sprezzature-colors/references/palette.csv``:
     ``Hexcode``, ``Base``, ``LightHex``, ``Emotion``, ``Concepts``,
     ``PsychologyPositive``, ``PsychologyNegative``. Documented at
-    <https://harchaoui.org/warith/colors/>.
+    <https://deraison.ai/colors/>.
 
     Returns
     -------
@@ -749,7 +749,7 @@ def qualitative_sequence(n: int = 8, theme: str = "corporate") -> List[str]:
 #: Blue also carries *Trust / Logic* and red *Danger / Warning* in the sprezzature-colors
 #: concepts, which fits "positive vs negative". Verify any diverging choice on the
 #: rendered pixels with ``simulate_cvd.py``. Source:
-#: <https://harchaoui.org/warith/colors/>.
+#: <https://deraison.ai/colors/>.
 DIVERGING_CVD_SAFE = ("#007AFF", "#F2F4F6", "#FF3B30")  # (positive, neutral mid, negative)
 
 
@@ -894,7 +894,7 @@ def infer_polarity(metric_name: str) -> Optional[str]:
 #: *Security*) — the metric is neutral; the frame is compliance.
 #: The **breach** overlay uses Red (psychology-negative: *Warning*,
 #: *Danger*) to flag SLA violations without co-opting the base
-#: encoding. Source: <https://harchaoui.org/warith/colors/>.
+#: encoding. Source: <https://deraison.ai/colors/>.
 POLARITY_COLOR: Dict[str, str] = {
     "higher-better": "Green",
     "lower-better":  "Green",
