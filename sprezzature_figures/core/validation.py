@@ -18,12 +18,21 @@ from .figure_plan import FigurePlan, StyleOptions
 from .operations import (
     AddFilter,
     AggregateRows,
+    AggregateTransform,
     BindColumn,
     CalculateColumn,
+    CalculateDerived,
     FigureOperation,
+    FilterByRange,
+    FilterByValue,
+    FilterTemporal,
+    GroupOthers,
     LimitCategories,
+    RenameDisplay,
     SetStyleOption,
     SortRows,
+    SortTransform,
+    TopN,
     Transform,
 )
 
@@ -31,21 +40,35 @@ _STYLE_FIELDS = set(StyleOptions.model_fields)
 
 
 def _transform_columns(transform: Transform) -> list[str]:
-    kind = transform.kind
-    if kind in (
-        "filter_value",
-        "filter_range",
-        "filter_temporal",
-        "sort",
-        "rename_display",
-        "top_n",
-        "group_others",
+    """
+    Every dataset column a transform names, so the caller can check they exist.
+
+    Dispatch is by class, not by the ``kind`` string. ``Transform`` is a
+    discriminated union and each member already declares its own
+    ``kind: Literal[...]``, but reading that string into a local and testing
+    it with ``in`` throws the discrimination away: a type checker then sees
+    ``transform.column`` on the whole union and cannot tell which members
+    have it. Thirty-four warnings said so. ``isinstance`` narrows, so a
+    member added later without a branch here is a type error rather than an
+    ``AttributeError`` the first time that transform reaches validation.
+    """
+    if isinstance(transform, AggregateTransform):
+        return [*transform.group_by, transform.value_column]
+    if isinstance(transform, CalculateDerived):
+        return [transform.left, transform.right]
+    if isinstance(
+        transform,
+        (
+            FilterByValue,
+            FilterByRange,
+            FilterTemporal,
+            SortTransform,
+            RenameDisplay,
+            TopN,
+            GroupOthers,
+        ),
     ):
         return [transform.column]
-    if kind == "aggregate":
-        return [*transform.group_by, transform.value_column]
-    if kind == "calculate":
-        return [transform.left, transform.right]
     return []
 
 
