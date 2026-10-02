@@ -99,6 +99,7 @@ mcp = [
 dev = [
     "pytest>=8",
     "ruff",
+    "mypy",
     "build",
     "numpy>=1.24",
     # headless-Chromium checks: scripts/render_gapminder_og.py, the Ralph

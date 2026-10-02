@@ -276,7 +276,10 @@ def audit_one(path: Path, *, render: bool, timeout: int, tmp_dir: Path) -> dict[
         and entry["accepts_out"]
     )
 
-    if render and contract_complete:
+    # `demo_data is not None` rather than leaning on `contract_complete`: that
+    # flag already implies it (via `demo_data_len > 0`), but it says so through
+    # a dict entry, which is not something a reader or a checker can follow.
+    if render and contract_complete and demo_data is not None:
         out_path = tmp_dir / f"{module_name}.svg"
         status, error = try_render(fn, demo_data, out_path, timeout)
         entry["render_test"] = status

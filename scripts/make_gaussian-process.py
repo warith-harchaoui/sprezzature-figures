@@ -142,8 +142,11 @@ def build_svg(
     n_samples = 3
     samples = mean[:, None] + chol @ rng.standard_normal((len(x_test), n_samples))
 
-    y_min = min(lo.min(), y_train.min(), samples.min())
-    y_max = max(hi.max(), y_train.max(), samples.max())
+    # `np.min(arr)` rather than `arr.min()`: numpy 2.5's stubs reject the
+    # zero-argument method form on these arrays, though it is valid NumPy. The
+    # functional form is equivalent and types cleanly across versions.
+    y_min = min(np.min(lo), np.min(y_train), np.min(samples))
+    y_max = max(np.max(hi), np.max(y_train), np.max(samples))
     pad = (y_max - y_min) * 0.1 or 1.0
 
     plot_x, plot_y = 60.0, 118.0
