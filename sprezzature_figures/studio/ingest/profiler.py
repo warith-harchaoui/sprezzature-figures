@@ -45,6 +45,24 @@ def _json_safe(value: object) -> object:
     return value
 
 
+def _scalar_bound(value: object) -> float | str | None:
+    """
+    A column's min or max, as the three shapes ``ColumnProfile`` declares.
+
+    ``_json_safe`` is honestly polymorphic -- it passes through whatever the
+    column holds -- so its ``object`` cannot be assigned to a
+    ``float | str | None`` field without a narrowing step. Doing it here
+    rather than silencing the warning keeps the model's declared type true:
+    anything that is not already a number falls back to its string form,
+    which is what every consumer of these two fields (JSON payloads, the
+    studio's column inspector) treats them as anyway.
+    """
+    safe = _json_safe(value)
+    if safe is None or isinstance(safe, (int, float, str)):
+        return safe
+    return str(safe)
+
+
 def profile_column(series: pd.Series, *, name: str | None = None) -> ColumnProfile:
     col_name = name if name is not None else str(series.name)
     non_null = series.dropna()
@@ -67,8 +85,8 @@ def profile_column(series: pd.Series, *, name: str | None = None) -> ColumnProfi
         median = float(non_null.median())
         quantiles = {f"p{int(q * 100)}": float(non_null.quantile(q)) for q in _QUANTILES}
     elif not non_null.empty and semantic_type in ("categorical", "text", "identifier", "datetime"):
-        minimum = _json_safe(non_null.min())
-        maximum = _json_safe(non_null.max())
+        minimum = _scalar_bound(non_null.min())
+        maximum = _scalar_bound(non_null.max())
 
     sample_values = [_json_safe(v) for v in non_null.unique()[:_SAMPLE_VALUES_SHOWN]]
 
@@ -181,7 +199,22 @@ def _data_quality_warnings(df: pd.DataFrame, columns: list[ColumnProfile]) -> li
                 )
             )
         p25, p75 = col.quantiles.get("p25"), col.quantiles.get("p75")
-        if p25 is not None and p75 is not None and col.minimum is not None and col.maximum is not None:
+        # `minimum` / `maximum` are `float | str | None`: numeric columns get
+        # numbers, categorical and text columns get the first and last label.
+        # `quantiles` is only filled for numeric columns, so in practice the
+        # two agree -- but they are independent fields on a pydantic model,
+        # and a profile rebuilt from JSON with a textual minimum and a
+        # quantile dict validates cleanly and then raises
+        # `'>' not supported between instances of 'str' and 'float'` on the
+        # comparison below, killing the whole warnings pass. Checking the type
+        # rather than just non-nullness states the invariant and holds whoever
+        # built the profile.
+        if (
+            p25 is not None
+            and p75 is not None
+            and isinstance(col.minimum, (int, float))
+            and isinstance(col.maximum, (int, float))
+        ):
             iqr = p75 - p25
             if iqr > 0:
                 lower, upper = p25 - 1.5 * iqr, p75 + 1.5 * iqr

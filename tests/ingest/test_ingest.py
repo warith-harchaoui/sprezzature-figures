@@ -332,3 +332,36 @@ def test_profile_dataframe_leaves_genuine_text_columns_alone() -> None:
     # the assertion to one pandas generation.
     assert code.physical_dtype in ("object", "str")
     assert code.semantic_type in ("categorical", "text")
+
+
+def test_outlier_warning_survives_a_profile_whose_bounds_are_text() -> None:
+    """A textual min/max next to numeric quantiles must not crash the pass.
+
+    ``ColumnProfile.minimum`` is ``float | str | None`` -- numeric columns get
+    a number, categorical and text columns get the first and last label --
+    while ``quantiles`` is only filled for numeric columns. The profiler never
+    produces both at once, but they are independent fields on a pydantic model:
+    a profile rebuilt from JSON with a textual minimum and a quantile dict
+    validates cleanly, and the IQR outlier check then compared ``str`` to
+    ``float``. That raised ``TypeError`` and took down the whole warnings pass
+    for every column, not just the odd one.
+    """
+    from sprezzature_figures.core.dataset import ColumnProfile
+    from sprezzature_figures.studio.ingest.profiler import _data_quality_warnings
+
+    poisoned = ColumnProfile.model_validate(
+        {
+            "name": "client",
+            "physical_dtype": "object",
+            "semantic_type": "categorical",
+            "minimum": "Alice",
+            "maximum": "Zoe",
+            "quantiles": {"p25": 1.0, "p75": 3.0},
+        }
+    )
+
+    warnings = _data_quality_warnings(
+        pd.DataFrame({"client": ["Alice", "Bob", "Zoe"]}), [poisoned]
+    )
+
+    assert all(w.column == "client" for w in warnings)
