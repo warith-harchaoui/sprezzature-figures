@@ -30,7 +30,16 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
-import tomllib
+
+# `tomllib` is stdlib only from 3.11 and this package supports 3.10, where the
+# bare import failed collection of this whole file. `tomli` is the same parser
+# under its pre-stdlib name and is declared in the `dev` extra for 3.10 alone.
+# A regex would do for a single value, which is how `[project.scripts]` is read
+# next door, but what this file needs is a nested table.
+try:
+    import tomllib
+except ModuleNotFoundError:  # pragma: no cover - Python 3.10 only
+    import tomli as tomllib
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
