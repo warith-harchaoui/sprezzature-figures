@@ -12,6 +12,7 @@ Warith HARCHAOUI <warith.harchaoui@gmail.com>
 
 from __future__ import annotations
 
+from sprezzature_figures.core.dataset import DatasetProfile
 from sprezzature_figures.core.figure_plan import FigurePlan
 from sprezzature_figures.core.operations import FigureOperation
 from sprezzature_figures.core.validation import validate_operation
@@ -21,7 +22,9 @@ from .apply import apply_operations
 from .policy import is_safe_repair
 
 
-def safe_repairs_from_critique(critique: VisualCritique, *, dataset=None) -> list[FigureOperation]:
+def safe_repairs_from_critique(
+    critique: VisualCritique, *, dataset: DatasetProfile | None = None
+) -> list[FigureOperation]:
     """The subset of `critique.safe_repairs` that both the policy and
     ordinary operation validation actually approve.
     """
@@ -33,7 +36,7 @@ def safe_repairs_from_critique(critique: VisualCritique, *, dataset=None) -> lis
 
 
 def apply_safe_repairs(
-    plan: FigurePlan, critique: VisualCritique, *, dataset=None
+    plan: FigurePlan, critique: VisualCritique, *, dataset: DatasetProfile | None = None
 ) -> tuple[FigurePlan, list[FigureOperation]]:
     """Apply the approved safe repairs from `critique` to `plan`.
 

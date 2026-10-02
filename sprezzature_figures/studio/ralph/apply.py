@@ -30,11 +30,12 @@ from sprezzature_figures.core.operations import (
     SetSubtitle,
     SetTitle,
     SortRows,
+    Transform,
     UnbindColumn,
 )
 
 
-def _with_transform_id(transform):
+def _with_transform_id(transform: Transform) -> Transform:
     if transform.transform_id:
         return transform
     return transform.model_copy(update={"transform_id": uuid.uuid4().hex[:8]})
@@ -81,8 +82,10 @@ def apply_operation(plan: FigurePlan, op: FigureOperation) -> FigurePlan:
         return plan.model_copy(update={"annotations": [*plan.annotations, op.annotation]})
 
     if isinstance(op, RemoveAnnotation):
-        remaining = [a for a in plan.annotations if a.annotation_id != op.annotation_id]
-        return plan.model_copy(update={"annotations": remaining})
+        # `kept`, not `remaining`: that name holds the surviving
+        # transformations seven lines above, and these are annotations.
+        kept = [a for a in plan.annotations if a.annotation_id != op.annotation_id]
+        return plan.model_copy(update={"annotations": kept})
 
     if isinstance(op, SetOutputSize):
         style = plan.style.model_copy(update={"width": op.width, "height": op.height})

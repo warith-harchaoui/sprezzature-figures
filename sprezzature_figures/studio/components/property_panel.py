@@ -88,7 +88,10 @@ def build_property_panel(
     def refresh() -> None:
         lang = state.ui_language
         has_figure = state.plan is not None
-        style = state.plan.style if has_figure else StyleOptions()
+        # Read off `state.plan` directly: `has_figure` holds the same answer,
+        # but only this form tells a reader (or a checker) that `.style` is
+        # reached solely when there is a plan.
+        style = state.plan.style if state.plan is not None else StyleOptions()
         suppress["active"] = True
         try:
             heading.text = t("style_heading", lang)

@@ -30,11 +30,15 @@ else:
     from .catalog import resolve_kind
     from .make_figure import _demo_data_for, list_kinds, make_figure
 
+    # The group gets its own name so the `@cli.command(...)` decorators below
+    # attach to a real `click.Group`. Binding it to `main` directly made the
+    # name mean a plain function in the fallback branch and a Group here, and
+    # every decorator then read as an attribute on a function.
     @click.group()
-    def main() -> None:  # type: ignore[misc]
+    def cli() -> None:
         """sprezzature-figures: render publication-quality data figures."""
 
-    @main.command("list")
+    @cli.command("list")
     @click.option(
         "--status",
         default=None,
@@ -48,7 +52,7 @@ else:
         for k in kinds:
             click.echo(f"  {k}")
 
-    @main.command("render")
+    @cli.command("render")
     @click.argument("kind")
     @click.option(
         "--out",
@@ -147,7 +151,7 @@ else:
             raise SystemExit(1) from exc
         click.echo(result)
 
-    @main.command("redraw")
+    @cli.command("redraw")
     @click.argument("image", type=click.Path(exists=True, dir_okay=False))
     @click.option(
         "--out",
@@ -254,7 +258,7 @@ else:
         for warning in result.warnings:
             click.echo(f"note: {warning}", err=True)
 
-    @main.command("recommend")
+    @cli.command("recommend")
     @click.option(
         "--data",
         "data_path",
@@ -352,7 +356,7 @@ else:
             result = make_figure(top.kind, bound, out=render_out)
             click.echo(f"rendered top recommendation ({top.kind}) -> {result}")
 
-    @main.command("check")
+    @cli.command("check")
     @click.argument("svg", type=click.Path(exists=True, dir_okay=False, allow_dash=True))
     @click.option(
         "--dark",
@@ -408,3 +412,6 @@ else:
             if finding.detail:
                 click.echo(f"    {finding.detail}", err=True)
         raise SystemExit(1)
+
+    # The console script in pyproject.toml points at `main`.
+    main = cli

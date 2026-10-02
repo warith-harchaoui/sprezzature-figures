@@ -20,7 +20,7 @@ Warith HARCHAOUI <warith.harchaoui@gmail.com>
 
 from __future__ import annotations
 
-from sprezzature_figures.catalog.models import FigureDefinition
+from sprezzature_figures.catalog.models import FigureDefinition, FigureStatus
 from sprezzature_figures.core.dataset import DatasetProfile
 
 from .compatibility import (
@@ -36,7 +36,7 @@ def recommend_figures(
     profile: DatasetProfile,
     *,
     limit: int = 3,
-    status: str | None = "stable",
+    status: FigureStatus | None = "stable",
     goal: str | None = None,
 ) -> list[FigureDefinition]:
     """The top `limit` figure kinds this dataset can fill, best first. Feed the

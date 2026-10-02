@@ -230,7 +230,8 @@ def _decalage(element: ET.Element, ancestors: dict) -> tuple:
     """
     dx = dy = 0.0
     calculable = True
-    node = element
+    # Optional: the walk ends when `ancestors.get` returns None at the root.
+    node: ET.Element | None = element
     while node is not None:
         transform = node.get("transform") or ""
         if transform:
@@ -268,7 +269,9 @@ def _text_labels(root: ET.Element) -> list[_Label]:
         if masque:
             continue
         rotated = False
-        node: ET.Element | None = element
+        # Re-walk from the element: `node` is already declared above, so this
+        # second pass reuses it rather than redeclaring the same name and type.
+        node = element
         while node is not None:
             if "rotate" in (node.get("transform") or ""):
                 rotated = True

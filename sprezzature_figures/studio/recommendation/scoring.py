@@ -15,7 +15,7 @@ Warith HARCHAOUI <warith.harchaoui@gmail.com>
 
 from __future__ import annotations
 
-from sprezzature_figures.catalog.models import FigureDefinition, RoleDefinition
+from sprezzature_figures.catalog.models import FigureDefinition, FigureStatus, RoleDefinition
 from sprezzature_figures.core.dataset import ColumnProfile, DatasetProfile
 
 from .compatibility import column_fits_role, compatible_definitions
@@ -175,7 +175,7 @@ def score(
 
 
 def rank(
-    profile: DatasetProfile, *, status: str | None = "stable", goal: str | None = None
+    profile: DatasetProfile, *, status: FigureStatus | None = "stable", goal: str | None = None
 ) -> list[tuple[FigureDefinition, float]]:
     """Compatible figures paired with their score, best first (ties keep
     registry order, so the ranking is fully deterministic). Pass `goal` (the

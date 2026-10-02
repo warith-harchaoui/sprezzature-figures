@@ -11,6 +11,7 @@ Warith HARCHAOUI <warith.harchaoui@gmail.com>
 from __future__ import annotations
 
 from collections.abc import Callable
+from typing import Any
 
 from nicegui import ui
 
@@ -19,7 +20,10 @@ from sprezzature_figures.studio.state import SessionState
 from sprezzature_figures.studio.ui_strings import t
 
 
-def build_engine_status(state: SessionState) -> Callable[[], None]:
+# Returns NiceGUI's `.refresh`, whose own return value is an
+# `AwaitableResponse`, not None: callers ignore it, but the declared type
+# has to admit it exists.
+def build_engine_status(state: SessionState) -> Callable[[], Any]:
     """Render the badge; returns a ``refresh()`` the editor's language toggle
     calls to re-render it in the other language (the underlying engine
     status itself never changes mid-session, only its label's language)."""

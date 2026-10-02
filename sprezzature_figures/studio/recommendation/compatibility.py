@@ -12,7 +12,11 @@ Warith HARCHAOUI <warith.harchaoui@gmail.com>
 
 from __future__ import annotations
 
-from sprezzature_figures.catalog.models import FigureDefinition, RoleDefinition
+from sprezzature_figures.catalog.models import (
+    FigureDefinition,
+    FigureStatus,
+    RoleDefinition,
+)
 from sprezzature_figures.catalog.registry import get_figure_definition, list_kinds
 from sprezzature_figures.core.dataset import ColumnProfile, DatasetProfile
 
@@ -161,7 +165,7 @@ _DATA_BLIND_HERO_KINDS = frozenset(
 
 
 def compatible_definitions(
-    profile: DatasetProfile, *, status: str | None = "stable"
+    profile: DatasetProfile, *, status: FigureStatus | None = "stable"
 ) -> list[FigureDefinition]:
     """Every figure of the given status whose required roles this dataset can
     fill, in registry order. Pass `status=None` to consider all kinds."""

@@ -26,6 +26,7 @@ Warith HARCHAOUI <warith.harchaoui@gmail.com>
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from datetime import date, datetime
 from typing import Any
 
@@ -206,10 +207,13 @@ def _aggregate_values(values: list[Any], agg: str) -> Any:
 def _apply_top_n(rows: list[Row], t: TopN) -> list[Row]:
     if t.n <= 0:
         return []
-    if t.by is not None and _has_column(rows, t.by):
+    by = t.by
+    if by is not None and _has_column(rows, by):
+        # Bound to a local first: the lambda is a closure, so the narrowing
+        # from `t.by is not None` does not reach inside it.
         ranked = sorted(
             enumerate(rows),
-            key=lambda pair: _sort_key(pair[1].get(t.by)),
+            key=lambda pair: _sort_key(pair[1].get(by)),
             reverse=True,
         )
         keep_indices = {index for index, _ in ranked[: t.n]}
@@ -265,7 +269,10 @@ def _required_columns(t: Transform) -> list[str]:
     return []  # RenameDisplay has no data-level effect
 
 
-_APPLIERS = {
+# Annotated: the keys are nine distinct transform classes and each value
+# takes its own one, so inference joins the callables into something it
+# then refuses to call. The dispatch is correct; only its type is wide.
+_APPLIERS: dict[type, Callable[..., list[Row]]] = {
     FilterByValue: _apply_filter_value,
     FilterByRange: _apply_filter_range,
     FilterTemporal: _apply_filter_temporal,
