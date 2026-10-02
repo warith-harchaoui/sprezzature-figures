@@ -166,15 +166,18 @@ def build_svg(
     largeur_max = max((len(e) for e in etiquettes), default=0) * 13 * 0.55
     incliner = largeur_max + 6 > bin_w
     descente = min(largeur_max * 0.57, 70.0) if incliner else 0.0
-    height = height + descente
-    plot_h = height - plot_y - bottom_reserved - descente
+    # The canvas grows by the slanted labels' descent, so it is no longer the
+    # integer the caller passed: a separate name rather than rebinding the
+    # parameter to a different type.
+    canvas_h = height + descente
+    plot_h = canvas_h - plot_y - bottom_reserved - descente
     bar_w = max(1.0, bin_w * 0.6)
 
     def y_for(v: float) -> float:
         return plot_y + plot_h - (v / y_domain * plot_h)
 
     parts: List[str] = []
-    parts.append(svg_open(width, height, "bar-title", "bar-desc", font_family=chrome_stack_for_theme(theme)))
+    parts.append(svg_open(width, canvas_h, "bar-title", "bar-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="bar-title">{xml_escape(title)}</title>')
     top = ordered[0] if ordered else None
     peak_desc = (
@@ -205,7 +208,7 @@ def build_svg(
         "</style>"
     )
 
-    parts.append(f'<rect width="{width}" height="{height}" fill="{BG}"/>')
+    parts.append(f'<rect width="{width}" height="{canvas_h}" fill="{BG}"/>')
     parts.append(
         f'<text x="40" y="56" font-size="26" font-weight="600" fill="{INK}" '
         f'letter-spacing="-0.3">{xml_escape(title)}</text>'

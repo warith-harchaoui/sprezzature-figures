@@ -65,6 +65,7 @@ Author
 """
 from __future__ import annotations
 
+import argparse
 import ast
 import re
 import sys
@@ -202,7 +203,7 @@ def iter_files(paths: List[str]) -> List[Path]:
     return out
 
 
-def build_parser():
+def build_parser() -> argparse.ArgumentParser:
     parser = make_parser(
         prog="audit_generator_hardcoded_text",
         description=(

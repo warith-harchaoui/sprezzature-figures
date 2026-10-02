@@ -23,7 +23,7 @@ from __future__ import annotations
 import sys
 from collections import defaultdict
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
@@ -126,7 +126,9 @@ def _layout(sizes: List[float], x: float, y: float, dx: float, dy: float) -> Lis
     return _layout_row(sizes, x, y, dx, dy) if dx >= dy else _layout_col(sizes, x, y, dx, dy)
 
 
-def _leftover(sizes: List[float], x: float, y: float, dx: float, dy: float):
+def _leftover(
+    sizes: List[float], x: float, y: float, dx: float, dy: float
+) -> Tuple[float, float, float, float]:
     covered = sum(sizes)
     if dx >= dy:
         width = covered / dy if dy else 0.0

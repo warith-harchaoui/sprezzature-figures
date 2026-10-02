@@ -579,13 +579,16 @@ def build_svg(
         f'height="{_MAP_H:.1f}" rx="14" fill="{_OCEAN}"/>'
     )
     parts.append('<g stroke="' + _GRAT + '" stroke-width="1" fill="none">')
-    for lat in range(36, 47, 2):
-        p0 = _to_screen(_LON_MIN, lat, fit)
-        p1 = _to_screen(_LON_MAX, lat, fit)
+    # `grat_*` rather than `lat` / `lon`: those names carry the stations' own
+    # float coordinates further down, and the graticule's whole-degree ints
+    # met them in the same function.
+    for grat_lat in range(36, 47, 2):
+        p0 = _to_screen(_LON_MIN, grat_lat, fit)
+        p1 = _to_screen(_LON_MAX, grat_lat, fit)
         parts.append(f'<path d="M{p0[0]:.1f},{p0[1]:.1f} L{p1[0]:.1f},{p1[1]:.1f}"/>')
-    for lon in range(-80, -67, 3):
-        p0 = _to_screen(lon, _LAT_MIN, fit)
-        p1 = _to_screen(lon, _LAT_MAX, fit)
+    for grat_lon in range(-80, -67, 3):
+        p0 = _to_screen(grat_lon, _LAT_MIN, fit)
+        p1 = _to_screen(grat_lon, _LAT_MAX, fit)
         parts.append(f'<path d="M{p0[0]:.1f},{p0[1]:.1f} L{p1[0]:.1f},{p1[1]:.1f}"/>')
     parts.append('</g>')
 

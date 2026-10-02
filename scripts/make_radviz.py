@@ -145,7 +145,7 @@ def _class_profiles() -> List[Dict[str, Any]]:
     ]
 
 
-def sample_rows(seed: int, per_class: int) -> List[Dict[str, object]]:
+def sample_rows(seed: int, per_class: int) -> List[Dict[str, Any]]:
     """Draw a synthetic wheat-kernel table, one Gaussian cloud per class.
 
     Parameters
@@ -163,12 +163,12 @@ def sample_rows(seed: int, per_class: int) -> List[Dict[str, object]]:
         ``raw`` (the 7 measured features, pre-normalisation).
     """
     rng = random.Random(seed)
-    rows: List[Dict[str, object]] = []
+    rows: List[Dict[str, Any]] = []
     for ci, prof in enumerate(_class_profiles()):
         mean = prof["mean"]
         sd = prof["sd"]
         for _ in range(per_class):
-            raw = [rng.gauss(m, s) for m, s in zip(mean, sd, strict=True)]  # type: ignore[arg-type]
+            raw = [rng.gauss(m, s) for m, s in zip(mean, sd, strict=True)]
             # Measurements are physical, so floor them at zero.
             raw = [max(0.0, v) for v in raw]
             rows.append({"cls": ci, "name": prof["name"], "raw": raw})
@@ -184,9 +184,9 @@ def _demo_rows() -> List[Dict[str, Any]]:
     """Flatten :func:`sample_rows` into ``{"variety", <feature>: value, ...}`` rows."""
     rows: List[Dict[str, Any]] = []
     for r in sample_rows(seed=7, per_class=60):
-        raw = r["raw"]  # type: ignore[index]
+        raw = r["raw"]
         row: Dict[str, Any] = {"variety": str(r["name"])}
-        for feat, v in zip(FEATURES, raw, strict=True):  # type: ignore[arg-type]
+        for feat, v in zip(FEATURES, raw, strict=True):
             row[feat] = round(float(v), 3)
         rows.append(row)
     return rows
@@ -195,7 +195,7 @@ def _demo_rows() -> List[Dict[str, Any]]:
 DEMO_DATA: List[Dict[str, Any]] = _demo_rows()
 
 
-def _kernel_rows_from_records(rows: List[Dict[str, Any]]) -> List[Dict[str, object]]:
+def _kernel_rows_from_records(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """Reshape ``{"variety", <feature>: value, ...}`` rows into RadViz kernel records.
 
     Parameters
@@ -212,7 +212,7 @@ def _kernel_rows_from_records(rows: List[Dict[str, Any]]) -> List[Dict[str, obje
         :data:`FEATURES` order, ready for :func:`normalise`/:func:`project`.
     """
     class_index = {c["name"]: i for i, c in enumerate(CLASSES)}
-    out: List[Dict[str, object]] = []
+    out: List[Dict[str, Any]] = []
     for r in rows:
         name = str(r.get("variety", ""))
         ci = class_index.get(name)
@@ -223,7 +223,7 @@ def _kernel_rows_from_records(rows: List[Dict[str, Any]]) -> List[Dict[str, obje
     return out
 
 
-def normalise(rows: List[Dict[str, object]]) -> None:
+def normalise(rows: List[Dict[str, Any]]) -> None:
     """Min-max scale every feature into ``[0, 1]`` **in place**.
 
     RadViz weights are meaningless across features on different physical
@@ -238,13 +238,13 @@ def normalise(rows: List[Dict[str, object]]) -> None:
         Rows from :func:`sample_rows`; mutated to gain a ``norm`` key.
     """
     d = len(FEATURES)
-    cols = [[float(r["raw"][j]) for r in rows] for j in range(d)]  # type: ignore[index]
+    cols = [[float(r["raw"][j]) for r in rows] for j in range(d)]
     lo = [min(c) for c in cols]
     hi = [max(c) for c in cols]
     for r in rows:
         raw = r["raw"]
         r["norm"] = [
-            (float(raw[j]) - lo[j]) / (hi[j] - lo[j]) if hi[j] > lo[j] else 0.0  # type: ignore[index]
+            (float(raw[j]) - lo[j]) / (hi[j] - lo[j]) if hi[j] > lo[j] else 0.0
             for j in range(d)
         ]
 
@@ -364,7 +364,7 @@ def _disc_and_anchors(anchors: List[Tuple[float, float]]) -> str:
 
 
 def _points(
-    rows: List[Dict[str, object]],
+    rows: List[Dict[str, Any]],
     anchors: List[Tuple[float, float]],
     colours: Dict[str, str] | None = None,
 ) -> Tuple[str, List[Tuple[float, float]]]:
@@ -414,13 +414,13 @@ def _points(
         # the same immediate parent, which each class's own `<g>` is.
         cls_tips: List[str] = []
         for pi, r in enumerate(cls_rows):
-            x, y = project(r["norm"], anchors)  # type: ignore[arg-type]
+            x, y = project(r["norm"], anchors)
             sx += x
             sy += y
-            norm_vec = r["norm"]  # type: ignore[assignment]
-            dom_idx = max(range(len(norm_vec)), key=lambda j: norm_vec[j])  # type: ignore[index]
+            norm_vec = r["norm"]
+            dom_idx = max(range(len(norm_vec)), key=lambda j: norm_vec[j])
             dom_feat = FEATURES[dom_idx]
-            dom_val = r["raw"][dom_idx]  # type: ignore[index]
+            dom_val = r["raw"][dom_idx]
             tip = f"{name} kernel — pulled toward {dom_feat}"
             parts.append(
                 f'      <circle id="pt-{ci}-{pi}" class="pt hit" tabindex="0" cx="{x:.1f}" cy="{y:.1f}" r="6.5" '

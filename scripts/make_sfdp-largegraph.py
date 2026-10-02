@@ -654,26 +654,33 @@ def build_svg(
         my = sum(pos[i][1] for i in members) / len(members)
         rim = max(math.hypot(pos[i][0] - mx, pos[i][1] - my) for i in members)
         pill_w = 30 + 16.2 * len(labels[c])
-        pill_h = 46
+        pill_h: float = 46  # annotated: rebound from the placement dict (float) below
         push = rim + math.hypot(pill_w, pill_h) / 2.0 + 10.0
         x_lo, x_hi = PLOT_PAD + pill_w / 2, WIDTH - PLOT_PAD - pill_w / 2
         y_lo, y_hi = PLOT_TOP + pill_h / 2, HEIGHT - LEGEND_H - pill_h / 2
 
         dx, dy = mx - fig_cx, my - fig_cy
         base_angle = math.atan2(dy, dx) if math.hypot(dx, dy) > 1e-6 else -math.pi / 2
-        lxp = lyp = None
+        # The pair is carried as one optional tuple rather than two optional
+        # scalars: `if lxp is None` only narrows `lxp`, so `lyp` stayed
+        # `float | None` all the way into the dict below even though both are
+        # always assigned together.
+        spot: Optional[Tuple[float, float]] = None
         for off_deg in (0, -20, 20, -40, 40, -60, 60):
             ang = base_angle + math.radians(off_deg)
             cand_x = mx + math.cos(ang) * push
             cand_y = my + math.sin(ang) * push
             if x_lo <= cand_x <= x_hi and y_lo <= cand_y <= y_hi:
-                lxp, lyp = cand_x, cand_y
+                spot = (cand_x, cand_y)
                 break
-        if lxp is None:
+        if spot is None:
             # Nothing in the narrow fan cleared the canvas untouched;
             # fall back to the preferred direction, clamped, as before.
-            lxp = min(x_hi, max(x_lo, mx + math.cos(base_angle) * push))
-            lyp = min(y_hi, max(y_lo, my + math.sin(base_angle) * push))
+            spot = (
+                min(x_hi, max(x_lo, mx + math.cos(base_angle) * push)),
+                min(y_hi, max(y_lo, my + math.sin(base_angle) * push)),
+            )
+        lxp, lyp = spot
         label_placements.append(
             {"c": c, "x": lxp, "y": lyp, "w": pill_w, "h": pill_h,
              "x_lo": x_lo, "x_hi": x_hi, "y_lo": y_lo, "y_hi": y_hi}
@@ -685,22 +692,26 @@ def build_svg(
         moved = False
         for i in range(len(label_placements)):
             for j in range(i + 1, len(label_placements)):
-                a, b = label_placements[i], label_placements[j]
-                ox = (a["w"] + b["w"]) / 2 - abs(a["x"] - b["x"])
-                oy = (a["h"] + b["h"]) / 2 - abs(a["y"] - b["y"])
+                # `pa` / `pb`, not `a` / `b`: those name edge endpoints
+                # (ints) elsewhere in this module, and reusing them here for
+                # placement dicts made every index below unreadable to a type
+                # checker and confusing to a reader.
+                pa, pb = label_placements[i], label_placements[j]
+                ox = (pa["w"] + pb["w"]) / 2 - abs(pa["x"] - pb["x"])
+                oy = (pa["h"] + pb["h"]) / 2 - abs(pa["y"] - pb["y"])
                 if ox <= 0 or oy <= 0:
                     continue  # no rectangle overlap
                 moved = True
-                vx, vy = a["x"] - b["x"], a["y"] - b["y"]
+                vx, vy = pa["x"] - pb["x"], pa["y"] - pb["y"]
                 vnorm = math.hypot(vx, vy) or 1.0
                 # Separate along the shallower overlap axis for a smaller,
                 # more natural nudge.
                 step = min(ox, oy) / 2.0 + 1.0
                 ux_, uy_ = vx / vnorm, vy / vnorm
-                a["x"] = min(a["x_hi"], max(a["x_lo"], a["x"] + ux_ * step))
-                a["y"] = min(a["y_hi"], max(a["y_lo"], a["y"] + uy_ * step))
-                b["x"] = min(b["x_hi"], max(b["x_lo"], b["x"] - ux_ * step))
-                b["y"] = min(b["y_hi"], max(b["y_lo"], b["y"] - uy_ * step))
+                pa["x"] = min(pa["x_hi"], max(pa["x_lo"], pa["x"] + ux_ * step))
+                pa["y"] = min(pa["y_hi"], max(pa["y_lo"], pa["y"] + uy_ * step))
+                pb["x"] = min(pb["x_hi"], max(pb["x_lo"], pb["x"] - ux_ * step))
+                pb["y"] = min(pb["y_hi"], max(pb["y_lo"], pb["y"] - uy_ * step))
         if not moved:
             break
 
