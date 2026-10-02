@@ -54,7 +54,7 @@ def _ramp_hex(t: float, theme: str = "corporate") -> str:
     if theme == "academic":
         return viridis(t)
     t = min(1.0, max(0.0, t))
-    for (lo_t, lo_c), (hi_t, hi_c) in zip(_RAMP, _RAMP[1:]):
+    for (lo_t, lo_c), (hi_t, hi_c) in zip(_RAMP, _RAMP[1:], strict=False):
         if lo_t <= t <= hi_t:
             local = (t - lo_t) / (hi_t - lo_t) if hi_t > lo_t else 0.0
             ar, ag, ab = int(lo_c[1:3], 16), int(lo_c[3:5], 16), int(lo_c[5:7], 16)

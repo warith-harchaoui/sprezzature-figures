@@ -579,11 +579,11 @@ def _pack_node(node: Dict[str, Any], padding: float) -> float:
     pad_radii = [r + padding for r in child_radii]
     packed = _pack_siblings(pad_radii)
 
-    for ch, (x, y, _pr) in zip(children, packed):  # type: ignore[assignment]
+    for ch, (x, y, _pr) in zip(children, packed, strict=True):  # type: ignore[assignment]
         ch["x"] = x  # type: ignore[index]
         ch["y"] = y  # type: ignore[index]
 
-    enc = _enclose([(x, y, pr) for (x, y, _pr), pr in zip(packed, pad_radii)])
+    enc = _enclose([(x, y, pr) for (x, y, _pr), pr in zip(packed, pad_radii, strict=True)])
     # Shift children so the cluster centre is at local origin.
     for ch in children:  # type: ignore[assignment]
         ch["x"] = ch["x"] - enc[0]  # type: ignore[index,operator]

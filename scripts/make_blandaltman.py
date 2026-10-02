@@ -119,7 +119,7 @@ def make_data(n: int = 90, seed: int = 7) -> List[Dict[str, float]]:
 
     return [
         {"mean": round(float(m), 1), "diff": round(float(d), 1)}
-        for m, d in zip(mean, diff)
+        for m, d in zip(mean, diff, strict=True)
     ]
 
 

@@ -457,7 +457,7 @@ def main(
     # fades out or in via a discrete opacity window at exactly the right year.
     for name, d in order:
         col = region_color.get(d["continent"], "#8E8E93")
-        pts = ";".join(f"{sx(g):.1f},{sy(le):.1f}" for g, le in zip(d["gdp"], d["life"]))
+        pts = ";".join(f"{sx(g):.1f},{sy(le):.1f}" for g, le in zip(d["gdp"], d["life"], strict=True))
         rs = ";".join(f"{sr(p):.1f}" for p in d["pop"])
         lys = ";".join(f"{-(sr(p) + 3):.1f}" for p in d["pop"])
         bx, by, br = sx(d["gdp"][0]), sy(d["life"][0]), sr(d["pop"][0])
@@ -500,7 +500,7 @@ def main(
 
     for name, d in order:
         lxs = ";".join(f"{sx(g):.1f}" for g in d["gdp"])
-        lys = ";".join(f"{sy(le) - sr(p) - 3:.1f}" for le, p in zip(d["life"], d["pop"]))
+        lys = ";".join(f"{sy(le) - sr(p) - 3:.1f}" for le, p in zip(d["life"], d["pop"], strict=True))
         lx0, ly0 = sx(d["gdp"][0]), sy(d["life"][0]) - sr(d["pop"][0]) - 3
         for start, end, disp in NAME_HISTORY.get(name, [(y0i, y1i, name)]):
             op = ";".join("1" if (label_on[name][i] and start <= years[i] <= end) else "0" for i in range(n))

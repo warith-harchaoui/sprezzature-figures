@@ -58,10 +58,10 @@ def _ols_fit(xs: List[float], ys: List[float]) -> Dict[str, float]:
     n = len(xs)
     x_bar, y_bar = sum(xs) / n, sum(ys) / n
     s_xx = sum((x - x_bar) ** 2 for x in xs)
-    s_xy = sum((x - x_bar) * (y - y_bar) for x, y in zip(xs, ys))
+    s_xy = sum((x - x_bar) * (y - y_bar) for x, y in zip(xs, ys, strict=True))
     slope = s_xy / s_xx
     intercept = y_bar - slope * x_bar
-    residuals = [y - (intercept + slope * x) for x, y in zip(xs, ys)]
+    residuals = [y - (intercept + slope * x) for x, y in zip(xs, ys, strict=True)]
     s2 = sum(r * r for r in residuals) / max(1, n - 2)
     return {"slope": slope, "intercept": intercept, "s2": s2, "x_bar": x_bar, "s_xx": s_xx, "n": n}
 
@@ -178,8 +178,8 @@ def build_svg(
     )
 
     # ---- confidence band ----
-    top_pts = [(x_for(x), y_for(v)) for x, v in zip(grid_x, hi)]
-    bot_pts = [(x_for(x), y_for(v)) for x, v in zip(grid_x, lo)]
+    top_pts = [(x_for(x), y_for(v)) for x, v in zip(grid_x, hi, strict=True)]
+    bot_pts = [(x_for(x), y_for(v)) for x, v in zip(grid_x, lo, strict=True)]
     band_d = "M " + " L ".join(f"{x:.1f},{y:.1f}" for x, y in top_pts)
     band_d += " L " + " L ".join(f"{x:.1f},{y:.1f}" for x, y in reversed(bot_pts)) + " Z"
     parts.append(f'<path d="{band_d}" fill="{COLOR_BAND}" fill-opacity="0.15"/>')
@@ -192,7 +192,7 @@ def build_svg(
     # (`hit-N`/`tip-N`); the fitted line gets its own single pair (`hit-line`
     # / `tip-line`) since there's only one of it.
     tips: List[str] = []
-    for i, (x, y) in enumerate(zip(xs, ys)):
+    for i, (x, y) in enumerate(zip(xs, ys, strict=True)):
         cx, cy = x_for(x), y_for(y)
         resid = y - predict(x)
         pt_tip = f"x = {x:.2f}, y = {y:.2f} (residual {resid:+.2f})"
@@ -212,7 +212,7 @@ def build_svg(
     n_pts = len(xs)
 
     # ---- fitted line ----
-    line_pts = [(x_for(x), y_for(v)) for x, v in zip(grid_x, yhat)]
+    line_pts = [(x_for(x), y_for(v)) for x, v in zip(grid_x, yhat, strict=True)]
     line_d = "M " + " L ".join(f"{x:.1f},{y:.1f}" for x, y in line_pts)
     tip = f"y = {fit['intercept']:.2f} + {fit['slope']:.2f}x (n={fit['n']:.0f})"
     parts.append(

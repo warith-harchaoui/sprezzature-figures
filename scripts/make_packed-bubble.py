@@ -446,10 +446,10 @@ def build_svg(
     # already fits, which is the common case.
     safe_top, safe_bottom = 200.0, HEIGHT - 70.0
     safe_left, safe_right = 40.0, WIDTH - 40.0
-    reach_up = max((PACK_CY - (y - r) for (x, y), r in zip(centres, radii)), default=0.0)
-    reach_down = max(((y + r) - PACK_CY for (x, y), r in zip(centres, radii)), default=0.0)
-    reach_left = max((PACK_CX - (x - r) for (x, y), r in zip(centres, radii)), default=0.0)
-    reach_right = max(((x + r) - PACK_CX for (x, y), r in zip(centres, radii)), default=0.0)
+    reach_up = max((PACK_CY - (y - r) for (x, y), r in zip(centres, radii, strict=True)), default=0.0)
+    reach_down = max(((y + r) - PACK_CY for (x, y), r in zip(centres, radii, strict=True)), default=0.0)
+    reach_left = max((PACK_CX - (x - r) for (x, y), r in zip(centres, radii, strict=True)), default=0.0)
+    reach_right = max(((x + r) - PACK_CX for (x, y), r in zip(centres, radii, strict=True)), default=0.0)
     fit_scale = min(
         1.0,
         (PACK_CY - safe_top) / reach_up if reach_up > 0 else 1.0,
@@ -541,7 +541,7 @@ def build_svg(
     # construction.
     parts.append('<g id="bubbles">')
     bubble_tips: List[str] = []
-    for bub_i, ((name, share, fam), (x, y), r) in enumerate(zip(ordered, centres, radii)):
+    for bub_i, ((name, share, fam), (x, y), r) in enumerate(zip(ordered, centres, radii, strict=True)):
         color = family_color[fam]
         label_ink = family_label[fam]
         slug = fam_slug[fam]

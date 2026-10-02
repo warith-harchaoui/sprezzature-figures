@@ -315,7 +315,7 @@ def _write_shap_beeswarm_svg(
         order = list(np.argsort(vals))
         items = [(x_for(float(vals[j])), 0.0) for j in order]
         ys = _swarm_positions(items, cy, radius, max_offset=row_h / 2.0 - radius - 1.0)
-        for (x, _), y, j in zip(items, ys, order):
+        for (x, _), y, j in zip(items, ys, order, strict=True):
             t = (float(raw[j]) - raw_min) / raw_span
             color = color_ramp(t, ramp_stops)
             tip = f"{feat_names[feat_idx]}: SHAP {float(vals[j]):+.3f}, feature value {float(raw[j]):.3g}"

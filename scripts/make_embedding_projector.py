@@ -457,7 +457,7 @@ def _project_positions(
     off_x = plot_x + pad + (avail_w - span_x * scale) / 2.0
     off_y = plot_y + pad + (avail_h - span_y * scale) / 2.0
     out: List[Tuple[float, float]] = []
-    for x, y in zip(xs, ys):
+    for x, y in zip(xs, ys, strict=True):
         px = off_x + (x - minx) * scale
         # SVG y grows downward: flip so model +y reads as "up".
         py = off_y + (maxy - y) * scale

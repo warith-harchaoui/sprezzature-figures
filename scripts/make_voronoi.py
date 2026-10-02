@@ -554,7 +554,7 @@ def build_svg(
     total_area = sum(_polygon_area(c) for c in cells) or 1.0
     area_by_chain: Dict[str, float] = {c: 0.0 for c in chain_order}
     count_by_chain: Dict[str, int] = {c: 0 for c in chain_order}
-    for chain, cell in zip(chains, cells):
+    for chain, cell in zip(chains, cells, strict=True):
         area_by_chain[chain] += _polygon_area(cell)
         count_by_chain[chain] += 1
     share = {c: 100.0 * area_by_chain[c] / total_area for c in chain_order}
@@ -728,7 +728,7 @@ def build_svg(
     # --- cells layer (clipped to the rounded map card) ---
     parts.append('<g id="cells" clip-path="url(#mapclip)">')
     bubbles: List[str] = []
-    for cell_i, ((_gx, _gy, chain, name), cell) in enumerate(zip(city, cells)):
+    for cell_i, ((_gx, _gy, chain, name), cell) in enumerate(zip(city, cells, strict=True)):
         if len(cell) < 3:
             continue
         color = chain_color[chain]
@@ -791,7 +791,7 @@ def build_svg(
     #   Long "Chain · Place" names stack onto two lines to keep the pill
     #   compact enough to sit clear of the cell's edges.
     parts.append('<g id="labels">')
-    for (_gx, _gy, chain, name), cell in zip(city, cells):
+    for (_gx, _gy, chain, name), cell in zip(city, cells, strict=True):
         if not name or len(cell) < 3:
             continue
         slug = chain_slug[chain]

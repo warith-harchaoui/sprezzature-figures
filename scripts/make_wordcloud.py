@@ -608,7 +608,7 @@ def build_svg(
         f'stroke="{_HAIR}" stroke-width="1.4"/>'
     )
     slot_x = [56.0, 470.0, 884.0]
-    for (key, meta), lx in zip(groups.items(), slot_x):
+    for (key, meta), lx in zip(groups.items(), slot_x, strict=True):
         color = str(meta["color"])
         # Share of total mentions carried by this theme, for the caption.
         grp_mentions = sum(int(p["count"]) for p in placed if p["group"] == key)

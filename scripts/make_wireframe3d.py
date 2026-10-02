@@ -150,7 +150,7 @@ def _sample_surface(n: int = 26, seed: int = 3) -> Tuple[np.ndarray, np.ndarray,
 #: for a figure whose natural data is a ``z = f(x, y)`` grid.
 DEMO_DATA: List[Dict[str, float]] = [
     {"x": float(x), "y": float(y), "z": float(z)}
-    for x, y, z in zip(*(a.ravel() for a in _sample_surface()))
+    for x, y, z in zip(*(a.ravel() for a in _sample_surface()), strict=True)
 ]
 
 

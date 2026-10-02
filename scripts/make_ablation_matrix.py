@@ -133,7 +133,7 @@ def _make_demo_data() -> List[Dict[str, Any]]:
     rows: List[Dict[str, Any]] = []
     for components, scores in variants:
         shrink = 1.25 - 0.09 * len(components)
-        for metric, value, err in zip(metrics, scores, errors):
+        for metric, value, err in zip(metrics, scores, errors, strict=True):
             rows.append(
                 {
                     "components": _SEP.join(components),

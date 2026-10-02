@@ -281,7 +281,7 @@ def _compute_geometry(
         pad_total = gap * (len(ids) - 1)
         stack_h = sum(heights) + pad_total
         y = plot_top + (plot_h - stack_h) / 2.0
-        for node_id, h in zip(ids, heights):
+        for node_id, h in zip(ids, heights, strict=True):
             geometry[node_id] = {
                 "x": xs[layer_idx],
                 "y": y,

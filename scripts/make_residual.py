@@ -117,7 +117,7 @@ def make_data(n: int = 160, seed: int = 11) -> List[Dict[str, float]]:
 
     return [
         {"fitted": round(float(f), 1), "residual": round(float(r), 1)}
-        for f, r in zip(fitted, residual)
+        for f, r in zip(fitted, residual, strict=True)
     ]
 
 
@@ -455,7 +455,7 @@ def build_svg(
     x_lo, x_hi = min(fitted), max(fitted)
     grid = [x_lo + (x_hi - x_lo) * i / 80.0 for i in range(81)]
     smooth = loess(fitted, residual, grid, frac=0.6)
-    pts = [(sx(gx), sy(gy)) for gx, gy in zip(grid, smooth)]
+    pts = [(sx(gx), sy(gy)) for gx, gy in zip(grid, smooth, strict=True)]
     d_attr = "M " + " L ".join(f"{x:.1f} {y:.1f}" for x, y in pts)
     parts.append(
         f'<path d="{d_attr}" fill="none" stroke="#FFFFFF" stroke-width="8" '

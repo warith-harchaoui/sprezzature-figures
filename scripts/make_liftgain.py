@@ -173,7 +173,7 @@ def make_data(n: int = 4000, base_rate: float = 0.18, seed: int = 11) -> Dict[st
     idx = np.clip((grid * n).astype(int), 0, n)
 
     records: List[Dict[str, Any]] = []
-    for gx, gi in zip(grid, idx):
+    for gx, gi in zip(grid, idx, strict=True):
         records.append({"pop": round(float(gx), 4), "gain": round(float(model_gain[gi]), 4), "series": "Model"})
         records.append({"pop": round(float(gx), 4), "gain": round(float(perfect_gain[gi]), 4), "series": "Perfect model"})
         records.append({"pop": round(float(gx), 4), "gain": round(float(gx), 4), "series": "Random baseline"})

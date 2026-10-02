@@ -248,7 +248,7 @@ def build_svg(
     if data:
         log_ors = [math.log(float(s["or_"])) for s in rows]
         w_sum = sum(weights) or 1.0
-        pooled_log = sum(w * lo for w, lo in zip(weights, log_ors)) / w_sum
+        pooled_log = sum(w * lo for w, lo in zip(weights, log_ors, strict=True)) / w_sum
         se = 1.0 / math.sqrt(w_sum)
         or_p = math.exp(pooled_log)
         lo_p = math.exp(pooled_log - 1.96 * se)
@@ -362,7 +362,7 @@ def build_svg(
     # is drawn, so a later row's diamond/box can never cover an earlier
     # row's bubble.
     row_tips: List[str] = []
-    for i, (s, half, w) in enumerate(zip(rows, half_sides, weights)):
+    for i, (s, half, w) in enumerate(zip(rows, half_sides, weights, strict=True)):
         cy = first_row_y + i * row_h + row_h / 2
         cx = sx(float(s["or_"]))
         x_lo = sx(float(s["lo"]))

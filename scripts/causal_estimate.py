@@ -554,7 +554,7 @@ def render_forest_plot(summary: Dict[str, Any], out_dir: Path, dark: bool) -> No
         f'stroke="{fg}" stroke-width="1" opacity="0.4"/>'
     )
 
-    for i, (label, value) in enumerate(zip(labels, values)):
+    for i, (label, value) in enumerate(zip(labels, values, strict=True)):
         cy = m_top + i * row_h + row_h / 2.0
         parts.append(
             f'<text x="{m_left - 12:.1f}" y="{cy + 4:.1f}" font-size="12.5" fill="{fg}" '

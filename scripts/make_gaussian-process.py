@@ -200,20 +200,20 @@ def build_svg(
     )
 
     # ---- 95% credible band ----
-    top_pts = [(x_for(x), y_for(v)) for x, v in zip(x_test, hi)]
-    bot_pts = [(x_for(x), y_for(v)) for x, v in zip(x_test, lo)]
+    top_pts = [(x_for(x), y_for(v)) for x, v in zip(x_test, hi, strict=True)]
+    bot_pts = [(x_for(x), y_for(v)) for x, v in zip(x_test, lo, strict=True)]
     band_d = "M " + " L ".join(f"{x:.1f},{y:.1f}" for x, y in top_pts)
     band_d += " L " + " L ".join(f"{x:.1f},{y:.1f}" for x, y in reversed(bot_pts)) + " Z"
     parts.append(f'<path d="{band_d}" fill="{COLOR_BAND}" fill-opacity="0.22"/>')
 
     # ---- posterior sample paths ----
     for s in range(n_samples):
-        pts = [(x_for(x), y_for(v)) for x, v in zip(x_test, samples[:, s])]
+        pts = [(x_for(x), y_for(v)) for x, v in zip(x_test, samples[:, s], strict=True)]
         path_d = "M " + " L ".join(f"{x:.1f},{y:.1f}" for x, y in pts)
         parts.append(f'<path d="{path_d}" fill="none" stroke="{COLOR_SAMPLE}" stroke-width="1" opacity="0.6"/>')
 
     # ---- posterior mean ----
-    mean_pts = [(x_for(x), y_for(v)) for x, v in zip(x_test, mean)]
+    mean_pts = [(x_for(x), y_for(v)) for x, v in zip(x_test, mean, strict=True)]
     mean_d = "M " + " L ".join(f"{x:.1f},{y:.1f}" for x, y in mean_pts)
     tip = f"GP posterior mean, {len(rows)} observations, RBF kernel"
     parts.append(

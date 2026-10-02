@@ -200,8 +200,8 @@ def build_svg(
 
         cx = plot_x + gi * bin_w + bin_w / 2
         color = colors.get(g, "#8E8E93")
-        right_pts = [(cx + (d / peak) * violin_half_w, y_for(y)) for y, d in zip(y_eval, density)]
-        left_pts = [(cx - (d / peak) * violin_half_w, y_for(y)) for y, d in zip(y_eval, density)]
+        right_pts = [(cx + (d / peak) * violin_half_w, y_for(y)) for y, d in zip(y_eval, density, strict=True)]
+        left_pts = [(cx - (d / peak) * violin_half_w, y_for(y)) for y, d in zip(y_eval, density, strict=True)]
         path_d = "M " + " L ".join(f"{x:.1f},{y:.1f}" for x, y in right_pts)
         path_d += " L " + " L ".join(f"{x:.1f},{y:.1f}" for x, y in reversed(left_pts)) + " Z"
 

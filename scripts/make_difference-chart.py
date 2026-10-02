@@ -259,7 +259,7 @@ def _crossings(
         ``(x, value)`` of each crossing, in data units.
     """
     out: List[Tuple[float, float]] = []
-    diff = [ai - bi for ai, bi in zip(a, b)]
+    diff = [ai - bi for ai, bi in zip(a, b, strict=True)]
     for i in range(len(xs) - 1):
         d0, d1 = diff[i], diff[i + 1]
         if d0 == 0.0:

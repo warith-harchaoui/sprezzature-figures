@@ -87,7 +87,7 @@ def _roc_curve(
     # Trapezoidal AUC over the (already threshold-sorted, monotone-in-FPR-ish) points.
     points_sorted = sorted(set(points))
     auc = 0.0
-    for (x0, y0), (x1, y1) in zip(points_sorted, points_sorted[1:]):
+    for (x0, y0), (x1, y1) in zip(points_sorted, points_sorted[1:], strict=False):
         auc += (x1 - x0) * (y0 + y1) / 2.0
     return points, point_thresholds, auc
 

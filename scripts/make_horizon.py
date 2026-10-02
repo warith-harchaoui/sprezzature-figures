@@ -296,7 +296,7 @@ def _band_area_path(
         return ""  # this band is never reached — skip it
     # Height of one band in pixels (all bands share the same row_h footprint).
     frac = [c / (band_hi - band_lo) for c in clamped]
-    top = [(x_of(x), baseline - f * row_h) for x, f in zip(xs, frac)]
+    top = [(x_of(x), baseline - f * row_h) for x, f in zip(xs, frac, strict=True)]
     x0 = x_of(xs[0])
     x1 = x_of(xs[-1])
     # Top edge as a smooth Catmull-Rom spline; the baseline edges stay straight.
