@@ -67,6 +67,29 @@ def test_the_command_the_help_names_is_a_command_that_exists(
     )
 
 
+def test_the_scan_that_feeds_the_check_actually_read_something() -> None:
+    """
+    An empty advertised set has to mean "none advertised", not "none read".
+
+    When no script spells a suite command the parametrised check above gets an
+    empty set, pytest turns it into a skip, and the file reports green while
+    testing nothing. That is the right answer in a package whose scripts do
+    not advertise suite commands, and the wrong one — indistinguishable from
+    it — once ``scripts/`` moves, is renamed, or ships in a layout the glob no
+    longer matches. This pins the difference: the directory is there and has
+    Python in it, so an empty result is a fact about the scripts rather than
+    about the scan.
+    """
+    assert SCRIPTS_DIR.is_dir(), (
+        f"{SCRIPTS_DIR} is gone: the advertised-command scan has nothing to "
+        f"read, and the check above would skip rather than fail."
+    )
+    assert list(SCRIPTS_DIR.glob("*.py")), (
+        f"{SCRIPTS_DIR} holds no .py file: either the scripts moved or the "
+        f"glob no longer matches how they are named."
+    )
+
+
 def test_every_console_script_points_at_something_importable() -> None:
     """The other direction: no entry point naming a module that is not there.
 
