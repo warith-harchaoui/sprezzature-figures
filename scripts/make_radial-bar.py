@@ -255,24 +255,29 @@ def build_svg(
         A complete, standalone SVG document.
     """
     hues = _palette_hues(accessibility, theme=theme)
-    data = _trips_from_rows(data)
-    n = len(data)                       # 24 hours
+    # Named apart from the `data` parameter on purpose: that one is rows of
+    # {"hour", "trips"} dicts (or None), this one is the 24 trip counts they
+    # reshape into. Rebinding the parameter made the same name mean two types
+    # three lines apart, which a reader has to hold in their head and a type
+    # checker cannot follow at all -- it reported fifteen phantom errors here.
+    trips = _trips_from_rows(data)
+    n = len(trips)                      # 24 hours
     sector_deg = 360.0 / n              # 15° per hour
     pad_deg = 3.2                       # angular gap so bars read as columns
-    total = sum(data)
+    total = sum(trips)
 
     # Radial scale: the busiest hour reaches _R_OUT; a friendly round tick
     # keeps the gridlines on whole thousands.
-    data_max = max(data)
+    data_max = max(trips)
     ring_step = 500                     # trips per ring
     axis_max = math.ceil(data_max / ring_step) * ring_step
     scale = (_R_OUT - _R_IN) / axis_max  # px per trip
 
     # Threshold above which an hour counts as a "rush" peak (warm accent).
     peak_cut = 1600
-    peak_hours = [h for h, v in enumerate(data) if v >= peak_cut]
-    morning = max((h for h in peak_hours if h < 12), key=lambda h: data[h])
-    evening = max((h for h in peak_hours if h >= 12), key=lambda h: data[h])
+    peak_hours = [h for h, v in enumerate(trips) if v >= peak_cut]
+    morning = max((h for h in peak_hours if h < 12), key=lambda h: trips[h])
+    evening = max((h for h in peak_hours if h >= 12), key=lambda h: trips[h])
 
     parts: List[str] = []
 
@@ -405,7 +410,7 @@ def build_svg(
     # covered by any bar drawn afterward. `h` (already a unique hour index)
     # pairs each bar with its bubble (`hit-N`/`tip-N`).
     tips: List[str] = []
-    for h, v in enumerate(data):
+    for h, v in enumerate(trips):
         centre = h * sector_deg
         a0 = centre - (sector_deg - pad_deg) / 2.0
         a1 = centre + (sector_deg - pad_deg) / 2.0
@@ -465,7 +470,7 @@ def build_svg(
     parts.append(
         f'<text x="{_CX:.0f}" y="{_CY + 22:.0f}" font-size="17" '
         f'fill="{_SUBTLE}" text-anchor="middle">to work · '
-        f'{_fmt_trips(data[morning])} trips</text>'
+        f'{_fmt_trips(trips[morning])} trips</text>'
     )
     parts.append(
         f'<text class="rb-peak" x="{_CX:.0f}" y="{_CY + 64:.0f}" font-size="46" '
@@ -475,7 +480,7 @@ def build_svg(
     parts.append(
         f'<text x="{_CX:.0f}" y="{_CY + 94:.0f}" font-size="17" '
         f'fill="{_SUBTLE}" text-anchor="middle">to home · '
-        f'{_fmt_trips(data[evening])} trips</text>'
+        f'{_fmt_trips(trips[evening])} trips</text>'
     )
 
     # ---- legend (base vs peak), lower-left ----

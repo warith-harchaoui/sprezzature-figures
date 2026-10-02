@@ -261,12 +261,18 @@ def _to_screen(lon: float, lat: float, fit: Tuple[float, float, float, float]) -
 # ------------------------------------------------------------------
 # Wind-barb geometry
 # ------------------------------------------------------------------
-def _rounded_speed(speed_kt: int) -> int:
-    """Round a wind speed to the nearest 5 knots (barb tallies are base-5)."""
+def _rounded_speed(speed_kt: float) -> int:
+    """Round a wind speed to the nearest 5 knots (barb tallies are base-5).
+
+    Takes a float: the station rows carry ``float(r["speed"])``, so the three
+    helpers in this chain were annotated ``int`` while every real call passed
+    a float. The arithmetic was always float-safe; only the declared contract
+    was wrong.
+    """
     return int(round(speed_kt / 5.0)) * 5
 
 
-def _tally(speed_kt: int) -> Tuple[int, int, int]:
+def _tally(speed_kt: float) -> Tuple[int, int, int]:
     """Decompose a wind speed (knots) into (pennants, full barbs, half barbs).
 
     Parameters
@@ -287,7 +293,7 @@ def _tally(speed_kt: int) -> Tuple[int, int, int]:
     return pennants, fulls, halves
 
 
-def _barb_glyph(cx: float, cy: float, dir_from_deg: float, speed_kt: int, color: str) -> str:
+def _barb_glyph(cx: float, cy: float, dir_from_deg: float, speed_kt: float, color: str) -> str:
     """Return the SVG fragment for one wind barb centred on a station.
 
     The staff points *from* the wind (meteorological convention): a wind
