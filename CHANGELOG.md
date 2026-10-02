@@ -1,5 +1,62 @@
 # Changelog
 
+## 2.4.0 (2026-10-02): a mismatched pair raises instead of drawing a shorter chart
+
+### Fixed
+
+- **99 `zip()` calls said nothing about length, and 85 of them should have.**
+  A `zip()` over two sequences stops at the shorter one. Where those sequences
+  are parallel by construction (x against y, labels against values, centres
+  against radii), a length that diverges meant the tail was dropped in silence
+  and the figure still rendered, correct-looking and wrong. Those 85 now pass
+  `strict=True` and raise instead. The remaining 14 are sliding pairs
+  (`zip(xs, xs[1:])`) where the truncation is the point, and say `strict=False`.
+  Ten generators already used `strict=True`: the convention existed and had
+  never been carried through.
+
+  This is the one change here a caller can feel. Data that silently lost its
+  tail now stops with an error, which is the behaviour this package exists to
+  provide, and is why this is a minor release rather than a patch.
+- **A malformed request got a 500 where it had earned a 422.** The HTTP surface
+  answered a client mistake with a server error.
+- **`studio`: a textual column profile crashed the whole warnings pass.** One
+  column of the wrong kind took down every warning the pass would have raised,
+  not just its own.
+- **`studio`: four `io_bound` results were never checked.** Whatever those
+  calls reported, nobody read it.
+- **`horizon`: an empty series is skipped rather than fatal.** One series with
+  no points stopped the whole figure.
+- **The linter was looking at a fifth of the package.** Its path configuration
+  left four fifths unread, so "ruff passes" meant less than it appeared to.
+- **`harchaoui.org` is gone, and every reference pointed at it.** The host now
+  answers 503; the links go to `deraison.ai` and `sprezzature.ai`.
+- **`mcp.py` defined `main` twice, and the two took different arguments.** The
+  fallback reached when the `[mcp]` extra is absent took nothing while the real
+  one took `argv`, so `main(["--host", "127.0.0.1"])` answered on a machine
+  with the extra and raised `TypeError` on a machine without it. The broken
+  half is the one a reader who skipped the extra meets first.
+
+### Changed
+
+- **119 typing imprecisions across the package, its scripts and its tools**,
+  including one contract string and thirteen names that each stood for two
+  different things in the same scope. No behaviour depends on these; they are
+  what let the type gate below say something trustworthy.
+
+### Added
+
+- **A type gate**, `mypy.ini` plus one CI step over the package, `scripts/` and
+  `tools/`. The monorepo carried one while the skills lived there; at the split
+  ruff came with the package and mypy did not. Run by hand, it found the `main`
+  defect above in six packages at once.
+- **`test_mcp_fallback_signature.py`**, reading the source as a syntax tree so
+  it needs neither mypy nor an install; a guard on the command names the help
+  text advertises; and a case ruling out the state where that guard's scan
+  finds no candidates and reports green while testing nothing.
+- **A versioned `.githooks/pre-push`** running lint, types and all three test
+  lanes, the default one plus `slow` and `packaging`, so the heavy work happens
+  before the push rather than after it.
+
 ## 2.3.0 (2026-09-14): a figure proved legible without a vision model
 
 ### Added

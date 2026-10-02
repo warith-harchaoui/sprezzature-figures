@@ -54,6 +54,7 @@ Author
 
 from __future__ import annotations
 
+import textwrap
 import sys
 from pathlib import Path
 from typing import Any, Dict, List
@@ -236,6 +237,8 @@ def build_svg(
     language: str = "en",
     theme: str = "corporate",
     title: str = "",
+    axis_left_title: str = "",
+    transparent: bool = False,
 ) -> str:
     """Assemble the full Pareto-chart SVG string.
 
@@ -299,6 +302,11 @@ def build_svg(
     ink = "#1D1D1F"                             # primary ink for headings + call-out
     secondary = "#6E6E73"
     band = "#F5F5F7"
+    # Les grilles sont blanches parce qu'elles sont tracees SUR la bande
+    # claire. Sans bande, du blanc sur un fond inconnu ne se voit pas : on
+    # passe alors au gris clair de la maison, lisible sur clair comme sur
+    # sombre.
+    grid_c = "#E5E5EA" if transparent else "#FFFFFF"
 
     n = len(rows)
     n_vital = int(crossing.get("n_vital", 0)) if crossing else 0
@@ -316,17 +324,52 @@ def build_svg(
     plot_h = height - m_top - m_bottom
     ax_bottom = plot_y + plot_h
 
-    # Both scales are percentages 0..100, sharing one 0..106 pixel range so
-    # the last cumulative marker (100 %) never kisses the top frame. The bars
-    # read against the *left* axis, the curve against the *right* axis; both
-    # are 0..100 %, so this is an honest twin-percentage scale, not a
-    # misleading dual axis — the two labelled axes make that explicit.
+    # DEUX echelles distinctes, et c'est assume : un vrai double axe.
+    #
+    # Avant, les deux partageaient 0..106 %. Consequence visible : la plus
+    # grosse barre culminait a 13 % de la hauteur du cadre pendant que la
+    # courbe cumulee montait a 100 %, donc les barres etaient des moignons et
+    # la comparaison entre categories, illisible. Les deux axes portent
+    # chacun son libelle et sa couleur, ce qui dit lequel lire.
+    #
+    # A DROITE, la part cumulee, en pourcentage, 0..106 pour que le dernier
+    # marqueur a 100 % n'embrasse pas le bord haut.
     y_min, y_max = 0.0, 106.0
     y_ticks = [0, 20, 40, 60, 80, 100]
 
     def sy(v: float) -> float:
-        """Map a percentage (0..100) to a y pixel coordinate (y-down)."""
+        """Part cumulee (0..100 %) vers une ordonnee en pixels (y vers le bas)."""
         return plot_y + (y_max - v) / (y_max - y_min) * plot_h
+
+    # A GAUCHE, la VALEUR BRUTE des barres, dans son unite (euros, tickets,
+    # unites vendues). Un pourcentage du total demande une division mentale
+    # avant de rien comprendre ; la grandeur se lit directement.
+    valeur_max = max((float(r["count"]) for r in rows), default=0.0) or 1.0
+
+    def _pas_lisible(brut: float) -> float:
+        """Pas d'axe « rond » immediatement au-dessus de ``brut``."""
+        import math as _math
+        if brut <= 0:
+            return 1.0
+        exposant = _math.floor(_math.log10(brut))
+        base = 10.0 ** exposant
+        for facteur in (1.0, 2.0, 2.5, 5.0, 10.0):
+            if facteur * base >= brut:
+                return facteur * base
+        return 10.0 * base
+
+    pas_gauche = _pas_lisible(valeur_max / 5.0)
+    import math as _math
+    valeur_axe_max = _pas_lisible(valeur_max) if valeur_max < pas_gauche else pas_gauche * _math.ceil(valeur_max / pas_gauche)
+    graduations_gauche = [pas_gauche * k for k in range(int(valeur_axe_max / pas_gauche) + 1)]
+
+    def sy_valeur(v: float) -> float:
+        """Valeur brute vers une ordonnee en pixels, sur l'echelle de gauche."""
+        return plot_y + (valeur_axe_max - v) / valeur_axe_max * plot_h
+
+    def _format_valeur(v: float) -> str:
+        """Nombre lisible a l'oeil : separateur de milliers, pas de decimale."""
+        return f"{int(round(v)):,}".replace(",", "\u202f")
 
     # Even category slots across the plot; each bar sits centred in its slot.
     slot_w = plot_w / n
@@ -390,10 +433,14 @@ def build_svg(
     )
 
     # --- background ----------------------------------------------
-    parts.append(f'<rect width="{width}" height="{height}" fill="#FFFFFF"/>')
+    # Le fond plein cadre est OPTIONNEL. Le theme sombre ne le supprime pas,
+    # il le repeint par CSS ; une figure posee sur une diapositive veut au
+    # contraire laisser voir le fond de la diapositive, quel qu'il soit.
+    if not transparent:
+        parts.append(f'<rect width="{width}" height="{height}" fill="#FFFFFF"/>')
     parts.append(
         f'<rect x="{plot_x}" y="{plot_y}" width="{plot_w}" height="{plot_h}" '
-        f'fill="{band}" rx="10"/>'
+        f'fill="{"none" if transparent else band}" rx="10"/>'
     )
 
     # --- title + subtitle (the takeaway) -------------------------
@@ -408,17 +455,53 @@ def build_svg(
     takeaway = strings["headline"].format(n_vital=n_vital, n=n, cross_cum=cross_cum)
     headline = title.strip() or takeaway
     second_line = takeaway if title.strip() else strings["subtitle"]
+    # Le titre etait ecrit en une seule ligne de texte SVG, sans contrainte de
+    # largeur : un titre long depassait le viewBox et se faisait couper net par
+    # celui-ci, a toute taille d'affichage. Constate le 2026-09-15 avec « Les
+    # cinq clients generant le plus de chiffre d'affaires et leur contribution
+    # cumulee », 87 caracteres pour 1034 px disponibles. Reduire le corps seul
+    # ne suffisait pas : il fallait descendre sous 20 pour faire tenir une
+    # ligne, ce qui rendait le titre plus petit que son propre sous-titre.
+    #
+    # On replie donc sur DEUX lignes au plus, en prenant le plus grand corps
+    # qui tienne. Les lignes suivantes descendent d'autant ; la marge haute de
+    # la zone tracee (m_top = 210) laisse la place, et un titre court garde
+    # exactement la mise en page d'avant, corps 42 sur une seule ligne.
+    largeur_titre = width - m_left - m_right
+    EM = 0.55  # largeur moyenne d'un caractere, en em, pour la graisse 700
+    corps_titre, lignes_titre = 42, [headline]
+    for corps in (42, 38, 34, 30, 26, 22):
+        par_ligne = max(8, int(largeur_titre / (EM * corps)))
+        essai = textwrap.wrap(headline, width=par_ligne) or [""]
+        if len(essai) <= 2:
+            corps_titre, lignes_titre = corps, essai
+            break
+    else:
+        corps_titre = 22
+        par_ligne = max(8, int(largeur_titre / (EM * corps_titre)))
+        lignes_titre = textwrap.wrap(headline, width=par_ligne)[:2]
+
+    if len(lignes_titre) <= 1:
+        y_titre = [80]
+        y_second, y_caption = 124, 156
+    else:
+        interligne = corps_titre + 6
+        y_titre = [62, 62 + interligne]
+        y_second = y_titre[-1] + 34
+        y_caption = y_second + 32
+
+    for y_ligne, texte_ligne in zip(y_titre, lignes_titre, strict=True):
+        parts.append(
+            f'<text x="{m_left}" y="{y_ligne}" font-size="{corps_titre}" '
+            f'font-weight="700" fill="{ink}">{xml_escape(texte_ligne)}</text>'
+        )
     parts.append(
-        f'<text x="{m_left}" y="80" font-size="42" font-weight="700" '
-        f'fill="{ink}">{xml_escape(headline)}</text>'
-    )
-    parts.append(
-        f'<text x="{m_left}" y="124" font-size="24" fill="{secondary}">'
+        f'<text x="{m_left}" y="{y_second}" font-size="24" fill="{secondary}">'
         f'{xml_escape(second_line)}</text>'
     )
     caption = strings["caption"].format(total=total, n=n)
     parts.append(
-        f'<text x="{m_left}" y="156" font-size="20" fill="{secondary}">'
+        f'<text x="{m_left}" y="{y_caption}" font-size="20" fill="{secondary}">'
         f'{xml_escape(caption)}</text>'
     )
 
@@ -427,7 +510,7 @@ def build_svg(
         gy = sy(t)
         parts.append(
             f'<line class="pa-grid" x1="{plot_x:.1f}" y1="{gy:.1f}" x2="{plot_x + plot_w:.1f}" '
-            f'y2="{gy:.1f}" stroke="#FFFFFF" stroke-width="1.6"/>'
+            f'y2="{gy:.1f}" stroke="{grid_c}" stroke-width="1.6"/>'
         )
 
     # --- 80% reference rule + its label --------------------------
@@ -452,7 +535,8 @@ def build_svg(
     for i, r in enumerate(rows):
         cx = slot_center(i)
         share = float(r["share"])
-        top = sy(share)
+        # La barre porte la VALEUR, pas la part : c'est l'echelle de gauche.
+        top = sy_valeur(float(r["count"]))
         h = ax_bottom - top
         is_vital = bool(r["vital"])
         fill = vital_c if is_vital else trivial_c
@@ -604,9 +688,11 @@ def build_svg(
         f'x2="{plot_x + plot_w:.1f}" y2="{ax_bottom:.1f}" '
         f'stroke="{ink}" stroke-width="1.6"/>'
     )
-    for t in y_ticks:
-        gy = sy(t)
-        # Left ticks + labels (ink).
+    # Graduations de GAUCHE : la valeur brute des barres, sur son echelle.
+    # Les deux axes n'ayant plus la meme plage, ils ne peuvent plus partager
+    # une boucle.
+    for v in graduations_gauche:
+        gy = sy_valeur(v)
         parts.append(
             f'<line x1="{plot_x - 7:.1f}" y1="{gy:.1f}" x2="{plot_x:.1f}" '
             f'y2="{gy:.1f}" stroke="{ink}" stroke-width="1.6"/>'
@@ -614,9 +700,11 @@ def build_svg(
         parts.append(
             f'<text x="{plot_x - 14:.1f}" y="{gy + 6:.1f}" font-size="19" '
             f'font-family="{mono_family}" fill="{ink}" '
-            f'text-anchor="end">{t}%</text>'
+            f'text-anchor="end">{xml_escape(_format_valeur(v))}</text>'
         )
-        # Right ticks + labels (curve colour).
+    # Graduations de DROITE : la part cumulee, en pourcentage.
+    for tick in y_ticks:
+        gy = sy(tick)
         parts.append(
             f'<line x1="{plot_x + plot_w:.1f}" y1="{gy:.1f}" '
             f'x2="{plot_x + plot_w + 7:.1f}" y2="{gy:.1f}" '
@@ -625,7 +713,7 @@ def build_svg(
         parts.append(
             f'<text x="{plot_x + plot_w + 14:.1f}" y="{gy + 6:.1f}" '
             f'font-size="19" font-family="{mono_family}" '
-            f'fill="{line_c}" text-anchor="start">{t}%</text>'
+            f'fill="{line_c}" text-anchor="start">{tick}%</text>'
         )
 
     # Left axis title (bar shares).
@@ -635,7 +723,7 @@ def build_svg(
         f'<text x="{lt_x:.1f}" y="{lt_y:.1f}" font-size="21" fill="{ink}" '
         f'text-anchor="middle" '
         f'transform="rotate(-90 {lt_x:.1f} {lt_y:.1f})">'
-        f'{xml_escape(strings["axis_left_title"])}</text>'
+        f'{xml_escape(axis_left_title or strings["axis_left_title"])}</text>'
     )
     # Right axis title (cumulative curve).
     rt_x = width - 34
@@ -678,6 +766,8 @@ def make_pareto(
     accessibility: str = "universal",
     language: str = "en",
     theme: str = "corporate",
+    axis_left_title: str = "",
+    transparent: bool = False,
 ) -> Path:
     """Render the Pareto chart and write the SVG to *out*.
 
@@ -710,6 +800,8 @@ def make_pareto(
     svg = build_svg(
         rows, mode=mode, accessibility=accessibility, language=language,
         theme=theme, title=title,
+        axis_left_title=axis_left_title,
+        transparent=transparent,
     )
     dest = Path(out) if out else svg_example_path(__file__, "pareto")
     return write_svg(dest, svg, theme=theme)
