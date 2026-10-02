@@ -576,7 +576,7 @@ def build_svg(
             f'<g class="lin" tabindex="0" role="img" '
             f'aria-label="{escape(tip)}"><title>{escape(tip)}</title>'
         )
-        for a, b in zip(chain, chain[1:]):
+        for a, b in zip(chain, chain[1:], strict=False):
             _emit_one_link(parts, geometry, a, b)
         for node_id in chain:
             _emit_one_node(parts, geometry, label_of, kids, node_id, interactive=True)

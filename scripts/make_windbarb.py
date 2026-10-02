@@ -408,7 +408,7 @@ def _airmass_color(lon: float, lat: float, warm: str, cold: str) -> str:
     front_lon = _COASTLINE[0][0]  # placeholder, overwritten below
     pts = _FRONT
     front_lon = pts[0][0]
-    for (lo0, la0), (lo1, la1) in zip(pts, pts[1:]):
+    for (lo0, la0), (lo1, la1) in zip(pts, pts[1:], strict=False):
         lo, hi = sorted((la0, la1))
         if lo <= lat <= hi and la1 != la0:
             t = (lat - la0) / (la1 - la0)
@@ -745,7 +745,7 @@ def _front_glyph(fit: Tuple[float, float, float, float], color: str) -> List[str
     spacing = 78.0
     # Walk the polyline at fixed arc-length spacing.
     acc = spacing * 0.5
-    for (x0, y0), (x1, y1) in zip(pts, pts[1:]):
+    for (x0, y0), (x1, y1) in zip(pts, pts[1:], strict=False):
         seg = math.hypot(x1 - x0, y1 - y0)
         if seg < 1e-6:
             continue

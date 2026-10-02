@@ -208,7 +208,7 @@ def build_svg(
     # never clipped by the plot's top edge.
     area_h = (PLOT_B - PLOT_T) * 0.88
     pts: List[Tuple[float, float]] = []
-    for x, d in zip(grid, dens):
+    for x, d in zip(grid, dens, strict=True):
         px = _sx(x, lo, hi)
         py = PLOT_B - (d / dmax) * area_h
         pts.append((px, py))

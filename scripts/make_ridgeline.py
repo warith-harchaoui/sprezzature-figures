@@ -259,12 +259,12 @@ def _season_ramp(n: int, accessibility: str = "universal") -> List[str]:
     # stay fixed so only the colours move, never the spacing.
     anchor_hex = leveled_colors(_RAMP_ANCHOR_HEX, accessibility)
     stops: Sequence[Tuple[float, str]] = tuple(
-        zip(_RAMP_ANCHOR_POS, anchor_hex.values())
+        zip(_RAMP_ANCHOR_POS, anchor_hex.values(), strict=True)
     )
     colours: List[str] = []
     for i in range(n):
         pos = i / (n - 1) if n > 1 else 0.0
-        for (lo_t, lo_c), (hi_t, hi_c) in zip(stops, stops[1:]):
+        for (lo_t, lo_c), (hi_t, hi_c) in zip(stops, stops[1:], strict=False):
             if lo_t <= pos <= hi_t:
                 local = (pos - lo_t) / (hi_t - lo_t) if hi_t > lo_t else 0.0
                 colours.append(_lerp_hex(lo_c, hi_c, local))
@@ -437,7 +437,7 @@ def build_svg(
         # Build the filled area path: along the top silhouette, then close
         # flat along the baseline.
         top_pts: List[str] = []
-        for gx_val, d in zip(grid, dens):
+        for gx_val, d in zip(grid, dens, strict=True):
             px = x_px(float(gx_val))
             py = base_y - d * peak_h
             top_pts.append(f"{fmt_compact(px)},{fmt_compact(py)}")

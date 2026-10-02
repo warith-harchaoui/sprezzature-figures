@@ -45,7 +45,7 @@ DEMO_DATA: List[Dict[str, Any]] = [
         "Social": [5, 6, 7, 9, 11, 13, 14, 16, 18, 19, 21, 23],
         "Direct": [8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13],
     }.items()
-    for m, v in zip(MONTHS, values)
+    for m, v in zip(MONTHS, values, strict=True)
 ]
 
 

@@ -149,10 +149,10 @@ DEMO_DATA: List[Dict[str, Any]] = [
             [1.4, 2.4, 2.1, 1.3, 0.7, 0.3],  # WNW
             [1.2, 1.7, 1.2, 0.7, 0.3, 0.1],  # NW
             [1.1, 1.4, 0.9, 0.4, 0.1, 0.0],  # NNW
-        ],
+        ], strict=True,
     )
     for band, value in zip(
-        ("< 5 kt", "5–10 kt", "10–16 kt", "16–22 kt", "22–28 kt", "≥ 28 kt"), row
+        ("< 5 kt", "5–10 kt", "10–16 kt", "16–22 kt", "22–28 kt", "≥ 28 kt"), row, strict=True
     )
 ]
 

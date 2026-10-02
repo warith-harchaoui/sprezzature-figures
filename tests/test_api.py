@@ -247,3 +247,28 @@ def test_check_render_route_reports_a_dropped_title() -> None:
     )
     assert dropped.status_code == 200, dropped.text
     assert [f["check"] for f in dropped.json()] == ["title_ignored"]
+
+
+def test_a_row_missing_a_role_is_the_callers_fault_not_a_server_error() -> None:
+    """A malformed payload answers 422, not 500.
+
+    ``make_figure`` reads each row by role name, so a row without one raises
+    ``KeyError``. That escaped the handler and FastAPI turned it into a 500:
+    the status that tells an agent "the server broke, retry later" when the
+    truth is "your rows are wrong, fix them and retry now". A bad *value*
+    already answered 422 and an unknown kind 404; only the missing key was
+    reported as the server's fault.
+    """
+    from fastapi.testclient import TestClient
+
+    from sprezzature_figures.api import app
+
+    client = TestClient(app, raise_server_exceptions=False)
+    response = client.post(
+        "/render/line",
+        json={"data": [{"month": "Jan", "value": 1}, {"month": "Feb"}], "format": "svg"},
+    )
+    assert response.status_code == 422
+    detail = response.json()["detail"]
+    assert "value" in detail, detail
+    assert "required_roles" in detail, detail

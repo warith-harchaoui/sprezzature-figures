@@ -560,7 +560,7 @@ def build_svg(
             f'aria-label="{escape(tip)}"><title>{escape(tip)}</title>'
         )
         # ancestor links along the chain
-        for a, b in zip(chain, chain[1:]):
+        for a, b in zip(chain, chain[1:], strict=False):
             _emit_one_link(parts, geometry, a, b, label_of=label_of)
         # the nodes along the chain
         for node_id in chain:

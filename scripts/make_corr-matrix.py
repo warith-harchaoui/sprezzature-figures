@@ -45,7 +45,7 @@ _RAMP: Tuple[Tuple[float, str], ...] = (
 def _ramp_hex(r: float) -> str:
     """Sample the diverging red-white-blue ramp at correlation ``r`` in ``[-1, 1]``."""
     r = min(1.0, max(-1.0, r))
-    for (lo_t, lo_c), (hi_t, hi_c) in zip(_RAMP, _RAMP[1:]):
+    for (lo_t, lo_c), (hi_t, hi_c) in zip(_RAMP, _RAMP[1:], strict=False):
         if lo_t <= r <= hi_t:
             local = (r - lo_t) / (hi_t - lo_t) if hi_t > lo_t else 0.0
             ar, ag, ab = int(lo_c[1:3], 16), int(lo_c[3:5], 16), int(lo_c[5:7], 16)

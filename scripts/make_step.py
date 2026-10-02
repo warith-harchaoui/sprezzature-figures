@@ -142,7 +142,7 @@ def build_svg(
 
     # ---- step-after path ----
     step_pts: List[Tuple[float, float]] = []
-    for t, y in zip(ts, ys):
+    for t, y in zip(ts, ys, strict=True):
         x, sy = x_for(t), y_for(y)
         if step_pts:
             step_pts.append((x, step_pts[-1][1]))
@@ -155,7 +155,7 @@ def build_svg(
     # no z-index, so a bubble drawn in place would be covered by any point
     # drawn afterward, no matter which one is hovered.
     bubbles: List[str] = []
-    for i, (t, y) in enumerate(zip(ts, ys)):
+    for i, (t, y) in enumerate(zip(ts, ys, strict=True)):
         cx, cy = x_for(t), y_for(y)
         tip = f"t={t:.0f}: {y:.0f}"
         parts.append(

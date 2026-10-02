@@ -104,7 +104,7 @@ def make_data(n: int = 120, seed: int = 7) -> List[Dict[str, float]]:
 
     return [
         {"sleep": round(float(s), 1), "rt": int(round(float(r)))}
-        for s, r in zip(sleep, rt)
+        for s, r in zip(sleep, rt, strict=True)
     ]
 
 

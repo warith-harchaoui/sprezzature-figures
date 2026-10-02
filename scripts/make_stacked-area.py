@@ -42,7 +42,7 @@ DEMO_DATA: List[Dict[str, Any]] = [
         "Storage": [8.0, 8.2, 8.5, 8.9, 9.3, 9.8, 10.4, 11.0, 11.6, 12.3, 13.0, 13.8],
         "Network": [5.0, 4.8, 5.2, 5.5, 5.9, 6.3, 6.8, 7.2, 7.6, 8.1, 8.6, 9.1],
     }.items()
-    for m, v in zip(range(1, 13), values)
+    for m, v in zip(range(1, 13), values, strict=True)
 ]
 
 
@@ -190,8 +190,8 @@ def build_svg(
     bubbles: List[str] = []
     for si, s in enumerate(services):
         top = cum[s]
-        top_pts = [(x_for(m), y_for(v)) for m, v in zip(months, top)]
-        bot_pts = [(x_for(m), y_for(v)) for m, v in zip(months, prev)]
+        top_pts = [(x_for(m), y_for(v)) for m, v in zip(months, top, strict=True)]
+        bot_pts = [(x_for(m), y_for(v)) for m, v in zip(months, prev, strict=True)]
         d = "M " + " L ".join(f"{x:.1f},{y:.1f}" for x, y in top_pts)
         d += " L " + " L ".join(f"{x:.1f},{y:.1f}" for x, y in reversed(bot_pts)) + " Z"
         latest = top[-1] - prev[-1]

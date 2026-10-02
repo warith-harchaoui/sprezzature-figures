@@ -317,7 +317,7 @@ def build_svg(
     # so a bubble drawn in place would sit under any leaf drawn afterward.
     bubbles: List[str] = []
     leaf_i = 0
-    for cat, crect in zip(categories, cat_rects):
+    for cat, crect in zip(categories, cat_rects, strict=True):
         color = category_colors[cat]
         # Choose ink or white label text by the *rendered* leaf colour (the
         # 0.82 fill-opacity over white), not the raw swatch hue -- several
@@ -332,7 +332,7 @@ def build_svg(
         leaf_sizes = _normalize(leaf_vals, leaf_area)
         leaf_rects = _squarify(leaf_sizes, crect["x"], crect["y"], crect["dx"], crect["dy"])
         cat_total = sum(leaf_vals) or 1.0
-        for row, r in zip(leaves, leaf_rects):
+        for row, r in zip(leaves, leaf_rects, strict=True):
             val_txt = f"{float(row['value']):,.0f}"
             unit_suffix = f" {value_unit}" if value_unit else ""
             share = float(row["value"]) / cat_total * 100.0

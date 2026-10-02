@@ -247,7 +247,7 @@ def andrews_curve(row: np.ndarray, t: np.ndarray) -> np.ndarray:
 # --------------------------------------------------------------------------- #
 def _poly_d(xs: np.ndarray, ys: np.ndarray) -> str:
     """Build an SVG polyline ``d`` attribute from parallel x/y pixel arrays."""
-    pts = [f"{fmt_compact(float(px))},{fmt_compact(float(py))}" for px, py in zip(xs, ys)]
+    pts = [f"{fmt_compact(float(px))},{fmt_compact(float(py))}" for px, py in zip(xs, ys, strict=True)]
     return "M" + " L".join(pts)
 
 
@@ -514,7 +514,7 @@ def build_svg(
 
     # x tick labels: -π, -π/2, 0, π/2, π.
     tick_labels = ["−π", "−π/2", "0", "π/2", "π"]
-    for tv, lab in zip(tick_angles, tick_labels):
+    for tv, lab in zip(tick_angles, tick_labels, strict=True):
         gx = x_px(tv)
         parts.append(
             f'<text x="{fmt_compact(gx)}" y="{fmt_compact(axis_y + 30)}" text-anchor="middle" '

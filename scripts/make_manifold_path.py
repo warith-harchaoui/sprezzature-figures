@@ -148,7 +148,7 @@ def _shade(t: float, theme: str) -> Tuple[int, int, int]:
         hexv = viridis(t)
         return (int(hexv[1:3], 16), int(hexv[3:5], 16), int(hexv[5:7], 16))
     return tuple(  # type: ignore[return-value]
-        round(a + (b - a) * t) for a, b in zip(_LO_RGB, _HI_RGB)
+        round(a + (b - a) * t) for a, b in zip(_LO_RGB, _HI_RGB, strict=True)
     )
 
 

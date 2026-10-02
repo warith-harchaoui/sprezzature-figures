@@ -149,7 +149,7 @@ def make_data(n: int = 90, seed: int = 7) -> List[Dict[str, float]]:
             "theoretical": round(float(t), 4),
             "minutes": round(float(m), 1),
         }
-        for e, t, m in zip(empirical, theoretical, x_sorted)
+        for e, t, m in zip(empirical, theoretical, x_sorted, strict=True)
     ]
 
 
@@ -459,7 +459,7 @@ def build_svg(
     xs_o, ys_o = xs[order], ys[order]
     grid = np.linspace(float(xs_o.min()), float(xs_o.max()), 80)
     smooth = _loess(xs_o, ys_o, grid, bandwidth=0.55)
-    trend_pts = [(sx(float(g)), sy(float(v))) for g, v in zip(grid, smooth)]
+    trend_pts = [(sx(float(g)), sy(float(v))) for g, v in zip(grid, smooth, strict=True)]
     d_trend = "M " + " L ".join(f"{x:.1f} {y:.1f}" for x, y in trend_pts)
     # White under-stroke first so the arc stays crisp over the points/grid.
     parts.append(

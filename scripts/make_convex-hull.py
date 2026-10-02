@@ -165,7 +165,7 @@ def make_data(seed: int = 11) -> Dict[str, List[Tuple[float, float]]]:
         cx, cy, sx, sy, n = _CLUSTER_PARAMS[name]
         xs = np.clip(rng.normal(cx, sx, n), X_MIN + 4, X_MAX - 4)
         ys = np.clip(rng.normal(cy, sy, n), Y_MIN + 0.15, Y_MAX - 0.2)
-        out[name] = [(float(x), float(y)) for x, y in zip(xs, ys)]
+        out[name] = [(float(x), float(y)) for x, y in zip(xs, ys, strict=True)]
     return out
 
 
@@ -621,7 +621,7 @@ def build_svg(
         slug = seg_slug[seg]
         parts.append(f'<g class="seg {slug}">')
         seg_tip_cards: List[str] = []
-        for (x, y), (px, py) in zip(data[seg], seg_px[seg]):
+        for (x, y), (px, py) in zip(data[seg], seg_px[seg], strict=True):
             spend = int(round(x))
             days = round(y, 1)
             tip = f"{seg} · ${spend}/mo · {days} active days/week"

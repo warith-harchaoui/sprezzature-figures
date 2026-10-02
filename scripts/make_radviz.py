@@ -168,7 +168,7 @@ def sample_rows(seed: int, per_class: int) -> List[Dict[str, object]]:
         mean = prof["mean"]
         sd = prof["sd"]
         for _ in range(per_class):
-            raw = [rng.gauss(m, s) for m, s in zip(mean, sd)]  # type: ignore[arg-type]
+            raw = [rng.gauss(m, s) for m, s in zip(mean, sd, strict=True)]  # type: ignore[arg-type]
             # Measurements are physical, so floor them at zero.
             raw = [max(0.0, v) for v in raw]
             rows.append({"cls": ci, "name": prof["name"], "raw": raw})
@@ -291,8 +291,8 @@ def project(norm: List[float], anchors: List[Tuple[float, float]]) -> Tuple[floa
     total = sum(norm)
     if total <= 1e-12:
         return (CX, CY)
-    x = sum(v * a[0] for v, a in zip(norm, anchors)) / total
-    y = sum(v * a[1] for v, a in zip(norm, anchors)) / total
+    x = sum(v * a[0] for v, a in zip(norm, anchors, strict=True)) / total
+    y = sum(v * a[1] for v, a in zip(norm, anchors, strict=True)) / total
     return (x, y)
 
 
@@ -319,7 +319,7 @@ def _disc_and_anchors(anchors: List[Tuple[float, float]]) -> str:
     # (`anchor-N`/`tip-anchor-N`) since they are no longer document
     # neighbours.
     tips: List[str] = []
-    for i, ((ax, ay), name) in enumerate(zip(anchors, FEATURES)):
+    for i, ((ax, ay), name) in enumerate(zip(anchors, FEATURES, strict=True)):
         parts.append(
             f'    <line x1="{CX}" y1="{CY}" x2="{ax:.1f}" y2="{ay:.1f}" '
             f'stroke="{GRID}" stroke-width="1.5"/>'
@@ -459,7 +459,7 @@ def _class_labels(
         palette); ``None`` keeps the shipped hues, byte-for-byte unchanged.
     """
     parts: List[str] = ['  <g class="clslabels" aria-hidden="true">']
-    for (cx, cy), cls in zip(centroids, CLASSES):
+    for (cx, cy), cls in zip(centroids, CLASSES, strict=True):
         col = (colours or {}).get(cls["name"], cls["color"])
         name = cls["name"]
         # Nudge the label outward from the disc centre so it clears the
@@ -611,7 +611,7 @@ def build_svg(
     # they overlap and colour is stripped.
     rv_series = [f".rv-{cls['name'].lower()}" for cls in CLASSES]
     contrast_block = os_adaptive_style(
-        {sel: class_colours[cls["name"]] for sel, cls in zip(rv_series, CLASSES)},
+        {sel: class_colours[cls["name"]] for sel, cls in zip(rv_series, CLASSES, strict=True)},
         role="fill",
     )
     fcp_defs, fcp_style = forced_color_patterns(rv_series, prefix="rv-fcp")

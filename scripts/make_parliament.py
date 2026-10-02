@@ -310,7 +310,7 @@ def _seat_lattice(total_seats: int = TOTAL_SEATS) -> List[Tuple[float, float, fl
     counts = _seats_per_row(radii, total_seats)
 
     seats: List[Tuple[float, float, float, float]] = []
-    for r, n in zip(radii, counts):
+    for r, n in zip(radii, counts, strict=True):
         if n == 1:
             angles = [90.0]
         else:
@@ -600,7 +600,7 @@ def build_svg(
     # its own seat would be covered by any seat drawn later in the arc.
     parts.append('<g id="floor">')
     bubbles: List[str] = []
-    for i, ((x, y), pid) in enumerate(zip(positions, assignment)):
+    for i, ((x, y), pid) in enumerate(zip(positions, assignment, strict=True)):
         name, lab, seats, hue = parties[pid]
         cls = f"{pid}-{lab.lower()}"
         # Tooltip names the member holding the seat, then their party and its
@@ -694,7 +694,7 @@ def build_svg(
     total_w = sum(widths) + chip_gap * (len(parties) - 1)
     cursor = CX - total_w / 2.0  # centre the whole strip under the subtitle
     parts.append(f'<g transform="translate(0,{legend_y})">')
-    for (name, _lab, seats, hue), w in zip(parties, widths):
+    for (name, _lab, seats, hue), w in zip(parties, widths, strict=True):
         cx_disk = cursor + disk_r
         parts.append(
             f'<circle cx="{cx_disk:.1f}" cy="0" r="{disk_r}" fill="{hue}"/>'

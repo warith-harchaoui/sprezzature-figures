@@ -458,13 +458,13 @@ def _speed_ramp(accessibility: str = "universal", theme: str = "corporate") -> C
 
     def ramp(t: float) -> str:
         t = max(0.0, min(1.0, t))
-        for (t0, c0), (t1, c1) in zip(anchors, anchors[1:]):
+        for (t0, c0), (t1, c1) in zip(anchors, anchors[1:], strict=False):
             if t <= t1:
                 f = 0.0 if t1 == t0 else (t - t0) / (t1 - t0)
                 return _rgb_to_hex(
                     cast(
                         Tuple[float, float, float],
-                        tuple(a + f * (b - a) for a, b in zip(c0, c1)),
+                        tuple(a + f * (b - a) for a, b in zip(c0, c1, strict=True)),
                     )
                 )
         return _rgb_to_hex(anchors[-1][1])

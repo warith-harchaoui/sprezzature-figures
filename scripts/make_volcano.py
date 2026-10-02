@@ -140,8 +140,8 @@ def build_svg(
         return plot_y + plot_h - (v - y_min) / ((y_max - y_min) or 1.0) * plot_h
 
     colors = {"Up": COLOR_UP, "Down": COLOR_DOWN, "n.s.": COLOR_NS}
-    n_up = sum(1 for lfc, p in zip(lfcs, ps) if _classify(lfc, p) == "Up")
-    n_down = sum(1 for lfc, p in zip(lfcs, ps) if _classify(lfc, p) == "Down")
+    n_up = sum(1 for lfc, p in zip(lfcs, ps, strict=True) if _classify(lfc, p) == "Up")
+    n_down = sum(1 for lfc, p in zip(lfcs, ps, strict=True) if _classify(lfc, p) == "Down")
 
     parts: List[str] = []
     parts.append(svg_open(width, height, "volc-title", "volc-desc", font_family=chrome_stack_for_theme(theme)))

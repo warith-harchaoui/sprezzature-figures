@@ -211,10 +211,10 @@ ignore = [
 # reformat of that size across live generators is its own decision, not a
 # side effect of switching the linter on.
 #
-# B905 (`zip()` without `strict=`) is the one silenced rule that could hide a
-# defect: 99 call sites, each pairing lists that are parallel by construction.
-# Flipping them to `strict=True` would turn silent truncation into a loud
-# error, which is better, but the demo data every test renders with is always
-# even, so a latent crash on uneven user data would ship unseen. Left as a
-# deliberate, named debt rather than a blind sweep.
-"scripts/*" = ["UP", "I001", "B905", "C4", "SIM", "W"]
+# B905 (`zip()` without `strict=`) was silenced here as a named debt and is
+# paid off: all 99 call sites are explicit. 85 pair sequences that are
+# parallel by construction and say `strict=True`, so a length mismatch raises
+# instead of silently dropping the tail and drawing a chart that looks right.
+# 14 are sliding pairs (`zip(xs, xs[1:])`) where the short end is the point
+# and say `strict=False`. The 127 figures all still render.
+"scripts/*" = ["UP", "I001", "C4", "SIM", "W"]

@@ -455,7 +455,7 @@ def build_svg(
     top_overflow = top_placed[-1] - (m_left + plot_w)
     if top_overflow > 0:
         top_placed = [p - top_overflow for p in top_placed]
-    for col, tx in zip(cols, top_placed):
+    for col, tx in zip(cols, top_placed, strict=True):
         cxm = float(col["cx"])
         col_y = float(col["y"])
         gdp_cap = float(col["gdp_cap"])
@@ -510,7 +510,7 @@ def build_svg(
     if overflow > 0:
         placed = [p - overflow for p in placed]
 
-    for col, lx in zip(cols, placed):
+    for col, lx in zip(cols, placed, strict=True):
         cxm = float(col["cx"])
         base_hex = str(col["hex"])
         pop = float(col["pop"])

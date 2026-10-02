@@ -182,7 +182,7 @@ def build_svg(
 
     # ---- filled curve ----
     axis_y = plot_y + plot_h
-    top_pts = [(x_for(x), y_for(d)) for x, d in zip(x_eval, density)]
+    top_pts = [(x_for(x), y_for(d)) for x, d in zip(x_eval, density, strict=True)]
     path_d = "M " + " L ".join(f"{x:.1f},{y:.1f}" for x, y in top_pts)
     path_d += f" L {top_pts[-1][0]:.1f},{axis_y:.1f} L {top_pts[0][0]:.1f},{axis_y:.1f} Z"
     tip = f"KDE of {len(samples)} observations, bandwidth {bandwidth:.2f}"

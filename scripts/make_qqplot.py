@@ -211,7 +211,7 @@ def build_svg(
     # covered by any point drawn afterward. `i` pairs each point with its
     # bubble (`hit-N`/`tip-N`) since they're no longer document neighbours.
     tips: List[str] = []
-    for i, (t, s) in enumerate(zip(theoretical, sample)):
+    for i, (t, s) in enumerate(zip(theoretical, sample, strict=True)):
         cx, cy = x_for(t), y_for(s)
         deviation = s - t
         tip = f"Theoretical {t:.1f}, sample {s:.1f}"

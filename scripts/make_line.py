@@ -41,7 +41,7 @@ DEMO_DATA: List[Dict[str, Any]] = [
         "Software": [8, 9, 10, 11, 13, 14, 16, 17, 19, 21, 23, 25],
         "Services": [5, 5, 6, 6, 7, 8, 8, 9, 10, 11, 12, 13],
     }.items()
-    for m, v in zip(MONTHS, values)
+    for m, v in zip(MONTHS, values, strict=True)
 ]
 
 # Chrome text (Studio detects "en"/"fr" from the imported CSV's column

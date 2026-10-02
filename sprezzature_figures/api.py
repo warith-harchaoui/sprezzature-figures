@@ -370,6 +370,19 @@ def render(kind: str, body: RenderRequest = RenderRequest()) -> Response:
             try:
                 try:
                     result_path = make_figure(canonical, data, **kwargs)
+                except KeyError as exc:
+                    # A row missing one of the kind's roles is the caller's
+                    # payload, not a server fault. It used to escape as a 500,
+                    # which tells an agent to retry and tells a human nothing;
+                    # 422 plus the missing key name tells both what to fix.
+                    raise HTTPException(
+                        status_code=422,
+                        detail=(
+                            f"A row is missing the role {exc.args[0]!r} that "
+                            f"{canonical} requires. GET /kinds/{canonical} "
+                            f"lists required_roles."
+                        ),
+                    ) from exc
                 except (ValueError, AttributeError) as exc:
                     raise HTTPException(status_code=422, detail=str(exc)) from exc
                 except (FileNotFoundError, RuntimeError) as exc:

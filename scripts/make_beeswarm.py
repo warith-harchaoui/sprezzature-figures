@@ -307,7 +307,7 @@ def build_svg(
     # ---- dots ----
     n_rows = len(ordered_rows)
     dot_tips: List[str] = []
-    for i, ((x, _), y, row) in enumerate(zip(items, ys, ordered_rows)):
+    for i, ((x, _), y, row) in enumerate(zip(items, ys, ordered_rows, strict=True)):
         g = str(row["group"])
         val = float(row["value"])
         tip = chrome["info_groupe"].format(g=g, v=val)

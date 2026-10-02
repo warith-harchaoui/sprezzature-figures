@@ -751,7 +751,7 @@ def color_ramp(t: float, stops: Sequence[Tuple[float, str]]) -> str:
     '#FDE725'
     """
     t = min(1.0, max(0.0, t))
-    for (lo_t, lo_c), (hi_t, hi_c) in zip(stops, stops[1:]):
+    for (lo_t, lo_c), (hi_t, hi_c) in zip(stops, stops[1:], strict=False):
         if lo_t <= t <= hi_t:
             local = (t - lo_t) / (hi_t - lo_t) if hi_t > lo_t else 0.0
             ar, ag, ab = hex_to_rgb(lo_c)

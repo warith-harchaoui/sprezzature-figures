@@ -136,7 +136,7 @@ def _dataset(
             f"make_venn expects exactly 3 distinct set names across `sets`, got {names!r}"
         )
     letters = ("A", "B", "C")
-    name_to_letter = dict(zip(names, letters))
+    name_to_letter = dict(zip(names, letters, strict=True))
 
     # Equilateral placement: A top, B lower-left, C lower-right. Blue /
     # Green / Orange are pairwise distinct under the common color-vision
@@ -153,7 +153,7 @@ def _dataset(
             "cx": positions[letter][0],
             "cy": positions[letter][1],
         }
-        for i, (name, letter) in enumerate(zip(names, letters))
+        for i, (name, letter) in enumerate(zip(names, letters, strict=True))
     }
 
     # Disjoint region counts (each respondent counted exactly once), keyed
