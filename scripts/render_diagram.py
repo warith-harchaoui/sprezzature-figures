@@ -30,7 +30,7 @@ Mermaid, or raw SVG before handing it to this renderer.
 
 House style, by default: every kind is themed from the **canonical
 sprezzature-colors palette** (``sprezzature-colors/references/palette.csv``, the same
-tokens documented at <https://harchaoui.org/warith/colors/>) via
+tokens documented at <https://deraison.ai/colors/>) via
 :mod:`_style`. TikZ gets a ``\\definecolor`` preamble of the base hues;
 Mermaid gets an injected ``%%{init}%%`` theme. You can always edit the
 colors afterwards: the palette is the *first* choice, not a lock-in.

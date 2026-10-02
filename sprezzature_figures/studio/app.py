@@ -45,7 +45,7 @@ def register_fonts() -> None:
 def register_theme() -> None:
     """Inject the Studio's visual language (see `theme.py`): the same
     neutral/brand-blue palette and rounded-card look as the public
-    harchaoui.org/warith/sprezzature site, backing the Tailwind-style
+    sprezzature.ai/ site, backing the Tailwind-style
     utility classes the components already use (this NiceGUI build ships no
     Tailwind CSS itself, so those classes were previously silent no-ops).
     """

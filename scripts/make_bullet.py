@@ -170,7 +170,7 @@ def _band_hex(palette: Dict[str, str]) -> List[str]:
     light, keeps the backdrop calm and never trips the CVD-unsafe
     red+green pairing. The steps are light enough that the dark measure
     bar and the orange target tick both stay crisp on top. Source:
-    <https://harchaoui.org/warith/colors/>.
+    <https://deraison.ai/colors/>.
 
     Parameters
     ----------

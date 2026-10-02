@@ -1,6 +1,6 @@
 """
 theme — the Studio's visual language, matching the public
-harchaoui.org/warith/sprezzature site (same Roboto typography, the same
+sprezzature.ai/ site (same Roboto typography, the same
 neutral/brand-blue palette, the same rounded-card look) instead of the raw
 default styling of Quasar, the UI component library NiceGUI is built on.
 
