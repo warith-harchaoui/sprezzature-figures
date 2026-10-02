@@ -25,10 +25,27 @@ import re
 from pathlib import Path
 
 import pytest
-import tomllib
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SCRIPTS_DIR = REPO_ROOT / "scripts"
+
+#: ``[project.scripts]`` is read with a regex rather than the ``tomllib``
+#: module, which is stdlib only from 3.11 while these packages support 3.10 --
+#: there the import alone failed collection of this entire file, and CI said so
+#: on the first push that reached it. ``test_release_consistency.py`` already
+#: reads pyproject.toml this way and explains why; this file had not followed.
+_SCRIPTS_SECTION_RE = re.compile(r"^\[project\.scripts\]\s*$(.*?)(?=^\[|\Z)", re.M | re.S)
+_SCRIPT_ENTRY_RE = re.compile(r'^\s*([A-Za-z0-9._-]+)\s*=\s*["\']([^"\']+)["\']', re.M)
+
+
+def _console_scripts() -> dict[str, str]:
+    """``{installed command: "module:attribute"}`` straight from pyproject.toml."""
+    text = (REPO_ROOT / "pyproject.toml").read_text(encoding="utf-8")
+    section = _SCRIPTS_SECTION_RE.search(text)
+    if section is None:
+        return {}
+    return dict(_SCRIPT_ENTRY_RE.findall(section.group(1)))
+
 
 #: A ``prog=`` or Click ``name=`` argument spelling a suite command name.
 _PROG_RE = re.compile(r'(?:prog|name)\s*=\s*["\'](sprezzature[a-z0-9-]*)["\']')
@@ -36,8 +53,7 @@ _PROG_RE = re.compile(r'(?:prog|name)\s*=\s*["\'](sprezzature[a-z0-9-]*)["\']')
 
 def _declared_console_scripts() -> set[str]:
     """The names ``pip install`` actually puts on a user's PATH."""
-    with (REPO_ROOT / "pyproject.toml").open("rb") as handle:
-        return set(tomllib.load(handle)["project"].get("scripts", {}))
+    return set(_console_scripts())
 
 
 def _advertised_names() -> list[tuple[str, str]]:
@@ -102,8 +118,7 @@ def test_every_console_script_points_at_something_importable() -> None:
     import importlib
     import importlib.util
 
-    with (REPO_ROOT / "pyproject.toml").open("rb") as handle:
-        scripts = tomllib.load(handle)["project"].get("scripts", {})
+    scripts = _console_scripts()
 
     for name, target in sorted(scripts.items()):
         module_name, _, attribute = target.partition(":")
