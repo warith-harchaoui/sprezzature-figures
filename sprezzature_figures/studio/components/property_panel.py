@@ -16,6 +16,7 @@ from typing import Any
 from nicegui import ui
 
 from sprezzature_figures.core.figure_plan import StyleOptions
+from sprezzature_figures.core.operations import StyleOptionName
 from sprezzature_figures.studio.state import SessionState
 from sprezzature_figures.studio.ui_strings import t
 
@@ -52,7 +53,10 @@ def _legend_options(lang: str) -> dict[str, str]:
 def build_property_panel(
     state: SessionState,
     *,
-    on_change: Callable[[str, Any], Any],
+    # `StyleOptionName`, not `str`: the four names this panel emits must be
+    # ones `SetStyleOption` accepts, and typing the chain makes a typo here
+    # a checked error instead of a validation failure at apply time.
+    on_change: Callable[[StyleOptionName, Any], Any],
 ) -> Callable[[], None]:
     """Render the style controls; returns a `refresh()` the editor calls after
     any plan change, and after a UI-language toggle, so the controls mirror
@@ -64,7 +68,7 @@ def build_property_panel(
     """
     suppress = {"active": False}
 
-    def emit(option: str) -> Callable[[Any], None]:
+    def emit(option: StyleOptionName) -> Callable[[Any], None]:
         def handler(event: Any) -> None:
             if suppress["active"]:
                 return

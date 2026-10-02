@@ -39,6 +39,20 @@ jobs:
         # which the config excluded anyway. Both are linted now.
         run: ruff check .
 
+      # The type half of the gate, added once the package, scripts/ and tools/
+      # all reached zero. It is here because running mypy by hand is what
+      # found four unguarded `run.io_bound` results in the studio editor:
+      # NiceGUI returns None from that call when the client disconnects, so
+      # closing a tab mid-render raised AttributeError in the handler.
+      # Three roots, three invocations: scripts/ and tools/ import siblings
+      # by bare name off a runtime sys.path, which only resolves when that
+      # directory is the check's root.
+      - name: Mypy
+        if: matrix.python-version == '3.12'
+        run: |
+          mypy sprezzature_figures
+          mypy scripts
+          mypy tools
       - name: "Fast tests (default: excludes slow + packaging)"
         run: python -m pytest -q
 

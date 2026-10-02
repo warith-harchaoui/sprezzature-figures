@@ -12,6 +12,7 @@ Warith HARCHAOUI <warith.harchaoui@gmail.com>
 from __future__ import annotations
 
 from collections.abc import Callable
+from typing import Any
 
 from nicegui import ui
 
@@ -25,7 +26,10 @@ def build_history_panel(
     *,
     on_undo: Callable[[], None],
     on_redo: Callable[[], None],
-    on_export: Callable[[], None],
+    # `handle_export` is async, so what arrives is a coroutine function;
+    # NiceGUI awaits it. Declaring `-> None` described the handlers that
+    # happen to be synchronous, not the contract.
+    on_export: Callable[[], Any],
 ) -> Callable[[], None]:
     """Render the undo / redo / export toolbar; returns a `refresh()` callback
     the editor calls whenever the render or history changes (or the UI

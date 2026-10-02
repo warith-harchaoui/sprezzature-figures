@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import logging
 import uuid
+from collections.abc import Callable
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -24,7 +25,7 @@ from sprezzature_figures.core import (
 )
 from sprezzature_figures.core.figure_plan import FigurePlan
 from sprezzature_figures.core.iterations import IterationRecord, save_iteration_record
-from sprezzature_figures.core.operations import SetStyleOption
+from sprezzature_figures.core.operations import SetStyleOption, StyleOptionName
 from sprezzature_figures.core.projects import load_manifest
 from sprezzature_figures.core.rendering import RenderResult, render_figure_to_project
 from sprezzature_figures.core.transformations import apply_transformations
@@ -123,16 +124,32 @@ def _summarize_result(result: RalphResult) -> str:
 
 
 def build_editor(state: SessionState) -> None:
-    # `refresh_canvas` / `refresh_history` are assigned below, once their panels
-    # are built; every handler here only *calls* them, and isn't invoked itself
-    # until after those assignments have happened, so the forward reference is
-    # safe.
-    refresh_canvas = None
-    refresh_history = None
-    refresh_properties = None
-    refresh_data_lang = None
-    refresh_engine_lang = None
-    refresh_chat_lang = None
+    # `refresh_canvas` / `refresh_history` and friends are assigned below, once
+    # their panels are built; every handler here only *calls* them, and isn't
+    # invoked itself until after those assignments have happened, so the
+    # forward reference is safe.
+    #
+    # The placeholder raises rather than being None. The forward reference is
+    # safe today, but "safe" rests on a call-order argument a future edit can
+    # break silently -- and the failure would be a bare
+    # `'NoneType' object is not callable`, which says nothing about which panel
+    # was missing. This names it, and lets a reader (and a type checker) see
+    # that these are always callables.
+    def _before_panels(panel: str) -> Callable[..., Any]:
+        def _raise(*_args: Any, **_kwargs: Any) -> Any:
+            raise RuntimeError(
+                f"{panel}() was called before its panel was built; "
+                f"build_editor assigns it further down."
+            )
+
+        return _raise
+
+    refresh_canvas: Callable[..., Any] = _before_panels("refresh_canvas")
+    refresh_history: Callable[..., Any] = _before_panels("refresh_history")
+    refresh_properties: Callable[..., Any] = _before_panels("refresh_properties")
+    refresh_data_lang: Callable[..., Any] = _before_panels("refresh_data_lang")
+    refresh_engine_lang: Callable[..., Any] = _before_panels("refresh_engine_lang")
+    refresh_chat_lang: Callable[..., Any] = _before_panels("refresh_chat_lang")
 
     def create_initial_render(plan: FigurePlan) -> None:
         if state.project_dir is None:
@@ -202,6 +219,13 @@ def build_editor(state: SessionState) -> None:
         except Exception as exc:  # noqa: BLE001 - surfaced in chat, not raised
             state.add_chat("assistant", f"Something went wrong: {exc}")
             return None
+        # `run.io_bound` returns None when the call is cancelled or the app
+        # is shutting down -- its own docstring says so. Closing the tab
+        # mid-turn therefore reached the attribute access below with None
+        # and raised AttributeError inside the handler. No test covers it:
+        # it needs a live client to disconnect.
+        if result is None:
+            return None
 
         summary = _summarize_result(result)
         _record_iteration(
@@ -245,6 +269,9 @@ def build_editor(state: SessionState) -> None:
             )
         except Exception as exc:  # noqa: BLE001 - surfaced in chat, not raised
             state.add_chat("assistant", f"Confirmed changes but re-render failed: {exc}")
+            return
+        # Cancelled or shutting down; see the note in handle_send.
+        if result is None:
             return
         _record_iteration(
             state.project_dir,
@@ -295,26 +322,37 @@ def build_editor(state: SessionState) -> None:
         ui.notify(t("restored_next", state.ui_language), type="positive")
 
     async def handle_export() -> None:
-        if state.plan is None or state.render is None or state.project_dir is None:
+        # Snapshot before the guard, and close over the snapshot rather than
+        # over `state`: the export runs in a worker thread, so reading
+        # `state.plan` again inside the lambda could pick up a different plan
+        # than the one just checked. The narrowing reaching the closure is the
+        # smaller benefit.
+        plan = state.plan
+        render = state.render
+        project_dir = state.project_dir
+        if plan is None or render is None or project_dir is None:
             ui.notify(t("create_figure_first", state.ui_language), type="warning")
             return
         try:
             archive = await run.io_bound(
                 lambda: export_project(
-                    project_name=state.source_name or state.project_dir.name,
-                    plan=state.plan,
+                    project_name=state.source_name or project_dir.name,
+                    plan=plan,
                     data=state.data,
-                    render=state.render,
-                    exports_dir=state.project_dir / "exports",
+                    render=render,
+                    exports_dir=project_dir / "exports",
                     dataset=state.dataset_profile,
                 )
             )
         except Exception as exc:  # noqa: BLE001 - surfaced to the user, not raised
             ui.notify(t("export_failed", state.ui_language, error=exc), type="negative")
             return
+        # Cancelled or shutting down; see the note in handle_send.
+        if archive is None:
+            return
         ui.notify(t("exported_to", state.ui_language, path=archive), type="positive")
 
-    async def handle_style_change(option: str, value: Any) -> None:
+    async def handle_style_change(option: StyleOptionName, value: Any) -> None:
         """Apply one style change from the property panel as a SetStyleOption,
         then re-render and record it like any other edit."""
         if state.plan is None or state.project_dir is None:
@@ -340,6 +378,9 @@ def build_editor(state: SessionState) -> None:
             )
         except Exception as exc:  # noqa: BLE001 - surfaced to the user, not raised
             ui.notify(t("render_failed", state.ui_language, error=exc), type="negative")
+            return
+        # Cancelled or shutting down; see the note in handle_send.
+        if result is None:
             return
         _record_iteration(
             state.project_dir,
