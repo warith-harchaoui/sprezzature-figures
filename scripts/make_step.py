@@ -142,7 +142,7 @@ def build_svg(
 
     # ---- step-after path ----
     step_pts: List[Tuple[float, float]] = []
-    for i, (t, y) in enumerate(zip(ts, ys)):
+    for t, y in zip(ts, ys):
         x, sy = x_for(t), y_for(y)
         if step_pts:
             step_pts.append((x, step_pts[-1][1]))

@@ -272,7 +272,7 @@ def build_svg(
     # incline plutôt que de les laisser se chevaucher — c'est ce qui se
     # passait avec des identifiants de clients, imprimés les uns sur les
     # autres jusqu'à former une bouillie.
-    for i, row in enumerate(ordered):
+    for i, _row in enumerate(ordered):
         tx = plot_x + i * bin_w + bin_w / 2
         etiquette = xml_escape(etiquettes[i])
         if incliner:

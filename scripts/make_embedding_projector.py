@@ -355,7 +355,7 @@ def _representative_labels(records: List[Dict[str, Any]], per_cluster: int) -> L
         by_cluster.setdefault(int(r["ci"]), []).append(i)
 
     chosen: List[int] = []
-    for ci, members in by_cluster.items():
+    for _ci, members in by_cluster.items():
         mx = sum(float(records[i]["x"]) for i in members) / len(members)
         my = sum(float(records[i]["y"]) for i in members) / len(members)
         # Order members by distance to the centroid.

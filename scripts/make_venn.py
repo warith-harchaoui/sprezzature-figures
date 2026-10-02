@@ -255,8 +255,8 @@ def build_svg(
         "Three-set Venn diagram of skills held by 1,000 surveyed data "
         "professionals. "
         + "; ".join(
-            f"{_xml(str(sets[l]['label']))} total {totals[l]}"
-            for l in ("A", "B", "C")
+            f"{_xml(str(sets[key]['label']))} total {totals[key]}"
+            for key in ("A", "B", "C")
         )
         + f". The central region — fluent in all three — is the largest at "
         f"{regions['ABC']}, and Python plus SQL together add another "

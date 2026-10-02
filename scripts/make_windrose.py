@@ -434,7 +434,7 @@ def build_svg(
 
     # ---- spokes + compass labels (every sector; cardinals emphasised) ----
     parts.append('<g>')
-    for i, direction in enumerate(_DIRECTIONS):
+    for i, _direction in enumerate(_DIRECTIONS):
         bearing = i * sector_deg
         x_out, y_out = _polar(_CX, _CY, _R_MAX, bearing)
         parts.append(

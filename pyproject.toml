@@ -181,15 +181,40 @@ markers = [
 [tool.ruff]
 line-length = 100
 target-version = "py310"
-extend-exclude = ["assets", "tests", "scripts"]
+# Only generated art is out of scope. `scripts/` and `tests/` used to be
+# excluded here too, and that made the gate meaningless: `scripts/` is 82 000
+# of this package's 102 000 lines of Python, every make_* generator plus the
+# auditor and the eyeball loop, and it ships in the wheel as
+# `sprezzature_figures_scripts`. "All checks passed" was green because ruff
+# was not looking. It looks now; the noise is handled per-file below rather
+# than by hiding the directory.
+extend-exclude = ["assets"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "C4", "UP", "SIM"]
 ignore = [
     "E501",
+    # FastAPI reads a Pydantic model instance in a parameter default as "this
+    # body is optional"; it is the framework's own idiom, not a shared mutable.
     "B008",
     "SIM108",
 ]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["B011"]
+# The 127 generators were written before this repo had a linter. Everything
+# that catches a real mistake runs on them -- pyflakes, the bugbear checks,
+# ambiguous names, imports stranded mid-module. What is silenced here is
+# syntax modernisation and ordering: 3 117 `typing.Dict` -> `dict`, 464
+# `Optional[X]` -> `X | None`, 144 import-sort rewrites. Turning those on
+# would bury the next real finding under four thousand cosmetic ones, and a
+# reformat of that size across live generators is its own decision, not a
+# side effect of switching the linter on.
+#
+# B905 (`zip()` without `strict=`) is the one silenced rule that could hide a
+# defect: 99 call sites, each pairing lists that are parallel by construction.
+# Flipping them to `strict=True` would turn silent truncation into a loud
+# error, which is better, but the demo data every test renders with is always
+# even, so a latent crash on uneven user data would ship unseen. Left as a
+# deliberate, named debt rather than a blind sweep.
+"scripts/*" = ["UP", "I001", "B905", "C4", "SIM", "W"]

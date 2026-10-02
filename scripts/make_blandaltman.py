@@ -62,7 +62,7 @@ from _style import leveled_colors, load_palette, os_adaptive_style, os_dark_styl
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 from _scale import nice_ticks_range  # noqa: E402
 from _svg import (  # noqa: E402
-    fmt_number, foreground_tip_css, svg_open, tooltip_bubble, wrap_no_orphan,
+    foreground_tip_css, svg_open, tooltip_bubble, wrap_no_orphan,
     xml_escape,
 )
 

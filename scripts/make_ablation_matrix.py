@@ -346,7 +346,7 @@ def build_svg(
     # Best variant per metric, so the winner can be called out rather than
     # left for the reader to find by eye.
     best_row: Dict[str, int] = {}
-    for m, metric in enumerate(metrics):
+    for metric in metrics:
         vals = [(scores.get((_SEP.join(v), metric), (float("-inf"), 0.0))[0], r) for r, v in enumerate(variants)]
         best_row[metric] = max(vals)[1]
 
@@ -462,7 +462,7 @@ def build_svg(
         )
         tip = f"{' + '.join(members)}: {score_text}"
 
-        parts.append(f'<g class="row">')
+        parts.append('<g class="row">')
         if r % 2 == 0:
             parts.append(
                 f'<rect x="{left_pad:.1f}" y="{band_y:.1f}" '

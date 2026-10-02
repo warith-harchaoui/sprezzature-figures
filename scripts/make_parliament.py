@@ -626,7 +626,7 @@ def build_svg(
         angs = [seat_angles[i] for i, p in enumerate(assignment) if p == pidx]
         sector_mid_deg.append(sum(angs) / len(angs) if angs else 90.0)
     r_wedge_label = R_OUTER + 66.0
-    for pidx, (name, lab, seats, hue) in enumerate(parties):
+    for pidx, (_name, lab, seats, hue) in enumerate(parties):
         mid = sector_mid_deg[pidx]
         wx, wy = _polar(r_wedge_label, mid)
         wtext = f"{lab} · {seats}"

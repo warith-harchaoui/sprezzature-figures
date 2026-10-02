@@ -51,7 +51,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _style import BG, INK, forced_color_patterns, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
-from _svg import foreground_tip_css, hex_to_rgb, svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _svg import hex_to_rgb, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
@@ -728,7 +728,7 @@ def build_svg(
     # --- cells layer (clipped to the rounded map card) ---
     parts.append('<g id="cells" clip-path="url(#mapclip)">')
     bubbles: List[str] = []
-    for cell_i, ((gx, gy, chain, name), cell) in enumerate(zip(city, cells)):
+    for cell_i, ((_gx, _gy, chain, name), cell) in enumerate(zip(city, cells)):
         if len(cell) < 3:
             continue
         color = chain_color[chain]
@@ -791,7 +791,7 @@ def build_svg(
     #   Long "Chain · Place" names stack onto two lines to keep the pill
     #   compact enough to sit clear of the cell's edges.
     parts.append('<g id="labels">')
-    for (gx, gy, chain, name), cell in zip(city, cells):
+    for (_gx, _gy, chain, name), cell in zip(city, cells):
         if not name or len(cell) < 3:
             continue
         slug = chain_slug[chain]
