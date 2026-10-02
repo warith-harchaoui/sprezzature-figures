@@ -41,6 +41,7 @@ import base64
 import functools
 from collections.abc import Sequence
 from pathlib import Path
+from typing import Any
 
 # Font files live one level up from this package, under assets/fonts/. In
 # the source tree that's <repo>/assets/fonts; once installed it ships
@@ -155,7 +156,10 @@ DEFAULT_SVG_FACES: tuple[str, ...] = ("sans", "mono")
 #: stack). ``THEMES["corporate"]`` reproduces :data:`DEFAULT_SVG_FACES` /
 #: :data:`SANS_STACK` / :data:`MONO_STACK` exactly, so selecting it is a
 #: no-op relative to today's default render. See :func:`svg_faces_for_theme`.
-THEMES: dict[str, dict[str, object]] = {
+# `Any`, not `object`: these inner dicts are deliberately mixed (a tuple of
+# face keys next to plain strings), and `object` forbids every operation on
+# the values, which is what the `type: ignore` below was papering over.
+THEMES: dict[str, dict[str, Any]] = {
     "corporate": {
         "faces": ("sans", "mono"),
         "chrome_stack": SANS_STACK,
@@ -180,7 +184,7 @@ def svg_faces_for_theme(theme: str) -> tuple[str, ...]:
     Unknown theme names fall back to ``"corporate"`` rather than raising, so
     a typo degrades to the current default look instead of crashing a render.
     """
-    return tuple(THEMES.get(theme, THEMES["corporate"])["faces"])  # type: ignore[return-value]
+    return tuple(THEMES.get(theme, THEMES["corporate"])["faces"])
 
 
 def chrome_stack_for_theme(theme: str) -> str:
