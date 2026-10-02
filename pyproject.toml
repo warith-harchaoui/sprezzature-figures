@@ -101,6 +101,9 @@ dev = [
     "ruff",
     "mypy",
     "build",
+    # tests/test_linter_is_not_blind.py reads a nested pyproject table, and
+    # `tomllib` only joined the standard library in 3.11.
+    "tomli; python_version < '3.11'",
     "numpy>=1.24",
     # headless-Chromium checks: scripts/render_gapminder_og.py, the Ralph
     # eyeball loop, gallery-interactivity verification. Needs a one-time
