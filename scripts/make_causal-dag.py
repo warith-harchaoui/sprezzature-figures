@@ -58,8 +58,8 @@ from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_the
 #: One row per arrow. ``observed`` marks whether the *source* node was
 #: measured; a node is unobserved only if every row naming it says so.
 DEMO_DATA: List[Dict[str, Any]] = [
-    {"source": "socioeconomic status", "target": "statin prescribed", "observed": 1},
-    {"source": "socioeconomic status", "target": "heart attack", "observed": 1},
+    {"source": "social class", "target": "statin prescribed", "observed": 1},
+    {"source": "social class", "target": "heart attack", "observed": 1},
     {"source": "family history", "target": "statin prescribed", "observed": 1},
     {"source": "family history", "target": "heart attack", "observed": 1},
     {"source": "genetic risk", "target": "cholesterol", "observed": 0},
@@ -360,8 +360,8 @@ def build_svg(
         )
     else:
         said_parts.append(
-            f"All {len(backdoor)} backdoor paths are blocked by this set, so the "
-            f"treatment-outcome estimate is identified under these assumptions."
+            f"All {len(backdoor)} backdoor paths are blocked by this set: the effect "
+            f"is identified under these assumptions."
         )
     blocked_names = sorted(
         {node for node in nodes if role[node] in ("mediator", "collider")}
