@@ -13493,6 +13493,201 @@
     ]
   },
   {
+    "kind": "shap-waterfall",
+    "label": "Shap Waterfall",
+    "aliases": [
+      "shap waterfall",
+      "shap_waterfall"
+    ],
+    "category": "Model explanation",
+    "description": "One prediction taken apart: a waterfall from the model's average output to this row's prediction, one step per feature. The usual version leaves the baseline unlabelled, so the bars look like they sum from zero \u2014 they sum from E[f(x)] over a background sample, and without that number the chart is unanchored. It is drawn, named and given. The contributions are in **log-odds** and nobody says so: a reader who takes \u00ab+0.42\u00bb for forty-two points of probability has misread the chart by a factor that depends on where they started, so the unit is named and `link=\"logit\"` reports both ends as probabilities too. The lumped tail gets a total instead of a label. And the caveat is drawn rather than assumed: this explains one row.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "svg",
+    "module": "scripts/make_shap-waterfall.py",
+    "callable_name": "make_shap_waterfall",
+    "required_roles": [
+      {
+        "name": "feature",
+        "label": "Feature name",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "shap",
+        "label": "Contribution for this row",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [
+      {
+        "name": "observed",
+        "label": "Value the feature took in this row",
+        "accepted_types": [
+          "categorical",
+          "numeric"
+        ],
+        "required": false
+      }
+    ],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 960,
+    "default_height": 668,
+    "options_schema": {
+      "title": {
+        "type": "str",
+        "default": "From 13% to 34%, and verified income is the biggest thing pulling the other way",
+        "choices": [],
+        "description": "Chart text."
+      },
+      "subtitle": {
+        "type": "str",
+        "default": "One prediction taken apart: the model's average output, then what each feature did to it for this row.",
+        "choices": [],
+        "description": "Chart text."
+      },
+      "width": {
+        "type": "int",
+        "default": 960,
+        "choices": [],
+        "description": "Canvas size in pixels."
+      },
+      "height": {
+        "type": "int",
+        "default": 668,
+        "choices": [],
+        "description": "Canvas size in pixels."
+      },
+      "feature": {
+        "type": "str",
+        "default": "feature",
+        "choices": [],
+        "description": "Row keys for the feature name, its contribution, and the value it took in the row being explained."
+      },
+      "value": {
+        "type": "str",
+        "default": "shap",
+        "choices": [],
+        "description": "Row keys for the feature name, its contribution, and the value it took in the row being explained."
+      },
+      "observed": {
+        "type": "str",
+        "default": "observed",
+        "choices": [],
+        "description": "Row keys for the feature name, its contribution, and the value it took in the row being explained."
+      },
+      "base_value": {
+        "type": "float",
+        "default": -1.86,
+        "choices": [],
+        "description": "The model's average output over the background sample."
+      },
+      "top": {
+        "type": "int",
+        "default": 8,
+        "choices": [],
+        "description": "How many features to draw individually; the rest are summed."
+      },
+      "units": {
+        "type": "str",
+        "default": "log-odds",
+        "choices": [],
+        "description": "What the contributions are measured in."
+      },
+      "link": {
+        "type": "str",
+        "default": "logit",
+        "choices": [
+          "logit",
+          "identity"
+        ],
+        "description": "\"logit\" also reports both ends as probabilities."
+      },
+      "base_label": {
+        "type": "str",
+        "default": "average output",
+        "choices": [],
+        "description": "Captions for the two reference lines and the summed bar."
+      },
+      "prediction_label": {
+        "type": "str",
+        "default": "this prediction",
+        "choices": [],
+        "description": "Captions for the two reference lines and the summed bar."
+      },
+      "rest_label": {
+        "type": "str",
+        "default": "all other features",
+        "choices": [],
+        "description": "Captions for the two reference lines and the summed bar."
+      },
+      "caveat": {
+        "type": "str",
+        "default": "this explains one row; the next applicant can have the opposite explanation",
+        "choices": [],
+        "description": "The standing limitation, drawn whatever the data says."
+      },
+      "unit_note": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "The line naming the units and the two ends, and the sentence summarising the move; None composes each from the data."
+      },
+      "finding": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "The line naming the units and the two ends, and the sentence summarising the move; None composes each from the data."
+      },
+      "mode": {
+        "type": "str",
+        "default": "self-contained",
+        "choices": [
+          "self-contained",
+          "external",
+          "static"
+        ],
+        "description": "How the SVG carries its interactivity: self-contained ships its own script, external expects the page to supply one, static leaves it out."
+      },
+      "accessibility": {
+        "type": "str",
+        "default": "universal",
+        "choices": [
+          "universal",
+          "high-contrast",
+          "monochrome",
+          "deuteranopia",
+          "protanopia",
+          "tritanopia"
+        ],
+        "description": "Palette accessibility level; universal is the colour-vision-safe default."
+      },
+      "theme": {
+        "type": "str",
+        "default": "corporate",
+        "choices": [
+          "corporate",
+          "academic"
+        ],
+        "description": "Visual theme. Forwarded to build_svg."
+      }
+    },
+    "warnings": [
+      "make_figure('shap-waterfall') cannot resolve to make_shap-waterfall.py: hyphen/underscore normalisation looks for a different filename"
+    ]
+  },
+  {
     "kind": "silhouette",
     "label": "Silhouette",
     "aliases": [],

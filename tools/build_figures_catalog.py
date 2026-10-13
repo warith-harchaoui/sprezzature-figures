@@ -200,6 +200,30 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
             },
         ],
     },
+    "shap-waterfall": {
+        "required_roles": [
+            {
+                "name": "feature",
+                "label": "Feature name",
+                "accepted_types": ["categorical"],
+                "required": True,
+            },
+            {
+                "name": "shap",
+                "label": "Contribution for this row",
+                "accepted_types": ["numeric"],
+                "required": True,
+            },
+        ],
+        "optional_roles": [
+            {
+                "name": "observed",
+                "label": "Value the feature took in this row",
+                "accepted_types": ["categorical", "numeric"],
+                "required": False,
+            },
+        ],
+    },
     "acf": {
         "required_roles": [
             {

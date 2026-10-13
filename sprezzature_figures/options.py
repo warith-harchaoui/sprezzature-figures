@@ -105,6 +105,9 @@ OPTION_CHOICES: dict[str, tuple[str, ...]] = {
     # see the element-wise check in `coerce_option`.
     "limit_from": ("moving-range", "sd"),
     "rules": ("beyond", "run", "trend", "two-of-three"),
+    # shap-waterfall: whether the contributions are passed through a
+    # logistic before the two ends are quoted as probabilities.
+    "link": ("logit", "identity"),
 }
 
 #: House meaning of the keywords many generators share. A generator
