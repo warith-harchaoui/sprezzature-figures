@@ -91,6 +91,11 @@ OPTION_CHOICES: dict[str, tuple[str, ...]] = {
     # else; the catalogue advertised it as free text, so the CLI offered no
     # choices and the API accepted a value that could only fail downstream.
     "mark": ("dot", "bar"),
+    # validation-curve: which direction along the swept parameter makes the
+    # model simpler. A closed set, and declaring it is what tells the
+    # "every text option reaches the drawing" probe that this one is a
+    # switch rather than a caption.
+    "simpler_is": ("larger", "smaller"),
 }
 
 #: House meaning of the keywords many generators share. A generator

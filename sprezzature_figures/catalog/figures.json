@@ -14533,7 +14533,10 @@
       "simpler_is": {
         "type": "str",
         "default": "larger",
-        "choices": [],
+        "choices": [
+          "larger",
+          "smaller"
+        ],
         "description": "\"larger\" or \"smaller\": which direction along the parameter makes the model simpler."
       },
       "log_scale": {
