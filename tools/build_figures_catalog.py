@@ -101,6 +101,23 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
         ],
         "optional_roles": [],
     },
+    "hist2d": {
+        "required_roles": [
+            {
+                "name": "distance",
+                "label": "X",
+                "accepted_types": ["numeric"],
+                "required": True,
+            },
+            {
+                "name": "fare",
+                "label": "Y",
+                "accepted_types": ["numeric"],
+                "required": True,
+            },
+        ],
+        "optional_roles": [],
+    },
     "pie": {
         "required_roles": [
             {
