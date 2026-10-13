@@ -153,6 +153,29 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
             },
         ],
     },
+    "cohort-retention": {
+        "required_roles": [
+            {
+                "name": "cohort",
+                "label": "Cohort",
+                "accepted_types": ["categorical", "datetime"],
+                "required": True,
+            },
+            {
+                "name": "period",
+                "label": "Periods since the cohort started",
+                "accepted_types": ["numeric"],
+                "required": True,
+            },
+            {
+                "name": "users",
+                "label": "Members still present",
+                "accepted_types": ["numeric"],
+                "required": True,
+            },
+        ],
+        "optional_roles": [],
+    },
     "acf": {
         "required_roles": [
             {

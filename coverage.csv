@@ -313,4 +313,4 @@ data-science,permutation importance,permutation-importance,gap,"importance with 
 data-science,causal DAG,causal-dag,gap,"the DoWhy graph: treatment, outcome, confounders"
 data-science,missing-data matrix,missing-matrix,covered,
 data-science,control chart (SPC),control-chart,covered,
-data-science,cohort retention,cohort-retention,gap,triangle of cohorts against age
+data-science,cohort retention,cohort-retention,covered,

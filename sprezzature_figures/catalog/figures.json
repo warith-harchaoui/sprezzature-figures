@@ -2871,6 +2871,191 @@
     ]
   },
   {
+    "kind": "cohort-retention",
+    "label": "Cohort Retention",
+    "aliases": [
+      "cohort retention",
+      "cohort_retention"
+    ],
+    "category": "Retention",
+    "description": "A retention triangle: one row per cohort, one column per period of age, each cell the share still present. The usual version paints the not-yet-measured corner the same dark shade as a cohort that left \u2014 those periods have not happened yet, so here they carry no fill and the chrome counts them. Its colour scale runs 0 to 100% when retention past month one is rarely above half, so the grid reads as one flat colour; this one is scaled to the measured cells and labelled at both ends. It marks where churn settles (the *median* cohort's loss, not the mean \u2014 one cohort caught by a bad month moves a mean answer by five months) and it checks the **diagonals**, because an outage hits every cohort on the same calendar date and lands on a diagonal, not a row \u2014 the reading a triangle makes hardest.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "svg",
+    "module": "scripts/make_cohort-retention.py",
+    "callable_name": "make_cohort_retention",
+    "required_roles": [
+      {
+        "name": "cohort",
+        "label": "Cohort",
+        "accepted_types": [
+          "categorical",
+          "datetime"
+        ],
+        "required": true
+      },
+      {
+        "name": "period",
+        "label": "Periods since the cohort started",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "users",
+        "label": "Members still present",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 940,
+    "default_height": 664,
+    "options_schema": {
+      "title": {
+        "type": "str",
+        "default": "Churn settles at month 5, and one bad calendar month cuts across every cohort",
+        "choices": [],
+        "description": "Chart text."
+      },
+      "subtitle": {
+        "type": "str",
+        "default": "Twelve monthly cohorts, each followed as far as today; the empty corner is not yet measured.",
+        "choices": [],
+        "description": "Chart text."
+      },
+      "width": {
+        "type": "int",
+        "default": 940,
+        "choices": [],
+        "description": "Canvas size in pixels."
+      },
+      "height": {
+        "type": "int",
+        "default": 664,
+        "choices": [],
+        "description": "Canvas size in pixels."
+      },
+      "cohort": {
+        "type": "str",
+        "default": "cohort",
+        "choices": [],
+        "description": "Row keys for the cohort name, the age in periods, and the measured quantity."
+      },
+      "period": {
+        "type": "str",
+        "default": "period",
+        "choices": [],
+        "description": "Row keys for the cohort name, the age in periods, and the measured quantity."
+      },
+      "value": {
+        "type": "str",
+        "default": "users",
+        "choices": [],
+        "description": "Row keys for the cohort name, the age in periods, and the measured quantity."
+      },
+      "value_is_rate": {
+        "type": "bool",
+        "default": false,
+        "choices": [],
+        "description": "Whether value is already a share in 0 to 1."
+      },
+      "include_period_zero": {
+        "type": "bool",
+        "default": false,
+        "choices": [],
+        "description": "Draw the period-zero column, which is 100% by construction."
+      },
+      "plateau_at": {
+        "type": "float",
+        "default": 0.06,
+        "choices": [],
+        "description": "The month-on-month loss, median over cohorts, below which the curve counts as flat."
+      },
+      "diagonal_gap": {
+        "type": "float",
+        "default": 0.08,
+        "choices": [],
+        "description": "How far below its neighbours a calendar diagonal must sit before it is called out."
+      },
+      "cohort_label": {
+        "type": "str",
+        "default": "Cohort",
+        "choices": [],
+        "description": "Axis titles."
+      },
+      "period_label": {
+        "type": "str",
+        "default": "Months since signup",
+        "choices": [],
+        "description": "Axis titles."
+      },
+      "pending_label": {
+        "type": "str",
+        "default": "not yet measured",
+        "choices": [],
+        "description": "What the unfilled cells are called in the key."
+      },
+      "scale_note": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "The line describing the colour scale, and the sentence naming the plateau and any bad calendar month; None composes each from the data."
+      },
+      "finding": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "The line describing the colour scale, and the sentence naming the plateau and any bad calendar month; None composes each from the data."
+      },
+      "mode": {
+        "type": "str",
+        "default": "self-contained",
+        "choices": [
+          "self-contained",
+          "external",
+          "static"
+        ],
+        "description": "How the SVG carries its interactivity: self-contained ships its own script, external expects the page to supply one, static leaves it out."
+      },
+      "accessibility": {
+        "type": "str",
+        "default": "universal",
+        "choices": [
+          "universal",
+          "high-contrast",
+          "monochrome",
+          "deuteranopia",
+          "protanopia",
+          "tritanopia"
+        ],
+        "description": "Palette accessibility level; universal is the colour-vision-safe default."
+      },
+      "theme": {
+        "type": "str",
+        "default": "corporate",
+        "choices": [
+          "corporate",
+          "academic"
+        ],
+        "description": "Visual theme. Forwarded to build_svg."
+      }
+    },
+    "warnings": [
+      "make_figure('cohort-retention') cannot resolve to make_cohort-retention.py: hyphen/underscore normalisation looks for a different filename"
+    ]
+  },
+  {
     "kind": "columnrange",
     "label": "Columnrange",
     "aliases": [],
