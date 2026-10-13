@@ -45,11 +45,26 @@ _ORPHANS_FR = {"le", "la", "les", "de", "des", "du", "un", "une", "et", "ou", "Ã
 _ORPHANS = _ORPHANS_EN | _ORPHANS_FR
 
 
-def text_width(text: str, font_size: float, *, bold: bool = False) -> float:
+#: Every glyph in a monospaced face takes the same advance, and for the
+#: stacks this project ships that advance is 0.6em. The proportional table
+#: below averages near 0.43em, so measuring mono text with it under-reads a
+#: thirty-character caption by about fifty pixels -- enough for the French
+#: control-chart captions to run off the canvas while the fitter, trusting
+#: the estimate, reported room to spare.
+_MONO_EM = 0.6
+
+
+def text_width(
+    text: str, font_size: float, *, bold: bool = False, mono: bool = False
+) -> float:
     """Estimate the rendered width, in pixels, of ``text`` at ``font_size``.
 
     Bold Roboto is a little wider; ``bold`` scales the estimate by 3%.
+    ``mono`` switches to the fixed advance of a monospaced face, which
+    the proportional table badly under-reads.
     """
+    if mono:
+        return len(text) * _MONO_EM * font_size * (1.03 if bold else 1.0)
     ems = sum(_EM.get(ch, _DEFAULT_EM) for ch in text)
     return ems * font_size * (1.03 if bold else 1.0)
 
