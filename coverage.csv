@@ -310,7 +310,7 @@ data-science,SHAP beeswarm,shap-beeswarm,covered,
 data-science,SHAP waterfall,shap-waterfall,covered,
 data-science,partial dependence / ICE,pdp-ice,covered,
 data-science,permutation importance,permutation-importance,covered,
-data-science,causal DAG,causal-dag,gap,"the DoWhy graph: treatment, outcome, confounders"
+data-science,causal DAG,causal-dag,covered,
 data-science,missing-data matrix,missing-matrix,covered,
 data-science,control chart (SPC),control-chart,covered,
 data-science,cohort retention,cohort-retention,covered,

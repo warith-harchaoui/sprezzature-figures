@@ -2566,6 +2566,204 @@
     ]
   },
   {
+    "kind": "causal-dag",
+    "label": "Causal Dag",
+    "aliases": [
+      "causal dag",
+      "causal_dag"
+    ],
+    "category": "Causal inference",
+    "description": "The assumed causal structure, with every node's part \u2014 confounder, mediator, collider \u2014 **worked out from the arrows rather than declared**. The usual rendering draws the graph and leaves the one decision a DAG exists for to the reader: this enumerates the backdoor paths from treatment to outcome, tests the proposed adjustment set against each, and says which are blocked and which stay open. It also catches the expensive mistake: an adjustment set containing a collider can block every backdoor path and still be wrong, because it *opens* one that was closed \u2014 so a set naming a collider or a mediator is reported as such before the backdoor count is given. Unobserved nodes are hollow, because a confounder you cannot measure is the difference between an estimate and a guess.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "svg",
+    "module": "scripts/make_causal-dag.py",
+    "callable_name": "make_causal_dag",
+    "required_roles": [
+      {
+        "name": "source",
+        "label": "Arrow tail",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "target",
+        "label": "Arrow head",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [
+      {
+        "name": "observed",
+        "label": "Whether the tail node was measured",
+        "accepted_types": [
+          "numeric",
+          "categorical"
+        ],
+        "required": false
+      }
+    ],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 980,
+    "default_height": 620,
+    "options_schema": {
+      "title": {
+        "type": "str",
+        "default": "Adjust for three; the hospital record would open a path that is closed",
+        "choices": [],
+        "description": "Chart text."
+      },
+      "subtitle": {
+        "type": "str",
+        "default": "The assumed causal structure, with every node's part worked out from the arrows rather than declared.",
+        "choices": [],
+        "description": "Chart text."
+      },
+      "width": {
+        "type": "int",
+        "default": 980,
+        "choices": [],
+        "description": "Canvas size in pixels."
+      },
+      "height": {
+        "type": "int",
+        "default": 620,
+        "choices": [],
+        "description": "Canvas size in pixels."
+      },
+      "source": {
+        "type": "str",
+        "default": "source",
+        "choices": [],
+        "description": "Row keys for the two ends of each arrow and for whether the source node was measured."
+      },
+      "target": {
+        "type": "str",
+        "default": "target",
+        "choices": [],
+        "description": "Row keys for the two ends of each arrow and for whether the source node was measured."
+      },
+      "observed": {
+        "type": "str",
+        "default": "observed",
+        "choices": [],
+        "description": "Row keys for the two ends of each arrow and for whether the source node was measured."
+      },
+      "treatment": {
+        "type": "str",
+        "default": "statin prescribed",
+        "choices": [],
+        "description": "The two nodes the graph is about."
+      },
+      "outcome": {
+        "type": "str",
+        "default": "heart attack",
+        "choices": [],
+        "description": "The two nodes the graph is about."
+      },
+      "adjust_for": {
+        "type": "str_list",
+        "default": null,
+        "choices": [],
+        "description": "The proposed adjustment set; None proposes the observed parents of treatment."
+      },
+      "treatment_label": {
+        "type": "str",
+        "default": "treatment",
+        "choices": [],
+        "description": ""
+      },
+      "outcome_label": {
+        "type": "str",
+        "default": "outcome",
+        "choices": [],
+        "description": ""
+      },
+      "confounder_label": {
+        "type": "str",
+        "default": "confounder",
+        "choices": [],
+        "description": ""
+      },
+      "mediator_label": {
+        "type": "str",
+        "default": "mediator \u00b7 do not adjust",
+        "choices": [],
+        "description": ""
+      },
+      "collider_label": {
+        "type": "str",
+        "default": "collider \u00b7 do not adjust",
+        "choices": [],
+        "description": "Names for the parts a node can play."
+      },
+      "unobserved_label": {
+        "type": "str",
+        "default": "unobserved",
+        "choices": [],
+        "description": "Names for the parts a node can play."
+      },
+      "set_note": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "The line naming the adjustment set, and the sentence reporting the backdoor paths; None composes each from the data."
+      },
+      "finding": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "The line naming the adjustment set, and the sentence reporting the backdoor paths; None composes each from the data."
+      },
+      "mode": {
+        "type": "str",
+        "default": "self-contained",
+        "choices": [
+          "self-contained",
+          "external",
+          "static"
+        ],
+        "description": "How the SVG carries its interactivity: self-contained ships its own script, external expects the page to supply one, static leaves it out."
+      },
+      "accessibility": {
+        "type": "str",
+        "default": "universal",
+        "choices": [
+          "universal",
+          "high-contrast",
+          "monochrome",
+          "deuteranopia",
+          "protanopia",
+          "tritanopia"
+        ],
+        "description": "Palette accessibility level; universal is the colour-vision-safe default."
+      },
+      "theme": {
+        "type": "str",
+        "default": "corporate",
+        "choices": [
+          "corporate",
+          "academic"
+        ],
+        "description": "Visual theme. Forwarded to build_svg."
+      }
+    },
+    "warnings": [
+      "make_figure('causal-dag') cannot resolve to make_causal-dag.py: hyphen/underscore normalisation looks for a different filename"
+    ]
+  },
+  {
     "kind": "chord",
     "label": "Chord",
     "aliases": [],

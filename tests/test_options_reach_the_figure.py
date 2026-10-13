@@ -30,9 +30,13 @@ from __future__ import annotations
 
 import contextlib
 import io
+import sys
+from importlib import import_module
 from pathlib import Path
 
 import pytest
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
 from sprezzature_figures import make_figure
 from sprezzature_figures.catalog import get_figure_definition, list_kinds
@@ -67,23 +71,55 @@ KNOWN_UNWIRED: dict[str, tuple[str, ...]] = {
 }
 
 
+def _selects_from_the_data(kind: str, option: OptionDefinition) -> bool:
+    """Whether `option` picks something out of the data rather than saying it.
+
+    Two shapes, and the second was found by `causal-dag`. A default that
+    names a *column* is a column selector -- `bar`'s ``value``. A default
+    that names a *value inside a column* is a selector too:
+    ``treatment="statin prescribed"`` picks one node out of a graph, and
+    handing it a sentinel asks for a node that does not exist. Both make
+    the figure raise rather than quietly drop a caption, which is a
+    different test's job.
+    """
+    if not isinstance(option.default, str):
+        return False
+    definition = get_figure_definition(kind)
+    roles = {role.name for role in definition.required_roles + definition.optional_roles}
+    if option.default in roles:
+        return True
+    return any(
+        str(cell) == option.default
+        for row in _demo_rows(kind)
+        for cell in row.values()
+    )
+
+
+def _demo_rows(kind: str) -> list[dict[str, object]]:
+    """The generator's own ``DEMO_DATA``, or an empty list if it has none."""
+    name = f"make_{kind}"
+    try:
+        module = import_module(name)
+    except ImportError:
+        return []
+    rows = getattr(module, "DEMO_DATA", None)
+    return rows if isinstance(rows, list) else []
+
+
 def _text_options(kind: str) -> dict[str, OptionDefinition]:
     """The options that are prose a reader sees, and not something else.
 
     Two exclusions, both necessary. An option with a closed set of values
     cannot take a sentinel -- `theme`, `mode`, `accessibility` -- and one
-    whose default names a data role is a *column selector*: passing a
-    sentinel to `bar`'s ``value`` asks the figure to plot a column that
-    does not exist, which is a different test's job.
+    that selects out of the data is not a caption at all; see
+    :func:`_selects_from_the_data`.
     """
-    definition = get_figure_definition(kind)
-    roles = {role.name for role in definition.required_roles + definition.optional_roles}
     return {
         name: option
         for name, option in options_for(kind).items()
         if option.type == "str"
         and not option.choices
-        and not (isinstance(option.default, str) and option.default in roles)
+        and not _selects_from_the_data(kind, option)
     }
 
 
