@@ -1,6 +1,6 @@
 # Figure Catalogue
 
-130 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type). `choropleth` and `situation_map` moved to their own repo, [sprezzature-maps](https://github.com/warith-harchaoui/sprezzature-maps).
+131 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type). `choropleth` and `situation_map` moved to their own repo, [sprezzature-maps](https://github.com/warith-harchaoui/sprezzature-maps).
 
 Invoke via:
 
@@ -54,6 +54,7 @@ colour-vision-deficiency-safe Okabe-Ito palette); see
 | `columnrange` | make_columnrange.py | Range | Vertical bars spanning from a low to a high value per category. Use for temperature ranges, salary bands, confidence intervals, or any per-group min–max. |
 | `confusion-matrix` | make_confusion-matrix.py | Model evaluation | Confusion matrix: actual class (rows) vs predicted class (columns), both axes labelled with the class names, cells shaded by count with a strong correct diagonal. Use to see exactly which classes a classifier confuses. |
 | `connected-scatter` | make_connected-scatter.py | Bivariate time series | Scatter plot where consecutive time points are connected by lines. Use to reveal the joint trajectory of two variables over time (e.g., GDP vs. life expectancy). |
+| `contour` | make_contour.py | Gridded field | Iso-lines over a scalar field z = f(x, y), with filled bands behind them. Use for a field that is measured or computed rather than estimated from points: a loss surface, a temperature, a potential, a model's output over two inputs. Every level is written on its own line — contour labels are an opt-in almost everywhere and almost nobody opts in, which leaves the reader a topography with no altitude — and the levels run on a geometric sequence by default, because a field spanning three orders of magnitude gets all its evenly spaced lines around the peaks and none in the basins. Prefer `kde2d-contour` when the field is a density estimated from points, `heatmap` when there is no continuity to contour, `surface3d` when the shape matters more than the values. |
 | `convex-hull` | make_convex-hull.py | Clustering | Scatter plot with convex-hull polygons drawn around labelled clusters. Use to visually delimit group boundaries after clustering or classification. |
 | `corr-matrix` | make_corr-matrix.py | Distribution | Symmetric grid of pairwise correlation coefficients, diverging red-white-blue scale centred on zero, coefficient printed per cell. Use to explore a new dataset's feature relationships before modelling or spot multicollinearity. |
 | `cycle` | make_cycle.py | Cyclic | Directed ring of proportional arcs for a process that returns to its start (a crop rotation, the seasons, a product lifecycle, a sprint). Each arc's length is that phase's share of one full turn, wrapped by a flow arrow. Use over a pie when order and recurrence matter. |
