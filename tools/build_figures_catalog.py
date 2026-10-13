@@ -237,6 +237,29 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
             },
         ],
     },
+    "loss-curve": {
+        "required_roles": [
+            {
+                "name": "epoch",
+                "label": "Epoch",
+                "accepted_types": ["numeric"],
+                "required": True,
+            },
+            {
+                "name": "split",
+                "label": "Training or validation",
+                "accepted_types": ["categorical"],
+                "required": True,
+            },
+            {
+                "name": "loss",
+                "label": "Loss",
+                "accepted_types": ["numeric"],
+                "required": True,
+            },
+        ],
+        "optional_roles": [],
+    },
     "pie": {
         "required_roles": [
             {

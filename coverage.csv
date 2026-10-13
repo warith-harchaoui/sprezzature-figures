@@ -301,7 +301,7 @@ data-science,Bland-Altman,blandaltman,covered,
 data-science,Gaussian process posterior,gaussian-process,covered,
 data-science,learning curve,learning-curve,covered,
 data-science,validation curve,validation-curve,gap,score against one hyper-parameter
-data-science,training / loss curve,loss-curve,gap,"loss against epoch, train against validation"
+data-science,training / loss curve,loss-curve,covered,
 data-science,silhouette plot,silhouette,gap,"per-sample silhouette, grouped by cluster"
 data-science,ACF / PACF correlogram,acf,gap,autocorrelation with its significance band
 data-science,seasonal decomposition,seasonal-decomposition,gap,observed / trend / seasonal / residual
