@@ -348,6 +348,7 @@ def make_waterfall(
     subtitle: str = "Millions of EUR, FY-2023 → FY-2024",
     width: int = WIDTH,
     height: int = HEIGHT,
+    accessibility: str = "universal",
     theme: str = "corporate",
 ) -> Path:
     """Render a waterfall chart and write the SVG to *out*.
@@ -368,6 +369,11 @@ def make_waterfall(
         Ignored (canvas is fixed; kept for API parity with other generators).
     height : int
         Ignored.
+    accessibility : str, optional
+        Palette accessibility level. ``build_svg`` has always taken it;
+        this entry point did not, so a caller asking every figure for a
+        high-contrast or monochrome palette got the universal one here and
+        nothing said so.
     theme : str, optional
         Visual theme. Forwarded to :func:`build_svg`.
 
@@ -384,7 +390,9 @@ def make_waterfall(
     """
     if data is None:
         data = DEMO_DATA
-    svg = build_svg(data, title=title, subtitle=subtitle, theme=theme)
+    svg = build_svg(
+        data, title=title, subtitle=subtitle, accessibility=accessibility, theme=theme
+    )
     dest = Path(out) if out else svg_example_path(__file__, "waterfall")
     return write_svg(dest, svg, theme=theme)
 

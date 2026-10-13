@@ -8,6 +8,12 @@ current, then run this script. Hand-authored enrichment (required_roles for
 the currently-stable figures) lives in HAND_ROLES below and is re-applied on
 every run, so regenerating from FIGURES.md never silently drops it.
 
+Each entry's ``options_schema`` and canvas defaults are read off the live
+``make_<kind>`` signature and docstring (see
+:func:`introspect_entry_options`), which is what lets the CLI, the HTTP API
+and an MCP host publish every keyword a figure accepts without importing
+127 modules to find out.
+
 Author
 ------
 Warith HARCHAOUI <warith.harchaoui@gmail.com>
@@ -15,10 +21,21 @@ Warith HARCHAOUI <warith.harchaoui@gmail.com>
 
 from __future__ import annotations
 
+import contextlib
+import io
 import json
 import re
+import sys
 from pathlib import Path
 from typing import Any
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+# ``_load_module`` is private to the dispatcher, and deliberately reused here:
+# it is the one loader that puts ``scripts/`` on ``sys.path`` first, which the
+# generators rely on to import their sibling helpers by bare name.
+from sprezzature_figures.make_figure import _load_module  # noqa: E402
+from sprezzature_figures.options import introspect_options  # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 FIGURES_MD = REPO_ROOT / "FIGURES.md"
@@ -2286,6 +2303,53 @@ HAND_LIMITS: dict[str, dict[str, int]] = {
 }
 
 
+def introspect_entry_options(filename: str, callable_name: str) -> dict[str, Any]:
+    """Read one generator's keyword surface off the live module.
+
+    The catalogue freezes this so the CLI, the HTTP API and an MCP host
+    can list what a figure accepts without importing 127 modules at
+    start-up. Deriving it here, rather than hand-writing it next to
+    HAND_ROLES, is the only way it stays true: a generator that gains a
+    parameter publishes it on the next catalogue build, and
+    ``tests/test_figure_options.py`` fails when the two have drifted.
+
+    Parameters
+    ----------
+    filename : str
+        The generator's file name inside ``scripts/`` (e.g. ``"make_bar.py"``).
+    callable_name : str
+        The ``make_<kind>`` function to introspect.
+
+    Returns
+    -------
+    dict
+        ``{option name: serialised OptionDefinition}``; empty when the
+        module or the callable cannot be loaded, which the audit already
+        reports separately.
+    """
+    path = REPO_ROOT / "scripts" / filename
+    if not path.exists():
+        return {}
+    module_name = f"_catalog_options_{path.stem}"
+    try:
+        # Generators print to stdout as a side effect of being importable
+        # scripts; swallow that so the build's own output stays readable.
+        with contextlib.redirect_stdout(io.StringIO()):
+            module = _load_module(path, module_name)
+        function = getattr(module, callable_name, None)
+    except Exception as exc:  # noqa: BLE001 - a broken generator must not stop the build
+        print(f"warning: cannot introspect {filename}: {type(exc).__name__}: {exc}")
+        return {}
+    if function is None:
+        return {}
+    return {
+        name: # ``name`` is the key and ``cli_flag`` is derived from it: storing
+        # either would be a second copy to keep in step with the first.
+        option.model_dump(mode="json", exclude={"name", "cli_flag"})
+        for name, option in introspect_options(function).items()
+    }
+
+
 def build_entry(
     kind: str, md_row: dict[str, str] | None, audit_entry: dict[str, Any]
 ) -> dict[str, Any]:
@@ -2306,6 +2370,7 @@ def build_entry(
         The catalog entry, merging `md_row`, `audit_entry`,
         :data:`HAND_ROLES` and :data:`HAND_LIMITS` for `kind`.
     """
+    options = introspect_entry_options(audit_entry["filename"], audit_entry["expected_callable"])
     entry: dict[str, Any] = {
         "kind": kind,
         "label": kind.replace("-", " ").replace("_", " ").title(),
@@ -2325,9 +2390,17 @@ def build_entry(
         "max_recommended_categories": None,
         "default_width": 900,
         "default_height": 600,
-        "options_schema": {},
+        "options_schema": options,
         "warnings": list(audit_entry["errors"]),
     }
+    # The canvas defaults were a flat 900x600 for every kind, which was true
+    # of almost none of them: the generator's own signature is the only place
+    # that knows a bar chart is 745x505. Read them off it when it declares
+    # them, so a caller sizing a container is not told a size that is not used.
+    for axis in ("width", "height"):
+        declared = options.get(axis, {}).get("default")
+        if isinstance(declared, int):
+            entry[f"default_{axis}"] = declared
     hand = HAND_ROLES.get(kind)
     if hand:
         entry["required_roles"] = hand["required_roles"]
