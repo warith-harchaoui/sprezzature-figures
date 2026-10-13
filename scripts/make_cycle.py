@@ -255,6 +255,7 @@ DEMO_DATA: List[Dict[str, Any]] = [
 def build_svg(
     mode: str = "self-contained", accessibility: str = "universal", theme: str = "corporate",
     hub_label: str = "ONE FIELD", hub_title: str = "Winter wheat",
+    title: Optional[str] = None,
 ) -> str:
     """Assemble the full cycle-wheel SVG document as a string.
 
@@ -373,9 +374,12 @@ def build_svg(
     parts.append(f'<rect width="{_WIDTH}" height="{_HEIGHT}" fill="{_BG}"/>')
 
     # ---- title + subtitle ----
+    # The headline the figure writes about its own data, used only when
+    # the caller supplies none.
+    title = title or 'A field is never idle: the winter-wheat year'
     parts.append(
         f'<text x="56" y="66" font-size="33" font-weight="700" '
-        f'fill="{_INK}">A field is never idle: the winter-wheat year</text>'
+        f'fill="{_INK}">{xml_escape(title)}</text>'
     )
     parts.append(
         f'<text x="56" y="100" font-size="18" fill="{_SUBTLE}">'
@@ -620,7 +624,7 @@ def make_cycle(
         Absolute path to the written SVG file.
     """
     _ = data, title  # accepted for dispatcher parity; see docstring
-    svg = build_svg(mode=mode, accessibility=accessibility, theme=theme, hub_label=hub_label, hub_title=hub_title)
+    svg = build_svg(mode=mode, accessibility=accessibility, theme=theme, hub_label=hub_label, hub_title=hub_title, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "cycle")
     return write_svg(dest, svg, theme=theme)
 

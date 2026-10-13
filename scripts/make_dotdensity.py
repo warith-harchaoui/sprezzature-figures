@@ -50,7 +50,7 @@ import math
 import random
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Sequence, Tuple
+from typing import Any, Dict, List, Sequence, Tuple, Optional
 
 # The house-style palette lives in _style (stdlib-only, safe to import
 # without the dataviz tier).
@@ -473,6 +473,7 @@ def _ring_path(ring: Ring, lat0: float, fit: Tuple[float, float, float, float, f
 def build_svg(
     mode: str = "self-contained", accessibility: str = "universal", theme: str = "corporate",
     legend_title: str = "Macro-region",
+    title: Optional[str] = None,
 ) -> str:
     """Assemble the full dot-density-map SVG document as a string.
 
@@ -590,9 +591,12 @@ def build_svg(
     parts.append(f'<rect width="{_WIDTH}" height="{_HEIGHT}" fill="{_BG}"/>')
 
     # ---- title + subtitle ----
+    # The headline the figure writes about its own data, used only when
+    # the caller supplies none.
+    title = title or 'Where the French actually live'
     parts.append(
         f'<text x="{_MAP_X}" y="66" font-size="34" font-weight="700" '
-        f'fill="{_INK}">Where the French actually live</text>'
+        f'fill="{_INK}">{xml_escape(title)}</text>'
     )
     parts.append(
         f'<text x="{_MAP_X}" y="102" font-size="20" fill="{_SUBTLE}">'
@@ -763,7 +767,7 @@ def make_dotdensity(
     (was hardcoded ``"Macro-region"``). ``theme`` is forwarded to
     :func:`build_svg`.
     """
-    svg = build_svg(mode=mode, accessibility=accessibility, theme=theme, legend_title=legend_title)
+    svg = build_svg(mode=mode, accessibility=accessibility, theme=theme, legend_title=legend_title, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "dotdensity")
     return write_svg(dest, svg, theme=theme)
 

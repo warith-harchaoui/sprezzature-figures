@@ -263,6 +263,7 @@ def build_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    title: Optional[str] = None,
 ) -> str:
     """Assemble the full wind-rose SVG document as a string.
 
@@ -403,9 +404,12 @@ def build_svg(
     parts.append(f'<rect width="{_WIDTH}" height="{_HEIGHT}" fill="{_BG}"/>')
 
     # ---- title + subtitle ----
+    # The headline the figure writes about its own data, used only when
+    # the caller supplies none.
+    title = title or 'The wind here comes off the Atlantic'
     parts.append(
         f'<text x="48" y="62" font-size="30" font-weight="700" '
-        f'fill="{_INK}">The wind here comes off the Atlantic</text>'
+        f'fill="{_INK}">{xml_escape(title)}</text>'
     )
     parts.append(
         f'<text x="48" y="94" font-size="17" fill="{_SUBTLE}">'
@@ -602,9 +606,8 @@ def make_windrose(
     Path
         Absolute path to the written SVG file.
     """
-    del title
     svg = build_svg(data, legend_title=legend_title,
-                     mode=mode, accessibility=accessibility, theme=theme)
+                     mode=mode, accessibility=accessibility, theme=theme, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "windrose")
     return write_svg(dest, svg, theme=theme)
 

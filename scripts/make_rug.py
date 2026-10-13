@@ -165,6 +165,7 @@ def build_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    title: Optional[str] = None,
 ) -> str:
     """Assemble the full rug-plot SVG document as a string.
 
@@ -250,9 +251,12 @@ def build_svg(
     )
 
     # ---- Title + subtitle (takeaway) -----------------------------
+    # The headline the figure writes about its own data, used only when
+    # the caller supplies none.
+    title = title or 'The slow tail hides behind a fast average'
     parts.append(
         f'<text x="{PAD_L}" y="60" font-size="30" font-weight="700" '
-        f'fill="{INK}">The slow tail hides behind a fast average</text>'
+        f'fill="{INK}">{xml_escape(title)}</text>'
     )
     parts.append(
         f'<text x="{PAD_L}" y="94" font-size="20" fill="{SECONDARY}">'
@@ -401,7 +405,7 @@ def make_rug(
         Absolute path to the written SVG file.
     """
     _ = title
-    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "rug")
     return write_svg(dest, svg, theme=theme)
 

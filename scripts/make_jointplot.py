@@ -49,7 +49,7 @@ from __future__ import annotations
 import math
 import sys
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional
 
 import numpy as np
 
@@ -154,6 +154,7 @@ def build_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    title: Optional[str] = None,
 ) -> str:
     """Assemble the full joint-plot SVG string.
 
@@ -321,9 +322,12 @@ def build_svg(
     parts.append(f'<rect width="{width}" height="{height}" fill="#FFFFFF"/>')
 
     # --- title + subtitle (the takeaway) -------------------------
+    # The headline the figure writes about its own data, used only when
+    # the caller supplies none.
+    title = title or "A good night\'s sleep sharpens reaction time"
     parts.append(
         f'<text x="{m_left}" y="70" font-size="34" font-weight="700" '
-        f'fill="{ink}">A good night\'s sleep sharpens reaction time</text>'
+        f'fill="{ink}">{xml_escape(title)}</text>'
     )
     parts.append(
         f'<text x="{m_left}" y="108" font-size="19" fill="{secondary}">'
@@ -603,7 +607,7 @@ def make_jointplot(
     """
     _ = title, subtitle
     rows = data if data else DEMO_DATA
-    svg = build_svg(rows, mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(rows, mode=mode, accessibility=accessibility, theme=theme, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "jointplot")
     return write_svg(dest, svg, theme=theme)
 

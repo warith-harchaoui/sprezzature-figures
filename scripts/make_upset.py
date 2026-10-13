@@ -159,6 +159,7 @@ def build_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    title: Optional[str] = None,
 ) -> str:
     """Assemble the full UpSet-plot SVG document as a string.
 
@@ -319,9 +320,12 @@ def build_svg(
     parts.append(f'<rect width="{width}" height="{height}" fill="{_BG}"/>')
 
     # ---- title + subtitle (the takeaway) ----
+    # The headline the figure writes about its own data, used only when
+    # the caller supplies none.
+    title = title or 'Most reachable users live on a single channel'
     parts.append(
         f'<text x="{left_pad:.0f}" y="52" font-size="28" font-weight="700" '
-        f'fill="{_INK}">Most reachable users live on a single channel</text>'
+        f'fill="{_INK}">{xml_escape(title)}</text>'
     )
     parts.append(
         f'<text x="{left_pad:.0f}" y="82" font-size="17" fill="{_SUBTLE}">'
@@ -492,9 +496,8 @@ def make_upset(
     Path
         Absolute path to the written SVG file.
     """
-    del title
     svg = build_svg(data, set_size_title=set_size_title,
-                     mode=mode, accessibility=accessibility, theme=theme)
+                     mode=mode, accessibility=accessibility, theme=theme, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "upset")
     return write_svg(dest, svg, theme=theme)
 
