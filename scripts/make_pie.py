@@ -254,7 +254,15 @@ def build_svg(
         name = str(row[category])
         rolled = int(row.get("_rolled", 0))
 
-        tip_lines = [name, f"{quantity(raw)} · {share * 100:.1f}% of the whole"]
+        # With percentages, the value and the share are the same number, and
+        # "14.3% · 14.3% of the whole" says it twice. Caught by running the
+        # gallery localiser, which lists every visible string: a duplicate
+        # reads as noise in one language and as a translation bug in the next.
+        if unit == "%":
+            measured = f"{share * 100:.1f}% of the whole"
+        else:
+            measured = f"{quantity(raw)} · {share * 100:.1f}% of the whole"
+        tip_lines = [name, measured]
         if rolled:
             tip_lines.append(f"{rolled} smaller categories, summed")
         else:
@@ -264,7 +272,7 @@ def build_svg(
             f'aria-label="{xml_escape(name)}: {share * 100:.1f} percent" '
             f'd="{_sector_path(cx, cy, r_outer, a0, a1)}" fill="{color}" '
             f'stroke="{BG}" stroke-width="2">'
-            f'<title>{xml_escape(f"{name}: {quantity(raw)} ({share * 100:.1f}%)")}</title></path>'
+            f'<title>{xml_escape(f"{name}: {measured}")}</title></path>'
         )
 
         if a1 - a0 >= _INSIDE_MIN_ANGLE:
