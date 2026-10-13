@@ -158,6 +158,7 @@ def build_svg(
     x_label: str = "x",
     y_label: str = "y",
     value_label: str = "f(x, y)",
+    summary: Optional[str] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -180,6 +181,9 @@ def build_svg(
         readable numbers; the count that results is at most this.
     x_label, y_label, value_label : str
         Axis titles and the name of the field.
+    summary : str or None
+        The line stating the grid size, the number of levels and the range.
+        ``None`` composes it.
     mode, accessibility : str, optional
         Forwarded to :func:`_interactive.fullscreen_control` /
         :func:`_style.load_palette`.
@@ -255,10 +259,13 @@ def build_svg(
         f'<text x="{plot_x:.1f}" y="72" font-size="14" fill="{SECONDARY}">'
         f'{xml_escape(subtitle)}</text>'
     )
+    said = summary if summary is not None else (
+        f"{nx} × {ny} grid · {len(cuts)} levels on a geometric sequence · "
+        f"{fmt_number(z_lo)} to {fmt_number(z_hi)}"
+    )
     parts.append(
         f'<text x="{plot_x:.1f}" y="98" font-size="12" fill="{SECONDARY}" '
-        f'font-family="{mono_family}">{nx} × {ny} grid · {len(cuts)} levels on a '
-        f'geometric sequence · {fmt_number(z_lo)} to {fmt_number(z_hi)}</text>'
+        f'font-family="{mono_family}">{xml_escape(said)}</text>'
     )
 
     # ---- the banded fill ----
@@ -407,6 +414,7 @@ def make_contour(
     x_label: str = "x",
     y_label: str = "y",
     value_label: str = "f(x, y)",
+    summary: Optional[str] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -430,6 +438,8 @@ def make_contour(
         How many iso-levels to draw.
     x_label, y_label, value_label : str
         Axis titles and the name of the field.
+    summary : str or None
+        The line stating grid, levels and range; ``None`` composes it.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
     theme : str, optional
@@ -449,7 +459,8 @@ def make_contour(
     svg = build_svg(
         data, title=title, subtitle=subtitle, width=width, height=height,
         x=x, y=y, z=z, levels=levels, x_label=x_label, y_label=y_label,
-        value_label=value_label, mode=mode, accessibility=accessibility, theme=theme,
+        value_label=value_label, summary=summary, mode=mode,
+        accessibility=accessibility, theme=theme,
     )
     dest = Path(out) if out else svg_example_path(__file__, "contour")
     return write_svg(dest, svg, theme=theme)

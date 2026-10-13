@@ -3199,6 +3199,12 @@
         "choices": [],
         "description": "Axis titles and the name of the field."
       },
+      "summary": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "The line stating grid, levels and range; None composes it."
+      },
       "mode": {
         "type": "str",
         "default": "self-contained",
@@ -4417,6 +4423,12 @@
         "default": true,
         "choices": [],
         "description": "Start both value axes at zero."
+      },
+      "caveat": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "The anchoring-and-correlation line; None composes it."
       },
       "mode": {
         "type": "str",
@@ -6663,6 +6675,24 @@
         "default": "Fare ($)",
         "choices": [],
         "description": "Axis titles."
+      },
+      "legend_title": {
+        "type": "str",
+        "default": "Points per bin",
+        "choices": [],
+        "description": "Heading above the colour scale, and the name of its blank swatch."
+      },
+      "empty_label": {
+        "type": "str",
+        "default": "no trips",
+        "choices": [],
+        "description": "Heading above the colour scale, and the name of its blank swatch."
+      },
+      "summary": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "The line stating points, bin size and scale; None composes it."
       },
       "mode": {
         "type": "str",
@@ -9555,6 +9585,12 @@
         "choices": [],
         "description": "Name of that rolled-up wedge."
       },
+      "footer": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "The line at the foot; None composes the default."
+      },
       "mode": {
         "type": "str",
         "default": "self-contained",
@@ -11874,6 +11910,24 @@
         "default": "unit",
         "choices": [],
         "description": "Which keys name the row, order the points, carry the value and the unit."
+      },
+      "window_label": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "The three column headings; window_label=None composes its own."
+      },
+      "latest_label": {
+        "type": "str",
+        "default": "Latest",
+        "choices": [],
+        "description": "The three column headings; window_label=None composes its own."
+      },
+      "change_label": {
+        "type": "str",
+        "default": "Change",
+        "choices": [],
+        "description": "The three column headings; window_label=None composes its own."
       },
       "mode": {
         "type": "str",
