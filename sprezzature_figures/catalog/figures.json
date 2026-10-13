@@ -163,13 +163,13 @@
     "options_schema": {
       "title": {
         "type": "str",
-        "default": "A twelve-month season, and four months of direct memory under it",
+        "default": "A December that returns every year, and one month of memory under it",
         "choices": [],
         "description": "Chart text."
       },
       "subtitle": {
         "type": "str",
-        "default": "Twelve years of monthly demand. Stems outside the band are what a noise series would produce once in twenty.",
+        "default": "Twelve years of monthly demand. A stem outside the band is what white noise produces at one lag in twenty.",
         "choices": [],
         "description": "Chart text."
       },
