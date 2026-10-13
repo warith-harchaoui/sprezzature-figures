@@ -12,6 +12,9 @@ What ships here
   ``status`` (``stable`` / ``experimental`` / ``legacy`` / ``unavailable``).
 - ``GET /kinds/{kind}`` — full :class:`~sprezzature_figures.catalog.FigureDefinition`
   for one kind (required/optional data roles, default size, renderer, …).
+- ``GET /kinds/{kind}/options`` — every keyword that kind accepts besides
+  its rows, with type, default and allowed values. The same list the
+  ``make-figure <kind> --describe`` command prints.
 - ``POST /render/{kind}`` — render a chart and return the file bytes
   directly (``Content-Type`` set from the requested format). Body omits
   ``data`` to fall back to that figure's built-in demo rows, same as
@@ -67,7 +70,8 @@ from pydantic import BaseModel, Field
 
 from . import __version__ as _VERSION
 from .catalog import FigureDefinition, get_figure_definition, list_kinds, resolve_kind
-from .make_figure import _demo_data_for, make_figure
+from .make_figure import make_figure
+from .options import OptionDefinition, OptionError, options_for, validate_options
 
 _MEDIA_TYPES: dict[str, str] = {
     "svg": "image/svg+xml",
@@ -107,7 +111,14 @@ class RenderRequest(BaseModel):
         default=None,
         description="Input rows. Omit to render that figure's built-in demo data.",
     )
-    title: str = Field(default="", description="Chart title.")
+    title: str | None = Field(
+        default=None,
+        description=(
+            "Chart title. Omit it and the figure keeps its own headline over its own "
+            "demo rows, and goes untitled over yours -- where that headline would "
+            "describe data you did not send."
+        ),
+    )
     format: Literal["svg", "png", "pdf", "jpg", "html"] = Field(
         default="svg", description="Output format; picks the response Content-Type."
     )
@@ -115,10 +126,21 @@ class RenderRequest(BaseModel):
         default=None,
         description="Upsample raster/PDF output N times for hi-DPI. Ignored for svg/html.",
     )
+    dark: bool = Field(
+        default=False,
+        description=(
+            "Render for a dark canvas: transparent background and lightened chrome, "
+            "so the figure reads on a dark page. SVG output."
+        ),
+    )
     options: dict[str, Any] = Field(
         default_factory=dict,
-        description="Extra generator-specific kwargs forwarded as-is (e.g. subtitle, width, "
-        "height, bin_count) -- see FIGURES.md for what each kind accepts.",
+        description=(
+            "This figure's own keywords, by name: subtitle, width, height, theme, "
+            "language, axis titles, and whatever else it declares. GET "
+            "/kinds/{kind}/options lists them with their types and defaults. An "
+            "option the figure does not accept is a 422, not a silent no-op."
+        ),
     )
 
 
@@ -142,9 +164,7 @@ class RedrawRequest(BaseModel):
         default=None, description="Skip the model's choice of chart type and use this one."
     )
     title: str | None = Field(default=None, description="Override the title.")
-    hint: str = Field(
-        default="", description="Anything worth telling the model about the image."
-    )
+    hint: str = Field(default="", description="Anything worth telling the model about the image.")
     language: Literal["en", "fr"] = Field(
         default="en", description="Language of the provenance caption written onto the figure."
     )
@@ -321,11 +341,42 @@ def kind_definition(kind: str) -> FigureDefinition:
 
     Accepts a kind name or any of its aliases, case-insensitively, with
     hyphens, underscores and spaces interchangeable.
+
+    `options_schema` here, and `list_kind_options` on its own, carry the
+    other half of the contract: what the figure accepts besides its rows.
     """
     canonical = resolve_kind(kind)
     if canonical is None:
         raise HTTPException(status_code=404, detail=f"No such kind: {kind!r}. See GET /kinds.")
     return get_figure_definition(canonical)
+
+
+@app.get(
+    "/kinds/{kind}/options",
+    tags=["meta"],
+    response_model=list[OptionDefinition],
+    operation_id="list_kind_options",
+    summary="List everything one chart type accepts besides its data",
+)
+def kind_options(kind: str) -> list[OptionDefinition]:
+    """Every keyword this figure takes, with its type, default and allowed values.
+
+    `get_kind` answers "which columns must my rows carry"; this answers
+    "what else can I say about the drawing" -- the subtitle, the canvas
+    size, the axis titles, the theme, the language of the chrome the figure
+    writes itself, and whatever is particular to this one kind (a sankey
+    has `volume_unit` and `stage_names`; a rose has `legend_title`).
+
+    Pass any of them in `render_figure`'s `options` object, under the name
+    given here. `default` is the generator's own, verbatim: where that is a
+    sentence about the built-in demo rows, you are seeing the caption you
+    will want to replace. An option not in this list is refused with a 422
+    rather than ignored.
+    """
+    canonical = resolve_kind(kind)
+    if canonical is None:
+        raise HTTPException(status_code=404, detail=f"No such kind: {kind!r}. See GET /kinds.")
+    return list(options_for(canonical).values())
 
 
 @app.post(
@@ -347,6 +398,12 @@ def render(kind: str, body: RenderRequest = RenderRequest()) -> Response:
     demo rows, which is the fast way to show someone what a kind looks like
     before committing real data to it.
 
+    Everything else about the drawing goes in `options`, keyed by the names
+    `list_kind_options` returns: subtitle, width, height, theme, language,
+    axis titles, and this kind's own. They are checked against that list, so
+    a name this figure does not accept comes back as a 422 naming the ones
+    it does -- it is never dropped in silence.
+
     Do NOT use this to improve a chart that already exists as a picture:
     that is `redraw_figure`.
     """
@@ -354,9 +411,22 @@ def render(kind: str, body: RenderRequest = RenderRequest()) -> Response:
     if canonical is None:
         raise HTTPException(status_code=404, detail=f"No such kind: {kind!r}. See GET /kinds.")
 
-    data = body.data if body.data is not None else _demo_data_for(canonical)
-    kwargs: dict[str, Any] = dict(body.options)
-    kwargs["title"] = body.title
+    try:
+        kwargs: dict[str, Any] = validate_options(canonical, body.options)
+    except OptionError as exc:
+        raise HTTPException(
+            status_code=422,
+            detail=f"{exc} GET /kinds/{canonical}/options lists them with their defaults.",
+        ) from exc
+    # `data=None` is not "no data": it tells the generator to draw its own
+    # demo rows with its own title and subtitle. Reading those rows back and
+    # sending them in would look like caller data from the inside, and the
+    # chrome written for them would be suppressed.
+    data = body.data
+    if body.title is not None:
+        kwargs["title"] = body.title
+    if body.dark:
+        kwargs["dark"] = True
 
     suffix = f".{body.format}"
     with tempfile.TemporaryDirectory(prefix="sprezzature-figures-api-") as tmp:
@@ -570,6 +640,5 @@ def check_render_route(body: CheckRenderRequest) -> list[RenderFindingOut]:
         forbidden_text=tuple(body.forbidden_text),
     )
     return [
-        RenderFindingOut(check=f.check, message=f.message, detail=f.detail or "")
-        for f in findings
+        RenderFindingOut(check=f.check, message=f.message, detail=f.detail or "") for f in findings
     ]
