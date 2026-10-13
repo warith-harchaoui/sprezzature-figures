@@ -305,7 +305,7 @@ data-science,training / loss curve,loss-curve,covered,
 data-science,silhouette plot,silhouette,covered,
 data-science,ACF / PACF correlogram,acf,covered,
 data-science,seasonal decomposition,seasonal-decomposition,covered,
-data-science,forecast fan chart,forecast-fan,gap,a forecast and its widening intervals
+data-science,forecast fan chart,forecast-fan,covered,
 data-science,SHAP beeswarm,shap-beeswarm,gap,"per-feature SHAP values, coloured by feature value"
 data-science,SHAP waterfall,shap-waterfall,gap,"one prediction, decomposed contribution by contribution"
 data-science,partial dependence / ICE,pdp-ice,gap,"average effect of a feature, and per-sample"

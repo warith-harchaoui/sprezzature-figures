@@ -4,11 +4,11 @@ Reproducible audit of every `scripts/make_*.py` generator against the
 `make_<kind>(data, *, out, title, ...) -> Path` contract the dispatcher
 expects. Regenerate with `python tools/audit_generators.py --render`.
 
-- **stable**: 140
+- **stable**: 141
 - **experimental**: 0
 - **legacy**: 0
 - **unavailable**: 0
-- **total**: 140
+- **total**: 141
 
 | kind | status | reachable | callable | demo_data | render | errors |
 |---|---|---|---|---|---|---|
@@ -58,6 +58,7 @@ expects. Regenerate with `python tools/audit_generators.py --render`.
 | `embedding_projector` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `errorbar` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `facet` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `forecast-fan` | stable | **no** | yes | yes | passed | make_figure('forecast-fan') cannot resolve to make_forecast-fan.py: hyphen/underscore normalisation looks for a different filename |
 | `forest` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `funnel` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `gantt` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |

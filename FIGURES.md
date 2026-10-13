@@ -1,6 +1,6 @@
 # Figure Catalogue
 
-140 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type). `choropleth` and `situation_map` moved to their own repo, [sprezzature-maps](https://github.com/warith-harchaoui/sprezzature-maps).
+141 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type). `choropleth` and `situation_map` moved to their own repo, [sprezzature-maps](https://github.com/warith-harchaoui/sprezzature-maps).
 
 Invoke via:
 
@@ -75,6 +75,7 @@ colour-vision-deficiency-safe Okabe-Ito palette); see
 | `errorbar` | make_errorbar.py | Distribution | Point estimate per category with a capped vertical bar spanning an uncertainty interval (95% CI, standard deviation, or min-max). Use for A/B test lifts, experiment arms, or survey means by cohort. |
 | `facet` | make_facet.py | Small multiples | The same chart once per group, every panel on one shared scale. Use when a single chart would carry more series than a reader can untangle: eight lines in one frame is a knot, eight panels of one line each is a comparison. Each panel draws every other group behind it in a pale ink, so a cell is a comparison rather than a chart that happens to sit next to others, and axis labels appear on the left column and bottom row only. Panels are ordered by their last value, largest first, so position in the grid is itself information. Prefer `line-multi` when the series genuinely need to be read against each other point by point, and this when they need to be read one at a time. |
 | `figure` | make_figure.py | n/a | Internal dispatcher; do not invoke directly. |
+| `forecast-fan` | make_forecast-fan.py | Forecast | A forecast drawn with the width of its own uncertainty: history in solid ink, the forecast dashed inside nested intervals that widen with the horizon. The usual fan chart draws history and forecast in the same ink, so the boundary between measurement and projection — the most important line on the chart — is invisible; here it is ruled and labelled. The bands carry their levels, and the chrome says what a level *means* («5 times in 100 the outcome falls outside the widest one») rather than printing a percent sign and hoping. The intervals come from a forecast and a standard error, one column each, so the levels drawn are a presentation choice: ask for 67% and you get 67%, by Acklam's inverse normal rather than a lookup table. |
 | `forest` | make_forest.py | Meta-analysis | Forest plot: effect size with confidence interval per study, plus a pooled diamond. Standard in systematic reviews and meta-analyses. |
 | `funnel` | make_funnel.py | Pipeline | Horizontal bars narrowing to show drop-off across sequential stages (conversion funnel, hiring, clinical trial enrolment). Percentage labels on each stage. |
 | `gantt` | make_gantt.py | Project planning | One horizontal bar per task spanning its start-end day, coloured by owning team, top-to-bottom order follows the data. The default chart for a project plan or roadmap. |

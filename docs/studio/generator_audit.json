@@ -1,6 +1,6 @@
 {
   "summary": {
-    "stable": 140,
+    "stable": 141,
     "experimental": 0,
     "legacy": 0,
     "unavailable": 0
@@ -1120,6 +1120,30 @@
       "status": "stable",
       "errors": [
         "Default output path falls back to a shared assets/ directory"
+      ]
+    },
+    {
+      "kind": "forecast-fan",
+      "filename": "make_forecast-fan.py",
+      "hyphenated_kind": true,
+      "dispatcher_reachable_by_kind": false,
+      "importable": true,
+      "import_error": null,
+      "expected_callable": "make_forecast_fan",
+      "callable_exists": true,
+      "demo_data_exists": true,
+      "demo_data_len": 48,
+      "accepts_data": true,
+      "accepts_out": true,
+      "accepts_title": true,
+      "renderer": "svg",
+      "writes_hardcoded_path": false,
+      "hardcoded_dimensions": true,
+      "render_test": "passed",
+      "render_error": null,
+      "status": "stable",
+      "errors": [
+        "make_figure('forecast-fan') cannot resolve to make_forecast-fan.py: hyphen/underscore normalisation looks for a different filename"
       ]
     },
     {
