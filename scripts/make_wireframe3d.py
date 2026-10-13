@@ -490,6 +490,7 @@ def build_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    title: Optional[str] = None,
 ) -> str:
     """Assemble the full 3D-wireframe SVG document as a string.
 
@@ -562,7 +563,7 @@ def build_svg(
     parts: List[str] = []
 
     # ---- header ----------------------------------------------------------- #
-    title = "A single ripple ripples out, then fades to stillness"
+    title = title or "A single ripple ripples out, then fades to stillness"
     subtitle = (
         "Wave height across a still pond, one second after a single drop"
     )
@@ -729,9 +730,8 @@ def make_wireframe3d(
     Path
         Absolute path to the written SVG file.
     """
-    del title
     xx, yy, zz = _rows_to_grid(list(data)) if data else _sample_surface()
-    svg = build_svg(xx, yy, zz, animate=animate, mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(xx, yy, zz, animate=animate, mode=mode, accessibility=accessibility, theme=theme, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "wireframe3d")
     return write_svg(dest, svg, theme=theme)
 

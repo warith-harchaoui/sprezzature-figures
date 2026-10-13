@@ -284,6 +284,7 @@ def build_svg(
     actual_label: str = "Actual",
     plan_label: str = "Plan",
     shortfall_label: str = "Behind plan (shortfall)",
+    title: Optional[str] = None,
 ) -> str:
     """Assemble the full difference-chart SVG document as a string.
 
@@ -381,7 +382,7 @@ def build_svg(
     defs: List[str] = []
 
     # ---- header ----------------------------------------------------------- #
-    title = "Revenue outran plan all spring, then fell behind through the summer"
+    title = title or "Revenue outran plan all spring, then fell behind through the summer"
     subtitle = ("Actual vs board-planned monthly recurring revenue, "
                 "one fiscal year")
     parts.append(
@@ -724,7 +725,7 @@ def make_difference_chart(
     series = _rows_to_series(rows)
     svg = build_svg(
         series, mode=mode, accessibility=accessibility, theme=theme,
-        actual_label=actual_label, plan_label=plan_label, shortfall_label=shortfall_label,
+        actual_label=actual_label, plan_label=plan_label, shortfall_label=shortfall_label, title=title or None,
     )
     dest = Path(out) if out else svg_example_path(__file__, "difference-chart")
     return write_svg(dest, svg, theme=theme)

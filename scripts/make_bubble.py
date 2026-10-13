@@ -134,6 +134,7 @@ def build_svg(
     theme: str = "corporate",
     region_legend_title: str = "Region",
     size_legend_title: str = "Population (M)",
+    title: Optional[str] = None,
 ) -> str:
     """Assemble the full bubble-chart SVG document as a string.
 
@@ -201,7 +202,7 @@ def build_svg(
     def r_for(pop: float) -> float:
         return r_min + (r_max - r_min) * math.sqrt(max(pop, 0.0) / pop_max)
 
-    title_txt = "The richest places here outlive the poorest by seventeen years"
+    title_txt = title or "The richest places here outlive the poorest by seventeen years"
     subtitle_txt = "Synthetic sample · invented place names, not real countries"
     desc_txt = (
         f"Bubble chart of {len(places)} synthetic places. The horizontal axis is "
@@ -430,7 +431,7 @@ def make_bubble(
     """
     _ = title
     svg = build_svg(data, mode=mode, accessibility=accessibility,
-                     x_label=x_label, y_label=y_label, log_x=log_x, theme=theme, region_legend_title=region_legend_title, size_legend_title=size_legend_title)
+                     x_label=x_label, y_label=y_label, log_x=log_x, theme=theme, region_legend_title=region_legend_title, size_legend_title=size_legend_title, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "bubble")
     return write_svg(dest, svg, theme=theme)
 

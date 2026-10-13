@@ -451,6 +451,7 @@ def build_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    title: Optional[str] = None,
 ) -> str:
     """Assemble the full hemicycle SVG document as a string.
 
@@ -493,7 +494,7 @@ def build_svg(
     lead_name, _lead_lab, lead_seats, lead_hue = max(parties, key=lambda p: p[2])
     short = majority - lead_seats  # how far the largest bloc falls short
 
-    title_txt = (
+    title_txt = title or (
         f"Hung parliament: {lead_name} lead but fall {short} short of a majority"
     )
     subtitle_txt = (
@@ -782,7 +783,7 @@ def make_parliament(
     if not data:
         # No data supplied: match main()/the shipped CLI exactly (build_svg
         # resolves _parties(accessibility) itself).
-        svg = build_svg(None, readout_label=readout_label, mode=mode, accessibility=accessibility, theme=theme)
+        svg = build_svg(None, readout_label=readout_label, mode=mode, accessibility=accessibility, theme=theme, title=title or None)
     else:
         palette = load_palette(accessibility, theme=theme)
         resolved = [

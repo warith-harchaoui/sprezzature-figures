@@ -393,6 +393,7 @@ def _compute_layout(team_color: Optional[Dict[str, str]] = None) -> Tuple[Dict[i
 def build_svg(
     mode: str = "self-contained", accessibility: str = "universal", theme: str = "corporate",
     hub_label: str = "Platform reviewed", hub_sublabel: str = "given vs received",
+    title: Optional[str] = None,
 ) -> str:
     """Assemble the full chord-diagram SVG document as a string.
 
@@ -429,7 +430,7 @@ def build_svg(
 
     parts: List[str] = []
 
-    title_txt = "Platform reviews everyone's code and is rarely reviewed back"
+    title_txt = title or "Platform reviews everyone's code and is rarely reviewed back"
     subtitle_txt = (
         "Cross-team pull-request reviews over one sprint"
     )
@@ -675,7 +676,7 @@ def make_chord(
     True
     """
     _ = data, title
-    svg = build_svg(mode=mode, accessibility=accessibility, theme=theme, hub_label=hub_label, hub_sublabel=hub_sublabel)
+    svg = build_svg(mode=mode, accessibility=accessibility, theme=theme, hub_label=hub_label, hub_sublabel=hub_sublabel, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "chord")
     return write_svg(dest, svg, theme=theme)
 

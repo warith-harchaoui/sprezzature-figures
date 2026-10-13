@@ -410,6 +410,7 @@ def build_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    title: Optional[str] = None,
 ) -> str:
     """Assemble the full radial-tree SVG document as a string.
 
@@ -452,7 +453,7 @@ def build_svg(
     parts: List[str] = []
 
     # --- accessible header text ---
-    title_txt = "The Data Platform API, from the core outward"
+    title_txt = title or "The Data Platform API, from the core outward"
     subtitle_txt = (
         "Four product pillars branch from one core; Ingestion carries the widest "
         "surface."
@@ -844,7 +845,7 @@ def make_radial_tree(
     _ = title
     rows = data if data else DEMO_DATA
     nodes = _rows_to_nodes(rows)
-    svg = build_svg(nodes, legend_title=legend_title, mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(nodes, legend_title=legend_title, mode=mode, accessibility=accessibility, theme=theme, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "radial-tree")
     return write_svg(dest, svg, theme=theme)
 

@@ -322,6 +322,7 @@ def build_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    title: Optional[str] = None,
 ) -> str:
     """Assemble the full tidy-tree SVG document as a string.
 
@@ -392,7 +393,7 @@ def build_svg(
     parts: List[str] = []
 
     # --- accessible header ---
-    title_txt = "A machine-learning syllabus, branch by branch"
+    title_txt = title or "A machine-learning syllabus, branch by branch"
     subtitle_txt = (
         "Supervised learning carries the deepest branch, reaching all the way "
         "down to named algorithms. That is where the course spends most weeks. "
@@ -843,8 +844,7 @@ def make_tree(
     Path
         Absolute path to the written SVG file.
     """
-    del title
-    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "tree")
     return write_svg(dest, svg, theme=theme)
 

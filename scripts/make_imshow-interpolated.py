@@ -46,7 +46,7 @@ from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
 import argparse
 from pathlib import Path
-from typing import Any, Dict, List, Sequence, Tuple
+from typing import Any, Dict, List, Sequence, Tuple, Optional
 
 import numpy as np
 
@@ -233,6 +233,7 @@ def build_svg(
     x_axis_title: str = "Distance east (m)",
     y_axis_title: str = "Distance north (m)",
     legend_title: str = "Moisture",
+    title: Optional[str] = None,
 ) -> str:
     """Assemble the full interpolated-heatmap SVG document as a string.
 
@@ -312,7 +313,7 @@ def build_svg(
     parts: List[str] = []
 
     # ---- header ----------------------------------------------------------- #
-    title = "Soil moisture pools in the field's low hollow"
+    title = title or "Soil moisture pools in the field's low hollow"
     subtitle = (
         "Bilinearly interpolated survey grid (imshow) · deeper blue = wetter soil "
         ""
@@ -609,7 +610,7 @@ def make_imshow_interpolated(
     grid = _rows_to_grid(rows)
     svg = build_svg(
         grid, mode=mode, accessibility=accessibility, theme=theme,
-        x_axis_title=x_axis_title, y_axis_title=y_axis_title, legend_title=legend_title,
+        x_axis_title=x_axis_title, y_axis_title=y_axis_title, legend_title=legend_title, title=title or None,
     )
     dest = Path(out) if out else svg_example_path(__file__, "imshow-interpolated")
     return write_svg(dest, svg, theme=theme)

@@ -751,6 +751,7 @@ def _text_color_for(fill: str) -> str:
 def build_svg(
     mode: str = "self-contained", accessibility: str = "universal", theme: str = "corporate",
     legend_title: str = "PACKAGES BY SHARE",
+    title: Optional[str] = None,
 ) -> str:
     """Assemble the full circle-packing SVG document as a string.
 
@@ -818,7 +819,7 @@ def build_svg(
     parts: List[str] = []
 
     # --- accessible header text ---
-    title_txt = "Where the code lives: two packages carry the weight"
+    title_txt = title or "Where the code lives: two packages carry the weight"
     subtitle_txt = (
         "Every circle is a module sized by lines of code; services/ alone is 43% "
         "of the tree and its payments.py runs to 2,410 lines."
@@ -1214,7 +1215,7 @@ def make_circle_packing(
     True
     """
     _ = data, title
-    svg = build_svg(mode=mode, accessibility=accessibility, theme=theme, legend_title=legend_title)
+    svg = build_svg(mode=mode, accessibility=accessibility, theme=theme, legend_title=legend_title, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "circle-packing")
     return write_svg(dest, svg, theme=theme)
 

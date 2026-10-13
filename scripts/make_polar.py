@@ -174,6 +174,7 @@ def build_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    title: Optional[str] = None,
 ) -> str:
     """Assemble the full polar-plot SVG document as a string.
 
@@ -242,7 +243,7 @@ def build_svg(
     parts: List[str] = []
 
     # ---- header / accessibility ------------------------------------------- #
-    title = "The city breathes twice a day"
+    title = title or "The city breathes twice a day"
     subtitle = (
         "Bike-share departures by hour of an average weekday"
     )
@@ -514,7 +515,7 @@ def make_polar(
     """
     _ = title
     counts = _counts_from_rows(data)
-    svg = build_svg(counts, mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(counts, mode, accessibility=accessibility, theme=theme, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "polar")
     return write_svg(dest, svg, theme=theme)
 

@@ -329,6 +329,7 @@ def build_svg(
     squeeze_caption: str = "",
     language: str = "en",
     price_legend_label: str = "",
+    title: Optional[str] = None,
 ) -> str:
     """Assemble the full Bollinger-band SVG document as a string.
 
@@ -415,7 +416,7 @@ def build_svg(
     squeeze_label = squeeze_label or chrome["squeeze"]
     squeeze_caption = squeeze_caption or chrome["squeeze_caption"]
     price_legend_label = price_legend_label or chrome["legende_prix"]
-    title = chrome["titre"]
+    title = title or chrome["titre"]
     subtitle = chrome["sous_titre"].format(window=window, sigma=sigma_txt)
     titre_lignes = wrap_no_orphan(title, 62)
     sous_titre_lignes = wrap_no_orphan(subtitle, 96)
@@ -943,7 +944,7 @@ def make_bollinger(
     _ = title
     rows = data if data else DEMO_DATA
     price_data = _rows_to_close(rows)
-    svg = build_svg(price_data, window=window, n_sigma=n_sigma, mode=mode, accessibility=accessibility, theme=theme, squeeze_label=squeeze_label, squeeze_caption=squeeze_caption, price_legend_label=price_legend_label, language=language)
+    svg = build_svg(price_data, window=window, n_sigma=n_sigma, mode=mode, accessibility=accessibility, theme=theme, squeeze_label=squeeze_label, squeeze_caption=squeeze_caption, price_legend_label=price_legend_label, language=language, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "bollinger")
     return write_svg(dest, svg, theme=theme)
 

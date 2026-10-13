@@ -198,6 +198,7 @@ def build_svg(
     accessibility: str = "universal",
     theme: str = "corporate",
     bands_label: str = "Bands:",
+    title: Optional[str] = None,
 ) -> str:
     """Assemble the full KPI bullet-graph SVG string.
 
@@ -333,7 +334,7 @@ def build_svg(
     # reader actually sees (a Ralph Eyeball Loop pass caught the previous
     # hardcoded "Three of five ... Revenue, activation and churn beat plan"
     # naming churn as a winner when it was over target -- i.e. missing).
-    headline = f'{_spelled(n_beat).capitalize()} of {_spelled(n)} targets cleared in Q3'
+    headline = title or f'{_spelled(n_beat).capitalize()} of {_spelled(n)} targets cleared in Q3'
     if beating and trailing:
         subtitle = (
             f'{_join_and(beating)} beat plan; {_join_and(trailing)} still trail the goal'
@@ -592,7 +593,7 @@ def make_bullet(
     True
     """
     _ = title
-    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme, bands_label=bands_label)
+    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme, bands_label=bands_label, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "bullet")
     return write_svg(dest, svg, theme=theme)
 

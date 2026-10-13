@@ -506,6 +506,7 @@ def build_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    title: Optional[str] = None,
 ) -> str:
     """Assemble the full Voronoi catchment-map SVG document as a string.
 
@@ -559,7 +560,7 @@ def build_svg(
         count_by_chain[chain] += 1
     share = {c: 100.0 * area_by_chain[c] / total_area for c in chain_order}
 
-    title_txt = "Greenleaf owns the map, not just the most shops"
+    title_txt = title or "Greenleaf owns the map, not just the most shops"
     subtitle_txt = (
         "Nearest-pharmacy catchment areas across the city, coloured by "
         "chain"
@@ -892,8 +893,7 @@ def make_voronoi(
     Path
         Absolute path to the written SVG file.
     """
-    del title
-    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "voronoi")
     return write_svg(dest, svg, theme=theme)
 

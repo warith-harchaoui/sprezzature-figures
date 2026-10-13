@@ -509,6 +509,7 @@ def build_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    title: Optional[str] = None,
 ) -> str:
     """Assemble the full RadViz SVG document as a string.
 
@@ -576,7 +577,7 @@ def build_svg(
         for ci in range(len(CLASSES))
     )
 
-    title = "Seven calliper measurements already separate the wheat varieties"
+    title = title or "Seven calliper measurements already separate the wheat varieties"
     subtitle = (
         "Rosa pulls to size, Kama to Compactness, Canadian to Asymmetry "
         "— the raw features already carry the signal"
@@ -702,7 +703,7 @@ def make_radviz(
         Absolute path to the written SVG file.
     """
     _ = title
-    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "radviz")
     return write_svg(dest, svg, theme=theme)
 

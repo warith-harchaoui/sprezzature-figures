@@ -380,6 +380,7 @@ def build_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    title: Optional[str] = None,
 ) -> str:
     """Assemble the full packed-bubble SVG document as a string.
 
@@ -461,7 +462,7 @@ def build_svg(
         centres = [(PACK_CX + (x - PACK_CX) * fit_scale, PACK_CY + (y - PACK_CY) * fit_scale) for x, y in centres]
         radii = [r * fit_scale for r in radii]
 
-    title_txt = "JavaScript and Python still anchor the working web"
+    title_txt = title or "JavaScript and Python still anchor the working web"
     subtitle_txt = "Share of professional developers using each language, by family"
     desc_txt = (
         "Packed-bubble chart of programming languages. Each bubble is a "
@@ -666,7 +667,7 @@ def make_packed_bubble(
     _ = title
     rows = data if data else DEMO_DATA
     languages = [(str(r["name"]), float(r["share"]), str(r["family"])) for r in rows]
-    svg = build_svg(languages, mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(languages, mode=mode, accessibility=accessibility, theme=theme, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "packed-bubble")
     return write_svg(dest, svg, theme=theme)
 

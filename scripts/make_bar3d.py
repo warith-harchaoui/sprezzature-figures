@@ -439,6 +439,7 @@ def build_svg(
     accessibility: str = "universal",
     language: str = "en",
     theme: str = "corporate",
+    title: Optional[str] = None,
 ) -> str:
     """Assemble the full 3D-bar SVG document as a string.
 
@@ -517,7 +518,7 @@ def build_svg(
     parts: List[str] = []
 
     # ---- header ----------------------------------------------------------- #
-    title = strings["title"]
+    title = title or strings["title"]
     subtitle = strings["subtitle"]
     parts.append(
         f'<svg role="img" aria-label="{title}" '
@@ -740,7 +741,7 @@ def make_bar3d(
     _ = title
     rows = data if data else DEMO_DATA
     grid = _rows_to_grid(rows)
-    svg = build_svg(grid, mode=mode, accessibility=accessibility, language=language, theme=theme)
+    svg = build_svg(grid, mode=mode, accessibility=accessibility, language=language, theme=theme, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "bar3d")
     return write_svg(dest, svg, theme=theme)
 
