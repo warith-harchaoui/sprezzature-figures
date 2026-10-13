@@ -78,6 +78,29 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
             },
         ],
     },
+    "facet": {
+        "required_roles": [
+            {
+                "name": "market",
+                "label": "Panel",
+                "accepted_types": ["categorical"],
+                "required": True,
+            },
+            {
+                "name": "month",
+                "label": "Position along the panel",
+                "accepted_types": ["categorical", "datetime", "numeric"],
+                "required": True,
+            },
+            {
+                "name": "orders",
+                "label": "Value",
+                "accepted_types": ["numeric"],
+                "required": True,
+            },
+        ],
+        "optional_roles": [],
+    },
     "pie": {
         "required_roles": [
             {

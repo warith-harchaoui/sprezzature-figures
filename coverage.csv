@@ -1,14 +1,14 @@
 library,chart,kind,status,note
 seaborn,scatterplot,scatter,covered,
 seaborn,lineplot,line,covered,
-seaborn,relplot,facet,gap,figure-level faceting
+seaborn,relplot,facet,covered,
 seaborn,histplot (univariate),histogram,covered,
 seaborn,histplot (bivariate),hist2d,gap,rectangular 2-D binning
 seaborn,kdeplot (univariate),kde1d,covered,
 seaborn,kdeplot (bivariate),kde2d-contour,covered,
 seaborn,ecdfplot,ecdf,covered,
 seaborn,rugplot,rug,covered,
-seaborn,displot,facet,gap,figure-level faceting
+seaborn,displot,facet,covered,
 seaborn,stripplot,strip,covered,
 seaborn,swarmplot,beeswarm,covered,
 seaborn,boxplot,boxplot,covered,
@@ -17,10 +17,10 @@ seaborn,boxenplot,boxen,covered,
 seaborn,pointplot,pointplot,gap,"point estimate + interval, joined across categories"
 seaborn,barplot,bar,covered,
 seaborn,countplot,bar,covered,a bar chart of counts
-seaborn,catplot,facet,gap,figure-level faceting
+seaborn,catplot,facet,covered,
 seaborn,regplot,regression-ci-band,covered,
 seaborn,residplot,residual,covered,
-seaborn,lmplot,facet,gap,faceted regression
+seaborn,lmplot,facet,covered,
 seaborn,heatmap,heatmap,covered,
 seaborn,clustermap,clustermap,covered,
 seaborn,pairplot,pairplot,covered,
@@ -220,7 +220,7 @@ ggplot2,geom_segment / geom_curve,dumbbell,covered,
 ggplot2,geom_spoke,quiver,covered,
 ggplot2,geom_rug,rug,covered,
 ggplot2,geom_count,bubble,covered,
-ggplot2,facet_wrap / facet_grid,facet,gap,
+ggplot2,facet_wrap / facet_grid,facet,covered,
 ggplot2,geom_map / coord_map,,sibling,sprezzature-maps `choropleth`
 highcharts,packedbubble,packed-bubble,covered,
 highcharts,bullet,bullet,covered,
@@ -257,7 +257,7 @@ datawrapper,range plot,columnrange,covered,
 datawrapper,arrow plot,difference-chart,covered,
 datawrapper,donut / election donut,donut,covered,
 datawrapper,pie,pie,covered,
-datawrapper,multiple pies / small multiples,facet,gap,
+datawrapper,multiple pies / small multiples,facet,covered,
 datawrapper,table,table,gap,
 datawrapper,election hemicycle,parliament,covered,
 datawrapper,locator / choropleth / symbol map,,sibling,sprezzature-maps `choropleth` / `situation_map`

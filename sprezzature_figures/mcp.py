@@ -72,8 +72,10 @@ else:
         name="sprezzature-figures",
         description=(
             "Sprezzature Figures MCP tools: list chart kinds, inspect a kind's "
-            "data-role requirements and the options it accepts, render one of 128 "
-            "chart types from JSON rows, or redraw a chart from a picture of it."
+            # Wrapped after "chart types" on purpose: a number left at the
+            # end of a fragment is invisible to the guards that keep it true.
+            "data-role requirements and the options it accepts, render one of "
+            "129 chart types from JSON rows, or redraw a chart from a picture of it."
         ),
     )
     # Attach the MCP endpoint to the FastAPI app. Newer fastapi-mcp releases

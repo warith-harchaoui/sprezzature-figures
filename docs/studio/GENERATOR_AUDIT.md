@@ -4,11 +4,11 @@ Reproducible audit of every `scripts/make_*.py` generator against the
 `make_<kind>(data, *, out, title, ...) -> Path` contract the dispatcher
 expects. Regenerate with `python tools/audit_generators.py --render`.
 
-- **stable**: 128
+- **stable**: 129
 - **experimental**: 0
 - **legacy**: 0
 - **unavailable**: 0
-- **total**: 128
+- **total**: 129
 
 | kind | status | reachable | callable | demo_data | render | errors |
 |---|---|---|---|---|---|---|
@@ -54,6 +54,7 @@ expects. Regenerate with `python tools/audit_generators.py --render`.
 | `elbow` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `embedding_projector` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `errorbar` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `facet` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `forest` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `funnel` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `gantt` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |

@@ -83,10 +83,55 @@ def test_quoted_catalogue_size_matches_the_catalogue(relative_path: str) -> None
     """Any catalogue count written in prose equals ``len(list_kinds())``."""
     kinds = len(list_kinds())
     text = (REPO_ROOT / relative_path).read_text(encoding="utf-8")
-    claimed = {int(n) for n, in ((m.group(1),) for m in _CLAIM_RE.finditer(text))}
+    claimed = {int(n) for (n,) in ((m.group(1),) for m in _CLAIM_RE.finditer(text))}
     wrong = sorted(n for n in claimed if n != kinds)
     assert not wrong, (
         f"{relative_path} tells the reader the catalogue holds {wrong}, but "
         f"list_kinds() returns {kinds}. Adding a generator without touching this "
         f"file is how the count went stale last time."
     )
+
+
+def test_no_file_quotes_a_stale_catalogue_size() -> None:
+    """Every quoted catalogue size, in every file that quotes one, says the real number.
+
+    Wider than the test above, which watches six files: the number is also
+    written into both READMEs, FIGURES.md, TRIGGERS.md and the two
+    landscape pages. `tools/bump_catalogue_count.py` knows the whole list
+    and sets them all from `list_kinds()`; this runs its `--check` so a
+    figure added without running it fails here rather than shipping a
+    sentence that is off by one.
+
+    Fix by running `python tools/bump_catalogue_count.py`.
+    """
+    import sys
+
+    sys.path.insert(0, str(REPO_ROOT / "tools"))
+    import bump_catalogue_count
+
+    assert bump_catalogue_count.main(["--check"]) == 0
+
+
+def test_a_quoted_size_is_never_left_at_the_end_of_a_wrapped_string() -> None:
+    """A number stranded before a closing quote is a claim no guard can see.
+
+    `api.py` and `mcp.py` both wrapped their description as `"... any of
+    127 "` + `"chart types ..."`. Neither this file's regex nor the bump
+    tool's can cross the quote, so both read it as a bare number and left
+    it stale through two releases. Wrap after the noun, not before it.
+    """
+    stranded = []
+    for relative_path in (*_COUNT_CLAIMING_FILES, "README.md", "LISEZMOI.md"):
+        path = REPO_ROOT / relative_path
+        if not path.exists() or path.suffix not in {".py", ".toml"}:
+            continue
+        for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+            # "of 129 " and "all 129 " introduce a count; ">=3.10,<3.14" is a
+            # version and ends the same way. The determiner is what tells
+            # them apart without a list of exceptions.
+            stranded_count = re.search(
+                r"\b(?:of|all|the|than|only|over)\s+\d{2,4}\s*[\"']\s*$", line
+            )
+            if stranded_count and "127.0.0.1" not in line:
+                stranded.append(f"{relative_path}:{number}: {line.strip()}")
+    assert stranded == [], "a catalogue size no guard can read:\n" + "\n".join(stranded)

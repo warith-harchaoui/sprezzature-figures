@@ -1,6 +1,6 @@
 # Figure Catalogue
 
-128 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type). `choropleth` and `situation_map` moved to their own repo, [sprezzature-maps](https://github.com/warith-harchaoui/sprezzature-maps).
+129 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type). `choropleth` and `situation_map` moved to their own repo, [sprezzature-maps](https://github.com/warith-harchaoui/sprezzature-maps).
 
 Invoke via:
 
@@ -70,6 +70,7 @@ colour-vision-deficiency-safe Okabe-Ito palette); see
 | `elbow` | make_elbow.py | Model selection | Detect the elbow (knee) of a diminishing-returns curve with the Kneedle method: pick k for k-means, the number of PCA components, or `eps` for DBSCAN. An inset draws the normalised difference curve whose peak locates the elbow. |
 | `embedding_projector` | make_embedding_projector.py | Dimensionality reduction | 2-D or 3-D scatter of high-dimensional embeddings coloured by label. Use to inspect whether a learned embedding separates classes or clusters semantically. |
 | `errorbar` | make_errorbar.py | Distribution | Point estimate per category with a capped vertical bar spanning an uncertainty interval (95% CI, standard deviation, or min-max). Use for A/B test lifts, experiment arms, or survey means by cohort. |
+| `facet` | make_facet.py | Small multiples | The same chart once per group, every panel on one shared scale. Use when a single chart would carry more series than a reader can untangle: eight lines in one frame is a knot, eight panels of one line each is a comparison. Each panel draws every other group behind it in a pale ink, so a cell is a comparison rather than a chart that happens to sit next to others, and axis labels appear on the left column and bottom row only. Panels are ordered by their last value, largest first, so position in the grid is itself information. Prefer `line-multi` when the series genuinely need to be read against each other point by point, and this when they need to be read one at a time. |
 | `figure` | make_figure.py | n/a | Internal dispatcher; do not invoke directly. |
 | `forest` | make_forest.py | Meta-analysis | Forest plot: effect size with confidence interval per study, plus a pooled diamond. Standard in systematic reviews and meta-analyses. |
 | `funnel` | make_funnel.py | Pipeline | Horizontal bars narrowing to show drop-off across sequential stages (conversion funnel, hiring, clinical trial enrolment). Percentage labels on each stage. |
