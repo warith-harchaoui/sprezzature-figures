@@ -453,7 +453,7 @@ MAPPING: dict[str, list[tuple[str, str, str, str]]] = {
             "importance with its spread, not a bare bar",
         ),
         ("causal DAG", "causal-dag", "gap", "the DoWhy graph: treatment, outcome, confounders"),
-        ("missing-data matrix", "missing-matrix", "gap", "where the holes are, column by column"),
+        ("missing-data matrix", "missing-matrix", "covered", ""),
         ("control chart (SPC)", "control-chart", "covered", ""),
         ("cohort retention", "cohort-retention", "gap", "triangle of cohorts against age"),
     ],

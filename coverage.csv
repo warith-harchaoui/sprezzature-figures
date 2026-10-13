@@ -311,6 +311,6 @@ data-science,SHAP waterfall,shap-waterfall,gap,"one prediction, decomposed contr
 data-science,partial dependence / ICE,pdp-ice,gap,"average effect of a feature, and per-sample"
 data-science,permutation importance,permutation-importance,gap,"importance with its spread, not a bare bar"
 data-science,causal DAG,causal-dag,gap,"the DoWhy graph: treatment, outcome, confounders"
-data-science,missing-data matrix,missing-matrix,gap,"where the holes are, column by column"
+data-science,missing-data matrix,missing-matrix,covered,
 data-science,control chart (SPC),control-chart,covered,
 data-science,cohort retention,cohort-retention,gap,triangle of cohorts against age

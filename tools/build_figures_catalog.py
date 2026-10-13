@@ -111,6 +111,48 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
         ],
         "optional_roles": [],
     },
+    "missing-matrix": {
+        "required_roles": [
+            {
+                "name": "patient",
+                "label": "Record identifier",
+                "accepted_types": ["categorical", "numeric", "datetime"],
+                "required": True,
+            },
+            {
+                "name": "age",
+                "label": "A field to inspect",
+                "accepted_types": ["numeric", "categorical", "datetime"],
+                "required": True,
+            },
+        ],
+        "optional_roles": [
+            {
+                "name": "weight",
+                "label": "Another field to inspect",
+                "accepted_types": ["numeric", "categorical", "datetime"],
+                "required": False,
+            },
+            {
+                "name": "height",
+                "label": "Another field to inspect",
+                "accepted_types": ["numeric", "categorical", "datetime"],
+                "required": False,
+            },
+            {
+                "name": "referrer",
+                "label": "Another field to inspect",
+                "accepted_types": ["numeric", "categorical", "datetime"],
+                "required": False,
+            },
+            {
+                "name": "consent_date",
+                "label": "Another field to inspect",
+                "accepted_types": ["numeric", "categorical", "datetime"],
+                "required": False,
+            },
+        ],
+    },
     "acf": {
         "required_roles": [
             {
