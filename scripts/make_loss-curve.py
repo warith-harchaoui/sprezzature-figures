@@ -97,7 +97,10 @@ def build_svg(
     series: str = "split",
     y: str = "loss",
     x_label: str = "Epoch",
-    y_label: str = "Loss",
+    # "Model loss" rather than "Loss": the gallery already translates the
+    # bare word in its accounting sense, where a loss is a decrease, and a
+    # flat English-to-French map cannot hold both meanings.
+    y_label: str = "Model loss",
     best_label: Optional[str] = None,
     wasted_label: Optional[str] = None,
     mode: str = "self-contained",
@@ -348,7 +351,7 @@ def make_loss_curve(
     series: str = "split",
     y: str = "loss",
     x_label: str = "Epoch",
-    y_label: str = "Loss",
+    y_label: str = "Model loss",
     best_label: Optional[str] = None,
     wasted_label: Optional[str] = None,
     mode: str = "self-contained",
