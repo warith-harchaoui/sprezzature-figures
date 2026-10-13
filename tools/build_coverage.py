@@ -428,12 +428,7 @@ MAPPING: dict[str, list[tuple[str, str, str, str]]] = {
         ("ACF / PACF correlogram", "acf", "covered", ""),
         ("seasonal decomposition", "seasonal-decomposition", "covered", ""),
         ("forecast fan chart", "forecast-fan", "covered", ""),
-        (
-            "SHAP beeswarm",
-            "shap-beeswarm",
-            "gap",
-            "per-feature SHAP values, coloured by feature value",
-        ),
+        ("SHAP beeswarm", "shap-beeswarm", "covered", ""),
         ("SHAP waterfall", "shap-waterfall", "covered", ""),
         (
             "partial dependence / ICE",

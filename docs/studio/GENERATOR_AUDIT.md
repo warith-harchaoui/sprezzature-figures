@@ -4,11 +4,11 @@ Reproducible audit of every `scripts/make_*.py` generator against the
 `make_<kind>(data, *, out, title, ...) -> Path` contract the dispatcher
 expects. Regenerate with `python tools/audit_generators.py --render`.
 
-- **stable**: 146
+- **stable**: 147
 - **experimental**: 0
 - **legacy**: 0
 - **unavailable**: 0
-- **total**: 146
+- **total**: 147
 
 | kind | status | reachable | callable | demo_data | render | errors |
 |---|---|---|---|---|---|---|
@@ -125,6 +125,7 @@ expects. Regenerate with `python tools/audit_generators.py --render`.
 | `scatter3d` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `seasonal-decomposition` | stable | **no** | yes | yes | passed | make_figure('seasonal-decomposition') cannot resolve to make_seasonal-decomposition.py: hyphen/underscore normalisation looks for a different filename |
 | `sfdp-largegraph` | stable | **no** | yes | yes | passed | make_figure('sfdp-largegraph') cannot resolve to make_sfdp-largegraph.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
+| `shap-beeswarm` | stable | **no** | yes | yes | passed | make_figure('shap-beeswarm') cannot resolve to make_shap-beeswarm.py: hyphen/underscore normalisation looks for a different filename |
 | `shap-waterfall` | stable | **no** | yes | yes | passed | make_figure('shap-waterfall') cannot resolve to make_shap-waterfall.py: hyphen/underscore normalisation looks for a different filename |
 | `silhouette` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `slope` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |

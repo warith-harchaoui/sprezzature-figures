@@ -224,6 +224,36 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
             },
         ],
     },
+    "shap-beeswarm": {
+        "required_roles": [
+            {
+                "name": "feature",
+                "label": "Feature name",
+                "accepted_types": ["categorical"],
+                "required": True,
+            },
+            {
+                "name": "shap",
+                "label": "Contribution for one observation",
+                "accepted_types": ["numeric"],
+                "required": True,
+            },
+            {
+                "name": "observed",
+                "label": "Value the feature took",
+                "accepted_types": ["numeric"],
+                "required": True,
+            },
+        ],
+        "optional_roles": [
+            {
+                "name": "row",
+                "label": "Which observation",
+                "accepted_types": ["numeric", "categorical"],
+                "required": False,
+            },
+        ],
+    },
     "acf": {
         "required_roles": [
             {

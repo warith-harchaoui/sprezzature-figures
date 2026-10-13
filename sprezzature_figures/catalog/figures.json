@@ -13493,6 +13493,188 @@
     ]
   },
   {
+    "kind": "shap-beeswarm",
+    "label": "Shap Beeswarm",
+    "aliases": [
+      "shap beeswarm",
+      "shap_beeswarm"
+    ],
+    "category": "Model explanation",
+    "description": "One swarm per feature: each dot is one row, placed at its contribution and coloured by the value the feature took. The usual version offers \u00ab high \u00bb and \u00ab low \u00bb with no numbers, while the colour range is different on every line \u2014 here both ends of each row carry the feature's own values. It invites \u00ab red on the right, so more is worse \u00bb and never checks it: the **rank correlation between value and contribution is computed per feature**, and a row where the colour does not line up is marked and named. That is the one thing this chart can say about a non-monotone effect and the usual version never does. Dots are packed rather than jittered, so the width of a pile is its density and not a random seed.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "svg",
+    "module": "scripts/make_shap-beeswarm.py",
+    "callable_name": "make_shap_beeswarm",
+    "required_roles": [
+      {
+        "name": "feature",
+        "label": "Feature name",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "shap",
+        "label": "Contribution for one observation",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "observed",
+        "label": "Value the feature took",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [
+      {
+        "name": "row",
+        "label": "Which observation",
+        "accepted_types": [
+          "numeric",
+          "categorical"
+        ],
+        "required": false
+      }
+    ],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 960,
+    "default_height": 660,
+    "options_schema": {
+      "title": {
+        "type": "str",
+        "default": "Five features push one way with their value; tenure pushes up at both ends",
+        "choices": [],
+        "description": "Chart text."
+      },
+      "subtitle": {
+        "type": "str",
+        "default": "One dot per row per feature, placed at its contribution and coloured by the value the feature took.",
+        "choices": [],
+        "description": "Chart text."
+      },
+      "width": {
+        "type": "int",
+        "default": 960,
+        "choices": [],
+        "description": "Canvas size in pixels."
+      },
+      "height": {
+        "type": "int",
+        "default": 660,
+        "choices": [],
+        "description": "Canvas size in pixels."
+      },
+      "feature": {
+        "type": "str",
+        "default": "feature",
+        "choices": [],
+        "description": "Row keys for the feature name, its contribution, and the feature value for that observation."
+      },
+      "value": {
+        "type": "str",
+        "default": "shap",
+        "choices": [],
+        "description": "Row keys for the feature name, its contribution, and the feature value for that observation."
+      },
+      "observed": {
+        "type": "str",
+        "default": "observed",
+        "choices": [],
+        "description": "Row keys for the feature name, its contribution, and the feature value for that observation."
+      },
+      "top": {
+        "type": "int",
+        "default": 0,
+        "choices": [],
+        "description": "Draw only the top features by mean absolute contribution."
+      },
+      "monotone_at": {
+        "type": "float",
+        "default": 0.45,
+        "choices": [],
+        "description": "How strong the rank correlation must be before a row counts as lining up with its colour."
+      },
+      "units": {
+        "type": "str",
+        "default": "log-odds",
+        "choices": [],
+        "description": "What the contributions are measured in."
+      },
+      "x_label": {
+        "type": "str",
+        "default": "Contribution to the prediction",
+        "choices": [],
+        "description": "Axis title."
+      },
+      "mixed_label": {
+        "type": "str",
+        "default": "colour does not line up",
+        "choices": [],
+        "description": "What a row whose colour does not line up is called."
+      },
+      "order_note": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "The line describing the ordering and the colour, and the sentence naming the rows that do not line up; None composes each from the data."
+      },
+      "finding": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "The line describing the ordering and the colour, and the sentence naming the rows that do not line up; None composes each from the data."
+      },
+      "mode": {
+        "type": "str",
+        "default": "self-contained",
+        "choices": [
+          "self-contained",
+          "external",
+          "static"
+        ],
+        "description": "How the SVG carries its interactivity: self-contained ships its own script, external expects the page to supply one, static leaves it out."
+      },
+      "accessibility": {
+        "type": "str",
+        "default": "universal",
+        "choices": [
+          "universal",
+          "high-contrast",
+          "monochrome",
+          "deuteranopia",
+          "protanopia",
+          "tritanopia"
+        ],
+        "description": "Palette accessibility level; universal is the colour-vision-safe default."
+      },
+      "theme": {
+        "type": "str",
+        "default": "corporate",
+        "choices": [
+          "corporate",
+          "academic"
+        ],
+        "description": "Visual theme. Forwarded to build_svg."
+      }
+    },
+    "warnings": [
+      "make_figure('shap-beeswarm') cannot resolve to make_shap-beeswarm.py: hyphen/underscore normalisation looks for a different filename"
+    ]
+  },
+  {
     "kind": "shap-waterfall",
     "label": "Shap Waterfall",
     "aliases": [
