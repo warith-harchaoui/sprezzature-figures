@@ -8871,6 +8871,137 @@
     ]
   },
   {
+    "kind": "pie",
+    "label": "Pie",
+    "aliases": [],
+    "category": "Composition",
+    "description": "The plain pie: one disc, one slice per part of a whole, sorted largest-first clockwise from twelve. Use only for part-of-whole data read at the level of \"about half\", \"about a quarter\", with few parts; past six or seven slices the angles stop being comparable and `bar` sorted descending wins. Differs from `donut` by having no hole: the hole buys a centre label and costs the reader the whole-disc reading a pie exists for. Slices carry their own name and share -- inside when wide enough, outside on a leader line when not -- so there is no legend to look things up in, and the tail past `max_slices` folds into one \"Other\" wedge that says on the figure how many categories it stands for.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "svg",
+    "module": "scripts/make_pie.py",
+    "callable_name": "make_pie",
+    "required_roles": [
+      {
+        "name": "source",
+        "label": "Part",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "share",
+        "label": "Size of the part",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 820,
+    "default_height": 560,
+    "options_schema": {
+      "title": {
+        "type": "str",
+        "default": "Two thirds of the world's electricity still comes from burning something",
+        "choices": [],
+        "description": "Chart text."
+      },
+      "subtitle": {
+        "type": "str",
+        "default": "Share of global generation by source, 2024",
+        "choices": [],
+        "description": "Chart text."
+      },
+      "width": {
+        "type": "int",
+        "default": 820,
+        "choices": [],
+        "description": "Canvas size in pixels."
+      },
+      "height": {
+        "type": "int",
+        "default": 560,
+        "choices": [],
+        "description": "Canvas size in pixels."
+      },
+      "category": {
+        "type": "str",
+        "default": "source",
+        "choices": [],
+        "description": "Which key holds the slice name and the slice size."
+      },
+      "value": {
+        "type": "str",
+        "default": "share",
+        "choices": [],
+        "description": "Which key holds the slice name and the slice size."
+      },
+      "unit": {
+        "type": "str",
+        "default": "%",
+        "choices": [],
+        "description": "Printed after each value; \"%\" attaches without a space."
+      },
+      "max_slices": {
+        "type": "int",
+        "default": 7,
+        "choices": [],
+        "description": "Fold the tail past this many slices into one wedge; 0 draws them all."
+      },
+      "other_label": {
+        "type": "str",
+        "default": "Other",
+        "choices": [],
+        "description": "Name of that rolled-up wedge."
+      },
+      "mode": {
+        "type": "str",
+        "default": "self-contained",
+        "choices": [
+          "self-contained",
+          "external",
+          "static"
+        ],
+        "description": "How the SVG carries its interactivity: self-contained ships its own script, external expects the page to supply one, static leaves it out."
+      },
+      "accessibility": {
+        "type": "str",
+        "default": "universal",
+        "choices": [
+          "universal",
+          "high-contrast",
+          "monochrome",
+          "deuteranopia",
+          "protanopia",
+          "tritanopia"
+        ],
+        "description": "Palette accessibility level; universal is the colour-vision-safe default."
+      },
+      "theme": {
+        "type": "str",
+        "default": "corporate",
+        "choices": [
+          "corporate",
+          "academic"
+        ],
+        "description": "Visual theme. Forwarded to build_svg."
+      }
+    },
+    "warnings": [
+      "Default output path falls back to a shared assets/ directory"
+    ]
+  },
+  {
     "kind": "polar",
     "label": "Polar",
     "aliases": [],

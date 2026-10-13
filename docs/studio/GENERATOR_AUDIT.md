@@ -4,11 +4,11 @@ Reproducible audit of every `scripts/make_*.py` generator against the
 `make_<kind>(data, *, out, title, ...) -> Path` contract the dispatcher
 expects. Regenerate with `python tools/audit_generators.py --render`.
 
-- **stable**: 127
+- **stable**: 128
 - **experimental**: 0
 - **legacy**: 0
 - **unavailable**: 0
-- **total**: 127
+- **total**: 128
 
 | kind | status | reachable | callable | demo_data | render | errors |
 |---|---|---|---|---|---|---|
@@ -90,6 +90,7 @@ expects. Regenerate with `python tools/audit_generators.py --render`.
 | `pareto` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `parliament` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `pictorial` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `pie` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `polar` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `population-pyramid` | stable | **no** | yes | yes | passed | make_figure('population-pyramid') cannot resolve to make_population-pyramid.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
 | `ppplot` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
