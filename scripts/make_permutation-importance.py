@@ -46,8 +46,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _scale import nice_ticks_range  # noqa: E402
+from _textfit import fit_font_size  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY, load_palette  # noqa: E402
 from _svg import (  # noqa: E402
+    fmt_measured,
     fmt_number,
     foreground_tip_css,
     svg_open,
@@ -124,7 +126,7 @@ def _standard_error(values: List[float]) -> float:
 
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
-    title: str = "Two of nine columns are not distinguishable from noise, and one is worse than noise",
+    title: str = "Two columns cannot be told from noise, and one is worse than noise",
     subtitle: str = "Drop in held-out AUC when each column is shuffled, ten shuffles per column, mean with two standard errors.",
     width: int = 940,
     height: int = 620,
@@ -209,6 +211,12 @@ def build_svg(
     solid = palette.get("Blue", "#007AFF")
     adverse = palette.get("Orange", "#FF9500")
 
+    # The precision the numbers are quoted at, read off the tightest
+    # interval on the chart: fmt_number would print "0.04 to 0.04" for an
+    # interval that runs 0.0414 to 0.0431 and lose the whole point.
+    errors = [error_multiple * error for _, _, error, _ in summary if error > 0.0]
+    precision = min(errors) if errors else 0.0
+
     reach = [mean + error_multiple * error for _, mean, error, _ in summary]
     reach += [mean - error_multiple * error for _, mean, error, _ in summary] + [0.0]
     ticks = nice_ticks_range(min(reach), max(reach), 5)
@@ -258,8 +266,9 @@ def build_svg(
     parts.append(
         f'<desc id="perm-desc">Permutation importance for {len(summary)} columns, '
         f'ordered by mean drop from {xml_escape(summary[0][0])} at '
-        f'{fmt_number(summary[0][1])} down to {xml_escape(summary[-1][0])} at '
-        f'{fmt_number(summary[-1][1])}. {xml_escape(said_measure)}. '
+        f'{fmt_measured(summary[0][1], precision)} down to '
+        f'{xml_escape(summary[-1][0])} at '
+        f'{fmt_measured(summary[-1][1], precision)}. {xml_escape(said_measure)}. '
         f'{xml_escape(" ".join(said_parts))} {xml_escape(caveat)}.</desc>'
     )
     parts.append(
@@ -272,9 +281,13 @@ def build_svg(
         "</style>"
     )
     parts.append(f'<rect width="{width}" height="{height}" fill="{BG}"/>')
+    # Sized to the canvas rather than fixed at 22. The academic theme sets
+    # a serif face that runs wider than the sans one, and a title that fits
+    # in corporate came out with its last two words off the edge.
+    title_size = fit_font_size(title, width - 96.0, 22.0, min_px=15.0)
     parts.append(
-        f'<text x="40" y="46" font-size="22" font-weight="700" fill="{INK}" '
-        f'letter-spacing="-0.3">{xml_escape(title)}</text>'
+        f'<text x="40" y="46" font-size="{title_size:.1f}" font-weight="700" '
+        f'fill="{INK}" letter-spacing="-0.3">{xml_escape(title)}</text>'
     )
     for line_index, line in enumerate(wrap_no_orphan(subtitle, 106)[:2]):
         parts.append(
@@ -353,18 +366,19 @@ def build_svg(
         )
         parts.append(
             f'<rect id="bar-{index}" class="bar hit" tabindex="0" role="img" '
-            f'aria-label="{xml_escape(name)}: {fmt_number(mean)} mean drop over {count} '
-            f'shuffles, interval {fmt_number(bar_low)} to {fmt_number(bar_high)}'
+            f'aria-label="{xml_escape(name)}: {fmt_measured(mean, precision)} mean drop '
+            f'over {count} shuffles, interval {fmt_measured(bar_low, precision)} '
+            f'to {fmt_measured(bar_high, precision)}'
             f'{", crossing zero" if spans_zero else ""}" '
             f'x="{plot_x:.1f}" y="{middle - row_h / 2:.1f}" width="{plot_w:.1f}" '
             f'height="{row_h:.1f}" fill="transparent">'
-            f'<title>{xml_escape(name)}: {fmt_number(mean)}</title></rect>'
+            f'<title>{xml_escape(name)}: {fmt_measured(mean, precision)}</title></rect>'
         )
         tips.append(
             tooltip_bubble(
                 px(mean), middle,
-                [name, f"{fmt_number(mean)} over {count} shuffles",
-                 f"{fmt_number(bar_low)} to {fmt_number(bar_high)}"],
+                [name, f"{fmt_measured(mean, precision)} over {count} shuffles",
+                 f"{fmt_measured(bar_low, precision)} to {fmt_measured(bar_high, precision)}"],
                 canvas_w=width, canvas_h=height, ink=INK, secondary=SECONDARY,
                 border=GRIDLINE, elem_id=f"bartip-{index}",
             )
@@ -380,7 +394,7 @@ def make_permutation_importance(
     data: Optional[List[Dict[str, Any]]] = None,
     *,
     out: Optional[str] = None,
-    title: str = "Two of nine columns are not distinguishable from noise, and one is worse than noise",
+    title: str = "Two columns cannot be told from noise, and one is worse than noise",
     subtitle: str = "Drop in held-out AUC when each column is shuffled, ten shuffles per column, mean with two standard errors.",
     width: int = 940,
     height: int = 620,

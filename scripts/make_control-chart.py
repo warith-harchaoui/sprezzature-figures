@@ -39,7 +39,6 @@ Author
 
 from __future__ import annotations
 
-import math
 import random
 import sys
 from pathlib import Path
@@ -51,6 +50,7 @@ from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _scale import nice_ticks_range  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY, load_palette  # noqa: E402
 from _svg import (  # noqa: E402
+    fmt_measured,
     fmt_number,
     foreground_tip_css,
     svg_open,
@@ -364,20 +364,8 @@ def build_svg(
         return plot_y + plot_h - (value - axis_low) / (axis_high - axis_low) * plot_h
 
     def measured(value: float) -> str:
-        """`value` with enough decimals to tell the limits apart.
-
-        The house formatter rounds anything over ten to a whole number,
-        which is right for an axis tick and wrong here: a fill weight
-        near 500 with a sigma of 0.83 has limits that differ from the
-        centre in the first decimal, and "500 / 503 / 498" hides exactly
-        the quantity the chart is about. The precision is read off sigma,
-        so a process measured in thousandths gets thousandths and one
-        measured in tens does not get a spurious decimal point.
-        """
-        if sigma <= 0.0:
-            return fmt_number(value)
-        places = max(0, min(4, 1 - int(math.floor(math.log10(sigma)))))
-        return f"{value:.{places}f}"
+        """`value` at the precision sigma makes meaningful."""
+        return fmt_measured(value, sigma)
 
     limit_lines = (
         [limit_note] if limit_note is not None
