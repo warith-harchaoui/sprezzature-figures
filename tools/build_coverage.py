@@ -434,12 +434,7 @@ MAPPING: dict[str, list[tuple[str, str, str, str]]] = {
             "gap",
             "per-feature SHAP values, coloured by feature value",
         ),
-        (
-            "SHAP waterfall",
-            "shap-waterfall",
-            "gap",
-            "one prediction, decomposed contribution by contribution",
-        ),
+        ("SHAP waterfall", "shap-waterfall", "covered", ""),
         (
             "partial dependence / ICE",
             "pdp-ice",

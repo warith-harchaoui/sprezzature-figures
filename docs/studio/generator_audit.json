@@ -1,6 +1,6 @@
 {
   "summary": {
-    "stable": 145,
+    "stable": 146,
     "experimental": 0,
     "legacy": 0,
     "unavailable": 0
@@ -2744,6 +2744,30 @@
       "errors": [
         "make_figure('sfdp-largegraph') cannot resolve to make_sfdp-largegraph.py: hyphen/underscore normalisation looks for a different filename",
         "Default output path falls back to a shared assets/ directory"
+      ]
+    },
+    {
+      "kind": "shap-waterfall",
+      "filename": "make_shap-waterfall.py",
+      "hyphenated_kind": true,
+      "dispatcher_reachable_by_kind": false,
+      "importable": true,
+      "import_error": null,
+      "expected_callable": "make_shap_waterfall",
+      "callable_exists": true,
+      "demo_data_exists": true,
+      "demo_data_len": 14,
+      "accepts_data": true,
+      "accepts_out": true,
+      "accepts_title": true,
+      "renderer": "svg",
+      "writes_hardcoded_path": false,
+      "hardcoded_dimensions": true,
+      "render_test": "passed",
+      "render_error": null,
+      "status": "stable",
+      "errors": [
+        "make_figure('shap-waterfall') cannot resolve to make_shap-waterfall.py: hyphen/underscore normalisation looks for a different filename"
       ]
     },
     {
