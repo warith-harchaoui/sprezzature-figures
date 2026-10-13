@@ -56,6 +56,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _render import svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
+from _project3d import project as project3d  # noqa: E402
 from _style import forced_color_patterns, leveled_colors, os_adaptive_style, os_dark_style  # noqa: E402
 from _svg import fmt_compact  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
@@ -241,36 +242,6 @@ def _rows_to_clusters(
 # --------------------------------------------------------------------------- #
 # 3D -> 2D projection (the reference math the embedded JS mirrors exactly)     #
 # --------------------------------------------------------------------------- #
-def _rotate(pts: np.ndarray, elev_deg: float, azim_deg: float) -> np.ndarray:
-    """Rotate model-space points by an azimuth then an elevation.
-
-    The azimuth turns the cloud about the world ``z`` (up) axis; the
-    elevation then tips the camera down toward the floor. Working on the
-    stacked ``(N, 3)`` array keeps the whole cloud in one matmul.
-
-    Parameters
-    ----------
-    pts : numpy.ndarray
-        ``(N, 3)`` points ``(x, y, z)`` in model space.
-    elev_deg, azim_deg : float
-        Elevation and azimuth of the camera, in degrees.
-
-    Returns
-    -------
-    numpy.ndarray
-        ``(N, 3)`` rotated points in camera space.
-    """
-    az = np.radians(azim_deg)
-    el = np.radians(elev_deg)
-    # Azimuth: rotate about z.
-    ca, sa = np.cos(az), np.sin(az)
-    rz = np.array([[ca, -sa, 0.0], [sa, ca, 0.0], [0.0, 0.0, 1.0]])
-    # Elevation: rotate about x (tip toward viewer).
-    ce, se = np.cos(el), np.sin(el)
-    rx = np.array([[1.0, 0.0, 0.0], [0.0, ce, -se], [0.0, se, ce]])
-    return pts @ rz.T @ rx.T
-
-
 def _project(
     xs: np.ndarray,
     ys: np.ndarray,
@@ -284,63 +255,19 @@ def _project(
     cy: float,
     zoom: float = 1.0,
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-    """Rotate the cloud and project it to pixel space with a light perspective.
+    """Project the cloud, squared off against the smaller plot dimension.
 
-    This is the *reference* projection: the embedded JavaScript reproduces
-    the exact same arithmetic (rotation, perspective divide, fit-scale,
-    ``zoom`` multiplier) so the server-rendered still and the browser's
-    first interactive frame coincide.
-
-    Parameters
-    ----------
-    xs, ys, zs : numpy.ndarray
-        ``(N,)`` model-space coordinates from :func:`_sample_clusters`.
-    elev_deg, azim_deg : float
-        Camera elevation and azimuth, in degrees.
-    plot_w, plot_h : float
-        Pixel extent available for the projected cloud.
-    cx, cy : float
-        Pixel centre the cloud is drawn around.
-    zoom : float, optional
-        Multiplier on the fit scale (1.0 = the still's framing). The wheel
-        handler drives this in the browser; the still always uses 1.0.
-
-    Returns
-    -------
-    tuple of numpy.ndarray
-        ``(PX, PY, DEPTH)``, each ``(N,)`` — pixel columns, pixel rows, and
-        a camera-depth value (larger = nearer the viewer) used for both
-        painter ordering and the depth size/opacity cue.
+    The arithmetic lives in :mod:`_project3d`; this names the one choice
+    the cloud makes, which is to fit the *box* so the axis gizmo's
+    vertical arm stays inside the frame. The embedded JavaScript
+    reproduces the same arithmetic so the still and the browser's first
+    frame coincide.
     """
-    pts = np.column_stack([xs, ys, zs])
-    cam = _rotate(pts, elev_deg, azim_deg)
-    cx_m, cy_m, cz_m = cam[:, 0], cam[:, 1], cam[:, 2]
+    return project3d(
+        xs, ys, zs, elev_deg=elev_deg, azim_deg=azim_deg, plot_w=plot_w,
+        plot_h=plot_h, cx=cx, cy=cy, zoom=zoom, fit="box",
+    )
 
-    # Simple perspective: points farther from the camera (larger y in camera
-    # space after the tip) shrink slightly. Camera sits down the -y axis.
-    dist = 4.0
-    denom = dist - cy_m
-    persp = dist / denom
-    sx = cx_m * persp
-    sy = cz_m * persp  # camera-space up maps to screen up
-
-    # Scale to fit the plot box (model x,y span ~[-1.4, 1.4] after rotation,
-    # once the axis-gizmo corner is included). A slightly wider span leaves
-    # head-room so the vertical +z arm clears the title band.
-    span = 1.55
-    scale = min(plot_w, plot_h) / (2.0 * span) * zoom
-    px = cx + sx * scale
-    py = cy - sy * scale  # SVG y grows downward
-
-    # Depth for ordering / sizing: nearer the camera -> larger. Camera looks
-    # down -y, so smaller cy_m is nearer; negate so "near" is the max.
-    depth = -cy_m
-    return px, py, depth
-
-
-# --------------------------------------------------------------------------- #
-# Colour helpers                                                               #
-# --------------------------------------------------------------------------- #
 def _lerp_hex(a: str, b: str, t: float) -> str:
     """Linearly interpolate two ``#RRGGBB`` colours in sRGB space.
 
