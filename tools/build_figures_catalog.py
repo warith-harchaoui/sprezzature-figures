@@ -94,6 +94,23 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
         ],
         "optional_roles": [],
     },
+    "control-chart": {
+        "required_roles": [
+            {
+                "name": "batch",
+                "label": "Order of production",
+                "accepted_types": ["numeric", "datetime"],
+                "required": True,
+            },
+            {
+                "name": "weight",
+                "label": "Measured value",
+                "accepted_types": ["numeric"],
+                "required": True,
+            },
+        ],
+        "optional_roles": [],
+    },
     "acf": {
         "required_roles": [
             {

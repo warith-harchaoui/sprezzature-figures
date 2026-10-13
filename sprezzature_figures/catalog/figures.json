@@ -3408,6 +3408,239 @@
     ]
   },
   {
+    "kind": "control-chart",
+    "label": "Control Chart",
+    "aliases": [
+      "control chart",
+      "control_chart"
+    ],
+    "category": "Process control",
+    "description": "An individuals chart: one point per unit, a centre line, control limits, and four run rules applied and named when they fire. The usual version computes its limits from the standard deviation of every point, which is the error that empties the chart of meaning \u2014 a process that shifted has a large overall standard deviation *because* it shifted, so the limits widen until they swallow the shift they exist to catch. Limits here come from the mean moving range; `limit_from=\"sd\"` draws the other version, and on the demo data that switch silences both sigma rules entirely. It also says, on the canvas, that these are control limits and not specification limits \u2014 the single most common confusion in the field \u2014 and draws spec limits apart, in another ink, when given.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "svg",
+    "module": "scripts/make_control-chart.py",
+    "callable_name": "make_control_chart",
+    "required_roles": [
+      {
+        "name": "batch",
+        "label": "Order of production",
+        "accepted_types": [
+          "numeric",
+          "datetime"
+        ],
+        "required": true
+      },
+      {
+        "name": "weight",
+        "label": "Measured value",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 900,
+    "default_height": 580,
+    "options_schema": {
+      "title": {
+        "type": "str",
+        "default": "The run rule saw the shift at batch 43; a crossing came only at 45",
+        "choices": [],
+        "description": "Chart text."
+      },
+      "subtitle": {
+        "type": "str",
+        "default": "Sixty batches of fill weight. From the overall standard deviation instead, neither sigma rule fires.",
+        "choices": [],
+        "description": "Chart text."
+      },
+      "width": {
+        "type": "int",
+        "default": 900,
+        "choices": [],
+        "description": "Canvas size in pixels."
+      },
+      "height": {
+        "type": "int",
+        "default": 580,
+        "choices": [],
+        "description": "Canvas size in pixels."
+      },
+      "x": {
+        "type": "str",
+        "default": "batch",
+        "choices": [],
+        "description": "Row keys for the sequence column and the measured column."
+      },
+      "y": {
+        "type": "str",
+        "default": "weight",
+        "choices": [],
+        "description": "Row keys for the sequence column and the measured column."
+      },
+      "sigma_multiplier": {
+        "type": "float",
+        "default": 3.0,
+        "choices": [],
+        "description": "How many estimated standard deviations the control limits sit at."
+      },
+      "limit_from": {
+        "type": "str",
+        "default": "moving-range",
+        "choices": [
+          "moving-range",
+          "sd"
+        ],
+        "description": "\"moving-range\" or \"sd\"."
+      },
+      "rules": {
+        "type": "str_list",
+        "default": null,
+        "choices": [
+          "beyond",
+          "run",
+          "trend",
+          "two-of-three"
+        ],
+        "description": "Which run rules to apply; None applies all four."
+      },
+      "run_length": {
+        "type": "int",
+        "default": 9,
+        "choices": [],
+        "description": "Lengths that count as a run and as a trend."
+      },
+      "trend_length": {
+        "type": "int",
+        "default": 6,
+        "choices": [],
+        "description": "Lengths that count as a run and as a trend."
+      },
+      "centre": {
+        "type": "float",
+        "default": null,
+        "choices": [],
+        "description": "The centre line; None uses the mean."
+      },
+      "spec_low": {
+        "type": "float",
+        "default": null,
+        "choices": [],
+        "description": "Specification limits, drawn apart from the control limits."
+      },
+      "spec_high": {
+        "type": "float",
+        "default": null,
+        "choices": [],
+        "description": "Specification limits, drawn apart from the control limits."
+      },
+      "zones": {
+        "type": "bool",
+        "default": true,
+        "choices": [],
+        "description": "Shade the one and two sigma zones."
+      },
+      "centre_label": {
+        "type": "str",
+        "default": "centre",
+        "choices": [],
+        "description": "Captions on the centre line and on the two control limits; each is drawn with its value beside it."
+      },
+      "upper_label": {
+        "type": "str",
+        "default": "upper control limit",
+        "choices": [],
+        "description": "Captions on the centre line and on the two control limits; each is drawn with its value beside it."
+      },
+      "lower_label": {
+        "type": "str",
+        "default": "lower control limit",
+        "choices": [],
+        "description": "Captions on the centre line and on the two control limits; each is drawn with its value beside it."
+      },
+      "spec_low_label": {
+        "type": "str",
+        "default": "spec low",
+        "choices": [],
+        "description": "Captions on the two specification limits."
+      },
+      "spec_high_label": {
+        "type": "str",
+        "default": "spec high",
+        "choices": [],
+        "description": "Captions on the two specification limits."
+      },
+      "x_label": {
+        "type": "str",
+        "default": "Batch",
+        "choices": [],
+        "description": "Axis titles."
+      },
+      "y_label": {
+        "type": "str",
+        "default": "Fill weight (g)",
+        "choices": [],
+        "description": "Axis titles."
+      },
+      "limit_note": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "The line saying where the limits came from, and the sentence naming what fired; None composes each from the data."
+      },
+      "finding": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "The line saying where the limits came from, and the sentence naming what fired; None composes each from the data."
+      },
+      "mode": {
+        "type": "str",
+        "default": "self-contained",
+        "choices": [
+          "self-contained",
+          "external",
+          "static"
+        ],
+        "description": "How the SVG carries its interactivity: self-contained ships its own script, external expects the page to supply one, static leaves it out."
+      },
+      "accessibility": {
+        "type": "str",
+        "default": "universal",
+        "choices": [
+          "universal",
+          "high-contrast",
+          "monochrome",
+          "deuteranopia",
+          "protanopia",
+          "tritanopia"
+        ],
+        "description": "Palette accessibility level; universal is the colour-vision-safe default."
+      },
+      "theme": {
+        "type": "str",
+        "default": "corporate",
+        "choices": [
+          "corporate",
+          "academic"
+        ],
+        "description": "Visual theme. Forwarded to build_svg."
+      }
+    },
+    "warnings": [
+      "make_figure('control-chart') cannot resolve to make_control-chart.py: hyphen/underscore normalisation looks for a different filename"
+    ]
+  },
+  {
     "kind": "convex-hull",
     "label": "Convex Hull",
     "aliases": [
