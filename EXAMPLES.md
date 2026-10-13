@@ -136,15 +136,27 @@ make-figure treemap --data budget.csv --out budget@3x.png --scale 3
 # Bind columns to roles when the headers differ (repeatable)
 make-figure bar --data gdp.csv --map region=Country --map value=GDP --out gdp.png
 
+# Ask a figure what it needs and what it accepts, with every default
+make-figure sankey --describe
+make-figure sankey --help          # the same options, as flags
+
+# Set them: one flag per option, or --set for the scriptable spelling
+make-figure bar --out sales.svg --subtitle "FY-2024" --width 1200 --theme academic
+make-figure sankey --out flow.svg --set volume-unit=sessions
+make-figure heatmap --out heat.svg --language fr --accessibility high-contrast
+
 # Ask which chart types fit your file, then render the best one
-# (needs the [cli] + [studio] extras; no model involved)
-sprezzature-figures recommend --data sales.csv
-sprezzature-figures recommend --data sales.csv --render best.png
+# (needs the [studio] extra; no model involved)
+make-figure recommend --data sales.csv
+make-figure recommend --data sales.csv --render best.png
 
 # State your analytical goal so the ranking picks the figure for that intent
 # (comparison, trend, distribution, composition, relationship, flow,
 #  hierarchy, geography, model_evaluation) instead of readability alone
-sprezzature-figures recommend --data sales.csv --intent comparison
+make-figure recommend --data sales.csv --intent comparison
+
+# Check a rendered figure for what its markup can prove wrong (exit 1 on a finding)
+make-figure check sales.svg --expect-title "Sales by region"
 ```
 
 `budget.csv` above is just a table whose columns match the chart's roles, e.g.

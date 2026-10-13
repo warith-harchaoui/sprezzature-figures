@@ -144,16 +144,30 @@ make-figure treemap --data budget.csv --out budget@3x.png --scale 3
 # (répétable)
 make-figure bar --data pib.csv --map region=Pays --map value=PIB --out pib.png
 
+# Demander à une figure ce qu'elle exige et ce qu'elle accepte, avec les
+# valeurs par défaut
+make-figure sankey --describe
+make-figure sankey --help          # les mêmes options, en drapeaux
+
+# Les passer : un drapeau par option, ou --set pour l'écriture scriptable
+make-figure bar --out ventes.svg --subtitle "Exercice 2024" --width 1200 --theme academic
+make-figure sankey --out flux.svg --set volume-unit=sessions
+make-figure heatmap --out chaleur.svg --language fr --accessibility high-contrast
+
 # Demander quels types de graphiques conviennent à son fichier, puis rendre
-# le meilleur (nécessite les extras [cli] + [studio], aucun modèle requis)
-sprezzature-figures recommend --data ventes.csv
-sprezzature-figures recommend --data ventes.csv --render meilleur.png
+# le meilleur (nécessite l'extra [studio], aucun modèle requis)
+make-figure recommend --data ventes.csv
+make-figure recommend --data ventes.csv --render meilleur.png
 
 # Préciser son objectif d'analyse pour que le classement choisisse la figure
 # adaptée à cette intention (comparison, trend, distribution, composition,
 # relationship, flow, hierarchy, geography, model_evaluation) plutôt que la
 # seule lisibilité
-sprezzature-figures recommend --data ventes.csv --intent comparison
+make-figure recommend --data ventes.csv --intent comparison
+
+# Vérifier une figure rendue sur ce que son balisage peut démentir
+# (code de sortie 1 au moindre constat)
+make-figure check ventes.svg --expect-title "Ventes par région"
 ```
 
 Le fichier `budget.csv` ci-dessus n'est qu'un tableau dont les colonnes

@@ -87,16 +87,27 @@ ce graphique ? », « passer la boucle Eyeball », « contrôle qualité visuel 
 | Job | Library | CLI | MCP tool |
 |---|---|---|---|
 | List the catalogue | `list_kinds()` | `make-figure --list` | `list_kinds` |
-| What columns a kind needs | `get_figure_definition(kind)` | — | `get_kind` |
-| Which kind fits this data | — | `sprezzature-figures recommend --data f.csv` | `recommend_figures` |
+| What columns a kind needs | `get_figure_definition(kind)` | `make-figure <kind> --describe` | `get_kind` |
+| What else a kind accepts | `options_for(kind)` | `make-figure <kind> --describe` | `list_kind_options` |
+| Which kind fits this data | — | `make-figure recommend --data f.csv` | `recommend_figures` |
 | Draw it | `make_figure(kind, rows, out=…)` | `make-figure <kind> --data f.csv` | `render_figure` |
-| Redraw from a picture | `redraw(image, out=…)` | `sprezzature-figures redraw img.png` | `redraw_figure` |
+| Set a figure's own options | `make_figure(kind, rows, width=…)` | `make-figure <kind> --width …` | `render_figure` (`options`) |
+| Redraw from a picture | `redraw(image, out=…)` | `make-figure redraw img.png` | `redraw_figure` |
+| Check a rendered SVG | `check_render(svg)` | `make-figure check fig.svg` | `check_render` |
 | Visual QA on a rendered figure | — | `ralph_eyeball_loop.py <file>` | *(not an MCP tool)* |
+
+Every CLI cell works with `sprezzature-figures` too (`render`, `describe`,
+`list`, `recommend`, `redraw`, `check`): the Click twin is the same commands
+through the same code, behind the `[cli]` extra.
 
 The dashes are honest gaps, not omissions: the eyeball loop needs a browser
 and a model and does not belong behind an HTTP request, and `recommend` has
 no library alias because its ranking lives in the Studio package rather than
 the core.
+
+An option a figure does not accept is refused, not ignored — by the command
+lines with the nearest real name, by the API with a 422. Ask
+`list_kind_options` (or `--describe`) before guessing one.
 
 ---
 

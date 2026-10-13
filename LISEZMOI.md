@@ -111,6 +111,32 @@ make-figure bar --data pib.csv --map region=Pays --map value=PIB --out pib.png
 cat ventes.jsonl | make-figure bar --data - --out ventes@2x.png --scale 2
 ```
 
+Chaque figure a aussi ses propres mots-clés : un sous-titre, une taille de
+toile, des titres d'axes, un thème, la langue du texte qu'elle écrit
+elle-même, plus ce qui est particulier à ce graphique-là. Demandez à la figure
+ce qu'elle accepte :
+
+```bash
+# Ce que ce graphique exige (rôles de données) et ce qu'il accepte (options)
+make-figure treemap --describe
+
+# La même liste sous forme de drapeaux, une fois la figure nommée
+make-figure sankey --help
+```
+
+Puis passez-les. Chaque option a son propre drapeau ; `--set nom=valeur` est
+l'écriture scriptable qui atteint n'importe laquelle :
+
+```bash
+make-figure bar --out ventes.svg --subtitle "Exercice 2024" --width 1200 --theme academic
+make-figure sankey --out flux.svg --set volume-unit=sessions --set stage-names="Visite,Essai,Payant"
+make-figure bar --out ventes.svg --language fr --accessibility monochrome
+```
+
+Une option que la figure n'accepte pas devient une erreur qui nomme celles
+qu'elle accepte — jamais un silence, qui faisait passer un drapeau mal
+orthographié pour une figure ayant ignoré la consigne.
+
 Le format de sortie suit l'extension de `--out` : `.svg` (par défaut,
 autonome avec polices embarquées), `.png`, `.pdf`, `.jpg` ou `.html`. Pour les
 sorties raster et PDF, `--scale N` suréchantillonne N fois pour les écrans
@@ -125,15 +151,21 @@ depuis l'entrée standard (le format est détecté d'après le contenu). Les nom
 de colonnes doivent correspondre aux rôles attendus par le graphique.
 
 Vous ne savez pas quel graphique convient à votre fichier ? Demandez une
-recommandation (nécessite les extras `[cli]` et `[studio]`). C'est le même
+recommandation (nécessite l'extra `[studio]` pour le profilage). C'est le même
 classement déterministe (compatibilité et lisibilité) que les cartes de la GUI
 Studio, sans aucun modèle :
 
 ```bash
-sprezzature-figures recommend --data budget.csv
-sprezzature-figures recommend --data budget.csv --render best.png
-sprezzature-figures recommend --data budget.csv --intent hierarchy
+make-figure recommend --data budget.csv
+make-figure recommend --data budget.csv --render best.png
+make-figure recommend --data budget.csv --intent hierarchy
 ```
+
+`recommend`, `redraw`, `check`, `list` et `describe` sont des sous-commandes
+des deux lignes de commande : `make-figure recommend ...` et
+`sprezzature-figures recommend ...` font la même chose par le même code. Le
+jumeau Click (extra `[cli]`) existe pour son `--help` plus agréable, pas pour
+un périmètre plus large.
 
 Ajoutez `--intent BUT` (`comparison`, `trend`, `distribution`, `composition`,
 `relationship`, `flow`, `hierarchy`, `geography`, `model_evaluation`) pour
@@ -361,8 +393,9 @@ joignable sur le réseau de deux façons : comme une simple API HTTP, et
 comme un outil MCP. Le MCP (_Model Context Protocol_) est une norme qui
 permet à un assistant IA d'appeler directement les fonctions d'un
 programme, de la même façon qu'un humain les appellerait depuis un script,
-sans avoir à lire une documentation et à deviner. Trois interfaces
-exposent au total le même dispatcheur `make_figure()` :
+sans avoir à lire une documentation et à deviner. Quatre interfaces
+exposent au total le même dispatcheur `make_figure()`, avec les mêmes
+commandes :
 
 | Interface | Toujours installée ? | Point d'entrée |
 |---|---|---|
@@ -385,6 +418,13 @@ curl -X POST http://localhost:8000/render/treemap -o treemap.svg
 curl -X POST http://localhost:8000/render/bar -H 'Content-Type: application/json' \
      -d '{"data": [{"region": "North", "value": 42}], "title": "Mon graphique"}' -o bar.svg
 
+# Ce que ce type accepte d'autre : types, valeurs par défaut, valeurs admises
+curl http://localhost:8000/kinds/bar/options
+
+# ...passé dans `options`, sous les noms que cette route a renvoyés
+curl -X POST http://localhost:8000/render/bar -H 'Content-Type: application/json' \
+     -d '{"options": {"subtitle": "Exercice 2024", "width": 1200, "theme": "academic"}}' -o bar.svg
+
 # Refaire le graphique de quelqu'un d'autre à partir de son image
 curl -X POST http://localhost:8000/redraw -H 'Content-Type: application/json' \
      -d "{\"image_base64\": \"$(base64 < leur-graphique.png)\"}" | jq -r .data_origin
@@ -392,6 +432,12 @@ curl -X POST http://localhost:8000/redraw -H 'Content-Type: application/json' \
 # Documentation OpenAPI complète
 open http://localhost:8000/docs
 ```
+
+`GET /kinds/{kind}/options` est la moitié HTTP de `make-figure <kind>
+--describe` : chaque mot-clé que la figure accepte, avec son type, sa valeur
+par défaut et ses valeurs admises. Les options passent dans l'objet `options`
+de `render`, sous ces noms-là ; une option que la figure n'accepte pas revient
+en 422 nommant celles qu'elle accepte, au lieu d'être écartée en chemin.
 
 `POST /redraw` répond du JSON plutôt que des octets : la figure arrive
 encodée en base64 dans `figure_base64`, à côté du diagnostic qui la

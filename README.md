@@ -109,6 +109,31 @@ make-figure bar --data gdp.csv --map region=Country --map value=GDP --out gdp.pn
 cat sales.jsonl | make-figure bar --data - --out sales@2x.png --scale 2
 ```
 
+Every figure also has its own keywords — a subtitle, a canvas size, axis
+titles, a theme, the language of the chrome it writes itself, plus whatever
+is particular to that one chart. Ask the figure what it takes:
+
+```bash
+# What this chart needs (data roles) and what it accepts (options), with defaults
+make-figure treemap --describe
+
+# The same list as flags, once you name the figure
+make-figure sankey --help
+```
+
+Then pass them. Each option is a flag of its own, and `--set name=value` is
+the scriptable spelling that reaches any of them:
+
+```bash
+make-figure bar --out sales.svg --subtitle "FY-2024" --width 1200 --theme academic
+make-figure sankey --out flow.svg --set volume-unit=sessions --set stage-names="Visit,Trial,Paid"
+make-figure bar --out sales.svg --language fr --accessibility monochrome
+```
+
+An option the figure does not accept is an error naming the ones it does —
+never a silent no-op, which is how a misspelt flag used to come back looking
+like the figure had ignored it.
+
 The output format follows the `--out` extension: `.svg` (default, fully
 self-contained with embedded fonts), `.png`, `.pdf`, `.jpg`, or `.html`. For
 raster and PDF output, `--scale N` upsamples N times for hi-DPI displays
@@ -125,15 +150,21 @@ roles the chart expects (`make-figure --list --status stable`, then see
 when they don't, `--map role=column` binds them without touching the file.
 
 Not sure which chart fits your file? Ask for a recommendation (needs the
-`[cli]` and `[studio]` extras). This runs the same deterministic
+`[studio]` extra for the profiling stack). This runs the same deterministic
 compatibility + readability ranking the Studio GUI shows as cards, with no
 model involved:
 
 ```bash
-sprezzature-figures recommend --data budget.csv
-sprezzature-figures recommend --data budget.csv --render best.png  # + render the top pick
-sprezzature-figures recommend --data budget.csv --intent hierarchy  # rank for a goal
+make-figure recommend --data budget.csv
+make-figure recommend --data budget.csv --render best.png  # + render the top pick
+make-figure recommend --data budget.csv --intent hierarchy  # rank for a goal
 ```
+
+`recommend`, `redraw`, `check`, `list` and `describe` are sub-commands of
+both command lines: `make-figure recommend ...` and `sprezzature-figures
+recommend ...` do the same thing through the same code. The Click twin
+(`[cli]` extra) is there for its nicer `--help`, not for a larger feature
+set.
 
 Add `--intent GOAL` (`comparison`, `trend`, `distribution`, `composition`,
 `relationship`, `flow`, `hierarchy`, `geography`, `model_evaluation`) to rank
@@ -355,8 +386,9 @@ Beyond the command line, the same `make_figure()` function is reachable
 over the network in two ways: as a plain HTTP API, and as an MCP tool.
 MCP (the Model Context Protocol) is a standard that lets an AI assistant
 call a program's functions directly, the same way a human would call them
-from a script, instead of having to read documentation and guess. Three
-interfaces expose the same `make_figure()` dispatcher in total:
+from a script, instead of having to read documentation and guess. Four
+interfaces expose the same `make_figure()` dispatcher in total, and offer
+the same commands:
 
 | Interface | Always installed? | Entry point |
 |---|---|---|
@@ -379,6 +411,13 @@ curl -X POST http://localhost:8000/render/treemap -o treemap.svg
 curl -X POST http://localhost:8000/render/bar -H 'Content-Type: application/json' \
      -d '{"data": [{"region": "North", "value": 42}], "title": "My chart"}' -o bar.svg
 
+# What else that chart type accepts, with types, defaults and allowed values
+curl http://localhost:8000/kinds/bar/options
+
+# ...passed under `options`, by the names that route returned
+curl -X POST http://localhost:8000/render/bar -H 'Content-Type: application/json' \
+     -d '{"options": {"subtitle": "FY-2024", "width": 1200, "theme": "academic"}}' -o bar.svg
+
 # Redraw somebody else's chart from a picture of it
 curl -X POST http://localhost:8000/redraw -H 'Content-Type: application/json' \
      -d "{\"image_base64\": \"$(base64 < theirs.png)\"}" | jq -r .data_origin
@@ -386,6 +425,12 @@ curl -X POST http://localhost:8000/redraw -H 'Content-Type: application/json' \
 # Full OpenAPI docs
 open http://localhost:8000/docs
 ```
+
+`GET /kinds/{kind}/options` is the HTTP half of `make-figure <kind>
+--describe`: every keyword that figure accepts, with its type, its default
+and its allowed values. Options go in `render`'s `options` object under
+those names; one that the figure does not accept comes back as a 422 naming
+the ones it does, rather than being dropped on the way in.
 
 `POST /redraw` answers JSON rather than file bytes: the figure arrives
 base64-encoded in `figure_base64`, next to the diagnosis that justified it
@@ -399,8 +444,9 @@ role bindings already worked out — the same deterministic ranking the CLI's
 `/render/{kind}` whenever nobody has named a chart type.
 
 The MCP surface (`sprezzature-figures[api,mcp]`) exposes the exact same
-routes as MCP tools (`list_kinds`, `get_kind`, `recommend_figures`,
-`render_figure`, `redraw_figure`) at `/mcp` on the same FastAPI app. Each
+routes as MCP tools (`list_kinds`, `get_kind`, `list_kind_options`,
+`recommend_figures`, `render_figure`, `redraw_figure`, `check_render`) at
+`/mcp` on the same FastAPI app. Each
 carries a written summary and a description saying **when** to call it —
 see [TRIGGERS.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/TRIGGERS.md)
 for the routing rules an agent should follow.
