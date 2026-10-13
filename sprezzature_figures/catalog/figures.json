@@ -8458,7 +8458,7 @@
       },
       "y_label": {
         "type": "str",
-        "default": "Loss",
+        "default": "Model loss",
         "choices": [],
         "description": "Axis titles."
       },
