@@ -176,6 +176,30 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
         ],
         "optional_roles": [],
     },
+    "permutation-importance": {
+        "required_roles": [
+            {
+                "name": "feature",
+                "label": "Column name",
+                "accepted_types": ["categorical"],
+                "required": True,
+            },
+            {
+                "name": "drop",
+                "label": "Score drop for one shuffle",
+                "accepted_types": ["numeric"],
+                "required": True,
+            },
+        ],
+        "optional_roles": [
+            {
+                "name": "repeat",
+                "label": "Which shuffle",
+                "accepted_types": ["numeric"],
+                "required": False,
+            },
+        ],
+    },
     "acf": {
         "required_roles": [
             {

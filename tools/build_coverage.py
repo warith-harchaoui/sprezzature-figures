@@ -446,12 +446,7 @@ MAPPING: dict[str, list[tuple[str, str, str, str]]] = {
             "gap",
             "average effect of a feature, and per-sample",
         ),
-        (
-            "permutation importance",
-            "permutation-importance",
-            "gap",
-            "importance with its spread, not a bare bar",
-        ),
+        ("permutation importance", "permutation-importance", "covered", ""),
         ("causal DAG", "causal-dag", "gap", "the DoWhy graph: treatment, outcome, confounders"),
         ("missing-data matrix", "missing-matrix", "covered", ""),
         ("control chart (SPC)", "control-chart", "covered", ""),

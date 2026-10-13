@@ -309,7 +309,7 @@ data-science,forecast fan chart,forecast-fan,covered,
 data-science,SHAP beeswarm,shap-beeswarm,gap,"per-feature SHAP values, coloured by feature value"
 data-science,SHAP waterfall,shap-waterfall,gap,"one prediction, decomposed contribution by contribution"
 data-science,partial dependence / ICE,pdp-ice,gap,"average effect of a feature, and per-sample"
-data-science,permutation importance,permutation-importance,gap,"importance with its spread, not a bare bar"
+data-science,permutation importance,permutation-importance,covered,
 data-science,causal DAG,causal-dag,gap,"the DoWhy graph: treatment, outcome, confounders"
 data-science,missing-data matrix,missing-matrix,covered,
 data-science,control chart (SPC),control-chart,covered,
