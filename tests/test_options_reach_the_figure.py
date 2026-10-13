@@ -87,9 +87,8 @@ def _text_options(kind: str) -> dict[str, OptionDefinition]:
     }
 
 
-def _unwired(kind: str, tmp_path: Path) -> list[str]:
-    """Which of `kind`'s text options never show up in what it draws."""
-    probes = {name: f"ZQ{index}X" for index, name in enumerate(_text_options(kind))}
+def _render_with(kind: str, probes: dict[str, str], tmp_path: Path) -> list[str]:
+    """Render `kind` with those sentinels and report the ones that vanished."""
     if not probes:
         return []
     target = tmp_path / f"{kind.replace('/', '_')}.svg"
@@ -99,6 +98,33 @@ def _unwired(kind: str, tmp_path: Path) -> list[str]:
         make_figure(kind, out=str(target), **probes)
     drawn = target.read_text(encoding="utf-8")
     return sorted(name for name, token in probes.items() if token not in drawn)
+
+
+def _unwired(kind: str, tmp_path: Path) -> list[str]:
+    """Which of `kind`'s text options never show up in what it draws.
+
+    Two renders, not one, and the reason is a blind spot this test found in
+    itself. Several figures take an override option defaulting to ``None``
+    -- `verdict`, `footer`, `summary`, `caveat` -- which *replaces* a
+    sentence composed from other options. Setting every option at once then
+    reports the composing options as unwired, because the override they
+    feed was overridden. So the composing options are probed together, and
+    the overrides in a second pass of their own.
+    """
+    options = _text_options(kind)
+    composing = {
+        name: f"ZQ{index}X"
+        for index, name in enumerate(options)
+        if options[name].default is not None
+    }
+    overriding = {
+        name: f"ZW{index}X"
+        for index, name in enumerate(options)
+        if options[name].default is None
+    }
+    return sorted(
+        _render_with(kind, composing, tmp_path) + _render_with(kind, overriding, tmp_path)
+    )
 
 
 @pytest.mark.slow
