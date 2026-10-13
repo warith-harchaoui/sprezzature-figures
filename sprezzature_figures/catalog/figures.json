@@ -4872,6 +4872,159 @@
     ]
   },
   {
+    "kind": "facet",
+    "label": "Facet",
+    "aliases": [],
+    "category": "Small multiples",
+    "description": "The same chart once per group, every panel on one shared scale. Use when a single chart would carry more series than a reader can untangle: eight lines in one frame is a knot, eight panels of one line each is a comparison. Each panel draws every other group behind it in a pale ink, so a cell is a comparison rather than a chart that happens to sit next to others, and axis labels appear on the left column and bottom row only. Panels are ordered by their last value, largest first, so position in the grid is itself information. Prefer `line-multi` when the series genuinely need to be read against each other point by point, and this when they need to be read one at a time.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "svg",
+    "module": "scripts/make_facet.py",
+    "callable_name": "make_facet",
+    "required_roles": [
+      {
+        "name": "market",
+        "label": "Panel",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "month",
+        "label": "Position along the panel",
+        "accepted_types": [
+          "categorical",
+          "datetime",
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "orders",
+        "label": "Value",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 1000,
+    "default_height": 700,
+    "options_schema": {
+      "title": {
+        "type": "str",
+        "default": "Only two markets grew in every single month",
+        "choices": [],
+        "description": "Chart text."
+      },
+      "subtitle": {
+        "type": "str",
+        "default": "Orders per market, indexed to 100 in January. Grey lines are the other markets.",
+        "choices": [],
+        "description": "Chart text."
+      },
+      "width": {
+        "type": "int",
+        "default": 1000,
+        "choices": [],
+        "description": "Canvas size in pixels."
+      },
+      "height": {
+        "type": "int",
+        "default": 700,
+        "choices": [],
+        "description": "Canvas size in pixels."
+      },
+      "facet": {
+        "type": "str",
+        "default": "market",
+        "choices": [],
+        "description": "Which key splits the panels, orders the points, and is drawn."
+      },
+      "x": {
+        "type": "str",
+        "default": "month",
+        "choices": [],
+        "description": "Which key splits the panels, orders the points, and is drawn."
+      },
+      "y": {
+        "type": "str",
+        "default": "orders",
+        "choices": [],
+        "description": "Which key splits the panels, orders the points, and is drawn."
+      },
+      "columns": {
+        "type": "int",
+        "default": 0,
+        "choices": [],
+        "description": "Panels per row; 0 picks a squarish grid."
+      },
+      "context": {
+        "type": "bool",
+        "default": true,
+        "choices": [],
+        "description": "Draw the other groups behind each panel in grey."
+      },
+      "x_label": {
+        "type": "str",
+        "default": "",
+        "choices": [],
+        "description": "Axis titles, written once for the grid."
+      },
+      "y_label": {
+        "type": "str",
+        "default": "Index (January = 100)",
+        "choices": [],
+        "description": "Axis titles, written once for the grid."
+      },
+      "mode": {
+        "type": "str",
+        "default": "self-contained",
+        "choices": [
+          "self-contained",
+          "external",
+          "static"
+        ],
+        "description": "How the SVG carries its interactivity: self-contained ships its own script, external expects the page to supply one, static leaves it out."
+      },
+      "accessibility": {
+        "type": "str",
+        "default": "universal",
+        "choices": [
+          "universal",
+          "high-contrast",
+          "monochrome",
+          "deuteranopia",
+          "protanopia",
+          "tritanopia"
+        ],
+        "description": "Palette accessibility level; universal is the colour-vision-safe default."
+      },
+      "theme": {
+        "type": "str",
+        "default": "corporate",
+        "choices": [
+          "corporate",
+          "academic"
+        ],
+        "description": "Visual theme. Forwarded to build_svg."
+      }
+    },
+    "warnings": [
+      "Default output path falls back to a shared assets/ directory"
+    ]
+  },
+  {
     "kind": "forest",
     "label": "Forest",
     "aliases": [],
