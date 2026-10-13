@@ -4,11 +4,11 @@ Reproducible audit of every `scripts/make_*.py` generator against the
 `make_<kind>(data, *, out, title, ...) -> Path` contract the dispatcher
 expects. Regenerate with `python tools/audit_generators.py --render`.
 
-- **stable**: 136
+- **stable**: 138
 - **experimental**: 0
 - **legacy**: 0
 - **unavailable**: 0
-- **total**: 136
+- **total**: 138
 
 | kind | status | reachable | callable | demo_data | render | errors |
 |---|---|---|---|---|---|---|
@@ -118,6 +118,7 @@ expects. Regenerate with `python tools/audit_generators.py --render`.
 | `scatter` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `scatter3d` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `sfdp-largegraph` | stable | **no** | yes | yes | passed | make_figure('sfdp-largegraph') cannot resolve to make_sfdp-largegraph.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
+| `silhouette` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `slope` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `sparkline` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `speaking_time` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
@@ -137,6 +138,7 @@ expects. Regenerate with `python tools/audit_generators.py --render`.
 | `tree` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `treemap` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `upset` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `validation-curve` | stable | **no** | yes | yes | passed | make_figure('validation-curve') cannot resolve to make_validation-curve.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
 | `variwide` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `venn` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `violin` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |

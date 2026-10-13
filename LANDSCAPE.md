@@ -6,7 +6,7 @@
 
 ```
 sprezzature suite
-├── sprezzature-figures   ← this package (136 chart types)
+├── sprezzature-figures   ← this package (138 chart types)
 ├── sprezzature-colors    (accessible colour palettes)
 ├── sprezzature-vision    (alt-text generation, image captioning)
 ├── sprezzature-audio     (audio transcription, caption translation)
