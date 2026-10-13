@@ -458,6 +458,7 @@ def make_gauge(
     *,
     out: Optional[Path | str] = None,
     title: str = "",
+    subtitle: Optional[str] = None,
     animated: bool = True,
     mode: str = "self-contained",
     accessibility: str = "universal",
@@ -479,6 +480,10 @@ def make_gauge(
     title : str, optional
         Overrides the row's ``label`` when non-empty (the ``--title`` CLI
         flag / dispatcher convention).
+    subtitle : str or None, optional
+        The context line under the reading. Overrides the row's
+        ``sublabel`` when given, the way `title` overrides ``label``;
+        ``None`` keeps the row's own.
     animated, mode, accessibility : optional
         Forwarded to :func:`build_svg`.
     theme : str, optional
@@ -493,7 +498,7 @@ def make_gauge(
     svg = build_svg(
         value=row.get("value"),
         title=title or row.get("label"),
-        subtitle=row.get("sublabel"),
+        subtitle=row.get("sublabel") if subtitle is None else subtitle,
         settle_from=row.get("settle_from"),
         animated=animated,
         mode=mode,
