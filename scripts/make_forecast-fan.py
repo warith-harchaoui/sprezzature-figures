@@ -139,7 +139,7 @@ def _z_for(level: float) -> float:
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
     title: str = "Twelve months out, the interval is twice as wide as at three",
-    subtitle: str = "Three years of monthly subscriptions, then a year of forecast drawn with the width of its own uncertainty.",
+    subtitle: str = "Three years of monthly subscriptions, then a year of forecast drawn at the width of its uncertainty.",
     width: int = 900,
     height: int = 610,
     x: str = "month",
@@ -477,7 +477,7 @@ def make_forecast_fan(
     *,
     out: Optional[str] = None,
     title: str = "Twelve months out, the interval is twice as wide as at three",
-    subtitle: str = "Three years of monthly subscriptions, then a year of forecast drawn with the width of its own uncertainty.",
+    subtitle: str = "Three years of monthly subscriptions, then a year of forecast drawn at the width of its uncertainty.",
     width: int = 900,
     height: int = 610,
     x: str = "month",

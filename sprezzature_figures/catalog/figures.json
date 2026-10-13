@@ -5576,7 +5576,7 @@
       },
       "subtitle": {
         "type": "str",
-        "default": "Three years of monthly subscriptions, then a year of forecast drawn with the width of its own uncertainty.",
+        "default": "Three years of monthly subscriptions, then a year of forecast drawn at the width of its uncertainty.",
         "choices": [],
         "description": "Chart text."
       },
