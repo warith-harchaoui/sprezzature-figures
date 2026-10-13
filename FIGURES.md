@@ -1,6 +1,6 @@
 # Figure Catalogue
 
-143 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type). `choropleth` and `situation_map` moved to their own repo, [sprezzature-maps](https://github.com/warith-harchaoui/sprezzature-maps).
+144 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type). `choropleth` and `situation_map` moved to their own repo, [sprezzature-maps](https://github.com/warith-harchaoui/sprezzature-maps).
 
 Invoke via:
 
@@ -52,6 +52,7 @@ colour-vision-deficiency-safe Okabe-Ito palette); see
 | `chord` | make_chord.py | Flow | Circular chord diagram for symmetric or directed flows between categories. Use when every pair of categories can exchange and the total volume matters (e.g., migration between countries). |
 | `circle-packing` | make_circle-packing.py | Hierarchy | Represent a hierarchy as nested circles whose area encodes a numeric value. Use for a single level of nesting where the visual impact of size differences matters more than precise reading. |
 | `clustermap` | make_clustermap.py | Distribution | Heatmap with rows and columns reordered by hierarchical clustering, with a dendrogram guide along each axis showing the merge structure. Use for gene-expression matrices, correlated-feature discovery, or customer-segment x product affinity. |
+| `cohort-retention` | make_cohort-retention.py | Retention | A retention triangle: one row per cohort, one column per period of age, each cell the share still present. The usual version paints the not-yet-measured corner the same dark shade as a cohort that left — those periods have not happened yet, so here they carry no fill and the chrome counts them. Its colour scale runs 0 to 100% when retention past month one is rarely above half, so the grid reads as one flat colour; this one is scaled to the measured cells and labelled at both ends. It marks where churn settles (the *median* cohort's loss, not the mean — one cohort caught by a bad month moves a mean answer by five months) and it checks the **diagonals**, because an outage hits every cohort on the same calendar date and lands on a diagonal, not a row — the reading a triangle makes hardest. |
 | `columnrange` | make_columnrange.py | Range | Vertical bars spanning from a low to a high value per category. Use for temperature ranges, salary bands, confidence intervals, or any per-group min–max. |
 | `confusion-matrix` | make_confusion-matrix.py | Model evaluation | Confusion matrix: actual class (rows) vs predicted class (columns), both axes labelled with the class names, cells shaded by count with a strong correct diagonal. Use to see exactly which classes a classifier confuses. |
 | `connected-scatter` | make_connected-scatter.py | Bivariate time series | Scatter plot where consecutive time points are connected by lines. Use to reveal the joint trajectory of two variables over time (e.g., GDP vs. life expectancy). |

@@ -1,6 +1,6 @@
 {
   "summary": {
-    "stable": 143,
+    "stable": 144,
     "experimental": 0,
     "legacy": 0,
     "unavailable": 0
@@ -584,6 +584,30 @@
       "status": "stable",
       "errors": [
         "Default output path falls back to a shared assets/ directory"
+      ]
+    },
+    {
+      "kind": "cohort-retention",
+      "filename": "make_cohort-retention.py",
+      "hyphenated_kind": true,
+      "dispatcher_reachable_by_kind": false,
+      "importable": true,
+      "import_error": null,
+      "expected_callable": "make_cohort_retention",
+      "callable_exists": true,
+      "demo_data_exists": true,
+      "demo_data_len": 78,
+      "accepts_data": true,
+      "accepts_out": true,
+      "accepts_title": true,
+      "renderer": "svg",
+      "writes_hardcoded_path": false,
+      "hardcoded_dimensions": true,
+      "render_test": "passed",
+      "render_error": null,
+      "status": "stable",
+      "errors": [
+        "make_figure('cohort-retention') cannot resolve to make_cohort-retention.py: hyphen/underscore normalisation looks for a different filename"
       ]
     },
     {

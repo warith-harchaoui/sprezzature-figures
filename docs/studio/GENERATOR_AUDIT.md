@@ -4,11 +4,11 @@ Reproducible audit of every `scripts/make_*.py` generator against the
 `make_<kind>(data, *, out, title, ...) -> Path` contract the dispatcher
 expects. Regenerate with `python tools/audit_generators.py --render`.
 
-- **stable**: 143
+- **stable**: 144
 - **experimental**: 0
 - **legacy**: 0
 - **unavailable**: 0
-- **total**: 143
+- **total**: 144
 
 | kind | status | reachable | callable | demo_data | render | errors |
 |---|---|---|---|---|---|---|
@@ -36,6 +36,7 @@ expects. Regenerate with `python tools/audit_generators.py --render`.
 | `chord` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `circle-packing` | stable | **no** | yes | yes | passed | make_figure('circle-packing') cannot resolve to make_circle-packing.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
 | `clustermap` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `cohort-retention` | stable | **no** | yes | yes | passed | make_figure('cohort-retention') cannot resolve to make_cohort-retention.py: hyphen/underscore normalisation looks for a different filename |
 | `columnrange` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `confusion-matrix` | stable | **no** | yes | yes | passed | make_figure('confusion-matrix') cannot resolve to make_confusion-matrix.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
 | `connected-scatter` | stable | **no** | yes | yes | passed | make_figure('connected-scatter') cannot resolve to make_connected-scatter.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
