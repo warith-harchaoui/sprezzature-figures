@@ -113,6 +113,9 @@ def build_svg(
     bins: int = 34,
     x_label: str = "Trip distance (miles)",
     y_label: str = "Fare ($)",
+    legend_title: str = "Points per bin",
+    empty_label: str = "no trips",
+    summary: Optional[str] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -136,6 +139,15 @@ def build_svg(
         rather than exactly it.
     x_label, y_label : str
         Axis titles.
+    legend_title : str
+        Heading above the colour scale.
+    empty_label : str
+        What the blank swatch in the legend is called -- the one that says
+        a bin with no points was left as canvas rather than coloured.
+    summary : str or None
+        The line stating the point count, the bin size and the scale.
+        ``None`` composes it. Nothing a reader sees should be reachable
+        only by editing this file.
     mode, accessibility : str, optional
         Forwarded to :func:`_interactive.fullscreen_control` /
         :func:`_style.load_palette`.
@@ -218,11 +230,13 @@ def build_svg(
         f'{xml_escape(subtitle)}</text>'
     )
     # The bin size is the figure's main assumption, so it is written on it.
+    said = summary if summary is not None else (
+        f"{len(rows):,} points · bins of {fmt_number(x_step)} × {fmt_number(y_step)} · "
+        f"busiest holds {busiest} · colour on a square-root scale"
+    )
     parts.append(
         f'<text x="{plot_x:.1f}" y="98" font-size="12" fill="{SECONDARY}" '
-        f'font-family="{mono_family}">{len(rows):,} points · bins of '
-        f'{fmt_number(x_step)} × {fmt_number(y_step)} · busiest holds {busiest} · '
-        f'colour on a square-root scale</text>'
+        f'font-family="{mono_family}">{xml_escape(said)}</text>'
     )
 
     parts.append(
@@ -301,7 +315,7 @@ def build_svg(
         )
     parts.append(
         f'<text x="{legend_x:.1f}" y="{legend_y - 12:.1f}" font-size="11" fill="{SECONDARY}">'
-        f'Points per bin</text>'
+        f'{xml_escape(legend_title)}</text>'
     )
     # An empty bin is canvas, and the legend says so rather than leaving the
     # reader to guess whether white means zero or means missing.
@@ -311,7 +325,7 @@ def build_svg(
     )
     parts.append(
         f'<text x="{legend_x + 24:.1f}" y="{legend_y + legend_h + 32:.1f}" font-size="11" '
-        f'fill="{SECONDARY}">no trips</text>'
+        f'fill="{SECONDARY}">{xml_escape(empty_label)}</text>'
     )
 
     parts.append(fullscreen_control(width, height, mode))
@@ -332,6 +346,9 @@ def make_hist2d(
     bins: int = 34,
     x_label: str = "Trip distance (miles)",
     y_label: str = "Fare ($)",
+    legend_title: str = "Points per bin",
+    empty_label: str = "no trips",
+    summary: Optional[str] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -355,6 +372,10 @@ def make_hist2d(
         Target bin count on the longer axis.
     x_label, y_label : str
         Axis titles.
+    legend_title, empty_label : str
+        Heading above the colour scale, and the name of its blank swatch.
+    summary : str or None
+        The line stating points, bin size and scale; ``None`` composes it.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
     theme : str, optional
@@ -374,6 +395,7 @@ def make_hist2d(
     svg = build_svg(
         data, title=title, subtitle=subtitle, width=width, height=height,
         x=x, y=y, bins=bins, x_label=x_label, y_label=y_label,
+        legend_title=legend_title, empty_label=empty_label, summary=summary,
         mode=mode, accessibility=accessibility, theme=theme,
     )
     dest = Path(out) if out else svg_example_path(__file__, "hist2d")

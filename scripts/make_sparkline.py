@@ -87,7 +87,10 @@ def _walk(start: float, drift: float, wobble: float, seed: int, shape: str = "dr
 #: Nine metrics a team would actually have on one screen, in units that do
 #: not share an axis: money, counts, percentages, milliseconds.
 _METRICS: List[Tuple[str, str, List[float]]] = [
-    ("Revenue", "k$", _walk(412.0, 0.34, 18.0, 3)),
+    # "Monthly revenue" rather than "Revenue": the gallery already
+    # translates the bare word as a department name on the org chart,
+    # and a flat English-to-French map cannot hold both meanings.
+    ("Monthly revenue", "k$", _walk(412.0, 0.34, 18.0, 3)),
     ("New signups", "", _walk(1840.0, 0.12, 120.0, 5)),
     ("Active teams", "", _walk(624.0, 0.21, 14.0, 7)),
     ("Churn", "%", _walk(3.4, -0.28, 0.22, 11)),
@@ -115,6 +118,9 @@ def build_svg(
     x: str = "week",
     y: str = "value",
     unit: str = "unit",
+    window_label: Optional[str] = None,
+    latest_label: str = "Latest",
+    change_label: str = "Change",
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -134,6 +140,12 @@ def build_svg(
     series, x, y, unit : str
         Which keys name the row, order the points, carry the value and
         (optionally) the unit.
+    window_label : str or None
+        Heading over the sparkline column. ``None`` composes "Last N
+        periods" from the data.
+    latest_label, change_label : str
+        Headings over the two number columns. Parameters and not literals:
+        nothing a reader sees should be reachable only by editing this file.
     mode, accessibility : str, optional
         Forwarded to :func:`_interactive.fullscreen_control` /
         :func:`_style.load_palette`.
@@ -180,9 +192,9 @@ def build_svg(
     parts.append(
         f'<desc id="spark-desc">{len(order)} sparklines stacked, one metric per row, each on '
         f'its own vertical scale over {len(points[order[0]]) if order else 0} periods. Behind '
-        f'each line is a pale band from that metric\'s own minimum to its own maximum, and the '
-        f'last point is marked. Each row ends with its latest reading and its change over the '
-        f'window.</desc>'
+        f'each line is a pale band holding the middle half of its own values, so a line leaving '
+        f'the band marks an unusual stretch; the last point is marked. Each row ends with its '
+        f'latest reading and its change over the window.</desc>'
     )
     parts.append(
         "<style>"
@@ -202,17 +214,20 @@ def build_svg(
         f'<text x="{left:.1f}" y="74" font-size="14" fill="{SECONDARY}">'
         f'{xml_escape(subtitle)}</text>'
     )
+    window = window_label if window_label is not None else (
+        f"Last {len(points[order[0]]) if order else 0} periods"
+    )
     parts.append(
         f'<text x="{left + label_w:.1f}" y="104" font-size="11" fill="{SECONDARY}">'
-        f'Last {len(points[order[0]]) if order else 0} periods</text>'
+        f'{xml_escape(window)}</text>'
     )
     parts.append(
         f'<text x="{left + label_w + spark_w + 86:.1f}" y="104" font-size="11" '
-        f'fill="{SECONDARY}" text-anchor="end">Latest</text>'
+        f'fill="{SECONDARY}" text-anchor="end">{xml_escape(latest_label)}</text>'
     )
     parts.append(
         f'<text x="{width - 44:.1f}" y="104" font-size="11" fill="{SECONDARY}" '
-        f'text-anchor="end">Change</text>'
+        f'text-anchor="end">{xml_escape(change_label)}</text>'
     )
 
     def px(position: float, first: float, last: float) -> float:
@@ -325,6 +340,9 @@ def make_sparkline(
     x: str = "week",
     y: str = "value",
     unit: str = "unit",
+    window_label: Optional[str] = None,
+    latest_label: str = "Latest",
+    change_label: str = "Change",
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -345,6 +363,8 @@ def make_sparkline(
         Canvas size in pixels.
     series, x, y, unit : str
         Which keys name the row, order the points, carry the value and the unit.
+    window_label, latest_label, change_label : str
+        The three column headings; ``window_label=None`` composes its own.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
     theme : str, optional
@@ -363,7 +383,8 @@ def make_sparkline(
     """
     svg = build_svg(
         data, title=title, subtitle=subtitle, width=width, height=height,
-        series=series, x=x, y=y, unit=unit, mode=mode,
+        series=series, x=x, y=y, unit=unit, window_label=window_label,
+        latest_label=latest_label, change_label=change_label, mode=mode,
         accessibility=accessibility, theme=theme,
     )
     dest = Path(out) if out else svg_example_path(__file__, "sparkline")

@@ -127,6 +127,7 @@ def build_svg(
     line_label: str = "Trial conversion (%)",
     x_label: str = "",
     zero_anchored: bool = True,
+    caveat: Optional[str] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -152,6 +153,10 @@ def build_svg(
         Start both value axes at zero. Turning it off is the version of
         this chart that can be made to show anything, so the figure says
         on itself when it is off.
+    caveat : str or None
+        The line stating where the axes start and what the correlation is.
+        ``None`` composes it. A parameter and not a literal: nothing a
+        reader sees should be reachable only by editing this file.
     mode, accessibility : str, optional
         Forwarded to :func:`_interactive.fullscreen_control` /
         :func:`_style.load_palette`.
@@ -235,17 +240,21 @@ def build_svg(
     )
     # The caveat belongs on the figure. A dual axis is read in seconds and
     # the footnote that would have qualified it is read by nobody.
-    anchoring = (
-        "Both axes start at zero."
-        if zero_anchored
-        else "Neither axis starts at zero, so the gap between the two series is a choice."
-    )
-    correlation = (
-        f" Pearson r over these {len(rows)} periods: {r:+.2f}." if r is not None else ""
-    )
+    if caveat is not None:
+        said = caveat
+    else:
+        anchoring = (
+            "Both axes start at zero."
+            if zero_anchored
+            else "Neither axis starts at zero, so the gap between the two series is a choice."
+        )
+        correlation = (
+            f" Pearson r over these {len(rows)} periods: {r:+.2f}." if r is not None else ""
+        )
+        said = anchoring + correlation
     parts.append(
         f'<text x="{plot_x:.1f}" y="98" font-size="12" fill="{SECONDARY}" '
-        f'font-family="{mono_family}">{xml_escape(anchoring + correlation)}</text>'
+        f'font-family="{mono_family}">{xml_escape(said)}</text>'
     )
     # Axis titles in their series' colour: that is the legend, removed.
     parts.append(
@@ -353,6 +362,7 @@ def make_dual_axis(
     line_label: str = "Trial conversion (%)",
     x_label: str = "",
     zero_anchored: bool = True,
+    caveat: Optional[str] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -376,6 +386,8 @@ def make_dual_axis(
         Axis titles, drawn in their series' colour.
     zero_anchored : bool
         Start both value axes at zero.
+    caveat : str or None
+        The anchoring-and-correlation line; ``None`` composes it.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
     theme : str, optional
@@ -395,7 +407,7 @@ def make_dual_axis(
     svg = build_svg(
         data, title=title, subtitle=subtitle, width=width, height=height,
         x=x, bars=bars, line=line, bars_label=bars_label, line_label=line_label,
-        x_label=x_label, zero_anchored=zero_anchored, mode=mode,
+        x_label=x_label, zero_anchored=zero_anchored, caveat=caveat, mode=mode,
         accessibility=accessibility, theme=theme,
     )
     dest = Path(out) if out else svg_example_path(__file__, "dual-axis")

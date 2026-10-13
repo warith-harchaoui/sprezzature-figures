@@ -132,6 +132,7 @@ def build_svg(
     unit: str = "%",
     max_slices: int = 7,
     other_label: str = "Other",
+    footer: Optional[str] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -157,6 +158,12 @@ def build_svg(
         0 disables the rollup and draws every row.
     other_label : str
         Name of the rolled-up wedge.
+    footer : str or None
+        The line at the foot of the figure. ``None`` composes it: the
+        number of parts, the total when the unit is not a percentage, and
+        a note naming the rolled-up wedge when there is one. Give a string
+        to say something else entirely -- nothing a reader sees should be
+        reachable only by editing this file.
     mode, accessibility : str, optional
         Forwarded to :func:`_interactive.fullscreen_control` /
         :func:`_style.load_palette`.
@@ -362,18 +369,21 @@ def build_svg(
     # tooltips, is that the last wedge is a rollup -- so that is what the
     # foot says when there is one.
     rolled_wedge = next((r for r in rows if int(r.get("_rolled", 0))), None)
-    if unit == "%" and 99.0 <= total <= 101.0:
-        foot = f"{len(rows)} parts of a whole"
+    if footer is not None:
+        foot = footer
     else:
-        foot = (
-            f"Total {quantity(total)} across {len(rows)} "
-            f"{'part' if len(rows) == 1 else 'parts'}"
-        )
-    if rolled_wedge is not None:
-        foot += (
-            f" · {rolled_wedge[category]} groups the "
-            f"{int(rolled_wedge['_rolled'])} smallest"
-        )
+        if unit == "%" and 99.0 <= total <= 101.0:
+            foot = f"{len(rows)} parts of a whole"
+        else:
+            foot = (
+                f"Total {quantity(total)} across {len(rows)} "
+                f"{'part' if len(rows) == 1 else 'parts'}"
+            )
+        if rolled_wedge is not None:
+            foot += (
+                f" · {rolled_wedge[category]} groups the "
+                f"{int(rolled_wedge['_rolled'])} smallest"
+            )
     parts.append(
         f'<text x="{width / 2:.1f}" y="{height - 20:.1f}" font-size="12" fill="{SECONDARY}" '
         f'text-anchor="middle">{xml_escape(foot)}</text>'
@@ -396,6 +406,7 @@ def make_pie(
     unit: str = "%",
     max_slices: int = 7,
     other_label: str = "Other",
+    footer: Optional[str] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -421,6 +432,8 @@ def make_pie(
         Fold the tail past this many slices into one wedge; 0 draws them all.
     other_label : str
         Name of that rolled-up wedge.
+    footer : str or None
+        The line at the foot; ``None`` composes the default.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
     theme : str, optional
@@ -440,7 +453,8 @@ def make_pie(
     svg = build_svg(
         data, title=title, subtitle=subtitle, width=width, height=height,
         category=category, value=value, unit=unit, max_slices=max_slices,
-        other_label=other_label, mode=mode, accessibility=accessibility, theme=theme,
+        other_label=other_label, footer=footer, mode=mode,
+        accessibility=accessibility, theme=theme,
     )
     dest = Path(out) if out else svg_example_path(__file__, "pie")
     return write_svg(dest, svg, theme=theme)
