@@ -110,16 +110,16 @@ quickchart,boxplot,boxplot,covered,
 quickchart,funnel,funnel,covered,
 quickchart,candlestick,candlestick,covered,
 quickchart,ohlc,ohlc,gap,"open-high-low-close bars, not candle bodies"
-quickchart,sparkline,sparkline,gap,"a word-sized line, no axes, no chrome"
+quickchart,sparkline,sparkline,covered,
 quickchart,sankey,sankey,covered,
 quickchart,progressBar,progress,gap,
-quickchart,mixed (bar + line),dual-axis,gap,
+quickchart,mixed (bar + line),dual-axis,covered,
 quickchart,QR code,,not-a-figure,not a chart
 antv,generate_area_chart,area,covered,
 antv,generate_bar_chart,bar,covered,
 antv,generate_column_chart,bar,covered,
 antv,generate_boxplot_chart,boxplot,covered,
-antv,generate_dual_axes_chart,dual-axis,gap,
+antv,generate_dual_axes_chart,dual-axis,covered,
 antv,generate_fishbone_diagram,fishbone,gap,Ishikawa cause-and-effect
 antv,generate_flow_diagram,,not-a-figure,"Mermaid, through the Ralph loop"
 antv,generate_funnel_chart,funnel,covered,
@@ -245,7 +245,7 @@ highcharts,vector,quiver,covered,
 highcharts,waterfall,waterfall,covered,
 highcharts,pyramid,funnel,covered,an inverted funnel
 highcharts,pie / semicircle pie,pie,covered,
-highcharts,sparkline,sparkline,gap,
+highcharts,sparkline,sparkline,covered,
 highcharts,ohlc,ohlc,gap,
 highcharts,heatmap,heatmap,covered,
 highcharts,network graph,network,covered,
