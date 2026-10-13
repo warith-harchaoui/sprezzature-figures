@@ -7560,6 +7560,171 @@
     ]
   },
   {
+    "kind": "learning-curve",
+    "label": "Learning Curve",
+    "aliases": [
+      "learning curve",
+      "learning_curve"
+    ],
+    "category": "Model evaluation",
+    "description": "Score against training-set size, training and validation, with a band for the fold-to-fold range. A learning curve is drawn for one reason \u2014 to decide whether collecting more data is worth the money \u2014 and almost every published one leaves that decision to the eye, which cannot tell a flattened curve from one still climbing at a hundredth per doubling. This one measures the final doubling and writes the answer in the chrome, names the train-validation gap at the right edge (the bias-variance reading, in one number), and says what the band is. Sizes run on a doubling ladder, which is how the experiment is actually run.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "svg",
+    "module": "scripts/make_learning-curve.py",
+    "callable_name": "make_learning_curve",
+    "required_roles": [
+      {
+        "name": "size",
+        "label": "Training-set size",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "split",
+        "label": "Training or validation",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "score",
+        "label": "Score",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [
+      {
+        "name": "fold",
+        "label": "Fold",
+        "accepted_types": [
+          "identifier",
+          "numeric"
+        ],
+        "required": false
+      }
+    ],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 900,
+    "default_height": 580,
+    "options_schema": {
+      "title": {
+        "type": "str",
+        "default": "The validation curve has not flattened: more data is still worth buying",
+        "choices": [],
+        "description": "Chart text."
+      },
+      "subtitle": {
+        "type": "str",
+        "default": "Accuracy against training-set size, five folds. Bands are the fold-to-fold range.",
+        "choices": [],
+        "description": "Chart text."
+      },
+      "width": {
+        "type": "int",
+        "default": 900,
+        "choices": [],
+        "description": "Canvas size in pixels."
+      },
+      "height": {
+        "type": "int",
+        "default": 580,
+        "choices": [],
+        "description": "Canvas size in pixels."
+      },
+      "x": {
+        "type": "str",
+        "default": "size",
+        "choices": [],
+        "description": "Which keys hold the size, the split and the score."
+      },
+      "series": {
+        "type": "str",
+        "default": "split",
+        "choices": [],
+        "description": "Which keys hold the size, the split and the score."
+      },
+      "y": {
+        "type": "str",
+        "default": "score",
+        "choices": [],
+        "description": "Which keys hold the size, the split and the score."
+      },
+      "x_label": {
+        "type": "str",
+        "default": "Training examples",
+        "choices": [],
+        "description": "Axis titles."
+      },
+      "y_label": {
+        "type": "str",
+        "default": "Accuracy",
+        "choices": [],
+        "description": "Axis titles."
+      },
+      "score_name": {
+        "type": "str",
+        "default": "accuracy",
+        "choices": [],
+        "description": "What the score is called in the verdict sentence."
+      },
+      "verdict": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "The \"would more data help\" sentence; None computes it."
+      },
+      "mode": {
+        "type": "str",
+        "default": "self-contained",
+        "choices": [
+          "self-contained",
+          "external",
+          "static"
+        ],
+        "description": "How the SVG carries its interactivity: self-contained ships its own script, external expects the page to supply one, static leaves it out."
+      },
+      "accessibility": {
+        "type": "str",
+        "default": "universal",
+        "choices": [
+          "universal",
+          "high-contrast",
+          "monochrome",
+          "deuteranopia",
+          "protanopia",
+          "tritanopia"
+        ],
+        "description": "Palette accessibility level; universal is the colour-vision-safe default."
+      },
+      "theme": {
+        "type": "str",
+        "default": "corporate",
+        "choices": [
+          "corporate",
+          "academic"
+        ],
+        "description": "Visual theme. Forwarded to build_svg."
+      }
+    },
+    "warnings": [
+      "make_figure('learning-curve') cannot resolve to make_learning-curve.py: hyphen/underscore normalisation looks for a different filename",
+      "Default output path falls back to a shared assets/ directory"
+    ]
+  },
+  {
     "kind": "liftgain",
     "label": "Liftgain",
     "aliases": [],
