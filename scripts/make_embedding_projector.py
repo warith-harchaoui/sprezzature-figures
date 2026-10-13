@@ -730,6 +730,7 @@ def build_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    title: Optional[str] = None,
 ) -> str:
     """Assemble the full embedding-projector SVG document as a string.
 
@@ -792,7 +793,7 @@ def build_svg(
 
     rep = set(_representative_labels(records, per_cluster=4))
 
-    title_txt = "Words that mean similar things land nearby"
+    title_txt = title or "Words that mean similar things land nearby"
     subtitle_txt = (
         "An embedding of 200 words projected to 2D · point at a word to "
         "light up its 6 nearest neighbours"
@@ -1058,7 +1059,7 @@ def make_embedding_projector(
         Absolute path to the written SVG file.
     """
     _ = data, title  # accepted for dispatcher parity; see docstring
-    svg = build_svg(seed=seed, mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(seed=seed, mode=mode, accessibility=accessibility, theme=theme, title=title or None)
     dest = Path(out) if out else _DEFAULT_OUT
     return write_svg(dest, svg, theme=theme)
 

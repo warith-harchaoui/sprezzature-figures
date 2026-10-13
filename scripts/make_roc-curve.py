@@ -101,6 +101,7 @@ def build_svg(
     x_label: str = "False positive rate",
     y_label: str = "True positive rate",
     theme: str = "corporate",
+    title: Optional[str] = None,
 ) -> str:
     """Assemble the full ROC curve SVG document as a string.
 
@@ -136,7 +137,7 @@ def build_svg(
     points, point_thresholds, auc = _roc_curve(rows)
     # AUC *is* this probability, which is the one reading of the number a
     # reader can act on; "AUC 0.88" alone means nothing without it.
-    title = f"Ranked correctly {auc * 100:.0f} % of the time"
+    title = title or f"Ranked correctly {auc * 100:.0f} % of the time"
     subtitle = f"AUC {auc:.2f} · true-positive against false-positive rate"
 
     plot_x, plot_y = 70.0, 118.0
@@ -321,7 +322,7 @@ def make_roc_curve(
     """
     _ = title
     svg = build_svg(data, width=width, height=height, mode=mode, accessibility=accessibility,
-                     x_label=x_label, y_label=y_label, theme=theme)
+                     x_label=x_label, y_label=y_label, theme=theme, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "roc-curve")
     return write_svg(dest, svg, theme=theme)
 

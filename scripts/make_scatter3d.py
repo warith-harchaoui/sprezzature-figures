@@ -1089,6 +1089,7 @@ def build_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    title: Optional[str] = None,
 ) -> str:
     """Assemble the full 3D-scatter SVG document as a string.
 
@@ -1183,7 +1184,7 @@ def build_svg(
     parts: List[str] = []
 
     # ---- header ----------------------------------------------------------- #
-    title = "Three grape cultivars fall into three chemistry clouds"
+    title = title or "Three grape cultivars fall into three chemistry clouds"
     subtitle = (
         "Drag to rotate, scroll or pinch to zoom, double-click to reset, "
         "hover a point for its readings"
@@ -1334,7 +1335,7 @@ def make_scatter3d(
     """
     _ = title
     xs, ys, zs, labels = _rows_to_clusters(data if data else DEMO_DATA)
-    svg = build_svg(xs, ys, zs, labels, mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(xs, ys, zs, labels, mode=mode, accessibility=accessibility, theme=theme, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "scatter3d")
     return write_svg(dest, svg, theme=theme)
 

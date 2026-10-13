@@ -316,6 +316,7 @@ def build_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    title: Optional[str] = None,
 ) -> str:
     """Assemble the full horizon-chart SVG document as a string.
 
@@ -407,7 +408,7 @@ def build_svg(
     defs: List[str] = []
 
     # ---- header ----------------------------------------------------------- #
-    title = "db-01's nightly batch is the fleet's biggest CPU swing"
+    title = title or "db-01's nightly batch is the fleet's biggest CPU swing"
     parts.append(
         f'<svg role="img" aria-label="{title}" '
         f'xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" '
@@ -735,7 +736,7 @@ def make_horizon(
     _ = title
     rows = data if data else DEMO_DATA
     series = _rows_to_series(rows)
-    svg = build_svg(series, mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(series, mode=mode, accessibility=accessibility, theme=theme, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "horizon")
     return write_svg(dest, svg, theme=theme)
 

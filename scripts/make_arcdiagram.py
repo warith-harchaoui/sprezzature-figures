@@ -218,7 +218,8 @@ def _arc_path(x0: float, x1: float) -> Tuple[str, float]:
 # SVG emission
 # ------------------------------------------------------------------
 def build_svg(
-    mode: str = "self-contained", accessibility: str = "universal", theme: str = "corporate"
+    mode: str = "self-contained", accessibility: str = "universal", theme: str = "corporate",
+    title: Optional[str] = None,
 ) -> str:
     """Assemble the full arc-diagram SVG document as a string.
 
@@ -255,7 +256,7 @@ def build_svg(
 
     parts: List[str] = []
 
-    title_txt = "One researcher holds two research groups together"
+    title_txt = title or "One researcher holds two research groups together"
     subtitle_txt = (
         "Co-authorship across a lab this year — nodes ordered by group; "
         "illustrative data"
@@ -557,7 +558,7 @@ def make_arcdiagram(
     True
     """
     _ = data, title
-    svg = build_svg(mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(mode=mode, accessibility=accessibility, theme=theme, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "arcdiagram")
     return write_svg(dest, svg, theme=theme)
 

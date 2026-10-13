@@ -356,6 +356,7 @@ def build_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    title: Optional[str] = None,
 ) -> str:
     """Assemble the full streamgraph SVG document as a string.
 
@@ -442,7 +443,7 @@ def build_svg(
     defs: List[str] = []
 
     # ---- header ----------------------------------------------------------- #
-    title = "Hip-Hop overtakes Rock as streaming reshapes the charts"
+    title = title or "Hip-Hop overtakes Rock as streaming reshapes the charts"
     parts.append(
         f'<svg role="img" aria-label="{title}" '
         f'xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" '
@@ -738,9 +739,8 @@ def make_streamgraph(
     Path
         Absolute path to the written SVG file.
     """
-    del title
     years, genres, volume = _rows_to_matrix(list(data)) if data else _sample_genre_share()
-    svg = build_svg(years, genres, volume, mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(years, genres, volume, mode=mode, accessibility=accessibility, theme=theme, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "streamgraph")
     return write_svg(dest, svg, theme=theme)
 

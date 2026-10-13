@@ -263,6 +263,7 @@ def build_svg(
     x_axis_title: str = "Time (seconds)",
     y_axis_title: str = "Frequency (Hz)",
     legend_title: str = "Power",
+    title: Optional[str] = None,
 ) -> str:
     """Assemble the full spectrogram SVG document as a string.
 
@@ -338,7 +339,7 @@ def build_svg(
     parts: List[str] = []
 
     # ---- header ----------------------------------------------------------- #
-    title = "A rising tone climbs the frequency axis over three seconds"
+    title = title or "A rising tone climbs the frequency axis over three seconds"
     subtitle = (
         "Short-time Fourier transform of a synthesised clip — brighter = louder "
         ""
@@ -654,11 +655,10 @@ def make_spectrogram(
     Path
         Absolute path to the written SVG file.
     """
-    del title
     signal, sr = _synthesise_clip(data, seed=seed)
     stft = _stft_db(signal, sr)
     svg = build_svg(stft, sr, mode, accessibility=accessibility, theme=theme,
-                     x_axis_title=x_axis_title, y_axis_title=y_axis_title, legend_title=legend_title)
+                     x_axis_title=x_axis_title, y_axis_title=y_axis_title, legend_title=legend_title, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "spectrogram")
     return write_svg(dest, svg, theme=theme)
 

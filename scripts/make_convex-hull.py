@@ -378,7 +378,8 @@ def _label_anchor(hull_px: List[Tuple[float, float]]) -> Tuple[float, float]:
 # SVG emission
 # ------------------------------------------------------------------
 def build_svg(
-    seed: int = 11, mode: str = "self-contained", accessibility: str = "universal", theme: str = "corporate"
+    seed: int = 11, mode: str = "self-contained", accessibility: str = "universal", theme: str = "corporate",
+    title: Optional[str] = None,
 ) -> str:
     """Assemble the full convex-hull SVG document as a string.
 
@@ -410,7 +411,7 @@ def build_svg(
     segment_color = _segment_colors(accessibility, theme=theme)
     data = make_data(seed=seed)
 
-    title_txt = "Three customer segments carve out distinct territory"
+    title_txt = title or "Three customer segments carve out distinct territory"
     subtitle_txt = (
         "Monthly spend vs. weekly active days, one dot per customer, "
         "hull per model-assigned segment"
@@ -704,7 +705,7 @@ def make_convex_hull(
         Absolute path to the written SVG file.
     """
     _ = data, title  # accepted for dispatcher parity; see docstring
-    svg = build_svg(seed=seed, mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(seed=seed, mode=mode, accessibility=accessibility, theme=theme, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "convex-hull")
     return write_svg(dest, svg, theme=theme)
 

@@ -257,6 +257,7 @@ def build_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    title: Optional[str] = None,
     y_axis_title: str = "f(t) — Andrews series value",
     legend_title: str = "Species",
     term_order_label: str = "Fourier term order:",
@@ -357,7 +358,10 @@ def build_svg(
     parts: List[str] = []
 
     # ---- header ----------------------------------------------------------- #
-    title = "Three penguin species trace three Fourier signatures"
+    # The headline the figure writes about its own demo data, used only
+    # when the caller supplies none. Accepting `title` and ignoring it --
+    # which this did -- advertises a knob that turns nothing.
+    title = title or "Three penguin species trace three Fourier signatures"
     subtitle = (
         "Each curve turns one bird's four body measurements into an "
         "Andrews series; bold lines are the species medians."
@@ -650,8 +654,8 @@ def make_andrews(
     out : Path, str, or None
         Output path (.svg). Defaults to ``assets/svg-examples/andrews.svg``.
     title : str, optional
-        Accepted for CLI/dispatcher parity; this figure's title is derived
-        from the class structure of the data and stays fixed.
+        Chart headline. Empty keeps the one the figure writes about its own
+        data; anything else replaces it.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
     theme : str, optional
@@ -671,7 +675,9 @@ def make_andrews(
     _ = title
     rows = data if data else DEMO_DATA
     x_raw, labels = _rows_to_matrix(rows)
-    svg = build_svg(x_raw, labels, mode=mode, accessibility=accessibility, theme=theme, y_axis_title=y_axis_title, legend_title=legend_title, term_order_label=term_order_label)
+    svg = build_svg(x_raw, labels, mode=mode, accessibility=accessibility, theme=theme,
+                    title=title or None, y_axis_title=y_axis_title,
+                    legend_title=legend_title, term_order_label=term_order_label)
     dest = Path(out) if out else svg_example_path(__file__, "andrews")
     return write_svg(dest, svg, theme=theme)
 

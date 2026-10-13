@@ -408,6 +408,7 @@ def _edge_control_points(
 def build_svg(
     mode: str = "self-contained", accessibility: str = "universal", theme: str = "corporate",
     stat_card_label: str = "Dependencies into", stat_card_value_label: str = "Auth",
+    title: Optional[str] = None,
 ) -> str:
     """Assemble the full edge-bundling SVG document as a string.
 
@@ -445,7 +446,7 @@ def build_svg(
     subsys_color = _subsys_color(accessibility, theme=theme)
     leaves, parents = _compute_layout(subsys_color)
 
-    title_txt = "Every subsystem reaches into Auth, and Billing burrows into Data"
+    title_txt = title or "Every subsystem reaches into Auth, and Billing burrows into Data"
     subtitle_txt = (
         "Module dependencies in a web app, bundled by subsystem"
     )
@@ -742,7 +743,7 @@ def make_edge_bundling(
     """
     _ = data, title  # accepted for dispatcher parity; see docstring
     svg = build_svg(mode=mode, accessibility=accessibility, theme=theme,
-                     stat_card_label=stat_card_label, stat_card_value_label=stat_card_value_label)
+                     stat_card_label=stat_card_label, stat_card_value_label=stat_card_value_label, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "edge-bundling")
     return write_svg(dest, svg, theme=theme)
 

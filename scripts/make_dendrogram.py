@@ -313,6 +313,7 @@ def _fmt(v: float) -> str:
 def build_svg(
     mode: str = "self-contained", accessibility: str = "universal", theme: str = "corporate",
     legend_title: str = "CLUSTERS",
+    title: Optional[str] = None,
 ) -> str:
     """Assemble the full dendrogram SVG document as a string.
 
@@ -353,7 +354,7 @@ def build_svg(
     parts: List[str] = []
 
     # --- header: accessible role + title + description ---
-    title_txt = "Three natural shelves emerge from how households shop"
+    title_txt = title or "Three natural shelves emerge from how households shop"
     subtitle_txt = (
         "Private-label lines clustered by co-purchase similarity"
     )
@@ -707,7 +708,7 @@ def make_dendrogram(
         Absolute path to the written SVG file.
     """
     _ = data, title  # accepted for dispatcher parity; see docstring
-    svg = build_svg(mode=mode, accessibility=accessibility, theme=theme, legend_title=legend_title)
+    svg = build_svg(mode=mode, accessibility=accessibility, theme=theme, legend_title=legend_title, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "dendrogram")
     return write_svg(dest, svg, theme=theme)
 

@@ -225,6 +225,7 @@ def build_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    title: Optional[str] = None,
 ) -> str:
     """Assemble the full radar-chart SVG document as a string.
 
@@ -291,7 +292,7 @@ def build_svg(
     parts: List[str] = []
 
     # ---- header / accessibility ------------------------------------------- #
-    title = "No database wins on every sprezzature"
+    title = title or "No database wins on every sprezzature"
     subtitle = (
         "Three managed cloud databases scored 0–100 across six buyer criteria "
         ""
@@ -561,7 +562,7 @@ def make_radar(
     _ = title
     rows = data if data else DEMO_DATA
     radar_data = _rows_to_radar_data(rows)
-    svg = build_svg(radar_data, mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(radar_data, mode=mode, accessibility=accessibility, theme=theme, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "radar")
     return write_svg(dest, svg, theme=theme)
 

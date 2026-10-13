@@ -386,7 +386,9 @@ def _compute_layout(region_color: Optional[Dict[str, str]] = None) -> Tuple[Dict
 # ------------------------------------------------------------------
 # SVG emission
 # ------------------------------------------------------------------
-def build_svg(mode: str = "self-contained", accessibility: str = "universal", theme: str = "corporate") -> str:
+def build_svg(mode: str = "self-contained", accessibility: str = "universal", theme: str = "corporate",
+    title: Optional[str] = None,
+) -> str:
     """Assemble the full dependency-wheel SVG document as a string.
 
     Parameters
@@ -416,7 +418,7 @@ def build_svg(mode: str = "self-contained", accessibility: str = "universal", th
 
     parts: List[str] = []
 
-    title_txt = "The Sun Belt keeps drawing people from the Rust Belt and the Coasts"
+    title_txt = title or "The Sun Belt keeps drawing people from the Rust Belt and the Coasts"
     subtitle_txt = (
         "Internal migration between six regions over a decade, in thousands of "
         "people"
@@ -713,7 +715,7 @@ def make_dependency_wheel(
         Absolute path to the written SVG file.
     """
     _ = data, title  # accepted for dispatcher parity; see docstring
-    svg = build_svg(mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(mode=mode, accessibility=accessibility, theme=theme, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "dependency-wheel")
     return write_svg(dest, svg, theme=theme)
 

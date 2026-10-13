@@ -282,6 +282,7 @@ def build_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    title: Optional[str] = None,
 ) -> str:
     """Assemble the full ridgeline SVG document as a string.
 
@@ -352,7 +353,7 @@ def build_svg(
     parts: List[str] = []
 
     # ---- header ----------------------------------------------------------- #
-    title = "The whole distribution marches with the seasons, not just the mean"
+    title = title or "The whole distribution marches with the seasons, not just the mean"
     subtitle = "Daily-high temperature by month, one colour-coded lane each"
     parts.append(
         f'<svg role="img" aria-label="{title}" '
@@ -554,7 +555,7 @@ def make_ridgeline(
     _ = title
     rows = data if data else DEMO_DATA
     samples = _samples_from_rows(rows, seed=seed)
-    svg = build_svg(samples, mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(samples, mode=mode, accessibility=accessibility, theme=theme, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "ridgeline")
     return write_svg(dest, svg, theme=theme)
 

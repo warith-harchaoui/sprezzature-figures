@@ -416,6 +416,7 @@ def build_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    title: Optional[str] = None,
 ) -> str:
     """Assemble the full force-directed large-graph SVG document.
 
@@ -463,7 +464,7 @@ def build_svg(
     # Cross-community edge count for the subtitle takeaway.
     cross = sum(1 for a, b in edges if comm[a] != comm[b])
 
-    title_txt = "Six labs, one connected research network"
+    title_txt = title or "Six labs, one connected research network"
     subtitle_txt = (
         f"{n} researchers, {len(edges)} co-authorships — "
         "illustrative data"
@@ -800,7 +801,7 @@ def make_sfdp_largegraph(
         Absolute path to the written SVG file.
     """
     _ = title
-    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "sfdp-largegraph")
     return write_svg(dest, svg, theme=theme)
 
