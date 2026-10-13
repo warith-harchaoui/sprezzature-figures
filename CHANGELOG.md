@@ -1,5 +1,73 @@
 # Changelog
 
+## 2.5.0 (2026-10-13): every figure's own options, on the command line and over HTTP
+
+Each of the 127 generators is a function with a signature — `make_bar(data, *,
+out, title, subtitle, width, height, mode, accessibility, language, x_label,
+y_label, theme)`. A library caller could read it and pass what it wanted. A
+command-line caller could pass `--title`, and nothing else. An HTTP caller
+could send an `options` object that was never checked, so a misspelt key was
+dropped on the way in and the figure came back looking as though it had
+ignored the request.
+
+That surface is now derived from the generators themselves and published
+through all three doors.
+
+### Added
+
+- **`options_schema` for all 127 kinds, read off the live signatures.** The
+  catalogue builder introspects each `make_<kind>` and its numpydoc docstring
+  into a type, a default, the allowed values and a line of help, and freezes
+  the result in `catalog/figures.json` — 847 options, where there had been
+  none. Deriving rather than hand-writing is what keeps it true: a generator
+  that gains a parameter publishes it on the next build, and a new test fails
+  when the frozen copy and the live signature disagree.
+- **A flag per option, on both command lines.** `make-figure sankey --help`
+  now documents `--volume-unit` and `--stage-names`; `make-figure bar --help`
+  documents `--width` and `--x-label`. The flags exist only for the figures
+  that accept them, the way `scripts/_render.py` has always grown a flag from
+  a `build_svg` parameter. `--set name=value` is the scriptable spelling that
+  reaches any option without one.
+- **`make-figure <kind> --describe`** (and `sprezzature-figures describe
+  <kind>`): what the figure needs — its data roles — then what it accepts,
+  with every default. `--json` prints the catalogue entry instead.
+- **`GET /kinds/{kind}/options`**, the HTTP half of the same answer, and an
+  MCP tool (`list_kind_options`) with it.
+- **`redraw`, `recommend`, `check` and `list` as `make-figure` sub-commands.**
+  They had routes in the HTTP API and commands in the Click twin, and no
+  spelling at all in the always-installed command: what you could do depended
+  on which door you came through. The behaviour moved into
+  `sprezzature_figures.actions`, called by both command lines, so the two
+  cannot answer differently. A test pins the route-to-command map.
+- **`dark` over HTTP.** It existed as `--dark` and as a `make_figure()`
+  keyword; the API could not ask for it.
+- **`--json` on `--list`**, for a caller that is not a person.
+
+### Fixed
+
+- **`make-figure <kind>` drew the demo figure untitled.** The command passed
+  `title=""` whether or not you asked for a title, and handed the generator
+  its own `DEMO_DATA` — which the dispatcher cannot tell from caller data, so
+  it suppressed the demo chrome as a precaution. Between them, the reference
+  render came out with no headline and no subtitle, and no flag could bring
+  them back. An omitted `--title` now means omitted, and a demo render asks
+  for the figure's own rows by passing none.
+- **The demo *title* survived onto your data.** The dispatcher already
+  suppressed the demo subtitle and axis titles when rendering somebody's own
+  rows, on the grounds that chrome written for other numbers is false. The
+  title — the most quoted line on the figure — was not in that list.
+- **An option the figure does not accept is now an error.** Unknown keywords
+  were dropped silently (right for a library caller forwarding a bundle of
+  shared chrome kwargs; wrong for someone who typed one). The CLI and the API
+  name the nearest real option and list the rest; the API answers 422.
+- **`make_gauge` ignored `subtitle` and `make_waterfall` ignored
+  `accessibility`.** Both parameters existed one level down in `build_svg`, so
+  a caller asking every figure for a monochrome palette got the universal one
+  from the waterfall, and nothing said so.
+- **Canvas defaults in the catalogue were a flat 900x600 for every kind**,
+  which was true of almost none of them. They are read off the generator now
+  (`bar` is 745x505).
+
 ## 2.4.0 (2026-10-02): a mismatched pair raises instead of drawing a shorter chart
 
 ### Fixed
