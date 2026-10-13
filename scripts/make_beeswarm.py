@@ -26,12 +26,13 @@ from __future__ import annotations
 import random
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _scale import nice_ticks_range  # noqa: E402
+from _swarm import _swarm_positions  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY, load_palette  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 from _svg import foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noqa: E402
@@ -53,63 +54,6 @@ def _make_demo_data() -> List[Dict[str, Any]]:
 
 
 DEMO_DATA: List[Dict[str, Any]] = _make_demo_data()
-
-
-def _swarm_positions(
-    items: List[Tuple[float, float]], center_y: float, radius: float,
-    max_offset: Optional[float] = None,
-) -> List[float]:
-    """Greedy collision-avoidance layout: return one y per (x, _) in *items*.
-
-    Processes points in the given order, trying ``center_y`` first, then
-    alternating offsets of increasing magnitude, accepting the first
-    position that does not overlap (in Euclidean distance) any
-    already-placed point whose x is within one diameter.
-
-    Parameters
-    ----------
-    max_offset : float, optional
-        Cap on how far a point may be pushed from ``center_y``. A locally
-        dense cluster of x-values (many points sharing nearly the same x)
-        otherwise pushes the offset outward without bound: fine when a
-        band has generous headroom, but a caller with a fixed row height
-        (a multi-row swarm, one band per category) needs points to stay
-        inside their own band rather than spill into a neighbour's. Once
-        the offset would exceed this cap, the point is clamped to the
-        boundary and placed there, overlap accepted, rather than pushed
-        further out. ``None`` (default) preserves the original unbounded
-        behaviour.
-    """
-    step = radius * 1.9
-    placed: List[Tuple[float, float]] = []
-    ys: List[float] = []
-    for x, _ in items:
-        offset = 0
-        tried = 0
-        while True:
-            raw_candidate = center_y if offset == 0 else center_y + (step * ((offset + 1) // 2) * (1 if offset % 2 else -1))
-            at_bound = max_offset is not None and abs(raw_candidate - center_y) >= max_offset
-            # Written as a statement, not a conditional expression: `at_bound`
-            # already implies `max_offset is not None`, but only a reader can
-            # see that through the intermediate variable. Repeating the test
-            # costs nothing at runtime and states the precondition where it is
-            # used.
-            if max_offset is not None and at_bound:
-                candidate = center_y + max_offset * (1 if raw_candidate >= center_y else -1)
-            else:
-                candidate = raw_candidate
-            collision = any(
-                (x - px) ** 2 + (candidate - py) ** 2 < (2 * radius) ** 2
-                for px, py in placed
-                if abs(x - px) < 2 * radius
-            )
-            if not collision or tried > 400 or at_bound:
-                placed.append((x, candidate))
-                ys.append(candidate)
-                break
-            offset += 1
-            tried += 1
-    return ys
 
 
 #: Chrome bilingue. Le français d'abord, parce que c'est la langue dans
