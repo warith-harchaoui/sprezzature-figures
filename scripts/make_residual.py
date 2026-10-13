@@ -187,6 +187,7 @@ def build_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    title: Optional[str] = None,
 ) -> str:
     """Assemble the full residual-plot SVG string.
 
@@ -312,10 +313,12 @@ def build_svg(
     parts.append(f'<rect width="{width}" height="{height}" fill="#FFFFFF"/>')
 
     # --- title + subtitle (the takeaway) -------------------------
+    # The headline the figure writes about its own data, used only
+    # when the caller supplies none.
+    title = title or "The residuals still curve — a straight line under-fits home prices"
     parts.append(
         f'<text x="{m_left}" y="66" font-size="28" font-weight="700" '
-        f'fill="{ink}">The residuals still curve — a straight line '
-        f'under-fits home prices</text>'
+        f'fill="{ink}">{xml_escape(title)}</text>'
     )
     parts.append(
         f'<text x="{m_left}" y="102" font-size="19" fill="{secondary}">'
@@ -520,7 +523,7 @@ def make_residual(
         Absolute path to the written SVG file.
     """
     _ = title
-    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "residual")
     return write_svg(dest, svg, theme=theme)
 

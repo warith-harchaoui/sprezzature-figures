@@ -22,7 +22,7 @@ from typing import Dict, List, Optional, Tuple
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _svg import svg_open, tooltip_bubble  # noqa: E402
+from _svg import xml_escape, svg_open, tooltip_bubble  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
@@ -114,6 +114,7 @@ def build_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    title: Optional[str] = None,
 ) -> str:
     """Assemble the full 3-D surface SVG document as a string.
 
@@ -192,9 +193,12 @@ def build_svg(
     )
     parts.append(f"<style>{hover_css}</style>")
     parts.append(f'<rect width="{_WIDTH}" height="{_HEIGHT}" fill="{_BG}"/>')
+    # The headline the figure writes about its own data, used only
+    # when the caller supplies none.
+    title = title or "A central peak on a 3-D surface"
     parts.append(
         f'<text x="40" y="56" font-size="26" font-weight="600" fill="{_INK}" '
-        f'letter-spacing="-0.3">A central peak on a 3-D surface</text>'
+        f'letter-spacing="-0.3">{xml_escape(title)}</text>'
     )
     parts.append(
         f'<text x="40" y="84" font-size="14" fill="{_SUBTLE}">'
@@ -293,8 +297,7 @@ def make_surface3d(
     Path
         Absolute path to the written SVG file.
     """
-    del title
-    svg = build_svg(data, z_axis_title=z_axis_title, mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(data, z_axis_title=z_axis_title, mode=mode, accessibility=accessibility, theme=theme, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "surface3d")
     return write_svg(dest, svg, theme=theme)
 

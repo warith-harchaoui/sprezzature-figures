@@ -40,7 +40,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 import _style
-from _svg import foreground_tip_css, tooltip_bubble, viridis  # noqa: E402
+from _svg import foreground_tip_css, tooltip_bubble, viridis, xml_escape  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
@@ -511,6 +511,7 @@ def build_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    title: Optional[str] = None,
 ) -> str:
     """Assemble the full boxen-plot SVG document as a string.
 
@@ -652,9 +653,12 @@ def build_svg(
     @media (prefers-reduced-motion:reduce){{.tip{{transition:none}}}}
   </style>"""
     bg = f'  <rect width="{WIDTH}" height="{HEIGHT}" fill="{WHITE}"/>'
+    # The headline the figure writes about its own data, used only when
+    # the caller supplies none.
+    title = title or "Where each service tier hides its latency tail"
     title_text = (
         f'  <text x="{PLOT_LEFT}" y="48" font-size="26" font-weight="700" '
-        f'fill="{INK}">Where each service tier hides its latency tail</text>'
+        f'fill="{INK}">{xml_escape(title)}</text>'
     )
     subtitle_text = (
         f'  <text x="{PLOT_LEFT}" y="77" font-size="17" fill="{SUBTLE}">{subtitle}</text>'
@@ -736,7 +740,7 @@ def make_boxen(
     True
     """
     _ = title
-    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "boxen")
     return write_svg(dest, svg, theme=theme)
 
