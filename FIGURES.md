@@ -1,6 +1,6 @@
 # Figure Catalogue
 
-134 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type). `choropleth` and `situation_map` moved to their own repo, [sprezzature-maps](https://github.com/warith-harchaoui/sprezzature-maps).
+135 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type). `choropleth` and `situation_map` moved to their own repo, [sprezzature-maps](https://github.com/warith-harchaoui/sprezzature-maps).
 
 Invoke via:
 
@@ -94,6 +94,7 @@ colour-vision-deficiency-safe Okabe-Ito palette); see
 | `jointplot` | make_jointplot.py | Bivariate distribution | Central scatter or hexbin with marginal histograms or KDE on each axis. Use to show bivariate distribution and its univariate projections simultaneously. |
 | `kde1d` | make_kde1d.py | Distribution | Smooths a numeric sample into a continuous density curve via a Gaussian kernel at each point, no binning choice, bandwidth as the only smoothing knob. Use for any single numeric sample where histogram bin edges would distract from the shape. |
 | `kde2d-contour` | make_kde2d-contour.py | Bivariate distribution | 2-D kernel density estimate drawn as isocontour rings over the raw scatter, closer rings where density changes fastest. Use to visualise where a bivariate sample concentrates and sanity-check the smoothing against the raw points. |
+| `learning-curve` | make_learning-curve.py | Model evaluation | Score against training-set size, training and validation, with a band for the fold-to-fold range. A learning curve is drawn for one reason — to decide whether collecting more data is worth the money — and almost every published one leaves that decision to the eye, which cannot tell a flattened curve from one still climbing at a hundredth per doubling. This one measures the final doubling and writes the answer in the chrome, names the train-validation gap at the right edge (the bias-variance reading, in one number), and says what the band is. Sizes run on a doubling ladder, which is how the experiment is actually run. |
 | `liftgain` | make_liftgain.py | Model evaluation | Lift and gain curves for binary classifiers. Use to evaluate how much better than random a model performs when targeting the top N% of a population. |
 | `line` | make_line.py | Time series | Multi-series line chart with points, the default for showing how a numeric value evolves over an ordered axis. Use for monthly revenue by product line, daily active users, sensor readings. |
 | `line-multi` | make_line-multi.py | Time series | Multi-series line chart over a continuous quantitative axis (e.g. hour-of-day), point marker at every sample, hover highlights one series. Use for sessions per hour by platform or any series sampled densely along one continuous axis. |

@@ -421,12 +421,7 @@ MAPPING: dict[str, list[tuple[str, str, str, str]]] = {
         ("Manhattan plot", "manhattan", "covered", ""),
         ("Bland-Altman", "blandaltman", "covered", ""),
         ("Gaussian process posterior", "gaussian-process", "covered", ""),
-        (
-            "learning curve",
-            "learning-curve",
-            "gap",
-            "score against training-set size, with its band",
-        ),
+        ("learning curve", "learning-curve", "covered", ""),
         ("validation curve", "validation-curve", "gap", "score against one hyper-parameter"),
         (
             "training / loss curve",

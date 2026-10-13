@@ -207,6 +207,36 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
         ],
         "optional_roles": [],
     },
+    "learning-curve": {
+        "required_roles": [
+            {
+                "name": "size",
+                "label": "Training-set size",
+                "accepted_types": ["numeric"],
+                "required": True,
+            },
+            {
+                "name": "split",
+                "label": "Training or validation",
+                "accepted_types": ["categorical"],
+                "required": True,
+            },
+            {
+                "name": "score",
+                "label": "Score",
+                "accepted_types": ["numeric"],
+                "required": True,
+            },
+        ],
+        "optional_roles": [
+            {
+                "name": "fold",
+                "label": "Fold",
+                "accepted_types": ["identifier", "numeric"],
+                "required": False,
+            },
+        ],
+    },
     "pie": {
         "required_roles": [
             {
