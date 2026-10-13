@@ -4,15 +4,16 @@ Reproducible audit of every `scripts/make_*.py` generator against the
 `make_<kind>(data, *, out, title, ...) -> Path` contract the dispatcher
 expects. Regenerate with `python tools/audit_generators.py --render`.
 
-- **stable**: 138
+- **stable**: 139
 - **experimental**: 0
 - **legacy**: 0
 - **unavailable**: 0
-- **total**: 138
+- **total**: 139
 
 | kind | status | reachable | callable | demo_data | render | errors |
 |---|---|---|---|---|---|---|
 | `ablation_matrix` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `acf` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `alluvial` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `andrews` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `arcdiagram` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
