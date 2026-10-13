@@ -3555,6 +3555,12 @@
         "choices": [],
         "description": "Captions on the centre line and on the two control limits; each is drawn with its value beside it."
       },
+      "spec_caution": {
+        "type": "str",
+        "default": "control limits, not specification limits",
+        "choices": [],
+        "description": ""
+      },
       "upper_label": {
         "type": "str",
         "default": "upper control limit",

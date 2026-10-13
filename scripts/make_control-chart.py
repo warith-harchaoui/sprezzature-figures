@@ -209,6 +209,7 @@ def build_svg(
     spec_high: Optional[float] = None,
     zones: bool = True,
     centre_label: str = "centre",
+    spec_caution: str = "control limits, not specification limits",
     upper_label: str = "upper control limit",
     lower_label: str = "lower control limit",
     spec_low_label: str = "spec low",
@@ -258,6 +259,10 @@ def build_svg(
         Captions on the two specification limits.
     zones : bool
         Shade the one and two sigma zones.
+    spec_caution : str
+        The standing caution under the limit line, drawn whether or not
+        specification limits are given, because the confusion it answers
+        does not wait for them.
     centre_label, upper_label, lower_label : str
         Captions on the centre line and on the two control limits; each
         is drawn with its value beside it.
@@ -374,12 +379,17 @@ def build_svg(
         places = max(0, min(4, 1 - int(math.floor(math.log10(sigma)))))
         return f"{value:.{places}f}"
 
-    said_limits = limit_note if limit_note is not None else (
-        f"control limits at {measured(middle)} ± {fmt_number(sigma_multiplier)} × "
-        f"{measured(sigma)}, sigma from the "
-        + ("mean moving range" if limit_from == "moving-range" else "standard deviation of all points")
-        + " · control limits, not specification limits"
+    limit_lines = (
+        [limit_note] if limit_note is not None
+        else [
+            f"control limits at {measured(middle)} ± {fmt_number(sigma_multiplier)} × "
+            f"{measured(sigma)}, sigma from the "
+            + ("mean moving range" if limit_from == "moving-range"
+               else "standard deviation of all points"),
+            spec_caution,
+        ]
     )
+    said_limits = " · ".join(limit_lines)
     said_parts: List[str] = []
     if finding is not None:
         said_parts.append(finding)
@@ -408,8 +418,8 @@ def build_svg(
     parts.append(
         f'<desc id="spc-desc">An individuals control chart of {n} units from '
         f'{xml_escape(labels[0])} to {xml_escape(labels[-1])}, with a centre line at '
-        f'{fmt_number(middle)} and control limits at {fmt_number(lower)} and '
-        f'{fmt_number(upper)}. {xml_escape(said_limits)}. '
+        f'{measured(middle)} and control limits at {measured(lower)} and '
+        f'{measured(upper)}. {xml_escape(said_limits)}. '
         f'{xml_escape(" ".join(said_parts))}</desc>'
     )
     parts.append(
@@ -431,7 +441,13 @@ def build_svg(
             f'<text x="{plot_x - 68:.1f}" y="{72 + line_index * 20:.1f}" font-size="14" '
             f'fill="{SECONDARY}">{xml_escape(line)}</text>'
         )
-    for line_index, line in enumerate(wrap_no_orphan(said_limits, 98)[:2]):
+    # One clause per line, by construction: the wrapper used to cut this
+    # note at "control limits, not / specification limits", which is both
+    # a worse read and a fragment for a translator.
+    limit_drawn: List[str] = []
+    for clause in limit_lines:
+        limit_drawn.extend(wrap_no_orphan(clause, 98))
+    for line_index, line in enumerate(limit_drawn[:2]):
         parts.append(
             f'<text x="{plot_x - 68:.1f}" y="{124 + line_index * 17:.1f}" font-size="12" '
             f'fill="{SECONDARY}" font-family="{mono_family}">{xml_escape(line)}</text>'
@@ -566,6 +582,7 @@ def make_control_chart(
     spec_high: Optional[float] = None,
     zones: bool = True,
     centre_label: str = "centre",
+    spec_caution: str = "control limits, not specification limits",
     upper_label: str = "upper control limit",
     lower_label: str = "lower control limit",
     spec_low_label: str = "spec low",
@@ -639,7 +656,8 @@ def make_control_chart(
         centre=centre, spec_low=spec_low, spec_high=spec_high,
         spec_low_label=spec_low_label, spec_high_label=spec_high_label,
         zones=zones,
-        centre_label=centre_label, upper_label=upper_label,
+        spec_caution=spec_caution, centre_label=centre_label,
+        upper_label=upper_label,
         lower_label=lower_label, x_label=x_label, y_label=y_label,
         limit_note=limit_note, finding=finding, mode=mode,
         accessibility=accessibility, theme=theme,
