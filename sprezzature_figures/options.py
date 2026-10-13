@@ -100,6 +100,11 @@ OPTION_CHOICES: dict[str, tuple[str, ...]] = {
     # scales it. Two different claims about the data, and the figure
     # computes different components for each.
     "model": ("additive", "multiplicative"),
+    # control-chart: where the sigma behind the limits comes from, and
+    # which run rules are applied. The second is a *list* of choices --
+    # see the element-wise check in `coerce_option`.
+    "limit_from": ("moving-range", "sd"),
+    "rules": ("beyond", "run", "trend", "two-of-three"),
 }
 
 #: House meaning of the keywords many generators share. A generator
@@ -434,8 +439,22 @@ def coerce_option(option: OptionDefinition, raw: Any) -> Any:
             f"--{option.name.replace('_', '-')} expects {_type_hint(option)}; got {raw!r} ({exc})."
         ) from exc
 
-    if option.choices and str(value) not in option.choices:
-        raise OptionError(f"{option.name}={raw!r} is not one of: {', '.join(option.choices)}.")
+    # Checked element by element, because a closed vocabulary is as common
+    # on a list option as on a single one: control-chart's `rules` takes any
+    # subset of four names. The earlier spelling compared `str(value)` to the
+    # vocabulary, which for a list compares "['beyond']" to "beyond" and can
+    # only ever fail -- so a list option could not declare choices at all,
+    # and its values went unvalidated by both the CLI and the API.
+    if option.choices:
+        candidates = value if isinstance(value, list) else [value]
+        rejected = [item for item in candidates if str(item) not in option.choices]
+        if rejected:
+            raise OptionError(
+                f"{option.name}={raw!r} is not one of: {', '.join(option.choices)}."
+                if len(candidates) == 1
+                else f"{option.name}={raw!r} has {len(rejected)} value(s) outside "
+                     f"{', '.join(option.choices)}: {', '.join(str(r) for r in rejected)}."
+            )
     return value
 
 
