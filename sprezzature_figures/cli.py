@@ -27,8 +27,11 @@ except ImportError:
         )
         sys.exit(1)
 else:
+    from collections.abc import Callable
+
+    from .actions import ActionError, ActionResult
     from .catalog import resolve_kind
-    from .make_figure import _demo_data_for, list_kinds, make_figure
+    from .make_figure import list_kinds, make_figure
 
     # The group gets its own name so the `@cli.command(...)` decorators below
     # attach to a real `click.Group`. Binding it to `main` directly made the
@@ -38,6 +41,25 @@ else:
     def cli() -> None:
         """sprezzature-figures: render publication-quality data figures."""
 
+    def _emit(action: Callable[[], ActionResult]) -> None:
+        """Run one shared action and give its result to the terminal.
+
+        The work lives in :mod:`sprezzature_figures.actions` so the
+        argparse command can do exactly the same thing; all that is left
+        here is which stream each line goes to and what to exit with.
+        """
+        try:
+            result = action()
+        except ActionError as exc:
+            click.echo(str(exc), err=True)
+            raise SystemExit(1) from exc
+        for line in result.out:
+            click.echo(line)
+        for line in result.err:
+            click.echo(line, err=True)
+        if result.code:
+            raise SystemExit(result.code)
+
     @cli.command("list")
     @click.option(
         "--status",
@@ -45,21 +67,121 @@ else:
         type=click.Choice(["stable", "experimental", "legacy", "unavailable"]),
         help="Only show kinds with this status.",
     )
-    def list_cmd(status: str | None) -> None:
+    @click.option(
+        "--json",
+        "as_json",
+        is_flag=True,
+        help="Print the names as a JSON array, for a caller that is not a person.",
+    )
+    def list_cmd(status: str | None, as_json: bool) -> None:
         """Print all available chart kind names."""
         kinds = list_kinds(status=status)
+        if as_json:
+            import json
+
+            click.echo(json.dumps(kinds, indent=2))
+            return
         click.echo(f"{len(kinds)} chart types available:")
         for k in kinds:
             click.echo(f"  {k}")
 
-    @cli.command("render")
+    class FigureRenderCommand(click.Command):
+        """``render``, grown a flag for every keyword the named figure accepts.
+
+        Click builds a command's options once, at import time, from its
+        decorators; the options a figure accepts are not known until the
+        caller names the figure. So the parameter list is rebuilt here, at
+        the top of parsing, from the frozen catalogue -- which is also when
+        ``--help`` is answered, so ``sprezzature-figures render sankey
+        --help`` documents ``--volume-unit`` and the bare ``render --help``
+        does not. The argparse twin (``make-figure``) does the same thing
+        with a two-pass parse; both read the same ``options_schema``, so a
+        flag exists in both commands or in neither.
+        """
+
+        #: The decorator-declared options, kept aside the first time the
+        #: command runs so each parse starts from them rather than from the
+        #: previous parse's figure.
+        _base_params: list[click.Parameter] | None = None
+
+        def parse_args(self, ctx: click.Context, args: list[str]) -> list[str]:
+            """Declare the named figure's options, then parse normally."""
+            if self._base_params is None:
+                type(self)._base_params = list(self.params)
+            # The first word that names a real figure is the figure: a value
+            # sitting after a flag (`--title bar`) can look like a positional
+            # to a parser that does not yet know which flags take values.
+            kind = next(
+                (
+                    resolved
+                    for token in args
+                    if not token.startswith("-")
+                    for resolved in [resolve_kind(token)]
+                    if resolved is not None
+                ),
+                None,
+            )
+            self.params = [*(self._base_params or []), *_figure_params(kind)]
+            try:
+                return super().parse_args(ctx, args)
+            except click.NoSuchOption as exc:
+                # Click's own message offers the nearest *generic* flag
+                # ("--width? did you mean --data?"). The useful answer is
+                # which options this figure has, which is the same sentence
+                # the argparse twin prints.
+                from .make_figure import _unrecognised
+
+                raise click.UsageError(
+                    _unrecognised(kind, [exc.option_name], "sprezzature-figures"), ctx=ctx
+                ) from exc
+
+    def _figure_params(kind: str | None) -> list[click.Parameter]:
+        """One Click option per keyword `kind` accepts, minus the ones render already owns."""
+        if kind is None:
+            return []
+        from .options import options_for
+
+        params: list[click.Parameter] = []
+        for option in options_for(kind).values():
+            if not option.cli_flag or option.name == "title":
+                continue
+            shown = "" if option.default is None else f"  [default: {option.default!r}]"
+            help_text = (option.description or f"{option.name} option.") + shown
+            if option.type == "bool":
+                flag = f"{option.cli_flag}/--no-{option.name.replace('_', '-')}"
+                params.append(
+                    click.Option([flag, f"opt_{option.name}"], default=None, help=help_text)
+                )
+            else:
+                params.append(
+                    click.Option(
+                        [option.cli_flag, f"opt_{option.name}"],
+                        default=None,
+                        metavar=None if option.choices else option.name.upper(),
+                        type=click.Choice(list(option.choices)) if option.choices else str,
+                        help=help_text,
+                    )
+                )
+        return params
+
+    @cli.command("render", cls=FigureRenderCommand)
     @click.argument("kind")
     @click.option(
         "--out",
         default=None,
         help="Output file path. The extension picks the format: .svg, .png, .pdf, .jpg, or .html.",
     )
-    @click.option("--title", default="", help="Chart title.")
+    @click.option(
+        "--title",
+        default=None,
+        help="Chart title. Omitted, the figure keeps its own default title for demo "
+        "data and goes untitled for your data.",
+    )
+    @click.option(
+        "--dark",
+        is_flag=True,
+        help="Render for a dark canvas: transparent background + lightened chrome (SVG output).",
+    )
     @click.option(
         "--scale",
         default=None,
@@ -84,20 +206,58 @@ else:
         help="Bind a figure role to a data column when they differ, e.g. --map value=GDP "
         "(repeatable). Only used with --data.",
     )
+    @click.option(
+        "--set",
+        "set_options",
+        multiple=True,
+        metavar="NAME=VALUE",
+        help="Set any option this figure accepts, e.g. --set subtitle='Q3 figures' "
+        "(repeatable). The scriptable twin of the per-figure flags.",
+    )
     def render_cmd(
         kind: str,
         out: str | None,
-        title: str,
+        title: str | None,
+        dark: bool,
         scale: float | None,
         data_path: str | None,
         mappings: tuple[str, ...],
+        set_options: tuple[str, ...],
+        **figure_options: object,
     ) -> None:
-        """Render KIND from a --data file, or its DEMO_DATA. KIND is a chart type name."""
+        """Render KIND from a --data file, or its DEMO_DATA. KIND is a chart type name.
+
+        Every keyword the figure accepts has a flag of its own here --
+        `sprezzature-figures render <kind> --help` lists them with their
+        defaults -- and `--set name=value` reaches any of them without one.
+        """
+        from .options import OptionError, parse_option_assignments, validate_options
+
         canonical = resolve_kind(kind)
         if canonical is None:
             click.echo(f"Error: no script for kind={kind!r}.", err=True)
             click.echo("Run `sprezzature-figures list` to see available kinds.", err=True)
             raise SystemExit(1)
+
+        # Per-figure flags and --set are two spellings of one thing, so a
+        # name given both ways is a mistake rather than a precedence puzzle.
+        try:
+            options = parse_option_assignments(canonical, list(set_options))
+            from_flags = {
+                name[len("opt_") :]: value
+                for name, value in figure_options.items()
+                if name.startswith("opt_") and value is not None
+            }
+            clash = sorted(set(options) & set(from_flags))
+            if clash:
+                raise OptionError(
+                    f"{clash[0]} was given twice: as --{clash[0].replace('_', '-')} and "
+                    f"as --set {clash[0]}=... Keep one."
+                )
+            options.update(validate_options(canonical, from_flags))
+        except OptionError as exc:
+            click.echo(f"Error: {exc}", err=True)
+            raise SystemExit(2) from exc
 
         mapping: dict[str, str] = {}
         if data_path:
@@ -116,25 +276,36 @@ else:
             if mappings:
                 click.echo("--map only applies with --data.", err=True)
                 raise SystemExit(1)
-            data = _demo_data_for(canonical)
+            # None, not the demo rows read back -- see the note in
+            # make_figure.main(): a generator handed its own DEMO_DATA
+            # cannot tell it from caller data, and drops its own chrome.
+            data = None
 
         if scale is not None:
             import os
 
             os.environ["SPREZZATURE_RENDER_SCALE"] = repr(scale)
 
-        kwargs: dict = {"title": title}
+        kwargs: dict = dict(options)
+        # An omitted --title means omitted: the figure keeps its own
+        # headline over its own demo rows, and goes untitled over yours,
+        # where that headline would be a sentence about data you did not
+        # supply.
+        if title is not None:
+            kwargs["title"] = title
+        if dark:
+            kwargs["dark"] = True
         if out:
             kwargs["out"] = out
         if data_path:
-            # User data must not inherit the demo chrome (subtitle, axis titles).
+            # User data must not inherit the demo chrome (title, subtitle, axis titles).
             from .make_figure import user_data_chrome_kwargs
 
             for key, value in user_data_chrome_kwargs(canonical, mapping).items():
                 kwargs.setdefault(key, value)
 
         try:
-            result = make_figure(kind, data, **kwargs)
+            result = make_figure(canonical, data, **kwargs)
         except (ValueError, AttributeError, FileNotFoundError, RuntimeError) as exc:
             click.echo(f"Error rendering {kind!r}: {exc}", err=True)
             if data_path:
@@ -150,6 +321,30 @@ else:
                 )
             raise SystemExit(1) from exc
         click.echo(result)
+
+    @cli.command("describe")
+    @click.argument("kind")
+    @click.option(
+        "--json",
+        "as_json",
+        is_flag=True,
+        help="Print the figure's full catalogue entry as JSON instead of text.",
+    )
+    def describe_cmd(kind: str, as_json: bool) -> None:
+        """Show what KIND needs (data roles) and what it accepts (options).
+
+        The one place that answers "which columns must my rows carry, and
+        what can I pass besides them" without reading the generator's
+        source. Same output as `make-figure KIND --describe`.
+        """
+        from .make_figure import _describe
+
+        canonical = resolve_kind(kind)
+        if canonical is None:
+            click.echo(f"Error: no script for kind={kind!r}.", err=True)
+            click.echo("Run `sprezzature-figures list` to see available kinds.", err=True)
+            raise SystemExit(1)
+        click.echo(_describe(canonical, as_json))
 
     @cli.command("redraw")
     @click.argument("image", type=click.Path(exists=True, dir_okay=False))
@@ -212,51 +407,20 @@ else:
         Without it you get the redesign on sample data, captioned as such: this
         never guesses numbers off a picture.
         """
-        from .redraw import redraw
+        from . import actions
 
-        rows = None
-        if data_path:
-            from .data_source import apply_mapping, load_records, load_stdin_records, parse_mapping
-
-            try:
-                rows = load_stdin_records() if data_path == "-" else load_records(data_path)
-                if mappings:
-                    rows = apply_mapping(rows, parse_mapping(list(mappings)))
-            except (FileNotFoundError, ValueError) as exc:
-                click.echo(f"Error reading --data: {exc}", err=True)
-                raise SystemExit(1) from exc
-        elif mappings:
-            click.echo("--map only applies with --data.", err=True)
-            raise SystemExit(1)
-
-        try:
-            result = redraw(
+        _emit(
+            lambda: actions.redraw(
                 image,
                 out=out,
-                data=rows,
+                data_path=data_path,
+                mappings=mappings,
                 kind=kind,
                 title=title,
                 hint=hint,
                 language=language,
             )
-        except (ValueError, FileNotFoundError, RuntimeError) as exc:
-            click.echo(f"Error redrawing {image!r}: {exc}", err=True)
-            raise SystemExit(1) from exc
-        except ImportError as exc:
-            click.echo(
-                "redraw needs a vision model. Install with: "
-                "pip install 'sprezzature-figures[local]' and make sure Ollama is running.",
-                err=True,
-            )
-            raise SystemExit(1) from exc
-
-        click.echo(f"{result.kind} -> {result.output}  (data: {result.data_origin})")
-        if result.changes:
-            click.echo("What it does differently:")
-            for change in result.changes:
-                click.echo(f"  - {change}")
-        for warning in result.warnings:
-            click.echo(f"note: {warning}", err=True)
+        )
 
     @cli.command("recommend")
     @click.option(
@@ -301,60 +465,9 @@ else:
         Studio GUI shows as recommendation cards, headless. No model involved.
         Add --intent to rank by your analytical goal (comparison, trend, ...).
         """
-        from pathlib import Path
+        from . import actions
 
-        from .data_source import load_records, load_stdin_records
-
-        try:
-            records = load_stdin_records() if data_path == "-" else load_records(data_path)
-        except (FileNotFoundError, ValueError) as exc:
-            click.echo(f"Error reading --data: {exc}", err=True)
-            raise SystemExit(1) from exc
-
-        name = "stdin" if data_path == "-" else Path(data_path).name
-
-        try:
-            import pandas as pd
-
-            from .studio.ingest.profiler import profile_dataframe
-            from .studio.recommendation import assign_columns, rank
-        except ImportError as exc:
-            click.echo(
-                "recommend needs the profiling stack. Install with: "
-                "pip install 'sprezzature-figures[studio]' (or [dataviz]).",
-                err=True,
-            )
-            raise SystemExit(1) from exc
-
-        profile = profile_dataframe(
-            pd.DataFrame(records), dataset_id=name, fingerprint="cli", source_name=name
-        )
-        ranked = rank(profile, goal=goal)
-        if not ranked:
-            click.echo(
-                f"No stable chart type can be filled from {name} "
-                f"({profile.column_count} columns, {profile.row_count} rows). "
-                "See `sprezzature-figures list --status stable`.",
-                err=True,
-            )
-            raise SystemExit(1)
-
-        click.echo(f"Top {min(limit, len(ranked))} chart types for {name} (best first):")
-        for definition, figure_score in ranked[:limit]:
-            binding = assign_columns(definition, profile) or {}
-            roles = ", ".join(f"{role}={col}" for role, col in binding.items())
-            click.echo(f"  {definition.kind:<20} score={figure_score:.2f}  {roles}")
-
-        if render_out:
-            top = ranked[0][0]
-            top_binding = assign_columns(top, profile) or {}
-            # Alias each bound column to the role name the generator expects,
-            # keeping the originals so figures that read extra columns still work.
-            bound = [
-                {**row, **{role: row[col] for role, col in top_binding.items()}} for row in records
-            ]
-            result = make_figure(top.kind, bound, out=render_out)
-            click.echo(f"rendered top recommendation ({top.kind}) -> {result}")
+        _emit(lambda: actions.recommend(data_path, limit=limit, goal=goal, render_out=render_out))
 
     @cli.command("check")
     @click.argument("svg", type=click.Path(exists=True, dir_okay=False, allow_dash=True))
@@ -393,25 +506,13 @@ else:
         Exit code 1 on any finding, so it works as a pre-commit or CI gate.
         Judgements of taste are not here and never will be.
         """
-        import sys as _sys
-        from pathlib import Path
+        from . import actions
 
-        from .render_checks import check_render
-
-        source = _sys.stdin.read() if svg == "-" else Path(svg).read_text(encoding="utf-8")
-        findings = check_render(
-            source, dark=dark, expected_title=expected_title, forbidden_text=forbidden
+        _emit(
+            lambda: actions.check(
+                svg, dark=dark, expected_title=expected_title, forbidden=forbidden
+            )
         )
-        if not findings:
-            click.echo(f"{svg}: nothing to report.")
-            return
-
-        click.echo(f"{svg}: {len(findings)} finding(s)", err=True)
-        for finding in findings:
-            click.echo(f"  {finding.check}: {finding.message}", err=True)
-            if finding.detail:
-                click.echo(f"    {finding.detail}", err=True)
-        raise SystemExit(1)
 
     # The console script in pyproject.toml points at `main`.
     main = cli

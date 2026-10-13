@@ -189,14 +189,37 @@ def resolve_role_mapping(kind: str, mapping: dict[str, str]) -> dict[str, str]:
 #: mettaient de l'anglais sous une figure rendue en français. La table ne
 #: traduit que ce vocabulaire-là, jamais les données de l'appelant.
 _ROLE_LABELS_FR = {
-    "region": "Région", "value": "Valeur", "month": "Mois", "day": "Jour",
-    "week": "Semaine", "year": "Année", "quarter": "Trimestre",
-    "category": "Catégorie", "count": "Effectif", "share": "Part",
-    "score": "Score", "name": "Nom", "label": "Libellé", "group": "Groupe",
-    "stage": "Étape", "date": "Date", "time": "Temps", "x": "x", "y": "y",
-    "mean": "Moyenne", "diff": "Écart", "std": "Écart-type", "close": "Clôture",
-    "hours": "Heures", "parent": "Parent", "source": "Source", "target": "Cible",
-    "price": "Prix", "quantity": "Quantité", "rate": "Taux", "total": "Total",
+    "region": "Région",
+    "value": "Valeur",
+    "month": "Mois",
+    "day": "Jour",
+    "week": "Semaine",
+    "year": "Année",
+    "quarter": "Trimestre",
+    "category": "Catégorie",
+    "count": "Effectif",
+    "share": "Part",
+    "score": "Score",
+    "name": "Nom",
+    "label": "Libellé",
+    "group": "Groupe",
+    "stage": "Étape",
+    "date": "Date",
+    "time": "Temps",
+    "x": "x",
+    "y": "y",
+    "mean": "Moyenne",
+    "diff": "Écart",
+    "std": "Écart-type",
+    "close": "Clôture",
+    "hours": "Heures",
+    "parent": "Parent",
+    "source": "Source",
+    "target": "Cible",
+    "price": "Prix",
+    "quantity": "Quantité",
+    "rate": "Taux",
+    "total": "Total",
 }
 
 
@@ -213,17 +236,20 @@ def user_data_chrome_kwargs(
     from ``--map`` (columns already carrying a role name need no entry).
     """
     mapping = mapping or {}
-    kwargs: dict[str, Any] = {"subtitle": ""}
+    # The title is demo chrome too, and the most quoted line on the figure:
+    # several generators default it to a sentence about their own demo rows
+    # ("Organic search fills the funnel..."). Suppressed here for the same
+    # reason as the subtitle -- over somebody else's numbers it is simply
+    # false. An explicit --title, or a `title=` from a library caller, still
+    # wins: this only fills what the caller left unsaid.
+    kwargs: dict[str, Any] = {"title": "", "subtitle": ""}
     canonical = _resolve_kind(kind)
     if canonical is None:
         return kwargs
     definition = _get_figure_definition(canonical)
-    category_roles = [
-        r for r in definition.required_roles if "numeric" not in r.accepted_types
-    ]
-    numeric_roles = [
-        r for r in definition.required_roles if "numeric" in r.accepted_types
-    ]
+    category_roles = [r for r in definition.required_roles if "numeric" not in r.accepted_types]
+    numeric_roles = [r for r in definition.required_roles if "numeric" in r.accepted_types]
+
     def libelle(nom: str) -> str:
         propose = mapping.get(nom, nom)
         if propose != nom:  # l'appelant a nommé sa colonne : on n'y touche pas
@@ -302,7 +328,7 @@ def validate_figure_input(
     return issues
 
 
-def make_figure(kind: str, data: list[dict[str, Any]], **kwargs: Any) -> Path:
+def make_figure(kind: str, data: list[dict[str, Any]] | None = None, **kwargs: Any) -> Path:
     """
     Render a figure of the given kind and return the output path.
 
@@ -317,9 +343,14 @@ def make_figure(kind: str, data: list[dict[str, Any]], **kwargs: Any) -> Path:
     kind : str
         Chart type name or alias, e.g. ``"treemap"``, ``"connected-scatter"``,
         ``"connected_scatter"``. See ``list_kinds()`` for the full catalogue.
-    data : list[dict[str, Any]]
+    data : list[dict[str, Any]] or None, optional
         Input rows forwarded to the underlying make function. Each script
-        documents its expected keys (see FIGURES.md for the full catalogue).
+        documents its expected keys (see FIGURES.md for the full
+        catalogue). ``None`` -- the default -- renders that figure's own
+        demo rows *with its own chrome*: the title and subtitle its author
+        wrote for them. Passing the demo rows explicitly is not the same
+        thing, and gets the chrome suppressed like any other caller data,
+        because nothing downstream can tell them apart.
     **kwargs
         Forwarded to the underlying make function. Common options:
         ``out`` (output path), ``title`` (chart title), ``width``, ``height``.
@@ -431,24 +462,95 @@ def make_figure(kind: str, data: list[dict[str, Any]], **kwargs: Any) -> Path:
     if dark and result_path.suffix.lower() == ".svg":
         from .darkmode import to_dark
 
-        result_path.write_text(
-            to_dark(result_path.read_text(encoding="utf-8")), encoding="utf-8"
-        )
+        result_path.write_text(to_dark(result_path.read_text(encoding="utf-8")), encoding="utf-8")
     return result_path
 
 
-def main() -> None:
-    """
-    CLI entry point for the ``make-figure`` command.
+def _kind_option_flags(parser: argparse.ArgumentParser, kind: str, options: dict[str, Any]) -> None:
+    """Give `kind`'s own keywords a flag each, in their own ``--help`` section.
 
-    Usage::
+    The generators already work this way one level down: ``render_cli`` in
+    ``scripts/_render.py`` grows a flag whenever a ``build_svg`` grows a
+    parameter. This does the same for ``make-figure``, from the frozen
+    catalogue rather than from a live signature, so ``make-figure sankey
+    --help`` costs a JSON read and lists ``--volume-unit`` and
+    ``--stage-names`` -- which existed, and which no command line could
+    reach.
 
-        make-figure treemap --out output.svg --title "My chart"
-        make-figure --list
+    ``title`` is skipped: it is a top-level flag already, shared by every
+    kind. Nothing is coerced here; values arrive as text and go through
+    :func:`~sprezzature_figures.options.coerce_option` with the ``--set``
+    ones, so both spellings fail the same way on a bad value.
     """
+    if not options:
+        return
+    group = parser.add_argument_group(
+        f"{kind} options",
+        f"Keywords {kind} accepts beyond its data. "
+        f"`make-figure {kind} --describe` prints them with their defaults.",
+    )
+    for option in options.values():
+        if not option.cli_flag or option.name == "title":
+            continue
+        shown = "" if option.default is None else f" (default: {option.default!r})"
+        help_text = (option.description or f"{option.name} option.") + shown
+        if option.type == "bool":
+            group.add_argument(
+                option.cli_flag,
+                dest=f"opt_{option.name}",
+                action=argparse.BooleanOptionalAction,
+                default=None,
+                help=help_text,
+            )
+        elif option.choices:
+            # No metavar here on purpose: argparse prints the metavar *or*
+            # the choice list, and for a closed set the choices are the
+            # help.
+            group.add_argument(
+                option.cli_flag,
+                dest=f"opt_{option.name}",
+                default=None,
+                choices=list(option.choices),
+                help=help_text,
+            )
+        else:
+            group.add_argument(
+                option.cli_flag,
+                dest=f"opt_{option.name}",
+                default=None,
+                metavar=option.name.upper(),
+                help=help_text,
+            )
+
+
+def _build_parser(kind: str | None, options: dict[str, Any]) -> argparse.ArgumentParser:
+    """The ``make-figure`` parser, with `kind`'s own options folded in when one is named."""
     parser = argparse.ArgumentParser(
         prog="make-figure",
-        description="Render a sprezzature-figures chart from DEMO_DATA.",
+        description=(
+            "Render one of the sprezzature-figures chart types, from your own data "
+            "or from the figure's built-in demo rows."
+        ),
+        epilog=(
+            "Sub-commands (each takes its own --help):\n"
+            "  list        every chart kind, optionally filtered by status\n"
+            "  describe    what a figure needs and what it accepts\n"
+            "  redraw      redraw somebody else's chart from a picture of it\n"
+            "  recommend   rank the chart types your data can fill\n"
+            "  check       check a rendered SVG for the failures markup can show\n"
+            "\n"
+            "Examples:\n"
+            "  make-figure --list\n"
+            "  make-figure treemap --describe\n"
+            "  make-figure bar --out sales.svg --title 'Q3 sales' --theme academic\n"
+            "  make-figure bar --data sales.csv --map value=revenue --width 1200\n"
+            "  make-figure sankey --set volume-unit=sessions --out flow.svg\n"
+            "\n"
+            "Every keyword a figure accepts has a flag of its own once you name the "
+            "figure (`make-figure <kind> --help`), and `--set name=value` reaches any "
+            "of them without one."
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument(
         "kind",
@@ -460,7 +562,12 @@ def main() -> None:
         default=None,
         help="Output file path. The extension picks the format: .svg, .png, .pdf, .jpg, or .html.",
     )
-    parser.add_argument("--title", default="", help="Chart title.")
+    parser.add_argument(
+        "--title",
+        default=None,
+        help="Chart title. Omitted, the figure keeps its own default title for demo "
+        "data and goes untitled for your data.",
+    )
     parser.add_argument(
         "--dark",
         action="store_true",
@@ -489,6 +596,20 @@ def main() -> None:
         "(repeatable). Only used with --data.",
     )
     parser.add_argument(
+        "--set",
+        action="append",
+        default=[],
+        dest="set_options",
+        metavar="NAME=VALUE",
+        help="Set any option this figure accepts, e.g. --set subtitle='Q3 figures' "
+        "(repeatable). The scriptable twin of the per-figure flags below.",
+    )
+    parser.add_argument(
+        "--describe",
+        action="store_true",
+        help="Print what this figure needs (data roles) and what it accepts (options), then exit.",
+    )
+    parser.add_argument(
         "--list", action="store_true", help="Print all available chart kinds and exit."
     )
     parser.add_argument(
@@ -497,27 +618,445 @@ def main() -> None:
         choices=["stable", "experimental", "legacy", "unavailable"],
         help="With --list, only show kinds with this status.",
     )
+    parser.add_argument(
+        "--json",
+        action="store_true",
+        help="With --list or --describe, print machine-readable JSON instead of text.",
+    )
+    if kind is not None:
+        _kind_option_flags(parser, kind, options)
+    return parser
 
-    args = parser.parse_args()
+
+def _describe(kind: str, as_json: bool) -> str:
+    """Everything a caller needs before rendering `kind`: its roles, then its options."""
+    from .options import describe_options, options_for
+
+    definition = _get_figure_definition(kind)
+    if as_json:
+        import json
+
+        return json.dumps(definition.model_dump(mode="json"), indent=2)
+
+    def roles(items: Any) -> str:
+        return (
+            "\n".join(
+                f"  {role.name}  ({role.label}; {'/'.join(role.accepted_types) or 'any'})"
+                for role in items
+            )
+            or "  (none)"
+        )
+
+    options = options_for(kind)
+    return "\n".join(
+        [
+            f"{kind} -- {definition.label} ({definition.category}, {definition.status})",
+            "",
+            definition.description,
+            "",
+            "Required data roles (every row must carry these keys):",
+            roles(definition.required_roles),
+            "",
+            "Optional data roles:",
+            roles(definition.optional_roles),
+            "",
+            f"Options ({len(options)}):",
+            describe_options(kind),
+            "",
+            f"Renders to: {', '.join(definition.supported_outputs)}. "
+            f"Default canvas: {definition.default_width}x{definition.default_height}.",
+        ]
+    )
+
+
+def _unrecognised(kind: str | None, unknown: list[str], command: str = "make-figure") -> str:
+    """Say which flag was not understood, and where the real ones are listed.
+
+    Shared by both command lines, so `command` names the one the reader is
+    actually typing into -- a Click user told to run ``make-figure`` would
+    be sent to a different program.
+    """
+    import difflib
+
+    from .options import options_for
+
+    describe = (
+        f"{command} {kind} --describe" if command == "make-figure" else f"{command} describe {kind}"
+    )
+    listing = "make-figure --list" if command == "make-figure" else f"{command} list"
+    flags = [token for token in unknown if token.startswith("-")] or unknown
+    if kind is None:
+        return (
+            f"Unrecognised argument: {flags[0]}. Name a chart kind first -- most flags "
+            f"belong to a figure, not to the command -- and `{listing}` shows every kind."
+        )
+    known = options_for(kind)
+    accepted = [option.cli_flag for option in known.values() if option.cli_flag]
+    close = difflib.get_close_matches(flags[0], accepted, n=1, cutoff=0.6)
+    hint = f" Did you mean {close[0]}?" if close else ""
+    return (
+        f"{kind} has no option {flags[0]}.{hint} It accepts: "
+        f"{', '.join(sorted(accepted)) or 'no options'}. "
+        f"Run `{describe}` for defaults and accepted values."
+    )
+
+
+def _run_action(build: Any) -> int:
+    """Run one shared action and give its result to the terminal.
+
+    The twin of ``_emit`` in the Click command: both call the same
+    function in :mod:`sprezzature_figures.actions`, so the two command
+    lines cannot answer the same question differently. All that differs
+    here is ``print`` instead of ``click.echo``.
+    """
+    from .actions import ActionError
+
+    try:
+        result = build()
+    except ActionError as exc:
+        print(str(exc), file=sys.stderr)
+        return 1
+    for line in result.out:
+        print(line)
+    for line in result.err:
+        print(line, file=sys.stderr)
+    return result.code
+
+
+def _verb_parser(verb: str, description: str) -> argparse.ArgumentParser:
+    """A sub-command parser named so ``--help`` says ``make-figure <verb>``."""
+    return argparse.ArgumentParser(prog=f"make-figure {verb}", description=description)
+
+
+def _verb_list(argv: list[str]) -> int:
+    """``make-figure list`` -- the sub-command spelling of ``--list``."""
+    parser = _verb_parser("list", "Print every chart kind this package can draw.")
+    parser.add_argument(
+        "--status",
+        default=None,
+        choices=["stable", "experimental", "legacy", "unavailable"],
+        help="Only show kinds with this status.",
+    )
+    parser.add_argument("--json", action="store_true", help="Print the names as a JSON array.")
+    args = parser.parse_args(argv)
+    kinds = list_kinds(status=args.status)
+    if args.json:
+        import json
+
+        print(json.dumps(kinds, indent=2))
+    else:
+        print(f"{len(kinds)} chart types available:")
+        for kind in kinds:
+            print(f"  {kind}")
+    return 0
+
+
+def _verb_describe(argv: list[str]) -> int:
+    """``make-figure describe KIND`` -- the sub-command spelling of ``KIND --describe``."""
+    parser = _verb_parser(
+        "describe", "Show what a figure needs (data roles) and what it accepts (options)."
+    )
+    parser.add_argument("kind", help="Chart type name or alias.")
+    parser.add_argument(
+        "--json", action="store_true", help="Print the full catalogue entry as JSON."
+    )
+    args = parser.parse_args(argv)
+    canonical = _resolve_kind(args.kind)
+    if canonical is None:
+        print(f"Error: no script for kind={args.kind!r}.", file=sys.stderr)
+        print("Run `make-figure --list` to see available kinds.", file=sys.stderr)
+        return 1
+    print(_describe(canonical, args.json))
+    return 0
+
+
+def _verb_redraw(argv: list[str]) -> int:
+    """``make-figure redraw IMAGE`` -- twin of ``sprezzature-figures redraw``."""
+    parser = _verb_parser(
+        "redraw",
+        "Take a picture of somebody else's chart and draw it properly, with reasons. "
+        "Pass --data and you get a real figure; without it you get the redesign on "
+        "sample data, captioned as such -- this never guesses numbers off a picture.",
+    )
+    parser.add_argument("image", help="Picture of the chart to redraw (a screenshot, usually).")
+    parser.add_argument(
+        "--out",
+        default=None,
+        help="Output file path. The extension picks the format. Defaults to <kind>-redrawn.svg.",
+    )
+    parser.add_argument(
+        "--data",
+        "--rows",
+        dest="data_path",
+        default=None,
+        help="Your real rows (.csv/.tsv/.json/.jsonl). Use '-' to read from stdin.",
+    )
+    parser.add_argument(
+        "--map",
+        action="append",
+        default=[],
+        metavar="ROLE=COLUMN",
+        help="Bind a figure role to a column of --data when they differ (repeatable).",
+    )
+    parser.add_argument(
+        "--kind", default=None, help="Skip the model's choice of chart type and redraw as this one."
+    )
+    parser.add_argument("--title", default=None, help="Override the title.")
+    parser.add_argument(
+        "--hint",
+        default="",
+        help="Anything you want to tell the model about the image (what it is, what it shows).",
+    )
+    parser.add_argument(
+        "--language",
+        default="en",
+        choices=["en", "fr"],
+        help="Language of the provenance caption written onto the figure (default: en).",
+    )
+    args = parser.parse_args(argv)
+
+    from . import actions
+
+    return _run_action(
+        lambda: actions.redraw(
+            args.image,
+            out=args.out,
+            data_path=args.data_path,
+            mappings=args.map,
+            kind=args.kind,
+            title=args.title,
+            hint=args.hint,
+            language=args.language,
+        )
+    )
+
+
+def _verb_recommend(argv: list[str]) -> int:
+    """``make-figure recommend --data FILE`` -- twin of ``sprezzature-figures recommend``."""
+    parser = _verb_parser(
+        "recommend",
+        "Rank the chart types your data can fill, best first. Runs the deterministic "
+        "compatibility filter and readability score the Studio GUI shows as cards, "
+        "headless. No model involved.",
+    )
+    parser.add_argument(
+        "--data",
+        dest="data_path",
+        required=True,
+        help="Data file (.csv/.tsv/.json/.jsonl). Use '-' to read from stdin.",
+    )
+    parser.add_argument(
+        "--limit", type=int, default=5, help="How many recommendations to show (default: 5)."
+    )
+    parser.add_argument(
+        "--intent",
+        dest="goal",
+        default=None,
+        choices=[
+            "comparison",
+            "trend",
+            "distribution",
+            "composition",
+            "relationship",
+            "flow",
+            "hierarchy",
+            "geography",
+            "model_evaluation",
+        ],
+        help="Your analytical goal. Ranks figures that serve it first, instead of "
+        "readability alone -- decisive when many kinds otherwise tie.",
+    )
+    parser.add_argument(
+        "--render",
+        dest="render_out",
+        default=None,
+        help="Also render the top recommendation to this output path.",
+    )
+    args = parser.parse_args(argv)
+
+    from . import actions
+
+    return _run_action(
+        lambda: actions.recommend(
+            args.data_path, limit=args.limit, goal=args.goal, render_out=args.render_out
+        )
+    )
+
+
+def _verb_check(argv: list[str]) -> int:
+    """``make-figure check FILE.svg`` -- twin of ``sprezzature-figures check``."""
+    parser = _verb_parser(
+        "check",
+        "Check a rendered SVG for the failures that are decidable from markup: "
+        "colliding labels, text off the canvas, leftover demo chrome, a light card "
+        "on a dark page, a title the generator dropped. Exit code 1 on any finding, "
+        "so it works as a pre-commit or CI gate.",
+    )
+    parser.add_argument("svg", help="The SVG to check. Use '-' to read it from stdin.")
+    parser.add_argument(
+        "--dark",
+        action="store_true",
+        help="The figure was rendered for a dark canvas. Adds the dark-mode rules.",
+    )
+    parser.add_argument(
+        "--expect-title",
+        dest="expected_title",
+        default=None,
+        help="Title you asked the generator for. Reported missing if no text carries it.",
+    )
+    parser.add_argument(
+        "--forbid",
+        dest="forbidden",
+        action="append",
+        default=[],
+        metavar="TEXT",
+        help="A string that must not appear, on top of the demo chrome already known (repeatable).",
+    )
+    args = parser.parse_args(argv)
+
+    from . import actions
+
+    return _run_action(
+        lambda: actions.check(
+            args.svg,
+            dark=args.dark,
+            expected_title=args.expected_title,
+            forbidden=args.forbidden,
+        )
+    )
+
+
+#: ``make-figure`` sub-commands, by the word that selects them. They are the
+#: argparse twins of the Click command group, so the always-installed command
+#: can do everything the optional one can -- ``redraw``, ``recommend`` and
+#: ``check`` used to exist only behind the ``[cli]`` extra, while the HTTP API
+#: exposed all three as routes. A word here only wins if it is not also a
+#: chart kind; :func:`_verbs_are_not_chart_kinds` keeps that true.
+_VERBS: dict[str, Any] = {
+    "list": _verb_list,
+    "describe": _verb_describe,
+    "redraw": _verb_redraw,
+    "recommend": _verb_recommend,
+    "check": _verb_check,
+}
+
+
+def main(argv: list[str] | None = None) -> None:
+    """
+    CLI entry point for the ``make-figure`` command.
+
+    Parses in two passes so a figure's own keywords can become flags: the
+    first pass reads which kind was named, the second re-parses with that
+    kind's options declared. This is why ``make-figure sankey --help``
+    documents ``--volume-unit`` while ``make-figure --help`` does not --
+    the flag only exists for the figures that accept it.
+
+    Parameters
+    ----------
+    argv : list of str or None, optional
+        Arguments to parse. ``None`` reads ``sys.argv``.
+
+    Usage::
+
+        make-figure --list
+        make-figure treemap --describe
+        make-figure treemap --out output.svg --title "My chart"
+        make-figure bar --data sales.csv --map value=revenue --width 1200
+    """
+    from .options import OptionError, options_for, parse_option_assignments, validate_options
+
+    argv = list(sys.argv[1:] if argv is None else argv)
+
+    # A sub-command, when the first word names one and no figure answers to
+    # that name. `make-figure redraw shot.png` was a chart kind called
+    # "redraw" as far as this parser was concerned, and the three commands
+    # the Click twin and the HTTP API both had -- redraw, recommend, check --
+    # had no spelling here at all.
+    if argv and argv[0] in _VERBS and _resolve_kind(argv[0]) is None:
+        sys.exit(_VERBS[argv[0]](argv[1:]))
+
+    # ``--help`` is answered by whichever parser is built last, so hold it
+    # back through the probe pass: otherwise `make-figure bar --help` would
+    # print the generic help and never mention bar's own flags.
+    wants_help = any(token in ("-h", "--help") for token in argv)
+    argv_without_help = [token for token in argv if token not in ("-h", "--help")]
+
+    probe, _ = _build_parser(None, {}).parse_known_args(argv_without_help)
+    canonical = _resolve_kind(probe.kind) if probe.kind else None
+    if canonical is None:
+        # An unknown flag ahead of the kind steals the positional slot
+        # (`make-figure --subtitle Foo bar` reads Foo as the kind). Only the
+        # probe is affected -- it exists to decide which flags to declare --
+        # so recover by taking the first word that names a real figure.
+        canonical = next(
+            (
+                resolved
+                for token in argv_without_help
+                if not token.startswith("-")
+                for resolved in [_resolve_kind(token)]
+                if resolved is not None
+            ),
+            None,
+        )
+    kind_options = options_for(canonical) if canonical else {}
+
+    parser = _build_parser(canonical, kind_options)
+    if wants_help:
+        parser.print_help()
+        return
+
+    args, unknown = parser.parse_known_args(argv_without_help)
+    if unknown:
+        print(f"Error: {_unrecognised(canonical, unknown)}", file=sys.stderr)
+        sys.exit(2)
 
     if args.list:
         kinds = list_kinds(status=args.status)
-        print(f"{len(kinds)} chart types available:")
-        for k in kinds:
-            print(f"  {k}")
+        if args.json:
+            import json
+
+            print(json.dumps(kinds, indent=2))
+        else:
+            print(f"{len(kinds)} chart types available:")
+            for k in kinds:
+                print(f"  {k}")
         return
 
     if not args.kind:
         parser.print_help()
         sys.exit(1)
 
-    canonical = _resolve_kind(args.kind)
     if canonical is None:
         print(f"Error: no script for kind={args.kind!r}.", file=sys.stderr)
         print("Run `make-figure --list` to see available kinds.", file=sys.stderr)
         sys.exit(1)
 
+    if args.describe:
+        print(_describe(canonical, args.json))
+        return
+
+    # Per-figure flags and --set are two spellings of one thing, so a name
+    # given both ways is a mistake rather than a precedence puzzle.
+    try:
+        options: dict[str, Any] = parse_option_assignments(canonical, args.set_options)
+        from_flags = {
+            name[len("opt_") :]: value
+            for name, value in vars(args).items()
+            if name.startswith("opt_") and value is not None
+        }
+        clash = sorted(set(options) & set(from_flags))
+        if clash:
+            raise OptionError(
+                f"{clash[0]} was given twice: as --{clash[0].replace('_', '-')} and "
+                f"as --set {clash[0]}=... Keep one."
+            )
+        options.update(validate_options(canonical, from_flags))
+    except OptionError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        sys.exit(2)
+
     mapping: dict[str, str] = {}
+    data: list[dict[str, Any]] | None = None
     if args.data:
         from .data_source import apply_mapping, load_records, load_stdin_records, parse_mapping
 
@@ -532,25 +1071,37 @@ def main() -> None:
         if args.map:
             print("--map only applies with --data.", file=sys.stderr)
             sys.exit(1)
-        data = _demo_data_for(canonical)
+        # None, not the demo rows read back: handing a generator its own
+        # DEMO_DATA looks like caller data from the inside, and the demo
+        # chrome gets suppressed as a precaution against captioning
+        # somebody else's numbers. `make-figure bar` should draw the
+        # reference figure, title and all.
+        data = None
 
     if args.scale is not None:
         import os
 
         os.environ["SPREZZATURE_RENDER_SCALE"] = repr(args.scale)
 
-    kwargs: dict[str, Any] = {"title": args.title}
+    kwargs: dict[str, Any] = dict(options)
+    # An omitted --title used to arrive as "", which overrode each figure's
+    # own headline: `make-figure sankey` drew the demo sankey untitled, and
+    # no flag could get the title back. Omitted now means omitted, and the
+    # generator's default applies -- except over your own data, where that
+    # default is a sentence about the demo rows and would be a lie.
+    if args.title is not None:
+        kwargs["title"] = args.title
     if args.dark:
         kwargs["dark"] = True
     if args.out:
         kwargs["out"] = args.out
     if args.data:
-        # User data must not inherit the demo chrome (subtitle, axis titles).
+        # User data must not inherit the demo chrome (title, subtitle, axis titles).
         for key, value in user_data_chrome_kwargs(canonical, mapping).items():
             kwargs.setdefault(key, value)
 
     try:
-        result = make_figure(args.kind, data, **kwargs)
+        result = make_figure(canonical, data, **kwargs)
     except (ValueError, AttributeError, FileNotFoundError, RuntimeError) as exc:
         print(f"Error rendering {args.kind!r}: {exc}", file=sys.stderr)
         if args.data:
