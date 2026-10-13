@@ -114,6 +114,29 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
         ],
         "optional_roles": [],
     },
+    "pointplot": {
+        "required_roles": [
+            {
+                "name": "dataset",
+                "label": "Group",
+                "accepted_types": ["categorical"],
+                "required": True,
+            },
+            {
+                "name": "method",
+                "label": "Series",
+                "accepted_types": ["categorical"],
+                "required": True,
+            },
+            {
+                "name": "score",
+                "label": "Observed value",
+                "accepted_types": ["numeric"],
+                "required": True,
+            },
+        ],
+        "optional_roles": [],
+    },
     "sparkline": {
         "required_roles": [
             {
