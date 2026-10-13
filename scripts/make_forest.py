@@ -59,7 +59,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
 from _style import GRIDLINE, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
-from _svg import foreground_tip_css, svg_open, tooltip_bubble  # noqa: E402
+from _svg import xml_escape, foreground_tip_css, svg_open, tooltip_bubble  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
 
@@ -139,6 +139,7 @@ def build_svg(
     theme: str = "corporate",
     row_label_header: str = "Trial",
     estimate_header: str = "OR (95% CI)",
+    title: Optional[str] = None,
 ) -> str:
     """Assemble the full forest-plot SVG string.
 
@@ -318,9 +319,12 @@ def build_svg(
     parts.append(f'<rect width="{width}" height="{height}" fill="#FFFFFF"/>')
 
     # --- title + subtitle (the takeaway) -------------------------
+    # The headline the figure writes about its own data, used only
+    # when the caller supplies none.
+    title = title or "Telemonitoring helps patients hit their BP target"
     parts.append(
         f'<text x="{m_left}" y="36" font-size="18" font-weight="700" '
-        f'fill="{ink}">Telemonitoring helps patients hit their BP target</text>'
+        f'fill="{ink}">{xml_escape(title)}</text>'
     )
     parts.append(
         f'<text x="{m_left}" y="58" font-size="12.5" fill="{secondary}">'
@@ -594,7 +598,7 @@ def make_forest(
         theme=theme,
         row_label_header=row_label_header,
         estimate_header=estimate_header,
-    )
+     title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "forest")
     return write_svg(dest, svg, theme=theme)
 

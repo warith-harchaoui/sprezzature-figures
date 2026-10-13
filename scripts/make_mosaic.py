@@ -230,6 +230,7 @@ def render_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    title: Optional[str] = None,
 ) -> str:
     """Assemble the full mosaic SVG document as a string.
 
@@ -356,7 +357,7 @@ def render_svg(
     parts.append(f'<rect width="{width}" height="{height}" fill="#FFFFFF"/>')
 
     # Title + subtitle.
-    parts.append(f'<text x="{fmt_compact(plot_x, decimals=2)}" y="66" font-size="34" font-weight="700" fill="{ink}">{escape(TITLE)}</text>')
+    parts.append(f'<text x="{fmt_compact(plot_x, decimals=2)}" y="66" font-size="34" font-weight="700" fill="{ink}">{escape(title or TITLE)}</text>')
     parts.append(f'<text x="{fmt_compact(plot_x, decimals=2)}" y="102" font-size="20" fill="{muted}">{escape(SUBTITLE)}</text>')
 
     # Left axis label (vertical) — within-device composition axis.
@@ -544,7 +545,7 @@ def make_mosaic(
         mode=mode,
         accessibility=accessibility,
         theme=theme,
-    )
+     title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "mosaic")
     return write_svg(dest, svg, theme=theme)
 

@@ -268,6 +268,7 @@ def render_svg(
     accessibility: str = "universal",
     theme: str = "corporate",
     legend_title: str = "Colour",
+    title: Optional[str] = None,
 ) -> str:
     """Assemble the full icicle / flame-graph SVG document as a string.
 
@@ -340,7 +341,7 @@ def render_svg(
 
     parts: List[str] = []
     parts.append(svg_open(width, height, "ice-t", "ice-d", font_family=chrome_stack_for_theme(theme)))
-    parts.append(f'<title id="ice-t">{xml_escape(TITLE)}</title>')
+    parts.append(f'<title id="ice-t">{xml_escape(title or TITLE)}</title>')
     parts.append(
         '<desc id="ice-d">Icicle / flame graph of one GET /api/checkout request totalling 480 '
         'milliseconds. The root bar spans the full width; each row below splits its parent by time. '
@@ -398,7 +399,7 @@ def render_svg(
     # Title + subtitle.
     parts.append(
         f'<text x="{fmt_compact(plot_x, decimals=2)}" y="72" font-size="38" font-weight="700" '
-        f'fill="{ink}">{xml_escape(TITLE)}</text>'
+        f'fill="{ink}">{xml_escape(title or TITLE)}</text>'
     )
     parts.append(
         f'<text x="{fmt_compact(plot_x, decimals=2)}" y="110" font-size="18" fill="{muted}">{xml_escape(SUBTITLE)}</text>'
@@ -639,7 +640,7 @@ def make_icicle(
     _ = title
     rows = data if data else DEMO_DATA
     tree = _rows_to_tree(rows) or TREE
-    svg = render_svg(tree, mode=mode, accessibility=accessibility, theme=theme, legend_title=legend_title)
+    svg = render_svg(tree, mode=mode, accessibility=accessibility, theme=theme, legend_title=legend_title, title=title or None)
     dest = Path(__file__).resolve().parent.parent / "assets" / "svg-examples" / "icicle.svg"
     dest = Path(out) if out else dest
     return write_svg(dest, svg, theme=theme)

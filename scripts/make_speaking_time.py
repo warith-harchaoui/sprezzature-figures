@@ -152,6 +152,7 @@ def build_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    title: Optional[str] = None,
 ) -> str:
     """Assemble the full speaking-time donut as an SVG string.
 
@@ -197,6 +198,12 @@ def build_svg(
         "total, 40:00. Illustrative data."
     )
 
+    # The headline the figure writes about its own data, used only
+
+    # when the caller supplies none.
+
+    title = title or "Who spoke, and for how long"
+
     parts: List[str] = [
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" '
         f'viewBox="0 0 {W} {H}" font-family="{chrome_stack_for_theme(theme)}" role="img" '
@@ -206,7 +213,7 @@ def build_svg(
         f'<rect width="{W}" height="{H}" fill="#FFFFFF"/>',
         # Title block.
         f'<text x="60" y="66" font-size="30" font-weight="700" fill="{INK}">'
-        f"Who spoke, and for how long</text>",
+        f"{xml_escape(title)}</text>",
         f'<text x="60" y="98" font-size="18" fill="{SECONDARY}">'
         f"Speaking time per participant · a 40-minute round table</text>",
     ]
@@ -338,7 +345,7 @@ def make_speaking_time(
         Visual theme. Forwarded to :func:`build_svg`.
     """
     _ = title
-    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "speaking_time")
     return write_svg(dest, svg, theme=theme)
 
