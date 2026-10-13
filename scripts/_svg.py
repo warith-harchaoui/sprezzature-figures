@@ -214,7 +214,7 @@ def fmt_compact(v: float, decimals: int = 1) -> str:
     >>> fmt_compact(12.34)
     '12.3'
     >>> fmt_compact(12.345, decimals=2)
-    '12.34'
+    '12.35'
     """
     # Round to `decimals` first (so 12.345 -> "12.34" at decimals=2), then
     # drop trailing zeros and the orphaned dot they leave behind
@@ -267,6 +267,51 @@ def fmt_number(v: float) -> str:
     if av >= 0.01:
         return f"{v:.2f}"
     return f"{v:g}"
+
+
+def fmt_measured(v: float, scale: float) -> str:
+    """Format `v` with enough decimals to tell differences of `scale` apart.
+
+    Why this exists. :func:`fmt_number` settles precision by *magnitude*:
+    anything over ten is a whole number, anything under one gets two
+    decimals. That is right for an axis tick and wrong whenever the
+    quantity a figure is about lives below its own magnitude -- a control
+    limit of 502.87 that prints "503", an importance interval of 0.0414
+    to 0.0431 that prints "0.04 to 0.04". Both are real: the first was
+    found on a fill-weight chart, the second on a permutation-importance
+    chart, which is why this moved out of one figure and into here.
+
+    The precision is read off `scale` -- the size of the difference that
+    has to stay visible, typically a standard error or a tick step -- so
+    a process measured in thousandths gets thousandths and one measured
+    in tens does not get a spurious decimal point.
+
+    Parameters
+    ----------
+    v : float
+        The value to render.
+    scale : float
+        The smallest difference that must remain legible. Non-positive
+        falls back to :func:`fmt_number`.
+
+    Returns
+    -------
+    str
+        ``v`` with between zero and four decimals.
+
+    Examples
+    --------
+    >>> fmt_measured(502.87, 0.83)
+    '502.87'
+    >>> fmt_measured(0.04135, 0.0014)
+    '0.0413'
+    >>> fmt_measured(1240.0, 55.0)
+    '1240'
+    """
+    if scale <= 0.0:
+        return fmt_number(v)
+    places = max(0, min(4, 1 - int(math.floor(math.log10(scale)))))
+    return f"{v:.{places}f}"
 
 
 def fmt_magnitude(v: float, lang: str = "en") -> str:

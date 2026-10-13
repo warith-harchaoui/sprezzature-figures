@@ -10767,7 +10767,7 @@
     "options_schema": {
       "title": {
         "type": "str",
-        "default": "Two of nine columns are not distinguishable from noise, and one is worse than noise",
+        "default": "Two columns cannot be told from noise, and one is worse than noise",
         "choices": [],
         "description": "Chart text."
       },
