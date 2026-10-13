@@ -175,8 +175,8 @@ def test_render_concurrent_scale_does_not_race() -> None:
     sizes_at_3x = {size for scale, size in results if scale == 3.0}
     assert len(sizes_at_1x) == 1, f"scale=1.0 produced inconsistent sizes: {sizes_at_1x}"
     assert len(sizes_at_3x) == 1, f"scale=3.0 produced inconsistent sizes: {sizes_at_3x}"
-    (w1, _), = sizes_at_1x
-    (w3, _), = sizes_at_3x
+    ((w1, _),) = sizes_at_1x
+    ((w3, _),) = sizes_at_3x
     assert w3 == w1 * 3
 
 
@@ -218,7 +218,6 @@ def test_recommend_limit_is_bounded() -> None:
     assert resp.status_code == 422
 
 
-
 def test_check_render_route_reports_a_dropped_title() -> None:
     """
     The route exists, and it catches the failure that needs a caller's intent.
@@ -234,9 +233,7 @@ def test_check_render_route_reports_a_dropped_title() -> None:
     from sprezzature_figures import make_figure
 
     with tempfile.TemporaryDirectory() as tmp:
-        svg = make_figure("bar", ROWS, out=str(Path(tmp) / "bar.svg")).read_text(
-            encoding="utf-8"
-        )
+        svg = make_figure("bar", ROWS, out=str(Path(tmp) / "bar.svg")).read_text(encoding="utf-8")
 
     clean = client.post("/check_render", json={"svg": svg})
     assert clean.status_code == 200, clean.text
@@ -272,3 +269,114 @@ def test_a_row_missing_a_role_is_the_callers_fault_not_a_server_error() -> None:
     detail = response.json()["detail"]
     assert "value" in detail, detail
     assert "required_roles" in detail, detail
+
+
+# --- the per-figure option surface -------------------------------------
+
+
+def test_kind_options_lists_what_the_figure_accepts() -> None:
+    resp = client.get("/kinds/sankey/options")
+    assert resp.status_code == 200
+    options = {option["name"]: option for option in resp.json()}
+    # sankey's own vocabulary, which no caller could discover before.
+    assert options["volume_unit"]["default"] == "visitors"
+    assert options["stage_names"]["type"] == "str_list"
+    assert options["theme"]["choices"] == ["corporate", "academic"]
+    assert options["title"]["cli_flag"] == "--title"
+
+
+def test_kind_options_404s_on_an_unknown_kind() -> None:
+    assert client.get("/kinds/not-a-chart/options").status_code == 404
+
+
+def test_every_kind_answers_the_options_route() -> None:
+    """All 127, not the ones somebody got to -- the point of deriving it."""
+    for kind in client.get("/kinds").json():
+        payload = client.get(f"/kinds/{kind}/options").json()
+        assert payload, f"{kind} publishes no options"
+
+
+def test_kind_definition_carries_the_same_options() -> None:
+    """One figure, one answer: the detail route and the options route agree."""
+    detail = client.get("/kinds/sankey").json()
+    listed = {option["name"] for option in client.get("/kinds/sankey/options").json()}
+    assert set(detail["options_schema"]) == listed
+
+
+def test_an_unknown_option_is_refused_rather_than_ignored() -> None:
+    """A misspelt option used to be dropped, and the figure came back looking ignored."""
+    resp = client.post("/render/bar", json={"options": {"widht": 900}})
+    assert resp.status_code == 422
+    detail = resp.json()["detail"]
+    assert "Did you mean 'width'" in detail
+    assert "/kinds/bar/options" in detail
+
+
+def test_an_option_belonging_to_another_figure_is_refused() -> None:
+    resp = client.post("/render/rose", json={"options": {"width": 900}})
+    assert resp.status_code == 422
+    assert "rose has no option" in resp.json()["detail"]
+
+
+def test_a_bad_option_value_is_a_422_not_a_500() -> None:
+    resp = client.post("/render/bar", json={"options": {"theme": "neon"}})
+    assert resp.status_code == 422
+    assert "corporate, academic" in resp.json()["detail"]
+
+
+@pytest.mark.slow
+def test_options_reach_the_rendered_figure() -> None:
+    resp = client.post("/render/bar", json={"options": {"width": 1234, "subtitle": "Q3 figures"}})
+    assert resp.status_code == 200
+    body = resp.content.decode("utf-8")
+    assert 'width="1234"' in body
+    assert "Q3 figures" in body
+
+
+@pytest.mark.slow
+def test_a_demo_render_keeps_the_chrome_written_for_it() -> None:
+    """Omitting `data` draws the reference figure, headline and all."""
+    body = client.post("/render/sankey", json={}).content.decode("utf-8")
+    assert "Organic search fills the funnel" in body
+
+
+@pytest.mark.slow
+def test_dark_is_reachable_over_http_too() -> None:
+    """`dark` existed on the command line and in the library, and not here."""
+    light = client.post("/render/bar", json={}).content
+    dark = client.post("/render/bar", json={"dark": True}).content
+    assert dark != light
+
+
+def test_every_api_action_has_a_command_line_twin() -> None:
+    """The HTTP surface and the command lines offer the same things.
+
+    Not a naming convention for its own sake: three of these routes
+    (`redraw`, `recommend`, `check`) existed only in the Click command
+    line, so what you could do depended on which door you came through.
+    """
+    click = pytest.importorskip("click")  # noqa: F841
+    from sprezzature_figures.cli import cli
+    from sprezzature_figures.make_figure import _VERBS
+
+    operations = {
+        route.operation_id
+        for route in app.routes
+        if getattr(route, "operation_id", None) is not None
+    }
+    #: route -> the command that does the same thing. `health` is a
+    #: liveness probe for a server that a command line does not have.
+    twins = {
+        "health": None,
+        "list_kinds": "list",
+        "get_kind": "describe",
+        "list_kind_options": "describe",
+        "render_figure": "render",
+        "redraw_figure": "redraw",
+        "recommend_figures": "recommend",
+        "check_render": "check",
+    }
+    assert operations == set(twins), "a route gained or lost without a command to match"
+    commands = set(cli.commands) | set(_VERBS) | {"render"}
+    missing = {name for name in twins.values() if name is not None} - commands
+    assert missing == set(), f"routes with no command-line twin: {missing}"
