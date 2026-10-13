@@ -60,28 +60,42 @@ _MONTHS = 144
 
 
 def _series(seed: int = 31) -> List[Dict[str, Any]]:
-    """Twelve years of monthly demand: a yearly cycle, carry-over, and noise.
+    """Twelve years of monthly demand: a December, a carry-over, and noise.
 
-    Deliberately without a trend. A first draft had one, and a trending
-    series autocorrelates with itself at every lag -- 31 of 36 crossed the
-    band, the correlogram came out a wall of orange, and it said nothing
-    beyond "this series goes up". A correlogram is read on a stationary
-    series; the figure's own title would have been false otherwise.
+    Two drafts were thrown away here, and both failures are worth keeping
+    written down because both produce a correlogram that looks busy and
+    says nothing.
 
-    What is left is the textbook case: the yearly cycle makes the
-    autocorrelation ripple at 12, 24 and 36, and the month-to-month
-    carry-over is what the partial function strips back to a couple of
-    lags.
+    The first had a linear trend. A series that climbs correlates with
+    itself at *every* lag: 31 of 36 crossed the band, and the figure's
+    only message was "this goes up". A correlogram is read on a stationary
+    series.
+
+    The second made the season a sine wave. The autocorrelation of a
+    sinusoid is a sinusoid -- it never decays, so 30 of 36 lags crossed
+    and the panel came out a ripple with no quiet stretches to measure
+    against. Real seasonality is a *shape*, not a tone: one month far
+    from the others. A spike-shaped profile has an autocorrelation that
+    is near zero away from the multiples of the period, which is what
+    makes the spikes at 12, 24 and 36 legible as spikes.
+
+    What is left carries both lessons the pair of panels exists to teach:
+    the autocorrelation is significant at lags 1 and 2, and again at 12,
+    24, 36; the partial autocorrelation keeps lag 1 and lag 12 and drops
+    lag 2, because the second month is inherited through the first rather
+    than remembered directly.
     """
     rng = random.Random(seed)
+    december = 13.0
+    other_months = -december / 11.0  # so the yearly profile averages to zero
     rows: List[Dict[str, Any]] = []
     level = 0.0
-    for month in range(1, _MONTHS + 1):
-        shock = (rng.random() - 0.5) * 9.0
-        level = 0.62 * level + shock
-        seasonal = 15.0 * math.sin(2.0 * math.pi * month / 12.0)
+    for index in range(_MONTHS):
+        level = 0.72 * level + (rng.random() - 0.5) * 9.0
+        month_of_year = index % 12 + 1
+        seasonal = december if month_of_year == 12 else other_months
         rows.append({
-            "month": month,
+            "month": index + 1,
             "demand": round(220.0 + seasonal + level, 2),
         })
     return rows
@@ -156,8 +170,8 @@ def _seasonal_note(significant: List[int], period_hint: int) -> str:
 
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
-    title: str = "A twelve-month season, and four months of direct memory under it",
-    subtitle: str = "Twelve years of monthly demand. Stems outside the band are what a noise series would produce once in twenty.",
+    title: str = "A December that returns every year, and one month of memory under it",
+    subtitle: str = "Twelve years of monthly demand. A stem outside the band is what white noise produces at one lag in twenty.",
     width: int = 900,
     height: int = 660,
     x: str = "month",
@@ -407,8 +421,8 @@ def make_acf(
     data: Optional[List[Dict[str, Any]]] = None,
     *,
     out: Optional[Path | str] = None,
-    title: str = "A twelve-month season, and four months of direct memory under it",
-    subtitle: str = "Twelve years of monthly demand. Stems outside the band are what a noise series would produce once in twenty.",
+    title: str = "A December that returns every year, and one month of memory under it",
+    subtitle: str = "Twelve years of monthly demand. A stem outside the band is what white noise produces at one lag in twenty.",
     width: int = 900,
     height: int = 660,
     x: str = "month",
