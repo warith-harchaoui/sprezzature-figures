@@ -4,11 +4,11 @@ Reproducible audit of every `scripts/make_*.py` generator against the
 `make_<kind>(data, *, out, title, ...) -> Path` contract the dispatcher
 expects. Regenerate with `python tools/audit_generators.py --render`.
 
-- **stable**: 135
+- **stable**: 136
 - **experimental**: 0
 - **legacy**: 0
 - **unavailable**: 0
-- **total**: 135
+- **total**: 136
 
 | kind | status | reachable | callable | demo_data | render | errors |
 |---|---|---|---|---|---|---|
@@ -83,6 +83,7 @@ expects. Regenerate with `python tools/audit_generators.py --render`.
 | `line` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `liquid-gauge` | stable | **no** | yes | yes | passed | make_figure('liquid-gauge') cannot resolve to make_liquid-gauge.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
 | `lollipop` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `loss-curve` | stable | **no** | yes | yes | passed | make_figure('loss-curve') cannot resolve to make_loss-curve.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
 | `manhattan` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `manifold_path` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `mosaic` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |

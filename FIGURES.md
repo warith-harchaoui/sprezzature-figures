@@ -1,6 +1,6 @@
 # Figure Catalogue
 
-135 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type). `choropleth` and `situation_map` moved to their own repo, [sprezzature-maps](https://github.com/warith-harchaoui/sprezzature-maps).
+136 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type). `choropleth` and `situation_map` moved to their own repo, [sprezzature-maps](https://github.com/warith-harchaoui/sprezzature-maps).
 
 Invoke via:
 
@@ -100,6 +100,7 @@ colour-vision-deficiency-safe Okabe-Ito palette); see
 | `line-multi` | make_line-multi.py | Time series | Multi-series line chart over a continuous quantitative axis (e.g. hour-of-day), point marker at every sample, hover highlights one series. Use for sessions per hour by platform or any series sampled densely along one continuous axis. |
 | `liquid-gauge` | make_liquid-gauge.py | KPI | Animated liquid fill gauge (wave inside a circle). Use for a single percentage KPI in consumer-facing dashboards where animation adds appeal. |
 | `lollipop` | make_lollipop.py | Comparison | Thin stem from zero to the value, capped with a dot, one per category sorted largest to smallest. A lighter-weight cousin of the bar chart for a longer category list or a restrained report. |
+| `loss-curve` | make_loss-curve.py | Model evaluation | Training and validation loss against epoch, with the best epoch marked and everything after it shaded. The figure is drawn to find one number — the epoch where validation stopped improving — and the usual version makes the reader find it by eye on a curve whose minimum is flat enough that the eye misses by five epochs. Here the minimum is read off the data (ties go to the earliest epoch, which is what an early-stopping callback does), the span after it is shaded with how many epochs it cost, and the gap between the two curves at the last epoch — the overfitting diagnosis — is printed. |
 | `manhattan` | make_manhattan.py | Genomics / Statistics | Manhattan plot: −log₁₀(p-value) vs. genomic position. The standard chart for genome-wide association study (GWAS) results. |
 | `manifold_path` | make_manifold_path.py | 3-D surface | A walk across a two-coordinate objective surface, animated along the path it actually took, with the global optimum marked whether or not the walk reaches it. Use to show how an optimiser behaves, including where it stalls. |
 | `mosaic` | make_mosaic.py | Categorical | Mosaic (Marimekko) plot: tile area encodes joint frequency of two categorical variables. Use to show contingency tables and test independence visually. |

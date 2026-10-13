@@ -8358,6 +8358,161 @@
     ]
   },
   {
+    "kind": "loss-curve",
+    "label": "Loss Curve",
+    "aliases": [
+      "loss curve",
+      "loss_curve"
+    ],
+    "category": "Model evaluation",
+    "description": "Training and validation loss against epoch, with the best epoch marked and everything after it shaded. The figure is drawn to find one number \u2014 the epoch where validation stopped improving \u2014 and the usual version makes the reader find it by eye on a curve whose minimum is flat enough that the eye misses by five epochs. Here the minimum is read off the data (ties go to the earliest epoch, which is what an early-stopping callback does), the span after it is shaded with how many epochs it cost, and the gap between the two curves at the last epoch \u2014 the overfitting diagnosis \u2014 is printed.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "svg",
+    "module": "scripts/make_loss-curve.py",
+    "callable_name": "make_loss_curve",
+    "required_roles": [
+      {
+        "name": "epoch",
+        "label": "Epoch",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "split",
+        "label": "Training or validation",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "loss",
+        "label": "Loss",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 900,
+    "default_height": 580,
+    "options_schema": {
+      "title": {
+        "type": "str",
+        "default": "Validation loss bottomed out at epoch 30; the next 30 made it worse",
+        "choices": [],
+        "description": "Chart text."
+      },
+      "subtitle": {
+        "type": "str",
+        "default": "One training run, 60 epochs. The shaded span is everything after the best checkpoint.",
+        "choices": [],
+        "description": "Chart text."
+      },
+      "width": {
+        "type": "int",
+        "default": 900,
+        "choices": [],
+        "description": "Canvas size in pixels."
+      },
+      "height": {
+        "type": "int",
+        "default": 580,
+        "choices": [],
+        "description": "Canvas size in pixels."
+      },
+      "x": {
+        "type": "str",
+        "default": "epoch",
+        "choices": [],
+        "description": "Which keys hold the epoch, the split and the loss."
+      },
+      "series": {
+        "type": "str",
+        "default": "split",
+        "choices": [],
+        "description": "Which keys hold the epoch, the split and the loss."
+      },
+      "y": {
+        "type": "str",
+        "default": "loss",
+        "choices": [],
+        "description": "Which keys hold the epoch, the split and the loss."
+      },
+      "x_label": {
+        "type": "str",
+        "default": "Epoch",
+        "choices": [],
+        "description": "Axis titles."
+      },
+      "y_label": {
+        "type": "str",
+        "default": "Loss",
+        "choices": [],
+        "description": "Axis titles."
+      },
+      "best_label": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "Labels on the best-epoch rule and the shaded span; None composes each from the data."
+      },
+      "wasted_label": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "Labels on the best-epoch rule and the shaded span; None composes each from the data."
+      },
+      "mode": {
+        "type": "str",
+        "default": "self-contained",
+        "choices": [
+          "self-contained",
+          "external",
+          "static"
+        ],
+        "description": "How the SVG carries its interactivity: self-contained ships its own script, external expects the page to supply one, static leaves it out."
+      },
+      "accessibility": {
+        "type": "str",
+        "default": "universal",
+        "choices": [
+          "universal",
+          "high-contrast",
+          "monochrome",
+          "deuteranopia",
+          "protanopia",
+          "tritanopia"
+        ],
+        "description": "Palette accessibility level; universal is the colour-vision-safe default."
+      },
+      "theme": {
+        "type": "str",
+        "default": "corporate",
+        "choices": [
+          "corporate",
+          "academic"
+        ],
+        "description": "Visual theme. Forwarded to build_svg."
+      }
+    },
+    "warnings": [
+      "make_figure('loss-curve') cannot resolve to make_loss-curve.py: hyphen/underscore normalisation looks for a different filename",
+      "Default output path falls back to a shared assets/ directory"
+    ]
+  },
+  {
     "kind": "manhattan",
     "label": "Manhattan",
     "aliases": [],

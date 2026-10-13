@@ -43,6 +43,7 @@ from typing import Any, Dict, List, Optional, Tuple
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
+from _scale import nice_ticks_range  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY, load_palette  # noqa: E402
 from _svg import fmt_number, foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
@@ -200,26 +201,11 @@ def build_svg(
     # Round the step before padding out: padding first and rounding after
     # leaves ticks on 0.78 and 0.86, which read as data rather than an axis.
     span = (hi - lo) or 0.05
-    # The step has to be round *to read*, which is not the same as round to
-    # a computer. Picking the smallest nice step at or above span/4 gave
-    # 0.125 here -- arithmetically tidy, and it printed ticks at 0.73, 0.85
-    # and 0.98. Only 1, 2 and 5 times a power of ten are round to an eye,
-    # so those are the only candidates, and the ladder is walked upward
-    # until four of them cover the data.
-    step = 10.0 ** math.floor(math.log10(span))
-    while True:
-        for nice in (1.0, 2.0, 5.0, 10.0):
-            if step * nice * 4.0 >= span:
-                step *= nice
-                break
-        else:
-            step *= 10.0
-            continue
-        break
-    y_lo = math.floor((lo - span * 0.12) / step) * step
-    y_hi = y_lo + step * 4.0
-    while y_hi < hi + span * 0.04:
-        y_hi += step
+    # `_scale.nice_ticks_range` is the house answer to "ticks a reader can
+    # read on an axis that does not start at zero". Writing it again here
+    # cost two Ralph passes and still got it wrong on the next figure.
+    ticks = nice_ticks_range(lo - span * 0.12, hi + span * 0.04)
+    y_lo, y_hi = ticks[0], ticks[-1]
 
     plot_x, plot_y = 82.0, 156.0
     right_margin, bottom_margin = 124.0, 76.0
@@ -288,14 +274,6 @@ def build_svg(
         f'{xml_escape(y_label)}</text>'
     )
 
-    # Walk the axis by the rounded step rather than quartering the range:
-    # the range gets stretched by one step when the data needs the headroom,
-    # and a quarter of five steps is not a round number.
-    ticks: List[float] = []
-    value_at = y_lo
-    while value_at <= y_hi + step * 0.001:
-        ticks.append(value_at)
-        value_at += step
     for value_at in ticks:
         gy = py(value_at)
         parts.append(
