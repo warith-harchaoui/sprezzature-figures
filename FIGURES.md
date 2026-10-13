@@ -1,6 +1,6 @@
 # Figure Catalogue
 
-129 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type). `choropleth` and `situation_map` moved to their own repo, [sprezzature-maps](https://github.com/warith-harchaoui/sprezzature-maps).
+130 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type). `choropleth` and `situation_map` moved to their own repo, [sprezzature-maps](https://github.com/warith-harchaoui/sprezzature-maps).
 
 Invoke via:
 
@@ -83,6 +83,7 @@ colour-vision-deficiency-safe Okabe-Ito palette); see
 | `hexbin` | make_hexbin.py | Distribution | Aggregates a dense scatter into a hexagonal grid, cell colour is the point count. Hexagons tile with less visual bias than square bins. Use for overplotted scatter data or 2-D density of two continuous variables. |
 | `hexbin-map` | make_hexbin-map.py | Geospatial | US (or world) map where equal-area hexagons replace geographic regions. Eliminates size-biased area distortion from choropleth maps. |
 | `hexmap` | make_hexmap.py | Geospatial | Generic hexagonal binning map. Use for local or regional point density where standard hexbin-map doesn't fit. |
+| `hist2d` | make_hist2d.py | Bivariate distribution | Two-dimensional histogram: raw points binned to a rectangular grid, colour encoding the count in a cell. Use when a scatter has stopped working because the points overplot — past a few thousand, a scatter shows where data is and hides how much of it is there. A bin with no points is left as canvas rather than painted the bottom of the ramp, so "nothing here" cannot read as "a little here"; colour runs on a square-root scale because bin counts are long-tailed almost every time, and the figure says so; the bin size is printed, because every 2-D histogram is an argument about bin width. Prefer `hexbin` when packing matters more than reading a cell off two axes, `heatmap` when the matrix is already a table, `jointplot` when the marginals are the point. |
 | `histogram` | make_histogram.py | Distribution | Bins a single numeric variable and counts observations per bin. The default chart for understanding a distribution's shape, spread, and skew. |
 | `horizon` | make_horizon.py | Time series | Horizon chart: fold a time series at regular intervals and overlay bands. Enables many series in compact vertical space (e.g., server metrics, sensor arrays). |
 | `icicle` | make_icicle.py | Hierarchy | Top-down rectangular treemap (icicle / flame chart). Use to show execution profiles, file-system trees, or budget breakdowns where reading order matters. |

@@ -6264,6 +6264,137 @@
     ]
   },
   {
+    "kind": "hist2d",
+    "label": "Hist2D",
+    "aliases": [],
+    "category": "Bivariate distribution",
+    "description": "Two-dimensional histogram: raw points binned to a rectangular grid, colour encoding the count in a cell. Use when a scatter has stopped working because the points overplot \u2014 past a few thousand, a scatter shows where data is and hides how much of it is there. A bin with no points is left as canvas rather than painted the bottom of the ramp, so \"nothing here\" cannot read as \"a little here\"; colour runs on a square-root scale because bin counts are long-tailed almost every time, and the figure says so; the bin size is printed, because every 2-D histogram is an argument about bin width. Prefer `hexbin` when packing matters more than reading a cell off two axes, `heatmap` when the matrix is already a table, `jointplot` when the marginals are the point.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "svg",
+    "module": "scripts/make_hist2d.py",
+    "callable_name": "make_hist2d",
+    "required_roles": [
+      {
+        "name": "distance",
+        "label": "X",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "fare",
+        "label": "Y",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 880,
+    "default_height": 620,
+    "options_schema": {
+      "title": {
+        "type": "str",
+        "default": "The airport flat fare shows up as a cloud of its own",
+        "choices": [],
+        "description": "Chart text."
+      },
+      "subtitle": {
+        "type": "str",
+        "default": "Every taxi trip of one week, counted into bins. A scatter of these would be one black smear.",
+        "choices": [],
+        "description": "Chart text."
+      },
+      "width": {
+        "type": "int",
+        "default": 880,
+        "choices": [],
+        "description": "Canvas size in pixels."
+      },
+      "height": {
+        "type": "int",
+        "default": 620,
+        "choices": [],
+        "description": "Canvas size in pixels."
+      },
+      "x": {
+        "type": "str",
+        "default": "distance",
+        "choices": [],
+        "description": "Which key is binned along each axis."
+      },
+      "y": {
+        "type": "str",
+        "default": "fare",
+        "choices": [],
+        "description": "Which key is binned along each axis."
+      },
+      "bins": {
+        "type": "int",
+        "default": 34,
+        "choices": [],
+        "description": "Target bin count on the longer axis."
+      },
+      "x_label": {
+        "type": "str",
+        "default": "Trip distance (miles)",
+        "choices": [],
+        "description": "Axis titles."
+      },
+      "y_label": {
+        "type": "str",
+        "default": "Fare ($)",
+        "choices": [],
+        "description": "Axis titles."
+      },
+      "mode": {
+        "type": "str",
+        "default": "self-contained",
+        "choices": [
+          "self-contained",
+          "external",
+          "static"
+        ],
+        "description": "How the SVG carries its interactivity: self-contained ships its own script, external expects the page to supply one, static leaves it out."
+      },
+      "accessibility": {
+        "type": "str",
+        "default": "universal",
+        "choices": [
+          "universal",
+          "high-contrast",
+          "monochrome",
+          "deuteranopia",
+          "protanopia",
+          "tritanopia"
+        ],
+        "description": "Palette accessibility level; universal is the colour-vision-safe default."
+      },
+      "theme": {
+        "type": "str",
+        "default": "corporate",
+        "choices": [
+          "corporate",
+          "academic"
+        ],
+        "description": "Visual theme. Forwarded to build_svg."
+      }
+    },
+    "warnings": [
+      "Default output path falls back to a shared assets/ directory"
+    ]
+  },
+  {
     "kind": "histogram",
     "label": "Histogram",
     "aliases": [],

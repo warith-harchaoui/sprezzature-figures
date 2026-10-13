@@ -4,11 +4,11 @@ Reproducible audit of every `scripts/make_*.py` generator against the
 `make_<kind>(data, *, out, title, ...) -> Path` contract the dispatcher
 expects. Regenerate with `python tools/audit_generators.py --render`.
 
-- **stable**: 129
+- **stable**: 130
 - **experimental**: 0
 - **legacy**: 0
 - **unavailable**: 0
-- **total**: 129
+- **total**: 130
 
 | kind | status | reachable | callable | demo_data | render | errors |
 |---|---|---|---|---|---|---|
@@ -66,6 +66,7 @@ expects. Regenerate with `python tools/audit_generators.py --render`.
 | `hexbin-map` | stable | **no** | yes | yes | passed | make_figure('hexbin-map') cannot resolve to make_hexbin-map.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
 | `hexbin` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `hexmap` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `hist2d` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `histogram` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `horizon` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `icicle` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
