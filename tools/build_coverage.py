@@ -425,7 +425,7 @@ MAPPING: dict[str, list[tuple[str, str, str, str]]] = {
         ("validation curve", "validation-curve", "covered", ""),
         ("training / loss curve", "loss-curve", "covered", ""),
         ("silhouette plot", "silhouette", "covered", ""),
-        ("ACF / PACF correlogram", "acf", "gap", "autocorrelation with its significance band"),
+        ("ACF / PACF correlogram", "acf", "covered", ""),
         (
             "seasonal decomposition",
             "seasonal-decomposition",

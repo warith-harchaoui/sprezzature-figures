@@ -303,7 +303,7 @@ data-science,learning curve,learning-curve,covered,
 data-science,validation curve,validation-curve,covered,
 data-science,training / loss curve,loss-curve,covered,
 data-science,silhouette plot,silhouette,covered,
-data-science,ACF / PACF correlogram,acf,gap,autocorrelation with its significance band
+data-science,ACF / PACF correlogram,acf,covered,
 data-science,seasonal decomposition,seasonal-decomposition,gap,observed / trend / seasonal / residual
 data-science,forecast fan chart,forecast-fan,gap,a forecast and its widening intervals
 data-science,SHAP beeswarm,shap-beeswarm,gap,"per-feature SHAP values, coloured by feature value"

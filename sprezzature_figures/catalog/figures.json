@@ -121,6 +121,168 @@
     ]
   },
   {
+    "kind": "acf",
+    "label": "Acf",
+    "aliases": [],
+    "category": "Serial correlation",
+    "description": "The correlogram: autocorrelation at each lag as stems from zero, with the band inside which a lag is indistinguishable from noise. Two panels, because the pair is what a reader needs \u2014 the autocorrelation function says how far back the series remembers, the **partial** one how much of that memory is direct rather than inherited through the lags between. Lag 0 is dropped (it is 1 by definition and spends the whole vertical range saying so), the band is labelled with its formula and its n rather than left to be mistaken for a confidence interval on the coefficient, and the lags that cross it are coloured apart and listed \u2014 with the season named when the crossings are its multiples. Takes the **series**, not a table of coefficients: the autocorrelations are computed here.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "svg",
+    "module": "scripts/make_acf.py",
+    "callable_name": "make_acf",
+    "required_roles": [
+      {
+        "name": "month",
+        "label": "Position in the series",
+        "accepted_types": [
+          "numeric",
+          "datetime"
+        ],
+        "required": true
+      },
+      {
+        "name": "demand",
+        "label": "Value",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 900,
+    "default_height": 660,
+    "options_schema": {
+      "title": {
+        "type": "str",
+        "default": "A twelve-month season, and four months of direct memory under it",
+        "choices": [],
+        "description": "Chart text."
+      },
+      "subtitle": {
+        "type": "str",
+        "default": "Twelve years of monthly demand. Stems outside the band are what a noise series would produce once in twenty.",
+        "choices": [],
+        "description": "Chart text."
+      },
+      "width": {
+        "type": "int",
+        "default": 900,
+        "choices": [],
+        "description": "Canvas size in pixels."
+      },
+      "height": {
+        "type": "int",
+        "default": 660,
+        "choices": [],
+        "description": "Canvas size in pixels."
+      },
+      "x": {
+        "type": "str",
+        "default": "month",
+        "choices": [],
+        "description": "Which key orders the series and which carries the value."
+      },
+      "y": {
+        "type": "str",
+        "default": "demand",
+        "choices": [],
+        "description": "Which key orders the series and which carries the value."
+      },
+      "max_lag": {
+        "type": "int",
+        "default": 36,
+        "choices": [],
+        "description": "How many lags to compute."
+      },
+      "period_hint": {
+        "type": "int",
+        "default": 12,
+        "choices": [],
+        "description": "Season to test for when naming the finding; 0 disables it."
+      },
+      "include_zero": {
+        "type": "bool",
+        "default": false,
+        "choices": [],
+        "description": "Plot lag 0, which is 1 by definition."
+      },
+      "acf_label": {
+        "type": "str",
+        "default": "Autocorrelation",
+        "choices": [],
+        "description": "Panel titles and the shared axis title."
+      },
+      "pacf_label": {
+        "type": "str",
+        "default": "Partial autocorrelation",
+        "choices": [],
+        "description": "Panel titles and the shared axis title."
+      },
+      "x_label": {
+        "type": "str",
+        "default": "Lag (months)",
+        "choices": [],
+        "description": "Panel titles and the shared axis title."
+      },
+      "band_label": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "What the band is, and the sentence naming the significant lags; None composes each from the data."
+      },
+      "finding": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "What the band is, and the sentence naming the significant lags; None composes each from the data."
+      },
+      "mode": {
+        "type": "str",
+        "default": "self-contained",
+        "choices": [
+          "self-contained",
+          "external",
+          "static"
+        ],
+        "description": "How the SVG carries its interactivity: self-contained ships its own script, external expects the page to supply one, static leaves it out."
+      },
+      "accessibility": {
+        "type": "str",
+        "default": "universal",
+        "choices": [
+          "universal",
+          "high-contrast",
+          "monochrome",
+          "deuteranopia",
+          "protanopia",
+          "tritanopia"
+        ],
+        "description": "Palette accessibility level; universal is the colour-vision-safe default."
+      },
+      "theme": {
+        "type": "str",
+        "default": "corporate",
+        "choices": [
+          "corporate",
+          "academic"
+        ],
+        "description": "Visual theme. Forwarded to build_svg."
+      }
+    },
+    "warnings": [
+      "Default output path falls back to a shared assets/ directory"
+    ]
+  },
+  {
     "kind": "alluvial",
     "label": "Alluvial",
     "aliases": [],

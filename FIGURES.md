@@ -1,6 +1,6 @@
 # Figure Catalogue
 
-138 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type). `choropleth` and `situation_map` moved to their own repo, [sprezzature-maps](https://github.com/warith-harchaoui/sprezzature-maps).
+139 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type). `choropleth` and `situation_map` moved to their own repo, [sprezzature-maps](https://github.com/warith-harchaoui/sprezzature-maps).
 
 Invoke via:
 
@@ -29,6 +29,7 @@ colour-vision-deficiency-safe Okabe-Ito palette); see
 | Kind | Script | Category | When to use |
 |------|--------|----------|-------------|
 | `ablation_matrix` | make_ablation_matrix.py | Model evaluation | Ablation study: one row per model variant, a dot matrix of the components it keeps, and one metric panel per metric sharing that row axis. Use to show which parts of a model earn their place; hovering a row highlights it across every panel at once. |
+| `acf` | make_acf.py | Serial correlation | The correlogram: autocorrelation at each lag as stems from zero, with the band inside which a lag is indistinguishable from noise. Two panels, because the pair is what a reader needs — the autocorrelation function says how far back the series remembers, the **partial** one how much of that memory is direct rather than inherited through the lags between. Lag 0 is dropped (it is 1 by definition and spends the whole vertical range saying so), the band is labelled with its formula and its n rather than left to be mistaken for a confidence interval on the coefficient, and the lags that cross it are coloured apart and listed — with the season named when the crossings are its multiples. Takes the **series**, not a table of coefficients: the autocorrelations are computed here. |
 | `alluvial` | make_alluvial.py | Flow | Trace how categorical populations shift across multiple sequential stages (e.g., patient treatment paths, hiring funnel). Use over sankey when stages are time-ordered and each row belongs to exactly one bin per stage. |
 | `andrews` | make_andrews.py | Multivariate | Project multivariate observations as Fourier curves. Clusters of similar rows become visually coincident curves; use for detecting clusters or outliers in high-dimensional data before running PCA. |
 | `arcdiagram` | make_arcdiagram.py | Network | Show pairwise connections along a linear node axis. Ideal for sequences where crossing arcs reveal unexpected long-range dependencies (e.g., citation links, gene co-expression). |

@@ -48,6 +48,23 @@ _ROW_RE = re.compile(r"^\|\s*`([^`]+)`\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*([
 # make_<kind>(data, *, out, title) -> Path contract (§3.1 required_roles).
 # Every other figure defaults to no declared roles until it is adapted.
 HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
+    "acf": {
+        "required_roles": [
+            {
+                "name": "month",
+                "label": "Position in the series",
+                "accepted_types": ["numeric", "datetime"],
+                "required": True,
+            },
+            {
+                "name": "demand",
+                "label": "Value",
+                "accepted_types": ["numeric"],
+                "required": True,
+            },
+        ],
+        "optional_roles": [],
+    },
     "ablation_matrix": {
         "required_roles": [
             {
