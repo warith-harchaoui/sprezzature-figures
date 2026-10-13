@@ -413,8 +413,7 @@ def build_svg(
     parts.append(
         f'<desc id="decomp-desc">A series of {n} observations split into four stacked '
         f'panels: {xml_escape(observed_label)}, {xml_escape(trend_label)}, '
-        f'{xml_escape(seasonal_label)} and {xml_escape(remainder_label)}, under an '
-        f'{xml_escape(model)} model with a period of {period}. '
+        f'{xml_escape(seasonal_label)} and {xml_escape(remainder_label)}. '
         f'{xml_escape(said_strength)}. {xml_escape(said)}</desc>'
     )
     parts.append(
