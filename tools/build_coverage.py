@@ -427,7 +427,7 @@ MAPPING: dict[str, list[tuple[str, str, str, str]]] = {
         ("silhouette plot", "silhouette", "covered", ""),
         ("ACF / PACF correlogram", "acf", "covered", ""),
         ("seasonal decomposition", "seasonal-decomposition", "covered", ""),
-        ("forecast fan chart", "forecast-fan", "gap", "a forecast and its widening intervals"),
+        ("forecast fan chart", "forecast-fan", "covered", ""),
         (
             "SHAP beeswarm",
             "shap-beeswarm",

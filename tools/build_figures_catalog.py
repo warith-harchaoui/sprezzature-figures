@@ -65,6 +65,35 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
         ],
         "optional_roles": [],
     },
+    "forecast-fan": {
+        "required_roles": [
+            {
+                "name": "month",
+                "label": "Period",
+                "accepted_types": ["numeric", "datetime"],
+                "required": True,
+            },
+            {
+                "name": "subscriptions",
+                "label": "Observed value",
+                "accepted_types": ["numeric"],
+                "required": True,
+            },
+            {
+                "name": "forecast",
+                "label": "Point forecast",
+                "accepted_types": ["numeric"],
+                "required": True,
+            },
+            {
+                "name": "se",
+                "label": "Standard error of the forecast",
+                "accepted_types": ["numeric"],
+                "required": True,
+            },
+        ],
+        "optional_roles": [],
+    },
     "acf": {
         "required_roles": [
             {
