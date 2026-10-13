@@ -337,8 +337,14 @@ def build_svg(
                 [
                     name,
                     f"{positions[0]} {fmt_number(first_v)} → {positions[-1]} {fmt_number(last_v)}",
-                    f"{'up' if change >= 0 else 'down'} {fmt_number(abs(change))} over "
-                    f"{len(positions)} {xml_escape(x)}s",
+                    # "up 0" is not a direction. A series that ended where it
+                    # began says so, the way its label already does.
+                    (
+                        f"unchanged over {len(positions)} {xml_escape(x)}s"
+                        if rounded_drift == 0
+                        else f"{'up' if change > 0 else 'down'} {fmt_number(abs(change))} "
+                        f"over {len(positions)} {xml_escape(x)}s"
+                    ),
                 ],
                 canvas_w=width,
                 canvas_h=height,
