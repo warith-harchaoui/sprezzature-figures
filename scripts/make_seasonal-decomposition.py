@@ -372,26 +372,37 @@ def build_svg(
         f"· trend strength {fmt_number(trend_strength)}, both on 0 to 1"
     )
     uncovered = n - len(covered)
+    # Built as whole sentences and wrapped only if one is too long, rather
+    # than poured into a fixed width. A chrome line should break where the
+    # meaning breaks: the line is what a reader reads, and it is also what
+    # a translator is handed -- a sentence cut mid-clause by the wrapper is
+    # a fragment in both roles.
+    said_parts: List[str] = []
     if finding is not None:
-        said = finding
+        said_parts.append(finding)
     elif outliers:
         named = ", ".join(labels[index] for index in outliers[:4])
         more = f" and {len(outliers) - 4} more" if len(outliers) > 4 else ""
-        said = (
+        said_parts.append(
             f"{len(outliers)} of {len(covered)} months "
             f"{'sits' if len(outliers) == 1 else 'sit'} more than "
             f"{fmt_number(outlier_sigma)} standard deviations from trend plus season: "
             f"{named}{more}."
         )
     else:
-        said = (
+        said_parts.append(
             f"No month departs from the trend and the season by more than "
             f"{fmt_number(outlier_sigma)} standard deviations."
         )
-    said += (
-        f" Trend covers {labels[first]} to {labels[last]}; the centred average "
-        f"cannot reach the first or last {uncovered // 2} months."
-    ) if uncovered else ""
+    if uncovered:
+        said_parts.append(
+            f"Trend covers {labels[first]} to {labels[last]}; the centred average "
+            f"cannot reach the first or last {uncovered // 2} months."
+        )
+    said = " ".join(said_parts)
+    said_lines: List[str] = []
+    for sentence in said_parts:
+        said_lines.extend(wrap_no_orphan(sentence, 98))
 
     parts: List[str] = []
     parts.append(
@@ -429,7 +440,7 @@ def build_svg(
         f'<text x="{plot_x - 64:.1f}" y="124" font-size="12" fill="{SECONDARY}" '
         f'font-family="{mono_family}">{xml_escape(said_strength)}</text>'
     )
-    for line_index, line in enumerate(wrap_no_orphan(said, 98)[:3]):
+    for line_index, line in enumerate(said_lines[:3]):
         parts.append(
             f'<text x="{plot_x - 64:.1f}" y="{144 + line_index * 17:.1f}" font-size="12" '
             f'fill="{SECONDARY}" font-family="{mono_family}">{xml_escape(line)}</text>'
@@ -499,7 +510,7 @@ def build_svg(
             if value is None:
                 continue
             element = len(tips)
-            flagged = index in outliers
+            flagged = index in outliers and panel_index in (0, len(panels) - 1)
             parts.append(
                 f'<rect id="pt-{element}" class="pt hit" tabindex="0" role="img" '
                 f'aria-label="{xml_escape(label)} at {xml_escape(labels[index])}: '
