@@ -50,6 +50,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _render import svg_example_path, write_svg  # noqa: E402
 from _svg import fmt_compact  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
+from _project3d import project as project3d  # noqa: E402
 from _style import leveled_colors, os_dark_style  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
@@ -193,36 +194,6 @@ def _rows_to_grid(rows: List[Dict[str, float]]) -> Tuple[np.ndarray, np.ndarray,
 # --------------------------------------------------------------------------- #
 # 3D → 2D projection                                                          #
 # --------------------------------------------------------------------------- #
-def _rotate(pts: np.ndarray, elev_deg: float, azim_deg: float) -> np.ndarray:
-    """Rotate model-space points by an azimuth then an elevation.
-
-    The azimuth turns the surface about the world ``z`` (up) axis; the
-    elevation then tips the camera down toward the plate. Working on the
-    stacked ``(N, 3)`` array keeps the whole lattice in one matmul.
-
-    Parameters
-    ----------
-    pts : numpy.ndarray
-        ``(N, 3)`` points ``(x, y, z)`` in model space.
-    elev_deg, azim_deg : float
-        Elevation and azimuth of the camera, in degrees.
-
-    Returns
-    -------
-    numpy.ndarray
-        ``(N, 3)`` rotated points in camera space.
-    """
-    az = np.radians(azim_deg)
-    el = np.radians(elev_deg)
-    # Azimuth: rotate about z.
-    ca, sa = np.cos(az), np.sin(az)
-    rz = np.array([[ca, -sa, 0.0], [sa, ca, 0.0], [0.0, 0.0, 1.0]])
-    # Elevation: rotate about x (tip toward viewer).
-    ce, se = np.cos(el), np.sin(el)
-    rx = np.array([[1.0, 0.0, 0.0], [0.0, ce, -se], [0.0, se, ce]])
-    return pts @ rz.T @ rx.T
-
-
 def _project(
     xx: np.ndarray,
     yy: np.ndarray,
@@ -235,62 +206,22 @@ def _project(
     cx: float,
     cy: float,
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-    """Rotate the lattice and project it to pixel space with a light perspective.
+    """Project the lattice, keyed to the width so the surface fills the frame.
 
-    Parameters
-    ----------
-    xx, yy, zz : numpy.ndarray
-        ``(n, n)`` model-space coordinate grids from :func:`_sample_surface`.
-    elev_deg, azim_deg : float
-        Camera elevation and azimuth, in degrees.
-    plot_w, plot_h : float
-        Pixel extent available for the projected lattice.
-    cx, cy : float
-        Pixel centre the lattice is drawn around.
-
-    Returns
-    -------
-    tuple of numpy.ndarray
-        ``(PX, PY, DEPTH)``, each ``(n, n)`` — pixel columns, pixel rows,
-        and a camera-depth value (larger = nearer the viewer) used for both
-        painter ordering and the depth colour ramp.
+    Two choices belong to the surface rather than to the camera, and both
+    are made here. The height is exaggerated a touch so the ripple reads
+    in projection -- a statement about the data, not about the lens. And
+    the scale is keyed to the available *width* alone, so the surface
+    claims the frame instead of floating small in whitespace.
     """
     n = xx.shape[0]
-    # z is exaggerated a touch so the ripple reads clearly in projection.
-    pts = np.column_stack([xx.ravel(), yy.ravel(), (zz * 0.65).ravel()])
-    cam = _rotate(pts, elev_deg, azim_deg)
-    cx_m, cy_m, cz_m = cam[:, 0], cam[:, 1], cam[:, 2]
-
-    # Simple perspective: points farther from the camera (smaller y in camera
-    # space after the tip) shrink slightly. Camera sits down the -y axis.
-    dist = 4.0
-    denom = dist - cy_m
-    persp = dist / denom
-    sx = cx_m * persp
-    sy = cz_m * persp  # camera-space up maps to screen up
-
-    # Scale to fill the plot box generously. The lattice spans ~[-1.4, 1.4] in
-    # model x after rotation, so we key the scale off the available *width* and
-    # let the (shorter) projected height follow — this makes the surface claim
-    # the frame rather than float small in whitespace.
-    span = 1.55
-    scale = plot_w / (2.0 * span)
-    px = cx + sx * scale
-    py = cy - sy * scale  # SVG y grows downward
-
-    # Depth for ordering / shading: nearer the camera → larger. Camera looks
-    # down -y, so smaller cy_m is nearer; negate so "near" is the max.
-    depth = -cy_m
-    return (
-        px.reshape(n, n),
-        py.reshape(n, n),
-        depth.reshape(n, n),
+    px, py, depth = project3d(
+        xx.ravel(), yy.ravel(), (zz * 0.65).ravel(),
+        elev_deg=elev_deg, azim_deg=azim_deg, plot_w=plot_w, plot_h=plot_h,
+        cx=cx, cy=cy, fit="width",
     )
+    return px.reshape(n, n), py.reshape(n, n), depth.reshape(n, n)
 
-
-# --------------------------------------------------------------------------- #
-# Colour ramp                                                                  #
-# --------------------------------------------------------------------------- #
 def _lerp_hex(a: str, b: str, t: float) -> str:
     """Linearly interpolate two ``#RRGGBB`` colours in sRGB space.
 
