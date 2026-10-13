@@ -66,8 +66,13 @@ def test_every_kind_publishes_its_options() -> None:
 
 
 def test_catalogue_covers_every_registered_kind() -> None:
-    """The option listing is for all of them, not for the ones somebody got to."""
-    assert len(ALL_KINDS) == 127
+    """The option listing is for all of them, not for the ones somebody got to.
+
+    Deliberately not a hardcoded catalogue size: that number moves every
+    time a figure is added, and `tests/test_release_consistency.py` is
+    already the one place that checks it against the prose quoting it.
+    """
+    assert len(ALL_KINDS) >= 127
     assert all(options_for(kind) for kind in ALL_KINDS)
 
 

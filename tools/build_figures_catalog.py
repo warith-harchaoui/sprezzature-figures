@@ -78,6 +78,23 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
             },
         ],
     },
+    "pie": {
+        "required_roles": [
+            {
+                "name": "source",
+                "label": "Part",
+                "accepted_types": ["categorical"],
+                "required": True,
+            },
+            {
+                "name": "share",
+                "label": "Size of the part",
+                "accepted_types": ["numeric"],
+                "required": True,
+            },
+        ],
+        "optional_roles": [],
+    },
     "diffusion_trajectory": {
         "required_roles": [
             {
