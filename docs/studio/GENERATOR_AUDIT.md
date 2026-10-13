@@ -4,11 +4,11 @@ Reproducible audit of every `scripts/make_*.py` generator against the
 `make_<kind>(data, *, out, title, ...) -> Path` contract the dispatcher
 expects. Regenerate with `python tools/audit_generators.py --render`.
 
-- **stable**: 144
+- **stable**: 145
 - **experimental**: 0
 - **legacy**: 0
 - **unavailable**: 0
-- **total**: 144
+- **total**: 145
 
 | kind | status | reachable | callable | demo_data | render | errors |
 |---|---|---|---|---|---|---|
@@ -100,6 +100,7 @@ expects. Regenerate with `python tools/audit_generators.py --render`.
 | `parcoords` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `pareto` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `parliament` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `permutation-importance` | stable | **no** | yes | yes | passed | make_figure('permutation-importance') cannot resolve to make_permutation-importance.py: hyphen/underscore normalisation looks for a different filename |
 | `pictorial` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `pie` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `pointplot` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |

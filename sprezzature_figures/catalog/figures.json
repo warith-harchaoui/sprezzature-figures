@@ -10714,6 +10714,173 @@
     ]
   },
   {
+    "kind": "permutation-importance",
+    "label": "Permutation Importance",
+    "aliases": [
+      "permutation importance",
+      "permutation_importance"
+    ],
+    "category": "Model explanation",
+    "description": "One bar per column: how much worse the model scores when that column is shuffled and everything else is left alone. The usual plot draws one shuffle as one bar with no spread \u2014 a permutation is a random draw, and a single pass gives a number that moves when you run it again. This takes the repeats as input, draws the mean with its interval, and **tints the rows whose interval crosses zero**: not distinguishable from a column of noise is a finding, not a small bar. Negative importance is drawn rather than clipped \u2014 shuffling a column can make the model score better, and clipping deletes exactly the columns worth removing. The chrome names which data the score was measured on, and carries the one limitation no permutation can see: two columns that move together each keep the other's score up.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "svg",
+    "module": "scripts/make_permutation-importance.py",
+    "callable_name": "make_permutation_importance",
+    "required_roles": [
+      {
+        "name": "feature",
+        "label": "Column name",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "drop",
+        "label": "Score drop for one shuffle",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [
+      {
+        "name": "repeat",
+        "label": "Which shuffle",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": false
+      }
+    ],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 940,
+    "default_height": 620,
+    "options_schema": {
+      "title": {
+        "type": "str",
+        "default": "Two of nine columns are not distinguishable from noise, and one is worse than noise",
+        "choices": [],
+        "description": "Chart text."
+      },
+      "subtitle": {
+        "type": "str",
+        "default": "Drop in held-out AUC when each column is shuffled, ten shuffles per column, mean with two standard errors.",
+        "choices": [],
+        "description": "Chart text."
+      },
+      "width": {
+        "type": "int",
+        "default": 940,
+        "choices": [],
+        "description": "Canvas size in pixels."
+      },
+      "height": {
+        "type": "int",
+        "default": 620,
+        "choices": [],
+        "description": "Canvas size in pixels."
+      },
+      "feature": {
+        "type": "str",
+        "default": "feature",
+        "choices": [],
+        "description": "Row keys for the column name and the score drop."
+      },
+      "value": {
+        "type": "str",
+        "default": "drop",
+        "choices": [],
+        "description": "Row keys for the column name and the score drop."
+      },
+      "error_multiple": {
+        "type": "float",
+        "default": 2.0,
+        "choices": [],
+        "description": "How many standard errors the interval spans either side."
+      },
+      "top": {
+        "type": "int",
+        "default": 0,
+        "choices": [],
+        "description": "Draw only the top features by mean drop; 0 draws all."
+      },
+      "set_label": {
+        "type": "str",
+        "default": "held-out data",
+        "choices": [],
+        "description": "Which data the score was measured on."
+      },
+      "score_label": {
+        "type": "str",
+        "default": "Drop in AUC when shuffled",
+        "choices": [],
+        "description": "Axis title."
+      },
+      "caveat": {
+        "type": "str",
+        "default": "two columns that move together each keep the other's score up, and no permutation can see it",
+        "choices": [],
+        "description": "The standing limitation, drawn whatever the data says."
+      },
+      "measure_note": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "The line describing the measurement, and the sentence naming what the intervals show; None composes each from the data."
+      },
+      "finding": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "The line describing the measurement, and the sentence naming what the intervals show; None composes each from the data."
+      },
+      "mode": {
+        "type": "str",
+        "default": "self-contained",
+        "choices": [
+          "self-contained",
+          "external",
+          "static"
+        ],
+        "description": "How the SVG carries its interactivity: self-contained ships its own script, external expects the page to supply one, static leaves it out."
+      },
+      "accessibility": {
+        "type": "str",
+        "default": "universal",
+        "choices": [
+          "universal",
+          "high-contrast",
+          "monochrome",
+          "deuteranopia",
+          "protanopia",
+          "tritanopia"
+        ],
+        "description": "Palette accessibility level; universal is the colour-vision-safe default."
+      },
+      "theme": {
+        "type": "str",
+        "default": "corporate",
+        "choices": [
+          "corporate",
+          "academic"
+        ],
+        "description": "Visual theme. Forwarded to build_svg."
+      }
+    },
+    "warnings": [
+      "make_figure('permutation-importance') cannot resolve to make_permutation-importance.py: hyphen/underscore normalisation looks for a different filename"
+    ]
+  },
+  {
     "kind": "pictorial",
     "label": "Pictorial",
     "aliases": [],
