@@ -1,6 +1,6 @@
 # Figure Catalogue
 
-148 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type). `choropleth` and `situation_map` moved to their own repo, [sprezzature-maps](https://github.com/warith-harchaoui/sprezzature-maps).
+149 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type). `choropleth` and `situation_map` moved to their own repo, [sprezzature-maps](https://github.com/warith-harchaoui/sprezzature-maps).
 
 Invoke via:
 
@@ -49,6 +49,7 @@ colour-vision-deficiency-safe Okabe-Ito palette); see
 | `calendar-heatmap` | make_calendar-heatmap.py | Time series | GitHub-style week x day grid, cell colour is a daily count on a single pale-to-navy blue ramp. Use for commit activity, daily active users, or habit tracking viewed over months at a glance. |
 | `calibration` | make_calibration.py | Model evaluation | Plot predicted probability vs. observed frequency. Use after training a classifier to check whether its scores are well-calibrated (reliable confidence estimates). |
 | `candlestick` | make_candlestick.py | Finance | OHLC chart per period: a thin wick spans low-high, a thick body spans open-close, coloured green up / red down. The default chart for daily price data or any open/high/low/close-shaped series. |
+| `causal-dag` | make_causal-dag.py | Causal inference | The assumed causal structure, with every node's part — confounder, mediator, collider — **worked out from the arrows rather than declared**. The usual rendering draws the graph and leaves the one decision a DAG exists for to the reader: this enumerates the backdoor paths from treatment to outcome, tests the proposed adjustment set against each, and says which are blocked and which stay open. It also catches the expensive mistake: an adjustment set containing a collider can block every backdoor path and still be wrong, because it *opens* one that was closed — so a set naming a collider or a mediator is reported as such before the backdoor count is given. Unobserved nodes are hollow, because a confounder you cannot measure is the difference between an estimate and a guess. |
 | `chord` | make_chord.py | Flow | Circular chord diagram for symmetric or directed flows between categories. Use when every pair of categories can exchange and the total volume matters (e.g., migration between countries). |
 | `circle-packing` | make_circle-packing.py | Hierarchy | Represent a hierarchy as nested circles whose area encodes a numeric value. Use for a single level of nesting where the visual impact of size differences matters more than precise reading. |
 | `clustermap` | make_clustermap.py | Distribution | Heatmap with rows and columns reordered by hierarchical clustering, with a dendrogram guide along each axis showing the merge structure. Use for gene-expression matrices, correlated-feature discovery, or customer-segment x product affinity. |

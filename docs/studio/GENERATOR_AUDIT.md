@@ -4,11 +4,11 @@ Reproducible audit of every `scripts/make_*.py` generator against the
 `make_<kind>(data, *, out, title, ...) -> Path` contract the dispatcher
 expects. Regenerate with `python tools/audit_generators.py --render`.
 
-- **stable**: 148
+- **stable**: 149
 - **experimental**: 0
 - **legacy**: 0
 - **unavailable**: 0
-- **total**: 148
+- **total**: 149
 
 | kind | status | reachable | callable | demo_data | render | errors |
 |---|---|---|---|---|---|---|
@@ -33,6 +33,7 @@ expects. Regenerate with `python tools/audit_generators.py --render`.
 | `calendar-heatmap` | stable | **no** | yes | yes | passed | make_figure('calendar-heatmap') cannot resolve to make_calendar-heatmap.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
 | `calibration` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `candlestick` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `causal-dag` | stable | **no** | yes | yes | passed | make_figure('causal-dag') cannot resolve to make_causal-dag.py: hyphen/underscore normalisation looks for a different filename |
 | `chord` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `circle-packing` | stable | **no** | yes | yes | passed | make_figure('circle-packing') cannot resolve to make_circle-packing.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
 | `clustermap` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |

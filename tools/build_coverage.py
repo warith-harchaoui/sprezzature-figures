@@ -432,7 +432,7 @@ MAPPING: dict[str, list[tuple[str, str, str, str]]] = {
         ("SHAP waterfall", "shap-waterfall", "covered", ""),
         ("partial dependence / ICE", "pdp-ice", "covered", ""),
         ("permutation importance", "permutation-importance", "covered", ""),
-        ("causal DAG", "causal-dag", "gap", "the DoWhy graph: treatment, outcome, confounders"),
+        ("causal DAG", "causal-dag", "covered", ""),
         ("missing-data matrix", "missing-matrix", "covered", ""),
         ("control chart (SPC)", "control-chart", "covered", ""),
         ("cohort retention", "cohort-retention", "covered", ""),

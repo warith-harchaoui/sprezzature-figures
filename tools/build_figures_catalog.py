@@ -284,6 +284,30 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
             },
         ],
     },
+    "causal-dag": {
+        "required_roles": [
+            {
+                "name": "source",
+                "label": "Arrow tail",
+                "accepted_types": ["categorical"],
+                "required": True,
+            },
+            {
+                "name": "target",
+                "label": "Arrow head",
+                "accepted_types": ["categorical"],
+                "required": True,
+            },
+        ],
+        "optional_roles": [
+            {
+                "name": "observed",
+                "label": "Whether the tail node was measured",
+                "accepted_types": ["numeric", "categorical"],
+                "required": False,
+            },
+        ],
+    },
     "acf": {
         "required_roles": [
             {

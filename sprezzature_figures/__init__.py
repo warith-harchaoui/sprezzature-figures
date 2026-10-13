@@ -1,7 +1,7 @@
 """
 sprezzature_figures — publication-quality data figures.
 
-148 chart types, every one a hand-authored SVG.
+149 chart types, every one a hand-authored SVG.
 Every chart is callable as a library function and as a CLI command.
 The Ralph Eyeball Loop provides autonomous visual quality feedback.
 redraw() takes a picture of somebody else's chart and redraws it here.
