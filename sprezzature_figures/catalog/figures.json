@@ -3090,7 +3090,7 @@
     "label": "Contour",
     "aliases": [],
     "category": "Gridded field",
-    "description": "Iso-lines over a scalar field z = f(x, y), with filled bands behind them. Use for a field that is measured or computed rather than estimated from points: a loss surface, a temperature, a potential, a model's output over two inputs. Every level is written on its own line \u2014 matplotlib has `clabel` and almost nobody calls it, which leaves the reader a topography with no altitude \u2014 and the levels run on a geometric sequence by default, because a field spanning three orders of magnitude gets all its evenly spaced lines around the peaks and none in the basins. Prefer `kde2d-contour` when the field is a density estimated from points, `heatmap` when there is no continuity to contour, `surface3d` when the shape matters more than the values.",
+    "description": "Iso-lines over a scalar field z = f(x, y), with filled bands behind them. Use for a field that is measured or computed rather than estimated from points: a loss surface, a temperature, a potential, a model's output over two inputs. Every level is written on its own line \u2014 contour labels are an opt-in almost everywhere and almost nobody opts in, which leaves the reader a topography with no altitude \u2014 and the levels run on a geometric sequence by default, because a field spanning three orders of magnitude gets all its evenly spaced lines around the peaks and none in the basins. Prefer `kde2d-contour` when the field is a density estimated from points, `heatmap` when there is no continuity to contour, `surface3d` when the shape matters more than the values.",
     "intents": [],
     "status": "stable",
     "renderer": "svg",
@@ -4297,6 +4297,162 @@
       }
     },
     "warnings": [
+      "Default output path falls back to a shared assets/ directory"
+    ]
+  },
+  {
+    "kind": "dual-axis",
+    "label": "Dual Axis",
+    "aliases": [
+      "dual axis",
+      "dual_axis"
+    ],
+    "category": "Comparison",
+    "description": "Bars on a left axis, a line on a right one, for two series whose units genuinely do not share a scale. The form has a bad reputation and most of it is deserved \u2014 two independent scales can be slid against each other until any pair appears to move together \u2014 so the objection is answered on the figure: both axes start at zero unless told otherwise (and say so when not), each axis is drawn in its series' colour so there is no legend to cross-check, the caveat that the crossing point means nothing is printed rather than implied, and Pearson's r over the window is computed so the reader judges a number instead of an impression.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "svg",
+    "module": "scripts/make_dual-axis.py",
+    "callable_name": "make_dual_axis",
+    "required_roles": [
+      {
+        "name": "month",
+        "label": "Position",
+        "accepted_types": [
+          "categorical",
+          "datetime"
+        ],
+        "required": true
+      },
+      {
+        "name": "revenue",
+        "label": "Bars (left axis)",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "conversion",
+        "label": "Line (right axis)",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 900,
+    "default_height": 560,
+    "options_schema": {
+      "title": {
+        "type": "str",
+        "default": "Revenue up 80% over the year, trial conversion down a third",
+        "choices": [],
+        "description": "Chart text."
+      },
+      "subtitle": {
+        "type": "str",
+        "default": "Monthly revenue and trial conversion. Two scales, so where the line meets the bars means nothing.",
+        "choices": [],
+        "description": "Chart text."
+      },
+      "width": {
+        "type": "int",
+        "default": 900,
+        "choices": [],
+        "description": "Canvas size in pixels."
+      },
+      "height": {
+        "type": "int",
+        "default": 560,
+        "choices": [],
+        "description": "Canvas size in pixels."
+      },
+      "x": {
+        "type": "str",
+        "default": "month",
+        "choices": [],
+        "description": "Which keys order the points and supply the two series."
+      },
+      "bars": {
+        "type": "str",
+        "default": "revenue",
+        "choices": [],
+        "description": "Which keys order the points and supply the two series."
+      },
+      "line": {
+        "type": "str",
+        "default": "conversion",
+        "choices": [],
+        "description": "Which keys order the points and supply the two series."
+      },
+      "bars_label": {
+        "type": "str",
+        "default": "Revenue (k$)",
+        "choices": [],
+        "description": "Axis titles, drawn in their series' colour."
+      },
+      "line_label": {
+        "type": "str",
+        "default": "Trial conversion (%)",
+        "choices": [],
+        "description": "Axis titles, drawn in their series' colour."
+      },
+      "x_label": {
+        "type": "str",
+        "default": "",
+        "choices": [],
+        "description": "Axis titles, drawn in their series' colour."
+      },
+      "zero_anchored": {
+        "type": "bool",
+        "default": true,
+        "choices": [],
+        "description": "Start both value axes at zero."
+      },
+      "mode": {
+        "type": "str",
+        "default": "self-contained",
+        "choices": [
+          "self-contained",
+          "external",
+          "static"
+        ],
+        "description": "How the SVG carries its interactivity: self-contained ships its own script, external expects the page to supply one, static leaves it out."
+      },
+      "accessibility": {
+        "type": "str",
+        "default": "universal",
+        "choices": [
+          "universal",
+          "high-contrast",
+          "monochrome",
+          "deuteranopia",
+          "protanopia",
+          "tritanopia"
+        ],
+        "description": "Palette accessibility level; universal is the colour-vision-safe default."
+      },
+      "theme": {
+        "type": "str",
+        "default": "corporate",
+        "choices": [
+          "corporate",
+          "academic"
+        ],
+        "description": "Visual theme. Forwarded to build_svg."
+      }
+    },
+    "warnings": [
+      "make_figure('dual-axis') cannot resolve to make_dual-axis.py: hyphen/underscore normalisation looks for a different filename",
       "Default output path falls back to a shared assets/ directory"
     ]
   },
@@ -11574,6 +11730,150 @@
         "default": 520,
         "choices": [],
         "description": "Canvas size in pixels."
+      },
+      "mode": {
+        "type": "str",
+        "default": "self-contained",
+        "choices": [
+          "self-contained",
+          "external",
+          "static"
+        ],
+        "description": "How the SVG carries its interactivity: self-contained ships its own script, external expects the page to supply one, static leaves it out."
+      },
+      "accessibility": {
+        "type": "str",
+        "default": "universal",
+        "choices": [
+          "universal",
+          "high-contrast",
+          "monochrome",
+          "deuteranopia",
+          "protanopia",
+          "tritanopia"
+        ],
+        "description": "Palette accessibility level; universal is the colour-vision-safe default."
+      },
+      "theme": {
+        "type": "str",
+        "default": "corporate",
+        "choices": [
+          "corporate",
+          "academic"
+        ],
+        "description": "Visual theme. Forwarded to build_svg."
+      }
+    },
+    "warnings": [
+      "Default output path falls back to a shared assets/ directory"
+    ]
+  },
+  {
+    "kind": "sparkline",
+    "label": "Sparkline",
+    "aliases": [],
+    "category": "Time series",
+    "description": "A stack of word-sized lines, one metric per row, no axes. Use when a page needs twenty metrics at once and each is read for its own shape rather than against the others: revenue in thousands and error rate in percent belong on the same screen and never on the same axis. Behind each line sits its own middle half (first to third quartile), so the line leaves the band exactly when the series is doing something unusual, and each row ends with its latest reading and its change. Prefer `facet` when the series share a unit and must be compared, this when they do not.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "svg",
+    "module": "scripts/make_sparkline.py",
+    "callable_name": "make_sparkline",
+    "required_roles": [
+      {
+        "name": "metric",
+        "label": "Row",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "week",
+        "label": "Position along the row",
+        "accepted_types": [
+          "numeric",
+          "datetime",
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "value",
+        "label": "Value",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [
+      {
+        "name": "unit",
+        "label": "Unit printed after the latest reading",
+        "accepted_types": [
+          "text"
+        ],
+        "required": false
+      }
+    ],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 920,
+    "default_height": 520,
+    "options_schema": {
+      "title": {
+        "type": "str",
+        "default": "Nine metrics, nine scales, one screen",
+        "choices": [],
+        "description": "Chart text."
+      },
+      "subtitle": {
+        "type": "str",
+        "default": "Each row has its own scale; the grey band is its middle half. Blue rose, orange fell: direction, not judgement.",
+        "choices": [],
+        "description": "Chart text."
+      },
+      "width": {
+        "type": "int",
+        "default": 920,
+        "choices": [],
+        "description": "Canvas size in pixels."
+      },
+      "height": {
+        "type": "int",
+        "default": 520,
+        "choices": [],
+        "description": "Canvas size in pixels."
+      },
+      "series": {
+        "type": "str",
+        "default": "metric",
+        "choices": [],
+        "description": "Which keys name the row, order the points, carry the value and the unit."
+      },
+      "x": {
+        "type": "str",
+        "default": "week",
+        "choices": [],
+        "description": "Which keys name the row, order the points, carry the value and the unit."
+      },
+      "y": {
+        "type": "str",
+        "default": "value",
+        "choices": [],
+        "description": "Which keys name the row, order the points, carry the value and the unit."
+      },
+      "unit": {
+        "type": "str",
+        "default": "unit",
+        "choices": [],
+        "description": "Which keys name the row, order the points, carry the value and the unit."
       },
       "mode": {
         "type": "str",

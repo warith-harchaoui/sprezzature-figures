@@ -91,6 +91,59 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
         ],
         "optional_roles": [],
     },
+    "dual-axis": {
+        "required_roles": [
+            {
+                "name": "month",
+                "label": "Position",
+                "accepted_types": ["categorical", "datetime"],
+                "required": True,
+            },
+            {
+                "name": "revenue",
+                "label": "Bars (left axis)",
+                "accepted_types": ["numeric"],
+                "required": True,
+            },
+            {
+                "name": "conversion",
+                "label": "Line (right axis)",
+                "accepted_types": ["numeric"],
+                "required": True,
+            },
+        ],
+        "optional_roles": [],
+    },
+    "sparkline": {
+        "required_roles": [
+            {
+                "name": "metric",
+                "label": "Row",
+                "accepted_types": ["categorical"],
+                "required": True,
+            },
+            {
+                "name": "week",
+                "label": "Position along the row",
+                "accepted_types": ["numeric", "datetime", "categorical"],
+                "required": True,
+            },
+            {
+                "name": "value",
+                "label": "Value",
+                "accepted_types": ["numeric"],
+                "required": True,
+            },
+        ],
+        "optional_roles": [
+            {
+                "name": "unit",
+                "label": "Unit printed after the latest reading",
+                "accepted_types": ["text"],
+                "required": False,
+            },
+        ],
+    },
     "facet": {
         "required_roles": [
             {

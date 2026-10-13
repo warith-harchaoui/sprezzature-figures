@@ -4,11 +4,11 @@ Reproducible audit of every `scripts/make_*.py` generator against the
 `make_<kind>(data, *, out, title, ...) -> Path` contract the dispatcher
 expects. Regenerate with `python tools/audit_generators.py --render`.
 
-- **stable**: 131
+- **stable**: 133
 - **experimental**: 0
 - **legacy**: 0
 - **unavailable**: 0
-- **total**: 131
+- **total**: 133
 
 | kind | status | reachable | callable | demo_data | render | errors |
 |---|---|---|---|---|---|---|
@@ -49,6 +49,7 @@ expects. Regenerate with `python tools/audit_generators.py --render`.
 | `donut` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `dotdensity` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `dotplot` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `dual-axis` | stable | **no** | yes | yes | passed | make_figure('dual-axis') cannot resolve to make_dual-axis.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
 | `dumbbell` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `ecdf` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `edge-bundling` | stable | **no** | yes | yes | passed | make_figure('edge-bundling') cannot resolve to make_edge-bundling.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
@@ -115,6 +116,7 @@ expects. Regenerate with `python tools/audit_generators.py --render`.
 | `scatter3d` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `sfdp-largegraph` | stable | **no** | yes | yes | passed | make_figure('sfdp-largegraph') cannot resolve to make_sfdp-largegraph.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
 | `slope` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `sparkline` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `speaking_time` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `spectrogram` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `spike-map` | stable | **no** | yes | yes | passed | make_figure('spike-map') cannot resolve to make_spike-map.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
