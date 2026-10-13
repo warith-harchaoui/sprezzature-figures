@@ -12158,6 +12158,153 @@
     ]
   },
   {
+    "kind": "silhouette",
+    "label": "Silhouette",
+    "aliases": [],
+    "category": "Model evaluation",
+    "description": "One blade per sample, sorted inside its cluster, clusters stacked: the standard way to judge a clustering. The standard version reports one number \u2014 the overall mean \u2014 which is exactly the number that hides the problem, because three tight groups and one incoherent one average to \"fine\". Here the samples on the wrong side of zero (closer to another cluster than to their own) are counted per cluster and coloured apart, each cluster carries its own mean **and its own n**, and the overall mean is a rule across the figure. Below about two pixels a blade stops being a blade and the sorted profile is filled as one shape, which is the same information without the rasterising stripes.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "svg",
+    "module": "scripts/make_silhouette.py",
+    "callable_name": "make_silhouette",
+    "required_roles": [
+      {
+        "name": "cluster",
+        "label": "Cluster",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "silhouette",
+        "label": "Silhouette coefficient",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [
+      {
+        "name": "sample",
+        "label": "Sample id",
+        "accepted_types": [
+          "identifier",
+          "text"
+        ],
+        "required": false
+      }
+    ],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 900,
+    "default_height": 620,
+    "options_schema": {
+      "title": {
+        "type": "str",
+        "default": "One cluster in four is not a cluster: a quarter of it sits on the wrong side of zero",
+        "choices": [],
+        "description": "Chart text."
+      },
+      "subtitle": {
+        "type": "str",
+        "default": "Silhouette coefficient per sample, sorted inside each cluster. Negative means closer to another cluster.",
+        "choices": [],
+        "description": "Chart text."
+      },
+      "width": {
+        "type": "int",
+        "default": 900,
+        "choices": [],
+        "description": "Canvas size in pixels."
+      },
+      "height": {
+        "type": "int",
+        "default": 620,
+        "choices": [],
+        "description": "Canvas size in pixels."
+      },
+      "cluster": {
+        "type": "str",
+        "default": "cluster",
+        "choices": [],
+        "description": "Which keys name the cluster, the coefficient and the sample."
+      },
+      "value": {
+        "type": "str",
+        "default": "silhouette",
+        "choices": [],
+        "description": "Which keys name the cluster, the coefficient and the sample."
+      },
+      "sample": {
+        "type": "str",
+        "default": "sample",
+        "choices": [],
+        "description": "Which keys name the cluster, the coefficient and the sample."
+      },
+      "x_label": {
+        "type": "str",
+        "default": "Silhouette coefficient",
+        "choices": [],
+        "description": "Title under the coefficient axis."
+      },
+      "mean_label": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "The mean rule's label and the wrong-side-of-zero line; None composes each from the data."
+      },
+      "misfit_label": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "The mean rule's label and the wrong-side-of-zero line; None composes each from the data."
+      },
+      "mode": {
+        "type": "str",
+        "default": "self-contained",
+        "choices": [
+          "self-contained",
+          "external",
+          "static"
+        ],
+        "description": "How the SVG carries its interactivity: self-contained ships its own script, external expects the page to supply one, static leaves it out."
+      },
+      "accessibility": {
+        "type": "str",
+        "default": "universal",
+        "choices": [
+          "universal",
+          "high-contrast",
+          "monochrome",
+          "deuteranopia",
+          "protanopia",
+          "tritanopia"
+        ],
+        "description": "Palette accessibility level; universal is the colour-vision-safe default."
+      },
+      "theme": {
+        "type": "str",
+        "default": "corporate",
+        "choices": [
+          "corporate",
+          "academic"
+        ],
+        "description": "Visual theme. Forwarded to build_svg."
+      }
+    },
+    "warnings": [
+      "Default output path falls back to a shared assets/ directory"
+    ]
+  },
+  {
     "kind": "slope",
     "label": "Slope",
     "aliases": [],
@@ -14275,6 +14422,167 @@
       }
     },
     "warnings": [
+      "Default output path falls back to a shared assets/ directory"
+    ]
+  },
+  {
+    "kind": "validation-curve",
+    "label": "Validation Curve",
+    "aliases": [
+      "validation curve",
+      "validation_curve"
+    ],
+    "category": "Model evaluation",
+    "description": "Score against one hyper-parameter, training and validation, with a band for the fold-to-fold range. Drawn to make one decision \u2014 which value to ship \u2014 and the usual version hands that decision back as a hump to eyeball. The peak is the wrong answer anyway: the argmax of a noisy validation curve overfits the validation set. This one performs the **one-standard-error rule** (take the simplest model within one standard error of the best), draws the threshold, marks both candidates, and says what the simpler model costs. `simpler_is` says which direction along the parameter is simpler, because only the caller knows.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "svg",
+    "module": "scripts/make_validation-curve.py",
+    "callable_name": "make_validation_curve",
+    "required_roles": [
+      {
+        "name": "alpha",
+        "label": "Hyper-parameter value",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "split",
+        "label": "Training or validation",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "score",
+        "label": "Score",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 900,
+    "default_height": 580,
+    "options_schema": {
+      "title": {
+        "type": "str",
+        "default": "Ten times more regularisation costs nothing measurable \u2014 take it",
+        "choices": [],
+        "description": "Chart text."
+      },
+      "subtitle": {
+        "type": "str",
+        "default": "Five folds per value. Bands are the fold-to-fold range; the rule is one standard error from the peak.",
+        "choices": [],
+        "description": "Chart text."
+      },
+      "width": {
+        "type": "int",
+        "default": 900,
+        "choices": [],
+        "description": "Canvas size in pixels."
+      },
+      "height": {
+        "type": "int",
+        "default": 580,
+        "choices": [],
+        "description": "Canvas size in pixels."
+      },
+      "x": {
+        "type": "str",
+        "default": "alpha",
+        "choices": [],
+        "description": "Which keys hold the parameter, the split and the score."
+      },
+      "series": {
+        "type": "str",
+        "default": "split",
+        "choices": [],
+        "description": "Which keys hold the parameter, the split and the score."
+      },
+      "y": {
+        "type": "str",
+        "default": "score",
+        "choices": [],
+        "description": "Which keys hold the parameter, the split and the score."
+      },
+      "x_label": {
+        "type": "str",
+        "default": "Regularisation strength \u03b1",
+        "choices": [],
+        "description": "Axis titles."
+      },
+      "y_label": {
+        "type": "str",
+        "default": "Accuracy",
+        "choices": [],
+        "description": "Axis titles."
+      },
+      "simpler_is": {
+        "type": "str",
+        "default": "larger",
+        "choices": [],
+        "description": "\"larger\" or \"smaller\": which direction along the parameter makes the model simpler."
+      },
+      "log_scale": {
+        "type": "bool",
+        "default": true,
+        "choices": [],
+        "description": "Put the parameter on a logarithmic axis."
+      },
+      "advice": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "The peak-versus-one-standard-error sentence; None composes it."
+      },
+      "mode": {
+        "type": "str",
+        "default": "self-contained",
+        "choices": [
+          "self-contained",
+          "external",
+          "static"
+        ],
+        "description": "How the SVG carries its interactivity: self-contained ships its own script, external expects the page to supply one, static leaves it out."
+      },
+      "accessibility": {
+        "type": "str",
+        "default": "universal",
+        "choices": [
+          "universal",
+          "high-contrast",
+          "monochrome",
+          "deuteranopia",
+          "protanopia",
+          "tritanopia"
+        ],
+        "description": "Palette accessibility level; universal is the colour-vision-safe default."
+      },
+      "theme": {
+        "type": "str",
+        "default": "corporate",
+        "choices": [
+          "corporate",
+          "academic"
+        ],
+        "description": "Visual theme. Forwarded to build_svg."
+      }
+    },
+    "warnings": [
+      "make_figure('validation-curve') cannot resolve to make_validation-curve.py: hyphen/underscore normalisation looks for a different filename",
       "Default output path falls back to a shared assets/ directory"
     ]
   },

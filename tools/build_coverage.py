@@ -422,9 +422,9 @@ MAPPING: dict[str, list[tuple[str, str, str, str]]] = {
         ("Bland-Altman", "blandaltman", "covered", ""),
         ("Gaussian process posterior", "gaussian-process", "covered", ""),
         ("learning curve", "learning-curve", "covered", ""),
-        ("validation curve", "validation-curve", "gap", "score against one hyper-parameter"),
+        ("validation curve", "validation-curve", "covered", ""),
         ("training / loss curve", "loss-curve", "covered", ""),
-        ("silhouette plot", "silhouette", "gap", "per-sample silhouette, grouped by cluster"),
+        ("silhouette plot", "silhouette", "covered", ""),
         ("ACF / PACF correlogram", "acf", "gap", "autocorrelation with its significance band"),
         (
             "seasonal decomposition",

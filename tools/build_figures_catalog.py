@@ -137,6 +137,30 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
         ],
         "optional_roles": [],
     },
+    "silhouette": {
+        "required_roles": [
+            {
+                "name": "cluster",
+                "label": "Cluster",
+                "accepted_types": ["categorical"],
+                "required": True,
+            },
+            {
+                "name": "silhouette",
+                "label": "Silhouette coefficient",
+                "accepted_types": ["numeric"],
+                "required": True,
+            },
+        ],
+        "optional_roles": [
+            {
+                "name": "sample",
+                "label": "Sample id",
+                "accepted_types": ["identifier", "text"],
+                "required": False,
+            },
+        ],
+    },
     "sparkline": {
         "required_roles": [
             {
@@ -254,6 +278,29 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
             {
                 "name": "loss",
                 "label": "Loss",
+                "accepted_types": ["numeric"],
+                "required": True,
+            },
+        ],
+        "optional_roles": [],
+    },
+    "validation-curve": {
+        "required_roles": [
+            {
+                "name": "alpha",
+                "label": "Hyper-parameter value",
+                "accepted_types": ["numeric"],
+                "required": True,
+            },
+            {
+                "name": "split",
+                "label": "Training or validation",
+                "accepted_types": ["categorical"],
+                "required": True,
+            },
+            {
+                "name": "score",
+                "label": "Score",
                 "accepted_types": ["numeric"],
                 "required": True,
             },
