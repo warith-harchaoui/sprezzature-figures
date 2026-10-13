@@ -96,6 +96,10 @@ OPTION_CHOICES: dict[str, tuple[str, ...]] = {
     # "every text option reaches the drawing" probe that this one is a
     # switch rather than a caption.
     "simpler_is": ("larger", "smaller"),
+    # seasonal-decomposition: whether the season adds to the level or
+    # scales it. Two different claims about the data, and the figure
+    # computes different components for each.
+    "model": ("additive", "multiplicative"),
 }
 
 #: House meaning of the keywords many generators share. A generator
