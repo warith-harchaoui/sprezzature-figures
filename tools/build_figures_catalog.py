@@ -78,6 +78,19 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
             },
         ],
     },
+    "contour": {
+        "required_roles": [
+            {"name": "x", "label": "X", "accepted_types": ["numeric"], "required": True},
+            {"name": "y", "label": "Y", "accepted_types": ["numeric"], "required": True},
+            {
+                "name": "z",
+                "label": "Field value",
+                "accepted_types": ["numeric"],
+                "required": True,
+            },
+        ],
+        "optional_roles": [],
+    },
     "facet": {
         "required_roles": [
             {
