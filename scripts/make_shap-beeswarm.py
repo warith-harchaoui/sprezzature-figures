@@ -276,7 +276,8 @@ def build_svg(
         said_parts.append(finding)
     elif mixed:
         said_parts.append(
-            f"{len(mixed)} of {len(summary)} rows have a rank correlation below "
+            f"{len(mixed)} of {len(summary)} rows "
+            f"{'has' if len(mixed) == 1 else 'have'} a rank correlation below "
             f"{fmt_number(monotone_at)} between value and contribution: {', '.join(mixed)}."
         )
         said_parts.append(
