@@ -223,6 +223,7 @@ def build_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    title: Optional[str] = None,
 ) -> str:
     """Assemble the full radial-bar SVG document as a string.
 
@@ -332,9 +333,12 @@ def build_svg(
     parts.append(f'<rect width="{_WIDTH}" height="{_HEIGHT}" fill="{_BG}"/>')
 
     # ---- title + subtitle (upper-left, poster weight) ----
+    # The headline the figure writes about its own data, used only when
+    # the caller supplies none.
+    title = title or 'A city with two rush hours'
     parts.append(
         f'<text x="60" y="72" font-size="34" font-weight="700" '
-        f'fill="{_INK}">A city with two rush hours</text>'
+        f'fill="{_INK}">{xml_escape(title)}</text>'
     )
     parts.append(
         f'<text x="60" y="106" font-size="18" fill="{_SUBTLE}">'
@@ -559,7 +563,7 @@ def make_radial_bar(
         Absolute path to the written SVG file.
     """
     _ = title
-    svg = build_svg(data, peak_badge_label=peak_badge_label, mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(data, peak_badge_label=peak_badge_label, mode=mode, accessibility=accessibility, theme=theme, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "radial-bar")
     return write_svg(dest, svg, theme=theme)
 

@@ -436,6 +436,7 @@ def build_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    title: Optional[str] = None,
 ) -> str:
     """Assemble the full wind-barb station-plot SVG document as a string.
 
@@ -562,9 +563,12 @@ def build_svg(
     parts.append(f'<rect width="{_WIDTH}" height="{_HEIGHT}" fill="{_BG}"/>')
 
     # ---- title + subtitle ----
+    # The headline the figure writes about its own data, used only when
+    # the caller supplies none.
+    title = title or 'A cold front swings the wind hard around the coast'
     parts.append(
         f'<text x="{_MAP_X + 4:.1f}" y="70" font-size="39" font-weight="700" '
-        f'fill="{_INK}">A cold front swings the wind hard around the coast</text>'
+        f'fill="{_INK}">{xml_escape(title)}</text>'
     )
     parts.append(
         f'<text x="{_MAP_X + 4:.1f}" y="110" font-size="21" fill="{_SUBTLE}">'
@@ -975,9 +979,8 @@ def make_windbarb(
     Path
         Absolute path to the written SVG file.
     """
-    del title
     svg = build_svg(data, airmass_label=airmass_label, cold_front_label=cold_front_label,
-                     mode=mode, accessibility=accessibility, theme=theme)
+                     mode=mode, accessibility=accessibility, theme=theme, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "windbarb")
     return write_svg(dest, svg, theme=theme)
 

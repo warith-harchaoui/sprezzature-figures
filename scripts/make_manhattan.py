@@ -247,6 +247,7 @@ def build_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    title: Optional[str] = None,
 ) -> str:
     """Assemble the full Manhattan-plot SVG document as a string.
 
@@ -354,9 +355,12 @@ def build_svg(
     parts.append(f'<rect width="{_WIDTH}" height="{_HEIGHT}" fill="{_BG}"/>')
 
     # ---- title + subtitle ----
+    # The headline the figure writes about its own data, used only when
+    # the caller supplies none.
+    title = title or 'Height is written across the whole genome'
     parts.append(
         f'<text x="{_PLOT_X}" y="62" font-size="32" font-weight="700" '
-        f'fill="{_INK}">Height is written across the whole genome</text>'
+        f'fill="{_INK}">{xml_escape(title)}</text>'
     )
     parts.append(
         f'<text x="{_PLOT_X}" y="96" font-size="18" fill="{_SUBTLE}">'
@@ -614,7 +618,7 @@ def make_manhattan(
         (str(r["chromosome"]), float(r["position_fraction"]), float(r["neg_log10p"]), str(r["gene"]))
         for r in rows
     ]
-    svg = build_svg(peaks, x_axis_title=x_axis_title, mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(peaks, x_axis_title=x_axis_title, mode=mode, accessibility=accessibility, theme=theme, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "manhattan")
     return write_svg(dest, svg, theme=theme)
 

@@ -251,6 +251,7 @@ def build_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    title: Optional[str] = None,
 ) -> str:
     """Assemble the full liquid-fill gauge as an SVG string.
 
@@ -378,9 +379,12 @@ def build_svg(
     parts.append(f'<rect width="{_WIDTH}" height="{_HEIGHT}" fill="{_BG}"/>')
 
     # ---- title + subtitle (upper-left, poster weight) ----
+    # The headline the figure writes about its own data, used only when
+    # the caller supplies none.
+    title = title or 'A reservoir running a little low'
     parts.append(
         f'<text x="60" y="78" font-size="36" font-weight="700" '
-        f'fill="{_INK}">A reservoir running a little low</text>'
+        f'fill="{_INK}">{xml_escape(title)}</text>'
     )
     parts.append(
         f'<text x="60" y="114" font-size="19" fill="{_SUBTLE}">'
@@ -605,7 +609,7 @@ def make_liquid_gauge(
     row = rows[0] if rows else {}
     value = float(row.get("value", _VALUE))
     median = float(row.get("median", _MEDIAN))
-    svg = build_svg(value=value, median=median, animated=animated, mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(value=value, median=median, animated=animated, mode=mode, accessibility=accessibility, theme=theme, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "liquid-gauge")
     return write_svg(dest, svg, theme=theme)
 

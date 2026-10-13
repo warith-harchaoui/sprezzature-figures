@@ -87,6 +87,10 @@ OPTION_CHOICES: dict[str, tuple[str, ...]] = {
     "theme": ("corporate", "academic"),
     "language": ("en", "fr"),
     "lang": ("en", "fr"),
+    # ablation_matrix validates this at render time and raised on anything
+    # else; the catalogue advertised it as free text, so the CLI offered no
+    # choices and the API accepted a value that could only fail downstream.
+    "mark": ("dot", "bar"),
 }
 
 #: House meaning of the keywords many generators share. A generator

@@ -116,6 +116,7 @@ def build_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    title: Optional[str] = None,
 ) -> str:
     """Assemble the full variwide-column SVG string.
 
@@ -264,9 +265,12 @@ def build_svg(
     )
 
     # --- title + subtitle (the takeaway) -------------------------
+    # The headline the figure writes about its own data, used only when
+    # the caller supplies none.
+    title = title or 'Two ways to build a multi-trillion economy'
     parts.append(
         f'<text x="{m_left}" y="72" font-size="38" font-weight="700" '
-        f'fill="{ink}">Two ways to build a multi-trillion economy</text>'
+        f'fill="{ink}">{xml_escape(title)}</text>'
     )
     parts.append(
         f'<text x="{m_left}" y="112" font-size="21" fill="{secondary}">'
@@ -594,8 +598,7 @@ def make_variwide(
     Path
         Absolute path to the written SVG file.
     """
-    del title
-    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "variwide")
     return write_svg(dest, svg, theme=theme)
 

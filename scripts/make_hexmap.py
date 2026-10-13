@@ -330,6 +330,7 @@ def build_svg(
     accessibility: str = "universal",
     theme: str = "corporate",
     legend_title: str = "Trips per hex",
+    title: Optional[str] = None,
 ) -> str:
     """Assemble the full hexbin-map SVG document as a string.
 
@@ -434,9 +435,12 @@ def build_svg(
     parts.append(f'<rect width="{_WIDTH}" height="{_HEIGHT}" fill="{_BG}"/>')
 
     # ---- title + subtitle ----
+    # The headline the figure writes about its own data, used only when
+    # the caller supplies none.
+    title = title or 'Bike-share demand clusters on the downtown core'
     parts.append(
         f'<text x="{_MAP_X0}" y="70" font-size="34" font-weight="700" '
-        f'fill="{_INK}">Bike-share demand clusters on the downtown core</text>'
+        f'fill="{_INK}">{xml_escape(title)}</text>'
     )
     parts.append(
         f'<text x="{_MAP_X0}" y="106" font-size="20" fill="{_SUBTLE}">'
@@ -588,7 +592,7 @@ def make_hexmap(
     ``title`` are accepted for dispatcher parity and unused. ``theme`` is
     forwarded to :func:`build_svg`.
     """
-    svg = build_svg(mode=mode, accessibility=accessibility, theme=theme, legend_title=legend_title)
+    svg = build_svg(mode=mode, accessibility=accessibility, theme=theme, legend_title=legend_title, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "hexmap")
     return write_svg(dest, svg, theme=theme)
 

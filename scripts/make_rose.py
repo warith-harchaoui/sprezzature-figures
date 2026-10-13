@@ -301,6 +301,7 @@ def build_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    title: Optional[str] = None,
 ) -> str:
     """Assemble the full Nightingale-rose SVG document as a string.
 
@@ -422,9 +423,12 @@ def build_svg(
     parts.append(f'<rect width="{_WIDTH}" height="{_HEIGHT}" fill="{_BG}"/>')
 
     # ---- title + subtitle ----
+    # The headline the figure writes about its own data, used only when
+    # the caller supplies none.
+    title = title or 'Most of the dead never saw a battlefield'
     parts.append(
         f'<text x="56" y="66" font-size="33" font-weight="700" '
-        f'fill="{_INK}">Most of the dead never saw a battlefield</text>'
+        f'fill="{_INK}">{xml_escape(title)}</text>'
     )
     parts.append(
         f'<text x="56" y="100" font-size="18" fill="{_SUBTLE}">'
@@ -683,7 +687,7 @@ def make_rose(
         Absolute path to the written SVG file.
     """
     _ = title
-    svg = build_svg(data, legend_title=legend_title, mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(data, legend_title=legend_title, mode=mode, accessibility=accessibility, theme=theme, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "rose")
     return write_svg(dest, svg, theme=theme)
 

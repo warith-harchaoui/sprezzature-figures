@@ -193,6 +193,7 @@ def build_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    title: Optional[str] = None,
 ) -> str:
     """Assemble the full calibration-curve SVG string.
 
@@ -375,9 +376,12 @@ def build_svg(
     parts.append(f'<rect width="{width}" height="{height}" fill="#FFFFFF"/>')
 
     # --- title + subtitle (the takeaway) -------------------------
+    # The headline the figure writes about its own data, used only when
+    # the caller supplies none.
+    title = title or 'The churn model is overconfident:'
     parts.append(
         f'<text x="{m_left}" y="82" font-size="36" font-weight="700" '
-        f'fill="{ink}">The churn model is overconfident:</text>'
+        f'fill="{ink}">{xml_escape(title)}</text>'
     )
     parts.append(
         f'<text x="{m_left}" y="126" font-size="36" font-weight="700" '
@@ -794,7 +798,7 @@ def make_calibration(
     True
     """
     _ = title
-    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "calibration")
     return write_svg(dest, svg, theme=theme)
 

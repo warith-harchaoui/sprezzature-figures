@@ -89,6 +89,7 @@ def build_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    title: Optional[str] = None,
 ) -> str:
     """Assemble the full parallel-coordinates SVG string.
 
@@ -169,9 +170,12 @@ def build_svg(
     parts.append(f'<rect width="{_WIDTH}" height="{_HEIGHT}" fill="{_BG}"/>')
 
     # Title + subtitle.
+    # The headline the figure writes about its own data, used only when
+    # the caller supplies none.
+    title = title or 'The classes separate on every measure but acceleration'
     parts.append(
         f'<text x="40" y="56" font-size="26" font-weight="600" fill="{_INK}" '
-        f'letter-spacing="-0.3">The classes separate on every measure but acceleration</text>'
+        f'letter-spacing="-0.3">{xml_escape(title)}</text>'
     )
     parts.append(
         f'<text x="40" y="84" font-size="14" fill="{_SUBTLE}">'
@@ -291,7 +295,7 @@ def make_parcoords(
     """
     _ = title
     rows = data if data else DEMO_DATA
-    svg = build_svg(rows, mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(rows, mode=mode, accessibility=accessibility, theme=theme, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "parcoords")
     return write_svg(dest, svg, theme=theme)
 
