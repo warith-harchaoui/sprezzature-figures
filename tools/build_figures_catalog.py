@@ -254,6 +254,36 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
             },
         ],
     },
+    "pdp-ice": {
+        "required_roles": [
+            {
+                "name": "line",
+                "label": "Which row the curve belongs to",
+                "accepted_types": ["categorical", "numeric"],
+                "required": True,
+            },
+            {
+                "name": "tenure",
+                "label": "Swept feature",
+                "accepted_types": ["numeric"],
+                "required": True,
+            },
+            {
+                "name": "prediction",
+                "label": "Model output at that value",
+                "accepted_types": ["numeric"],
+                "required": True,
+            },
+        ],
+        "optional_roles": [
+            {
+                "name": "sampled",
+                "label": "Value the feature actually took",
+                "accepted_types": ["numeric"],
+                "required": False,
+            },
+        ],
+    },
     "acf": {
         "required_roles": [
             {

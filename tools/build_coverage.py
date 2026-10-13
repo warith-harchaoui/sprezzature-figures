@@ -430,12 +430,7 @@ MAPPING: dict[str, list[tuple[str, str, str, str]]] = {
         ("forecast fan chart", "forecast-fan", "covered", ""),
         ("SHAP beeswarm", "shap-beeswarm", "covered", ""),
         ("SHAP waterfall", "shap-waterfall", "covered", ""),
-        (
-            "partial dependence / ICE",
-            "pdp-ice",
-            "gap",
-            "average effect of a feature, and per-sample",
-        ),
+        ("partial dependence / ICE", "pdp-ice", "covered", ""),
         ("permutation importance", "permutation-importance", "covered", ""),
         ("causal DAG", "causal-dag", "gap", "the DoWhy graph: treatment, outcome, confounders"),
         ("missing-data matrix", "missing-matrix", "covered", ""),

@@ -10714,6 +10714,206 @@
     ]
   },
   {
+    "kind": "pdp-ice",
+    "label": "Pdp Ice",
+    "aliases": [
+      "pdp ice",
+      "pdp_ice"
+    ],
+    "category": "Model explanation",
+    "description": "One line per row as a feature is swept across its range, with their average \u2014 the partial dependence \u2014 drawn on top. Drawn alone, that average is produced just as easily by a feature that does nothing as by one that pushes half the rows up and the other half down: the individual curves are here, and the **share of them moving against the average is computed and named**, which is the whole reason they exist. They are centred by default, because uncentred each starts at its own prediction and the shape \u2014 the only thing the chart is about \u2014 disappears behind the spread of starting points. The feature's own distribution is drawn underneath and the sparse tail faded, because sweeping to the maximum asks the model about rows that do not exist.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "svg",
+    "module": "scripts/make_pdp-ice.py",
+    "callable_name": "make_pdp_ice",
+    "required_roles": [
+      {
+        "name": "line",
+        "label": "Which row the curve belongs to",
+        "accepted_types": [
+          "categorical",
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "tenure",
+        "label": "Swept feature",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "prediction",
+        "label": "Model output at that value",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [
+      {
+        "name": "sampled",
+        "label": "Value the feature actually took",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": false
+      }
+    ],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 960,
+    "default_height": 640,
+    "options_schema": {
+      "title": {
+        "type": "str",
+        "default": "The average says tenure barely matters; 41% of rows move against it",
+        "choices": [],
+        "description": "Chart text."
+      },
+      "subtitle": {
+        "type": "str",
+        "default": "One line per row as tenure is swept, each shifted to start at zero, with their average drawn on top.",
+        "choices": [],
+        "description": "Chart text."
+      },
+      "width": {
+        "type": "int",
+        "default": 960,
+        "choices": [],
+        "description": "Canvas size in pixels."
+      },
+      "height": {
+        "type": "int",
+        "default": 640,
+        "choices": [],
+        "description": "Canvas size in pixels."
+      },
+      "line": {
+        "type": "str",
+        "default": "line",
+        "choices": [],
+        "description": "Row keys for the curve identity, the swept feature, and the model's output."
+      },
+      "x": {
+        "type": "str",
+        "default": "tenure",
+        "choices": [],
+        "description": "Row keys for the curve identity, the swept feature, and the model's output."
+      },
+      "y": {
+        "type": "str",
+        "default": "prediction",
+        "choices": [],
+        "description": "Row keys for the curve identity, the swept feature, and the model's output."
+      },
+      "sampled": {
+        "type": "str",
+        "default": "sampled",
+        "choices": [],
+        "description": "Row key for the value the feature actually took in that row."
+      },
+      "centre_lines": {
+        "type": "bool",
+        "default": true,
+        "choices": [],
+        "description": "Shift every curve to start at zero."
+      },
+      "sparse_at": {
+        "type": "float",
+        "default": 0.9,
+        "choices": [],
+        "description": "The quantile of the observed feature beyond which the sweep is faded."
+      },
+      "max_lines": {
+        "type": "int",
+        "default": 90,
+        "choices": [],
+        "description": "Cap on how many individual curves are drawn."
+      },
+      "x_label": {
+        "type": "str",
+        "default": "Tenure (months)",
+        "choices": [],
+        "description": "Axis titles."
+      },
+      "y_label": {
+        "type": "str",
+        "default": "Change in prediction (log-odds)",
+        "choices": [],
+        "description": "Axis titles."
+      },
+      "average_label": {
+        "type": "str",
+        "default": "average (partial dependence)",
+        "choices": [],
+        "description": "Caption on the average curve."
+      },
+      "caveat": {
+        "type": "str",
+        "default": "sweeping one feature holds the others fixed, which invents rows the data never contained",
+        "choices": [],
+        "description": "The standing limitation, drawn whatever the data says."
+      },
+      "method_note": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "The line describing what was drawn, and the sentence naming the disagreement; None composes each from the data."
+      },
+      "finding": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "The line describing what was drawn, and the sentence naming the disagreement; None composes each from the data."
+      },
+      "mode": {
+        "type": "str",
+        "default": "self-contained",
+        "choices": [
+          "self-contained",
+          "external",
+          "static"
+        ],
+        "description": "How the SVG carries its interactivity: self-contained ships its own script, external expects the page to supply one, static leaves it out."
+      },
+      "accessibility": {
+        "type": "str",
+        "default": "universal",
+        "choices": [
+          "universal",
+          "high-contrast",
+          "monochrome",
+          "deuteranopia",
+          "protanopia",
+          "tritanopia"
+        ],
+        "description": "Palette accessibility level; universal is the colour-vision-safe default."
+      },
+      "theme": {
+        "type": "str",
+        "default": "corporate",
+        "choices": [
+          "corporate",
+          "academic"
+        ],
+        "description": "Visual theme. Forwarded to build_svg."
+      }
+    },
+    "warnings": [
+      "make_figure('pdp-ice') cannot resolve to make_pdp-ice.py: hyphen/underscore normalisation looks for a different filename"
+    ]
+  },
+  {
     "kind": "permutation-importance",
     "label": "Permutation Importance",
     "aliases": [
