@@ -113,6 +113,8 @@ OPTION_CHOICES: dict[str, tuple[str, ...]] = {
     "baseline": ("zero", "mean", "given"),
     # eventplot: how the rows of the raster are stacked.
     "order": ("given", "first", "count", "first-after-onset"),
+    # quiver3d: how a vector's magnitude becomes its drawn length.
+    "length_scale": ("linear", "sqrt", "log", "uniform"),
 }
 
 #: House meaning of the keywords many generators share. A generator
