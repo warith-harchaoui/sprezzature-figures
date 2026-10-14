@@ -78,18 +78,24 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
                 "label": "Observed value",
                 "accepted_types": ["numeric"],
                 "required": True,
+                # A gap here is data, not a mistake: the forecast rows have no observation yet.
+                "tolerates_gaps": True,
             },
             {
                 "name": "forecast",
                 "label": "Point forecast",
                 "accepted_types": ["numeric"],
                 "required": True,
+                # A gap here is data, not a mistake: the history rows are not forecasts.
+                "tolerates_gaps": True,
             },
             {
                 "name": "se",
                 "label": "Standard error of the forecast",
                 "accepted_types": ["numeric"],
                 "required": True,
+                # A gap here is data, not a mistake: the history rows are not forecasts.
+                "tolerates_gaps": True,
             },
         ],
         "optional_roles": [],
@@ -124,6 +130,8 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
                 "label": "A field to inspect",
                 "accepted_types": ["numeric", "categorical", "datetime"],
                 "required": True,
+                # A gap here is data, not a mistake: the gaps are the subject of this figure.
+                "tolerates_gaps": True,
             },
         ],
         "optional_roles": [
@@ -1425,6 +1433,8 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
                 "label": "Parent ID",
                 "accepted_types": ["categorical"],
                 "required": True,
+                # A gap here is data, not a mistake: the root has none, and that is what makes it the root.
+                "tolerates_gaps": True,
             },
             {"name": "name", "label": "Name", "accepted_types": ["categorical"], "required": True},
             {"name": "ms", "label": "Ms", "accepted_types": ["numeric"], "required": True},
@@ -1582,6 +1592,8 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
                 "label": "Parent ID",
                 "accepted_types": ["categorical"],
                 "required": True,
+                # A gap here is data, not a mistake: the root has none, and that is what makes it the root.
+                "tolerates_gaps": True,
             },
         ],
         "optional_roles": [],
@@ -1800,6 +1812,8 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
                 "label": "Parent ID",
                 "accepted_types": ["categorical"],
                 "required": True,
+                # A gap here is data, not a mistake: the root has none, and that is what makes it the root.
+                "tolerates_gaps": True,
             },
         ],
         "optional_roles": [],
@@ -1983,13 +1997,17 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
                 "label": "Start hz",
                 "accepted_types": ["numeric"],
                 "required": True,
+                # A gap here is data, not a mistake: only the swept components have one.
+                "tolerates_gaps": True,
             },
-            {"name": "end_hz", "label": "End hz", "accepted_types": ["numeric"], "required": True},
+            {"name": "end_hz", "label": "End hz", "accepted_types": ["numeric"], "required": True, "tolerates_gaps": True},
             {
                 "name": "amplitude",
                 "label": "Amplitude",
                 "accepted_types": ["numeric"],
                 "required": True,
+                # A gap here is data, not a mistake: the field rows carry no amplitude of their own.
+                "tolerates_gaps": True,
             },
         ],
         "optional_roles": [],
@@ -2034,6 +2052,8 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
                 "label": "Speed kmh",
                 "accepted_types": ["numeric"],
                 "required": True,
+                # A gap here is data, not a mistake: the second row carries the field, not a reading.
+                "tolerates_gaps": True,
             },
         ],
         "optional_roles": [],
@@ -2088,6 +2108,8 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
                 "label": "Parent ID",
                 "accepted_types": ["categorical"],
                 "required": True,
+                # A gap here is data, not a mistake: the root has none, and that is what makes it the root.
+                "tolerates_gaps": True,
             },
         ],
         "optional_roles": [],

@@ -255,6 +255,10 @@ def test_a_row_missing_a_role_is_the_callers_fault_not_a_server_error() -> None:
     truth is "your rows are wrong, fix them and retry now". A bad *value*
     already answered 422 and an unknown kind 404; only the missing key was
     reported as the server's fault.
+
+    The detail now names the column and the row it is missing from: the
+    gap check in ``validate_figure_input`` reaches a key absent from one
+    row, which the first-row role check could not see.
     """
     from fastapi.testclient import TestClient
 
@@ -268,7 +272,9 @@ def test_a_row_missing_a_role_is_the_callers_fault_not_a_server_error() -> None:
     assert response.status_code == 422
     detail = response.json()["detail"]
     assert "value" in detail, detail
-    assert "required_roles" in detail, detail
+    # The row, so the caller does not have to find it: one row of two.
+    assert "1 of 2 rows" in detail, detail
+    assert "row 1" in detail, detail
 
 
 # --- the per-figure option surface -------------------------------------

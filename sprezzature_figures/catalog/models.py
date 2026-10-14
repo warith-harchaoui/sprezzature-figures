@@ -37,6 +37,13 @@ class RoleDefinition(BaseModel):
     required: bool = True
     multiple: bool = False
     description: str = ""
+    #: Whether a gap in this column is data rather than a mistake. False
+    #: for almost every role: a bar whose height is missing cannot be
+    #: drawn, and a figure that quietly skips the row misreports the
+    #: total. True only where absence is the subject -- ``missing-matrix``
+    #: exists to draw it -- so the check below refuses the gap everywhere
+    #: else, at the door, with the column named.
+    tolerates_gaps: bool = False
 
 
 class FigureDefinition(BaseModel):

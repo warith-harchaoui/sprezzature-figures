@@ -29,6 +29,8 @@ from .catalog import FigureDefinition, ValidationIssue
 from .catalog import get_figure_definition as _get_figure_definition
 from .catalog import list_kinds as _list_kinds
 from .catalog import resolve_kind as _resolve_kind
+from .frames import as_rows
+from .notebook import FigurePath, as_figure_path
 
 
 def _resolve_scripts_dir(pkg_parent: Path) -> Path:
@@ -296,7 +298,7 @@ def _without_demo_chrome(
 
 
 def validate_figure_input(
-    kind: str, data: list[dict[str, Any]] | None, **kwargs: Any
+    kind: str, data: Any = None, **kwargs: Any
 ) -> list[ValidationIssue]:
     """
     Check `data` against the registered required data roles for `kind`.
@@ -306,12 +308,33 @@ def validate_figure_input(
     guarantee of renderability). Column-type/cardinality checks belong to
     the richer validation engine in sprezzature_figures.core (not built
     here yet).
+
+    Parameters
+    ----------
+    kind : str
+        Chart type name or alias.
+    data : Any, optional
+        The rows, in whatever the caller is holding -- the same shapes
+        :func:`make_figure` takes, normalised the same way, so asking
+        "would this render?" never needs a different conversion from
+        rendering it.
+    **kwargs
+        Accepted and ignored; present so a caller can forward the same
+        keyword arguments to both functions.
+
+    Returns
+    -------
+    list of ValidationIssue
+        One per required role the rows do not carry; empty when nothing
+        is missing, which includes the case of no rows at all (the
+        figure then draws its own).
     """
     definition = _get_figure_definition(kind)
     issues: list[ValidationIssue] = []
-    if not data:
+    rows = as_rows(data)
+    if not rows:
         return issues
-    first_row = data[0] if isinstance(data, list) else None
+    first_row = rows[0]
     keys = set(first_row) if isinstance(first_row, dict) else set()
     for role in definition.required_roles:
         if role.name not in keys:
@@ -325,10 +348,34 @@ def validate_figure_input(
                     severity="error",
                 )
             )
+            continue
+        if role.tolerates_gaps:
+            continue
+        # A gap in a required column is refused here rather than inside a
+        # generator, where it surfaces as "float() argument must be a
+        # string or a real number". The row is named, because finding the
+        # one empty cell in fifty thousand is the actual work.
+        empty = [n for n, row in enumerate(rows) if row.get(role.name) is None]
+        if empty:
+            where = ", ".join(str(n) for n in empty[:5])
+            more = f" and {len(empty) - 5} more" if len(empty) > 5 else ""
+            issues.append(
+                ValidationIssue(
+                    field=role.name,
+                    message=(
+                        f"{role.name!r} ({role.label}) is empty in "
+                        f"{len(empty)} of {len(rows)} rows (row {where}{more}). "
+                        "A figure cannot draw a value that is not there: drop "
+                        "those rows, fill them, or reach for 'missing-matrix', "
+                        "which is the figure whose subject is where the gaps are."
+                    ),
+                    severity="error",
+                )
+            )
     return issues
 
 
-def make_figure(kind: str, data: list[dict[str, Any]] | None = None, **kwargs: Any) -> Path:
+def make_figure(kind: str, data: Any = None, **kwargs: Any) -> FigurePath:
     """
     Render a figure of the given kind and return the output path.
 
@@ -343,9 +390,14 @@ def make_figure(kind: str, data: list[dict[str, Any]] | None = None, **kwargs: A
     kind : str
         Chart type name or alias, e.g. ``"treemap"``, ``"connected-scatter"``,
         ``"connected_scatter"``. See ``list_kinds()`` for the full catalogue.
-    data : list[dict[str, Any]] or None, optional
-        Input rows forwarded to the underlying make function. Each script
-        documents its expected keys (see FIGURES.md for the full
+    data : Any, optional
+        The rows to draw, in whatever the caller is holding: a list of
+        dicts, a pandas / polars / Arrow frame, or a dict of equal-length
+        columns. :func:`sprezzature_figures.frames.as_rows` normalises
+        it, spells every absent cell ``None`` and writes dates in ISO
+        form; nothing is imported to do it, so a caller with none of
+        those libraries installed pays nothing. Each script documents
+        the column names it expects (see FIGURES.md for the full
         catalogue). ``None`` -- the default -- renders that figure's own
         demo rows *with its own chrome*: the title and subtitle its author
         wrote for them. Passing the demo rows explicitly is not the same
@@ -361,11 +413,18 @@ def make_figure(kind: str, data: list[dict[str, Any]] | None = None, **kwargs: A
 
     Returns
     -------
-    Path
-        Absolute path to the rendered output file.
+    FigurePath
+        Absolute path to the rendered output file. A ``Path`` in every
+        respect -- ``isinstance(result, Path)`` holds, and so does every
+        method -- which additionally draws itself when a notebook asks
+        it to, so a cell ending in this call shows the figure rather
+        than printing where it went.
 
     Raises
     ------
+    TypeError
+        If `data` is a shape with no column names in it -- a list of
+        lists, a bare array.
     ValueError
         If no registered figure matches ``kind``, or `data` is missing a
         role the figure declares as required.
@@ -387,6 +446,10 @@ def make_figure(kind: str, data: list[dict[str, Any]] | None = None, **kwargs: A
     # it before the kwargs ever reach a figure script (which would reject it),
     # and apply it to the rendered SVG at the end (see :mod:`.darkmode`).
     dark = bool(kwargs.pop("dark", False))
+    # One normalisation, at the one door every caller comes through: all
+    # 162 generators gain DataFrame support here rather than each one
+    # growing its own conversion.
+    data = as_rows(data)
     canonical = _resolve_kind(kind)
     if canonical is None:
         legacy_path = _legacy_filename_guess(kind)
@@ -414,7 +477,7 @@ def make_figure(kind: str, data: list[dict[str, Any]] | None = None, **kwargs: A
                 legacy_out.write_text(
                     to_dark(legacy_out.read_text(encoding="utf-8")), encoding="utf-8"
                 )
-            return legacy_out
+            return as_figure_path(legacy_out)
         available = _list_kinds()
         raise ValueError(
             f"No script for kind={kind!r}. Available ({len(available)}): {', '.join(available)}"
@@ -463,7 +526,7 @@ def make_figure(kind: str, data: list[dict[str, Any]] | None = None, **kwargs: A
         from .darkmode import to_dark
 
         result_path.write_text(to_dark(result_path.read_text(encoding="utf-8")), encoding="utf-8")
-    return result_path
+    return as_figure_path(result_path)
 
 
 def _kind_option_flags(parser: argparse.ArgumentParser, kind: str, options: dict[str, Any]) -> None:

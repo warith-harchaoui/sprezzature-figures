@@ -6671,7 +6671,8 @@
         "accepted_types": [
           "numeric"
         ],
-        "required": true
+        "required": true,
+        "tolerates_gaps": true
       },
       {
         "name": "forecast",
@@ -6679,7 +6680,8 @@
         "accepted_types": [
           "numeric"
         ],
-        "required": true
+        "required": true,
+        "tolerates_gaps": true
       },
       {
         "name": "se",
@@ -6687,7 +6689,8 @@
         "accepted_types": [
           "numeric"
         ],
-        "required": true
+        "required": true,
+        "tolerates_gaps": true
       }
     ],
     "optional_roles": [],
@@ -8612,7 +8615,8 @@
         "accepted_types": [
           "categorical"
         ],
-        "required": true
+        "required": true,
+        "tolerates_gaps": true
       },
       {
         "name": "name",
@@ -10612,7 +10616,8 @@
           "categorical",
           "datetime"
         ],
-        "required": true
+        "required": true,
+        "tolerates_gaps": true
       }
     ],
     "optional_roles": [
@@ -11256,7 +11261,8 @@
         "accepted_types": [
           "categorical"
         ],
-        "required": true
+        "required": true,
+        "tolerates_gaps": true
       }
     ],
     "optional_roles": [],
@@ -13925,7 +13931,8 @@
         "accepted_types": [
           "categorical"
         ],
-        "required": true
+        "required": true,
+        "tolerates_gaps": true
       }
     ],
     "optional_roles": [],
@@ -16241,7 +16248,8 @@
         "accepted_types": [
           "numeric"
         ],
-        "required": true
+        "required": true,
+        "tolerates_gaps": true
       },
       {
         "name": "end_hz",
@@ -16249,7 +16257,8 @@
         "accepted_types": [
           "numeric"
         ],
-        "required": true
+        "required": true,
+        "tolerates_gaps": true
       },
       {
         "name": "amplitude",
@@ -16257,7 +16266,8 @@
         "accepted_types": [
           "numeric"
         ],
-        "required": true
+        "required": true,
+        "tolerates_gaps": true
       }
     ],
     "optional_roles": [],
@@ -17091,7 +17101,8 @@
         "accepted_types": [
           "numeric"
         ],
-        "required": true
+        "required": true,
+        "tolerates_gaps": true
       }
     ],
     "optional_roles": [],
@@ -18060,7 +18071,8 @@
         "accepted_types": [
           "categorical"
         ],
-        "required": true
+        "required": true,
+        "tolerates_gaps": true
       }
     ],
     "optional_roles": [],
