@@ -1,6 +1,6 @@
 # Figure Catalogue
 
-161 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type). `choropleth` and `situation_map` moved to their own repo, [sprezzature-maps](https://github.com/warith-harchaoui/sprezzature-maps).
+162 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type). `choropleth` and `situation_map` moved to their own repo, [sprezzature-maps](https://github.com/warith-harchaoui/sprezzature-maps).
 
 Invoke via:
 
@@ -184,6 +184,7 @@ colour-vision-deficiency-safe Okabe-Ito palette); see
 | `violin` | make_violin.py | Distribution | Mirrors a kernel density estimate left and right of a central axis, one violin per category, with a median tick. Shows full distribution shape (bimodal, skewed) that a box plot alone would hide. Use for comparing shape across experiment arms or cohorts. |
 | `volcano` | make_volcano.py | Genomics / Statistics | Scatters effect size (log2 fold-change) against significance (-log10 p-value) for many simultaneous tests, dashed threshold lines isolate hits into the two upper corners. The standard chart for differential-expression results, or any large multiple-testing comparison. |
 | `voronoi` | make_voronoi.py | Geospatial / Spatial | Voronoi tessellation: colour each region by the nearest point. Use to show catchment areas, service regions, or proximity-based assignments. |
+| `voxels` | make_voxels.py | 3-D lattice | Cells of an x by y by z grid drawn as solid blocks — a three-way grid search, an occupancy map, a three-way histogram — with `threshold` deciding which are filled. A solid volume hides its own interior and almost no implementation admits it: every filled cell is tested against the ones in front of it and the count that **cannot be seen** from this camera is written in the chrome, with `cut` to take the near octant or half off and look inside. Cells are shrunk by `gap` so the lattice survives, sorted back to front, back-face culled by screen-space winding, and shaded per face orientation. `mark_best` says whether the best cell sits on a face of the grid — if it does, the search bounds are part of the result. |
 | `waffle` | make_waffle.py | Composition | Square grid of unit cells coloured by category. Use as an engaging, precise alternative to a pie chart for part-of-whole comparisons (each cell = 1 % or N units). |
 | `waterfall` | make_waterfall.py | Accounting / Decomposition | Running-total bar chart where positive and negative contributions are shown in sequence. Use for financial P&L bridges, budget variance, or cumulative effect analysis. |
 | `windbarb` | make_windbarb.py | Meteorology | Meteorological wind barbs showing direction and speed with feather notation. Standard in weather and oceanographic reporting. |
