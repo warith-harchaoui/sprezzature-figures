@@ -18242,6 +18242,247 @@
     ]
   },
   {
+    "kind": "tricontour",
+    "label": "Tricontour",
+    "aliases": [],
+    "category": "Scattered field",
+    "description": "Iso-lines over samples that are *not* on a grid \u2014 sensors, wells, stations \u2014 triangulated here and contoured through the triangles, which also removes the saddle ambiguity a gridded contour has to guess at. What it adds is honesty about the gaps: a segment crossing ground with no sample within `support_radius` is drawn **dashed** and its share of the line is measured, so a reader can see which part of a decision line is evidence. One level can be named as the `threshold` and gets its own weight; `max_edge` drops the convex-hull triangles that span ground nobody measured, and `min_angle` peels the hull's splinters. Bands are clipped exactly against the levels, so the fill agrees with the lines instead of merely resembling them.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "svg",
+    "module": "scripts/make_tricontour.py",
+    "callable_name": "make_tricontour",
+    "required_roles": [
+      {
+        "name": "east_km",
+        "label": "First ground coordinate",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "north_km",
+        "label": "Second ground coordinate",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "pm25",
+        "label": "Measured value",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 880,
+    "default_height": 700,
+    "options_schema": {
+      "title": {
+        "type": "str",
+        "default": "A third of the guideline line is a guess, and is drawn as one",
+        "choices": [],
+        "description": "Chart text."
+      },
+      "subtitle": {
+        "type": "str",
+        "default": "PM2.5 across a city's low-cost sensor network, triangulated. Dashed where no sensor is near enough to support the line.",
+        "choices": [],
+        "description": "Chart text."
+      },
+      "width": {
+        "type": "int",
+        "default": 880,
+        "choices": [],
+        "description": "Canvas size in pixels."
+      },
+      "height": {
+        "type": "int",
+        "default": 700,
+        "choices": [],
+        "description": "Canvas size in pixels."
+      },
+      "x": {
+        "type": "str",
+        "default": "east_km",
+        "choices": [],
+        "description": "Which keys hold the coordinates and the measured value."
+      },
+      "y": {
+        "type": "str",
+        "default": "north_km",
+        "choices": [],
+        "description": "Which keys hold the coordinates and the measured value."
+      },
+      "z": {
+        "type": "str",
+        "default": "pm25",
+        "choices": [],
+        "description": "Which keys hold the coordinates and the measured value."
+      },
+      "levels": {
+        "type": "int",
+        "default": 7,
+        "choices": [],
+        "description": "Roughly how many iso-levels to draw. Ignored when cuts is given."
+      },
+      "cuts": {
+        "type": "float_list",
+        "default": null,
+        "choices": [],
+        "description": "Explicit levels in the value's own units."
+      },
+      "threshold": {
+        "type": "float",
+        "default": 15.0,
+        "choices": [],
+        "description": "The level to draw heavier, as the one a reader acts on."
+      },
+      "threshold_label": {
+        "type": "str",
+        "default": "WHO 24-hour guideline",
+        "choices": [],
+        "description": "What that line is."
+      },
+      "max_edge": {
+        "type": "float",
+        "default": 0.26,
+        "choices": [],
+        "description": "Drop triangles with an edge longer than this fraction of the span."
+      },
+      "support_radius": {
+        "type": "float",
+        "default": null,
+        "choices": [],
+        "description": "How far a piece of contour may sit from the nearest sample and still count as supported, in the data's own units."
+      },
+      "support_spacing": {
+        "type": "float",
+        "default": 2.0,
+        "choices": [],
+        "description": "Multiple of the network's own spacing used when support_radius is None."
+      },
+      "min_angle": {
+        "type": "float",
+        "default": 3.0,
+        "choices": [],
+        "description": "Drop triangles narrower than this, in degrees, as hull splinters."
+      },
+      "fill": {
+        "type": "bool",
+        "default": true,
+        "choices": [],
+        "description": "Which layers to draw."
+      },
+      "show_mesh": {
+        "type": "bool",
+        "default": true,
+        "choices": [],
+        "description": "Which layers to draw."
+      },
+      "show_points": {
+        "type": "bool",
+        "default": true,
+        "choices": [],
+        "description": "Which layers to draw."
+      },
+      "label_levels": {
+        "type": "bool",
+        "default": true,
+        "choices": [],
+        "description": "Which layers to draw."
+      },
+      "x_label": {
+        "type": "str",
+        "default": "east, km",
+        "choices": [],
+        "description": "Axis titles, the field's name and its unit."
+      },
+      "y_label": {
+        "type": "str",
+        "default": "north, km",
+        "choices": [],
+        "description": "Axis titles, the field's name and its unit."
+      },
+      "value_label": {
+        "type": "str",
+        "default": "PM2.5, \u00b5g/m\u00b3",
+        "choices": [],
+        "description": "Axis titles, the field's name and its unit."
+      },
+      "unit": {
+        "type": "str",
+        "default": "\u00b5g/m\u00b3",
+        "choices": [],
+        "description": "Axis titles, the field's name and its unit."
+      },
+      "coord_unit": {
+        "type": "str",
+        "default": "km",
+        "choices": [],
+        "description": "The unit the coordinates are in."
+      },
+      "summary": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "The chrome line and the closing line; None composes them."
+      },
+      "finding": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "The chrome line and the closing line; None composes them."
+      },
+      "mode": {
+        "type": "str",
+        "default": "self-contained",
+        "choices": [
+          "self-contained",
+          "external",
+          "static"
+        ],
+        "description": "How the SVG carries its interactivity: self-contained ships its own script, external expects the page to supply one, static leaves it out."
+      },
+      "accessibility": {
+        "type": "str",
+        "default": "universal",
+        "choices": [
+          "universal",
+          "high-contrast",
+          "monochrome",
+          "deuteranopia",
+          "protanopia",
+          "tritanopia"
+        ],
+        "description": "Palette accessibility level; universal is the colour-vision-safe default."
+      },
+      "theme": {
+        "type": "str",
+        "default": "corporate",
+        "choices": [
+          "corporate",
+          "academic"
+        ],
+        "description": "Visual theme. Forwarded to build_svg."
+      }
+    },
+    "warnings": [
+      "Default output path falls back to a shared assets/ directory"
+    ]
+  },
+  {
     "kind": "trisurface",
     "label": "Trisurface",
     "aliases": [],

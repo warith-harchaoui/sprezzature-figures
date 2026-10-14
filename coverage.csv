@@ -55,7 +55,7 @@ matplotlib,contour / contourf,contour,covered,
 matplotlib,barbs,windbarb,covered,
 matplotlib,quiver,quiver,covered,
 matplotlib,streamplot,streamplot,covered,
-matplotlib,tricontour / tripcolor / triplot,tricontour,gap,"irregular, triangulated grids"
+matplotlib,tricontour / tripcolor / triplot,tricontour,covered,
 matplotlib,bar3d,bar3d,covered,
 matplotlib,plot (3-D line),line3d,covered,
 matplotlib,scatter (3-D),scatter3d,covered,
