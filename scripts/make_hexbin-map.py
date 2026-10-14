@@ -674,6 +674,11 @@ def build_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    title: str = "The Earth\u2019s earthquakes draw a Ring of Fire",
+    subtitle: str = (
+        "Large quakes (magnitude 5.5+) binned into hexagons \u00b7 the deep-red "
+        "cells trace the Pacific rim\u2019s subduction zones"
+    ),
     headline_stat_label: str = "Ring of Fire",
     ramp_legend_title: str = "Earthquakes per hexagon",
 ) -> str:
@@ -737,8 +742,10 @@ def build_svg(
     parts: List[str] = []
     parts.append(svg_open(_WIDTH, _HEIGHT, "hb-title", "hb-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(
-        '<title id="hb-title">Three decades of large earthquakes trace the '
-        'Ring of Fire</title>'
+        # The accessible name is the headline a sighted reader sees: when
+        # the two disagree, a screen-reader user is told about a different
+        # figure.
+        f'<title id="hb-title">{xml_escape(title)}</title>'
     )
     desc = (
         f"Geographic hexbin map of the world. The globe is tiled with regular "
@@ -807,12 +814,11 @@ def build_svg(
     # ---- title + subtitle ----
     parts.append(
         f'<text x="{_MAP_X + 6:.1f}" y="72" font-size="40" font-weight="700" '
-        f'fill="{_INK}">The Earth’s earthquakes draw a Ring of Fire</text>'
+        f'fill="{_INK}">{xml_escape(title)}</text>'
     )
     parts.append(
         f'<text x="{_MAP_X + 6:.1f}" y="112" font-size="21" fill="{_SUBTLE}">'
-        f'Large quakes (magnitude 5.5+) binned into hexagons · the deep-red '
-        f'cells trace the Pacific rim’s subduction zones</text>'
+        f'{xml_escape(subtitle)}</text>'
     )
 
     # ---- ocean graticule (faint, drawn first) ----
@@ -1009,7 +1015,11 @@ def make_hexbin_map(
     data: "object | None" = None,
     *,
     out: "Path | str | None" = None,
-    title: str = "",
+    title: str = "The Earth\u2019s earthquakes draw a Ring of Fire",
+    subtitle: str = (
+        "Large quakes (magnitude 5.5+) binned into hexagons \u00b7 the deep-red "
+        "cells trace the Pacific rim\u2019s subduction zones"
+    ),
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -1021,10 +1031,13 @@ def make_hexbin_map(
     The standard ``make_<kind>`` entry the figure registry dispatches to, so
     ``make-figure hexbin-map`` and the Studio work like every other figure. The
     demo geography and values are baked into the hand-authored SVG, so ``data``
-    and ``title`` are accepted for dispatcher parity and unused.
+    is accepted for dispatcher parity and unused. ``title`` and ``subtitle``
+    are the two lines of chrome, and the title is also the figure's
+    accessible name.
     """
     svg = build_svg(
         mode=mode, accessibility=accessibility, theme=theme,
+        title=title, subtitle=subtitle,
         headline_stat_label=headline_stat_label, ramp_legend_title=ramp_legend_title,
     )
     dest = Path(out) if out else svg_example_path(__file__, "hexbin-map")

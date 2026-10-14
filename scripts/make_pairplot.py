@@ -313,6 +313,7 @@ def _legend_glyph(shape: str, cx: float, cy: float, r: float, fill: str, cls: st
 
 def build_svg(
     rows: "List[Dict[str, Any]] | None" = None, mode: str = "self-contained",
+    title: str = "Three battery chemistries, three clean clusters",
     legend_title: str = "Cell chemistry",
     theme: str = "corporate",
 ) -> str:
@@ -410,8 +411,10 @@ def build_svg(
     # --- SVG root + accessible title/description ---------------------
     parts.append(svg_open(width, height, "pp-title", "pp-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(
-        '<title id="pp-title">Pair plot of four battery-cell properties by '
-        'chemistry</title>'
+        # The accessible name is the headline a sighted reader sees: when
+        # the two disagree, a screen-reader user is told about a different
+        # figure.
+        f'<title id="pp-title">{xml_escape(title)}</title>'
     )
     parts.append(
         '<desc id="pp-desc">A scatterplot matrix (pair plot) of a fleet of '
@@ -459,7 +462,7 @@ def build_svg(
     # --- title + subtitle (the takeaway) -----------------------------
     parts.append(
         f'<text x="{m_left}" y="70" font-size="40" font-weight="700" '
-        f'fill="{INK}">Three battery chemistries, three clean clusters</text>'
+        f'fill="{INK}">{xml_escape(title)}</text>'
     )
     parts.append(
         f'<text x="{m_left}" y="108" font-size="20" fill="{SECONDARY}">'
@@ -690,7 +693,7 @@ def make_pairplot(
     data: Optional[List[Dict[str, Any]]] = None,
     *,
     out: Optional[Path | str] = None,
-    title: str = "",
+    title: str = "Three battery chemistries, three clean clusters",
     legend_title: str = "Cell chemistry",
     mode: str = "self-contained",
     accessibility: str = "universal",
@@ -722,9 +725,11 @@ def make_pairplot(
     Path
         Absolute path to the written SVG file.
     """
-    _ = title, accessibility
+    _ = accessibility
     rows = data if data else DEMO_DATA
-    svg = build_svg(rows, mode=mode, legend_title=legend_title, theme=theme)
+    svg = build_svg(
+        rows, mode=mode, title=title, legend_title=legend_title, theme=theme
+    )
     dest = Path(out) if out else svg_example_path(__file__, "pairplot")
     return write_svg(dest, svg, theme=theme)
 

@@ -30,6 +30,7 @@ from typing import Any
 from gapminder_i18n import COUNTRIES_FR, HISTORY_FR, LABELS_FR, REGIONS_FR
 from _interactive import fullscreen_control
 from _render import write_svg
+from _svg import xml_escape as _xml
 from _style import forced_color_patterns, leveled_colors, os_adaptive_style, os_dark_style
 from sprezzature_figures.fonts import chrome_stack_for_theme
 
@@ -259,6 +260,8 @@ def main(
     *,
     rows: "list[dict[str, Any]] | None" = None,
     out: "Path | str | None" = None,
+    title: "str | None" = None,
+    subtitle: "str | None" = None,
     theme: str = "corporate",
 ) -> Path:
     """Build the animated SVG (``lang`` = 'en' or 'fr') and write it to disk.
@@ -355,7 +358,12 @@ def main(
         # squashing this 1020x520 chart.
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}" '
         f'font-family="{chrome_stack_for_theme(theme)}" role="img" aria-labelledby="gm-t gm-d">',
-        f'<title id="gm-t">{lab["title_a11y"]}, {years[0]} to {years[-1]}</title>',
+        # The accessible name follows the caller's headline when there is
+        # one: a screen-reader user hearing a different title from the one
+        # on screen is being told about a different figure.
+        f'<title id="gm-t">'
+        f'{_xml(title) if title is not None else lab["title_a11y"]}'
+        f', {years[0]} to {years[-1]}</title>',
         f'<desc id="gm-d">{lab["desc"]}</desc>',
         f'<rect width="{W}" height="{H}" fill="#FFFFFF"/>',
         # Hover any bubble (when the SVG is live, e.g. embedded via <object>) to
@@ -421,11 +429,21 @@ def main(
     svg.append(f'<text x="20" y="{(Y0 + Y1) / 2:.0f}" font-size="13" fill="#1D1D1F" transform="rotate(-90 20 {(Y0 + Y1) / 2:.0f})" text-anchor="middle">{lab["y_axis"]}</text>')
 
     # Title (linked to Rosling's video) + subtitle + a link to the data we provide.
-    svg.append('<text x="20" y="24" font-size="15" font-weight="700" fill="#1D1D1F">'
-               '<a href="https://www.youtube.com/watch?v=hVimVzgtD6w" target="_blank">'
-               f'<tspan fill="#007AFF" text-decoration="underline">{lab["title_link"]}</tspan></a>'
-               f'{lab["title_rest"]}</text>')
-    svg.append(f'<text x="20" y="40" font-size="11" fill="#6E6E73">{lab["subtitle"]}</text>')
+    # The default headline links to Rosling's talk, because the default
+    # figure *is* the tribute. A caller's own title is their sentence, not
+    # a link to somebody else's video, so the override drops the anchor.
+    if title is None:
+        svg.append('<text x="20" y="24" font-size="15" font-weight="700" fill="#1D1D1F">'
+                   '<a href="https://www.youtube.com/watch?v=hVimVzgtD6w" target="_blank">'
+                   f'<tspan fill="#007AFF" text-decoration="underline">{lab["title_link"]}</tspan></a>'
+                   f'{lab["title_rest"]}</text>')
+    else:
+        svg.append('<text x="20" y="24" font-size="15" font-weight="700" '
+                   f'fill="#1D1D1F">{_xml(title)}</text>')
+    svg.append(
+        '<text x="20" y="40" font-size="11" fill="#6E6E73">'
+        f'{_xml(subtitle if subtitle is not None else lab["subtitle"])}</text>'
+    )
     csv_name = "tribute-hans-rosling-1950-2025" + (".fr.csv" if fr else ".csv")
     svg.append(
         f'<a href="../../data/{csv_name}" target="_blank">'
@@ -554,7 +572,8 @@ def make_gapminder(
     data: "list[dict[str, Any]] | None" = None,
     *,
     out: "Path | str | None" = None,
-    title: str = "",
+    title: "str | None" = None,
+    subtitle: "str | None" = None,
     lang: str = "en",
     mode: str = "external",
     accessibility: str = "universal",
@@ -579,9 +598,11 @@ def make_gapminder(
         Output path (.svg). Defaults to
         ``assets/svg-examples/gapminder-animated.svg`` (or its ``.fr.svg``
         sibling for ``lang="fr"``).
-    title : str, optional
-        Unused (the figure's headline is fixed prose linking to the Rosling
-        talk); accepted for dispatcher parity.
+    title, subtitle : str, optional
+        The two lines of chrome, and the title is also the figure's
+        accessible name. ``None`` keeps the tribute's own headline, which
+        links to Rosling's talk; a caller's title replaces it, anchor and
+        all, because their sentence is not a link to somebody else's video.
     lang, mode, accessibility : str
         Forwarded to :func:`main`.
     theme : str, optional
@@ -592,9 +613,11 @@ def make_gapminder(
     Path
         Absolute path to the written SVG file.
     """
-    _ = title  # accepted for dispatcher parity; see docstring
     rows = data if data else DEMO_DATA
-    return main(lang, mode=mode, accessibility=accessibility, rows=rows, out=out, theme=theme)
+    return main(
+        lang, mode=mode, accessibility=accessibility, rows=rows, out=out,
+        title=title, subtitle=subtitle, theme=theme,
+    )
 
 
 def write_fr_csv() -> None:

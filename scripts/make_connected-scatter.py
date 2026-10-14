@@ -359,6 +359,8 @@ def arrowhead(
 
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
+    title: str = "Growth went one way, carbon the other",
+    subtitle: Optional[str] = None,
     start_label: str = "Start",
     end_label: str = "Now",
     mode: str = "self-contained",
@@ -454,10 +456,9 @@ def build_svg(
 
     # --- SVG root + accessible description ------------------------
     parts.append(svg_open(width, height, "cs-title", "cs-desc", font_family=chrome_stack_for_theme(theme)))
-    parts.append(
-        '<title id="cs-title">The United Kingdom grew its economy while '
-        'cutting carbon per person nearly in half</title>'
-    )
+    # The accessible name is the headline a sighted reader sees: when the
+    # two disagree, a screen-reader user is told about a different figure.
+    parts.append(f'<title id="cs-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="cs-desc">Connected scatter tracing carbon-dioxide '
         f'emissions per person (vertical, tonnes) against economic output '
@@ -510,15 +511,17 @@ def build_svg(
     parts.append(f'<rect class="paper" width="{width}" height="{height}" fill="#FFFFFF"/>')
 
     # --- title + subtitle (the takeaway) -------------------------
+    said = subtitle if subtitle is not None else (
+        f'United Kingdom, {rows[0]["year"]}\u2013{rows[-1]["year"]}: output '
+        f'per person up ~{gdp_rise}% while carbon per person fell ~{co2_drop}% '
+    )
     parts.append(
         f'<text x="{m_left}" y="92" font-size="42" font-weight="700" '
-        f'fill="{ink}">Growth went one way, carbon the other</text>'
+        f'fill="{ink}">{xml_escape(title)}</text>'
     )
     parts.append(
         f'<text x="{m_left}" y="140" font-size="24" fill="{secondary}">'
-        f'United Kingdom, {rows[0]["year"]}–{rows[-1]["year"]}: output '
-        f'per person up ~{gdp_rise}% while carbon per person fell ~{co2_drop}% '
-        f'</text>'
+        f'{xml_escape(said)}</text>'
     )
 
     # --- legend: what the two emphasised markers mean ------------
@@ -849,7 +852,8 @@ def make_connected_scatter(
     data: Optional[List[Dict[str, Any]]] = None,
     *,
     out: Optional[Path | str] = None,
-    title: str = "",
+    title: str = "Growth went one way, carbon the other",
+    subtitle: Optional[str] = None,
     start_label: str = "Start",
     end_label: str = "Now",
     mode: str = "self-contained",
@@ -868,8 +872,10 @@ def make_connected_scatter(
         Output path (.svg). Defaults to
         ``assets/svg-examples/connected-scatter.svg``.
     title : str, optional
-        Accepted for CLI/dispatcher parity; this figure's title narrates
-        the decoupling trend and stays fixed.
+        The headline, which is also the figure's accessible name.
+    subtitle : str or None, optional
+        The line under it. ``None`` composes it from the rows: the span
+        of years, and how far each of the two measures moved.
     start_label, end_label : str, optional
         Legend labels for the first/last waypoint markers (was hardcoded
         ``"Start"``/``"Now"``).
@@ -889,8 +895,10 @@ def make_connected_scatter(
     >>> p.exists()
     True
     """
-    _ = title
-    svg = build_svg(data, start_label=start_label, end_label=end_label, mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(
+        data, title=title, subtitle=subtitle, start_label=start_label,
+        end_label=end_label, mode=mode, accessibility=accessibility, theme=theme,
+    )
     dest = Path(out) if out else svg_example_path(__file__, "connected-scatter")
     return write_svg(dest, svg, theme=theme)
 

@@ -155,6 +155,7 @@ def build_svg(
     accessibility: str = "universal",
     theme: str = "corporate",
     title: Optional[str] = None,
+    subtitle: Optional[str] = None,
 ) -> str:
     """Assemble the full joint-plot SVG string.
 
@@ -329,10 +330,13 @@ def build_svg(
         f'<text x="{m_left}" y="70" font-size="34" font-weight="700" '
         f'fill="{ink}">{xml_escape(title)}</text>'
     )
+    said = subtitle or (
+        f"Reaction-time test vs. hours slept, {len(data)} volunteers "
+        f"\u2014 marginals show each distribution"
+    )
     parts.append(
         f'<text x="{m_left}" y="108" font-size="19" fill="{secondary}">'
-        f'Reaction-time test vs. hours slept, 120 volunteers — marginals '
-        f'show each distribution</text>'
+        f'{xml_escape(said)}</text>'
     )
     # --- top marginal: histogram of hours slept ------------------
     # Bars grow downward from the top rail toward the scatter, so the marginal
@@ -605,9 +609,11 @@ def make_jointplot(
     Path
         Absolute path to the written SVG file.
     """
-    _ = title, subtitle
     rows = data if data else DEMO_DATA
-    svg = build_svg(rows, mode=mode, accessibility=accessibility, theme=theme, title=title or None)
+    svg = build_svg(
+        rows, mode=mode, accessibility=accessibility, theme=theme,
+        title=title or None, subtitle=subtitle or None,
+    )
     dest = Path(out) if out else svg_example_path(__file__, "jointplot")
     return write_svg(dest, svg, theme=theme)
 

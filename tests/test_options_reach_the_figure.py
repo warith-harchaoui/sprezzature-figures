@@ -43,32 +43,18 @@ from sprezzature_figures.catalog import get_figure_definition, list_kinds
 from sprezzature_figures.options import OptionDefinition, options_for
 
 #: Kinds whose text options still do not reach the drawing, with the names
-#: that do not. **This list can only shrink.** Each entry is a figure whose
-#: headline is written as a literal inside the call that draws it, split
-#: across f-string fragments, or composed in a helper -- shapes that need a
-#: reading rather than a sweep. ``test_the_allowlist_holds_no_passing_kind``
-#: fails when one is fixed and left here, so the debt cannot quietly
-#: outlive itself.
+#: that do not. **This list can only shrink**, and it has: it held eighteen
+#: figures whose headline was a literal inside the call that drew it, and
+#: now holds one option that is conditional rather than dropped.
+#: ``test_the_allowlist_holds_no_passing_kind`` fails when an entry is fixed
+#: and left here, so the debt cannot quietly outlive itself.
 KNOWN_UNWIRED: dict[str, tuple[str, ...]] = {
-    "alluvial": ("title",),
-    "binned-grid-map": ("title",),
-    "connected-scatter": ("title",),
-    "elbow": ("abstain_reason", "title"),
-    "gapminder": ("title",),
-    "gapminder_variants": ("title",),
-    "hexbin-map": ("title",),
-    "interruption-matrix": ("title",),
-    "jointplot": ("subtitle",),
-    "liftgain": ("title",),
-    "org-chart": ("title",),
-    "pairplot": ("title",),
-    "parallel-sets": ("title",),
-    "pictorial": ("title",),
-    "ppplot": ("title",),
-    "prcurve": ("title",),
-    "ternary": ("title",),
-    "timeline": ("title",),
+    # The one that is genuinely conditional rather than dropped: the
+    # abstention card is only drawn when no elbow is found, and the demo
+    # sweep has one. Pass ``is_clear=False`` and the reason is rendered.
+    "elbow": ("abstain_reason",),
 }
+
 
 
 def _selects_from_the_data(kind: str, option: OptionDefinition) -> bool:

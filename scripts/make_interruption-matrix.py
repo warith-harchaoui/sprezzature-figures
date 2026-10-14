@@ -199,6 +199,8 @@ def _hover_script() -> str:
 
 def build_svg(
     data: List[Dict[str, Any]] | None = None,
+    title: str = TITLE,
+    subtitle: str = SUBTITLE,
     row_total_label: str = "Σ taken",
     col_total_label: str = "Σ made",
     mode: str = "self-contained",
@@ -213,6 +215,9 @@ def build_svg(
         Directed pairs ``{"interrupter", "interrupted", "count"}``. Defaults to
         :data:`DEMO_DATA` (the No Priors episode). The speaker set is the union
         of the names; the matrix and its margins are derived by :func:`_aggregate`.
+    title, subtitle : str, optional
+        The headline and the line under it. The title is also the
+        figure's accessible name.
     row_total_label : str
         Header of the row-totals column (interruptions each speaker suffered).
         Defaults to ``"Σ taken"`` (was hardcoded, no override).
@@ -284,7 +289,7 @@ def build_svg(
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" '
         f'viewBox="0 0 {w} {h}" font-family="{chrome_stack_for_theme(theme)}" role="img" '
         f'aria-labelledby="im-title im-desc">',
-        f'<title id="im-title">{xml_escape(TITLE)}</title>',
+        f'<title id="im-title">{xml_escape(title)}</title>',
         f'<desc id="im-desc">{a11y_desc}</desc>',
     ]
 
@@ -304,11 +309,11 @@ def build_svg(
     p.append(f'<rect width="{w}" height="{h}" fill="#FFFFFF"/>')
     p.append(
         f'<text x="{w / 2:.1f}" y="62" text-anchor="middle" font-size="30" font-weight="700" '
-        f'fill="{INK}">{xml_escape(TITLE)}</text>'
+        f'fill="{INK}">{xml_escape(title)}</text>'
     )
     p.append(
         f'<text x="{w / 2:.1f}" y="92" text-anchor="middle" font-size="16" fill="{SECONDARY}">'
-        f"{xml_escape(SUBTITLE)}</text>"
+        f"{xml_escape(subtitle)}</text>"
     )
 
     idx = {name: i for i, name in enumerate(order)}
@@ -448,7 +453,8 @@ def make_interruption_matrix(
     data: "List[Dict[str, Any]] | None" = None,
     *,
     out: "Path | str | None" = None,
-    title: str = "",
+    title: str = TITLE,
+    subtitle: str = SUBTITLE,
     row_total_label: str = "Σ taken",
     col_total_label: str = "Σ made",
     mode: str = "self-contained",
@@ -461,12 +467,14 @@ def make_interruption_matrix(
     ``make-figure interruption-matrix`` and the Studio work like every other
     figure. ``data`` is directed pairs
     ``{"interrupter", "interrupted", "count"}``; omit it for the built-in demo.
-    ``title`` is accepted for signature parity and unused (the headline is baked
-    into the figure). ``row_total_label``/``col_total_label`` forwarded to
-    :func:`build_svg` (see there). ``theme`` is forwarded to :func:`build_svg`.
+    ``title`` and ``subtitle`` are the two lines of chrome, and the title is
+    also the figure's accessible name. ``row_total_label``/``col_total_label``
+    forwarded to :func:`build_svg` (see there). ``theme`` is forwarded to
+    :func:`build_svg`.
     """
     svg = build_svg(
-        data=data, row_total_label=row_total_label, col_total_label=col_total_label,
+        data=data, title=title, subtitle=subtitle,
+        row_total_label=row_total_label, col_total_label=col_total_label,
         mode=mode, accessibility=accessibility, theme=theme,
     )
     dest = Path(out) if out else svg_example_path(__file__, "interruption-matrix")

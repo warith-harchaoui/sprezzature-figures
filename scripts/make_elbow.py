@@ -182,6 +182,8 @@ def build_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     language: str = "en",
+    title: str | None = None,
+    subtitle: str | None = None,
     x_label: str | None = None,
     y_label: str | None = None,
     ci: tuple[float, float] | None = None,
@@ -305,6 +307,13 @@ def build_svg(
 
     p: list[str] = []
     p.append(svg_open(WIDTH, HEIGHT, "elb-title", "elb-desc", font_family=chrome_stack_for_theme(theme)))
+    # Composed from the curve by default -- "the elbow is at k = 4" is a
+    # fact about this curve, not a sentence to carry between curves -- and
+    # replaced whole when a caller has one.
+    if title is not None:
+        title_txt = title
+    if subtitle is not None:
+        subtitle_txt = subtitle
     p.append(f'<title id="elb-title">{escape(title_txt)}</title>')
     p.append(f'<desc id="elb-desc">{escape(desc_txt)}</desc>')
 
@@ -668,7 +677,8 @@ def make_elbow(
     data: list[dict[str, Any]] | None = None,
     *,
     out: Path | str | None = None,
-    title: str = "",
+    title: str | None = None,
+    subtitle: str | None = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
     language: str = "en",
@@ -698,9 +708,10 @@ def make_elbow(
         :func:`build_svg`. Defaults to the demo sweep.
     out : Path, str, or None
         Output path (.svg). Defaults to ``assets/svg-examples/elbow.svg``.
-    title : str, optional
-        Accepted for dispatcher/CLI parity; unused, since the chart's title
-        is derived from the data (or the abstention state).
+    title, subtitle : str, optional
+        The two lines of chrome, and the title is also the figure's
+        accessible name. ``None`` derives them from the curve, or from the
+        abstention state when no elbow is reported.
     mode, accessibility, language : str
         Forwarded to :func:`build_svg`.
     x_label, y_label : str, optional
@@ -723,9 +734,10 @@ def make_elbow(
     Path
         Absolute path to the written SVG file.
     """
-    _ = title  # accepted for dispatcher/CLI parity; see docstring
     svg = build_svg(
         data,
+        title=title,
+        subtitle=subtitle,
         mode=mode,
         accessibility=accessibility,
         language=language,

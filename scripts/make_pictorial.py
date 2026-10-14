@@ -269,6 +269,8 @@ def _icon(
 
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
+    title: str = "Copenhagen bikes; Los Angeles drives",
+    subtitle: Optional[str] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -311,8 +313,10 @@ def build_svg(
     parts: List[str] = []
     parts.append(svg_open(_WIDTH, _HEIGHT, "pc-title", "pc-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(
-        '<title id="pc-title">Cycling to work, per 100 commuters, '
-        'across five cities</title>'
+        # The accessible name is the headline a sighted reader sees: when
+        # the two disagree, a screen-reader user is told about a different
+        # figure.
+        f'<title id="pc-title">{_xml(title)}</title>'
     )
     desc = (
         "Pictorial ISOTYPE chart: each row repeats a person icon, one "
@@ -402,12 +406,15 @@ def build_svg(
     parts.append(
         f'<text x="{_FIELD_X - 244:.0f}" y="76" font-size="34" '
         f'font-weight="700" fill="{_INK}">'
-        f'Copenhagen bikes; Los Angeles drives</text>'
+        f'{_xml(title)}</text>'
+    )
+    said = subtitle if subtitle is not None else (
+        f"Cyclists per 100 commuters on a typical weekday \u00b7 one figure "
+        f"= {int(_UNIT)} people"
     )
     parts.append(
         f'<text x="{_FIELD_X - 244:.0f}" y="116" font-size="19" '
-        f'fill="{_SUBTLE}">Cyclists per 100 commuters on a typical '
-        f'weekday · one figure = {int(_UNIT)} people</text>'
+        f'fill="{_SUBTLE}">{_xml(said)}</text>'
     )
 
     # ---- icon rows, one per city ----
@@ -545,7 +552,8 @@ def make_pictorial(
     data: Optional[List[Dict[str, Any]]] = None,
     *,
     out: Optional[Path | str] = None,
-    title: str = "",
+    title: str = "Copenhagen bikes; Los Angeles drives",
+    subtitle: Optional[str] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -573,8 +581,10 @@ def make_pictorial(
     Path
         Absolute path to the written SVG file.
     """
-    _ = title
-    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(
+        data, title=title, subtitle=subtitle,
+        mode=mode, accessibility=accessibility, theme=theme,
+    )
     dest = Path(out) if out else svg_example_path(__file__, "pictorial")
     return write_svg(dest, svg, theme=theme)
 

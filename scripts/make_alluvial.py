@@ -239,6 +239,15 @@ def _esc(text: str) -> str:
 
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
+    title: str = "Where new sign-ups end up after 90 days",
+    subtitle: str = (
+        "Referral drives the most retention; free-trial users churn far more "
+        "than paying ones"
+    ),
+    note: str = (
+        "Illustrative cohort of 1,000 sign-ups · ribbon width = number of "
+        "users on that path"
+    ),
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -252,6 +261,14 @@ def build_svg(
         ``{"channel": ..., "plan": ..., "outcome": ..., "count": n}``
         (see :data:`DEMO_DATA`). Falls back to the module's illustrative
         SaaS cohort when ``None``.
+    title : str, optional
+        The headline. The default states what the demo cohort shows; a
+        caller with their own rows should say what *theirs* shows.
+    subtitle : str, optional
+        The takeaway under the headline.
+    note : str, optional
+        The line of provenance under the takeaway, stating what the rows
+        are and what the ribbon width means.
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`.
         One of ``"self-contained"`` (default, ships a hidden-until-live
@@ -341,7 +358,7 @@ def build_svg(
         f'width="{width}" height="{height}" viewBox="0 0 {width} {height}">'
     )
     parts.append(
-        "<title>Where new sign-ups end up after 90 days</title>"
+        f"<title>{_esc(title)}</title>"
         "<desc>An alluvial diagram following 1,000 new sign-ups across three "
         "axes — acquisition channel, plan chosen, and 90-day outcome. Ribbon "
         "width is proportional to the number of users on that path; the "
@@ -412,20 +429,15 @@ def build_svg(
     # -- title block -------------------------------------------------------- #
     parts.append(
         f'<text x="{margin}" y="60" font-family="{chrome_family}" '
-        f'font-size="38" font-weight="600" fill="{ink}">'
-        "Where new sign-ups end up after 90 days</text>"
+        f'font-size="38" font-weight="600" fill="{ink}">{_esc(title)}</text>'
     )
     parts.append(
         f'<text x="{margin}" y="98" font-family="{chrome_family}" '
-        f'font-size="22" fill="{secondary}">'
-        "Referral drives the most retention; free-trial users churn far more "
-        "than paying ones</text>"
+        f'font-size="22" fill="{secondary}">{_esc(subtitle)}</text>'
     )
     parts.append(
         f'<text x="{margin}" y="128" font-family="{chrome_family}" '
-        f'font-size="16" fill="{secondary}">'
-        "Illustrative cohort of 1,000 sign-ups &#183; ribbon width = number of "
-        "users on that path</text>"
+        f'font-size="16" fill="{secondary}">{_esc(note)}</text>'
     )
 
     # -- axis captions ------------------------------------------------------ #
@@ -623,7 +635,15 @@ def make_alluvial(
     data: Optional[List[Dict[str, Any]]] = None,
     *,
     out: Optional[Path | str] = None,
-    title: str = "",
+    title: str = "Where new sign-ups end up after 90 days",
+    subtitle: str = (
+        "Referral drives the most retention; free-trial users churn far more "
+        "than paying ones"
+    ),
+    note: str = (
+        "Illustrative cohort of 1,000 sign-ups · ribbon width = number of "
+        "users on that path"
+    ),
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -638,9 +658,9 @@ def make_alluvial(
         :data:`DEMO_DATA`, an illustrative SaaS sign-up cohort.
     out : Path, str, or None
         Output path (.svg). Defaults to ``assets/svg-examples/alluvial.svg``.
-    title : str, optional
-        Accepted for CLI/dispatcher parity; the figure's title and takeaway
-        subtitle are derived from the data's structure and stay fixed.
+    title, subtitle, note : str, optional
+        The headline, the takeaway under it, and the line of provenance
+        under that. Forwarded to :func:`build_svg`.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
     theme : str, optional
@@ -657,8 +677,10 @@ def make_alluvial(
     >>> p.exists()
     True
     """
-    _ = title
-    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(
+        data, title=title, subtitle=subtitle, note=note,
+        mode=mode, accessibility=accessibility, theme=theme,
+    )
     dest = Path(out) if out else svg_example_path(__file__, "alluvial")
     return write_svg(dest, svg, theme=theme)
 
