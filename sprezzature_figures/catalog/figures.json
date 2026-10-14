@@ -18297,7 +18297,7 @@
       },
       "subtitle": {
         "type": "str",
-        "default": "PM2.5 across a city's low-cost sensor network, triangulated. Dashed where no sensor is near enough to support the line.",
+        "default": "PM2.5 across a city's sensor network, triangulated and dashed where no sensor is near.",
         "choices": [],
         "description": "Chart text."
       },
