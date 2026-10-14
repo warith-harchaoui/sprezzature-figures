@@ -292,11 +292,11 @@ def build_svg(
     parts: List[str] = []
 
     # ---- header / accessibility ------------------------------------------- #
-    title = title or "No database wins on every sprezzature"
-    subtitle = (
-        "Three managed cloud databases scored 0–100 across six buyer criteria "
-        ""
-    )
+    # "on every sprezzature" was a global rename that caught a word it had
+    # no business catching: the six spokes are the buyer's criteria, and
+    # the headline is about no one product leading all six.
+    title = title or "No database wins on every criterion"
+    subtitle = "Three managed cloud databases scored 0–100 across six buyer criteria"
     aria = (
         "Radar chart comparing three managed cloud databases — Aurora, Cloud "
         "SQL and Cosmos — across six criteria arranged as spokes: query speed, "
