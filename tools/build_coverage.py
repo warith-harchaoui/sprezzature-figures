@@ -221,7 +221,7 @@ MAPPING: dict[str, list[tuple[str, str, str, str]]] = {
         ("generate_column_chart", "bar", "covered", ""),
         ("generate_boxplot_chart", "boxplot", "covered", ""),
         ("generate_dual_axes_chart", "dual-axis", "covered", ""),
-        ("generate_fishbone_diagram", "fishbone", "gap", "Ishikawa cause-and-effect"),
+        ("generate_fishbone_diagram", "fishbone", "covered", ""),
         ("generate_flow_diagram", "", "not-a-figure", "Mermaid, through the Ralph loop"),
         ("generate_funnel_chart", "funnel", "covered", ""),
         ("generate_histogram_chart", "histogram", "covered", ""),

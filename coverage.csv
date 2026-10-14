@@ -120,7 +120,7 @@ antv,generate_bar_chart,bar,covered,
 antv,generate_column_chart,bar,covered,
 antv,generate_boxplot_chart,boxplot,covered,
 antv,generate_dual_axes_chart,dual-axis,covered,
-antv,generate_fishbone_diagram,fishbone,gap,Ishikawa cause-and-effect
+antv,generate_fishbone_diagram,fishbone,covered,
 antv,generate_flow_diagram,,not-a-figure,"Mermaid, through the Ralph loop"
 antv,generate_funnel_chart,funnel,covered,
 antv,generate_histogram_chart,histogram,covered,
