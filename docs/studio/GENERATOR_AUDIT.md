@@ -4,11 +4,11 @@ Reproducible audit of every `scripts/make_*.py` generator against the
 `make_<kind>(data, *, out, title, ...) -> Path` contract the dispatcher
 expects. Regenerate with `python tools/audit_generators.py --render`.
 
-- **stable**: 153
+- **stable**: 154
 - **experimental**: 0
 - **legacy**: 0
 - **unavailable**: 0
-- **total**: 153
+- **total**: 154
 
 | kind | status | reachable | callable | demo_data | render | errors |
 |---|---|---|---|---|---|---|
@@ -88,6 +88,7 @@ expects. Regenerate with `python tools/audit_generators.py --render`.
 | `liftgain` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `line-multi` | stable | **no** | yes | yes | passed | make_figure('line-multi') cannot resolve to make_line-multi.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
 | `line` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `line3d` | stable | yes | yes | yes | passed |  |
 | `liquid-gauge` | stable | **no** | yes | yes | passed | make_figure('liquid-gauge') cannot resolve to make_liquid-gauge.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
 | `lollipop` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `loss-curve` | stable | **no** | yes | yes | passed | make_figure('loss-curve') cannot resolve to make_loss-curve.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |

@@ -400,6 +400,36 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
         ],
         "optional_roles": [],
     },
+    "line3d": {
+        "required_roles": [
+            {
+                "name": "x",
+                "label": "First coordinate",
+                "accepted_types": ["numeric"],
+                "required": True,
+            },
+            {
+                "name": "y",
+                "label": "Second coordinate",
+                "accepted_types": ["numeric"],
+                "required": True,
+            },
+            {
+                "name": "z",
+                "label": "Third coordinate",
+                "accepted_types": ["numeric"],
+                "required": True,
+            },
+        ],
+        "optional_roles": [
+            {
+                "name": "step",
+                "label": "Order along the path",
+                "accepted_types": ["numeric"],
+                "required": False,
+            },
+        ],
+    },
     "acf": {
         "required_roles": [
             {

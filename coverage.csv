@@ -57,7 +57,7 @@ matplotlib,quiver,quiver,covered,
 matplotlib,streamplot,streamplot,covered,
 matplotlib,tricontour / tripcolor / triplot,tricontour,gap,"irregular, triangulated grids"
 matplotlib,bar3d,bar3d,covered,
-matplotlib,plot (3-D line),line3d,gap,a path through three dimensions
+matplotlib,plot (3-D line),line3d,covered,
 matplotlib,scatter (3-D),scatter3d,covered,
 matplotlib,plot_surface,surface3d,covered,
 matplotlib,plot_wireframe,wireframe3d,covered,
@@ -90,7 +90,7 @@ plotly,scatter_polar / line_polar,polar,covered,
 plotly,bar_polar,rose,covered,
 plotly,scatter_ternary / line_ternary,ternary,covered,
 plotly,scatter_3d,scatter3d,covered,
-plotly,line_3d,line3d,gap,a path through three dimensions
+plotly,line_3d,line3d,covered,
 plotly,choropleth / choropleth_map,,sibling,sprezzature-maps `choropleth`
 plotly,scatter_geo / scatter_map,,sibling,sprezzature-maps `situation_map`
 plotly,line_geo / line_map,,sibling,sprezzature-maps `situation_map`

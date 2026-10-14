@@ -20,7 +20,7 @@ A chart request arrives in one of three shapes. Everything else is detail.
 
 ---
 
-## Do not try to memorise 153 chart names
+## Do not try to memorise 154 chart names
 
 The catalogue is open-ended and grows; the vocabulary of **intent** is
 closed. Route on the intent, let the tool pick the kind.
@@ -115,7 +115,7 @@ lines with the nearest real name, by the API with a 422. Ask
 
 **1. `render_figure` takes a catalogue name, not a description.** There is no
 `--x/--y/--kind` combinator and no plotting-library backend behind this: all
-153 kinds are SVG authored directly. If the user asks for output "in
+154 kinds are SVG authored directly. If the user asks for output "in
 <library>", say plainly that this package does not use one, and draw the
 figure.
 
@@ -137,4 +137,4 @@ from sprezzature_figures import make_figure
 path = make_figure(kind, data, out="output.png", title="My chart")
 ```
 
-All 153 kinds and the `data` shape each expects are in [FIGURES.md](FIGURES.md).
+All 154 kinds and the `data` shape each expects are in [FIGURES.md](FIGURES.md).
