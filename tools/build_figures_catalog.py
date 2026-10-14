@@ -470,6 +470,20 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
              "accepted_types": ["numeric", "categorical"], "required": False},
         ],
     },
+    "fishbone": {
+        "required_roles": [
+            {"name": "category", "label": "Cause group",
+             "accepted_types": ["categorical"], "required": True},
+            {"name": "cause", "label": "The cause itself",
+             "accepted_types": ["categorical"], "required": True},
+        ],
+        "optional_roles": [
+            {"name": "weight", "label": "How much it contributes",
+             "accepted_types": ["numeric"], "required": False},
+            {"name": "evidenced", "label": "Whether evidence backs it",
+             "accepted_types": ["numeric", "categorical"], "required": False},
+        ],
+    },
     "acf": {
         "required_roles": [
             {

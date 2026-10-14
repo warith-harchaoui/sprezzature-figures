@@ -6465,6 +6465,183 @@
     ]
   },
   {
+    "kind": "fishbone",
+    "label": "Fishbone",
+    "aliases": [],
+    "category": "Cause and effect",
+    "description": "Ishikawa's diagram, drawn so a session produces a **ranked** list rather than a tidy picture of everything anybody said. The usual version gives a cause mentioned once and a cause behind forty percent of the failures identical twigs: here causes carry a weight, groups are ordered by their totals, and the chrome names which carries most. Causes with something measured behind them are drawn solid and the rest dashed, because the form's whole risk is that a plausible guess written in ink becomes a fact by Tuesday. And the six standard categories are a prompt, not a schema \u2014 whatever groups the data carries are the ones drawn.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "svg",
+    "module": "scripts/make_fishbone.py",
+    "callable_name": "make_fishbone",
+    "required_roles": [
+      {
+        "name": "category",
+        "label": "Cause group",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "cause",
+        "label": "The cause itself",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [
+      {
+        "name": "weight",
+        "label": "How much it contributes",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": false
+      },
+      {
+        "name": "evidenced",
+        "label": "Whether evidence backs it",
+        "accepted_types": [
+          "numeric",
+          "categorical"
+        ],
+        "required": false
+      }
+    ],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 980,
+    "default_height": 620,
+    "options_schema": {
+      "title": {
+        "type": "str",
+        "default": "Deployment carries a third of it, and two in five causes have no evidence",
+        "choices": [],
+        "description": "Chart text."
+      },
+      "subtitle": {
+        "type": "str",
+        "default": "Causes of checkout incidents, grouped and weighted, with the evidenced ones drawn solid.",
+        "choices": [],
+        "description": "Chart text."
+      },
+      "width": {
+        "type": "int",
+        "default": 980,
+        "choices": [],
+        "description": "Canvas size in pixels."
+      },
+      "height": {
+        "type": "int",
+        "default": 620,
+        "choices": [],
+        "description": "Canvas size in pixels."
+      },
+      "category": {
+        "type": "str",
+        "default": "category",
+        "choices": [],
+        "description": "Row keys for the cause's group and its text."
+      },
+      "cause": {
+        "type": "str",
+        "default": "cause",
+        "choices": [],
+        "description": "Row keys for the cause's group and its text."
+      },
+      "weight": {
+        "type": "str",
+        "default": "weight",
+        "choices": [],
+        "description": "Row key for how much the cause contributes."
+      },
+      "evidenced": {
+        "type": "str",
+        "default": "evidenced",
+        "choices": [],
+        "description": "Row key for whether anything measured stands behind it."
+      },
+      "effect": {
+        "type": "str",
+        "default": "Checkout incidents",
+        "choices": [],
+        "description": "The thing being explained."
+      },
+      "weight_label": {
+        "type": "str",
+        "default": "incidents",
+        "choices": [],
+        "description": "What the weights count."
+      },
+      "evidence_label": {
+        "type": "str",
+        "default": "evidenced",
+        "choices": [],
+        "description": "Words for a cause with evidence and one without."
+      },
+      "hunch_label": {
+        "type": "str",
+        "default": "a hunch",
+        "choices": [],
+        "description": "Words for a cause with evidence and one without."
+      },
+      "method_note": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "The line describing the weights, and the sentence naming the heaviest group; None composes each from the data."
+      },
+      "finding": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "The line describing the weights, and the sentence naming the heaviest group; None composes each from the data."
+      },
+      "mode": {
+        "type": "str",
+        "default": "self-contained",
+        "choices": [
+          "self-contained",
+          "external",
+          "static"
+        ],
+        "description": "How the SVG carries its interactivity: self-contained ships its own script, external expects the page to supply one, static leaves it out."
+      },
+      "accessibility": {
+        "type": "str",
+        "default": "universal",
+        "choices": [
+          "universal",
+          "high-contrast",
+          "monochrome",
+          "deuteranopia",
+          "protanopia",
+          "tritanopia"
+        ],
+        "description": "Palette accessibility level; universal is the colour-vision-safe default."
+      },
+      "theme": {
+        "type": "str",
+        "default": "corporate",
+        "choices": [
+          "corporate",
+          "academic"
+        ],
+        "description": "Visual theme. Forwarded to build_svg."
+      }
+    },
+    "warnings": []
+  },
+  {
     "kind": "forecast-fan",
     "label": "Forecast Fan",
     "aliases": [
