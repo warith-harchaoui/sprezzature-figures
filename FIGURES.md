@@ -1,6 +1,6 @@
 # Figure Catalogue
 
-150 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type). `choropleth` and `situation_map` moved to their own repo, [sprezzature-maps](https://github.com/warith-harchaoui/sprezzature-maps).
+151 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type). `choropleth` and `situation_map` moved to their own repo, [sprezzature-maps](https://github.com/warith-harchaoui/sprezzature-maps).
 
 Invoke via:
 
@@ -46,6 +46,7 @@ colour-vision-deficiency-safe Okabe-Ito palette); see
 | `boxplot` | make_boxplot.py | Distribution | Box plot summarising median, quartiles, and outliers per category (Tukey 1.5×IQR rule). Use for salary by department, response time by service, scores by class. |
 | `bubble` | make_bubble.py | Comparison | Gapminder-style bubble chart: x and y for two measures, bubble area for a third, colour for a category. Use to compare many entities across three numeric dimensions plus a group at once. |
 | `bullet` | make_bullet.py | KPI | Bullet chart: a single bar against a reference measure and qualitative performance bands. The compact alternative to a gauge for dashboards with many KPIs. |
+| `bump` | make_bump.py | Ranking | One line per competitor at its rank, crossing the others when it overtakes them. Rank throws away how far apart things are and keeps only the order — the right trade when the order is the story and the wrong one when the gaps are, so **the values travel with the ranks**: the chrome quotes the lead at the first and last period, and a crossing between two competitors within `tie_within` of each other is drawn thin, because that overtake is a coin toss. Judged at the closest of the two periods, not at the far end. Rank 1 sits at the top, where it belongs; `highlight` greys the field so a few can be followed; and a competitor missing from a period is left as a gap rather than interpolated through. |
 | `calendar-heatmap` | make_calendar-heatmap.py | Time series | GitHub-style week x day grid, cell colour is a daily count on a single pale-to-navy blue ramp. Use for commit activity, daily active users, or habit tracking viewed over months at a glance. |
 | `calibration` | make_calibration.py | Model evaluation | Plot predicted probability vs. observed frequency. Use after training a classifier to check whether its scores are well-calibrated (reliable confidence estimates). |
 | `candlestick` | make_candlestick.py | Finance | OHLC chart per period: a thin wick spans low-high, a thick body spans open-close, coloured green up / red down. The default chart for daily price data or any open/high/low/close-shaped series. |

@@ -343,6 +343,29 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
         ],
         "optional_roles": [],
     },
+    "bump": {
+        "required_roles": [
+            {
+                "name": "quarter",
+                "label": "Period",
+                "accepted_types": ["categorical", "datetime", "numeric"],
+                "required": True,
+            },
+            {
+                "name": "product",
+                "label": "Competitor",
+                "accepted_types": ["categorical"],
+                "required": True,
+            },
+            {
+                "name": "share",
+                "label": "Quantity ranked",
+                "accepted_types": ["numeric"],
+                "required": True,
+            },
+        ],
+        "optional_roles": [],
+    },
     "acf": {
         "required_roles": [
             {
