@@ -131,7 +131,7 @@ MAPPING: dict[str, list[tuple[str, str, str, str]]] = {
         ("plot", "line", "covered", ""),
         ("scatter", "scatter", "covered", ""),
         ("bar / barh", "bar", "covered", ""),
-        ("stem", "stem", "gap", "lollipops on a baseline, for discrete signals"),
+        ("stem", "stem", "covered", ""),
         ("fill_between", "area", "covered", ""),
         ("stackplot", "stacked-area", "covered", ""),
         ("stairs", "step", "covered", ""),

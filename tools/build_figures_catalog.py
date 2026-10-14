@@ -366,6 +366,23 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
         ],
         "optional_roles": [],
     },
+    "stem": {
+        "required_roles": [
+            {
+                "name": "hour",
+                "label": "Sample position",
+                "accepted_types": ["numeric", "datetime"],
+                "required": True,
+            },
+            {
+                "name": "declines",
+                "label": "Value at that sample",
+                "accepted_types": ["numeric"],
+                "required": True,
+            },
+        ],
+        "optional_roles": [],
+    },
     "acf": {
         "required_roles": [
             {

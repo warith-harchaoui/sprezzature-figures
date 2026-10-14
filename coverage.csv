@@ -36,7 +36,7 @@ seaborn,objects.Text,,not-a-figure,"an annotation layer, not a chart"
 matplotlib,plot,line,covered,
 matplotlib,scatter,scatter,covered,
 matplotlib,bar / barh,bar,covered,
-matplotlib,stem,stem,gap,"lollipops on a baseline, for discrete signals"
+matplotlib,stem,stem,covered,
 matplotlib,fill_between,area,covered,
 matplotlib,stackplot,stacked-area,covered,
 matplotlib,stairs,step,covered,

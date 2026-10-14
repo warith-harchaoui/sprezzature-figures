@@ -4,11 +4,11 @@ Reproducible audit of every `scripts/make_*.py` generator against the
 `make_<kind>(data, *, out, title, ...) -> Path` contract the dispatcher
 expects. Regenerate with `python tools/audit_generators.py --render`.
 
-- **stable**: 151
+- **stable**: 152
 - **experimental**: 0
 - **legacy**: 0
 - **unavailable**: 0
-- **total**: 151
+- **total**: 152
 
 | kind | status | reachable | callable | demo_data | render | errors |
 |---|---|---|---|---|---|---|
@@ -139,6 +139,7 @@ expects. Regenerate with `python tools/audit_generators.py --render`.
 | `spike-map` | stable | **no** | yes | yes | passed | make_figure('spike-map') cannot resolve to make_spike-map.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
 | `stacked-area` | stable | **no** | yes | yes | passed | make_figure('stacked-area') cannot resolve to make_stacked-area.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
 | `stacked-bar` | stable | **no** | yes | yes | passed | make_figure('stacked-bar') cannot resolve to make_stacked-bar.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
+| `stem` | stable | yes | yes | yes | passed |  |
 | `step` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `streamgraph` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `streamplot` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
