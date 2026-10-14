@@ -284,7 +284,7 @@ def _nearest_spacing(points: Sequence[Tuple[float, float]]) -> float:
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
     title: str = "A third of the guideline line is a guess, and is drawn as one",
-    subtitle: str = "PM2.5 across a city's low-cost sensor network, triangulated. Dashed where no sensor is near enough to support the line.",
+    subtitle: str = "PM2.5 across a city's sensor network, triangulated and dashed where no sensor is near.",
     width: int = 880,
     height: int = 700,
     x: str = "east_km",
@@ -512,32 +512,41 @@ def build_svg(
         "1 peeled as a hull splinter" if peeled == 1
         else f"{peeled} peeled as hull splinters"
     )
-    said = summary if summary is not None else (
-        f"{len(rows)} sensors · {len(mesh)} triangles, {stretched} dropped for spanning "
-        f"more than {fmt_number(max_edge * 100)}% of the width, {splinters} · "
-        f"{measured(z_lo)} to {measured(z_hi)} {unit} · dashed where no sensor lies "
-        f"within {located(support_at)} {coord_unit}, "
-        f"{fmt_number(support_spacing)} times the median sensor spacing"
+    # Composed as whole lines rather than as one paragraph that wraps:
+    # a wrapped line breaks wherever the width runs out, which makes
+    # each half a fragment -- unreadable on its own, and untranslatable
+    # as a unit. One statement per line survives both.
+    said_lines = (
+        wrap_no_orphan(summary, 108) if summary is not None else [
+            f"{len(rows)} sensors · {len(mesh)} triangles, {stretched} dropped for "
+            f"spanning more than {fmt_number(max_edge * 100)}% of the width, "
+            f"{splinters}",
+            f"{measured(z_lo)} to {measured(z_hi)} {unit} · dashed where no sensor "
+            f"lies within {located(support_at)} {coord_unit}, "
+            f"{fmt_number(support_spacing)} times the median sensor spacing",
+        ]
     )
-    found = finding
-    if found is None and threshold is not None and total_km:
-        if unsupported_km <= 0.0:
-            found = (
-                f"Every one of the {located(total_km)} {coord_unit} of the "
-                f"{threshold_label} line has a sensor within "
-                f"{located(support_at)} {coord_unit} of it."
-            )
-        else:
-            found = (
-                f"{fmt_number(share * 100)}% of the {threshold_label} line -- "
-                f"{located(unsupported_km)} of {located(total_km)} {coord_unit} -- "
-                f"runs across ground no sensor is near enough to support, and is "
-                f"drawn dashed."
-            )
+    if finding is not None:
+        found_lines = wrap_no_orphan(finding, 108)
+    elif threshold is not None and total_km and unsupported_km > 0.0:
+        found_lines = [
+            f"{fmt_number(share * 100)}% of the {threshold_label} line runs across "
+            f"ground no sensor is near enough to support.",
+            f"That is {located(unsupported_km)} {coord_unit} of "
+            f"{located(total_km)}, and it is drawn dashed.",
+        ]
+    elif threshold is not None and total_km:
+        found_lines = [
+            f"Every one of the {located(total_km)} {coord_unit} of the "
+            f"{threshold_label} line has a sensor within "
+            f"{located(support_at)} {coord_unit} of it.",
+        ]
+    else:
+        found_lines = []
 
-    said_lines = wrap_no_orphan(said, 108)
+    said = " · ".join(said_lines)
+    found = " ".join(found_lines)
     subtitle_lines = wrap_no_orphan(subtitle, 104)[:2]
-    found_lines = wrap_no_orphan(found, 108) if found else []
 
     # ---- the room the chrome leaves, and the map that fits in it ----
     frame_x = 72.0
@@ -582,7 +591,7 @@ def build_svg(
     parts.append(
         f'<desc id="tricontour-desc">Iso-lines of {xml_escape(value_label)} over '
         f'{len(rows)} scattered sensors, triangulated into {len(mesh)} facets and '
-        f'filled in bands. {xml_escape(said)}. {xml_escape(found or "")}</desc>'
+        f'filled in bands. {xml_escape(said)}. {xml_escape(found)}</desc>'
     )
     parts.append(
         "<style>"
@@ -851,7 +860,7 @@ def make_tricontour(
     *,
     out: Optional[Path | str] = None,
     title: str = "A third of the guideline line is a guess, and is drawn as one",
-    subtitle: str = "PM2.5 across a city's low-cost sensor network, triangulated. Dashed where no sensor is near enough to support the line.",
+    subtitle: str = "PM2.5 across a city's sensor network, triangulated and dashed where no sensor is near.",
     width: int = 880,
     height: int = 700,
     x: str = "east_km",
