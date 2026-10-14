@@ -9456,6 +9456,199 @@
     ]
   },
   {
+    "kind": "line3d",
+    "label": "Line3D",
+    "aliases": [],
+    "category": "3-D path",
+    "description": "A trajectory through three dimensions \u2014 a state that moves, a parameter swept, an orbit \u2014 where the *order* of the points is as much the data as their position. A projected line crossing itself is ambiguous: without a depth cue the near strand and the far strand look identical, and the shape a reader reconstructs is a coin toss. Here the line is cut into segments **ordered back to front and shaded by distance from the camera**, both ends are marked and named, arrowheads say which way it runs, and the path's shadow on the floor separates high-and-far from low-and-near. The chrome counts the self-crossings, which is how the figure says why the shading is not decoration \u2014 a hundred and nineteen on its own demo.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "svg",
+    "module": "scripts/make_line3d.py",
+    "callable_name": "make_line3d",
+    "required_roles": [
+      {
+        "name": "x",
+        "label": "First coordinate",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "y",
+        "label": "Second coordinate",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "z",
+        "label": "Third coordinate",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [
+      {
+        "name": "step",
+        "label": "Order along the path",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": false
+      }
+    ],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 900,
+    "default_height": 640,
+    "options_schema": {
+      "title": {
+        "type": "str",
+        "default": "A path that crosses its own picture over a hundred times, and still reads",
+        "choices": [],
+        "description": "Chart text."
+      },
+      "subtitle": {
+        "type": "str",
+        "default": "The Lorenz attractor over thirty time units, shaded by distance from the camera with its shadow on the floor.",
+        "choices": [],
+        "description": "Chart text."
+      },
+      "width": {
+        "type": "int",
+        "default": 900,
+        "choices": [],
+        "description": "Canvas size in pixels."
+      },
+      "height": {
+        "type": "int",
+        "default": 640,
+        "choices": [],
+        "description": "Canvas size in pixels."
+      },
+      "x": {
+        "type": "str",
+        "default": "x",
+        "choices": [],
+        "description": "Row keys for the three coordinates."
+      },
+      "y": {
+        "type": "str",
+        "default": "y",
+        "choices": [],
+        "description": "Row keys for the three coordinates."
+      },
+      "z": {
+        "type": "str",
+        "default": "z",
+        "choices": [],
+        "description": "Row keys for the three coordinates."
+      },
+      "order": {
+        "type": "str",
+        "default": "step",
+        "choices": [
+          "given",
+          "first",
+          "count",
+          "first-after-onset"
+        ],
+        "description": "Row key that puts the points in order along the path."
+      },
+      "elev": {
+        "type": "float",
+        "default": 24.0,
+        "choices": [],
+        "description": "Camera elevation and azimuth, in degrees."
+      },
+      "azim": {
+        "type": "float",
+        "default": -58.0,
+        "choices": [],
+        "description": "Camera elevation and azimuth, in degrees."
+      },
+      "arrows": {
+        "type": "int",
+        "default": 7,
+        "choices": [],
+        "description": "How many direction arrowheads to place along the path."
+      },
+      "shadow": {
+        "type": "bool",
+        "default": true,
+        "choices": [],
+        "description": "Draw the path's projection on the floor plane."
+      },
+      "start_label": {
+        "type": "str",
+        "default": "start",
+        "choices": [],
+        "description": "Captions on the two ends of the path."
+      },
+      "end_label": {
+        "type": "str",
+        "default": "end",
+        "choices": [],
+        "description": "Captions on the two ends of the path."
+      },
+      "depth_note": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "The line describing the camera and the shading, and the sentence naming what the path does; None composes each from the data."
+      },
+      "finding": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "The line describing the camera and the shading, and the sentence naming what the path does; None composes each from the data."
+      },
+      "mode": {
+        "type": "str",
+        "default": "self-contained",
+        "choices": [
+          "self-contained",
+          "external",
+          "static"
+        ],
+        "description": "How the SVG carries its interactivity: self-contained ships its own script, external expects the page to supply one, static leaves it out."
+      },
+      "accessibility": {
+        "type": "str",
+        "default": "universal",
+        "choices": [
+          "universal",
+          "high-contrast",
+          "monochrome",
+          "deuteranopia",
+          "protanopia",
+          "tritanopia"
+        ],
+        "description": "Palette accessibility level; universal is the colour-vision-safe default."
+      },
+      "theme": {
+        "type": "str",
+        "default": "corporate",
+        "choices": [
+          "corporate",
+          "academic"
+        ],
+        "description": "Visual theme. Forwarded to build_svg."
+      }
+    },
+    "warnings": []
+  },
+  {
     "kind": "liquid-gauge",
     "label": "Liquid Gauge",
     "aliases": [
