@@ -1,6 +1,6 @@
 # Figure Catalogue
 
-154 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type). `choropleth` and `situation_map` moved to their own repo, [sprezzature-maps](https://github.com/warith-harchaoui/sprezzature-maps).
+155 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type). `choropleth` and `situation_map` moved to their own repo, [sprezzature-maps](https://github.com/warith-harchaoui/sprezzature-maps).
 
 Invoke via:
 
@@ -132,6 +132,7 @@ colour-vision-deficiency-safe Okabe-Ito palette); see
 | `ppplot` | make_ppplot.py | Goodness of fit | Probability-probability plot: theoretical vs. empirical CDF. Use alongside Q-Q plot to diagnose distributional fit in the body (not tails) of a distribution. |
 | `prcurve` | make_prcurve.py | Model evaluation | Precision-Recall curve for binary classifiers. Preferred over ROC when classes are imbalanced, because it focuses on the minority (positive) class performance. |
 | `qqplot` | make_qqplot.py | Goodness of fit | Sorted sample vs. theoretical normal quantiles; a sample drawn from a normal population falls on the dashed y=x reference line. The standard diagnostic for whether a residual or measurement sample is approximately Gaussian. |
+| `quiver3d` | make_quiver3d.py | Vector field | An arrow at each sample of a three-dimensional field. The hard part is that **perspective shortens an arrow pointing at the camera**, so the picture says «weak» where the data says «strong» — measured on this figure's own demo, up to 89% of an arrow's length, with a correlation to magnitude of −0.05. No pattern for a reader to correct by eye, which is why magnitude is carried by colour as well as length. Both channels use the same compression (`length_scale`, sqrt by default) and the chrome names it: a field spanning two orders of magnitude draws every arrow as a dot under a linear map. Arrows go back to front so near occludes far. |
 | `quiver` | make_quiver.py | Vector field | One small rotated triangular arrow per grid point, direction and colour follow the local vector, size follows magnitude. Use for fluid-flow or wind-field snapshots, gradient fields, or any function assigning a direction and magnitude to every point in a plane. |
 | `radar` | make_radar.py | Multivariate | Radar / spider chart: multiple quantitative axes radiating from a common centre. Use for comparing a small number of entities across 4–8 dimensions. |
 | `radial-bar` | make_radial-bar.py | Comparison | Bar chart bent into a circle. Use when aesthetic impact matters and absolute length comparison is secondary. |

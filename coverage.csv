@@ -63,7 +63,7 @@ matplotlib,plot_surface,surface3d,covered,
 matplotlib,plot_wireframe,wireframe3d,covered,
 matplotlib,plot_trisurf,trisurface,gap,"surface over a triangulated, irregular domain"
 matplotlib,voxels,voxels,gap,filled volumetric cells
-matplotlib,quiver (3-D),quiver3d,gap,vector field in three dimensions
+matplotlib,quiver (3-D),quiver3d,covered,
 plotly,scatter,scatter,covered,
 plotly,line,line,covered,
 plotly,area,stacked-area,covered,

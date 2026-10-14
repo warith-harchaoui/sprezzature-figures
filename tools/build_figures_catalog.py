@@ -430,6 +430,23 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
             },
         ],
     },
+    "quiver3d": {
+        "required_roles": [
+            {"name": "x", "label": "First coordinate",
+             "accepted_types": ["numeric"], "required": True},
+            {"name": "y", "label": "Second coordinate",
+             "accepted_types": ["numeric"], "required": True},
+            {"name": "z", "label": "Third coordinate",
+             "accepted_types": ["numeric"], "required": True},
+            {"name": "u", "label": "First vector component",
+             "accepted_types": ["numeric"], "required": True},
+            {"name": "v", "label": "Second vector component",
+             "accepted_types": ["numeric"], "required": True},
+            {"name": "w", "label": "Third vector component",
+             "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
     "acf": {
         "required_roles": [
             {

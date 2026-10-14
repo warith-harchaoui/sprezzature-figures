@@ -158,7 +158,7 @@ MAPPING: dict[str, list[tuple[str, str, str, str]]] = {
         ("plot_wireframe", "wireframe3d", "covered", ""),
         ("plot_trisurf", "trisurface", "gap", "surface over a triangulated, irregular domain"),
         ("voxels", "voxels", "gap", "filled volumetric cells"),
-        ("quiver (3-D)", "quiver3d", "gap", "vector field in three dimensions"),
+        ("quiver (3-D)", "quiver3d", "covered", "")
     ],
     "plotly": [
         ("scatter", "scatter", "covered", ""),
