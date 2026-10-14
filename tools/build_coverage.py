@@ -168,7 +168,7 @@ MAPPING: dict[str, list[tuple[str, str, str, str]]] = {
         ("timeline", "gantt", "covered", ""),
         ("pie", "pie", "covered", ""),
         ("funnel", "funnel", "covered", ""),
-        ("funnel_area", "funnel-area", "gap", "stacked proportional sectors, not a funnel of bars"),
+        ("funnel_area", "funnel-area", "covered", ""),
         ("histogram", "histogram", "covered", ""),
         ("box", "boxplot", "covered", ""),
         ("violin", "violin", "covered", ""),

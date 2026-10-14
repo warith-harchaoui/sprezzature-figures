@@ -1,6 +1,6 @@
 # Figure Catalogue
 
-155 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type). `choropleth` and `situation_map` moved to their own repo, [sprezzature-maps](https://github.com/warith-harchaoui/sprezzature-maps).
+156 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type). `choropleth` and `situation_map` moved to their own repo, [sprezzature-maps](https://github.com/warith-harchaoui/sprezzature-maps).
 
 Invoke via:
 
@@ -82,6 +82,7 @@ colour-vision-deficiency-safe Okabe-Ito palette); see
 | `figure` | make_figure.py | n/a | Internal dispatcher; do not invoke directly. |
 | `forecast-fan` | make_forecast-fan.py | Forecast | A forecast drawn with the width of its own uncertainty: history in solid ink, the forecast dashed inside nested intervals that widen with the horizon. The usual fan chart draws history and forecast in the same ink, so the boundary between measurement and projection — the most important line on the chart — is invisible; here it is ruled and labelled. The bands carry their levels, and the chrome says what a level *means* («5 times in 100 the outcome falls outside the widest one») rather than printing a percent sign and hoping. The intervals come from a forecast and a standard error, one column each, so the levels drawn are a presentation choice: ask for 67% and you get 67%, by Acklam's inverse normal rather than a lookup table. |
 | `forest` | make_forest.py | Meta-analysis | Forest plot: effect size with confidence interval per study, plus a pooled diamond. Standard in systematic reviews and meta-analyses. |
+| `funnel-area` | make_funnel-area.py | Pipeline | A tapering funnel carved so each band's **area** is its count — the quantity the eye actually measures. A funnel narrows, so a band low down is shorter across than one at the top; give both a height proportional to their count, as hand-rolled funnels do, and the lower one gets less area than it deserves. The heights are solved instead, and the chrome reports how far the naive version would be off *measured on the data in front of it* — ten percent on the demo. Each gap carries the rate that crossed it and the worst is marked; and because a funnel claims each stage is a subset of the one above, the figure checks the stages decrease and says so when they do not. |
 | `funnel` | make_funnel.py | Pipeline | Horizontal bars narrowing to show drop-off across sequential stages (conversion funnel, hiring, clinical trial enrolment). Percentage labels on each stage. |
 | `gantt` | make_gantt.py | Project planning | One horizontal bar per task spanning its start-end day, coloured by owning team, top-to-bottom order follows the data. The default chart for a project plan or roadmap. |
 | `gapminder` | make_gapminder.py | Animated bubble | Animated scatter: x = income, y = life expectancy, size = population, colour = region. Use to show development trends across countries over decades. |
