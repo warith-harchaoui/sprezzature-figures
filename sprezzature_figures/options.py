@@ -53,7 +53,9 @@ __all__ = [
     "validate_options",
 ]
 
-OptionType = Literal["str", "int", "float", "bool", "str_list", "float_pair"]
+OptionType = Literal[
+    "str", "int", "float", "bool", "str_list", "float_list", "float_pair"
+]
 
 #: Parameters that are not options: the rows themselves, and the output
 #: path. Both are owned by the caller's transport (``--out``, the API's
@@ -168,6 +170,8 @@ _PASS_THROUGH_RE = re.compile(r"^forwarded to [\w.:`~ ]+\.?$", re.IGNORECASE)
 _ANNOTATION_TYPES: tuple[tuple[str, OptionType], ...] = (
     ("bool", "bool"),
     ("list[str]", "str_list"),
+    ("list[float]", "float_list"),
+    ("list[int]", "float_list"),
     ("tuple", "float_pair"),
     ("float", "float"),
     ("int", "int"),
@@ -438,6 +442,16 @@ def coerce_option(option: OptionDefinition, raw: Any) -> Any:
                 if isinstance(raw, (list, tuple))
                 else [part.strip() for part in str(text).split(",") if part.strip()]
             )
+        elif option.type == "float_list":
+            # Any number of values, unlike ``float_pair``: iso-levels, cut
+            # points, tick positions. A caller holding real numbers (the
+            # API, a notebook) passes them through untouched; a caller
+            # holding a command line passes "8,12,16".
+            items = (
+                raw if isinstance(raw, (list, tuple))
+                else [part for part in str(text).split(",") if part.strip()]
+            )
+            value = [float(item) for item in items]
         elif option.type == "float_pair":
             parts = raw if isinstance(raw, (list, tuple)) else str(text).split(",")
             pair = [float(part) for part in parts]
@@ -477,6 +491,7 @@ def _type_hint(option: OptionDefinition) -> str:
         "int": "a whole number",
         "float": "a number",
         "str_list": "a comma-separated list",
+        "float_list": "a comma-separated list of numbers",
         "float_pair": "two numbers as 'low,high'",
         "str": "text",
     }[option.type]

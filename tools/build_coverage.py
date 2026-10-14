@@ -150,7 +150,7 @@ MAPPING: dict[str, list[tuple[str, str, str, str]]] = {
         ("barbs", "windbarb", "covered", ""),
         ("quiver", "quiver", "covered", ""),
         ("streamplot", "streamplot", "covered", ""),
-        ("tricontour / tripcolor / triplot", "tricontour", "gap", "irregular, triangulated grids"),
+        ("tricontour / tripcolor / triplot", "tricontour", "covered", ""),
         ("bar3d", "bar3d", "covered", ""),
         ("plot (3-D line)", "line3d", "covered", ""),
         ("scatter (3-D)", "scatter3d", "covered", ""),

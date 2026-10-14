@@ -500,6 +500,17 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
              "accepted_types": ["numeric"], "required": False},
         ],
     },
+    "tricontour": {
+        "required_roles": [
+            {"name": "east_km", "label": "First ground coordinate",
+             "accepted_types": ["numeric"], "required": True},
+            {"name": "north_km", "label": "Second ground coordinate",
+             "accepted_types": ["numeric"], "required": True},
+            {"name": "pm25", "label": "Measured value",
+             "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
     "trisurface": {
         "required_roles": [
             {"name": "x", "label": "First ground coordinate",
