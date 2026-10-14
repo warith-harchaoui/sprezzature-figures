@@ -1,6 +1,6 @@
 # Figure Catalogue
 
-149 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type). `choropleth` and `situation_map` moved to their own repo, [sprezzature-maps](https://github.com/warith-harchaoui/sprezzature-maps).
+150 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type). `choropleth` and `situation_map` moved to their own repo, [sprezzature-maps](https://github.com/warith-harchaoui/sprezzature-maps).
 
 Invoke via:
 
@@ -111,6 +111,7 @@ colour-vision-deficiency-safe Okabe-Ito palette); see
 | `missing-matrix` | make_missing-matrix.py | Data quality | One column per field, records down the page in arrival order, shaded wherever a value is absent. The usual version reports a percentage per column and stops — « age is 12% missing » says how much is gone, never whether it is gone at random. Columns here are scored by how often they go missing *together* (Jaccard overlap of the two sets of records, so a mostly-empty column does not pair with everything by being large) and the strongest pair is named: two fields missing in the same records mean one cause, and dropping rows on one silently drops the other. Records keep their order, because missingness is very often a function of *when* — a field added in March is absent before March — and they are binned into bands so the picture holds its shape from a thousand records to a hundred thousand. |
 | `mosaic` | make_mosaic.py | Categorical | Mosaic (Marimekko) plot: tile area encodes joint frequency of two categorical variables. Use to show contingency tables and test independence visually. |
 | `network` | make_network.py | Network | Force-directed network graph. Use to show relationships in social, citation, or infrastructure networks when node count is < 500. |
+| `ohlc` | make_ohlc.py | Finance | One vertical bar per session from low to high, with the open ticked left and the close ticked right — the older sibling of `candlestick`, and the one that survives a monochrome print, because direction is carried by **which side the tick is on** and not by colour alone. The usual version draws the range and never measures it: the widest session is named here with its range as a multiple of the median one. And it says what its axis counts — one bar per *session*, not per day — and how much calendar that closes up, because markets shut and a reader has to know whether the spacing they see is time or turns. |
 | `org-chart` | make_org-chart.py | Hierarchy | Top-down organisation chart. Use for reporting structures, software architecture layers, or any strict parent–child hierarchy. |
 | `packed-bubble` | make_packed-bubble.py | Comparison | Circles packed together, sized by value. Use as a visually engaging alternative to a pie chart when comparing parts of a whole across many categories. |
 | `pairplot` | make_pairplot.py | Multivariate | Matrix of scatter plots (or KDE on the diagonal) for every pair of numeric variables. Standard EDA chart for tabular datasets up to ~10 columns. |
