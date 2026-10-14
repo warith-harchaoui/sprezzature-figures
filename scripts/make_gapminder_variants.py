@@ -51,7 +51,8 @@ from pathlib import Path
 from typing import Any, Callable
 
 from gapminder_i18n import COUNTRIES_FR, HISTORY_FR, REGIONS_FR
-from _render import write_svg  # noqa: E402
+from _render import write_svg
+from _svg import xml_escape as _xml  # noqa: E402
 from _style import forced_color_patterns, leveled_colors, os_adaptive_style, os_dark_style
 from sprezzature_figures.fonts import chrome_stack_for_theme
 
@@ -481,6 +482,8 @@ def build(
     *,
     rows: "list[dict[str, Any]] | None" = None,
     out: "Path | str | None" = None,
+    title: "str | None" = None,
+    subtitle: "str | None" = None,
     theme: str = "corporate",
 ) -> Path:
     """Build one variant's animated SVG (``lang`` = 'en' or 'fr') and write it.
@@ -577,7 +580,12 @@ def build(
         # direct-open would fall back to the UA default (300x150 CSS px).
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}" '
         f'font-family="{chrome_stack_for_theme(theme)}" role="img" aria-labelledby="gm-t gm-d">',
-        f'<title id="gm-t">{lab["title_a11y"]}, {years[0]} to {years[-1]}</title>',
+        # The accessible name follows the caller's headline when there is
+        # one: a screen-reader user hearing a different title from the one
+        # on screen is being told about a different figure.
+        f'<title id="gm-t">'
+        f'{_xml(title) if title is not None else lab["title_a11y"]}'
+        f', {years[0]} to {years[-1]}</title>',
         f'<desc id="gm-d">{lab["desc"]}</desc>',
         f'<rect width="{W}" height="{H}" fill="#FFFFFF"/>',
         # OS-adaptive overrides (additive; the default render is unchanged
@@ -638,11 +646,21 @@ def build(
     svg.append(f'<text x="20" y="{(Y0 + Y1) / 2:.0f}" font-size="13" fill="#1D1D1F" transform="rotate(-90 20 {(Y0 + Y1) / 2:.0f})" text-anchor="middle">{lab["y_axis"]}</text>')
 
     # Title (linked to Rosling's video) + subtitle + a link to the data we provide.
-    svg.append('<text x="20" y="24" font-size="15" font-weight="700" fill="#1D1D1F">'
-               '<a href="https://www.youtube.com/watch?v=hVimVzgtD6w" target="_blank">'
-               f'<tspan fill="#007AFF" text-decoration="underline">{lab["title_link"]}</tspan></a>'
-               f'{lab["title_rest"]}</text>')
-    svg.append(f'<text x="20" y="40" font-size="11" fill="#6E6E73">{lab["subtitle"]}</text>')
+    # The default headline links to Rosling's talk, because the default
+    # figure *is* the tribute. A caller's own title is their sentence, not
+    # a link to somebody else's video, so the override drops the anchor.
+    if title is None:
+        svg.append('<text x="20" y="24" font-size="15" font-weight="700" fill="#1D1D1F">'
+                   '<a href="https://www.youtube.com/watch?v=hVimVzgtD6w" target="_blank">'
+                   f'<tspan fill="#007AFF" text-decoration="underline">{lab["title_link"]}</tspan></a>'
+                   f'{lab["title_rest"]}</text>')
+    else:
+        svg.append('<text x="20" y="24" font-size="15" font-weight="700" '
+                   f'fill="#1D1D1F">{_xml(title)}</text>')
+    svg.append(
+        '<text x="20" y="40" font-size="11" fill="#6E6E73">'
+        f'{_xml(subtitle if subtitle is not None else lab["subtitle"])}</text>'
+    )
     csv_stem = var.csv_name[:-4]                       # strip ".csv"
     csv_name = csv_stem + (".fr.csv" if fr else ".csv")
     svg.append(
@@ -781,7 +799,8 @@ def make_gapminder_variants(
     data: "list[dict[str, Any]] | None" = None,
     *,
     out: "Path | str | None" = None,
-    title: str = "",
+    title: "str | None" = None,
+    subtitle: "str | None" = None,
     variant: str = "fertility",
     lang: str = "en",
     mode: str = "external",
@@ -819,10 +838,12 @@ def make_gapminder_variants(
     Path
         Absolute path to the written SVG file.
     """
-    _ = title  # accepted for dispatcher parity; see docstring
     var = VARIANTS.get(variant, FERTILITY)
     rows = data if data else _DEMO_DATA_BY_VARIANT.get(var.key, DEMO_DATA_FERTILITY)
-    return build(var, lang, mode=mode, accessibility=accessibility, rows=rows, out=out, theme=theme)
+    return build(
+        var, lang, mode=mode, accessibility=accessibility, rows=rows, out=out,
+        title=title, subtitle=subtitle, theme=theme,
+    )
 
 
 def main(accessibility: str = "universal", theme: str = "corporate") -> None:

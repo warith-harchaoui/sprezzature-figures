@@ -212,6 +212,11 @@ def _loess(
 
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
+    title: str = "Session times aren\u2019t Normal",
+    subtitle: str = (
+        "Empirical vs fitted-Normal CDF \u2014 the arc off the 45\u00b0 line "
+        "flags the skew"
+    ),
     above_annotation: str = "Normal under-states P",
     below_annotation: str = "Normal over-states P",
     mode: str = "self-contained",
@@ -299,8 +304,10 @@ def build_svg(
     # --- SVG root + accessible description ------------------------
     parts.append(svg_open(width, height, "pp-title", "pp-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(
-        '<title id="pp-title">Session times aren\'t Normal — the P-P plot '
-        'bows off the diagonal</title>'
+        # The accessible name is the headline a sighted reader sees: when
+        # the two disagree, a screen-reader user is told about a different
+        # figure.
+        f'<title id="pp-title">{xml_escape(title)}</title>'
     )
     parts.append(
         '<desc id="pp-desc">Probability-probability (P-P) plot checking '
@@ -351,12 +358,11 @@ def build_svg(
     # --- title + subtitle (the takeaway) -------------------------
     parts.append(
         f'<text x="{m_left}" y="96" font-size="44" font-weight="700" '
-        f'fill="{ink}">Session times aren’t Normal</text>'
+        f'fill="{ink}">{xml_escape(title)}</text>'
     )
     parts.append(
         f'<text x="{m_left}" y="148" font-size="25" fill="{secondary}">'
-        f'Empirical vs fitted-Normal CDF — the arc off the 45° line '
-        f'flags the skew</text>'
+        f'{xml_escape(subtitle)}</text>'
     )
 
     # --- gridlines (very light) ----------------------------------
@@ -552,7 +558,11 @@ def make_ppplot(
     data: Optional[List[Dict[str, Any]]] = None,
     *,
     out: Optional[Path | str] = None,
-    title: str = "",
+    title: str = "Session times aren\u2019t Normal",
+    subtitle: str = (
+        "Empirical vs fitted-Normal CDF \u2014 the arc off the 45\u00b0 line "
+        "flags the skew"
+    ),
     above_annotation: str = "Normal under-states P",
     below_annotation: str = "Normal over-states P",
     mode: str = "self-contained",
@@ -584,9 +594,10 @@ def make_ppplot(
     Path
         Absolute path to the written SVG file.
     """
-    _ = title
     svg = build_svg(
         data,
+        title=title,
+        subtitle=subtitle,
         above_annotation=above_annotation,
         below_annotation=below_annotation,
         mode=mode,

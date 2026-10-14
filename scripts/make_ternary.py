@@ -297,6 +297,8 @@ def _axis_labels(
 
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
+    title: str = "Three soil textures, three corners of the triangle",
+    subtitle: str = "Topsoil samples by grain-size mix \u00b7 sand + silt + clay = 100 %",
     legend_title: str = "Texture class",
     clay_label: str = "Clay",
     sand_label: str = "Sand",
@@ -343,8 +345,10 @@ def build_svg(
     parts: List[str] = []
     parts.append(svg_open(_WIDTH, _HEIGHT, "tn-title", "tn-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(
-        '<title id="tn-title">Soil texture as a ternary of sand, silt '
-        'and clay</title>'
+        # The accessible name is the headline a sighted reader sees: when
+        # the two disagree, a screen-reader user is told about a different
+        # figure.
+        f'<title id="tn-title">{_xml(title)}</title>'
     )
     desc = (
         "Ternary plot: an equilateral triangle whose corners are 100 % "
@@ -417,12 +421,11 @@ def build_svg(
     # ---- title + subtitle ----
     parts.append(
         f'<text x="56" y="60" font-size="29" font-weight="700" '
-        f'fill="{_INK}">Three soil textures, three corners of the triangle</text>'
+        f'fill="{_INK}">{_xml(title)}</text>'
     )
     parts.append(
         f'<text x="56" y="94" font-size="18" fill="{_SUBTLE}">'
-        f'Topsoil samples by grain-size mix · sand + silt + clay = 100 % '
-        f'</text>'
+        f'{_xml(subtitle)}</text>'
     )
 
     # ---- triangle fill + inner grid ----
@@ -526,7 +529,8 @@ def make_ternary(
     data: Optional[List[Dict[str, Any]]] = None,
     *,
     out: Optional[Path | str] = None,
-    title: str = "",
+    title: str = "Three soil textures, three corners of the triangle",
+    subtitle: str = "Topsoil samples by grain-size mix \u00b7 sand + silt + clay = 100 %",
     legend_title: str = "Texture class",
     clay_label: str = "Clay",
     sand_label: str = "Sand",
@@ -561,9 +565,9 @@ def make_ternary(
     Path
         Absolute path to the written SVG file.
     """
-    del title
     svg = build_svg(
-        data, legend_title=legend_title, clay_label=clay_label,
+        data, title=title, subtitle=subtitle,
+        legend_title=legend_title, clay_label=clay_label,
         sand_label=sand_label, silt_label=silt_label,
         mode=mode, accessibility=accessibility, theme=theme,
     )

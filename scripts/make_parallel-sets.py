@@ -253,6 +253,11 @@ def _ribbon_path(
 # --------------------------------------------------------------------------- #
 def build_svg(
     flows: Optional[List[Dict[str, Any]]] = None,
+    title: str = "Who survived the Titanic",
+    subtitle: str = (
+        "Sex and age decided far more than the fare: women and children "
+        "lived, third-class men did not"
+    ),
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -415,13 +420,12 @@ def build_svg(
     parts.append(
         f'<text x="{margin}" y="72" font-family="{chrome_family}" '
         f'font-size="42" font-weight="600" fill="{ink}">'
-        "Who survived the Titanic</text>"
+        f"{xml_escape(title)}</text>"
     )
     parts.append(
         f'<text x="{margin}" y="112" font-family="{chrome_family}" '
         f'font-size="23" fill="{secondary}">'
-        "Sex and age decided far more than the fare: women and children lived, "
-        "third-class men did not</text>"
+        f"{xml_escape(subtitle)}</text>"
     )
     parts.append(
         f'<text x="{margin}" y="142" font-family="{chrome_family}" '
@@ -644,7 +648,11 @@ def make_parallel_sets(
     data: Optional[List[Dict[str, Any]]] = None,
     *,
     out: Optional[Path | str] = None,
-    title: str = "",
+    title: str = "Who survived the Titanic",
+    subtitle: str = (
+        "Sex and age decided far more than the fare: women and children "
+        "lived, third-class men did not"
+    ),
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -671,10 +679,12 @@ def make_parallel_sets(
     Path
         Absolute path to the written SVG file.
     """
-    _ = title
     rows = data if data else DEMO_DATA
     flows = _rows_to_flows(rows)
-    svg = build_svg(flows, mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(
+        flows, title=title, subtitle=subtitle,
+        mode=mode, accessibility=accessibility, theme=theme,
+    )
     dest = Path(out) if out else svg_example_path(__file__, "parallel-sets")
     return write_svg(dest, svg, theme=theme)
 

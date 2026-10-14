@@ -617,6 +617,8 @@ def _emit_box(
 
 def build_svg(
     nodes: Optional[List[Node]] = None,
+    title: Optional[str] = None,
+    subtitle: Optional[str] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -708,6 +710,13 @@ def build_svg(
             f"headcount; team cards below print their own size."
             + (f" {largest_name}, at {largest_pct}% of the company, is the largest division." if largest_div else "")
         )
+    # Composed from the rows by default -- the largest division is a fact
+    # about this org, not a sentence to carry between orgs -- and replaced
+    # whole when a caller has something better to say.
+    if title is not None:
+        title_txt = title
+    if subtitle is not None:
+        subtitle_txt = subtitle
     parts.append(svg_open(WIDTH, HEIGHT, "org-title", "org-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="org-title">{escape(title_txt)}</title>')
     parts.append(f'<desc id="org-desc">{escape(desc_txt)}</desc>')
@@ -859,7 +868,8 @@ def make_org_chart(
     data: Optional[List[Dict[str, Any]]] = None,
     *,
     out: Optional[Path | str] = None,
-    title: str = "",
+    title: Optional[str] = None,
+    subtitle: Optional[str] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -875,9 +885,11 @@ def make_org_chart(
     data : list[dict[str, Any]] or None
         Rows shaped ``{"id", "role", "headcount", "parent"}``, root first
         (``parent`` is ``None`` for the root). Defaults to :data:`DEMO_DATA`.
-        See :func:`build_svg` for how a custom hierarchy is coloured and
-        titled. ``title`` is accepted for signature parity with the rest of
-        the gallery and is currently a documented no-op.
+        See :func:`build_svg` for how a custom hierarchy is coloured.
+    title, subtitle : str or None, optional
+        The two lines of chrome. ``None`` composes them from the rows --
+        which division carries the largest share, and what share that is --
+        and the title is also the figure's accessible name.
     out : Path, str, or None
         Output path. Defaults to ``assets/svg-examples/org-chart.svg``.
     mode, accessibility : str
@@ -890,13 +902,15 @@ def make_org_chart(
     Path
         Absolute path to the written SVG file.
     """
-    _ = title
     rows = data if data else DEMO_DATA
     nodes: List[Node] = [
         (str(r["id"]), str(r["role"]), int(r["headcount"]), r.get("parent"))
         for r in rows
     ]
-    svg = build_svg(nodes, mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(
+        nodes, title=title, subtitle=subtitle,
+        mode=mode, accessibility=accessibility, theme=theme,
+    )
     dest = Path(out) if out else svg_example_path(__file__, "org-chart")
     return write_svg(dest, svg, theme=theme)
 

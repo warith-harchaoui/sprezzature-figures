@@ -359,6 +359,8 @@ def make_data(data: Optional[List[Dict[str, Any]]] = None) -> Dict[str, Any]:
 
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
+    title: str = "Gradient boosting flags fraud far more precisely",
+    subtitle: Optional[str] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -463,8 +465,10 @@ def build_svg(
     # --- SVG root + accessible description ------------------------
     parts.append(svg_open(width, height, "pr-title", "pr-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(
-        '<title id="pr-title">Gradient boosting flags fraud far more precisely '
-        'than the logistic baseline</title>'
+        # The accessible name is the headline a sighted reader sees: when
+        # the two disagree, a screen-reader user is told about a different
+        # figure.
+        f'<title id="pr-title">{xml_escape(title)}</title>'
     )
     parts.append(
         f'<desc id="pr-desc">Precision-recall curves for two fraud-detection '
@@ -531,12 +535,15 @@ def build_svg(
     # --- title + subtitle (the takeaway) -------------------------
     parts.append(
         f'<text x="{m_left}" y="96" font-size="44" font-weight="700" '
-        f'fill="{ink}">Gradient boosting flags fraud far more precisely</text>'
+        f'fill="{ink}">{xml_escape(title)}</text>'
+    )
+    said = subtitle if subtitle is not None else (
+        f"Precision vs recall as the threshold varies \u2014 AP "
+        f"{strong_ap:.2f} vs {weak_ap:.2f}"
     )
     parts.append(
         f'<text x="{m_left}" y="148" font-size="25" fill="{secondary}">'
-        f'Precision vs recall as the threshold varies — AP '
-        f'{strong_ap:.2f} vs {weak_ap:.2f}</text>'
+        f'{xml_escape(said)}</text>'
     )
 
     # --- gridlines (very light) ----------------------------------
@@ -854,7 +861,8 @@ def make_prcurve(
     data: Optional[List[Dict[str, Any]]] = None,
     *,
     out: Optional[Path | str] = None,
-    title: str = "",
+    title: str = "Gradient boosting flags fraud far more precisely",
+    subtitle: Optional[str] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -881,8 +889,10 @@ def make_prcurve(
     Path
         Absolute path to the written SVG file.
     """
-    _ = title
-    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(
+        data, title=title, subtitle=subtitle,
+        mode=mode, accessibility=accessibility, theme=theme,
+    )
     dest = Path(out) if out else svg_example_path(__file__, "prcurve")
     return write_svg(dest, svg, theme=theme)
 

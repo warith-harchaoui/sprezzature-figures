@@ -247,6 +247,11 @@ def _wrap(text: str, width: int) -> List[str]:
 # ------------------------------------------------------------------
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
+    title: str = "Sixty years of getting closer to Mars",
+    subtitle: str = (
+        "From a 21-frame flyby to a rover caching rock for the trip home, "
+        "each mission building on the last \u00b7 daggered dates are planned"
+    ),
     flown_legend_label: str = "Flown mission",
     mode: str = "self-contained",
     accessibility: str = "universal",
@@ -316,8 +321,10 @@ def build_svg(
     parts.append(svg_open(width, height, "tl-title", "tl-desc", font_family=chrome_stack_for_theme(theme)))
     n = len(milestones)
     parts.append(
-        '<title id="tl-title">Seven decades of Mars exploration as an '
-        'event timeline</title>'
+        # The accessible name is the headline a sighted reader sees: when
+        # the two disagree, a screen-reader user is told about a different
+        # figure.
+        f'<title id="tl-title">{xml_escape(title)}</title>'
     )
     parts.append(
         f'<desc id="tl-desc">A horizontal timeline of {n} Mars-mission '
@@ -383,13 +390,11 @@ def build_svg(
     # --- title + subtitle (the takeaway) -------------------------
     parts.append(
         f'<text x="{m_left}" y="74" font-size="40" font-weight="700" '
-        f'fill="{ink}">Sixty years of getting closer to Mars</text>'
+        f'fill="{ink}">{xml_escape(title)}</text>'
     )
     parts.append(
         f'<text x="{m_left}" y="112" font-size="21" fill="{secondary}">'
-        f'From a 21-frame flyby to a rover caching rock for the trip home, '
-        f'each mission building on the last &#183; daggered dates are '
-        f'planned</text>'
+        f'{xml_escape(subtitle)}</text>'
     )
 
     # --- era bands (hugging the spine) ---------------------------
@@ -756,7 +761,11 @@ def make_timeline(
     data: Optional[List[Dict[str, Any]]] = None,
     *,
     out: Optional[Path | str] = None,
-    title: str = "",
+    title: str = "Sixty years of getting closer to Mars",
+    subtitle: str = (
+        "From a 21-frame flyby to a rover caching rock for the trip home, "
+        "each mission building on the last \u00b7 daggered dates are planned"
+    ),
     flown_legend_label: str = "Flown mission",
     mode: str = "self-contained",
     accessibility: str = "universal",
@@ -786,8 +795,8 @@ def make_timeline(
     Path
         Absolute path to the written SVG file.
     """
-    del title
-    svg = build_svg(data, flown_legend_label=flown_legend_label,
+    svg = build_svg(data, title=title, subtitle=subtitle,
+                     flown_legend_label=flown_legend_label,
                      mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "timeline")
     return write_svg(dest, svg, theme=theme)

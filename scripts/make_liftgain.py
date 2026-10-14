@@ -194,6 +194,11 @@ def make_data(n: int = 4000, base_rate: float = 0.18, seed: int = 11) -> Dict[st
 
 def build_svg(
     curve: "List[Dict[str, Any]] | None" = None,
+    title: "str | None" = None,
+    subtitle: str = (
+        "Cumulative-gain curve: churners reached vs share of the "
+        "model-ranked base contacted"
+    ),
     model_label: str = "Model",
     perfect_model_label: str = "Perfect model",
     random_baseline_label: str = "Random baseline",
@@ -304,10 +309,19 @@ def build_svg(
 
     # --- SVG root + accessible description ------------------------
     op_pct = round(op["gain"] * 100)
+    # Composed from the operating point by default -- "the riskiest 20%
+    # reaches 68%" is a fact about this model, not a sentence to carry
+    # between models -- and replaced whole when a caller has one.
+    said_title = title if title is not None else (
+        f"Calling the riskiest {round(op['pop'] * 100)}% reaches "
+        f"{op_pct}% of churners"
+    )
     parts.append(svg_open(width, height, "lg-title", "lg-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(
-        '<title id="lg-title">A churn model reaches most churners from a '
-        'small fraction of the ranked list</title>'
+        # The accessible name is the headline a sighted reader sees: when
+        # the two disagree, a screen-reader user is told about a different
+        # figure.
+        f'<title id="lg-title">{xml_escape(said_title)}</title>'
     )
     parts.append(
         f'<desc id="lg-desc">Cumulative-gain chart for a churn-prevention '
@@ -368,13 +382,11 @@ def build_svg(
     # --- title + subtitle (the takeaway) -------------------------
     parts.append(
         f'<text x="{m_left}" y="80" font-size="42" font-weight="700" '
-        f'fill="{ink}">Calling the riskiest {round(op["pop"] * 100)}% '
-        f'reaches {op_pct}% of churners</text>'
+        f'fill="{ink}">{xml_escape(said_title)}</text>'
     )
     parts.append(
         f'<text x="{m_left}" y="124" font-size="24" fill="{secondary}">'
-        f'Cumulative-gain curve: churners reached vs share of the '
-        f'model-ranked base contacted</text>'
+        f'{xml_escape(subtitle)}</text>'
     )
 
     # --- gridlines (very light, on the shared 0..1 grid) ---------
@@ -587,7 +599,11 @@ def make_liftgain(
     data: "List[Dict[str, Any]] | None" = None,
     *,
     out: "Path | str | None" = None,
-    title: str = "",
+    title: "str | None" = None,
+    subtitle: str = (
+        "Cumulative-gain curve: churners reached vs share of the "
+        "model-ranked base contacted"
+    ),
     model_label: str = "Model",
     perfect_model_label: str = "Perfect model",
     random_baseline_label: str = "Random baseline",
@@ -619,10 +635,11 @@ def make_liftgain(
     Path
         Absolute path to the written SVG file.
     """
-    _ = title
     rows = data if data else DEMO_DATA
     svg = build_svg(
         rows,
+        title=title,
+        subtitle=subtitle,
         model_label=model_label,
         perfect_model_label=perfect_model_label,
         random_baseline_label=random_baseline_label,

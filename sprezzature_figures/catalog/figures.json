@@ -340,9 +340,21 @@
     "options_schema": {
       "title": {
         "type": "str",
-        "default": "",
+        "default": "Where new sign-ups end up after 90 days",
         "choices": [],
-        "description": "Accepted for CLI/dispatcher parity; the figure's title and takeaway subtitle are derived from the data's structure and stay fixed."
+        "description": "The headline, the takeaway under it, and the line of provenance under that. Forwarded to build_svg."
+      },
+      "subtitle": {
+        "type": "str",
+        "default": "Referral drives the most retention; free-trial users churn far more than paying ones",
+        "choices": [],
+        "description": "The headline, the takeaway under it, and the line of provenance under that. Forwarded to build_svg."
+      },
+      "note": {
+        "type": "str",
+        "default": "Illustrative cohort of 1,000 sign-ups \u00b7 ribbon width = number of users on that path",
+        "choices": [],
+        "description": "The headline, the takeaway under it, and the line of provenance under that. Forwarded to build_svg."
       },
       "mode": {
         "type": "str",
@@ -1393,9 +1405,15 @@
     "options_schema": {
       "title": {
         "type": "str",
-        "default": "",
+        "default": "Riverbend: incidents cluster on the downtown core",
         "choices": [],
         "description": "Headline above the figure. Omitted, the figure keeps its own."
+      },
+      "subtitle": {
+        "type": "str",
+        "default": "Night-time incidents (10 PM-4 AM) per 400 m grid cell across Riverbend",
+        "choices": [],
+        "description": "The line under the title, for the caveat a headline cannot carry."
       },
       "mode": {
         "type": "str",
@@ -3748,9 +3766,15 @@
     "options_schema": {
       "title": {
         "type": "str",
-        "default": "",
+        "default": "Growth went one way, carbon the other",
         "choices": [],
-        "description": "Accepted for CLI/dispatcher parity; this figure's title narrates the decoupling trend and stays fixed."
+        "description": "The headline, which is also the figure's accessible name."
+      },
+      "subtitle": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "The line under it. None composes it from the rows: the span of years, and how far each of the two measures moved."
       },
       "start_label": {
         "type": "str",
@@ -5812,9 +5836,15 @@
     "options_schema": {
       "title": {
         "type": "str",
-        "default": "",
+        "default": null,
         "choices": [],
-        "description": "Accepted for dispatcher/CLI parity; unused, since the chart's title is derived from the data (or the abstention state)."
+        "description": "The two lines of chrome, and the title is also the figure's accessible name. None derives them from the curve, or from the abstention state when no elbow is reported."
+      },
+      "subtitle": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "The two lines of chrome, and the title is also the figure's accessible name. None derives them from the curve, or from the abstention state when no elbow is reported."
       },
       "mode": {
         "type": "str",
@@ -7386,9 +7416,15 @@
     "options_schema": {
       "title": {
         "type": "str",
-        "default": "",
+        "default": null,
         "choices": [],
-        "description": "Unused (the figure's headline is fixed prose linking to the Rosling talk); accepted for dispatcher parity."
+        "description": "The two lines of chrome, and the title is also the figure's accessible name. None keeps the tribute's own headline, which links to Rosling's talk; a caller's title replaces it, anchor and all, because their sentence is not a link to somebody else's video."
+      },
+      "subtitle": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "The two lines of chrome, and the title is also the figure's accessible name. None keeps the tribute's own headline, which links to Rosling's talk; a caller's title replaces it, anchor and all, because their sentence is not a link to somebody else's video."
       },
       "lang": {
         "type": "str",
@@ -7510,9 +7546,15 @@
     "options_schema": {
       "title": {
         "type": "str",
-        "default": "",
+        "default": null,
         "choices": [],
         "description": "Unused (each variant's headline is fixed prose); accepted for dispatcher parity."
+      },
+      "subtitle": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "The line under the title, for the caveat a headline cannot carry."
       },
       "variant": {
         "type": "str",
@@ -8088,9 +8130,15 @@
     "options_schema": {
       "title": {
         "type": "str",
-        "default": "",
+        "default": "The Earth\u2019s earthquakes draw a Ring of Fire",
         "choices": [],
         "description": "Headline above the figure. Omitted, the figure keeps its own."
+      },
+      "subtitle": {
+        "type": "str",
+        "default": "Large quakes (magnitude 5.5+) binned into hexagons \u00b7 the deep-red cells trace the Pacific rim\u2019s subduction zones",
+        "choices": [],
+        "description": "The line under the title, for the caveat a headline cannot carry."
       },
       "mode": {
         "type": "str",
@@ -8860,9 +8908,15 @@
     "options_schema": {
       "title": {
         "type": "str",
-        "default": "",
+        "default": "Who talks over whom",
         "choices": [],
         "description": "Headline above the figure. Omitted, the figure keeps its own."
+      },
+      "subtitle": {
+        "type": "str",
+        "default": "Column interrupts \u00b7 row gets interrupted \u00b7 cell counts the interruptions",
+        "choices": [],
+        "description": "The line under the title, for the caveat a headline cannot carry."
       },
       "row_total_label": {
         "type": "str",
@@ -9421,9 +9475,15 @@
     "options_schema": {
       "title": {
         "type": "str",
-        "default": "",
+        "default": null,
         "choices": [],
         "description": "Headline above the figure. Omitted, the figure keeps its own."
+      },
+      "subtitle": {
+        "type": "str",
+        "default": "Cumulative-gain curve: churners reached vs share of the model-ranked base contacted",
+        "choices": [],
+        "description": "The line under the title, for the caveat a headline cannot carry."
       },
       "model_label": {
         "type": "str",
@@ -11278,9 +11338,15 @@
     "options_schema": {
       "title": {
         "type": "str",
-        "default": "",
+        "default": null,
         "choices": [],
-        "description": "Headline above the figure. Omitted, the figure keeps its own."
+        "description": "The two lines of chrome. None composes them from the rows -- which division carries the largest share, and what share that is -- and the title is also the figure's accessible name."
+      },
+      "subtitle": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "The two lines of chrome. None composes them from the rows -- which division carries the largest share, and what share that is -- and the title is also the figure's accessible name."
       },
       "mode": {
         "type": "str",
@@ -11481,7 +11547,7 @@
     "options_schema": {
       "title": {
         "type": "str",
-        "default": "",
+        "default": "Three battery chemistries, three clean clusters",
         "choices": [],
         "description": "Headline above the figure. Omitted, the figure keeps its own."
       },
@@ -11597,9 +11663,15 @@
     "options_schema": {
       "title": {
         "type": "str",
-        "default": "",
+        "default": "Who survived the Titanic",
         "choices": [],
         "description": "Headline above the figure. Omitted, the figure keeps its own."
+      },
+      "subtitle": {
+        "type": "str",
+        "default": "Sex and age decided far more than the fare: women and children lived, third-class men did not",
+        "choices": [],
+        "description": "The line under the title, for the caveat a headline cannot carry."
       },
       "mode": {
         "type": "str",
@@ -12364,9 +12436,15 @@
     "options_schema": {
       "title": {
         "type": "str",
-        "default": "",
+        "default": "Copenhagen bikes; Los Angeles drives",
         "choices": [],
         "description": "Accepted for signature parity with the other generators; this figure's headline is baked into the row narrative (unused)."
+      },
+      "subtitle": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "The line under the title, for the caveat a headline cannot carry."
       },
       "mode": {
         "type": "str",
@@ -12927,9 +13005,15 @@
     "options_schema": {
       "title": {
         "type": "str",
-        "default": "",
+        "default": "Session times aren\u2019t Normal",
         "choices": [],
         "description": "Accepted for signature parity; the figure's headline is baked into the diagnostic narrative (unused)."
+      },
+      "subtitle": {
+        "type": "str",
+        "default": "Empirical vs fitted-Normal CDF \u2014 the arc off the 45\u00b0 line flags the skew",
+        "choices": [],
+        "description": "The line under the title, for the caveat a headline cannot carry."
       },
       "above_annotation": {
         "type": "str",
@@ -13038,9 +13122,15 @@
     "options_schema": {
       "title": {
         "type": "str",
-        "default": "",
+        "default": "Gradient boosting flags fraud far more precisely",
         "choices": [],
         "description": "Accepted for signature parity; the figure's headline is baked into the diagnostic narrative (unused)."
+      },
+      "subtitle": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "The line under the title, for the caveat a headline cannot carry."
       },
       "mode": {
         "type": "str",
@@ -17867,9 +17957,15 @@
     "options_schema": {
       "title": {
         "type": "str",
-        "default": "",
+        "default": "Three soil textures, three corners of the triangle",
         "choices": [],
         "description": "Accepted for dispatcher parity; the plot's own headline states the specific takeaway, so this is unused."
+      },
+      "subtitle": {
+        "type": "str",
+        "default": "Topsoil samples by grain-size mix \u00b7 sand + silt + clay = 100 %",
+        "choices": [],
+        "description": "The line under the title, for the caveat a headline cannot carry."
       },
       "legend_title": {
         "type": "str",
@@ -17990,9 +18086,15 @@
     "options_schema": {
       "title": {
         "type": "str",
-        "default": "",
+        "default": "Sixty years of getting closer to Mars",
         "choices": [],
         "description": "Accepted for dispatcher parity; the timeline's own headline states the specific takeaway, so this is unused."
+      },
+      "subtitle": {
+        "type": "str",
+        "default": "From a 21-frame flyby to a rover caching rock for the trip home, each mission building on the last \u00b7 daggered dates are planned",
+        "choices": [],
+        "description": "The line under the title, for the caveat a headline cannot carry."
       },
       "flown_legend_label": {
         "type": "str",

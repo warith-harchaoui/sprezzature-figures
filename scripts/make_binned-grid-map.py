@@ -487,6 +487,8 @@ def _scale_bar(x0: float, y0: float, cell_px: float, mono_family: str = "Roboto 
 # ------------------------------------------------------------------
 def build_svg(
     mode: str = "self-contained", accessibility: str = "universal", theme: str = "corporate",
+    title: str = "Riverbend: incidents cluster on the downtown core",
+    subtitle: str = "Night-time incidents (10 PM-4 AM) per 400 m grid cell across Riverbend",
     river_label: str = "River",
     park_label: str = "Central Park",
     legend_title: str = "Incidents per cell",
@@ -539,10 +541,9 @@ def build_svg(
     # ---- header ----
     parts: List[str] = []
     parts.append(svg_open(_WIDTH, _HEIGHT, "bg-title", "bg-desc", font_family=chrome_family))
-    parts.append(
-        '<title id="bg-title">Night-time incidents concentrate in the '
-        'downtown core of Riverbend</title>'
-    )
+    # The accessible name is the headline a sighted reader sees: when the
+    # two disagree, a screen-reader user is told about a different figure.
+    parts.append(f'<title id="bg-title">{_xml(title)}</title>')
     desc = (
         f"Square-binned density map of Riverbend. The "
         f"city is tiled with a regular grid of {n_cells} square cells, each "
@@ -600,13 +601,11 @@ def build_svg(
     # ---- title + subtitle ----
     parts.append(
         f'<text x="{_MAP_X0}" y="70" font-size="34" font-weight="700" '
-        f'fill="{_INK}">Riverbend: incidents cluster on the downtown '
-        f'core</text>'
+        f'fill="{_INK}">{_xml(title)}</text>'
     )
     parts.append(
         f'<text x="{_MAP_X0}" y="106" font-size="20" fill="{_SUBTLE}">'
-        f'Night-time incidents (10 PM-4 AM) per 400 m grid cell across '
-        f'Riverbend</text>'
+        f'{_xml(subtitle)}</text>'
     )
 
     # ---- land base + city boundary ----
@@ -771,7 +770,8 @@ def make_binned_grid_map(
     data: List[Dict[str, Any]] | None = None,
     *,
     out: Path | str | None = None,
-    title: str = "",
+    title: str = "Riverbend: incidents cluster on the downtown core",
+    subtitle: str = "Night-time incidents (10 PM-4 AM) per 400 m grid cell across Riverbend",
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -786,11 +786,16 @@ def make_binned_grid_map(
     ``data`` defaults to :data:`DEMO_DATA` (the hotspot mixture's row-record
     view), but the demo geography, city boundary/river/park layout, event
     sampling and cartographic furniture are baked into the hand-authored
-    SVG's fixed random seed, so ``data`` and ``title`` are accepted for
-    dispatcher parity and not threaded into the render. ``theme`` is
-    forwarded to :func:`build_svg`.
+    SVG's fixed random seed, so ``data`` is accepted for dispatcher parity
+    and not threaded into the render. ``title`` and ``subtitle`` are: they
+    are the two lines a caller most wants to own, and they also set the
+    figure's accessible name. ``theme`` is forwarded to :func:`build_svg`.
     """
-    svg = build_svg(mode=mode, accessibility=accessibility, theme=theme, river_label=river_label, park_label=park_label, legend_title=legend_title)
+    svg = build_svg(
+        mode=mode, accessibility=accessibility, theme=theme,
+        title=title, subtitle=subtitle, river_label=river_label,
+        park_label=park_label, legend_title=legend_title,
+    )
     dest = Path(out) if out else svg_example_path(__file__, "binned-grid-map")
     return write_svg(dest, svg, theme=theme)
 
