@@ -1,6 +1,6 @@
 # Figure Catalogue
 
-158 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type). `choropleth` and `situation_map` moved to their own repo, [sprezzature-maps](https://github.com/warith-harchaoui/sprezzature-maps).
+159 chart types, each mapping to a `make_<kind>.py` script under `scripts/`, plus the internal `figure` dispatcher row documented below (not itself a chart type). `choropleth` and `situation_map` moved to their own repo, [sprezzature-maps](https://github.com/warith-harchaoui/sprezzature-maps).
 
 Invoke via:
 
@@ -170,6 +170,7 @@ colour-vision-deficiency-safe Okabe-Ito palette); see
 | `sunburst` | make_sunburst.py | Hierarchy | Radial treemap: nested rings for hierarchical data. Use when two or three levels of hierarchy need to be read simultaneously (e.g., budget by department → team → line item). |
 | `surface3d` | make_surface3d.py | 3-D surface | Static isometric 3-D surface for z = f(x, y): depth-sorted mesh quads shaded by height with a height legend. Hand-authored SVG. |
 | `survival-km` | make_survival-km.py | Genomics / Statistics | Kaplan-Meier survival curve: step-down probability-of-survival estimate from possibly-censored durations, with a 95% confidence band and censoring tick marks. The core visual of clinical-trial and reliability-engineering reporting. |
+| `table` | make_table.py | Table | A table is a chart: the reader is being asked to compare quantities, and almost everything that makes one hard to read is a decision about how the digits sit. Numeric columns are **right-aligned in a tabular face**, which is the single change that makes a column scannable, and each settles on one precision read off its own spread — per cell instead, one row says 1.2 and the next 1.23456 and the column stops being a column. One column carries its bars behind the numbers, because a column of figures is a bar chart with the bars removed. The sort is named on the canvas. And a total is drawn only where a total means something: `sum_columns` lets the caller say, because adding eight NPS scores gives a number with no referent. |
 | `ternary` | make_ternary.py | Compositional | Ternary (triangular) plot for three components that sum to a constant. Use in chemistry, geology, or any three-part compositional analysis. |
 | `timeline` | make_timeline.py | Temporal | Gantt-style horizontal timeline of events or phases. Use for project schedules, historical chronologies, or clinical trial phases. |
 | `tree` | make_tree.py | Hierarchy | Top-down or left-right tree diagram for strict hierarchies. Simpler than a dendrogram when the tree structure itself (not distances) is the message. |

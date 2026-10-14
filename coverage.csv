@@ -137,7 +137,7 @@ antv,generate_treemap_chart,treemap,covered,
 antv,generate_venn_chart,venn,covered,
 antv,generate_violin_chart,violin,covered,
 antv,generate_word_cloud_chart,wordcloud,covered,
-antv,generate_spreadsheet,table,gap,
+antv,generate_spreadsheet,table,covered,
 antv,generate_district_map,,sibling,sprezzature-maps `choropleth`
 antv,generate_pin_map,,sibling,sprezzature-maps `situation_map`
 antv,generate_path_map,,sibling,sprezzature-maps `situation_map`
@@ -258,7 +258,7 @@ datawrapper,arrow plot,difference-chart,covered,
 datawrapper,donut / election donut,donut,covered,
 datawrapper,pie,pie,covered,
 datawrapper,multiple pies / small multiples,facet,covered,
-datawrapper,table,table,gap,
+datawrapper,table,table,covered,
 datawrapper,election hemicycle,parliament,covered,
 datawrapper,locator / choropleth / symbol map,,sibling,sprezzature-maps `choropleth` / `situation_map`
 rawgraphs,alluvial,alluvial,covered,

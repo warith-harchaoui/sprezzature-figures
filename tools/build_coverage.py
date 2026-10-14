@@ -238,7 +238,7 @@ MAPPING: dict[str, list[tuple[str, str, str, str]]] = {
         ("generate_venn_chart", "venn", "covered", ""),
         ("generate_violin_chart", "violin", "covered", ""),
         ("generate_word_cloud_chart", "wordcloud", "covered", ""),
-        ("generate_spreadsheet", "table", "gap", ""),
+        ("generate_spreadsheet", "table", "covered", ""),
         ("generate_district_map", "", "sibling", "sprezzature-maps `choropleth`"),
         ("generate_pin_map", "", "sibling", "sprezzature-maps `situation_map`"),
         ("generate_path_map", "", "sibling", "sprezzature-maps `situation_map`"),
@@ -371,7 +371,7 @@ MAPPING: dict[str, list[tuple[str, str, str, str]]] = {
         ("donut / election donut", "donut", "covered", ""),
         ("pie", "pie", "covered", ""),
         ("multiple pies / small multiples", "facet", "covered", ""),
-        ("table", "table", "gap", ""),
+        ("table", "table", "covered", ""),
         ("election hemicycle", "parliament", "covered", ""),
         (
             "locator / choropleth / symbol map",
