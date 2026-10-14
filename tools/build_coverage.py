@@ -139,7 +139,7 @@ MAPPING: dict[str, list[tuple[str, str, str, str]]] = {
         ("boxplot", "boxplot", "covered", ""),
         ("errorbar", "errorbar", "covered", ""),
         ("violinplot", "violin", "covered", ""),
-        ("eventplot", "eventplot", "gap", "spike raster: one tick per event, one row per series"),
+        ("eventplot", "eventplot", "covered", ""),
         ("hist2d", "hist2d", "covered", ""),
         ("hexbin", "hexbin", "covered", ""),
         ("pie", "pie", "covered", ""),

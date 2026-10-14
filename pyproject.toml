@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "sprezzature-figures"
 version = "2.5.0"
-description = "Publication-quality data figures for the sprezzature stack: 152 hand-authored, interactive SVG chart types plus explainability, causality, and diagram rendering, every one authored as SVG directly. Includes the Ralph Eyeball Loop for autonomous visual quality feedback."
+description = "Publication-quality data figures for the sprezzature stack: 153 hand-authored, interactive SVG chart types plus explainability, causality, and diagram rendering, every one authored as SVG directly. Includes the Ralph Eyeball Loop for autonomous visual quality feedback."
 readme = "README.md"
 requires-python = ">=3.10,<3.14"
 license = "BSD-3-Clause"
@@ -51,7 +51,7 @@ studio = [
     "os-helper>=1.8.0",
     "langdetect>=1.0.9",
 ]
-# Data-side support for the 152-kind catalogue, explainability and
+# Data-side support for the 153-kind catalogue, explainability and
 # causality. Nothing here draws: every figure is authored as SVG directly,
 # so this tier is tables, geometry and models only.
 dataviz = [
@@ -206,7 +206,7 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["B011"]
-# The 152 generators were written before this repo had a linter. Everything
+# The 153 generators were written before this repo had a linter. Everything
 # that catches a real mistake runs on them -- pyflakes, the bugbear checks,
 # ambiguous names, imports stranded mid-module. What is silenced here is
 # syntax modernisation and ordering: 3 117 `typing.Dict` -> `dict`, 464
@@ -220,5 +220,5 @@ ignore = [
 # parallel by construction and say `strict=True`, so a length mismatch raises
 # instead of silently dropping the tail and drawing a chart that looks right.
 # 14 are sliding pairs (`zip(xs, xs[1:])`) where the short end is the point
-# and say `strict=False`. The 152 figures all still render.
+# and say `strict=False`. The 153 figures all still render.
 "scripts/*" = ["UP", "I001", "C4", "SIM", "W"]

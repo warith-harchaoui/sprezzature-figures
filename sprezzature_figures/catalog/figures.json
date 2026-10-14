@@ -6147,6 +6147,171 @@
     ]
   },
   {
+    "kind": "eventplot",
+    "label": "Eventplot",
+    "aliases": [],
+    "category": "Signal",
+    "description": "A raster: one tick per event at the moment it happened, one row per thing it happened to. No binning, no smoothing \u2014 the individual events are the data. The usual version stacks rows in whatever order they arrived, which hides the only structure worth stacking for; `order` sorts and the chrome says how, because \u00abthe top row fires first\u00bb means nothing until you know what the rows were sorted by. It marks the moment the raster is read against \u2014 a stimulus, a deploy \u2014 and **computes the bursts** rather than leaving them to the eye. Sorted by first *burst* after that moment, not first event: a chatty row fires soon after any moment and would otherwise sort among the ones that actually responded.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "svg",
+    "module": "scripts/make_eventplot.py",
+    "callable_name": "make_eventplot",
+    "required_roles": [
+      {
+        "name": "service",
+        "label": "What the event happened to",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "minute",
+        "label": "When it happened",
+        "accepted_types": [
+          "numeric",
+          "datetime"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 960,
+    "default_height": 580,
+    "options_schema": {
+      "title": {
+        "type": "str",
+        "default": "Three services start failing within seven minutes of the deploy",
+        "choices": [],
+        "description": "Chart text."
+      },
+      "subtitle": {
+        "type": "str",
+        "default": "One tick per error, one row per service, sorted by how soon each row burst after the marked moment.",
+        "choices": [],
+        "description": "Chart text."
+      },
+      "width": {
+        "type": "int",
+        "default": 960,
+        "choices": [],
+        "description": "Canvas size in pixels."
+      },
+      "height": {
+        "type": "int",
+        "default": 580,
+        "choices": [],
+        "description": "Canvas size in pixels."
+      },
+      "row": {
+        "type": "str",
+        "default": "service",
+        "choices": [],
+        "description": "Row keys for what the event happened to, and when."
+      },
+      "at": {
+        "type": "str",
+        "default": "minute",
+        "choices": [],
+        "description": "Row keys for what the event happened to, and when."
+      },
+      "order": {
+        "type": "str",
+        "default": "first-after-onset",
+        "choices": [
+          "given",
+          "first",
+          "count",
+          "first-after-onset"
+        ],
+        "description": "\"given\", \"first\", \"count\" or \"first-after-onset\"."
+      },
+      "onset": {
+        "type": "float",
+        "default": 305.0,
+        "choices": [],
+        "description": "The moment the raster is read against."
+      },
+      "onset_label": {
+        "type": "str",
+        "default": "deploy",
+        "choices": [],
+        "description": "Caption on the onset rule."
+      },
+      "burst_within": {
+        "type": "float",
+        "default": 2.0,
+        "choices": [],
+        "description": "Events closer together than this count as a burst."
+      },
+      "burst_of": {
+        "type": "int",
+        "default": 4,
+        "choices": [],
+        "description": "How many close events make a burst worth marking."
+      },
+      "x_label": {
+        "type": "str",
+        "default": "Minutes since midnight",
+        "choices": [],
+        "description": "Axis title."
+      },
+      "order_note": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "The line saying how the rows are sorted, and the sentence naming what responded; None composes each from the data."
+      },
+      "finding": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "The line saying how the rows are sorted, and the sentence naming what responded; None composes each from the data."
+      },
+      "mode": {
+        "type": "str",
+        "default": "self-contained",
+        "choices": [
+          "self-contained",
+          "external",
+          "static"
+        ],
+        "description": "How the SVG carries its interactivity: self-contained ships its own script, external expects the page to supply one, static leaves it out."
+      },
+      "accessibility": {
+        "type": "str",
+        "default": "universal",
+        "choices": [
+          "universal",
+          "high-contrast",
+          "monochrome",
+          "deuteranopia",
+          "protanopia",
+          "tritanopia"
+        ],
+        "description": "Palette accessibility level; universal is the colour-vision-safe default."
+      },
+      "theme": {
+        "type": "str",
+        "default": "corporate",
+        "choices": [
+          "corporate",
+          "academic"
+        ],
+        "description": "Visual theme. Forwarded to build_svg."
+      }
+    },
+    "warnings": []
+  },
+  {
     "kind": "facet",
     "label": "Facet",
     "aliases": [],
