@@ -12897,6 +12897,189 @@
     ]
   },
   {
+    "kind": "progress",
+    "label": "Progress",
+    "aliases": [],
+    "category": "KPI",
+    "description": "One bar per goal, filled to what has been achieved, with a rule where it **should** stand if the period were used evenly. That rule is the whole point: a bar at 60% is good news in month eleven and bad news in month two, and a progress bar without it cannot tell you which. The gap to pace is given in points. Overshoot runs past the target rather than clipping at 100%, because a goal at 130% is not the same as one that just landed. Goals are ordered by how far behind pace they are, so the row that needs attention is the first. And a `paced` flag marks goals that *accumulate*: a rate like uptime does not, three quarters of the year is not three quarters of the target, and a rule there would invent a schedule.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "svg",
+    "module": "scripts/make_progress.py",
+    "callable_name": "make_progress",
+    "required_roles": [
+      {
+        "name": "goal",
+        "label": "Goal",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "done",
+        "label": "Achieved so far",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "target",
+        "label": "Target",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [
+      {
+        "name": "paced",
+        "label": "Whether the goal accumulates",
+        "accepted_types": [
+          "numeric",
+          "categorical"
+        ],
+        "required": false
+      }
+    ],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 940,
+    "default_height": 560,
+    "options_schema": {
+      "title": {
+        "type": "str",
+        "default": "Two of the four scheduled goals are behind, the docs by a third of the year",
+        "choices": [],
+        "description": "Chart text."
+      },
+      "subtitle": {
+        "type": "str",
+        "default": "Each bar is progress toward its target, with a rule where the goal should stand nine months into twelve.",
+        "choices": [],
+        "description": "Chart text."
+      },
+      "width": {
+        "type": "int",
+        "default": 940,
+        "choices": [],
+        "description": "Canvas size in pixels."
+      },
+      "height": {
+        "type": "int",
+        "default": 560,
+        "choices": [],
+        "description": "Canvas size in pixels."
+      },
+      "label": {
+        "type": "str",
+        "default": "goal",
+        "choices": [],
+        "description": "Row keys for the goal's name, what has been achieved, and the target."
+      },
+      "done": {
+        "type": "str",
+        "default": "done",
+        "choices": [],
+        "description": "Row keys for the goal's name, what has been achieved, and the target."
+      },
+      "target": {
+        "type": "str",
+        "default": "target",
+        "choices": [],
+        "description": "Row keys for the goal's name, what has been achieved, and the target."
+      },
+      "paced": {
+        "type": "str",
+        "default": "paced",
+        "choices": [],
+        "description": "Row key for whether the goal accumulates over the period."
+      },
+      "elapsed": {
+        "type": "float",
+        "default": 0.75,
+        "choices": [],
+        "description": "How much of the period has gone, from 0 to 1."
+      },
+      "sort_by_lag": {
+        "type": "bool",
+        "default": true,
+        "choices": [],
+        "description": "Order the goals by how far behind pace they are."
+      },
+      "pace_label": {
+        "type": "str",
+        "default": "expected by now",
+        "choices": [],
+        "description": "Caption on the pace rule."
+      },
+      "behind_label": {
+        "type": "str",
+        "default": "behind",
+        "choices": [],
+        "description": "Words for a goal short of pace and past it."
+      },
+      "ahead_label": {
+        "type": "str",
+        "default": "ahead",
+        "choices": [],
+        "description": "Words for a goal short of pace and past it."
+      },
+      "pace_note": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "The line stating the period and the pace, and the sentence naming what is behind; None composes each from the data."
+      },
+      "finding": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "The line stating the period and the pace, and the sentence naming what is behind; None composes each from the data."
+      },
+      "mode": {
+        "type": "str",
+        "default": "self-contained",
+        "choices": [
+          "self-contained",
+          "external",
+          "static"
+        ],
+        "description": "How the SVG carries its interactivity: self-contained ships its own script, external expects the page to supply one, static leaves it out."
+      },
+      "accessibility": {
+        "type": "str",
+        "default": "universal",
+        "choices": [
+          "universal",
+          "high-contrast",
+          "monochrome",
+          "deuteranopia",
+          "protanopia",
+          "tritanopia"
+        ],
+        "description": "Palette accessibility level; universal is the colour-vision-safe default."
+      },
+      "theme": {
+        "type": "str",
+        "default": "corporate",
+        "choices": [
+          "corporate",
+          "academic"
+        ],
+        "description": "Visual theme. Forwarded to build_svg."
+      }
+    },
+    "warnings": []
+  },
+  {
     "kind": "qqplot",
     "label": "Qqplot",
     "aliases": [],

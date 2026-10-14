@@ -456,6 +456,20 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
         ],
         "optional_roles": [],
     },
+    "progress": {
+        "required_roles": [
+            {"name": "goal", "label": "Goal",
+             "accepted_types": ["categorical"], "required": True},
+            {"name": "done", "label": "Achieved so far",
+             "accepted_types": ["numeric"], "required": True},
+            {"name": "target", "label": "Target",
+             "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [
+            {"name": "paced", "label": "Whether the goal accumulates",
+             "accepted_types": ["numeric", "categorical"], "required": False},
+        ],
+    },
     "acf": {
         "required_roles": [
             {

@@ -211,7 +211,7 @@ MAPPING: dict[str, list[tuple[str, str, str, str]]] = {
         ("ohlc", "ohlc", "covered", ""),
         ("sparkline", "sparkline", "covered", ""),
         ("sankey", "sankey", "covered", ""),
-        ("progressBar", "progress", "gap", ""),
+        ("progressBar", "progress", "covered", ""),
         ("mixed (bar + line)", "dual-axis", "covered", ""),
         ("QR code", "", "not-a-figure", "not a chart"),
     ],

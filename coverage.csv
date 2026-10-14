@@ -112,7 +112,7 @@ quickchart,candlestick,candlestick,covered,
 quickchart,ohlc,ohlc,covered,
 quickchart,sparkline,sparkline,covered,
 quickchart,sankey,sankey,covered,
-quickchart,progressBar,progress,gap,
+quickchart,progressBar,progress,covered,
 quickchart,mixed (bar + line),dual-axis,covered,
 quickchart,QR code,,not-a-figure,not a chart
 antv,generate_area_chart,area,covered,
