@@ -29,6 +29,16 @@ from sprezzature_figures.catalog import get_figure_definition, list_kinds
 #: Pairs that look alike from the outside and are not, with why. Each entry
 #: is a promise a reader can check against the two figures.
 DISTINCT_PAIRS: dict[tuple[str, ...], str] = {
+    ("candlestick", "ohlc"): (
+        "The same four prices drawn two ways, and the difference is what "
+        "survives. A candlestick fills the body between open and close, so "
+        "direction is an area and reads instantly -- in colour. An OHLC bar "
+        "ticks the open to the left and the close to the right, so direction "
+        "is a *position* and survives a monochrome print and a red-green "
+        "reader. Candlestick when the chart is screen-first and the reader "
+        "wants the sweep; OHLC when it has to hold up in print, or when the "
+        "bodies would crowd into a solid block at the density on hand."
+    ),
     ("beeswarm", "strip"): (
         "A strip plot jitters points at random; a beeswarm packs them so none "
         "overlap, which costs the exact position and buys an honest count. Reach "

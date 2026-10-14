@@ -10174,6 +10174,191 @@
     ]
   },
   {
+    "kind": "ohlc",
+    "label": "Ohlc",
+    "aliases": [],
+    "category": "Finance",
+    "description": "One vertical bar per session from low to high, with the open ticked left and the close ticked right \u2014 the older sibling of `candlestick`, and the one that survives a monochrome print, because direction is carried by **which side the tick is on** and not by colour alone. The usual version draws the range and never measures it: the widest session is named here with its range as a multiple of the median one. And it says what its axis counts \u2014 one bar per *session*, not per day \u2014 and how much calendar that closes up, because markets shut and a reader has to know whether the spacing they see is time or turns.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "svg",
+    "module": "scripts/make_ohlc.py",
+    "callable_name": "make_ohlc",
+    "required_roles": [
+      {
+        "name": "day",
+        "label": "Session",
+        "accepted_types": [
+          "datetime",
+          "categorical",
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "open",
+        "label": "Opening price",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "high",
+        "label": "Highest price",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "low",
+        "label": "Lowest price",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "close",
+        "label": "Closing price",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 960,
+    "default_height": 600,
+    "options_schema": {
+      "title": {
+        "type": "str",
+        "default": "One session ran nearly four times the usual range; the axis hides nine weekends",
+        "choices": [],
+        "description": "Chart text."
+      },
+      "subtitle": {
+        "type": "str",
+        "default": "Each bar spans the session's low to high, with the open ticked left and the close ticked right.",
+        "choices": [],
+        "description": "Chart text."
+      },
+      "width": {
+        "type": "int",
+        "default": 960,
+        "choices": [],
+        "description": "Canvas size in pixels."
+      },
+      "height": {
+        "type": "int",
+        "default": 600,
+        "choices": [],
+        "description": "Canvas size in pixels."
+      },
+      "x": {
+        "type": "str",
+        "default": "day",
+        "choices": [],
+        "description": "Row key for the session label."
+      },
+      "open_key": {
+        "type": "str",
+        "default": "open",
+        "choices": [],
+        "description": "Row keys for the four prices."
+      },
+      "high_key": {
+        "type": "str",
+        "default": "high",
+        "choices": [],
+        "description": "Row keys for the four prices."
+      },
+      "low_key": {
+        "type": "str",
+        "default": "low",
+        "choices": [],
+        "description": "Row keys for the four prices."
+      },
+      "close_key": {
+        "type": "str",
+        "default": "close",
+        "choices": [],
+        "description": "Row keys for the four prices."
+      },
+      "tick_width": {
+        "type": "float",
+        "default": 5.0,
+        "choices": [],
+        "description": "How far the open and close ticks reach from the bar, in pixels."
+      },
+      "x_label": {
+        "type": "str",
+        "default": "Session",
+        "choices": [],
+        "description": "Axis titles."
+      },
+      "y_label": {
+        "type": "str",
+        "default": "Price",
+        "choices": [],
+        "description": "Axis titles."
+      },
+      "axis_note": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "The line saying what the axis counts, and the sentence naming the widest session; None composes each from the data."
+      },
+      "finding": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "The line saying what the axis counts, and the sentence naming the widest session; None composes each from the data."
+      },
+      "mode": {
+        "type": "str",
+        "default": "self-contained",
+        "choices": [
+          "self-contained",
+          "external",
+          "static"
+        ],
+        "description": "How the SVG carries its interactivity: self-contained ships its own script, external expects the page to supply one, static leaves it out."
+      },
+      "accessibility": {
+        "type": "str",
+        "default": "universal",
+        "choices": [
+          "universal",
+          "high-contrast",
+          "monochrome",
+          "deuteranopia",
+          "protanopia",
+          "tritanopia"
+        ],
+        "description": "Palette accessibility level; universal is the colour-vision-safe default."
+      },
+      "theme": {
+        "type": "str",
+        "default": "corporate",
+        "choices": [
+          "corporate",
+          "academic"
+        ],
+        "description": "Visual theme. Forwarded to build_svg."
+      }
+    },
+    "warnings": []
+  },
+  {
     "kind": "org-chart",
     "label": "Org Chart",
     "aliases": [

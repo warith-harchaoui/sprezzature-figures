@@ -308,6 +308,41 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
             },
         ],
     },
+    "ohlc": {
+        "required_roles": [
+            {
+                "name": "day",
+                "label": "Session",
+                "accepted_types": ["datetime", "categorical", "numeric"],
+                "required": True,
+            },
+            {
+                "name": "open",
+                "label": "Opening price",
+                "accepted_types": ["numeric"],
+                "required": True,
+            },
+            {
+                "name": "high",
+                "label": "Highest price",
+                "accepted_types": ["numeric"],
+                "required": True,
+            },
+            {
+                "name": "low",
+                "label": "Lowest price",
+                "accepted_types": ["numeric"],
+                "required": True,
+            },
+            {
+                "name": "close",
+                "label": "Closing price",
+                "accepted_types": ["numeric"],
+                "required": True,
+            },
+        ],
+        "optional_roles": [],
+    },
     "acf": {
         "required_roles": [
             {

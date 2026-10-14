@@ -75,7 +75,7 @@ else:
             # Wrapped after "chart types" on purpose: a number left at the
             # end of a fragment is invisible to the guards that keep it true.
             "data-role requirements and the options it accepts, render one of "
-            "149 chart types from JSON rows, or redraw a chart from a picture of it."
+            "150 chart types from JSON rows, or redraw a chart from a picture of it."
         ),
     )
     # Attach the MCP endpoint to the FastAPI app. Newer fastapi-mcp releases
