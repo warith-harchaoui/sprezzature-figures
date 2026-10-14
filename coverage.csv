@@ -44,7 +44,7 @@ matplotlib,hist,histogram,covered,
 matplotlib,boxplot,boxplot,covered,
 matplotlib,errorbar,errorbar,covered,
 matplotlib,violinplot,violin,covered,
-matplotlib,eventplot,eventplot,gap,"spike raster: one tick per event, one row per series"
+matplotlib,eventplot,eventplot,covered,
 matplotlib,hist2d,hist2d,covered,
 matplotlib,hexbin,hexbin,covered,
 matplotlib,pie,pie,covered,

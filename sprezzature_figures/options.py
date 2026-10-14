@@ -111,6 +111,8 @@ OPTION_CHOICES: dict[str, tuple[str, ...]] = {
     # stem: where the stalks are rooted. A closed set, and the figure
     # raises on anything else.
     "baseline": ("zero", "mean", "given"),
+    # eventplot: how the rows of the raster are stacked.
+    "order": ("given", "first", "count", "first-after-onset"),
 }
 
 #: House meaning of the keywords many generators share. A generator

@@ -383,6 +383,23 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
         ],
         "optional_roles": [],
     },
+    "eventplot": {
+        "required_roles": [
+            {
+                "name": "service",
+                "label": "What the event happened to",
+                "accepted_types": ["categorical"],
+                "required": True,
+            },
+            {
+                "name": "minute",
+                "label": "When it happened",
+                "accepted_types": ["numeric", "datetime"],
+                "required": True,
+            },
+        ],
+        "optional_roles": [],
+    },
     "acf": {
         "required_roles": [
             {
