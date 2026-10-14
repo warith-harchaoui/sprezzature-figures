@@ -4,11 +4,11 @@ Reproducible audit of every `scripts/make_*.py` generator against the
 `make_<kind>(data, *, out, title, ...) -> Path` contract the dispatcher
 expects. Regenerate with `python tools/audit_generators.py --render`.
 
-- **stable**: 158
+- **stable**: 159
 - **experimental**: 0
 - **legacy**: 0
 - **unavailable**: 0
-- **total**: 158
+- **total**: 159
 
 | kind | status | reachable | callable | demo_data | render | errors |
 |---|---|---|---|---|---|---|
@@ -153,6 +153,7 @@ expects. Regenerate with `python tools/audit_generators.py --render`.
 | `sunburst` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `surface3d` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `survival-km` | stable | **no** | yes | yes | passed | make_figure('survival-km') cannot resolve to make_survival-km.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
+| `table` | stable | yes | yes | yes | passed |  |
 | `ternary` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `timeline` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `tree` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |

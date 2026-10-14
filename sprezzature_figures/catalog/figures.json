@@ -17621,6 +17621,184 @@
     ]
   },
   {
+    "kind": "table",
+    "label": "Table",
+    "aliases": [],
+    "category": "Table",
+    "description": "A table is a chart: the reader is being asked to compare quantities, and almost everything that makes one hard to read is a decision about how the digits sit. Numeric columns are **right-aligned in a tabular face**, which is the single change that makes a column scannable, and each settles on one precision read off its own spread \u2014 per cell instead, one row says 1.2 and the next 1.23456 and the column stops being a column. One column carries its bars behind the numbers, because a column of figures is a bar chart with the bars removed. The sort is named on the canvas. And a total is drawn only where a total means something: `sum_columns` lets the caller say, because adding eight NPS scores gives a number with no referent.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "svg",
+    "module": "scripts/make_table.py",
+    "callable_name": "make_table",
+    "required_roles": [
+      {
+        "name": "region",
+        "label": "Row label",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "revenue",
+        "label": "A numeric column",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [
+      {
+        "name": "teams",
+        "label": "Another numeric column",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": false
+      },
+      {
+        "name": "churn",
+        "label": "Another numeric column",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": false
+      },
+      {
+        "name": "nps",
+        "label": "Another numeric column",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": false
+      }
+    ],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 960,
+    "default_height": 520,
+    "options_schema": {
+      "title": {
+        "type": "str",
+        "default": "Two regions with almost the same revenue lose customers at very different rates",
+        "choices": [],
+        "description": "Chart text."
+      },
+      "subtitle": {
+        "type": "str",
+        "default": "Numeric columns right-aligned at one precision each, with the sorted column carrying its bars in the cell.",
+        "choices": [],
+        "description": "Chart text."
+      },
+      "width": {
+        "type": "int",
+        "default": 960,
+        "choices": [],
+        "description": "Canvas size in pixels."
+      },
+      "height": {
+        "type": "int",
+        "default": 520,
+        "choices": [],
+        "description": "Canvas size in pixels."
+      },
+      "columns": {
+        "type": "str_list",
+        "default": null,
+        "choices": [],
+        "description": "Which columns to draw, left to right."
+      },
+      "sort_by": {
+        "type": "str",
+        "default": "revenue",
+        "choices": [],
+        "description": "Column to sort on."
+      },
+      "descending": {
+        "type": "bool",
+        "default": true,
+        "choices": [],
+        "description": "Sort direction."
+      },
+      "bar_column": {
+        "type": "str",
+        "default": "revenue",
+        "choices": [],
+        "description": "Which numeric column carries an in-cell bar."
+      },
+      "total_row": {
+        "type": "bool",
+        "default": true,
+        "choices": [],
+        "description": "Add a summed row at the foot."
+      },
+      "sum_columns": {
+        "type": "str_list",
+        "default": null,
+        "choices": [],
+        "description": "Which columns to total; None guesses from the values."
+      },
+      "total_label": {
+        "type": "str",
+        "default": "All regions",
+        "choices": [],
+        "description": "Name for the summed row."
+      },
+      "sort_note": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "The line naming the sort and the precisions, and the sentence naming what the table shows; None composes each from the data."
+      },
+      "finding": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "The line naming the sort and the precisions, and the sentence naming what the table shows; None composes each from the data."
+      },
+      "mode": {
+        "type": "str",
+        "default": "self-contained",
+        "choices": [
+          "self-contained",
+          "external",
+          "static"
+        ],
+        "description": "How the SVG carries its interactivity: self-contained ships its own script, external expects the page to supply one, static leaves it out."
+      },
+      "accessibility": {
+        "type": "str",
+        "default": "universal",
+        "choices": [
+          "universal",
+          "high-contrast",
+          "monochrome",
+          "deuteranopia",
+          "protanopia",
+          "tritanopia"
+        ],
+        "description": "Palette accessibility level; universal is the colour-vision-safe default."
+      },
+      "theme": {
+        "type": "str",
+        "default": "corporate",
+        "choices": [
+          "corporate",
+          "academic"
+        ],
+        "description": "Visual theme. Forwarded to build_svg."
+      }
+    },
+    "warnings": []
+  },
+  {
     "kind": "ternary",
     "label": "Ternary",
     "aliases": [],

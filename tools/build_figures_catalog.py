@@ -484,6 +484,22 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
              "accepted_types": ["numeric", "categorical"], "required": False},
         ],
     },
+    "table": {
+        "required_roles": [
+            {"name": "region", "label": "Row label",
+             "accepted_types": ["categorical"], "required": True},
+            {"name": "revenue", "label": "A numeric column",
+             "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [
+            {"name": "teams", "label": "Another numeric column",
+             "accepted_types": ["numeric"], "required": False},
+            {"name": "churn", "label": "Another numeric column",
+             "accepted_types": ["numeric"], "required": False},
+            {"name": "nps", "label": "Another numeric column",
+             "accepted_types": ["numeric"], "required": False},
+        ],
+    },
     "acf": {
         "required_roles": [
             {
