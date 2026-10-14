@@ -548,8 +548,13 @@ def build_svg(
 
     said_lines = (
         wrap_no_orphan(summary, mono_chars) if summary is not None else [
+            # "at or above" rather than a greater-or-equal sign: the
+            # mono face the chrome is set in has the glyph in its cmap
+            # and the renderer still falls back on it, which re-shapes
+            # the whole line in the proportional italic. One character
+            # is not worth a line of chrome in the wrong font.
             f"{nx} × {ny} × {nz} grid, {len(cells)} cells · {len(filled)} filled at "
-            f"{v_name} ≥ {measured(cut_at)}",
+            f"{v_name} {measured(cut_at)} and above",
             *cut_said,
             f"{measured(v_lo)} to {measured(v_hi)} · camera at {fmt_number(elev)}° "
             f"elevation, {fmt_number(azim)}° azimuth",
