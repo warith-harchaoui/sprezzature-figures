@@ -47,27 +47,27 @@ from _svg import (  # noqa: E402
     wrap_no_orphan,
     xml_escape,
 )
-from _textfit import fit_font_size  # noqa: E402
+from _textfit import fit_font_size, wrap_to_width  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 DEMO_DATA: List[Dict[str, Any]] = [
     {"category": "Deployment", "cause": "No staging soak", "weight": 14, "evidenced": 1},
     {"category": "Deployment", "cause": "Config drift", "weight": 9, "evidenced": 1},
     {"category": "Deployment", "cause": "Friday releases", "weight": 3, "evidenced": 0},
-    {"category": "Dependencies", "cause": "Payment gateway timeouts", "weight": 11,
+    {"category": "Dependencies", "cause": "Gateway timeouts", "weight": 11,
      "evidenced": 1},
-    {"category": "Dependencies", "cause": "Unpinned minor versions", "weight": 6,
+    {"category": "Dependencies", "cause": "Unpinned versions", "weight": 6,
      "evidenced": 1},
     {"category": "Monitoring", "cause": "Alert only on 5xx", "weight": 8, "evidenced": 1},
     {"category": "Monitoring", "cause": "No synthetic checkout", "weight": 7,
      "evidenced": 0},
-    {"category": "Monitoring", "cause": "Dashboards nobody opens", "weight": 2,
+    {"category": "Monitoring", "cause": "Unread dashboards", "weight": 2,
      "evidenced": 0},
-    {"category": "Capacity", "cause": "Connection pool too small", "weight": 5,
+    {"category": "Capacity", "cause": "Pool too small", "weight": 5,
      "evidenced": 1},
-    {"category": "Capacity", "cause": "Cold caches after deploy", "weight": 4,
+    {"category": "Capacity", "cause": "Cold caches", "weight": 4,
      "evidenced": 0},
-    {"category": "People", "cause": "One person knows the queue", "weight": 6,
+    {"category": "People", "cause": "One person owns it", "weight": 6,
      "evidenced": 0},
     {"category": "People", "cause": "Runbook out of date", "weight": 3, "evidenced": 1},
 ]
@@ -292,13 +292,27 @@ def build_svg(
                 + ("" if has_evidence else 'stroke-dasharray="3 3" ')
                 + 'opacity="0.85"/>'
             )
-            parts.append(
-                f'<text x="{twig_x + 5:.1f}" y="{branch_y + 4:.1f}" font-size="11" '
-                f'fill="{INK}" opacity="{1.0 if has_evidence else 0.65}">'
-                f'{xml_escape(text)} '
-                f'<tspan fill="{SECONDARY}" font-family="{mono_family}" font-size="10">'
-                f'{fmt_number(amount)}</tspan></text>'
-            )
+            # Wrapped to the room there actually is before the next
+            # group's branch. Drawn on one line, a French cause name runs
+            # straight through its neighbour: the English fits and the
+            # translation does not, which is not a translation problem.
+            # Wrapping is the safety net for a caller's own long labels.
+            # The demo keeps its names short enough never to need it,
+            # because a wrapped label becomes two separate strings for a
+            # translator and the second half stays in the source language.
+            room = max(90.0, plot_w / (len(above if side < 0 else below) + 1) - 70.0)
+            wrapped = wrap_to_width(text, room, 11.0)[:2]
+            for line_index, line in enumerate(wrapped):
+                last = line_index == len(wrapped) - 1
+                parts.append(
+                    f'<text x="{twig_x + 5:.1f}" '
+                    f'y="{branch_y + 4 + (line_index - (len(wrapped) - 1) / 2) * 12:.1f}" '
+                    f'font-size="11" fill="{INK}" '
+                    f'opacity="{1.0 if has_evidence else 0.65}">{xml_escape(line)}'
+                    + (f' <tspan fill="{SECONDARY}" font-family="{mono_family}" '
+                       f'font-size="10">{fmt_number(amount)}</tspan>' if last else "")
+                    + '</text>'
+                )
         parts.append(
             f'<rect id="bone-{index}" class="bone hit" tabindex="0" role="img" '
             f'aria-label="{xml_escape(name)}: {len(causes)} causes totalling '
