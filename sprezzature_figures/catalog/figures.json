@@ -18242,6 +18242,185 @@
     ]
   },
   {
+    "kind": "trisurface",
+    "label": "Trisurface",
+    "aliases": [],
+    "category": "3-D surface",
+    "description": "A surface over points measured wherever they could be measured \u2014 soundings, boreholes, sensors dropped where the ground allowed \u2014 joined by a Delaunay triangulation computed here. The usual version hides the mesh, so interpolation looks like measurement: the edges and the sample points are drawn, and the density of the evidence is visible everywhere. It also fills in the **convex hull**, turning the gaps nobody could reach into enormous flat triangles that read as flat ground; `max_edge` drops those and the chrome counts them. And the shading is the facet's *slope*, not its height, so the one spare channel says something the lift does not \u2014 clamped to the middle 90% of slopes, because one near-vertical artefact otherwise flattens the whole ramp.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "svg",
+    "module": "scripts/make_trisurface.py",
+    "callable_name": "make_trisurface",
+    "required_roles": [
+      {
+        "name": "x",
+        "label": "First ground coordinate",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "y",
+        "label": "Second ground coordinate",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "depth",
+        "label": "Measured value",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 920,
+    "default_height": 580,
+    "options_schema": {
+      "title": {
+        "type": "str",
+        "default": "The unsurveyed shoal is left as a hole, not filled in as flat ground",
+        "choices": [],
+        "description": "Chart text."
+      },
+      "subtitle": {
+        "type": "str",
+        "default": "Depth soundings across a bay, triangulated, with the mesh and the sample points left visible.",
+        "choices": [],
+        "description": "Chart text."
+      },
+      "width": {
+        "type": "int",
+        "default": 920,
+        "choices": [],
+        "description": "Canvas size in pixels."
+      },
+      "height": {
+        "type": "int",
+        "default": 580,
+        "choices": [],
+        "description": "Canvas size in pixels."
+      },
+      "x": {
+        "type": "str",
+        "default": "x",
+        "choices": [],
+        "description": "Row keys for the two ground coordinates and the measured value."
+      },
+      "y": {
+        "type": "str",
+        "default": "y",
+        "choices": [],
+        "description": "Row keys for the two ground coordinates and the measured value."
+      },
+      "z": {
+        "type": "str",
+        "default": "depth",
+        "choices": [],
+        "description": "Row keys for the two ground coordinates and the measured value."
+      },
+      "max_edge": {
+        "type": "float",
+        "default": 0.22,
+        "choices": [],
+        "description": "Longest triangle edge to keep, as a fraction of the width."
+      },
+      "elev": {
+        "type": "float",
+        "default": 26.0,
+        "choices": [],
+        "description": "Camera elevation and azimuth, in degrees."
+      },
+      "azim": {
+        "type": "float",
+        "default": -46.0,
+        "choices": [],
+        "description": "Camera elevation and azimuth, in degrees."
+      },
+      "show_mesh": {
+        "type": "bool",
+        "default": true,
+        "choices": [],
+        "description": "Whether to draw the triangle edges and the sample points."
+      },
+      "show_points": {
+        "type": "bool",
+        "default": true,
+        "choices": [],
+        "description": "Whether to draw the triangle edges and the sample points."
+      },
+      "flat_label": {
+        "type": "str",
+        "default": "flat",
+        "choices": [],
+        "description": "The two ends of the slope key."
+      },
+      "steep_label": {
+        "type": "str",
+        "default": "steep",
+        "choices": [],
+        "description": "The two ends of the slope key."
+      },
+      "mesh_note": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "The line describing the mesh and the trimming, and the sentence naming what the surface shows; None composes each from the data."
+      },
+      "finding": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "The line describing the mesh and the trimming, and the sentence naming what the surface shows; None composes each from the data."
+      },
+      "mode": {
+        "type": "str",
+        "default": "self-contained",
+        "choices": [
+          "self-contained",
+          "external",
+          "static"
+        ],
+        "description": "How the SVG carries its interactivity: self-contained ships its own script, external expects the page to supply one, static leaves it out."
+      },
+      "accessibility": {
+        "type": "str",
+        "default": "universal",
+        "choices": [
+          "universal",
+          "high-contrast",
+          "monochrome",
+          "deuteranopia",
+          "protanopia",
+          "tritanopia"
+        ],
+        "description": "Palette accessibility level; universal is the colour-vision-safe default."
+      },
+      "theme": {
+        "type": "str",
+        "default": "corporate",
+        "choices": [
+          "corporate",
+          "academic"
+        ],
+        "description": "Visual theme. Forwarded to build_svg."
+      }
+    },
+    "warnings": []
+  },
+  {
     "kind": "upset",
     "label": "Upset",
     "aliases": [],

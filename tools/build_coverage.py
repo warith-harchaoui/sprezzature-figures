@@ -156,7 +156,7 @@ MAPPING: dict[str, list[tuple[str, str, str, str]]] = {
         ("scatter (3-D)", "scatter3d", "covered", ""),
         ("plot_surface", "surface3d", "covered", ""),
         ("plot_wireframe", "wireframe3d", "covered", ""),
-        ("plot_trisurf", "trisurface", "gap", "surface over a triangulated, irregular domain"),
+        ("plot_trisurf", "trisurface", "covered", ""),
         ("voxels", "voxels", "gap", "filled volumetric cells"),
         ("quiver (3-D)", "quiver3d", "covered", "")
     ],

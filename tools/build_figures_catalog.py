@@ -500,6 +500,17 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
              "accepted_types": ["numeric"], "required": False},
         ],
     },
+    "trisurface": {
+        "required_roles": [
+            {"name": "x", "label": "First ground coordinate",
+             "accepted_types": ["numeric"], "required": True},
+            {"name": "y", "label": "Second ground coordinate",
+             "accepted_types": ["numeric"], "required": True},
+            {"name": "depth", "label": "Measured value",
+             "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
     "acf": {
         "required_roles": [
             {

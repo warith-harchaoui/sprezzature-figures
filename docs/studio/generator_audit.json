@@ -1,6 +1,6 @@
 {
   "summary": {
-    "stable": 159,
+    "stable": 160,
     "experimental": 0,
     "legacy": 0,
     "unavailable": 0
@@ -3523,6 +3523,28 @@
       "errors": [
         "Default output path falls back to a shared assets/ directory"
       ]
+    },
+    {
+      "kind": "trisurface",
+      "filename": "make_trisurface.py",
+      "hyphenated_kind": false,
+      "dispatcher_reachable_by_kind": true,
+      "importable": true,
+      "import_error": null,
+      "expected_callable": "make_trisurface",
+      "callable_exists": true,
+      "demo_data_exists": true,
+      "demo_data_len": 240,
+      "accepts_data": true,
+      "accepts_out": true,
+      "accepts_title": true,
+      "renderer": "svg",
+      "writes_hardcoded_path": false,
+      "hardcoded_dimensions": true,
+      "render_test": "passed",
+      "render_error": null,
+      "status": "stable",
+      "errors": []
     },
     {
       "kind": "upset",
