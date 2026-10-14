@@ -406,10 +406,20 @@ def build_svg(
             f'width="{plot_w:.1f}" height="{line_h:.1f}" fill="transparent">'
             f'<title>{xml_escape(str(row.get(names[0], "")))}</title></rect>'
         )
+        # Built from whole fields rather than by wrapping the joined row.
+        # A wrapped line breaks mid-field, which reads badly and hands a
+        # translator half a column name.
+        fields = [
+            f"{name} "
+            + (cell(name, float(row[name])) if numeric[name] else str(row.get(name, "")))
+            for name in names[1:] if name in row
+        ]
+        bubble = [str(row.get(names[0], ""))] + [
+            " · ".join(fields[at:at + 2]) for at in range(0, len(fields), 2)
+        ]
         tips.append(
             tooltip_bubble(
-                plot_x + plot_w * 0.5, middle,
-                wrap_no_orphan(said_row, 44)[:3],
+                plot_x + plot_w * 0.5, middle, bubble[:3],
                 canvas_w=width, canvas_h=height, ink=INK, secondary=SECONDARY,
                 border=GRIDLINE, elem_id=f"linetip-{index}",
             )
