@@ -500,6 +500,19 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
              "accepted_types": ["numeric"], "required": False},
         ],
     },
+    "voxels": {
+        "required_roles": [
+            {"name": "learning_rate", "label": "First grid axis",
+             "accepted_types": ["numeric", "categorical"], "required": True},
+            {"name": "max_depth", "label": "Second grid axis",
+             "accepted_types": ["numeric", "categorical"], "required": True},
+            {"name": "subsample", "label": "Third grid axis",
+             "accepted_types": ["numeric", "categorical"], "required": True},
+            {"name": "auc", "label": "Measured value",
+             "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
     "tricontour": {
         "required_roles": [
             {"name": "east_km", "label": "First ground coordinate",

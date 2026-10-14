@@ -4,11 +4,11 @@ Reproducible audit of every `scripts/make_*.py` generator against the
 `make_<kind>(data, *, out, title, ...) -> Path` contract the dispatcher
 expects. Regenerate with `python tools/audit_generators.py --render`.
 
-- **stable**: 161
+- **stable**: 162
 - **experimental**: 0
 - **legacy**: 0
 - **unavailable**: 0
-- **total**: 161
+- **total**: 162
 
 | kind | status | reachable | callable | demo_data | render | errors |
 |---|---|---|---|---|---|---|
@@ -167,6 +167,7 @@ expects. Regenerate with `python tools/audit_generators.py --render`.
 | `violin` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `volcano` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `voronoi` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `voxels` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `waffle` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `waterfall` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `windbarb` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |

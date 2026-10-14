@@ -19418,6 +19418,250 @@
     ]
   },
   {
+    "kind": "voxels",
+    "label": "Voxels",
+    "aliases": [],
+    "category": "3-D lattice",
+    "description": "Cells of an x by y by z grid drawn as solid blocks \u2014 a three-way grid search, an occupancy map, a three-way histogram \u2014 with `threshold` deciding which are filled. A solid volume hides its own interior and almost no implementation admits it: every filled cell is tested against the ones in front of it and the count that **cannot be seen** from this camera is written in the chrome, with `cut` to take the near octant or half off and look inside. Cells are shrunk by `gap` so the lattice survives, sorted back to front, back-face culled by screen-space winding, and shaded per face orientation. `mark_best` says whether the best cell sits on a face of the grid \u2014 if it does, the search bounds are part of the result.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "svg",
+    "module": "scripts/make_voxels.py",
+    "callable_name": "make_voxels",
+    "required_roles": [
+      {
+        "name": "learning_rate",
+        "label": "First grid axis",
+        "accepted_types": [
+          "numeric",
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "max_depth",
+        "label": "Second grid axis",
+        "accepted_types": [
+          "numeric",
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "subsample",
+        "label": "Third grid axis",
+        "accepted_types": [
+          "numeric",
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "auc",
+        "label": "Measured value",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 790,
+    "default_height": 620,
+    "options_schema": {
+      "title": {
+        "type": "str",
+        "default": "The best cell is against a wall, so the search stopped early",
+        "choices": [],
+        "description": "Chart text."
+      },
+      "subtitle": {
+        "type": "str",
+        "default": "A three-way grid search. Cells at or above the threshold are filled; the rest are left out.",
+        "choices": [],
+        "description": "Chart text."
+      },
+      "width": {
+        "type": "int",
+        "default": 790,
+        "choices": [],
+        "description": "Canvas size in pixels."
+      },
+      "height": {
+        "type": "int",
+        "default": 620,
+        "choices": [],
+        "description": "Canvas size in pixels."
+      },
+      "x": {
+        "type": "str",
+        "default": "learning_rate",
+        "choices": [],
+        "description": "Which keys hold the three coordinates and the measured value."
+      },
+      "y": {
+        "type": "str",
+        "default": "max_depth",
+        "choices": [],
+        "description": "Which keys hold the three coordinates and the measured value."
+      },
+      "z": {
+        "type": "str",
+        "default": "subsample",
+        "choices": [],
+        "description": "Which keys hold the three coordinates and the measured value."
+      },
+      "value": {
+        "type": "str",
+        "default": "auc",
+        "choices": [],
+        "description": "Which keys hold the three coordinates and the measured value."
+      },
+      "threshold": {
+        "type": "float",
+        "default": null,
+        "choices": [],
+        "description": "Fill cells at or above this; None keeps keep_share of them."
+      },
+      "keep_share": {
+        "type": "float",
+        "default": 0.45,
+        "choices": [],
+        "description": "Share of cells kept when threshold is None."
+      },
+      "gap": {
+        "type": "float",
+        "default": 0.14,
+        "choices": [],
+        "description": "How much of its own slot each cell gives back."
+      },
+      "cut": {
+        "type": "str",
+        "default": "none",
+        "choices": [
+          "none",
+          "corner",
+          "half"
+        ],
+        "description": "\"none\", \"corner\" or \"half\": how much of the near side to remove so the interior can be seen."
+      },
+      "elev": {
+        "type": "float",
+        "default": 24.0,
+        "choices": [],
+        "description": "Camera elevation, azimuth and zoom."
+      },
+      "azim": {
+        "type": "float",
+        "default": -52.0,
+        "choices": [],
+        "description": "Camera elevation, azimuth and zoom."
+      },
+      "zoom": {
+        "type": "float",
+        "default": 0.98,
+        "choices": [],
+        "description": "Camera elevation, azimuth and zoom."
+      },
+      "show_edges": {
+        "type": "bool",
+        "default": true,
+        "choices": [],
+        "description": "Which layers to draw."
+      },
+      "show_box": {
+        "type": "bool",
+        "default": true,
+        "choices": [],
+        "description": "Which layers to draw."
+      },
+      "mark_best": {
+        "type": "bool",
+        "default": true,
+        "choices": [],
+        "description": "Which layers to draw."
+      },
+      "x_label": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "Axis titles and the value's name; None uses the column names."
+      },
+      "y_label": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "Axis titles and the value's name; None uses the column names."
+      },
+      "z_label": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "Axis titles and the value's name; None uses the column names."
+      },
+      "value_label": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "Axis titles and the value's name; None uses the column names."
+      },
+      "summary": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "The chrome block and the closing lines; None composes them."
+      },
+      "finding": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "The chrome block and the closing lines; None composes them."
+      },
+      "mode": {
+        "type": "str",
+        "default": "self-contained",
+        "choices": [
+          "self-contained",
+          "external",
+          "static"
+        ],
+        "description": "How the SVG carries its interactivity: self-contained ships its own script, external expects the page to supply one, static leaves it out."
+      },
+      "accessibility": {
+        "type": "str",
+        "default": "universal",
+        "choices": [
+          "universal",
+          "high-contrast",
+          "monochrome",
+          "deuteranopia",
+          "protanopia",
+          "tritanopia"
+        ],
+        "description": "Palette accessibility level; universal is the colour-vision-safe default."
+      },
+      "theme": {
+        "type": "str",
+        "default": "corporate",
+        "choices": [
+          "corporate",
+          "academic"
+        ],
+        "description": "Visual theme. Forwarded to build_svg."
+      }
+    },
+    "warnings": [
+      "Default output path falls back to a shared assets/ directory"
+    ]
+  },
+  {
     "kind": "waffle",
     "label": "Waffle",
     "aliases": [],

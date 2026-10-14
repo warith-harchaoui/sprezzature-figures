@@ -87,6 +87,9 @@ OPTION_CHOICES: dict[str, tuple[str, ...]] = {
         "tritanopia",
     ),
     "theme": ("corporate", "academic"),
+    # voxels raises on anything else: the cutaway is a named geometry,
+    # not a free-text hint, and the three names are the whole vocabulary.
+    "cut": ("none", "corner", "half"),
     "language": ("en", "fr"),
     "lang": ("en", "fr"),
     # ablation_matrix validates this at render time and raised on anything
