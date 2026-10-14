@@ -82,6 +82,42 @@ path = make_figure("bar", data, out="revenue.png", title="Revenue by region")
 print(path)  # PosixPath('revenue.png')
 ```
 
+### From a DataFrame, in a notebook
+
+The rows can be whatever you are already holding — a pandas, polars or
+Arrow frame, or a dict of columns. Nothing is imported to read them: the
+conversion is by duck typing, so none of those libraries is a dependency
+and a caller with none of them installed pays nothing.
+
+```python
+import pandas as pd
+from sprezzature_figures import make_figure
+
+df = pd.read_csv("revenue.csv")          # region, value
+make_figure("bar", df, out="revenue.svg", title="Revenue by region")
+```
+
+A cell ending in that call **shows the figure**. The return value is still
+a `Path` — `isinstance(result, Path)` holds, and so does every method —
+it simply knows how to draw itself when a notebook asks.
+
+Gaps are spelled `None` on the way in, whatever the source called them
+(`NaN`, `NaT`, `pd.NA`), and a gap in a column a figure needs is refused
+at the door, naming the column and the row:
+
+```
+ValueError: Invalid data for kind='bar': value: 'value' (Value) is empty in
+1 of 3 rows (row 1). A figure cannot draw a value that is not there: drop
+those rows, fill them, or reach for 'missing-matrix', which is the figure
+whose subject is where the gaps are.
+```
+
+Dropping the row quietly would have misreported the total; letting it
+through would have raised inside a generator with a message about
+`float()`. Figures whose subject *is* absence — `missing-matrix`, a tree's
+root with no parent, a forecast with no history — declare it and are let
+through.
+
 All 162 registered chart kinds are `status="stable"` (render-verified end to
 end); see [docs/studio/GENERATOR_AUDIT.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/docs/studio/GENERATOR_AUDIT.md)
 for the per-chart audit detail, and `make-figure --list --status stable` to

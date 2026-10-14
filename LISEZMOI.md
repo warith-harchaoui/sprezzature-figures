@@ -83,6 +83,44 @@ chemin = make_figure("bar", donnees, out="revenu.png", title="Revenu par région
 print(chemin)  # PosixPath('revenu.png')
 ```
 
+### Depuis un DataFrame, dans un carnet
+
+Les lignes peuvent arriver sous la forme que vous avez déjà sous la main :
+un DataFrame pandas ou polars, une table Arrow, un dictionnaire de
+colonnes. Rien n'est importé pour les lire — la reconnaissance se fait par
+les méthodes offertes, donc aucune de ces bibliothèques n'est une
+dépendance et celui qui n'en a aucune ne paie rien.
+
+```python
+import pandas as pd
+from sprezzature_figures import make_figure
+
+df = pd.read_csv("revenu.csv")           # region, value
+make_figure("bar", df, out="revenu.svg", title="Revenu par région")
+```
+
+Une cellule qui se termine par cet appel **affiche la figure**. La valeur
+rendue reste un `Path` — `isinstance(resultat, Path)` tient toujours, et
+toutes ses méthodes avec — elle sait simplement se dessiner quand un carnet
+le lui demande.
+
+Les trous sont écrits `None` à l'entrée, quel que soit le nom que la source
+leur donnait (`NaN`, `NaT`, `pd.NA`). Un trou dans une colonne dont la
+figure a besoin est refusé à la porte, la colonne nommée, la ligne aussi :
+
+```
+ValueError: Invalid data for kind='bar': value: 'value' (Value) is empty in
+1 of 3 rows (row 1). A figure cannot draw a value that is not there: drop
+those rows, fill them, or reach for 'missing-matrix', which is the figure
+whose subject is where the gaps are.
+```
+
+Écarter la ligne en silence aurait faussé le total ; la laisser passer
+aurait fait remonter, depuis le fond d'un générateur, un message parlant de
+`float()`. Les figures dont le sujet *est* l'absence — `missing-matrix`, la
+racine d'un arbre sans parent, une prévision sans historique — le déclarent
+et passent.
+
 Les 162 types enregistrés sont tous `status="stable"` (vérifiés par rendu de
 bout en bout). Voir [docs/studio/GENERATOR_AUDIT.md](docs/studio/GENERATOR_AUDIT.md)
 pour le détail de l'audit par type, ou lancer `make-figure --list --status stable`
