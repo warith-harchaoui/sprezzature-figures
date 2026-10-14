@@ -447,6 +447,15 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
         ],
         "optional_roles": [],
     },
+    "funnel-area": {
+        "required_roles": [
+            {"name": "stage", "label": "Stage",
+             "accepted_types": ["categorical"], "required": True},
+            {"name": "count", "label": "How many reached it",
+             "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
     "acf": {
         "required_roles": [
             {

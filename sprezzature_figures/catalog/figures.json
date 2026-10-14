@@ -6861,6 +6861,155 @@
     ]
   },
   {
+    "kind": "funnel-area",
+    "label": "Funnel Area",
+    "aliases": [
+      "funnel area",
+      "funnel_area"
+    ],
+    "category": "Pipeline",
+    "description": "A tapering funnel carved so each band's **area** is its count \u2014 the quantity the eye actually measures. A funnel narrows, so a band low down is shorter across than one at the top; give both a height proportional to their count, as hand-rolled funnels do, and the lower one gets less area than it deserves. The heights are solved instead, and the chrome reports how far the naive version would be off *measured on the data in front of it* \u2014 ten percent on the demo. Each gap carries the rate that crossed it and the worst is marked; and because a funnel claims each stage is a subset of the one above, the figure checks the stages decrease and says so when they do not.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "svg",
+    "module": "scripts/make_funnel-area.py",
+    "callable_name": "make_funnel_area",
+    "required_roles": [
+      {
+        "name": "stage",
+        "label": "Stage",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "count",
+        "label": "How many reached it",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 900,
+    "default_height": 620,
+    "options_schema": {
+      "title": {
+        "type": "str",
+        "default": "Two in three are lost entering payment; no other step loses more than a fifth",
+        "choices": [],
+        "description": "Chart text."
+      },
+      "subtitle": {
+        "type": "str",
+        "default": "Each band's area is its count, so the eye reads the right quantity; the usual height-proportional version draws the last stage ten percent too small.",
+        "choices": [],
+        "description": "Chart text."
+      },
+      "width": {
+        "type": "int",
+        "default": 900,
+        "choices": [],
+        "description": "Canvas size in pixels."
+      },
+      "height": {
+        "type": "int",
+        "default": 620,
+        "choices": [],
+        "description": "Canvas size in pixels."
+      },
+      "stage": {
+        "type": "str",
+        "default": "stage",
+        "choices": [],
+        "description": "Row keys for the stage name and its count."
+      },
+      "value": {
+        "type": "str",
+        "default": "count",
+        "choices": [],
+        "description": "Row keys for the stage name and its count."
+      },
+      "size_by": {
+        "type": "str",
+        "default": "area",
+        "choices": [
+          "area",
+          "height"
+        ],
+        "description": "\"area\" or \"height\"."
+      },
+      "taper": {
+        "type": "float",
+        "default": 0.18,
+        "choices": [],
+        "description": "How much narrower the bottom is than the top."
+      },
+      "rate_label": {
+        "type": "str",
+        "default": "carried",
+        "choices": [],
+        "description": "Word used for the share that crossed each gap."
+      },
+      "method_note": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "The line saying how the bands are sized, and the sentence naming the worst step; None composes each from the data."
+      },
+      "finding": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "The line saying how the bands are sized, and the sentence naming the worst step; None composes each from the data."
+      },
+      "mode": {
+        "type": "str",
+        "default": "self-contained",
+        "choices": [
+          "self-contained",
+          "external",
+          "static"
+        ],
+        "description": "How the SVG carries its interactivity: self-contained ships its own script, external expects the page to supply one, static leaves it out."
+      },
+      "accessibility": {
+        "type": "str",
+        "default": "universal",
+        "choices": [
+          "universal",
+          "high-contrast",
+          "monochrome",
+          "deuteranopia",
+          "protanopia",
+          "tritanopia"
+        ],
+        "description": "Palette accessibility level; universal is the colour-vision-safe default."
+      },
+      "theme": {
+        "type": "str",
+        "default": "corporate",
+        "choices": [
+          "corporate",
+          "academic"
+        ],
+        "description": "Visual theme. Forwarded to build_svg."
+      }
+    },
+    "warnings": [
+      "make_figure('funnel-area') cannot resolve to make_funnel-area.py: hyphen/underscore normalisation looks for a different filename"
+    ]
+  },
+  {
     "kind": "gantt",
     "label": "Gantt",
     "aliases": [],

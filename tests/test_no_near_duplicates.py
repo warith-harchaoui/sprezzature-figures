@@ -29,6 +29,17 @@ from sprezzature_figures.catalog import get_figure_definition, list_kinds
 #: Pairs that look alike from the outside and are not, with why. Each entry
 #: is a promise a reader can check against the two figures.
 DISTINCT_PAIRS: dict[tuple[str, ...], str] = {
+    ("funnel", "funnel-area"): (
+        "The same stages drawn two ways, and the difference is what the "
+        "shape is for. A funnel is horizontal bars whose length is the "
+        "count: comparable, measurable, and honest because equal heights "
+        "make area follow length. A funnel-area is a tapering silhouette "
+        "carved so each band's *area* is the count, which is the form "
+        "presentations want and the one that lies unless the heights are "
+        "solved for. Reach for funnel when the numbers are the point; for "
+        "funnel-area when the shape is, and you want the taper without "
+        "the taper misreporting."
+    ),
     ("candlestick", "ohlc"): (
         "The same four prices drawn two ways, and the difference is what "
         "survives. A candlestick fills the body between open and close, so "

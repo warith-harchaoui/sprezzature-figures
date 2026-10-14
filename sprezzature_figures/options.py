@@ -115,6 +115,8 @@ OPTION_CHOICES: dict[str, tuple[str, ...]] = {
     "order": ("given", "first", "count", "first-after-onset"),
     # quiver3d: how a vector's magnitude becomes its drawn length.
     "length_scale": ("linear", "sqrt", "log", "uniform"),
+    # funnel-area: which of a trapezoid's two factors carries the count.
+    "size_by": ("area", "height"),
 }
 
 #: House meaning of the keywords many generators share. A generator

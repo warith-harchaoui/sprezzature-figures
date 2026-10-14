@@ -71,7 +71,7 @@ plotly,bar,bar,covered,
 plotly,timeline,gantt,covered,
 plotly,pie,pie,covered,
 plotly,funnel,funnel,covered,
-plotly,funnel_area,funnel-area,gap,"stacked proportional sectors, not a funnel of bars"
+plotly,funnel_area,funnel-area,covered,
 plotly,histogram,histogram,covered,
 plotly,box,boxplot,covered,
 plotly,violin,violin,covered,
