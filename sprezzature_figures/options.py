@@ -108,6 +108,9 @@ OPTION_CHOICES: dict[str, tuple[str, ...]] = {
     # shap-waterfall: whether the contributions are passed through a
     # logistic before the two ends are quoted as probabilities.
     "link": ("logit", "identity"),
+    # stem: where the stalks are rooted. A closed set, and the figure
+    # raises on anything else.
+    "baseline": ("zero", "mean", "given"),
 }
 
 #: House meaning of the keywords many generators share. A generator
