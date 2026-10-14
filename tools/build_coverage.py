@@ -383,7 +383,7 @@ MAPPING: dict[str, list[tuple[str, str, str, str]]] = {
     "rawgraphs": [
         ("alluvial", "alluvial", "covered", ""),
         ("beeswarm", "beeswarm", "covered", ""),
-        ("bump chart", "bump", "gap", "rank over time, one ribbon per competitor"),
+        ("bump chart", "bump", "covered", ""),
         ("circle packing", "circle-packing", "covered", ""),
         ("circular dendrogram", "radial-tree", "covered", ""),
         ("contour plot", "contour", "covered", ""),

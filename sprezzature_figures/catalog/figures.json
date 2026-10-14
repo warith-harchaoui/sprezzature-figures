@@ -2184,6 +2184,175 @@
     ]
   },
   {
+    "kind": "bump",
+    "label": "Bump",
+    "aliases": [],
+    "category": "Ranking",
+    "description": "One line per competitor at its rank, crossing the others when it overtakes them. Rank throws away how far apart things are and keeps only the order \u2014 the right trade when the order is the story and the wrong one when the gaps are, so **the values travel with the ranks**: the chrome quotes the lead at the first and last period, and a crossing between two competitors within `tie_within` of each other is drawn thin, because that overtake is a coin toss. Judged at the closest of the two periods, not at the far end. Rank 1 sits at the top, where it belongs; `highlight` greys the field so a few can be followed; and a competitor missing from a period is left as a gap rather than interpolated through.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "svg",
+    "module": "scripts/make_bump.py",
+    "callable_name": "make_bump",
+    "required_roles": [
+      {
+        "name": "quarter",
+        "label": "Period",
+        "accepted_types": [
+          "categorical",
+          "datetime",
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "product",
+        "label": "Competitor",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "share",
+        "label": "Quantity ranked",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 960,
+    "default_height": 600,
+    "options_schema": {
+      "title": {
+        "type": "str",
+        "default": "Beacon held first for a year, the last of it by three tenths of a point",
+        "choices": [],
+        "description": "Chart text."
+      },
+      "subtitle": {
+        "type": "str",
+        "default": "Rank by quarterly share, best at the top, with the share itself carried through so the gaps stay visible.",
+        "choices": [],
+        "description": "Chart text."
+      },
+      "width": {
+        "type": "int",
+        "default": 960,
+        "choices": [],
+        "description": "Canvas size in pixels."
+      },
+      "height": {
+        "type": "int",
+        "default": 600,
+        "choices": [],
+        "description": "Canvas size in pixels."
+      },
+      "x": {
+        "type": "str",
+        "default": "quarter",
+        "choices": [],
+        "description": "Row keys for the period, the competitor, and the quantity ranked."
+      },
+      "series": {
+        "type": "str",
+        "default": "product",
+        "choices": [],
+        "description": "Row keys for the period, the competitor, and the quantity ranked."
+      },
+      "value": {
+        "type": "str",
+        "default": "share",
+        "choices": [],
+        "description": "Row keys for the period, the competitor, and the quantity ranked."
+      },
+      "highlight": {
+        "type": "str_list",
+        "default": null,
+        "choices": [],
+        "description": "Which competitors to draw in full colour."
+      },
+      "tie_within": {
+        "type": "float",
+        "default": 0.6,
+        "choices": [],
+        "description": "How close two values must be for their order to count as a tie."
+      },
+      "higher_is_better": {
+        "type": "bool",
+        "default": true,
+        "choices": [],
+        "description": "Whether a larger value earns rank 1."
+      },
+      "x_label": {
+        "type": "str",
+        "default": "Quarter",
+        "choices": [],
+        "description": "Axis titles."
+      },
+      "rank_label": {
+        "type": "str",
+        "default": "Rank (1 at the top)",
+        "choices": [],
+        "description": "Axis titles."
+      },
+      "rank_note": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "The line describing the ranking, and the sentence naming what changed; None composes each from the data."
+      },
+      "finding": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "The line describing the ranking, and the sentence naming what changed; None composes each from the data."
+      },
+      "mode": {
+        "type": "str",
+        "default": "self-contained",
+        "choices": [
+          "self-contained",
+          "external",
+          "static"
+        ],
+        "description": "How the SVG carries its interactivity: self-contained ships its own script, external expects the page to supply one, static leaves it out."
+      },
+      "accessibility": {
+        "type": "str",
+        "default": "universal",
+        "choices": [
+          "universal",
+          "high-contrast",
+          "monochrome",
+          "deuteranopia",
+          "protanopia",
+          "tritanopia"
+        ],
+        "description": "Palette accessibility level; universal is the colour-vision-safe default."
+      },
+      "theme": {
+        "type": "str",
+        "default": "corporate",
+        "choices": [
+          "corporate",
+          "academic"
+        ],
+        "description": "Visual theme. Forwarded to build_svg."
+      }
+    },
+    "warnings": []
+  },
+  {
     "kind": "calendar-heatmap",
     "label": "Calendar Heatmap",
     "aliases": [

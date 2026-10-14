@@ -263,7 +263,7 @@ datawrapper,election hemicycle,parliament,covered,
 datawrapper,locator / choropleth / symbol map,,sibling,sprezzature-maps `choropleth` / `situation_map`
 rawgraphs,alluvial,alluvial,covered,
 rawgraphs,beeswarm,beeswarm,covered,
-rawgraphs,bump chart,bump,gap,"rank over time, one ribbon per competitor"
+rawgraphs,bump chart,bump,covered,
 rawgraphs,circle packing,circle-packing,covered,
 rawgraphs,circular dendrogram,radial-tree,covered,
 rawgraphs,contour plot,contour,covered,
