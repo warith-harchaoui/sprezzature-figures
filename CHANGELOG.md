@@ -1,5 +1,129 @@
 # Changelog
 
+## 2.6.0 (2026-10-15): forty figures, and the probe that found what the catalogue only claimed
+
+2.5.0 was prepared in this repository and never reached PyPI, so 2.6.0 is the
+first release carrying it. Everything in the 2.5.0 section below ships here.
+
+The catalogue goes from **127 kinds to 167**, additively: nothing was removed,
+nothing was renamed. But the headline of this release is not the count. It is
+that writing forty figures in a row produced a probe, and the probe found that
+a large part of the *existing* catalogue had been advertising options it
+silently ignored.
+
+### Added
+
+- **Forty new kinds.** By family:
+
+  - *Distributions and fields* — `hist2d`, `contour`, `tricontour`,
+    `trisurface`, `voxels`, `quiver3d`, `line3d`.
+  - *Time and sequence* — `acf`, `seasonal-decomposition`, `forecast-fan`,
+    `control-chart`, `ohlc`, `bump`, `stem`, `eventplot`, `sparkline`,
+    `dual-axis`.
+  - *Model diagnostics* — `learning-curve`, `loss-curve`, `validation-curve`,
+    `silhouette`, `permutation-importance`, `pdp-ice`, `shap-waterfall`,
+    `shap-beeswarm`, `causal-dag`.
+  - *Data quality and cohorts* — `missing-matrix`, `cohort-retention`,
+    `pointplot`.
+  - *Business shapes* — `pie`, `funnel-area`, `progress`, `fishbone`, `table`.
+  - *Layout* — `facet`, the small-multiples frame that was the catalogue's
+    largest single gap.
+  - *Thematic maps* — `map-bars`, `map-bubble`, `map-pie`, `map-flow`,
+    `map-tilegrid`. These draw quantities **on** a geography; the projected
+    cartography proper stays in `sprezzature-maps`.
+
+  `map-bars` and `map-pie` are flagged in the catalogue as near-duplicates --
+  same category, same columns -- with the sentence that separates them
+  written down rather than left to the reader: one plots magnitudes free to
+  move independently, compared by height off a shared baseline; the other
+  plots parts of one whole, compared by angle, a weaker channel paid for the
+  one thing bars cannot say -- that the parts are exhaustive.
+
+- **A DataFrame is enough.** `make_figure` took `list[dict]`, which nobody has
+  on hand: you have a pandas or polars DataFrame, an Arrow table, a dict of
+  columns. `frames.as_rows` normalises all of them at the single point
+  everything passes through, so all 167 figures gained it at once. Recognition
+  is by offered method (`to_dicts`, `to_pylist`, `to_dict(orient=...)`):
+  nothing is imported, no dependency is added, and anyone holding none of
+  those libraries pays nothing. Gaps come out as `None` whatever they were
+  called, and dates become ISO labels -- an axis prints and sorts, it does not
+  want a `Timestamp`.
+
+  With the refusal that belongs to it: a `NaN` turned `None` used to crash
+  deep inside a generator on `float()`. `validate_figure_input` now refuses it
+  at the door, naming the column and the row, and pointing anyone who wants to
+  *see* their gaps at `missing-matrix`. Roles whose absence **is** the data --
+  a tree's root, a forecast's future rows, the unswept components of a
+  spectrogram -- declare `tolerates_gaps` and pass.
+
+- **A trigger phrase for every one of the 167 figures.** The nine intents
+  covered ordinary demand but named only about forty shapes; for the rest
+  `TRIGGERS.md` deferred to `list_kinds` with a handful of examples, so an
+  agent could not route "the wind rose", "the forest plot", "where are the
+  holes in this dataset". The table gives, per figure, what a user actually
+  says in English and in French, grouped by routing family rather than by
+  `FIGURES.md`'s sixty-eight categories. Coverage is exact -- the script that
+  composes the table checks it against `list_kinds()`.
+
+### Fixed
+
+- **74 of 133 figures advertised a `title` they ignored.** A probe written to
+  check six new figures was run across the whole catalogue: render every kind
+  with a sentinel in each of its text options, then check the sentinel comes
+  back out of the SVG. `make-figure alluvial --title "My title"` did nothing,
+  silently, and `--help` offered it anyway.
+
+  Two shapes behind it, one correction. Either the title was *computed from
+  the data* -- a good reflex, `bullet` composing "Three of five targets met in
+  Q3" so the hook cannot drift from what is drawn -- but the parameter was
+  ignored rather than used as the override; or `build_svg` had no `title`
+  parameter at all and the wrapper kept its own "for signature parity", which
+  several docstrings said out loud. `build_svg` now takes
+  `title: Optional[str] = None`, the computed hook becomes its default, and
+  the wrapper passes it through. Nothing changes for anyone not passing one.
+  Thirty figures were rewired in the first pass and eighteen more after it,
+  and the probe is now a test, so the next one fails in CI rather than in a
+  user's figure.
+
+- **Nothing visible that is not a parameter.** The six figures added in one
+  sitting still had prose composed in code -- `pie`'s footer line, `hist2d`'s
+  legend title and empty-cell name, `contour`'s summary, `sparkline`'s three
+  column headings, `dual-axis`'s caveat and Pearson *r*. Each is now an
+  option where `None` composes the default sentence and a string replaces it,
+  so the catalogue publishes them and they arrive free in both CLIs and the
+  API. The lesson arrived immediately: the first write of `hist2d`'s
+  `legend_title` did not take, the replacement failed silently, and the option
+  was advertised everywhere while doing nothing. A declared option that never
+  reaches the SVG is exactly as false as a literal, and harder to see.
+
+- **The geometry linter was wrong far more often than the figures were.**
+  Three stacked errors produced 116 overlaps across 162 figures, of which two
+  were real. `dominant-baseline` was not read, though 422 texts in the
+  catalogue carry one, so all of them were placed a third of a line too high.
+  A string's ink is not a fraction of its size -- "63 %" at 150 px has nothing
+  below the baseline, and charging it 0.2 em of descender invented thirty
+  pixels of ink never drawn. A label written twice in the same place is one
+  label, not a collision. And `text_invisible_on_background` compared ink to
+  *canvas*: a white "74" inside a dark bar is white-on-white from there, and
+  perfectly legible in fact -- the rule was wrong 27 times out of 27. It now
+  asks what lies **under** the label, replaying the paint in document order,
+  and abstains when the markup does not say. Two overlaps and five overflows
+  remain across the whole catalogue, all looked at by eye, all real.
+
+- **`_textfit` measured monospace as if it were proportional**, and so cut
+  text it had just declared would fit.
+
+### Changed
+
+- `_project3d` carries one camera rather than seven, the Equal Earth
+  projection is written once rather than per world map, and `fmt_measured`
+  exists because `fmt_number` is built for a tick and a measurement is not a
+  tick.
+- Every mention of a third-party plotting library is gone from anything that
+  neither measures nor forbids one. The examples folder now passes the
+  project's own linter, and holds only what a generator can write.
+
+
 ## 2.5.0 (2026-10-13): every figure's own options, on the command line and over HTTP
 
 Each of the 127 generators is a function with a signature — `make_bar(data, *,
