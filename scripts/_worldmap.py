@@ -94,13 +94,21 @@ def load_land_rings() -> List[Ring]:
     return rings
 
 
-def equal_earth(lon: float, lat: float) -> Tuple[float, float]:
+def equal_earth(
+    lon: float, lat: float, *, central_meridian: float = 0.0
+) -> Tuple[float, float]:
     """Project ``(lon, lat)`` in degrees to Equal Earth planar ``(x, y)``.
 
     Parameters
     ----------
     lon, lat : float
         Longitude and latitude in degrees.
+    central_meridian : float, optional
+        Longitude placed at the middle of the map, in degrees. The default
+        0 gives the Atlantic-centred world everyone expects; a hexbin map of
+        the Pacific rim wants 160, so the Ring of Fire reads as one arc
+        instead of being cut in half at both edges. Longitudes are wrapped
+        into ``[-180, 180]`` about it.
 
     Returns
     -------
@@ -108,6 +116,8 @@ def equal_earth(lon: float, lat: float) -> Tuple[float, float]:
         Planar ``(x, y)`` in projection units, ``y`` pointing up. Callers
         fit these to a viewport with :func:`fit_to_viewport`.
     """
+    if central_meridian:
+        lon = ((lon - central_meridian + 180.0) % 360.0) - 180.0
     lam = math.radians(lon)
     phi = math.radians(lat)
     theta = math.asin(_M * math.sin(phi))  # parametric latitude
@@ -129,6 +139,7 @@ def fit_to_viewport(
     height: float,
     *,
     pad: float = 8.0,
+    central_meridian: float = 0.0,
 ) -> Callable[[float, float], Tuple[float, float]]:
     """Return a ``(lon, lat) -> (px, py)`` projector fitted to one viewport.
 
@@ -145,13 +156,21 @@ def fit_to_viewport(
         The viewport rectangle, in user-space pixels.
     pad : float, optional
         Inner margin kept on every side, in pixels.
+    central_meridian : float, optional
+        Forwarded to :func:`equal_earth`, and used for the fit as well as
+        for the returned projector -- fitting on one centring and drawing on
+        another would silently shift the whole map.
 
     Returns
     -------
     callable
         ``project(lon, lat) -> (px, py)`` with screen ``y`` pointing down.
     """
-    projected = [equal_earth(lon, lat) for ring in rings for lon, lat in ring]
+    projected = [
+        equal_earth(lon, lat, central_meridian=central_meridian)
+        for ring in rings
+        for lon, lat in ring
+    ]
     min_px = min(p[0] for p in projected)
     max_px = max(p[0] for p in projected)
     min_py = min(p[1] for p in projected)
@@ -163,7 +182,7 @@ def fit_to_viewport(
     offset_y = y + (height - span_y * scale) / 2.0
 
     def project(lon: float, lat: float) -> Tuple[float, float]:
-        px, py = equal_earth(lon, lat)
+        px, py = equal_earth(lon, lat, central_meridian=central_meridian)
         # Screen y grows downward; the projection's grows up.
         return (
             offset_x + (px - min_px) * scale,
