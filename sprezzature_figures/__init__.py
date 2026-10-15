@@ -1,7 +1,7 @@
 """
 sprezzature_figures — publication-quality data figures.
 
-162 chart types, every one a hand-authored SVG.
+165 chart types, every one a hand-authored SVG.
 Every chart is callable as a library function and as a CLI command.
 Rows come in as a list of dicts, a pandas / polars / Arrow frame, or a
 dict of columns; the path that comes back draws itself in a notebook.

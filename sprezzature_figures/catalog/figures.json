@@ -10644,6 +10644,315 @@
     ]
   },
   {
+    "kind": "map-bars",
+    "label": "Map Bars",
+    "aliases": [
+      "map bars",
+      "map_bars"
+    ],
+    "category": "Geospatial",
+    "description": "A grouped bar chart planted at each place, so several independent magnitudes per region are compared by height along a shared baseline \u2014 the strongest comparison the eye makes, and the one a bubble (one number) and a pie (one composition) cannot offer. All groups share one scale, drawn once in the legend: scaled individually they would be unrelated charts sharing a page. Wider than a bubble, so it holds fewer places before the glyphs collide \u2014 about eight regions at poster width.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "svg",
+    "module": "scripts/make_map-bars.py",
+    "callable_name": "make_map_bars",
+    "required_roles": [
+      {
+        "name": "region",
+        "label": "Place",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "lon",
+        "label": "Longitude",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "lat",
+        "label": "Latitude",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "values",
+        "label": "One magnitude per series",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 900,
+    "default_height": 600,
+    "options_schema": {
+      "title": {
+        "type": "str",
+        "default": "",
+        "choices": [],
+        "description": "Overrides the headline."
+      },
+      "mode": {
+        "type": "str",
+        "default": "self-contained",
+        "choices": [
+          "self-contained",
+          "external",
+          "static"
+        ],
+        "description": "How the SVG carries its interactivity: self-contained ships its own script, external expects the page to supply one, static leaves it out."
+      },
+      "accessibility": {
+        "type": "str",
+        "default": "universal",
+        "choices": [
+          "universal",
+          "high-contrast",
+          "monochrome",
+          "deuteranopia",
+          "protanopia",
+          "tritanopia"
+        ],
+        "description": "Palette accessibility level; universal is the colour-vision-safe default."
+      },
+      "theme": {
+        "type": "str",
+        "default": "corporate",
+        "choices": [
+          "corporate",
+          "academic"
+        ],
+        "description": "corporate (Roboto, house palette) or academic (Latin Modern, Okabe-Ito)."
+      }
+    },
+    "warnings": [
+      "make_figure('map-bars') cannot resolve to make_map-bars.py: hyphen/underscore normalisation looks for a different filename",
+      "Default output path falls back to a shared assets/ directory"
+    ]
+  },
+  {
+    "kind": "map-bubble",
+    "label": "Map Bubble",
+    "aliases": [
+      "map bubble",
+      "map_bubble"
+    ],
+    "category": "Geospatial",
+    "description": "One quantity per place, encoded as circle **area** (radius \u221d \u221avalue, so the ink matches the number). Use for a total that belongs to a point or to a country rather than spread over its territory: a choropleth of national totals makes the biggest countries shout and the smallest vanish whatever their number. Labels are placed by a four-pose search that avoids other labels and other bubbles alike.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "svg",
+    "module": "scripts/make_map-bubble.py",
+    "callable_name": "make_map_bubble",
+    "required_roles": [
+      {
+        "name": "name",
+        "label": "Place",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "lon",
+        "label": "Longitude",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "lat",
+        "label": "Latitude",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "gt",
+        "label": "Quantity sized by area",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 900,
+    "default_height": 600,
+    "options_schema": {
+      "title": {
+        "type": "str",
+        "default": "",
+        "choices": [],
+        "description": "Overrides the headline."
+      },
+      "mode": {
+        "type": "str",
+        "default": "self-contained",
+        "choices": [
+          "self-contained",
+          "external",
+          "static"
+        ],
+        "description": "How the SVG carries its interactivity: self-contained ships its own script, external expects the page to supply one, static leaves it out."
+      },
+      "accessibility": {
+        "type": "str",
+        "default": "universal",
+        "choices": [
+          "universal",
+          "high-contrast",
+          "monochrome",
+          "deuteranopia",
+          "protanopia",
+          "tritanopia"
+        ],
+        "description": "Palette accessibility level; universal is the colour-vision-safe default."
+      },
+      "theme": {
+        "type": "str",
+        "default": "corporate",
+        "choices": [
+          "corporate",
+          "academic"
+        ],
+        "description": "corporate (Roboto, house palette) or academic (Latin Modern, Okabe-Ito)."
+      }
+    },
+    "warnings": [
+      "make_figure('map-bubble') cannot resolve to make_map-bubble.py: hyphen/underscore normalisation looks for a different filename",
+      "Default output path falls back to a shared assets/ directory"
+    ]
+  },
+  {
+    "kind": "map-pie",
+    "label": "Map Pie",
+    "aliases": [
+      "map pie",
+      "map_pie"
+    ],
+    "category": "Geospatial",
+    "description": "A three-part pie planted at each place, for comparing *compositions* across a map \u2014 the one job a pie does better than a bar, because it states that the parts are a whole. Every disc is the same size on purpose: sizing by a second variable would make the smallest region's angles unreadable, and the angles are the data. Keep it to three or four parts; a pie with many slivers is a legend with extra steps.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "svg",
+    "module": "scripts/make_map-pie.py",
+    "callable_name": "make_map_pie",
+    "required_roles": [
+      {
+        "name": "region",
+        "label": "Place",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "lon",
+        "label": "Longitude",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "lat",
+        "label": "Latitude",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      },
+      {
+        "name": "values",
+        "label": "One share per part of the whole",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 900,
+    "default_height": 600,
+    "options_schema": {
+      "title": {
+        "type": "str",
+        "default": "",
+        "choices": [],
+        "description": "Overrides the headline."
+      },
+      "mode": {
+        "type": "str",
+        "default": "self-contained",
+        "choices": [
+          "self-contained",
+          "external",
+          "static"
+        ],
+        "description": "How the SVG carries its interactivity: self-contained ships its own script, external expects the page to supply one, static leaves it out."
+      },
+      "accessibility": {
+        "type": "str",
+        "default": "universal",
+        "choices": [
+          "universal",
+          "high-contrast",
+          "monochrome",
+          "deuteranopia",
+          "protanopia",
+          "tritanopia"
+        ],
+        "description": "Palette accessibility level; universal is the colour-vision-safe default."
+      },
+      "theme": {
+        "type": "str",
+        "default": "corporate",
+        "choices": [
+          "corporate",
+          "academic"
+        ],
+        "description": "corporate (Roboto, house palette) or academic (Latin Modern, Okabe-Ito)."
+      }
+    },
+    "warnings": [
+      "make_figure('map-pie') cannot resolve to make_map-pie.py: hyphen/underscore normalisation looks for a different filename",
+      "Default output path falls back to a shared assets/ directory"
+    ]
+  },
+  {
     "kind": "missing-matrix",
     "label": "Missing Matrix",
     "aliases": [

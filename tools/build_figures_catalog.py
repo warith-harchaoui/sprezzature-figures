@@ -48,6 +48,38 @@ _ROW_RE = re.compile(r"^\|\s*`([^`]+)`\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*([
 # make_<kind>(data, *, out, title) -> Path contract (§3.1 required_roles).
 # Every other figure defaults to no declared roles until it is adapted.
 HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
+    # The three glyph maps. All of them need a place (lon/lat) and a name for
+    # it; what differs is the payload: one number for a bubble, a list of
+    # independent magnitudes for a bar group, a list of parts of a whole for a
+    # pie. The list-valued roles are declared numeric because that is what
+    # each element is, and the generators normalise the row themselves.
+    "map-bubble": {
+        "required_roles": [
+            {"name": "name", "label": "Place", "accepted_types": ["categorical"], "required": True},
+            {"name": "lon", "label": "Longitude", "accepted_types": ["numeric"], "required": True},
+            {"name": "lat", "label": "Latitude", "accepted_types": ["numeric"], "required": True},
+            {"name": "gt", "label": "Quantity sized by area", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "map-bars": {
+        "required_roles": [
+            {"name": "region", "label": "Place", "accepted_types": ["categorical"], "required": True},
+            {"name": "lon", "label": "Longitude", "accepted_types": ["numeric"], "required": True},
+            {"name": "lat", "label": "Latitude", "accepted_types": ["numeric"], "required": True},
+            {"name": "values", "label": "One magnitude per series", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "map-pie": {
+        "required_roles": [
+            {"name": "region", "label": "Place", "accepted_types": ["categorical"], "required": True},
+            {"name": "lon", "label": "Longitude", "accepted_types": ["numeric"], "required": True},
+            {"name": "lat", "label": "Latitude", "accepted_types": ["numeric"], "required": True},
+            {"name": "values", "label": "One share per part of the whole", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
     "seasonal-decomposition": {
         "required_roles": [
             {

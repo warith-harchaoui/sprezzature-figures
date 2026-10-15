@@ -20,7 +20,7 @@ A chart request arrives in one of three shapes. Everything else is detail.
 
 ---
 
-## Do not try to memorise 162 chart names
+## Do not try to memorise 165 chart names
 
 The catalogue is open-ended and grows; the vocabulary of **intent** is
 closed. Route on the intent, let the tool pick the kind.
@@ -45,7 +45,7 @@ already worked out.
 **When no goal fits**, the request is still valid — the catalogue reaches
 well past the nine. Match the user's own noun against
 [the full trigger table below](#every-kind-and-the-sentence-that-reaches-it),
-which lists every one of the 162 kinds with the phrase that reaches it, in
+which lists every one of the 165 kinds with the phrase that reaches it, in
 English and in French. `get_kind` then says what the rows must carry.
 
 ### The generalisation, stated once
@@ -418,7 +418,7 @@ lines with the nearest real name, by the API with a 422. Ask
 
 **1. `render_figure` takes a catalogue name, not a description.** There is no
 `--x/--y/--kind` combinator and no plotting-library backend behind this: all
-162 kinds are SVG authored directly. If the user asks for output "in
+165 kinds are SVG authored directly. If the user asks for output "in
 <library>", say plainly that this package does not use one, and draw the
 figure.
 
@@ -440,4 +440,4 @@ from sprezzature_figures import make_figure
 path = make_figure(kind, data, out="output.png", title="My chart")
 ```
 
-All 162 kinds and the `data` shape each expects are in [FIGURES.md](FIGURES.md).
+All 165 kinds and the `data` shape each expects are in [FIGURES.md](FIGURES.md).
