@@ -3,8 +3,8 @@
 <desc id="pc-desc">Parallel-coordinates plot of three car classes (compact, midsize, SUV) across four metrics — fuel economy (mpg), power (hp), weight (lb) and 0-100 km/h time (s). Each car is a polyline crossing all four vertical axes; the three classes fall into three separated bands.</desc>
 <style>.tip{opacity:0;pointer-events:none;transition:opacity .12s ease}#car-0:hover~#car-tip-0,#car-0:focus~#car-tip-0{opacity:1}#car-1:hover~#car-tip-1,#car-1:focus~#car-tip-1{opacity:1}#car-2:hover~#car-tip-2,#car-2:focus~#car-tip-2{opacity:1}#car-3:hover~#car-tip-3,#car-3:focus~#car-tip-3{opacity:1}#car-4:hover~#car-tip-4,#car-4:focus~#car-tip-4{opacity:1}#car-5:hover~#car-tip-5,#car-5:focus~#car-tip-5{opacity:1}#car-6:hover~#car-tip-6,#car-6:focus~#car-tip-6{opacity:1}#car-7:hover~#car-tip-7,#car-7:focus~#car-tip-7{opacity:1}#car-8:hover~#car-tip-8,#car-8:focus~#car-tip-8{opacity:1}#car-9:hover~#car-tip-9,#car-9:focus~#car-tip-9{opacity:1}#car-10:hover~#car-tip-10,#car-10:focus~#car-tip-10{opacity:1}#car-11:hover~#car-tip-11,#car-11:focus~#car-tip-11{opacity:1}#car-12:hover~#car-tip-12,#car-12:focus~#car-tip-12{opacity:1}#car-13:hover~#car-tip-13,#car-13:focus~#car-tip-13{opacity:1}#car-14:hover~#car-tip-14,#car-14:focus~#car-tip-14{opacity:1}@media (prefers-reduced-motion: reduce){.tip{transition:none}}</style>
 <rect width="1200" height="720" fill="#FFFFFF"/>
-<text x="40" y="56" font-size="26" font-weight="600" fill="#1D1D1F" letter-spacing="-0.3">Cars by class across four metrics</text>
-<text x="40" y="84" font-size="14" fill="#6E6E73">Three classes traced over four measures · each line is one car</text>
+<text x="40" y="56" font-size="26" font-weight="600" fill="#1D1D1F" letter-spacing="-0.3">The classes separate on every measure but acceleration</text>
+<text x="40" y="84" font-size="14" fill="#6E6E73">Three classes over four measures · no overlap in economy, power or weight</text>
 <rect x="40.0" y="108" width="16" height="16" rx="3" fill="#007AFF"/>
 <text x="62.0" y="121" font-size="14" fill="#1D1D1F">Compact</text>
 <rect x="165.5" y="108" width="16" height="16" rx="3" fill="#FF9500"/>

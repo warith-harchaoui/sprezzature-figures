@@ -3,7 +3,7 @@
 <desc id="cm-desc">Confusion matrix of a 3-class classifier over 162 test images. Rows are the actual class (Cat, Dog, Fox), columns the predicted class; each cell is shaded on a blue ramp by its count, darkest on the correct diagonal, with the count printed. The diagonal (52, 44, 39) shows most predictions are correct; the largest error is 7 Fox predicted as Dog.</desc>
 <style>.tip{opacity:0;pointer-events:none;transition:opacity .12s ease}#hit-0:hover~#tip-0,#hit-0:focus~#tip-0{opacity:1}#hit-1:hover~#tip-1,#hit-1:focus~#tip-1{opacity:1}#hit-2:hover~#tip-2,#hit-2:focus~#tip-2{opacity:1}#hit-3:hover~#tip-3,#hit-3:focus~#tip-3{opacity:1}#hit-4:hover~#tip-4,#hit-4:focus~#tip-4{opacity:1}#hit-5:hover~#tip-5,#hit-5:focus~#tip-5{opacity:1}#hit-6:hover~#tip-6,#hit-6:focus~#tip-6{opacity:1}#hit-7:hover~#tip-7,#hit-7:focus~#tip-7{opacity:1}#hit-8:hover~#tip-8,#hit-8:focus~#tip-8{opacity:1}@media (prefers-reduced-motion: reduce){.tip{transition:none}}</style>
 <rect width="820" height="696.0" fill="#FFFFFF"/>
-<text x="40" y="56" font-size="26" font-weight="600" fill="#1D1D1F" letter-spacing="-0.3">Confusion matrix</text>
+<text x="40" y="56" font-size="26" font-weight="600" fill="#1D1D1F" letter-spacing="-0.3">Foxes get called dogs more often than any other mistake</text>
 <text x="40" y="84" font-size="14" fill="#6E6E73">Actual vs predicted class over 162 test images · diagonal = correct</text>
 <text x="483.0" y="134.0" font-size="16" font-weight="700" fill="#1D1D1F" text-anchor="middle">Predicted</text>
 <text x="325.0" y="164.0" font-size="15" fill="#1D1D1F" text-anchor="middle">Cat</text>

@@ -4,7 +4,7 @@
 <style>.bar{transition:filter .15s ease,transform .15s ease;transform-box:fill-box;transform-origin:bottom;}.bar:hover,.bar:focus{filter:brightness(1.08);transform:scaleY(1.015);outline:none;}@media (prefers-reduced-motion: reduce){.bar{transition:none;}.bar:hover,.bar:focus{transform:none;}}.tip{opacity:0;pointer-events:none;transition:opacity .12s ease}#bar-hit-0:hover~#bar-tip-0,#bar-hit-0:focus~#bar-tip-0{opacity:1}#bar-hit-1:hover~#bar-tip-1,#bar-hit-1:focus~#bar-tip-1{opacity:1}#bar-hit-2:hover~#bar-tip-2,#bar-hit-2:focus~#bar-tip-2{opacity:1}#bar-hit-3:hover~#bar-tip-3,#bar-hit-3:focus~#bar-tip-3{opacity:1}@media (prefers-reduced-motion:reduce){.tip{transition:none}}</style>
 <rect width="745" height="505.0" fill="#FFFFFF"/>
 <text x="40" y="56" font-size="26" font-weight="600" fill="#1D1D1F" letter-spacing="-0.3">The North brings in nearly four times what the West does</text>
-<text x="40" y="84" font-size="14" fill="#6E6E73"></text>
+<text x="40" y="84" font-size="14" fill="#6E6E73">Quarterly figures</text>
 <line x1="64.0" y1="435.0" x2="713.0" y2="435.0" stroke="#E5E5EA" stroke-width="1"/>
 <text x="54.0" y="439.0" font-size="12" font-family="Roboto Mono, ui-monospace, monospace" fill="#6E6E73" text-anchor="end">0</text>
 <line x1="64.0" y1="371.6" x2="713.0" y2="371.6" stroke="#E5E5EA" stroke-width="1"/>
@@ -17,7 +17,7 @@
 <text x="54.0" y="185.4" font-size="12" font-family="Roboto Mono, ui-monospace, monospace" fill="#6E6E73" text-anchor="end">40</text>
 <line x1="64.0" y1="118.0" x2="713.0" y2="118.0" stroke="#E5E5EA" stroke-width="1"/>
 <text x="54.0" y="122.0" font-size="12" font-family="Roboto Mono, ui-monospace, monospace" fill="#6E6E73" text-anchor="end">50</text>
-<text x="14.0" y="276.5" font-size="14" fill="#1D1D1F" text-anchor="middle" transform="rotate(-90 14.0 276.5)">value</text>
+<text x="14.0" y="276.5" font-size="14" fill="#1D1D1F" text-anchor="middle" transform="rotate(-90 14.0 276.5)">Value</text>
 <path id="bar-hit-0" class="bar hit" tabindex="0" d="M100.5,168.7 H189.8 A4,4 0 0 1 193.8,172.7 V435 H96.5 V172.7 A4,4 0 0 1 100.5,168.7 Z" fill="#007AFF"><title>North: 42 (42.0% of total)</title></path>
 <path id="bar-hit-1" class="bar hit" tabindex="0" d="M262.7,257.5 H352 A4,4 0 0 1 356,261.5 V435 H258.7 V261.5 A4,4 0 0 1 262.7,257.5 Z" fill="#A52A2A"><title>South: 28 (28.0% of total)</title></path>
 <path id="bar-hit-2" class="bar hit" tabindex="0" d="M424.9,314.5 H514.3 A4,4 0 0 1 518.3,318.5 V435 H420.9 V318.5 A4,4 0 0 1 424.9,314.5 Z" fill="#28CD41"><title>East: 19 (19.0% of total)</title></path>
@@ -31,6 +31,6 @@
 <text x="307.4" y="455.0" font-size="13" fill="#1D1D1F" text-anchor="middle">South</text>
 <text x="469.6" y="455.0" font-size="13" fill="#1D1D1F" text-anchor="middle">East</text>
 <text x="631.9" y="455.0" font-size="13" fill="#1D1D1F" text-anchor="middle">West</text>
-<text x="388.5" y="479.0" font-size="14" fill="#1D1D1F" text-anchor="middle">region</text>
+<text x="388.5" y="479.0" font-size="14" fill="#1D1D1F" text-anchor="middle">Region</text>
 <script><![CDATA[(function(){var me=document.currentScript,svg=me.ownerSVGElement||me.parentNode;if(svg.closest&&svg.closest('[data-fs-target]'))return;var fe=null;try{fe=window.frameElement}catch(err){}if(fe&&fe.hasAttribute('data-lb-obj'))return;if(fe&&window.parent!==window){svg.addEventListener('click',function(){window.parent.postMessage({szFig:1,type:'open-fullscreen'},'*');});return;}var req=svg.requestFullscreen||svg.webkitRequestFullscreen;if(!req)return;var t=function(){var f=document.fullscreenElement||document.webkitFullscreenElement;if(f===svg)(document.exitFullscreen||document.webkitExitFullscreen).call(document);else req.call(svg);};svg.style.cursor='pointer';svg.setAttribute('tabindex','0');svg.addEventListener('click',t);svg.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();t();}});})();]]></script>
 </svg>
