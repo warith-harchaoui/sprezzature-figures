@@ -1,6 +1,6 @@
 {
   "summary": {
-    "stable": 165,
+    "stable": 167,
     "experimental": 0,
     "legacy": 0,
     "unavailable": 0
@@ -2084,6 +2084,31 @@
       ]
     },
     {
+      "kind": "map-flow",
+      "filename": "make_map-flow.py",
+      "hyphenated_kind": true,
+      "dispatcher_reachable_by_kind": false,
+      "importable": true,
+      "import_error": null,
+      "expected_callable": "make_map_flow",
+      "callable_exists": true,
+      "demo_data_exists": true,
+      "demo_data_len": 10,
+      "accepts_data": true,
+      "accepts_out": true,
+      "accepts_title": true,
+      "renderer": "svg",
+      "writes_hardcoded_path": true,
+      "hardcoded_dimensions": false,
+      "render_test": "passed",
+      "render_error": null,
+      "status": "stable",
+      "errors": [
+        "make_figure('map-flow') cannot resolve to make_map-flow.py: hyphen/underscore normalisation looks for a different filename",
+        "Default output path falls back to a shared assets/ directory"
+      ]
+    },
+    {
       "kind": "map-pie",
       "filename": "make_map-pie.py",
       "hyphenated_kind": true,
@@ -2105,6 +2130,31 @@
       "status": "stable",
       "errors": [
         "make_figure('map-pie') cannot resolve to make_map-pie.py: hyphen/underscore normalisation looks for a different filename",
+        "Default output path falls back to a shared assets/ directory"
+      ]
+    },
+    {
+      "kind": "map-tilegrid",
+      "filename": "make_map-tilegrid.py",
+      "hyphenated_kind": true,
+      "dispatcher_reachable_by_kind": false,
+      "importable": true,
+      "import_error": null,
+      "expected_callable": "make_map_tilegrid",
+      "callable_exists": true,
+      "demo_data_exists": true,
+      "demo_data_len": 46,
+      "accepts_data": true,
+      "accepts_out": true,
+      "accepts_title": true,
+      "renderer": "svg",
+      "writes_hardcoded_path": true,
+      "hardcoded_dimensions": false,
+      "render_test": "passed",
+      "render_error": null,
+      "status": "stable",
+      "errors": [
+        "make_figure('map-tilegrid') cannot resolve to make_map-tilegrid.py: hyphen/underscore normalisation looks for a different filename",
         "Default output path falls back to a shared assets/ directory"
       ]
     },

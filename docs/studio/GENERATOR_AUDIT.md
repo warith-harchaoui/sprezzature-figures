@@ -4,11 +4,11 @@ Reproducible audit of every `scripts/make_*.py` generator against the
 `make_<kind>(data, *, out, title, ...) -> Path` contract the dispatcher
 expects. Regenerate with `python tools/audit_generators.py --render`.
 
-- **stable**: 165
+- **stable**: 167
 - **experimental**: 0
 - **legacy**: 0
 - **unavailable**: 0
-- **total**: 165
+- **total**: 167
 
 | kind | status | reachable | callable | demo_data | render | errors |
 |---|---|---|---|---|---|---|
@@ -98,7 +98,9 @@ expects. Regenerate with `python tools/audit_generators.py --render`.
 | `manifold_path` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `map-bars` | stable | **no** | yes | yes | passed | make_figure('map-bars') cannot resolve to make_map-bars.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
 | `map-bubble` | stable | **no** | yes | yes | passed | make_figure('map-bubble') cannot resolve to make_map-bubble.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
+| `map-flow` | stable | **no** | yes | yes | passed | make_figure('map-flow') cannot resolve to make_map-flow.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
 | `map-pie` | stable | **no** | yes | yes | passed | make_figure('map-pie') cannot resolve to make_map-pie.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
+| `map-tilegrid` | stable | **no** | yes | yes | passed | make_figure('map-tilegrid') cannot resolve to make_map-tilegrid.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
 | `missing-matrix` | stable | **no** | yes | yes | passed | make_figure('missing-matrix') cannot resolve to make_missing-matrix.py: hyphen/underscore normalisation looks for a different filename |
 | `mosaic` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
 | `network` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
