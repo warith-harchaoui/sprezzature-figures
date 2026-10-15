@@ -413,20 +413,24 @@ def build_svg(
         f'font-size="13" font-weight="700" fill="{_INK}">'
         f'CIRCLE AREA = ANNUAL EMISSIONS</text>'
     )
-    for value in (10.0, 5.0, 1.0):
-        r = radius(value)
+    # `reference`, not `value`: the loop above binds `value` to a *formatted*
+    # string, and reusing the name here for a number made the two meanings
+    # collide in one scope -- which mypy caught and a reader would not have.
+    for reference in (10.0, 5.0, 1.0):
+        ref_r = radius(reference)
         parts.append(
-            f'<circle cx="{legend_x:.1f}" cy="{legend_base - r:.1f}" r="{r:.1f}" '
-            f'fill="none" stroke="{_SUBTLE}" stroke-width="1.1"/>'
+            f'<circle cx="{legend_x:.1f}" cy="{legend_base - ref_r:.1f}" '
+            f'r="{ref_r:.1f}" fill="none" stroke="{_SUBTLE}" stroke-width="1.1"/>'
         )
         parts.append(
-            f'<line x1="{legend_x:.1f}" y1="{legend_base - 2 * r:.1f}" '
-            f'x2="{legend_x + _MAX_R + 12:.1f}" y2="{legend_base - 2 * r:.1f}" '
+            f'<line x1="{legend_x:.1f}" y1="{legend_base - 2 * ref_r:.1f}" '
+            f'x2="{legend_x + _MAX_R + 12:.1f}" y2="{legend_base - 2 * ref_r:.1f}" '
             f'stroke="{_LAND_EDGE}" stroke-width="1"/>'
         )
         parts.append(
-            f'<text x="{legend_x + _MAX_R + 18:.1f}" y="{legend_base - 2 * r + 4:.1f}" '
-            f'font-size="13" fill="{_SUBTLE}">{value:.0f} Gt a year</text>'
+            f'<text x="{legend_x + _MAX_R + 18:.1f}" '
+            f'y="{legend_base - 2 * ref_r + 4:.1f}" font-size="13" '
+            f'fill="{_SUBTLE}">{reference:.0f} Gt a year</text>'
         )
 
     # ---- footnote ----
