@@ -980,12 +980,16 @@ def _legend_and_stat(
         f'all on the Pacific rim</text>'
     )
 
-    # ---- horizontal ramp (right of the stat) ----
-    ramp_x = lx + 470.0
-    ramp_y = ly + 8.0
+    # ---- horizontal ramp (right edge of the map) ----
+    # Pinned to the right of the map rather than offset from the stat: a
+    # fixed 470 px gap guessed where the caption ended, and the caption is
+    # written from the data. On the demo rows it ran past that point, and
+    # the ramp's "1" was printed inside the word "Pacific".
     bar_h = 26.0
     n_seg = 9
     seg_w = 40.0
+    ramp_x = _MAP_X + _MAP_W - n_seg * seg_w - 8.0
+    ramp_y = ly + 8.0
     out.append(
         f'<text x="{ramp_x:.1f}" y="{ramp_y - 12:.1f}" font-size="16.5" '
         f'font-weight="700" fill="{_INK}">{ramp_legend_title}</text>'

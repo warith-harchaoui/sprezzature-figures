@@ -353,7 +353,12 @@ def _place_words(data: Optional[List[Dict[str, Any]]] = None) -> List[Dict[str, 
     # band rather than a circle. Fine angular steps keep placement tight.
     a = 4.2
     aspect = (_FIELD_RIGHT - _FIELD_LEFT) / (_FIELD_BOTTOM - _FIELD_TOP)
-    d_theta = 0.22
+    # A fixed angular step samples the spiral ever more coarsely as it opens:
+    # one turn out at r = 300, successive candidates sit 66 px apart and the
+    # walk steps straight over gaps a word would have fitted in. The step is
+    # therefore set from the arc it covers, so sampling stays as fine far out
+    # as it is at the centre.
+    d_theta_centre, pas_arc = 0.22, 7.0
     theta_max = 60.0 * math.pi   # plenty of turns for ~40 words
 
     placed_boxes: List[Tuple[float, float, float, float]] = []
@@ -371,6 +376,7 @@ def _place_words(data: Optional[List[Dict[str, Any]]] = None) -> List[Dict[str, 
 
         theta = 0.0
         cx, cy = cx0, cy0
+        loge = False
         # Walk the spiral until the box clears everything and stays in
         # the field. The first word lands dead-centre (theta = 0).
         while theta < theta_max:
@@ -378,8 +384,16 @@ def _place_words(data: Optional[List[Dict[str, Any]]] = None) -> List[Dict[str, 
             cx = cx0 + aspect * r * math.cos(theta)
             cy = cy0 + r * math.sin(theta)
             if _in_field(cx, cy, hw, hh) and not _overlaps(cx, cy, hw, hh, placed_boxes):
+                loge = True
                 break
-            theta += d_theta
+            theta += min(d_theta_centre, pas_arc / r) if r > 1.0 else d_theta_centre
+        if not loge:
+            # The spiral never found room. A word cloud drops its tail --
+            # every implementation does -- but it must drop it, not draw it
+            # where the walk happened to stop: that was outside the canvas,
+            # invisible to the eye and still announced, word by word, to a
+            # screen reader reading the list.
+            continue
 
         placed_boxes.append((cx, cy, hw, hh))
         placed.append(

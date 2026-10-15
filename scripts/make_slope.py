@@ -28,6 +28,7 @@ from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY, load_palette  # noqa: E402
 from _svg import foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _textfit import text_width  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
 
@@ -110,8 +111,22 @@ def build_svg(
     v_min, v_max = min(all_vals), max(all_vals)
     pad = (v_max - v_min) * 0.12 or 1.0
 
-    plot_x, plot_y = 90.0, 118.0
-    right_margin, bottom_reserved = 90.0, 60.0
+    # The end labels are the margins. They read "Community forum (28)", and a
+    # fixed 90 px gutter held about half of that: the four longest names were
+    # printed off the canvas, clipped at both edges, on the demo data itself.
+    # Measured with the same table the layout engine uses, so what fits here
+    # fits when it is drawn. Capped at a third of the canvas each, because a
+    # slope chart with no room left between its axes has stopped being one.
+    label_px = 12.0
+    def _gutter(period: str) -> float:
+        largest = max(
+            (text_width(f"{item} ({lookup.get((item, period), 0.0):.0f})", label_px) for item in items),
+            default=0.0,
+        )
+        return min(max(90.0, largest + 24.0), width / 3.0)
+
+    plot_x, plot_y = _gutter(periods[0]), 118.0
+    right_margin, bottom_reserved = _gutter(periods[-1]), 60.0
     plot_w = width - plot_x - right_margin
     plot_h = height - plot_y - bottom_reserved
     n_periods = len(periods)
@@ -193,11 +208,11 @@ def build_svg(
         x0, y0 = pts[0]
         x1, y1 = pts[-1]
         parts.append(
-            f'<text x="{x0 - 12:.1f}" y="{y0 + 4:.1f}" font-size="12" fill="{INK}" '
+            f'<text x="{x0 - 12:.1f}" y="{y0 + 4:.1f}" font-size="{label_px:.0f}" fill="{INK}" '
             f'text-anchor="end">{xml_escape(item)} ({v0:.0f})</text>'
         )
         parts.append(
-            f'<text x="{x1 + 12:.1f}" y="{y1 + 4:.1f}" font-size="12" fill="{INK}" '
+            f'<text x="{x1 + 12:.1f}" y="{y1 + 4:.1f}" font-size="{label_px:.0f}" fill="{INK}" '
             f'text-anchor="start">{xml_escape(item)} ({v1:.0f})</text>'
         )
 
