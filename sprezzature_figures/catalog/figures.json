@@ -10850,6 +10850,101 @@
     ]
   },
   {
+    "kind": "map-flow",
+    "label": "Map Flow",
+    "aliases": [
+      "map flow",
+      "map_flow"
+    ],
+    "category": "Geospatial",
+    "description": "A line between every pair of places that exchanges something, width \u221d the flow. The chart for origin-destination data \u2014 migration, trade, flights \u2014 where a bubble shows *where* and a choropleth shows *how dense*, and only a line says *from here to there*. Links are true great circles, sampled and projected, so the route is the real one and not a straight segment through places it never passes. Two nearly antipodal places cannot be drawn honestly and legibly at once: their great circle runs over the pole and sweeps the whole map width.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "svg",
+    "module": "scripts/make_map-flow.py",
+    "callable_name": "make_map_flow",
+    "required_roles": [
+      {
+        "name": "origin",
+        "label": "Origin place",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "destination",
+        "label": "Destination place",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "people",
+        "label": "Size of the flow",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 900,
+    "default_height": 600,
+    "options_schema": {
+      "title": {
+        "type": "str",
+        "default": "",
+        "choices": [],
+        "description": "Overrides the headline."
+      },
+      "mode": {
+        "type": "str",
+        "default": "self-contained",
+        "choices": [
+          "self-contained",
+          "external",
+          "static"
+        ],
+        "description": "How the SVG carries its interactivity: self-contained ships its own script, external expects the page to supply one, static leaves it out."
+      },
+      "accessibility": {
+        "type": "str",
+        "default": "universal",
+        "choices": [
+          "universal",
+          "high-contrast",
+          "monochrome",
+          "deuteranopia",
+          "protanopia",
+          "tritanopia"
+        ],
+        "description": "Palette accessibility level; universal is the colour-vision-safe default."
+      },
+      "theme": {
+        "type": "str",
+        "default": "corporate",
+        "choices": [
+          "corporate",
+          "academic"
+        ],
+        "description": "corporate (Roboto, house palette) or academic (Latin Modern, Okabe-Ito)."
+      }
+    },
+    "warnings": [
+      "make_figure('map-flow') cannot resolve to make_map-flow.py: hyphen/underscore normalisation looks for a different filename",
+      "Default output path falls back to a shared assets/ directory"
+    ]
+  },
+  {
     "kind": "map-pie",
     "label": "Map Pie",
     "aliases": [
@@ -10949,6 +11044,93 @@
     },
     "warnings": [
       "make_figure('map-pie') cannot resolve to make_map-pie.py: hyphen/underscore normalisation looks for a different filename",
+      "Default output path falls back to a shared assets/ directory"
+    ]
+  },
+  {
+    "kind": "map-tilegrid",
+    "label": "Map Tilegrid",
+    "aliases": [
+      "map tilegrid",
+      "map_tilegrid"
+    ],
+    "category": "Geospatial",
+    "description": "Every country as an equal square on a roughly geographic grid: shape, area and exact position are given up so that **each country carries the same visual weight**. Reach for it when a choropleth would let Russia and Canada shout while Iceland and Denmark vanish. Only ever for a *rate* \u2014 a share or a per-person figure, which belongs to a country rather than to its square kilometres. A total on a tile grid lies twice, hiding both the magnitudes behind the tiles and the fact that it hid them.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "svg",
+    "module": "scripts/make_map-tilegrid.py",
+    "callable_name": "make_map_tilegrid",
+    "required_roles": [
+      {
+        "name": "code",
+        "label": "Country code",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "percent",
+        "label": "Rate shading the tile",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 900,
+    "default_height": 600,
+    "options_schema": {
+      "title": {
+        "type": "str",
+        "default": "",
+        "choices": [],
+        "description": "Overrides the headline."
+      },
+      "mode": {
+        "type": "str",
+        "default": "self-contained",
+        "choices": [
+          "self-contained",
+          "external",
+          "static"
+        ],
+        "description": "How the SVG carries its interactivity: self-contained ships its own script, external expects the page to supply one, static leaves it out."
+      },
+      "accessibility": {
+        "type": "str",
+        "default": "universal",
+        "choices": [
+          "universal",
+          "high-contrast",
+          "monochrome",
+          "deuteranopia",
+          "protanopia",
+          "tritanopia"
+        ],
+        "description": "Palette accessibility level; universal is the colour-vision-safe default."
+      },
+      "theme": {
+        "type": "str",
+        "default": "corporate",
+        "choices": [
+          "corporate",
+          "academic"
+        ],
+        "description": "corporate (Roboto, house palette) or academic (Latin Modern, Okabe-Ito)."
+      }
+    },
+    "warnings": [
+      "make_figure('map-tilegrid') cannot resolve to make_map-tilegrid.py: hyphen/underscore normalisation looks for a different filename",
       "Default output path falls back to a shared assets/ directory"
     ]
   },

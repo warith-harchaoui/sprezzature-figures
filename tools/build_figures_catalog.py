@@ -53,6 +53,21 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
     # independent magnitudes for a bar group, a list of parts of a whole for a
     # pie. The list-valued roles are declared numeric because that is what
     # each element is, and the generators normalise the row themselves.
+    "map-flow": {
+        "required_roles": [
+            {"name": "origin", "label": "Origin place", "accepted_types": ["categorical"], "required": True},
+            {"name": "destination", "label": "Destination place", "accepted_types": ["categorical"], "required": True},
+            {"name": "people", "label": "Size of the flow", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
+    "map-tilegrid": {
+        "required_roles": [
+            {"name": "code", "label": "Country code", "accepted_types": ["categorical"], "required": True},
+            {"name": "percent", "label": "Rate shading the tile", "accepted_types": ["numeric"], "required": True},
+        ],
+        "optional_roles": [],
+    },
     "map-bubble": {
         "required_roles": [
             {"name": "name", "label": "Place", "accepted_types": ["categorical"], "required": True},
