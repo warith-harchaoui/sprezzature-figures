@@ -231,10 +231,10 @@ class _Label:
 
 #: A presentation property may be written as an attribute (``font-size="10"``)
 #: or inside the style attribute (``style="font-size: 10px"``). SVG the house
-#: writes uses attributes; SVG from matplotlib, Plotly and most exporters uses
-#: the style string. Reading only the attribute saw nothing there and fell back
-#: to a default, which put every label box in the wrong place -- so the checks
-#: quietly passed figures that were plainly broken.
+#: writes uses attributes; most exported SVG uses the style string. Reading
+#: only the attribute saw nothing there and fell back to a default, which put
+#: every label box in the wrong place -- so the checks quietly passed figures
+#: that were plainly broken.
 def _presentation(element: ET.Element, name: str) -> str | None:
     """Value of presentation property `name`, attribute or ``style:`` alike."""
     direct = element.get(name)
@@ -322,8 +322,8 @@ _ROTATE_ANGLE = re.compile(r"rotate\(\s*(-?[\d.]+)")
 def _tourne(transform: str) -> bool:
     """True when `transform` actually turns the text.
 
-    ``rotate(-0 cx cy)`` is what matplotlib writes on every *unrotated* tick
-    label. Treating the word "rotate" as proof of rotation excluded those
+    ``rotate(-0 cx cy)`` is what some exporters write on every *unrotated*
+    tick label. Treating the word "rotate" as proof of rotation excluded those
     labels from the collision test -- which is the one test they needed, since
     unrotated tick labels are exactly what runs into its neighbour. A zero
     angle is not a rotation.
@@ -616,17 +616,26 @@ def _display_scale(root: ET.Element) -> float:
 
 
 def _check_text_is_text(root: ET.Element, labels: Sequence[_Label]) -> list[RenderFinding]:
-    """Refuse to pass a figure whose text was converted to outlines.
+    """Refuse to pass a figure that carries no readable text.
 
-    matplotlib's default SVG writes every glyph as a path and references it
-    with ``<use>``: the figure looks identical and contains no text at all.
-    Every rule in this module then finds nothing to object to, and the caller
-    reads that as a pass -- the one answer worse than a failure, because it is
-    a failure wearing a pass. It is also a real defect in its own right: no
-    screen reader, no search, no copy, no translation.
+    A drawing with marks and no ``<text>`` makes every other rule in this
+    module find nothing to object to, and the caller reads that as a pass --
+    the one answer worse than a failure, because it is a failure wearing a
+    pass. It is a real defect in its own right too: no screen reader, no
+    search, no copy, no translation.
+
+    Two different things produce it, and the report names which one it saw
+    rather than guessing. Some exporters draw each glyph as a shape and place
+    it with ``<use>``, so the labels are there to the eye and absent to
+    everything else; that leaves a tell, a pile of ``<use>`` references with
+    no text anywhere. Without that tell the figure simply was never given
+    labels -- no country name, no value, no legend -- which is the same
+    defect reached by the other road, and telling the author to re-export
+    would be advice for an illness they do not have.
     """
     if labels:
         return []
+    glyphes = sum(1 for _ in root.iter(f"{_SVG_NS}use"))
     marques = sum(
         1
         for tag in ("path", "rect", "circle", "polygon", "line", "use")
@@ -634,13 +643,20 @@ def _check_text_is_text(root: ET.Element, labels: Sequence[_Label]) -> list[Rend
     )
     if marques < 5:
         return []  # not a figure: an icon, a logo, an empty canvas
+    cause = (
+        f"{glyphes} <use> glyph references and 0 <text>: the labels were "
+        "drawn as shapes, so re-export them as live text"
+        if glyphes
+        else f"{marques} drawn elements and 0 <text>: the figure was never "
+        "given labels, so there is nothing to re-export -- they have to be "
+        "authored"
+    )
     return [
         RenderFinding(
             "text_as_outlines",
             "the figure carries no readable text, so nothing here can be checked "
             "and no screen reader can read it",
-            f"{marques} drawn elements, 0 <text>; export with live text "
-            "(matplotlib: rcParams['svg.fonttype'] = 'none')",
+            cause,
         )
     ]
 
