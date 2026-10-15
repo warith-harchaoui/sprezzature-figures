@@ -232,6 +232,7 @@ def check(
     dark: bool = False,
     expected_title: str | None = None,
     forbidden: Sequence[str] = (),
+    fmt: str = "text",
 ) -> ActionResult:
     """Check a rendered SVG for the failures that are decidable from markup.
 
@@ -254,6 +255,13 @@ def check(
     forbidden : sequence of str, optional
         Strings that must not appear, on top of the demo chrome already
         known.
+    fmt : {"text", "json"}, optional
+        ``"json"`` prints one object on stdout -- the findings with their
+        rule, severity, message and detail, plus a count per severity and
+        an ``ok`` flag -- and nothing on stderr, so a caller that wants to
+        act on the result does not have to parse prose. The exit code is
+        the same either way: a gate keeps working, a program gains a
+        machine-readable answer.
 
     Returns
     -------
@@ -268,6 +276,33 @@ def check(
     findings = check_render(
         source, dark=dark, expected_title=expected_title, forbidden_text=list(forbidden)
     )
+    if fmt == "json":
+        import json
+
+        # Severities the caller may have to branch on are spelled out even
+        # when the count is zero: a key that only appears when something
+        # went wrong turns every reader into a `.get(..., 0)`.
+        counts = {
+            niveau: sum(1 for f in findings if f.severity == niveau)
+            for niveau in ("error", "warning")
+        }
+        rapport = {
+            "source": svg,
+            "ok": not findings,
+            "counts": counts,
+            "findings": [
+                {
+                    "check": f.check,
+                    "severity": f.severity,
+                    "message": f.message,
+                    "detail": f.detail,
+                }
+                for f in findings
+            ],
+        }
+        return ActionResult(
+            out=[json.dumps(rapport, ensure_ascii=False, indent=2)], code=1 if findings else 0
+        )
     if not findings:
         return ActionResult(out=[f"{svg}: nothing to report."])
 

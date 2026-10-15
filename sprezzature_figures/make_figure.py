@@ -975,6 +975,15 @@ def _verb_check(argv: list[str]) -> int:
         metavar="TEXT",
         help="A string that must not appear, on top of the demo chrome already known (repeatable).",
     )
+    parser.add_argument(
+        "--format",
+        dest="fmt",
+        choices=("text", "json"),
+        default="text",
+        help="json prints one object on stdout -- rule, severity, message, detail, and a "
+        "count per severity -- for a caller that acts on the result instead of reading "
+        "it. The exit code is the same either way. (default: text)",
+    )
     args = parser.parse_args(argv)
 
     from . import actions
@@ -985,6 +994,7 @@ def _verb_check(argv: list[str]) -> int:
             dark=args.dark,
             expected_title=args.expected_title,
             forbidden=args.forbidden,
+            fmt=args.fmt,
         )
     )
 
