@@ -11,6 +11,26 @@ name: publish
 #   workflow     publish.yml
 #   environment  pypi
 # All four have to match or PyPI rejects the upload.
+#
+# NOT YET REGISTERED, and the upload is gated because of it. At v2.6.0 PyPI
+# answered `invalid-publisher: valid token, but no corresponding publisher`:
+# the four values above describe what has to be declared, not what is. Until
+# somebody declares it, every tag would mint a token, be refused, and leave a
+# red run next to a release that in fact succeeded by hand -- which is how a
+# red build stops meaning anything.
+#
+# So the upload waits on a repository variable, `PYPI_TRUSTED_PUBLISHING`
+# (Settings -> Secrets and variables -> Actions -> Variables). The build job
+# still runs on every tag and still proves the thing it was written to prove:
+# that the tag and the built version agree, and that the distributions build
+# and pass `twine check`. Only the upload is held back, and it shows as a
+# skipped job rather than a passing one, so the gap stays visible.
+#
+# To turn it back on, both of these, in this order:
+#   1. register the publisher on PyPI with exactly the four values above;
+#   2. set the repository variable PYPI_TRUSTED_PUBLISHING to `ready`.
+# Meanwhile publishing is manual -- see the suite's release notes for the
+# twine invocation and which credentials file actually works.
 
 "on":
   push:
@@ -82,6 +102,9 @@ jobs:
     name: Publish to PyPI
     needs: build
     runs-on: ubuntu-latest
+    # Held back until the trusted publisher exists on PyPI -- see the header.
+    # A skipped job, not a passing one: the difference is the whole point.
+    if: vars.PYPI_TRUSTED_PUBLISHING == 'ready'
     # A dedicated environment is what the registered publisher is pinned to,
     # and it is where a protection rule (required reviewer) can be added later
     # without touching this file.
