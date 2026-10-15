@@ -45,8 +45,6 @@ Author
 
 from __future__ import annotations
 
-import json
-import math
 import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -59,6 +57,7 @@ from _svg import svg_open, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
+from _worldmap import equal_earth, load_land_rings  # noqa: E402
 
 
 # ------------------------------------------------------------------
@@ -210,96 +209,14 @@ _LABELLED: dict[str, str] = {
 # ------------------------------------------------------------------
 Ring = List[Tuple[float, float]]
 
-
-def _load_land_rings() -> List[Ring]:
-    """Decode the vendored world land silhouette from TopoJSON.
-
-    The minimal TopoJSON contract of ``countries-110m.json``: quantised,
-    delta-encoded arcs plus a ``scale`` / ``translate`` transform,
-    stitched into closed lon/lat rings. We use the ``land`` object (a
-    single fused silhouette) so no internal country borders clutter the
-    faint backdrop under the spikes.
-
-    Returns
-    -------
-    list of ring
-        One list of ``(lon, lat)`` tuples (degrees) per land ring.
-    """
-    geo_path = (
-        Path(__file__).resolve().parent.parent / "assets" / "geo" / "countries-110m.json"
-    )
-    topo = json.loads(geo_path.read_text(encoding="utf-8"))
-    scale = topo["transform"]["scale"]
-    translate = topo["transform"]["translate"]
-    raw_arcs = topo["arcs"]
-
-    def decode_arc(index: int) -> List[Tuple[float, float]]:
-        # A negative index means the arc is traversed in reverse (~index).
-        reverse = index < 0
-        arc = raw_arcs[~index if reverse else index]
-        pts: List[Tuple[float, float]] = []
-        x = y = 0
-        for dx, dy in arc:
-            x += dx
-            y += dy
-            pts.append((x * scale[0] + translate[0], y * scale[1] + translate[1]))
-        return pts[::-1] if reverse else pts
-
-    def stitch(arc_indices: List[int]) -> Ring:
-        ring: Ring = []
-        for j, idx in enumerate(arc_indices):
-            pts = decode_arc(idx)
-            ring.extend(pts if j == 0 else pts[1:])
-        return ring
-
-    rings: List[Ring] = []
-    for geom in topo["objects"]["land"]["geometries"]:
-        gtype = geom["type"]
-        if gtype == "Polygon":
-            for part in geom["arcs"]:
-                rings.append(stitch(part))
-        elif gtype == "MultiPolygon":
-            for poly in geom["arcs"]:
-                for part in poly:
-                    rings.append(stitch(part))
-    return rings
-
-
-# ------------------------------------------------------------------
-# Equal Earth projection (Šavrič, Patterson & Jenny 2018)
-# ------------------------------------------------------------------
-# Closed-form equal-area world projection; pleasant globe-like curvature.
-# Polynomial constants from the original paper.
-_A1, _A2, _A3, _A4 = 1.340264, -0.081106, 0.000893, 0.003796
-_M = math.sqrt(3.0) / 2.0
-
-
-def _equal_earth(lon: float, lat: float) -> Tuple[float, float]:
-    """Project ``(lon, lat)`` in degrees to Equal Earth planar ``(x, y)``.
-
-    Parameters
-    ----------
-    lon, lat : float
-        Longitude / latitude in degrees.
-
-    Returns
-    -------
-    tuple of float
-        Planar ``(x, y)`` in projection units; ``y`` points up. Callers
-        fit these to the viewport with :func:`_fit`.
-    """
-    lam = math.radians(lon)
-    phi = math.radians(lat)
-    # Parametric latitude.
-    theta = math.asin(_M * math.sin(phi))
-    t2 = theta * theta
-    t6 = t2 * t2 * t2
-    x = (
-        2.0 * math.sqrt(3.0) * lam * math.cos(theta)
-        / (3.0 * (_A1 + 3.0 * _A2 * t2 + t6 * (7.0 * _A3 + 9.0 * _A4 * t2)))
-    )
-    y = theta * (_A1 + _A2 * t2 + t6 * (_A3 + _A4 * t2))
-    return x, y
+# The TopoJSON decoder and the Equal Earth polynomial used to be written out
+# here in full. They are identical in every figure that needs them, so they
+# live in `_worldmap` now and these two names are the local spelling of the
+# shared thing. What stays local is `_fit` below: this map fits to the land
+# extent, where the hexbin map fits to the whole graticule, and that is a
+# real difference between the two figures rather than duplication.
+_load_land_rings = load_land_rings
+_equal_earth = equal_earth
 
 
 def _fit(rings: List[Ring]) -> Tuple[float, float, float, float, float]:
@@ -506,7 +423,7 @@ def build_svg(
     parts.append(f'<desc id="sm-desc">{desc}</desc>')
 
     # ---- interactivity (pure CSS + native <title>, no JS) ----
-    # Same idiom as the interactive-bar example: a native <title> per spike
+    # Same idiom as docs/examples/interactive-bar.svg: a native <title> per spike
     # gives an OS tooltip with zero JavaScript, and CSS :hover / :focus makes
     # the skyline explorable — hover any spike and its neighbours dim so the
     # eye lands on one, while a small value flag rises above the hovered spike.

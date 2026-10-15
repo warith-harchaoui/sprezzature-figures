@@ -49,7 +49,6 @@ Author
 
 from __future__ import annotations
 
-import json
 import math
 import random
 import sys
@@ -64,6 +63,7 @@ from _svg import foreground_tip_css, hex_to_rgb as _hex_to_rgb, svg_open, toolti
 from _svg import xml_escape  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
+from _worldmap import equal_earth, load_land_rings  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
 
@@ -174,106 +174,26 @@ def _ramp(
 # ------------------------------------------------------------------
 Ring = List[Tuple[float, float]]
 
-
-def _load_land_rings() -> List[Ring]:
-    """Decode the vendored world land silhouette from TopoJSON.
-
-    The minimal TopoJSON contract of ``countries-110m.json``: quantised,
-    delta-encoded arcs plus a ``scale`` / ``translate`` transform, stitched
-    into closed lon/lat rings. We use the fused ``land`` object so no internal
-    country borders clutter the faint backdrop under the hexes.
-
-    Returns
-    -------
-    list of ring
-        One list of ``(lon, lat)`` tuples (degrees) per land ring.
-    """
-    geo_path = (
-        Path(__file__).resolve().parent.parent / "assets" / "geo" / "countries-110m.json"
-    )
-    topo = json.loads(geo_path.read_text(encoding="utf-8"))
-    scale = topo["transform"]["scale"]
-    translate = topo["transform"]["translate"]
-    raw_arcs = topo["arcs"]
-
-    def decode_arc(index: int) -> List[Tuple[float, float]]:
-        # A negative index means the arc is traversed in reverse (~index).
-        reverse = index < 0
-        arc = raw_arcs[~index if reverse else index]
-        pts: List[Tuple[float, float]] = []
-        x = y = 0
-        for dx, dy in arc:
-            x += dx
-            y += dy
-            pts.append((x * scale[0] + translate[0], y * scale[1] + translate[1]))
-        return pts[::-1] if reverse else pts
-
-    def stitch(arc_indices: List[int]) -> Ring:
-        ring: Ring = []
-        for j, idx in enumerate(arc_indices):
-            pts = decode_arc(idx)
-            ring.extend(pts if j == 0 else pts[1:])
-        return ring
-
-    rings: List[Ring] = []
-    for geom in topo["objects"]["land"]["geometries"]:
-        gtype = geom["type"]
-        if gtype == "Polygon":
-            for part in geom["arcs"]:
-                rings.append(stitch(part))
-        elif gtype == "MultiPolygon":
-            for poly in geom["arcs"]:
-                for part in poly:
-                    rings.append(stitch(part))
-    return rings
-
-
-# ------------------------------------------------------------------
-# Equal Earth projection (Šavrič, Patterson & Jenny 2018)
-# ------------------------------------------------------------------
-# Closed-form equal-area world projection; pleasant globe-like curvature.
-# Equal-area is what keeps a hexbin honest: equal ground area maps to equal
-# screen area, so a full hexagon means the same catchment everywhere.
-_A1, _A2, _A3, _A4 = 1.340264, -0.081106, 0.000893, 0.003796
+# The TopoJSON decoder and the Equal Earth polynomial live in `_worldmap`:
+# they were written out here in full, and identically in `make_spike-map.py`,
+# before three more figures needed them. What is genuinely this figure's own
+# is the centring and the extent, kept below.
+_load_land_rings = load_land_rings
 
 #: Central meridian, in degrees. Centring on the Pacific keeps the Ring of
 #: Fire a single continuous arc instead of splitting it at the map edges.
 _LON0: float = 160.0
 
 
-def _wrap_lon(lon: float) -> float:
-    """Shift ``lon`` into ``[-180, 180]`` about the central meridian ``_LON0``."""
-    return ((lon - _LON0 + 180.0) % 360.0) - 180.0
-
-
 def _equal_earth(lon: float, lat: float) -> Tuple[float, float]:
-    """Project ``(lon, lat)`` in degrees to Equal Earth planar ``(x, y)``.
+    """Project ``(lon, lat)``, Pacific-centred, to Equal Earth ``(x, y)``.
 
-    Longitudes are first re-centred on :data:`_LON0` (the Pacific) and
-    wrapped into ``[-180, 180]``, so the map is Pacific-centred.
-
-    Parameters
-    ----------
-    lon, lat : float
-        Longitude / latitude in degrees.
-
-    Returns
-    -------
-    tuple of float
-        Planar ``(x, y)`` in projection units; ``y`` points up. Callers fit
-        these to the viewport with :func:`_fit`.
+    A one-line binding of the shared projection to this figure's centring,
+    so the dozen call sites below do not each have to remember it -- and so
+    the fit and the drawing cannot drift onto different meridians, which
+    would shift the whole map without any single line looking wrong.
     """
-    lam = math.radians(_wrap_lon(lon))
-    phi = math.radians(lat)
-    theta = math.asin((math.sqrt(3.0) / 2.0) * math.sin(phi))
-    t2 = theta * theta
-    t6 = t2 * t2 * t2
-    x = (
-        2.0 * math.sqrt(3.0) * lam * math.cos(theta)
-        / (3.0 * (_A1 + 3.0 * _A2 * t2 + t6 * (7.0 * _A3 + 9.0 * _A4 * t2)))
-    )
-    y = theta * (_A1 + _A2 * t2 + t6 * (_A3 + _A4 * t2))
-    return x, y
+    return equal_earth(lon, lat, central_meridian=_LON0)
 
 
 # Module-level projection fit, set once by build_svg. Kept out of the passed
