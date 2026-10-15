@@ -54,6 +54,7 @@ from gapminder_i18n import COUNTRIES_FR, HISTORY_FR, REGIONS_FR
 from _render import write_svg
 from _svg import xml_escape as _xml  # noqa: E402
 from _style import forced_color_patterns, leveled_colors, os_adaptive_style, os_dark_style
+from _textfit import text_width  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme
 
 # Import the pieces that are identical across the whole tribute family, so the
@@ -716,10 +717,64 @@ def build(
         parts.append('</g>')
         svg.append("".join(parts))
 
+    # Where does the name go: above the bubble, below it, or out to one
+    # side? Two large bubbles that sit close put their names on top of each
+    # other -- China and Brazil did, in the very first frame of the demo,
+    # and neither "both above" nor "both below" separates them: China's
+    # disc is big enough that Brazil is boxed in vertically.
+    #
+    # The side is chosen ONCE per country and kept for the whole run: a
+    # label that changed side mid-animation would flicker, which reads worse
+    # than the collision it avoided. Among the four, the one that runs into
+    # an already-placed name in the fewest frames wins -- with the opening
+    # frame counting for more than any other, since it is the still that
+    # gets screenshotted, embedded as a card and checked.
+    _POSES = ("dessus", "dessous", "droite", "gauche")
+
+    def _ancre(pose: str) -> str:
+        return {"droite": "start", "gauche": "end"}.get(pose, "middle")
+
+    def _point(nom: str, i: int, pose: str) -> tuple[float, float]:
+        d = data[nom]
+        cx, cy, r = sx(d["x"][i]), sy(d["y"][i]), sr(d["pop"][i])
+        if pose == "dessus":
+            return cx, cy - r - 3
+        if pose == "dessous":
+            return cx, cy + r + 11
+        if pose == "droite":
+            return cx + r + 5, cy + 3
+        return cx - r - 5, cy + 3
+
+    def _boite(nom: str, i: int, pose: str) -> tuple[float, float, float, float]:
+        x, y = _point(nom, i, pose)
+        largeur = text_width(tc(nom), 10.0)
+        depart = {"droite": x, "gauche": x - largeur}.get(pose, x - largeur / 2.0)
+        return depart, y - 8.0, depart + largeur, y + 2.0
+
+    def _heurte(a: tuple, b: tuple) -> bool:
+        return a[0] < b[2] and b[0] < a[2] and a[1] < b[3] and b[1] < a[3]
+
+    pose_de: dict[str, str] = {}
+    for name, _ in order:
+        def _cout(pose: str, nom: str = name) -> tuple[bool, int]:
+            heurts = [
+                i
+                for i in range(n)
+                if label_on[nom][i]
+                for voisin in pose_de
+                if label_on[voisin][i]
+                and _heurte(_boite(nom, i, pose), _boite(voisin, i, pose_de[voisin]))
+            ]
+            return (0 in heurts, len(heurts))
+
+        pose_de[name] = min(_POSES, key=_cout)
+
     # Following name labels for the current biggest bubbles, period-correct.
-    def label(disp: str, lx0: float, ly0: float, lxs: str, lys: str, opacity: str) -> str:
+    def label(
+        disp: str, lx0: float, ly0: float, lxs: str, lys: str, opacity: str, ancre: str
+    ) -> str:
         return (
-            f'<text x="{lx0:.1f}" y="{ly0:.1f}" opacity="{opacity.split(";")[0]}" text-anchor="middle" font-size="10" '
+            f'<text x="{lx0:.1f}" y="{ly0:.1f}" opacity="{opacity.split(";")[0]}" text-anchor="{ancre}" font-size="10" '
             f'font-weight="600" fill="#1D1D1F" stroke="#FFFFFF" stroke-width="2.4" paint-order="stroke" '
             f'style="pointer-events:none">{disp}'
             f'<animate attributeName="x" values="{lxs}" keyTimes="{keytimes}" dur="{dur}" repeatCount="indefinite"/>'
@@ -727,15 +782,16 @@ def build(
             f'<animate attributeName="opacity" values="{opacity}" keyTimes="{keytimes}" '
             f'calcMode="discrete" dur="{dur}" repeatCount="indefinite"/></text>')
 
-    for name, d in order:
-        lxs = ";".join(f"{sx(g):.1f}" for g in d["x"])
-        lys = ";".join(f"{sy(le) - sr(p) - 3:.1f}" for le, p in zip(d["y"], d["pop"], strict=True))
-        lx0, ly0 = sx(d["x"][0]), sy(d["y"][0]) - sr(d["pop"][0]) - 3
+    for name, _d in order:
+        points = [_point(name, i, pose_de[name]) for i in range(n)]
+        lxs = ";".join(f"{x:.1f}" for x, _ in points)
+        lys = ";".join(f"{y:.1f}" for _, y in points)
+        lx0, ly0 = points[0]
         for start, end, disp in NAME_HISTORY.get(name, [(y0i, y1i, name)]):
             op = ";".join("1" if (label_on[name][i] and start <= years[i] <= end) else "0" for i in range(n))
             if "1" in op:
                 shown = th(disp) if name in NAME_HISTORY else tc(disp)
-                svg.append(label(shown, lx0, ly0, lxs, lys, op))
+                svg.append(label(shown, lx0, ly0, lxs, lys, op, _ancre(pose_de[name])))
 
     # Region legend, out in the right margin.
     present = [r for r in region_color if any(d["continent"] == r for d in data.values())]
