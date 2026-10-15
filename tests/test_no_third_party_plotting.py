@@ -67,9 +67,10 @@ _MENTION = re.compile(
     re.IGNORECASE,
 )
 
-#: Files allowed to name a charting library, and why. Two legitimate
-#: reasons only: a guard that must name what it forbids, and a competitive
-#: landscape that must name what it is compared against. Paths are relative
+#: Files allowed to name a charting library, and why. Three legitimate
+#: reasons only: a guard that must name what it forbids, a competitive
+#: landscape that must name what it is compared against, and a reader of
+#: foreign output that must name whose output it reads. Paths are relative
 #: to the repo root.
 MENTION_ALLOWLIST: frozenset[str] = frozenset(
     {
@@ -83,6 +84,14 @@ MENTION_ALLOWLIST: frozenset[str] = frozenset(
         # Naming the source of ported code is provenance, not a dependency,
         # and stripping it while keeping the code would be the dishonest half.
         "scripts/make_circle-packing.py",
+        # Checks any SVG, not only ours, and the exporters differ in ways
+        # the code must handle: one writes ``font-size`` as an attribute,
+        # another inside ``style=``; one writes ``rotate(-0 ...)`` on text
+        # it did not rotate; one turns every glyph into a path, leaving
+        # nothing to check. Naming who does what is the only way those
+        # branches can be read, and the figures here are still drawn by
+        # hand -- this module imports nothing.
+        "sprezzature_figures/render_checks.py",
     }
 )
 

@@ -492,8 +492,22 @@ else:
         help="A string that must not appear, on top of the demo chrome already known "
         "(repeatable). Pass your own placeholders here.",
     )
+    @click.option(
+        "--format",
+        "fmt",
+        type=click.Choice(["text", "json"]),
+        default="text",
+        show_default=True,
+        help="json prints one object on stdout -- rule, severity, message, detail, "
+        "and a count per severity -- for a caller that acts on the result instead "
+        "of reading it. The exit code is the same either way.",
+    )
     def check_cmd(
-        svg: str, dark: bool, expected_title: str | None, forbidden: tuple[str, ...]
+        svg: str,
+        dark: bool,
+        expected_title: str | None,
+        forbidden: tuple[str, ...],
+        fmt: str,
     ) -> None:
         """Check a rendered SVG for the failures that are decidable from markup.
 
@@ -510,7 +524,7 @@ else:
 
         _emit(
             lambda: actions.check(
-                svg, dark=dark, expected_title=expected_title, forbidden=forbidden
+                svg, dark=dark, expected_title=expected_title, forbidden=forbidden, fmt=fmt
             )
         )
 

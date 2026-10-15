@@ -264,6 +264,58 @@ fields (`what_it_shows`, a title that states the result) are where a bigger
 model earns its keep — when they come back empty, the redraw falls back to
 the original's own title rather than inventing one.
 
+### Check a figure — yours, or anyone's
+
+A chart can be wrong in ways that have nothing to do with taste: two labels
+printed on top of each other, a name running off the canvas, a value drawn in
+the colour of the bar behind it, demo chrome that survived into a real render,
+a title the generator was given and quietly dropped. `check` finds those in
+the SVG source alone — no browser, no vision model, no judgement.
+
+```bash
+sprezzature-figures check mine.svg
+sprezzature-figures check theirs.svg --format json      # for a gate, not a reader
+make-figure check mine.svg --expect-title "Q3 revenue"  # did the title arrive?
+cat mine.svg | make-figure check - --dark               # from a pipe, dark canvas
+```
+
+```python
+from sprezzature_figures import check_render
+
+for finding in check_render(open("mine.svg").read()):
+    print(finding.check, finding.severity, finding.message)
+```
+
+It reads **any** SVG, not only ours. That is the point: the published
+work on visualisation linting checks a Vega-Lite *specification*, so it has
+nothing to say about a figure that was not written in one. This reads the
+drawing. The geometry it needs is read the way every exporter writes it —
+`font-size` as an attribute or inside `style=`, `dominant-baseline` as an
+alignment point rather than a baseline, `rotate(-0 …)` as the non-rotation it
+is, `width="100%"` as a proportion rather than a hundred pixels.
+
+Exit code is 1 on any finding, so it works as a pre-commit or CI gate.
+Findings carry a `severity`: `error` is wrong whoever drew the figure and
+whatever it is for, `warning` is wrong under this house's charter or wrong
+unless the author had a reason. A gate that blocks on both is a gate people
+switch off.
+
+**Its honest limit.** It cannot check a figure whose text was converted to
+outlines — once every glyph is a `<path>`, there is no text to read, no
+screen reader can read it either, and every rule would pass on an empty
+sight. That is the default of at least one widely used exporter, so the
+linter says so out loud (`text_as_outlines`) rather than returning the empty
+list that looks like a pass. Export with live text and run it again:
+
+```python
+matplotlib.rcParams["svg.fonttype"] = "none"   # then re-export, then check
+```
+
+What it will never do is tell you the chart type suits the question, or that
+the figure is beautiful. Those are judgements; the Ralph Eyeball Loop
+(`scripts/ralph_eyeball_loop.py`) is where a vision model is asked for them,
+and it is never allowed to contradict a fact established here.
+
 ---
 
 ---
