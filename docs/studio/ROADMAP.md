@@ -11,7 +11,7 @@
 - Core Pydantic domain models: `DatasetProfile`, `FigurePlan`,
   `StyleOptions`, the `Transform`/`FigureOperation` discriminated unions.
 - CSV/XLSX/clipboard ingestion + deterministic semantic-type profiling.
-- 15 of 90 chart types promoted to `status="stable"` (7 new Vega-Lite
+- 15 of 90 chart types promoted to `status="stable"` (7 new
   generators + `treemap`/`funnel`/`waffle`/`dumbbell`/`sankey`/
   `sunburst`/`waterfall`/`columnrange` adapted to the contract). `sankey`
   in particular was rewritten from hardcoded demo nodes/links to accept

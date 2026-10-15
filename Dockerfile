@@ -1,11 +1,12 @@
 FROM python:3.11-slim
 
 LABEL maintainer="Warith Harchaoui <warith.harchaoui@gmail.com>"
-LABEL description="sprezzature-figures: CLI + Studio server, 124 chart types"
+LABEL description="sprezzature-figures: CLI + Studio server, 162 chart types"
 
 WORKDIR /app
 
-# System deps for matplotlib (headless) and the resvg_py rasteriser
+# System deps for the resvg_py rasteriser (libgomp1) and the fonts the
+# generators name in their font stacks.
 RUN apt-get update && apt-get install -y --no-install-recommends \
         libgomp1 \
         fonts-liberation \
@@ -23,8 +24,8 @@ COPY assets/ ./assets/
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Non-root user for production use. HOME must point at appuser's own home
-# (not root's) — matplotlib's config dir writes there on first use, and
-# appuser can't write into /root.
+# (not root's): anything that caches under $HOME on first use has to land
+# somewhere writable, and appuser can't write into /root.
 RUN useradd --create-home appuser
 ENV HOME=/home/appuser
 USER appuser

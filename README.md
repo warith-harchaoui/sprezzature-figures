@@ -118,7 +118,7 @@ through would have raised inside a generator with a message about
 root with no parent, a forecast with no history — declare it and are let
 through.
 
-All 162 registered chart kinds are `status="stable"` (render-verified end to
+All 165 registered chart kinds are `status="stable"` (render-verified end to
 end); see [docs/studio/GENERATOR_AUDIT.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/docs/studio/GENERATOR_AUDIT.md)
 for the per-chart audit detail, and `make-figure --list --status stable` to
 confirm the current set. Every stable kind tolerates optional roles being
@@ -287,7 +287,7 @@ for finding in check_render(open("mine.svg").read()):
 ```
 
 It reads **any** SVG, not only ours. That is the point: the published
-work on visualisation linting checks a Vega-Lite *specification*, so it has
+work on visualisation linting checks a chart *specification*, so it has
 nothing to say about a figure that was not written in one. This reads the
 drawing. The geometry it needs is read the way every exporter writes it —
 `font-size` as an attribute or inside `style=`, `dominant-baseline` as an
@@ -303,13 +303,14 @@ switch off.
 **Its honest limit.** It cannot check a figure whose text was converted to
 outlines — once every glyph is a `<path>`, there is no text to read, no
 screen reader can read it either, and every rule would pass on an empty
-sight. That is the default of at least one widely used exporter, so the
+sight. That is the default of more than one widely used exporter, so the
 linter says so out loud (`text_as_outlines`) rather than returning the empty
-list that looks like a pass. Export with live text and run it again:
+list that looks like a pass. Re-export with live text — whatever wrote the
+file, the setting is usually one flag — and run it again.
 
-```python
-matplotlib.rcParams["svg.fonttype"] = "none"   # then re-export, then check
-```
+The same finding covers the other road to the same place: a figure that was
+never given labels at all. The report distinguishes them, because telling
+an author to re-export is useless advice when there was nothing to export.
 
 What it will never do is tell you the chart type suits the question, or that
 the figure is beautiful. Those are judgements; the Ralph Eyeball Loop
@@ -322,7 +323,7 @@ and it is never allowed to contradict a fact established here.
 
 ## Chart catalogue
 
-162 chart types across 52 categories. See [FIGURES.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/FIGURES.md) for the full table with per-chart guidance on when to use each type.
+165 chart types across 52 categories. See [FIGURES.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/FIGURES.md) for the full table with per-chart guidance on when to use each type.
 
 Quick overview:
 
@@ -407,13 +408,13 @@ sprezzature-figures/
 ├── scripts/
 │   ├── make_treemap.py            # self-contained chart script
 │   ├── make_connected-scatter.py  # hyphenated kinds are supported
-│   └── ...                        # 162 make_*.py scripts total
+│   └── ...                        # 165 make_*.py scripts total
 ├── assets/
 │   └── svg-examples/      # SVG template examples
 └── tests/
 ```
 
-Each `make_<kind>.py` script is self-contained: it imports what it needs, defines `make_<kind>(data, *, out=None, title="", ...) -> Path` and exposes a `DEMO_DATA` list for CLI and test use. `make_figure()` resolves the kind through `sprezzature_figures/catalog/figures.json` rather than guessing the filename; see [docs/studio/GENERATOR_AUDIT.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/docs/studio/GENERATOR_AUDIT.md) for which of the 162 scripts currently satisfy this contract.
+Each `make_<kind>.py` script is self-contained: it imports what it needs, defines `make_<kind>(data, *, out=None, title="", ...) -> Path` and exposes a `DEMO_DATA` list for CLI and test use. `make_figure()` resolves the kind through `sprezzature_figures/catalog/figures.json` rather than guessing the filename; see [docs/studio/GENERATOR_AUDIT.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/docs/studio/GENERATOR_AUDIT.md) for which of the 165 scripts currently satisfy this contract.
 
 ---
 

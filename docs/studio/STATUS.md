@@ -120,7 +120,7 @@ requests outside the plan's numbered commits:
     branch; now checked as a matter of course for every new subpackage).
   - 33 new tests in `tests/ingest/test_ingest.py`, including regression
     tests for both bugs above.
-- **Commit 6: Basic Vega-Lite figures** (`scripts/make_{bar,line,area,
+- **Commit 6: the seven basic figures** (`scripts/make_{bar,line,area,
   scatter,histogram,boxplot,heatmap}.py`). Seven new self-contained
   generators following the exact existing house pattern (same
   INK/SECONDARY/BG/GRIDLINE/FONT constants, `_render.svg_example_path`/
@@ -164,10 +164,10 @@ requests outside the plan's numbered commits:
 
 - **Commit 7: Adapted specialized figures** (`scripts/make_waffle.py`,
   `make_dumbbell.py`, `make_sankey.py`; `tests/test_adapted_figures.py`).
-  These are hand-authored-SVG generators (no Vega-Lite), each with a
-  hardcoded module-level dataset baked directly into `build_svg()` rather
-  than a `data` parameter, a materially different adaptation than Commit
-  6's Vega-Lite scripts.
+  These are hand-authored-SVG generators, each with a hardcoded
+  module-level dataset baked directly into `build_svg()` rather than a
+  `data` parameter, a materially different adaptation than Commit 6's
+  scripts.
   - **waffle**: `DEMO_DATA` is now plain `{label, value}` rows (no
     pre-baked colour). Colours cycle through the accessibility palette at
     render time. Added `_allocate_squares()`, a largest-remainder
@@ -234,10 +234,10 @@ requests outside the plan's numbered commits:
     file then `os.replace()`, so a crash mid-write never leaves a
     truncated file at the destination. Used by every write in both new
     modules.
-  - `svg_to_png_bytes()` uses `vl_convert.svg_to_png()`, already a core
-    dependency, so no new dependency needed, and it works uniformly for
-    *both* Vega-Lite-derived SVG and the hand-authored SVG from Commit 7's
-    generators (verified with `bar` and `waffle`, one Vega-Lite one not).
+  - `svg_to_png_bytes()` rasterises through `resvg_py`, so one code path
+    serves every generator's output whatever authored it (verified with
+    `bar` and `waffle`). Written at the time against a rasteriser that has
+    since been dropped; the function and its contract are unchanged.
   - `render_preview()` dispatches on the registry's declared `renderer`
     field; raises a clear `ValueError` for renderer kinds with no preview
     path yet (e.g. `html`) instead of silently producing nothing (plan

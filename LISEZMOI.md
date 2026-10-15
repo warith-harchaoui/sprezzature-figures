@@ -7,7 +7,7 @@
 
 [![logo](assets/logo.png)](https://sprezzature.ai/)
 
-162 types de graphiques de qualité publication, tous en SVG écrit à la main, y compris les sorties statistiques (inférence causale, explicabilité), utilisables comme bibliothèque Python ou en ligne de commande.
+165 types de graphiques de qualité publication, tous en SVG écrit à la main, y compris les sorties statistiques (inférence causale, explicabilité), utilisables comme bibliothèque Python ou en ligne de commande.
 
 Fait partie de la suite [sprezzature](https://sprezzature.ai/).
 
@@ -121,7 +121,7 @@ aurait fait remonter, depuis le fond d'un générateur, un message parlant de
 racine d'un arbre sans parent, une prévision sans historique — le déclarent
 et passent.
 
-Les 162 types enregistrés sont tous `status="stable"` (vérifiés par rendu de
+Les 165 types enregistrés sont tous `status="stable"` (vérifiés par rendu de
 bout en bout). Voir [docs/studio/GENERATOR_AUDIT.md](docs/studio/GENERATOR_AUDIT.md)
 pour le détail de l'audit par type ou lancer `make-figure --list --status stable`
 pour confirmer l'ensemble actuel. Chaque type stable tolère qu'un rôle
@@ -293,8 +293,8 @@ for defaut in check_render(open("mienne.svg").read()):
 
 Il lit **n'importe quel** SVG, pas seulement les nôtres. C'est là tout
 l'intérêt : les travaux publiés sur le linting de visualisation vérifient une
-*spécification* Vega-Lite, donc ils n'ont rien à dire d'une figure qui n'a pas
-été écrite dans ce langage. Ici c'est le dessin qui est lu. La géométrie est
+*spécification* de graphique, donc ils n'ont rien à dire d'une figure qui n'a
+pas été écrite dans ce langage. Ici c'est le dessin qui est lu. La géométrie est
 lue comme chaque exportateur l'écrit : `font-size` en attribut ou dans
 `style=`, `dominant-baseline` comme point d'alignement plutôt que comme ligne
 de base, `rotate(-0 …)` pour la non-rotation qu'il est, `width="100%"` comme
@@ -326,7 +326,7 @@ de vision ; elle n'a jamais le droit de contredire un fait établi ici.
 
 ## Catalogue des graphiques
 
-162 types de graphiques dans 52 catégories. Voir [FIGURES.md](FIGURES.md) pour le tableau complet.
+165 types de graphiques dans 52 catégories. Voir [FIGURES.md](FIGURES.md) pour le tableau complet.
 
 | Catégorie | Graphiques |
 |-----------|------------|
@@ -412,13 +412,13 @@ sprezzature-figures/
 ├── scripts/
 │   ├── make_treemap.py            # script autonome par type de graphique
 │   ├── make_connected-scatter.py  # les types avec tiret sont supportés
-│   └── ...                        # 162 scripts make_*.py au total
+│   └── ...                        # 165 scripts make_*.py au total
 ├── assets/
 │   └── svg-examples/      # gabarits SVG
 └── tests/
 ```
 
-Chaque script `make_<type>.py` est autonome : il importe ce dont il a besoin, définit `make_<type>(donnees, *, out=None, title="", ...) -> Path` et expose une liste `DEMO_DATA` pour la CLI et les tests. `make_figure()` résout le type via `sprezzature_figures/catalog/figures.json` plutôt que de deviner le nom de fichier ; voir [docs/studio/GENERATOR_AUDIT.md](docs/studio/GENERATOR_AUDIT.md) pour savoir lesquels des 162 scripts respectent déjà ce contrat.
+Chaque script `make_<type>.py` est autonome : il importe ce dont il a besoin, définit `make_<type>(donnees, *, out=None, title="", ...) -> Path` et expose une liste `DEMO_DATA` pour la CLI et les tests. `make_figure()` résout le type via `sprezzature_figures/catalog/figures.json` plutôt que de deviner le nom de fichier ; voir [docs/studio/GENERATOR_AUDIT.md](docs/studio/GENERATOR_AUDIT.md) pour savoir lesquels des 165 scripts respectent déjà ce contrat.
 
 ---
 
