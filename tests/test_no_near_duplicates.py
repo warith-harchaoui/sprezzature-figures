@@ -29,6 +29,19 @@ from sprezzature_figures.catalog import get_figure_definition, list_kinds
 #: Pairs that look alike from the outside and are not, with why. Each entry
 #: is a promise a reader can check against the two figures.
 DISTINCT_PAIRS: dict[tuple[str, ...], str] = {
+    ("map-bars", "map-pie"): (
+        "The same regions carrying the same four columns, and the difference "
+        "is what the numbers are to each other. map-bars draws magnitudes "
+        "that are free to move independently -- three totals that do not add "
+        "up to anything in particular -- and compares them by height along a "
+        "shared baseline, the strongest comparison the eye makes. map-pie "
+        "draws parts of one whole and compares them by angle, a far weaker "
+        "channel, bought in exchange for the one thing bars cannot say: that "
+        "the parts are exhaustive, so 'mostly this, a sliver of that' reads "
+        "off the disc at a glance. Feed shares to the bars and the reader "
+        "cannot see they sum to 100; feed independent totals to the pie and "
+        "it invents a whole that does not exist."
+    ),
     ("funnel", "funnel-area"): (
         "The same stages drawn two ways, and the difference is what the "
         "shape is for. A funnel is horizontal bars whose length is the "

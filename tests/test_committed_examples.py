@@ -42,15 +42,15 @@ EXAMPLES_DIR = REPO_ROOT / "assets" / "svg-examples"
 #: live everywhere it can mean something.
 _BY_DESIGN_HERE = frozenset({"placeholder_text"})
 
-#: Three published figures with no generator in this repository and none in
-#: ``sprezzature-maps`` either: pre-generator assets from the v1.0.0 import,
-#: still referenced by ``web/maps.html`` in the monorepo. They carry a
-#: document-level ``role``/``<title>``/``<desc>`` and not one ``<text>``
-#: element, so every label a reader would need -- country, bar value, legend
-#: -- is missing rather than outlined. Fixing them means authoring three
-#: generators, which is work and not a test's business; recording them here
-#: keeps the gate honest instead of silently green.
-_NO_GENERATOR_ANYWHERE = frozenset({"map-bars", "map-bubble", "map-pie"})
+#: Examples with no generator anywhere, allowed to fail the gate until one is
+#: written. Empty, and meant to stay that way.
+#:
+#: It held ``map-bars``, ``map-bubble`` and ``map-pie`` for exactly as long as
+#: it took to write them: pre-generator assets from the v1.0.0 import, 176
+#: ``<path>`` elements and not one ``<text>``, still served by the published
+#: gallery. An entry here is a debt, not a category -- the figure is shipping
+#: and unreadable, and the note is the only thing keeping that visible.
+_NO_GENERATOR_ANYWHERE: frozenset[str] = frozenset()
 
 
 def _examples() -> list[Path]:
@@ -59,10 +59,18 @@ def _examples() -> list[Path]:
 
 
 def test_the_examples_folder_is_not_empty() -> None:
-    """A gate that finds no files to check passes for the wrong reason."""
-    assert len(_examples()) > 100, (
-        f"{EXAMPLES_DIR} holds {len(_examples())} SVGs; the catalogue has 162 "
-        "figures, so something has moved and this test is now checking nothing"
+    """A gate that finds no files to check passes for the wrong reason.
+
+    The floor is read from the registry rather than written down, because a
+    number written down here goes stale the next time a figure is added and
+    then guards nothing at a threshold nobody rechecked.
+    """
+    from sprezzature_figures.catalog.registry import list_kinds
+
+    found = len(_examples())
+    assert found >= len(list_kinds()), (
+        f"{EXAMPLES_DIR} holds {found} SVGs for {len(list_kinds())} catalogue "
+        "kinds, so something has moved and this test is now checking nothing"
     )
 
 
