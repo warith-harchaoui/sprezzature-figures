@@ -719,10 +719,15 @@ def _fit_label(name: str, loc: int, radius: float) -> Optional[Tuple[float, floa
         if fs2 >= 9.0 and max(width_of(lines[0], fs2), width_of(lines[1], fs2)) <= room:
             return (fs2, max(fs2 * 0.70, 9.0), lines)
 
-    # Next: a smaller single line.
+    # Next: a smaller single line. The floor is 9 px here as everywhere
+    # else in this function: below it the label is not smaller, it is
+    # unreadable, and a circle that cannot hold readable text is better left
+    # clean with its tooltip than filled with ink nobody can resolve. This
+    # path used to stop at 8.5 and let the line-count row land at 8.5-8.9 px,
+    # which is where the four sub-floor labels of the demo render came from.
     fs3 = min(radius * 0.30, 14.0)
-    if fs3 >= 8.5 and width_of(short, fs3) <= radius * 1.85:
-        return (fs3, max(fs3 * 0.72, 8.5), [short])
+    if fs3 >= 9.0 and width_of(short, fs3) <= radius * 1.85:
+        return (fs3, max(fs3 * 0.72, 9.0), [short])
 
     # Final fallback: a long single word with no underscore (e.g.
     # "notifications") that is still too wide even at the smallest single
