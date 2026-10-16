@@ -36,7 +36,16 @@ import fnmatch
 from pathlib import Path
 
 import pytest
-import tomllib
+
+# `tomllib` is stdlib only from 3.11 and this package supports 3.10, where a
+# bare import fails collection of the whole file. `tomli` is the same parser
+# under its pre-stdlib name, declared in the `dev` extra for 3.10 alone -- the
+# pattern `tests/test_linter_is_not_blind.py` already uses to read this same
+# file. A regex would do for one value; what this needs is a nested table.
+try:
+    import tomllib
+except ModuleNotFoundError:  # pragma: no cover - Python 3.10 only
+    import tomli as tomllib
 
 from sprezzature_figures import fonts
 
