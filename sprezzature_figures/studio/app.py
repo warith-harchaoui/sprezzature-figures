@@ -26,10 +26,14 @@ _FONTS_URL_PREFIX = "/sprezzature-fonts"
 
 
 def register_fonts() -> None:
-    """Serve the bundled Roboto/Roboto Serif/Roboto Mono WOFF2 files as
-    static assets and inject `@font-face` + base font-family CSS into every
-    page's `<head>`. Idempotent-safe to call once at app startup, before any
-    page is registered.
+    """Serve the bundled WOFF2 files as static assets and inject `@font-face`
+    + base font-family CSS into every page's `<head>`. Idempotent-safe to call
+    once at app startup, before any page is registered.
+
+    Which faces, exactly, is `fonts.web_font_faces_css`'s call -- it reads the
+    directory mounted just below rather than the full face table, because the
+    two differ in an installed copy (Roboto Serif is not in the wheel) and a
+    rule for a file that is not there is a 404 the browser hides.
     """
     app.add_static_files(_FONTS_URL_PREFIX, str(FONTS_DIR))
     css = web_font_faces_css(_FONTS_URL_PREFIX)

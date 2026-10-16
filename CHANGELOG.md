@@ -1,5 +1,79 @@
 # Changelog
 
+## 2.7.0 (2026-10-16): the wheel carries every face the module offers
+
+**Roboto Serif is back in the wheel, and the wheel grows 3.4 MB to 11.4 MB for
+it.** That is the whole release: a typography decision reversing a packaging
+one, plus the test that should have been there to make the disagreement
+impossible.
+
+2.6.0 narrowed the font package-data to drop Roboto Serif -- 12.2 MB of 18.6
+uncompressed, for a family neither theme sets. The saving was real and the
+reasoning was sound. What made it a defect is that `fonts.py` went on offering
+`serif` and `serif_italic` anyway, so the module advertised ten faces while the
+wheel carried eight, and **nothing in this repository could tell**: the source
+tree's `assets/fonts/` holds every face regardless of what a build contains, so
+every font path passes locally by construction.
+
+It surfaced downstream instead. `sprezzature-maps` set its density plate in the
+serif; its CI installs from the wheel rather than the checkout, and answered
+with a bare `FileNotFoundError: RobotoSerif-Variable.woff2` -- a filename,
+naming neither the face that asked for it nor the fact that the absence was a
+decision. Hours went into a packaging bug that was a packaging *choice*.
+
+Shipping the face is the right resolution rather than the convenient one. The
+suite's typography is three Roboto -- sans, serif, mono -- and a rule that
+holds only where the source tree is checked out is not a rule; `SERIF_STACK` is
+public API, and in an installed copy it was quietly resolving to Georgia.
+`OFL-RobotoSerif.txt` ships with it: a licence travels with the font it covers.
+
+### Fixed
+
+- **`web_font_faces_css()` linked faces the install did not have.** Its default
+  was the entire face table, while Studio mounts `fonts.FONTS_DIR` and serves
+  whatever is actually there -- so under the 2.6.0 wheel every page requested
+  four Roboto Serif files that were not present. Nothing broke, which is why it
+  went unseen: a dead `@font-face` source is a 404 the browser swallows on its
+  way to the next family in the stack. The default now reads the directory, so
+  the rules and the files are the same set in a damaged install too. (Studio is
+  still work in progress; this was cheap rather than urgent.)
+
+- **A missing face now says which face, and what to do.**
+  `fonts.MissingFaceError` subclasses `FileNotFoundError`, so existing handlers
+  keep working, but the message names the face key that asked rather than only
+  the file it wanted. Since the wheel now carries every face offered, reaching
+  it means a damaged install, and the text says so instead of leaving the
+  reader to guess between accident and intent.
+
+- **Two comments that had drifted into falsehood.** `fonts.py` said Roboto
+  Serif "ships for the web app" while pyproject excluded it, and pyproject said
+  "the web app self-hosts its own copy" -- two web apps confused for one. The
+  sprezzature.ai site does self-host its own `web/fonts/` and was never
+  affected; the *Studio* app lives in this package and mounts `FONTS_DIR`.
+  `available_faces()` promised "normally all six" for a table of ten.
+
+### Added
+
+- **`fonts.OFFERED_FACES`** -- every face key the module offers, which the
+  wheel must carry in full.
+
+- **`tests/test_the_package_serves_only_fonts_it_ships.py`** (9 tests) reads the
+  font globs out of `pyproject.toml` and fails if any offered face would be
+  left out of a build. It reads the build configuration rather than the
+  directory on purpose: the directory is precisely what cannot see the
+  difference. Verified in both directions -- reintroducing the 2.6.0 default
+  turns it red, restoring it turns it green.
+
+  It also pins the two decisions themselves, so that reversing either is a
+  deliberate edit rather than a glob quietly narrowed: the serif ships, and
+  every bundled family ships its licence.
+
+- **`tests/test_packaging.py::test_installed_fonts_match_what_the_module_offers`**
+  asks a real wheel installed in a fresh venv the same questions, including
+  that the serif can actually be embedded. Marked `packaging`, so CI runs it in
+  the job that builds and installs; also verified to fail against the 2.6.0
+  behaviour before the fix.
+
 ## 2.6.0 (2026-10-15): forty figures, and the probe that found what the catalogue only claimed
 
 2.5.0 was prepared in this repository and never reached PyPI, so 2.6.0 is the

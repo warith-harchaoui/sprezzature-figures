@@ -169,4 +169,65 @@ def test_studio_extra_installs_and_console_scripts_resolve(wheel: Path, tmp_path
         help_result = subprocess.run(
             [str(script), "--help"], check=True, capture_output=True, text=True
         )
-        assert script_name.split("-")[-1] in help_result.stdout.lower() or "usage" in help_result.stdout.lower()
+        assert (
+            script_name.split("-")[-1] in help_result.stdout.lower()
+            or "usage" in help_result.stdout.lower()
+        )
+
+
+@pytest.mark.packaging
+def test_installed_fonts_match_what_the_module_offers(wheel: Path, tmp_path: Path) -> None:
+    """The real install is the only place the font gap was ever visible.
+
+    From a checkout, ``assets/fonts/`` holds every face whatever the wheel was
+    built to contain, so font paths pass locally by construction. That
+    asymmetry is what let the module offer Roboto Serif for a release in which
+    the wheel dropped it, and the discovery happened downstream:
+    ``sprezzature-maps``' CI, installing from the wheel, got a bare
+    ``FileNotFoundError`` naming a filename and no reason.
+
+    ``tests/test_the_package_serves_only_fonts_it_ships.py`` covers the same
+    ground fast, by reading pyproject's globs. This one skips the reading and
+    asks an actual install.
+    """
+    python = _make_venv(tmp_path / "venv")
+    _pip_install(python, str(wheel))
+
+    check = tmp_path / "check_fonts.py"
+    check.write_text(
+        "from sprezzature_figures import fonts\n"
+        "\n"
+        "# 1. Every offered face is really on disk, both files.\n"
+        "missing = [k for k in fonts.OFFERED_FACES\n"
+        "           if not (fonts.font_path(k).exists() and fonts.font_path(k, woff2=True).exists())]\n"
+        "assert not missing, f'wheel is missing faces the module offers: {missing}'\n"
+        "\n"
+        "# 2. The serif specifically -- the face this whole guard exists for.\n"
+        "for key in ('serif', 'serif_italic'):\n"
+        "    assert key in fonts.OFFERED_FACES, f'{key} no longer offered'\n"
+        "    assert fonts.font_path(key, woff2=True).exists(), f'{key} absent from the wheel'\n"
+        "assert fonts.embedded_font_css(('serif',)), 'the serif cannot be embedded'\n"
+        "\n"
+        "# 3. A licence travels with every family the wheel carries.\n"
+        "for licence in ('OFL-Roboto.txt', 'OFL-RobotoMono.txt', 'OFL-RobotoSerif.txt'):\n"
+        "    assert (fonts.FONTS_DIR / licence).is_file(), f'{licence} not shipped'\n"
+        "\n"
+        "# 4. available_faces() sees the install, and it is the full set.\n"
+        "assert set(fonts.available_faces()) == set(fonts.OFFERED_FACES), (\n"
+        "    f'available={sorted(fonts.available_faces())} offered={sorted(fonts.OFFERED_FACES)}')\n"
+        "\n"
+        "# 5. The CSS Studio injects links nothing this install lacks.\n"
+        "css = fonts.web_font_faces_css('/sprezzature-fonts')\n"
+        "linked = [chunk.split(chr(39), 1)[0].rsplit('/', 1)[1]\n"
+        '          for chunk in css.split("src:url(\'")[1:]]\n'
+        "assert linked, 'studio would serve no fonts at all'\n"
+        "absent = [n for n in linked if not (fonts.FONTS_DIR / n).is_file()]\n"
+        "assert not absent, f'studio links fonts absent from the install: {absent}'\n"
+        "\n"
+        "print('OK: installed fonts and offered fonts agree')\n",
+        encoding="utf-8",
+    )
+    result = subprocess.run(
+        [str(python), str(check)], cwd=tmp_path, check=True, capture_output=True, text=True
+    )
+    assert "OK: installed fonts and offered fonts agree" in result.stdout

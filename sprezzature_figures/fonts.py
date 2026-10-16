@@ -60,6 +60,11 @@ FONTS_DIR = next(
 # face first, a close system fallback second (only exercised in the
 # vanishingly rare case the bundled font file itself failed to load).
 SANS_STACK = "Roboto, system-ui, sans-serif"
+# Roboto Serif was briefly cut from the wheel to save 12.2 MB, which made this
+# stack resolve to Georgia in every installed copy while the module went on
+# offering it. It ships again: the suite's typography rule is three Roboto --
+# sans, serif, mono -- and a rule that holds only in a source checkout is not
+# a rule. The size is the price of the rule, paid on purpose.
 SERIF_STACK = "Roboto Serif, Georgia, serif"
 MONO_STACK = "Roboto Mono, ui-monospace, monospace"
 
@@ -146,10 +151,36 @@ _FACES: dict[str, dict[str, str]] = {
     },
 }
 
-# The faces figures actually set as font-family (see _svg.py svg_open());
-# Roboto Serif is a publication/editorial option (references/publication-
-# presets.md) that no generator currently uses under the corporate theme, so
-# it ships for the web app but is not embedded by default.
+#: Every face key this module offers. The wheel ships all of them: see
+#: ``pyproject.toml``'s font package-data globs, and
+#: ``tests/test_the_package_serves_only_fonts_it_ships.py``, which reads those
+#: globs and fails if any face here would be left out of a build.
+#:
+#: That test exists because the two silently disagreed at 2.6.0. The globs
+#: were narrowed to drop Roboto Serif; ``_FACES`` kept listing it; a source
+#: checkout has every file on disk regardless, so nothing local could tell.
+#: The gap surfaced downstream, in another package's CI, as a bare
+#: ``FileNotFoundError`` naming a filename and no reason.
+OFFERED_FACES: tuple[str, ...] = tuple(_FACES)
+
+
+class MissingFaceError(FileNotFoundError):
+    """A face named in :data:`_FACES` has no font file in *this* install.
+
+    Every offered face ships (:data:`OFFERED_FACES`), so reaching this means
+    the install is damaged rather than merely partial -- and the message says
+    so. Subclasses :class:`FileNotFoundError`, which is what the failure
+    surfaced as before, so existing handlers keep working; what changed is
+    that the text names the *face key* that asked and what to do about it,
+    where the bare version offered only a filename.
+    """
+
+
+# The faces figures actually set as font-family (see _svg.py svg_open()).
+# Roboto Serif ships but is not embedded by default: it is a publication/
+# editorial option (references/publication-presets.md) that no generator sets
+# under the corporate theme, and every face listed here lands as base64 in
+# every SVG produced.
 DEFAULT_SVG_FACES: tuple[str, ...] = ("sans", "mono")
 
 #: theme name -> (embedded SVG faces, chrome-text stack, tick/value-label
@@ -206,8 +237,22 @@ def font_path(key: str, *, woff2: bool = False) -> Path:
 @functools.cache
 def _data_uri(key: str) -> str:
     path = font_path(key, woff2=True)
-    encoded = base64.b64encode(path.read_bytes()).decode("ascii")
+    try:
+        payload = path.read_bytes()
+    except FileNotFoundError as exc:
+        raise MissingFaceError(_missing_face_message(key, path)) from exc
+    encoded = base64.b64encode(payload).decode("ascii")
     return f"data:font/woff2;base64,{encoded}"
+
+
+def _missing_face_message(key: str, path: Path) -> str:
+    """Why `key` has no file here, in the terms the caller needs to act on."""
+    return (
+        f"font face {key!r} needs {path.name}, which is not at {path.parent}. "
+        "Every face sprezzature-figures offers ships in its wheel, so this install "
+        f"is incomplete rather than merely missing an extra -- reinstall it. "
+        f"Faces offered: {', '.join(OFFERED_FACES)}."
+    )
 
 
 @functools.cache
@@ -239,15 +284,25 @@ def svg_font_defs(keys: tuple[str, ...] = DEFAULT_SVG_FACES) -> str:
     return f"<defs><style>{embedded_font_css(keys)}</style></defs>"
 
 
-def web_font_faces_css(url_prefix: str, keys: tuple[str, ...] = tuple(_FACES)) -> str:
+def web_font_faces_css(url_prefix: str, keys: tuple[str, ...] | None = None) -> str:
     """``@font-face`` rules pointing at `url_prefix`-served WOFF2 files
     (self-hosted, no Google Fonts CDN) -- for the Studio web app, where the
     browser fetches and caches each face once instead of paying the base64
     inlining cost on every page. Pair with a static-file mount at
     `url_prefix` serving :data:`FONTS_DIR` (see ``studio/app.py``).
+
+    `keys` defaults to :func:`available_faces`, i.e. whatever this install
+    actually has, rather than to every key in :data:`_FACES`. The difference is
+    not cosmetic: the mount serves :data:`FONTS_DIR`, so a rule for a face the
+    install lacks is a URL that 404s -- and a browser that cannot fetch a
+    ``@font-face`` source silently moves on to the next family in the stack.
+    With the old default, every page of an installed Studio linked the four
+    Roboto Serif files the wheel leaves out, and drew in Georgia without a
+    word. Deriving from disk is also correct in a source checkout, where those
+    four files are present and get served as before.
     """
     rules = []
-    for key in keys:
+    for key in tuple(available_faces()) if keys is None else keys:
         face = _FACES[key]
         rules.append(
             "@font-face{"
@@ -263,14 +318,19 @@ def web_font_faces_css(url_prefix: str, keys: tuple[str, ...] = tuple(_FACES)) -
 
 # ``resvg_py.svg_to_bytes(..., font_dirs=RESVG_FONT_DIRS)`` -- passed on each
 # call, because resvg keeps no persistent global font database to register
-# into. Covers the faces the web app uses but that are never embedded into
-# every generated SVG (Roboto Serif -- see :data:`DEFAULT_SVG_FACES`); the
-# embedded-font path already makes every generator's own render
-# font-independent without this.
+# into. It lets the rasteriser find any face sitting in this directory -- all
+# of :data:`OFFERED_FACES`, including the Roboto Serif that no generator
+# embeds by default; the embedded-font path already makes every generator's
+# own render font-independent without it.
 RESVG_FONT_DIRS: tuple[str, ...] = (str(FONTS_DIR),)
 
 
 def available_faces() -> Sequence[str]:
-    """Face keys whose bundled font file actually exists on disk (mostly a
-    guard for partial/broken installs -- normally all six)."""
+    """Face keys whose bundled font file actually exists on disk.
+
+    Expect :data:`OFFERED_FACES` -- all of them, from a source checkout and
+    from an installed copy alike, since the wheel ships every face offered.
+    Anything short of that is the damaged install this guards against, and it
+    is why the function reads the directory instead of trusting the table.
+    """
     return tuple(key for key in _FACES if font_path(key).exists())
