@@ -24,7 +24,7 @@ environment variable (tests use this to avoid touching the real home dir).
 
 Author
 ------
-Warith HARCHAOUI <warith.harchaoui@gmail.com>
+Warith HARCHAOUI <warithmetics@deraison.ai>
 """
 
 from __future__ import annotations

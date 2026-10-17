@@ -4,7 +4,7 @@ auditor born from the real make_columnrange.py bug (hardcoded "Temperature
 
 Author
 ------
-Warith HARCHAOUI <warith.harchaoui@gmail.com>
+Warith HARCHAOUI <warithmetics@deraison.ai>
 """
 from __future__ import annotations
 

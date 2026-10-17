@@ -10,7 +10,7 @@ would otherwise drift: that a flag exists in both or in neither.
 
 Author
 ------
-Warith HARCHAOUI <warith.harchaoui@gmail.com>
+Warith HARCHAOUI <warithmetics@deraison.ai>
 """
 
 from __future__ import annotations

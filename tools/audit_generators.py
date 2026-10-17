@@ -21,7 +21,7 @@ Writes ``docs/editor/generator_audit.json`` and ``docs/editor/GENERATOR_AUDIT.md
 
 Author
 ------
-Warith HARCHAOUI <warith.harchaoui@gmail.com>
+Warith HARCHAOUI <warithmetics@deraison.ai>
 """
 
 from __future__ import annotations

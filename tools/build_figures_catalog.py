@@ -16,7 +16,7 @@ and an MCP host publish every keyword a figure accepts without importing
 
 Author
 ------
-Warith HARCHAOUI <warith.harchaoui@gmail.com>
+Warith HARCHAOUI <warithmetics@deraison.ai>
 """
 
 from __future__ import annotations

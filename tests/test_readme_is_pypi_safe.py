@@ -12,7 +12,7 @@ renderings. Markdown and inline HTML are both checked: a README that uses
 
 Author
 ------
-Warith HARCHAOUI <warith.harchaoui@gmail.com>
+Warith HARCHAOUI <warithmetics@deraison.ai>
 """
 
 from __future__ import annotations

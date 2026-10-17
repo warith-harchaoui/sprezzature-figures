@@ -8,7 +8,7 @@ that ``api.py`` needed before a clean install could find its own scripts.
 
 Author
 ------
-Warith HARCHAOUI <warith.harchaoui@gmail.com>
+Warith HARCHAOUI <warithmetics@deraison.ai>
 """
 
 from __future__ import annotations

@@ -7,7 +7,7 @@ an incompatible figure kind, an undeclared option, or an out-of-bounds value
 
 Author
 ------
-Warith HARCHAOUI <warith.harchaoui@gmail.com>
+Warith HARCHAOUI <warithmetics@deraison.ai>
 """
 
 from __future__ import annotations
