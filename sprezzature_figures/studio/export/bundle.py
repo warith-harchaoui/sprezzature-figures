@@ -17,7 +17,7 @@ Build the full ``<project-name>.sprezzature.zip`` reproducibility archive
 
 Author
 ------
-Warith HARCHAOUI <warith.harchaoui@gmail.com>
+Warith HARCHAOUI <warithmetics@deraison.ai>
 """
 
 from __future__ import annotations

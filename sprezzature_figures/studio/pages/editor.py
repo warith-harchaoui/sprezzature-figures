@@ -3,7 +3,7 @@ The three-pane editor (plan §13.1): data panel, figure canvas, chat panel.
 
 Author
 ------
-Warith HARCHAOUI <warith.harchaoui@gmail.com>
+Warith HARCHAOUI <warithmetics@deraison.ai>
 """
 
 from __future__ import annotations

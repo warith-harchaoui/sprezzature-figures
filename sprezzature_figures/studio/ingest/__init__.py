@@ -3,7 +3,7 @@ sprezzature_figures.studio.ingest — CSV/XLSX/clipboard import and profiling.
 
 Author
 ------
-Warith HARCHAOUI <warith.harchaoui@gmail.com>
+Warith HARCHAOUI <warithmetics@deraison.ai>
 """
 
 from __future__ import annotations

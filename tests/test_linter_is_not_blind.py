@@ -22,7 +22,7 @@ lets ruff reach the code, so the exclusion cannot quietly come back.
 
 Author
 ------
-Warith HARCHAOUI <warith.harchaoui@gmail.com>
+Warith HARCHAOUI <warithmetics@deraison.ai>
 """
 
 from __future__ import annotations

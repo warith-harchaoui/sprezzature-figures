@@ -13,7 +13,7 @@ render-critique-edit loop by hand against any visual-from-code artifact
 
 Author
 ------
-Warith HARCHAOUI <warith.harchaoui@gmail.com>
+Warith HARCHAOUI <warithmetics@deraison.ai>
 """
 
 from __future__ import annotations

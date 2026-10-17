@@ -19,7 +19,7 @@ unreadably small, or absent, which the markup answers on its own.
 
 Author
 ------
-Warith HARCHAOUI <warith.harchaoui@gmail.com>
+Warith HARCHAOUI <warithmetics@deraison.ai>
 """
 
 from __future__ import annotations

@@ -6,7 +6,7 @@ history, and export the current figure as a reproducible `.sprezzature.zip`
 
 Author
 ------
-Warith HARCHAOUI <warith.harchaoui@gmail.com>
+Warith HARCHAOUI <warithmetics@deraison.ai>
 """
 
 from __future__ import annotations

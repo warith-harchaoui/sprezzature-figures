@@ -10,7 +10,7 @@ redraw() takes a picture of somebody else's chart and redraws it here.
 
 Author
 ------
-Warith HARCHAOUI <warith.harchaoui@gmail.com>
+Warith HARCHAOUI <warithmetics@deraison.ai>
 """
 
 from __future__ import annotations
@@ -38,4 +38,4 @@ __all__ = [
 
 __version__ = "2.7.0"
 __author__ = "Warith HARCHAOUI"
-__email__ = "warith.harchaoui@gmail.com"
+__email__ = "warithmetics@deraison.ai"

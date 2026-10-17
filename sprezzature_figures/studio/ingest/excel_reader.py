@@ -5,7 +5,7 @@ commits (plan §5.2). XLS (the legacy binary format) is not supported.
 
 Author
 ------
-Warith HARCHAOUI <warith.harchaoui@gmail.com>
+Warith HARCHAOUI <warithmetics@deraison.ai>
 """
 
 from __future__ import annotations

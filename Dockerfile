@@ -1,6 +1,6 @@
 FROM python:3.11-slim
 
-LABEL maintainer="Warith Harchaoui <warith.harchaoui@gmail.com>"
+LABEL maintainer="Warith Harchaoui <warithmetics@deraison.ai>"
 LABEL description="sprezzature-figures: CLI + Studio server, 162 chart types"
 
 WORKDIR /app
