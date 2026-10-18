@@ -7,7 +7,10 @@
 # dataviz — the data-side tier behind the generators, causal inference
 #           and explainability (tables, geometry, models; nothing draws)
 # studio  — the NiceGUI app (chat-driven figure editing, Ralph eyeball loop)
--e .[cli,dataviz,studio]
+# api     — the FastAPI app; the container's default command serves it, and
+#           without this the image could not run its own CMD
+# mcp     — the same routes republished as agent tools
+-e .[cli,dataviz,studio,api,mcp]
 
 # Heavier, narrow extras — opt in by uncommenting, not installed by default:
 # -e .[causal]   # make_causal_estimate.py (dowhy, econml)

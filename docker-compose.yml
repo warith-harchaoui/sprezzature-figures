@@ -1,0 +1,85 @@
+# `docker compose up` is the whole onboarding. The Dockerfile beside this file
+# is a recipe; this is the way in — the port, the volume, the environment and
+# the command, declared rather than reconstructed by the next reader from a
+# `docker run` line in somebody's shell history.
+#
+#   docker compose up -d
+#   curl -s localhost:8000/health
+#   docker compose run --rm api make-figure bell-curve --out /work/bell.svg
+#   docker compose --profile studio up -d     # the NiceGUI app on :8080
+#   docker compose --profile assist up -d     # + the model the chat and the
+#                                             #   eyeball loop ask
+#
+# Three services, from one image. `api` and `studio` are the same build with
+# different commands and different ports — declaring both is what keeps the
+# second one from being a `docker run` line in someone's history.
+#
+# The model server is a separate profile: drawing a figure needs no model at
+# all, and someone who wants a chart should not be made to run one. It is the
+# Studio's chat and the Ralph eyeball loop that ask.
+
+services:
+  api:
+    build: .
+    image: sprezzature-figures:local
+    ports:
+      - "8000:8000"
+    environment:
+      # The package reads OLLAMA_URL; the ollama server reads OLLAMA_HOST.
+      # They are not interchangeable, and getting it wrong is invisible until
+      # the first call: the default http://localhost:11434 resolves to *this*
+      # container, so the API comes up healthy and fails on the first critique.
+      OLLAMA_URL: http://ollama:11434
+    volumes:
+      # The figures written out, and any data file fed in. Mounted rather
+      # than copied so the container never holds the only copy.
+      - ./work:/work
+    working_dir: /work
+    restart: unless-stopped
+
+  studio:
+    build: .
+    image: sprezzature-figures:local
+    profiles: ["studio"]
+    ports:
+      # 8080, not 8000: the Studio is NiceGUI, a different server from the
+      # API, and running both on one port is the kind of thing a compose file
+      # exists to make impossible to get wrong.
+      - "8080:8080"
+    environment:
+      OLLAMA_URL: http://ollama:11434
+      # The project tree — iterations, history, exports. It defaults to
+      # $HOME/.sprezzature-studio, which a `down` throws away along with
+      # every saved figure. Pointed at a named volume below.
+      SPREZZATURE_STUDIO_HOME: /studio
+    volumes:
+      - ./work:/work
+      - studio-home:/studio
+    working_dir: /work
+    # --host 0.0.0.0, because the default 127.0.0.1 binds the container's own
+    # loopback: the published port maps onto nothing and the page never loads.
+    # --no-browser, because there is no browser in here to open.
+    command: ["sprezzature-studio", "--host", "0.0.0.0", "--port", "8080", "--no-browser"]
+    restart: unless-stopped
+
+  ollama:
+    image: ollama/ollama:latest
+    # Only started with `--profile assist`: the generators need no model.
+    profiles: ["assist"]
+    ports:
+      - "11434:11434"
+    volumes:
+      # Named volume, not a bind mount: the weights survive `down` and a
+      # rebuild, and are not something anyone wants in their working tree.
+      - ollama-models:/root/.ollama
+    healthcheck:
+      test: ["CMD-SHELL", "ollama list >/dev/null 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+    restart: unless-stopped
+
+volumes:
+  studio-home:
+  ollama-models:
