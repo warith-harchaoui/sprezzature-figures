@@ -6,3 +6,9 @@ pytest>=8
 ruff>=0.4
 build
 playwright>=1.40  # headless-Chromium rendering checks (Ralph eyeball loop, gallery interactivity)
+# starlette 1.9.0 moved its TestClient onto httpx2 and nothing declared it:
+# CI resolves the latest starlette, every developer machine had an older
+# one, so nine repositories were one `pip install -U` away from a red
+# suite and speaker-helper reached it first. starlette's own `full` extra
+# lists both, which is why this is additive rather than a pin.
+httpx2>=2.0.0
