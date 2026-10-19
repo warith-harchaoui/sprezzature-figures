@@ -68,3 +68,38 @@ Every alternative rated 1 to 5 on each criterion, higher is better (⭐ weak to 
 | Canva | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐ | ⭐ | ⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ | ⭐ | ⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐ | ⭐⭐⭐ | ⭐ | ⭐⭐ |
 
 ![sprezzature-figures against 36 other data-viz tools, positioned on two PCA-derived axes](assets/landscape.svg)
+
+The source is [`assets/landscape.csv`](assets/landscape.csv) — the star table
+above, nothing added — and the map is regenerated with:
+
+```sh
+standpoint assets/landscape.csv --outdir assets --stem landscape
+```
+
+The geometry is ordinary correlation PCA and is **deterministic**: the same
+table gives the same map every run, whatever model named the poles. What the
+model contributes is the four words at the edges, and they are vaguer than the
+loadings behind them, so here is what the two axes are actually made of.
+
+**Horizontal.** Publication quality (+0.35), reproducibility (+0.33),
+customisation and theming (+0.32) and chart-type breadth (+0.30) pull one way;
+ease of use (−0.30) pulls the other. It is the craft-against-immediacy axis,
+and `sprezzature-figures` sits at the far right of it by construction — it is
+the reference row, and `standpoint` anchors the reference top-right.
+
+**Vertical.** Interactive (−0.39), dashboards and BI (−0.38), responsive
+(−0.37), data-source flexibility (−0.33), web embeddability (−0.32) all load
+together at the bottom. That pole is a single coherent thing — *a product
+somebody browses* — and the top is its absence: a finished artefact. ECharts,
+Plotly/Dash and D3 are at the bottom; ChatGPT and Canva at the top with this
+package, which is the map noticing that "makes you a picture" and "gives you a
+dashboard" are different businesses.
+
+**Two axes carry about 50 % of the table.** That is the number to hold onto:
+half of what those 22 criteria say is *not* on this page. With 22 criteria
+across 37 tools a low figure is expected — there genuinely are more than two
+ways these tools differ — but it means the map is a first orientation and the
+table is the evidence. `standpoint` also writes a prose interpretation
+alongside; it is not reproduced here, because a model reading back ratings
+somebody wrote is not a finding, and this file is more useful if the
+judgements stay visibly mine.
