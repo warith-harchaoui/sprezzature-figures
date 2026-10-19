@@ -109,6 +109,10 @@ dev = [
     # eyeball loop, gallery-interactivity verification. Needs a one-time
     # `playwright install chromium` after this installs, pip can't do that part.
     "playwright>=1.40",
+    # starlette 1.9.0 moved its TestClient onto httpx2. This repository's
+    # CI installs `.[dev,...]` and never reads requirements-dev.txt, so the
+    # declaration has to be where the install actually looks.
+    "httpx2>=2.0.0",
 ]
 
 [project.scripts]
