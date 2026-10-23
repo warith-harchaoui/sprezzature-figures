@@ -192,7 +192,20 @@ packages = [
 ]
 
 [tool.pytest.ini_options]
-addopts = "-m 'not slow and not packaging and not llm and not vision'"
+# Where the tests live, said out loud: without it a bare `pytest` starts
+# collecting at the repository root and sweeps up whatever a build left
+# behind -- a `build/` tree, a stray venv, a vendored copy.
+testpaths = ["tests"]
+# `--strict-markers` because the alternative is a marker that does nothing.
+# pytest warns about an unknown mark and then runs the test anyway: a typo in
+# `@pytest.mark.slow` reads as a marked test and behaves as an unmarked one.
+# It cost sprezzature-accessibility seven LLM tests running in every default
+# run for weeks, and that repository is the only one of the nine that had the
+# flag. The flag is cheap, it fires at collection, and this is the repository where it matters most --
+# four markers deselect 418 of 1714 tests here, so a typo in one of their
+# names moves a test between lanes in silence. The whole suite now carries it -- tests/test_the_suite_runs_tests_the_same_way.py in the hub
+# checks that it still does.
+addopts = "--strict-markers -m 'not slow and not packaging and not llm and not vision'"
 markers = [
     "slow: tests that render actual figures (may take several seconds)",
     "packaging: builds a wheel and installs it in a fresh venv (network + several seconds)",
