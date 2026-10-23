@@ -583,7 +583,9 @@ def _emit_box(
         parts.append(
             f'<g class="box">'
             f'<rect class="hit{div_cls}" tabindex="0" x="{_fmt(x_left)}" y="{_fmt(y_top)}" '
-            f'width="{_fmt(w)}" height="{BOX_H}" rx="18" fill="{color}">'
+            # 16: the house corner cap `audit_figure` enforces. A box 92 tall
+            # is a card, not a capsule, so the cap applies to it.
+            f'width="{_fmt(w)}" height="{BOX_H}" rx="16" fill="{color}">'
             f'<title>{escape(tip)}</title></rect>'
             f'<text x="{_fmt(cx)}" y="{_fmt(y_top + 40)}" text-anchor="middle" '
             f'font-size="25" font-weight="700" fill="#FFFFFF">{escape(role)}</text>'

@@ -457,7 +457,8 @@ def build_svg(
         f"widest band while the Rock ribbon thins, as the format shifts from the "
         f"compact disc to on-demand streaming.</desc>"
     )
-    parts.append(f'<rect width="{width}" height="{height}" rx="18" fill="{_BG}"/>')
+    # 16: the house corner cap `audit_figure` enforces. See make_radar.
+    parts.append(f'<rect width="{width}" height="{height}" rx="16" fill="{_BG}"/>')
     parts.append(
         f'<text x="{_fmt(m_left)}" y="66" font-size="{_FS_TITLE}" '
         f'font-weight="700" fill="{_INK}">{title}</text>'

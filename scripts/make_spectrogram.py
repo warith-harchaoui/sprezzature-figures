@@ -389,7 +389,8 @@ def build_svg(
         f"streaks are percussive taps. Colour runs dark purple (quiet) to yellow "
         f"(loud).</desc>"
     )
-    parts.append(f'<rect width="{width}" height="{height}" rx="18" fill="{_BG}"/>')
+    # 16: the house corner cap `audit_figure` enforces. See make_radar.
+    parts.append(f'<rect width="{width}" height="{height}" rx="16" fill="{_BG}"/>')
     parts.append(
         f'<text x="{m_left - 42}" y="58" font-size="29" font-weight="700" '
         f'fill="{_INK}">{title}</text>'

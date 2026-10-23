@@ -453,7 +453,9 @@ def build_svg(
     ext_h = _MAP_Y1 - _MAP_Y0
     parts.append(
         f'<rect x="{_MAP_X0:.1f}" y="{_MAP_Y0:.1f}" width="{ext_w:.1f}" '
-        f'height="{ext_h:.1f}" rx="22" fill="{_SEA}"/>'
+        # 16: the house corner cap `audit_figure` enforces. This is the sea
+        # panel behind the hexes, a corner and not a capsule.
+        f'height="{ext_h:.1f}" rx="16" fill="{_SEA}"/>'
     )
     # The coastline path (land silhouette) as a faint casing under the hexes.
     coast_pts = [

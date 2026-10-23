@@ -398,7 +398,8 @@ def build_svg(
         f"spring) and red where it runs below (a shortfall through the summer). "
         f"</desc>"
     )
-    parts.append(f'<rect width="{width}" height="{height}" rx="18" fill="{_BG}"/>')
+    # 16: the house corner cap `audit_figure` enforces. See make_radar.
+    parts.append(f'<rect width="{width}" height="{height}" rx="16" fill="{_BG}"/>')
     parts.append(
         f'<text x="{m_left}" y="72" font-size="31" '
         f'font-weight="700" fill="{_INK}">{title}</text>'

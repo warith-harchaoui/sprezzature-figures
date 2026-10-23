@@ -368,7 +368,8 @@ def build_svg(
         f"curve's peak shifts right through summer and left in winter, so the "
         f"whole distribution — not just the mean — moves with the season.</desc>"
     )
-    parts.append(f'<rect width="{width}" height="{height}" rx="20" fill="{_BG}"/>')
+    # 16: the house corner cap `audit_figure` enforces. See make_radar.
+    parts.append(f'<rect width="{width}" height="{height}" rx="16" fill="{_BG}"/>')
 
     # OS-adaptive overrides (additive; every rule lives inside an @media block,
     # so the default render is byte-for-byte unchanged). Each ridge carries a
