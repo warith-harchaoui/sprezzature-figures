@@ -876,6 +876,20 @@ def _build_parser() -> argparse.ArgumentParser:
         default="universal",
         help="Palette accessibility level (default: universal, the CVD-safe standard).",
     )
+    # The library has taken a `language` since this figure learned French, and
+    # the command line could not say it: `build_svg(language=...)` picks the
+    # chrome text, `main()` never passed one. The two surfaces of one engine
+    # disagreed, which is the thing SURFACES.md forbids — and it cost this
+    # figure its download kit. `build_figure_kits.py` decides a generator is
+    # bilingual by looking for `language` in the *library* signature, then
+    # runs the *script* with `--language`, so the kit failed to build in both
+    # languages and the gallery card offered a zip from 13 September.
+    parser.add_argument(
+        "--language",
+        choices=("en", "fr"),
+        default="en",
+        help="Language of the figure's own chrome text (default: en).",
+    )
     return parser
 
 
@@ -889,6 +903,7 @@ def main(argv: List[str] | None = None) -> int:
         n_sigma=args.sigma,
         mode=args.mode,
         accessibility=args.accessibility,
+        language=args.language,
     )
     write_svg(args.out, svg)
     return 0
