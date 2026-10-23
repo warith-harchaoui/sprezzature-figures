@@ -47,6 +47,9 @@ jobs:
   build:
     name: Build and check the distributions
     runs-on: ubuntu-latest
+    # Cran d'arrêt, pas budget : sans lui GitHub laisse courir un job pendu
+    # six heures. Aucun des dix dépôts n'en avait.
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
 
@@ -102,6 +105,7 @@ jobs:
     name: Publish to PyPI
     needs: build
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     # Held back until the trusted publisher exists on PyPI -- see the header.
     # A skipped job, not a passing one: the difference is the whole point.
     if: vars.PYPI_TRUSTED_PUBLISHING == 'ready'
