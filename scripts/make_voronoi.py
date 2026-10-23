@@ -73,7 +73,8 @@ MAP_Y1 = float(HEIGHT - 96)
 
 # A gentle rounded frame around the map, so the tessellation reads as a
 # single card rather than bleeding to the canvas edge.
-FRAME_RADIUS = 22.0
+# 16: the house corner cap `audit_figure`'s `radius-over-cap` rule names.
+FRAME_RADIUS = 16.0
 
 Point = Tuple[float, float]
 Poly = List[Point]

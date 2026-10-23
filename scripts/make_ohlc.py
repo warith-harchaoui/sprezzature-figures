@@ -125,6 +125,40 @@ def _day_number(label: str) -> Optional[int]:
         return None
 
 
+#: Short month names for an axis. English only, on purpose: the French
+#: gallery is produced by `web/tools/localize_figures.py` from
+#: `web/i18n/figures.fr.patterns.yaml`, which already carries a rule per month
+#: in exactly this shape (``Mar ([-+\d.,\u202f ]+)`` → ``Mars {0}``). Writing
+#: the month before the day is what makes those twelve rules apply here too,
+#: instead of asking for thirteen more.
+_MONTHS: tuple[str, ...] = (
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+)
+
+
+def _axis_label(label: str) -> str:
+    """An axis label a person reads, not a key a machine sorts by.
+
+    ``2026-03-02`` is machine output: correct, sortable, and three times the
+    width of ``Mar 2`` for the same information. The suite's own figure
+    auditor has a rule for it — ``iso-date-tick`` — and the gallery's own
+    candlestick chart was breaking it, because nothing ran that auditor over
+    the gallery.
+
+    Only the axis. The hover bubble keeps the full date: it is read one at a
+    time, on demand, and the year is worth having there.
+
+    A label in any other shape is returned untouched — the session key belongs
+    to the caller, and most callers do not pass dates.
+    """
+    try:
+        when = date.fromisoformat(label)
+    except ValueError:
+        return label
+    return f"{_MONTHS[when.month - 1]} {when.day}"
+
+
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
     title: str = "One session ran nearly four times the usual range; the axis hides nine weekends",
@@ -366,7 +400,7 @@ def build_svg(
         parts.append(
             f'<text x="{px(index):.1f}" y="{plot_y + plot_h + 20:.1f}" font-size="11" '
             f'fill="{SECONDARY}" text-anchor="middle" font-family="{mono_family}">'
-            f'{xml_escape(sessions[index][0])}</text>'
+            f'{xml_escape(_axis_label(sessions[index][0]))}</text>'
         )
     parts.append(
         f'<text x="{plot_x + plot_w / 2:.1f}" y="{plot_y + plot_h + 46:.1f}" '

@@ -488,7 +488,8 @@ def build_svg(
         f"pushes through the upper band and trends up along it — a breakout, "
         f"marked in green.</desc>"
     )
-    parts.append(f'<rect width="{width}" height="{height}" rx="18" fill="{_BG}"/>')
+    # 16: the house corner cap `audit_figure` enforces. See make_radar.
+    parts.append(f'<rect width="{width}" height="{height}" rx="16" fill="{_BG}"/>')
     # Le titre était posé sur UNE ligne, à une ordonnée fixe, calibrée sur sa
     # version anglaise. La même phrase en français est plus longue — c'est la
     # règle, pas l'exception — et sortait du cadre. On la replie, et ce qui

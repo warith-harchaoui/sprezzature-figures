@@ -449,7 +449,8 @@ def build_svg(
         + "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
         + "</style>"
     )
-    parts.append(f'<rect width="{width}" height="{height}" rx="18" fill="{_BG}"/>')
+    # 16: the house corner cap `audit_figure` enforces. See make_radar.
+    parts.append(f'<rect width="{width}" height="{height}" rx="16" fill="{_BG}"/>')
     parts.append(
         f'<text x="{fmt_compact(m_left - 210 + 42)}" y="62" font-size="30" '
         f'font-weight="700" fill="{_INK}">{title}</text>'

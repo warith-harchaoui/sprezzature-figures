@@ -137,36 +137,82 @@ def rules_for_svg(text: str, path: str) -> List[Dict[str, Any]]:
         findings.append(make_finding("pie-3d", "error", "SVG uses a perspective transform", path))
 
     # corner policy: no rounding over the xl cap (16px) on any rect/path corner.
-    over = sorted({float(m) for m in re.findall(r'rx="([0-9.]+)"', text) if float(m) > 16})
+    #
+    # A capsule is not a rounded corner. `rx` equal to half the height makes a
+    # stadium — a pill node, a legend chip, a tooltip bubble — and that is a
+    # shape somebody chose, not a corner that drifted past the cap. Flagging
+    # them put fifteen warnings on a clean gallery of 182 figures, every one of
+    # them on a pill, which is how a rule stops being read: the real breach was
+    # in the sixteenth, a 1000x1080 canvas panel with a 22px corner.
+    over: set[float] = set()
+    for rect in re.findall(r"<rect\b[^>]*>", text):
+        radius = re.search(r'rx="([0-9.]+)"', rect)
+        if radius is None or float(radius.group(1)) <= 16:
+            continue
+        value = float(radius.group(1))
+        height = re.search(r'height="([0-9.]+)"', rect)
+        # Half the height, within a pixel: anything rounder than that is not a
+        # corner at all, it is the whole end of the shape.
+        if height is not None and abs(value - float(height.group(1)) / 2) <= 1.0:
+            continue
+        over.add(value)
+    # `rx` outside a <rect> — on a path or a use — keeps the old flat reading:
+    # there is no height to compare it against.
+    outside = re.sub(r"<rect\b[^>]*>", "", text)
+    over |= {float(m) for m in re.findall(r'rx="([0-9.]+)"', outside) if float(m) > 16}
     if over:
         findings.append(make_finding(
             "radius-over-cap", "warning",
-            f"rx over the 16px corner cap: {', '.join(f'{v:g}' for v in over)}", path))
+            f"rx over the 16px corner cap: {', '.join(f'{v:g}' for v in sorted(over))}",
+            path))
 
-    # Tick labels that are raw, unformatted magnitudes: "1000000" instead of
+    # Both label rules read the text a reader SEES, which is not all the text
+    # in the file. A `<title>` is a tooltip and a `<desc>` is the long
+    # description: both are read on demand, by one reader at a time, and the
+    # full precision is the point there. Counting them inflated an ohlc chart
+    # with eight dates on its axis into "56 tick labels are raw ISO dates" —
+    # a number seven times the defect, in a message asking somebody to go and
+    # look.
+    visible = re.sub(r"<(title|desc)\b[^>]*>.*?</\1>", "", text, flags=re.S)
+    # A hover bubble is revealed one at a time, and the full precision is
+    # exactly what it is for. This stack draws them as `<g class="tip">`,
+    # hidden by `.tip{opacity:0}` until the mark under them is hovered, so the
+    # dates and magnitudes inside are not "shown" in the sense these two rules
+    # mean. An ohlc chart with eight dates on its axis carries forty-eight
+    # more in its bubbles.
+    visible = re.sub(
+        r'<g\b[^>]*class="[^"]*\btip\b[^"]*"[^>]*>.*?</g>', "", visible, flags=re.S
+    )
+
+    # Raw, unformatted magnitudes shown to a reader: "1000000" instead of
     # "1M" or "1 000 000". Found by eyeballing a real revenue chart whose y-axis
     # read 200000 / 400000 / 600000 — legible only after counting zeros, which
     # is exactly the work a chart is supposed to remove. Five digits is the
-    # threshold because four-digit years ("2024") are legitimate tick labels.
+    # threshold because four-digit years ("2024") are legitimate labels.
+    #
+    # "Shown to a reader", not "axis tick": nothing in this markup distinguishes
+    # an axis tick from a value printed inside a bar or a cell of a table
+    # figure, and the message used to claim the first while finding all three.
+    # A rule that names the wrong thing sends the reader to the wrong place.
     bare = sorted({
-        m for m in re.findall(r">\s*(\d{5,})\s*<", text)
+        m for m in re.findall(r">\s*(\d{5,})\s*<", visible)
         if not (len(m) == 4 and m.startswith(("19", "20")))
     }, key=len, reverse=True)
     if len(bare) >= 3:
         findings.append(make_finding(
             "unformatted-tick", "warning",
-            "axis ticks are raw magnitudes with no separator or unit suffix "
+            "raw magnitudes shown with no separator or unit suffix "
             f"({', '.join(bare[:3])}...): a reader has to count digits",
             path))
 
-    # Tick labels left as ISO dates. A time axis reading "2024-07-01" twenty-four
+    # Labels left as ISO dates. A time axis reading "2024-07-01" twenty-four
     # times, rotated to fit, is machine output shown to a human: "juil. 2024" or
     # "Jul 2024" carries the same information in half the width.
-    iso = re.findall(r">\s*(\d{4}-\d{2}-\d{2})\s*<", text)
+    iso = re.findall(r">\s*(\d{4}-\d{2}-\d{2})\s*<", visible)
     if len(iso) >= 4:
         findings.append(make_finding(
             "iso-date-tick", "warning",
-            f"{len(iso)} tick labels are raw ISO dates ({iso[0]}...): format them "
+            f"{len(iso)} labels are raw ISO dates ({iso[0]}...): format them "
             "for a reader, not for a machine",
             path))
 

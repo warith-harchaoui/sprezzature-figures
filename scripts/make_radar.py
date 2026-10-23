@@ -309,7 +309,10 @@ def build_svg(
     parts.append(svg_open(width, height, "radar-title", "radar-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="radar-title">{xml_escape(title)}</title>')
     parts.append(f'<desc id="radar-desc">{xml_escape(aria)}</desc>')
-    parts.append(f'<rect width="{width}" height="{height}" rx="22" fill="{_BG}"/>')
+    # 16 is the house corner cap, the one `audit_figure`'s `radius-over-cap`
+    # rule names. This canvas was rounder than the rule this same repository
+    # ships, and nothing ran that auditor over the gallery.
+    parts.append(f'<rect width="{width}" height="{height}" rx="16" fill="{_BG}"/>')
 
     # ---- OS-adaptive overrides (additive; every rule lives inside an @media
     # block, so the default render is byte-for-byte unchanged). Each series
