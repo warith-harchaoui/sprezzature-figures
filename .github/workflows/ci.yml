@@ -12,6 +12,9 @@ concurrency:
 jobs:
   test:
     runs-on: ubuntu-latest
+    # Cran d'arrêt, pas budget : sans lui GitHub laisse courir un job pendu
+    # six heures. Aucun des dix dépôts n'en avait.
+    timeout-minutes: 25
     # pyproject declares `requires-python = ">=3.10,<3.14"`. Testing only 3.12
     # is how sprezzature-maps shipped a module that never parsed on 3.10 or
     # 3.11: the floor was a promise nobody checked. Lint and the slow render
@@ -63,6 +66,7 @@ jobs:
   packaging:
     name: "Packaging (wheel install, incl. [studio] extra)"
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
 
