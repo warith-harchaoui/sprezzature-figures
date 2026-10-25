@@ -161,3 +161,40 @@ def test_both_command_lines_report_the_same_findings(tmp_path: Path, runner: Cli
     code = _VERBS["check"]([str(svg)])
     assert code == through_click.exit_code
     assert str(svg) in through_click.output
+
+
+def test_both_console_names_resolve_to_the_click_command() -> None:
+    """
+    ``sprezzature-figures`` and ``make-figure`` are one command.
+
+    ``make-figure`` was the argparse front door until 2026-10-25; both names
+    now point at the Click one, so the parity the tests above check is no
+    longer an agreement that has to be maintained between two installed
+    commands — it is one command compared against the internal implementation
+    it grew out of.
+
+    That internal ``make_figure.main`` is now unreachable as an entry point.
+    It is left in place deliberately: the click command still imports a dozen
+    helpers that live beside it, and pulling the parser out of 662 interleaved
+    lines is its own change, not a side effect of this one.
+    """
+    from pathlib import Path
+
+    import tomllib
+
+    root = Path(__file__).resolve().parent.parent
+    scripts = tomllib.loads((root / "pyproject.toml").read_text())["project"]["scripts"]
+    assert scripts["sprezzature-figures"] == scripts["make-figure"]
+    assert scripts["make-figure"] == "sprezzature_figures.cli:main"
+
+
+def test_click_is_a_base_dependency_not_an_extra() -> None:
+    """With argparse gone from the console scripts, click cannot be optional."""
+    from pathlib import Path
+
+    import tomllib
+
+    root = Path(__file__).resolve().parent.parent
+    project = tomllib.loads((root / "pyproject.toml").read_text())["project"]
+    assert any(dep.startswith("click") for dep in project["dependencies"])
+    assert "cli" not in project.get("optional-dependencies", {})
