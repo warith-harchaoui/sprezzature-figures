@@ -63,9 +63,7 @@ DEMO_DATA: List[Dict[str, Any]] = [
 def _city_colors(
     cities: List[str], accessibility: str = "universal", theme: str = "corporate"
 ) -> Dict[str, str]:
-    return cycle_hues(
-        cities, accessibility, hues=["Blue", "Purple", "Green", "Orange", "Red"], theme=theme
-    )
+    return cycle_hues(cities, accessibility, hues=['Blue', 'Purple', 'Green', 'Orange', 'Red'], theme=theme)
 
 
 def build_svg(
@@ -135,9 +133,7 @@ def build_svg(
         # less tooltip on the one dataset where the domain-specific text is
         # actually correct. Any caller passing real `data` gets the general
         # defaults untouched.
-        subtitle = (
-            subtitle or "Mean daily low to mean daily high, degrees Celsius, 30-year climate normal"
-        )
+        subtitle = subtitle or "Mean daily low to mean daily high, degrees Celsius, 30-year climate normal"
         if y_axis_title == "Value":
             y_axis_title = "Temperature (°C)"
         if legend_title == "Series":
@@ -157,14 +153,10 @@ def build_svg(
         sort_by_month = {r["month"]: r["sort"] for r in rows}
         months = sorted({r["month"] for r in rows}, key=lambda m: sort_by_month[m])
     else:
-        months = sorted(
-            {r["month"] for r in rows}, key=lambda m: MONTHS.index(m) if m in MONTHS else 0
-        )
+        months = sorted({r["month"] for r in rows}, key=lambda m: MONTHS.index(m) if m in MONTHS else 0)
     colors = _city_colors(cities, accessibility, theme=theme)
 
-    lookup: Dict[tuple, tuple] = {
-        (r["city"], r["month"]): (float(r["low"]), float(r["high"])) for r in rows
-    }
+    lookup: Dict[tuple, tuple] = {(r["city"], r["month"]): (float(r["low"]), float(r["high"])) for r in rows}
     lows = [v[0] for v in lookup.values()]
     highs = [v[1] for v in lookup.values()]
     y_min, y_max = min(lows), max(highs)
@@ -195,14 +187,12 @@ def build_svg(
         return plot_y + plot_h - (v - y0) / (y1 - y0) * plot_h
 
     parts: List[str] = []
-    parts.append(
-        svg_open(width, height, "cr-title", "cr-desc", font_family=chrome_stack_for_theme(theme))
-    )
+    parts.append(svg_open(width, height, "cr-title", "cr-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="cr-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="cr-desc">Floating-bar range chart of {len(cities)} series across '
-        f"{n_groups} positions, each bar spanning its low to high value{' in ' + unit if unit else ''}. "
-        f"Range: {y_min:.0f} to {y_max:.0f}.</desc>"
+        f'{n_groups} positions, each bar spanning its low to high value{" in " + unit if unit else ""}. '
+        f'Range: {y_min:.0f} to {y_max:.0f}.</desc>'
     )
 
     parts.append(
@@ -210,8 +200,8 @@ def build_svg(
         ".rangebar{transition:filter .15s ease;}"
         ".rangebar:hover,.rangebar:focus{filter:brightness(1.1);outline:none;}"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        + foreground_tip_css(len(months) * len(cities))
-        + "@media (prefers-reduced-motion: reduce){.rangebar{transition:none;}"
+        + foreground_tip_css(len(months) * len(cities)) +
+        "@media (prefers-reduced-motion: reduce){.rangebar{transition:none;}"
         ".tip{transition:none}}"
         "</style>"
     )
@@ -221,24 +211,18 @@ def build_svg(
         f'<text x="40" y="46" font-size="24" font-weight="700" fill="{INK}" '
         f'letter-spacing="-0.3">{xml_escape(title)}</text>'
     )
-    parts.append(
-        f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>'
-    )
+    parts.append(f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>')
 
     # ---- legend ----
     lx, ly = 40.0, 100.0
-    parts.append(
-        f'<text x="{lx:.1f}" y="{ly:.1f}" font-size="13" font-weight="700" fill="{INK}">{xml_escape(legend_title)}</text>'
-    )
+    parts.append(f'<text x="{lx:.1f}" y="{ly:.1f}" font-size="13" font-weight="700" fill="{INK}">{xml_escape(legend_title)}</text>')
     cursor = lx
     ly2 = ly + 22
     for c in cities:
         parts.append(
             f'<rect x="{cursor:.1f}" y="{ly2 - 11:.1f}" width="12" height="12" rx="2" fill="{colors[c]}"/>'
         )
-        parts.append(
-            f'<text x="{cursor + 18:.1f}" y="{ly2:.1f}" font-size="12" fill="{INK}">{xml_escape(c)}</text>'
-        )
+        parts.append(f'<text x="{cursor + 18:.1f}" y="{ly2:.1f}" font-size="12" fill="{INK}">{xml_escape(c)}</text>')
         cursor += 18 + 7.2 * len(c) + 20
 
     # ---- y-axis gridlines ----
@@ -258,7 +242,7 @@ def build_svg(
     parts.append(
         f'<text x="18" y="{plot_y + plot_h / 2:.1f}" font-size="13" fill="{INK}" '
         f'text-anchor="middle" transform="rotate(-90 18 {plot_y + plot_h / 2:.1f})">'
-        f"{xml_escape(y_axis_title)}</text>"
+        f'{xml_escape(y_axis_title)}</text>'
     )
 
     # ---- floating bars, grouped by month ----
@@ -286,19 +270,10 @@ def build_svg(
             )
             tip_cards.append(
                 tooltip_bubble(
-                    x + bar_w / 2,
-                    y_top - 10,
-                    [
-                        f"{c}, {m}",
-                        f"low {low:.0f}{unit} — high {high:.0f}{unit}",
-                        f"span {high - low:.0f}{unit}",
-                    ],
-                    anchor="middle",
-                    canvas_w=width,
-                    canvas_h=height,
-                    ink=INK,
-                    secondary=SECONDARY,
-                    border=GRIDLINE,
+                    x + bar_w / 2, y_top - 10,
+                    [f"{c}, {m}", f"low {low:.0f}{unit} — high {high:.0f}{unit}", f"span {high - low:.0f}{unit}"],
+                    anchor="middle", canvas_w=width, canvas_h=height,
+                    ink=INK, secondary=SECONDARY, border=GRIDLINE,
                     elem_id=f"tip-{idx}",
                 )
             )
@@ -375,32 +350,16 @@ def make_columnrange(
     >>> p.exists()
     True
     """
-    svg = build_svg(
-        data,
-        title=title,
-        subtitle=subtitle,
-        y_axis_title=y_axis_title,
-        x_axis_title=x_axis_title,
-        legend_title=legend_title,
-        unit=unit,
-        width=width,
-        height=height,
-        mode=mode,
-        accessibility=accessibility,
-        theme=theme,
-    )
+    svg = build_svg(data, title=title, subtitle=subtitle, y_axis_title=y_axis_title,
+                     x_axis_title=x_axis_title, legend_title=legend_title, unit=unit,
+                     width=width, height=height, mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "columnrange")
     return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:
     """CLI entry point: build the SVG and write it to disk."""
-    render_cli(
-        __file__,
-        "columnrange",
-        build_svg,
-        description="Generate a column-range (floating bar) chart.",
-    )
+    render_cli(__file__, "columnrange", build_svg, description="Generate a column-range (floating bar) chart.")
 
 
 if __name__ == "__main__":

@@ -91,39 +91,21 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--data", required=True, help="CSV / Parquet input.")
     parser.add_argument("--treatment", required=True, help="Name of the treatment column.")
     parser.add_argument("--outcome", required=True, help="Name of the outcome column.")
-    parser.add_argument(
-        "--confounders",
-        default="",
-        help="Comma-separated confounder columns (falls back to DAG's backdoor set when empty).",
-    )
-    parser.add_argument(
-        "--instrument", default="", help="Column name of an instrumental variable (optional)."
-    )
-    parser.add_argument(
-        "--dag", default="", help="Path to a .gml / .dot DAG describing the causal graph."
-    )
-    parser.add_argument(
-        "--dag-string", default="", help="DoWhy inline DAG string (alternative to --dag)."
-    )
-    parser.add_argument(
-        "--estimator",
-        choices=("linear", "matching", "stratification", "dml", "dr", "causal-forest", "iv-2sls"),
-        default="dml",
-        help="Estimation backend.",
-    )
-    parser.add_argument(
-        "--refute",
-        choices=("none", "placebo", "subset", "random-cause", "all"),
-        default="all",
-        help="Refutation battery.",
-    )
+    parser.add_argument("--confounders", default="",
+                        help="Comma-separated confounder columns (falls back to DAG's backdoor set when empty).")
+    parser.add_argument("--instrument", default="", help="Column name of an instrumental variable (optional).")
+    parser.add_argument("--dag", default="",
+                        help="Path to a .gml / .dot DAG describing the causal graph.")
+    parser.add_argument("--dag-string", default="",
+                        help="DoWhy inline DAG string (alternative to --dag).")
+    parser.add_argument("--estimator", choices=("linear", "matching", "stratification",
+                                                 "dml", "dr", "causal-forest", "iv-2sls"),
+                        default="dml", help="Estimation backend.")
+    parser.add_argument("--refute", choices=("none", "placebo", "subset", "random-cause", "all"),
+                        default="all", help="Refutation battery.")
     parser.add_argument("--out", default="./causal", help="Output directory.")
-    parser.add_argument(
-        "--trim-quantile",
-        type=float,
-        default=0.0,
-        help="Trim rows by propensity-score quantile (helps overlap violations).",
-    )
+    parser.add_argument("--trim-quantile", type=float, default=0.0,
+                        help="Trim rows by propensity-score quantile (helps overlap violations).")
     parser.add_argument("--dark", action="store_true", help="Dark-mode plots.")
     return parser
 
@@ -163,7 +145,6 @@ def load_dag(dag_path: str, dag_string: str) -> str:
         # Convert DOT → GML via networkx (deferred import).
         import io
         import networkx as nx
-
         graph = nx.nx_pydot.read_dot(p)
         buffer = io.StringIO()
         nx.write_gml(graph, buffer)
@@ -209,26 +190,23 @@ def run_dowhy(ctx: Dict[str, Any]) -> Dict[str, Any]:
 
     # 2. estimate
     method_map = {
-        "linear": "backdoor.linear_regression",
-        "matching": "backdoor.propensity_score_matching",
+        "linear":         "backdoor.linear_regression",
+        "matching":       "backdoor.propensity_score_matching",
         "stratification": "backdoor.propensity_score_stratification",
-        "dml": "backdoor.econml.dml.LinearDML",
-        "dr": "backdoor.econml.dr.LinearDRLearner",
-        "causal-forest": "backdoor.econml.dml.CausalForestDML",
-        "iv-2sls": "iv.instrumental_variable",
+        "dml":            "backdoor.econml.dml.LinearDML",
+        "dr":             "backdoor.econml.dr.LinearDRLearner",
+        "causal-forest":  "backdoor.econml.dml.CausalForestDML",
+        "iv-2sls":        "iv.instrumental_variable",
     }
     method_name = method_map[ctx["estimator"]]
 
     method_params: Dict[str, Any] = {}
     if ctx["estimator"] in {"dml", "dr", "causal-forest"}:
         from sklearn.ensemble import GradientBoostingRegressor, GradientBoostingClassifier
-
         method_params = {
             "init_params": {
                 "model_y": GradientBoostingRegressor(),
-                "model_t": GradientBoostingRegressor()
-                if _looks_continuous(df, ctx["treatment"])
-                else GradientBoostingClassifier(),
+                "model_t": GradientBoostingRegressor() if _looks_continuous(df, ctx["treatment"]) else GradientBoostingClassifier(),
                 "featurizer": None,
             },
             "fit_params": {},
@@ -295,9 +273,9 @@ def _refute_list(flag: str) -> List[str]:
 def _run_refuter(model: Any, identified: Any, estimate: Any, name: str) -> Dict[str, Any]:
     """Run one DoWhy refuter and return a serialisable summary."""
     kind = {
-        "placebo": "placebo_treatment_refuter",
-        "random-cause": "random_common_cause",
-        "subset": "data_subset_refuter",
+        "placebo":       "placebo_treatment_refuter",
+        "random-cause":  "random_common_cause",
+        "subset":        "data_subset_refuter",
     }[name]
     try:
         result = model.refute_estimate(identified, estimate, method_name=kind)
@@ -305,12 +283,8 @@ def _run_refuter(model: Any, identified: Any, estimate: Any, name: str) -> Dict[
         return {
             "method": kind,
             "new_effect": new_effect,
-            "p_value": getattr(result, "refutation_result", {}).get("p_value")
-            if hasattr(result, "refutation_result")
-            else None,
-            "verdict": _refuter_verdict(
-                name, float(getattr(estimate, "value", 0.0) or 0.0), new_effect
-            ),
+            "p_value": getattr(result, "refutation_result", {}).get("p_value") if hasattr(result, "refutation_result") else None,
+            "verdict": _refuter_verdict(name, float(getattr(estimate, "value", 0.0) or 0.0), new_effect),
         }
     except Exception as exc:  # noqa: BLE001
         return {"method": kind, "error": str(exc)}
@@ -339,10 +313,9 @@ def _parse_dag_string(dag_string: str) -> "tuple[List[str], List[tuple]]":
     format.
     """
     import re as _re
-
     node_pattern = r'node\s*\[\s*id\s+"?(\w+)"?'
     edge_pattern = r'edge\s*\[\s*source\s+"?(\w+)"?\s+target\s+"?(\w+)"?'
-    dot_edge_pattern = r"(\w+)\s*->\s*(\w+)"
+    dot_edge_pattern = r'(\w+)\s*->\s*(\w+)'
     nodes = set(_re.findall(node_pattern, dag_string))
     edges = _re.findall(edge_pattern, dag_string)
     edges += _re.findall(dot_edge_pattern, dag_string)
@@ -466,7 +439,7 @@ def render_dag(dag_string: str, out_dir: Path, dark: bool) -> None:
     parts.append('<title id="dag-title">Causal graph</title>')
     parts.append(
         f'<desc id="dag-desc">Causal DAG with {len(nodes)} nodes and {len(edges)} directed edges, '
-        "laid out left to right by longest path from a source.</desc>"
+        'laid out left to right by longest path from a source.</desc>'
     )
     parts.append(
         "<style>.dagnode{transition:filter .15s ease;}"
@@ -510,7 +483,7 @@ def render_dag(dag_string: str, out_dir: Path, dark: bool) -> None:
             f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{node_r:.1f}" fill="{bg}" stroke="{fg}" stroke-width="1.4"/>'
             f'<text x="{x:.1f}" y="{y + font_size / 3:.1f}" font-size="{font_size}" fill="{fg}" '
             f'text-anchor="middle">{xml_escape(n)}</text>'
-            f"</g>"
+            f'</g>'
         )
 
     parts.append(fullscreen_control(width, height))
@@ -561,7 +534,7 @@ def render_forest_plot(summary: Dict[str, Any], out_dir: Path, dark: bool) -> No
     parts.append('<title id="cfp-title">Causal effect estimate and refutation checks</title>')
     parts.append(
         f'<desc id="cfp-desc">Point estimate of the effect on {xml_escape(outcome)} '
-        f"alongside {n - 1} refutation deltas.</desc>"
+        f'alongside {n - 1} refutation deltas.</desc>'
     )
     parts.append(
         "<style>.row{transition:opacity .1s ease}"
@@ -571,7 +544,7 @@ def render_forest_plot(summary: Dict[str, Any], out_dir: Path, dark: bool) -> No
     parts.append(f'<rect width="{width}" height="{height}" fill="{bg}"/>')
     parts.append(
         f'<text x="{m_left}" y="32" font-size="16" font-weight="700" fill="{fg}">'
-        f"Effect on {xml_escape(outcome)}</text>"
+        f'Effect on {xml_escape(outcome)}</text>'
     )
 
     zero_x = x_for(0.0)
@@ -594,9 +567,7 @@ def render_forest_plot(summary: Dict[str, Any], out_dir: Path, dark: bool) -> No
             f'<line x1="{zero_x:.1f}" y1="{cy:.1f}" x2="{vx:.1f}" y2="{cy:.1f}" '
             f'stroke="{blue}" stroke-width="6" stroke-linecap="round"/>'
         )
-        parts.append(
-            f'<circle cx="{vx:.1f}" cy="{cy:.1f}" r="5.5" fill="{blue}" stroke="{bg}" stroke-width="1.5"/>'
-        )
+        parts.append(f'<circle cx="{vx:.1f}" cy="{cy:.1f}" r="5.5" fill="{blue}" stroke="{bg}" stroke-width="1.5"/>')
         parts.append("</g>")
         # Placing the value label on the side the sign suggests (left of a
         # negative dot, right of a positive one) collides with the
@@ -636,7 +607,6 @@ def render_forest_plot(summary: Dict[str, Any], out_dir: Path, dark: bool) -> No
 def load_data(path: str) -> "pandas.DataFrame":  # noqa: F821 — quoted forward ref
     """Load a data table."""
     import pandas as pd
-
     p = Path(path)
     ext = p.suffix.lower()
     if ext == ".csv":

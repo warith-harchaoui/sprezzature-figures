@@ -65,14 +65,19 @@ from _svg import foreground_tip_css, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 # Repo-relative default output — the one SVG artifact this figure ships.
-_DEFAULT_OUT = Path(__file__).resolve().parent.parent / "assets" / "svg-examples" / "andrews.svg"
+_DEFAULT_OUT = (
+    Path(__file__).resolve().parent.parent
+    / "assets"
+    / "svg-examples"
+    / "andrews.svg"
+)
 
 # House-style tokens (mirrors the house-style constants, kept literal so this
 # generator needs no import of the dataviz tier at build time).
-_INK = "#1D1D1F"  # primary text
+_INK = "#1D1D1F"        # primary text
 _SECONDARY = "#6E6E73"  # subtitle / secondary text
-_BG = "#FFFFFF"  # white ground
-_GRIDLINE = "#E5E5EA"  # light gridline
+_BG = "#FFFFFF"         # white ground
+_GRIDLINE = "#E5E5EA"   # light gridline
 _FONT = "Roboto, system-ui, sans-serif"
 _MONO = "Roboto Mono, ui-monospace, monospace"
 
@@ -80,9 +85,9 @@ _MONO = "Roboto Mono, ui-monospace, monospace"
 # clear third channel between them (blue / orange / green) so the figure
 # survives colour-vision-deficiency review; each class is also labelled.
 _CLASS_COLOURS: Dict[str, str] = {
-    "Adélie": "#007AFF",  # Blue
+    "Adélie": "#007AFF",     # Blue
     "Chinstrap": "#FF9500",  # Orange
-    "Gentoo": "#34C759",  # Green
+    "Gentoo": "#34C759",     # Green
 }
 
 # The four body measurements, in the term order they occupy in the Fourier
@@ -126,9 +131,9 @@ def _sample_penguins(seed: int = 11, per_class: int = 26) -> Tuple[np.ndarray, L
     # Per-species mean vectors over (bill length mm, bill depth mm,
     # flipper length mm, body mass g).
     means: Dict[str, np.ndarray] = {
-        "Adélie": np.array([38.8, 18.3, 190.0, 3700.0]),
+        "Adélie":    np.array([38.8, 18.3, 190.0, 3700.0]),
         "Chinstrap": np.array([48.8, 18.4, 195.8, 3733.0]),
-        "Gentoo": np.array([47.5, 15.0, 217.2, 5076.0]),
+        "Gentoo":    np.array([47.5, 15.0, 217.2, 5076.0]),
     }
     # A shared-ish spread per feature; body mass is the widest in absolute terms.
     spread = np.array([2.6, 1.1, 6.3, 430.0])
@@ -242,9 +247,7 @@ def andrews_curve(row: np.ndarray, t: np.ndarray) -> np.ndarray:
 # --------------------------------------------------------------------------- #
 def _poly_d(xs: np.ndarray, ys: np.ndarray) -> str:
     """Build an SVG polyline ``d`` attribute from parallel x/y pixel arrays."""
-    pts = [
-        f"{fmt_compact(float(px))},{fmt_compact(float(py))}" for px, py in zip(xs, ys, strict=True)
-    ]
+    pts = [f"{fmt_compact(float(px))},{fmt_compact(float(py))}" for px, py in zip(xs, ys, strict=True)]
     return "M" + " L".join(pts)
 
 
@@ -317,7 +320,7 @@ def build_svg(
     # Poster-scale canvas: a big, generous figure so the curve clouds have
     # room to breathe and the per-species ribbons stop piling into a blob.
     width, height = 1180, 820
-    m_left, m_right = 108, 250  # right margin holds the class legend
+    m_left, m_right = 108, 250   # right margin holds the class legend
     m_top, m_bottom = 132, 104
     plot_w = width - m_left - m_right
     plot_h = height - m_top - m_bottom
@@ -386,7 +389,8 @@ def build_svg(
         if _lab not in _classes_ordered:
             _classes_ordered.append(_lab)
     curve_series = {
-        f".cls-{ci}": class_colours.get(cls, "#8E8E93") for ci, cls in enumerate(_classes_ordered)
+        f".cls-{ci}": class_colours.get(cls, "#8E8E93")
+        for ci, cls in enumerate(_classes_ordered)
     }
     # forced-colors (Windows High Contrast): the class identity is carried by
     # colour alone (the curves have no per-curve label), and the ~4-colour system
@@ -398,11 +402,7 @@ def build_svg(
     _fc_dashes = ["", "10 7", "2 6"]  # class 0 solid, 1 dashed, 2 dotted
     _fc_rows = "".join(
         f".cls-{ci}{{stroke:CanvasText;forced-color-adjust:none;"
-        + (
-            f"stroke-dasharray:{_fc_dashes[ci % len(_fc_dashes)]};"
-            if _fc_dashes[ci % len(_fc_dashes)]
-            else ""
-        )
+        + (f"stroke-dasharray:{_fc_dashes[ci % len(_fc_dashes)]};" if _fc_dashes[ci % len(_fc_dashes)] else "")
         + "}"
         for ci in range(len(_classes_ordered))
     )
@@ -431,7 +431,8 @@ def build_svg(
     )
     # Subtitle can be a touch long; keep it on one line.
     parts.append(
-        f'<text x="{m_left - 42}" y="92" font-size="17" fill="{_SECONDARY}">{subtitle}</text>'
+        f'<text x="{m_left - 42}" y="92" font-size="17" '
+        f'fill="{_SECONDARY}">{subtitle}</text>'
     )
 
     # ---- horizontal gridline at f = 0 + light vertical t-ticks ------------ #
@@ -461,7 +462,8 @@ def build_svg(
         parts.append('<g class="cloud">')
         # Native tooltip: which class and how many curves.
         parts.append(
-            f"<title>{cls} — {len(idx)} birds; bold line is the species median curve</title>"
+            f"<title>{cls} — {len(idx)} birds; bold line is the species "
+            f"median curve</title>"
         )
         for i in idx:
             ys = np.array([y_px(v) for v in curves[i]])
@@ -493,13 +495,9 @@ def build_svg(
         mid = len(t_px) // 2
         curve_tips.append(
             tooltip_bubble(
-                float(t_px[mid]),
-                float(ys[mid]) - 10,
+                float(t_px[mid]), float(ys[mid]) - 10,
                 [str(cls), f"{len(idx)} birds", "bold line = species median"],
-                canvas_w=width,
-                canvas_h=height,
-                ink=_INK,
-                secondary=_SECONDARY,
+                canvas_w=width, canvas_h=height, ink=_INK, secondary=_SECONDARY,
                 border=_GRIDLINE,
                 elem_id=f"curve-tip-{ci}",
             )
@@ -599,7 +597,9 @@ def _build_parser() -> argparse.ArgumentParser:
         default=_DEFAULT_OUT,
         help="Destination SVG path (default: the shipped example).",
     )
-    parser.add_argument("--seed", type=int, default=11, help="Random seed for the sample data.")
+    parser.add_argument(
+        "--seed", type=int, default=11, help="Random seed for the sample data."
+    )
     parser.add_argument(
         "--mode",
         choices=("self-contained", "external", "static"),
@@ -676,17 +676,9 @@ def make_andrews(
     _ = title
     rows = data if data else DEMO_DATA
     x_raw, labels = _rows_to_matrix(rows)
-    svg = build_svg(
-        x_raw,
-        labels,
-        mode=mode,
-        accessibility=accessibility,
-        theme=theme,
-        title=title or None,
-        y_axis_title=y_axis_title,
-        legend_title=legend_title,
-        term_order_label=term_order_label,
-    )
+    svg = build_svg(x_raw, labels, mode=mode, accessibility=accessibility, theme=theme,
+                    title=title or None, y_axis_title=y_axis_title,
+                    legend_title=legend_title, term_order_label=term_order_label)
     dest = Path(out) if out else svg_example_path(__file__, "andrews")
     return write_svg(dest, svg, theme=theme)
 

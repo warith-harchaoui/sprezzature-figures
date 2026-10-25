@@ -65,11 +65,11 @@ _R_IN: float = 168.0
 _R_OUT: float = 400.0
 
 #: House-style inks.
-_INK: str = "#1D1D1F"  # primary text
-_SUBTLE: str = "#6E6E73"  # secondary text
-_GRID: str = "#E8E8ED"  # concentric rings + hour spokes
-_BG: str = "#FFFFFF"  # background
-_FOCUS: str = "#0A4DA0"  # focus-ring blue
+_INK: str = "#1D1D1F"      # primary text
+_SUBTLE: str = "#6E6E73"   # secondary text
+_GRID: str = "#E8E8ED"     # concentric rings + hour spokes
+_BG: str = "#FFFFFF"       # background
+_FOCUS: str = "#0A4DA0"    # focus-ring blue
 
 
 def _palette_hues(accessibility: str = "universal", theme: str = "corporate") -> Dict[str, str]:
@@ -115,30 +115,10 @@ def _dataset() -> List[int]:
     """
     # Hand-tuned bimodal weekday curve; a real system's canonical shape.
     return [
-        120,
-        90,
-        60,
-        45,
-        55,
-        160,  # 00–05  overnight trough
-        520,
-        1180,
-        2240,
-        1480,
-        760,
-        700,  # 06–11  morning peak at 08
-        880,
-        820,
-        700,
-        760,
-        1340,
-        2060,  # 12–17  lunch lift, ramp
-        2380,
-        1560,
-        940,
-        560,
-        340,
-        190,  # 18–23  evening peak at 18
+        120,  90,  60,  45,  55, 160,   # 00–05  overnight trough
+        520, 1180, 2240, 1480,  760,  700,  # 06–11  morning peak at 08
+        880,  820,  700,  760, 1340, 2060,  # 12–17  lunch lift, ramp
+        2380, 1560,  940,  560,  340,  190,  # 18–23  evening peak at 18
     ]
 
 
@@ -146,7 +126,9 @@ def _dataset() -> List[int]:
 #: ``list[dict[str, Any]]`` shape. :func:`_trips_from_rows` reshapes it
 #: (or any caller-supplied row list of the same shape) into the
 #: hour-ordered trip-count list :func:`build_svg` renders.
-DEMO_DATA: List[Dict[str, Any]] = [{"hour": h, "trips": v} for h, v in enumerate(_dataset())]
+DEMO_DATA: List[Dict[str, Any]] = [
+    {"hour": h, "trips": v} for h, v in enumerate(_dataset())
+]
 
 
 def _trips_from_rows(data: Optional[List[Dict[str, Any]]]) -> List[int]:
@@ -192,7 +174,9 @@ def _polar(cx: float, cy: float, r: float, hour_angle_deg: float) -> Tuple[float
     return point_on_circle(cx, cy, r, theta)
 
 
-def _annular_bar(cx: float, cy: float, r0: float, r1: float, a0: float, a1: float) -> str:
+def _annular_bar(
+    cx: float, cy: float, r0: float, r1: float, a0: float, a1: float
+) -> str:
     """Build an SVG path for a filled annular bar (one hour's wedge).
 
     Parameters
@@ -278,15 +262,15 @@ def build_svg(
     # three lines apart, which a reader has to hold in their head and a type
     # checker cannot follow at all -- it reported fifteen phantom errors here.
     trips = _trips_from_rows(data)
-    n = len(trips)  # 24 hours
-    sector_deg = 360.0 / n  # 15° per hour
-    pad_deg = 3.2  # angular gap so bars read as columns
+    n = len(trips)                      # 24 hours
+    sector_deg = 360.0 / n              # 15° per hour
+    pad_deg = 3.2                       # angular gap so bars read as columns
     total = sum(trips)
 
     # Radial scale: the busiest hour reaches _R_OUT; a friendly round tick
     # keeps the gridlines on whole thousands.
     data_max = max(trips)
-    ring_step = 500  # trips per ring
+    ring_step = 500                     # trips per ring
     axis_max = math.ceil(data_max / ring_step) * ring_step
     scale = (_R_OUT - _R_IN) / axis_max  # px per trip
 
@@ -299,12 +283,10 @@ def build_svg(
     parts: List[str] = []
 
     # ---- header ----
-    parts.append(
-        svg_open(_WIDTH, _HEIGHT, "rb-title", "rb-desc", font_family=chrome_stack_for_theme(theme))
-    )
+    parts.append(svg_open(_WIDTH, _HEIGHT, "rb-title", "rb-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(
         '<title id="rb-title">Bike-share trips by hour of day: two commute '
-        "peaks around 8am and 6pm</title>"
+        'peaks around 8am and 6pm</title>'
     )
     desc = (
         "Radial bar chart of an average weekday's bike-share departures, "
@@ -353,20 +335,20 @@ def build_svg(
     # ---- title + subtitle (upper-left, poster weight) ----
     # The headline the figure writes about its own data, used only when
     # the caller supplies none.
-    title = title or "A city with two rush hours"
+    title = title or 'A city with two rush hours'
     parts.append(
         f'<text x="60" y="72" font-size="34" font-weight="700" '
         f'fill="{_INK}">{xml_escape(title)}</text>'
     )
     parts.append(
         f'<text x="60" y="106" font-size="18" fill="{_SUBTLE}">'
-        f"Vélomarée bike-share · trips by hour on an average weekday · "
-        f"{_fmt_trips(total)} daily rides</text>"
+        f'Vélomarée bike-share · trips by hour on an average weekday · '
+        f'{_fmt_trips(total)} daily rides</text>'
     )
 
     # ---- polar grid: concentric rings + ring value labels ----
     n_rings = int(round(axis_max / ring_step))
-    parts.append("<g>")
+    parts.append('<g>')
     # Faint base ring at the hole so the inner edge reads as an axis.
     parts.append(
         f'<circle cx="{_CX}" cy="{_CY}" r="{_R_IN:.2f}" fill="none" '
@@ -385,10 +367,10 @@ def build_svg(
             f'font-family="Roboto Mono, monospace" fill="{_SUBTLE}" '
             f'text-anchor="end">{_fmt_trips(val)}</text>'
         )
-    parts.append("</g>")
+    parts.append('</g>')
 
     # ---- hour spokes (every 3 hours, faint) ----
-    parts.append("<g>")
+    parts.append('<g>')
     for h in range(0, n, 3):
         bearing = h * sector_deg
         x0, y0 = _polar(_CX, _CY, _R_IN, bearing)
@@ -397,7 +379,7 @@ def build_svg(
             f'<line x1="{x0:.2f}" y1="{y0:.2f}" x2="{x1:.2f}" y2="{y1:.2f}" '
             f'stroke="{_GRID}" stroke-width="1.3"/>'
         )
-    parts.append("</g>")
+    parts.append('</g>')
 
     # ---- hour-of-day labels around the rim (every 3 hours) ----
     # Side-aware anchoring so each label sits at a constant radial gap and
@@ -447,7 +429,10 @@ def build_svg(
         # the read without any colour clash.
         base_op = 1.0 if is_peak else 0.88
         share = 100.0 * v / total
-        tip = f"{h:02d}:00 – {h:02d}:59 · {_fmt_trips(v)} trips ({share:.1f}% of the day)"
+        tip = (
+            f'{h:02d}:00 – {h:02d}:59 · {_fmt_trips(v)} trips '
+            f'({share:.1f}% of the day)'
+        )
         parts.append(
             f'<path id="hit-{h}" class="bar hit {bar_hue_class}" tabindex="0" role="img" '
             f'aria-label="{_xml(tip)}" '
@@ -460,25 +445,20 @@ def build_svg(
             f'additive="sum" values="1;1;0.02;1" keyTimes="0;0.001;0.002;1" '
             f'dur="0.9s" begin="0s" fill="freeze" '
             f'calcMode="spline" keySplines="0 0 1 1;0 0 1 1;0.22 1 0.36 1"/>'
-            f"</path>"
+            f'</path>'
         )
         mx, my = _polar(_CX, _CY, r1, centre)
         tips.append(
             tooltip_bubble(
-                mx,
-                my - 14,
+                mx, my - 14,
                 [f"{h:02d}:00 – {h:02d}:59", f"{_fmt_trips(v)} trips", f"{share:.1f}% of the day"],
-                anchor="middle",
-                canvas_w=_WIDTH,
-                canvas_h=_HEIGHT,
-                ink=_INK,
-                secondary=_SUBTLE,
-                border=_GRID,
+                anchor="middle", canvas_w=_WIDTH, canvas_h=_HEIGHT,
+                ink=_INK, secondary=_SUBTLE, border=_GRID,
                 elem_id=f"tip-{h}",
             )
         )
     parts.extend(tips)
-    parts.append("</g>")
+    parts.append('</g>')
 
     # ---- centre readout: the two peak hours, the takeaway in numbers ----
     parts.append(
@@ -489,22 +469,22 @@ def build_svg(
     parts.append(
         f'<text class="rb-peak" x="{_CX:.0f}" y="{_CY - 8:.0f}" font-size="46" '
         f'font-weight="700" fill="{hues["peak"]}" text-anchor="middle">'
-        f"{morning:02d}:00</text>"
+        f'{morning:02d}:00</text>'
     )
     parts.append(
         f'<text x="{_CX:.0f}" y="{_CY + 22:.0f}" font-size="17" '
         f'fill="{_SUBTLE}" text-anchor="middle">to work · '
-        f"{_fmt_trips(trips[morning])} trips</text>"
+        f'{_fmt_trips(trips[morning])} trips</text>'
     )
     parts.append(
         f'<text class="rb-peak" x="{_CX:.0f}" y="{_CY + 64:.0f}" font-size="46" '
         f'font-weight="700" fill="{hues["peak"]}" text-anchor="middle">'
-        f"{evening:02d}:00</text>"
+        f'{evening:02d}:00</text>'
     )
     parts.append(
         f'<text x="{_CX:.0f}" y="{_CY + 94:.0f}" font-size="17" '
         f'fill="{_SUBTLE}" text-anchor="middle">to home · '
-        f"{_fmt_trips(trips[evening])} trips</text>"
+        f'{_fmt_trips(trips[evening])} trips</text>'
     )
 
     # ---- legend (base vs peak), lower-left ----
@@ -527,23 +507,23 @@ def build_svg(
         parts.append(
             f'<text x="{lx0 + 38:.0f}" y="{yy:.0f}" font-size="17" '
             f'font-weight="500" fill="{_INK}" dominant-baseline="middle">'
-            f"{_xml(label)}</text>"
+            f'{_xml(label)}</text>'
         )
 
     # ---- footnote: how to read the dial ----
     parts.append(
         f'<text x="{_WIDTH - 60:.0f}" y="{_HEIGHT - 44:.0f}" font-size="15" '
         f'fill="{_SUBTLE}" text-anchor="end">Read it like a clock: midnight '
-        f"up top, noon at the bottom.</text>"
+        f'up top, noon at the bottom.</text>'
     )
     parts.append(
         f'<text x="{_WIDTH - 60:.0f}" y="{_HEIGHT - 22:.0f}" font-size="15" '
         f'fill="{_SUBTLE}" text-anchor="end">Hover any hour for its exact '
-        f"count.</text>"
+        f'count.</text>'
     )
 
     parts.append(fullscreen_control(_WIDTH, _HEIGHT, mode))
-    parts.append("</svg>")
+    parts.append('</svg>')
     return "\n".join(parts)
 
 
@@ -583,14 +563,7 @@ def make_radial_bar(
         Absolute path to the written SVG file.
     """
     _ = title
-    svg = build_svg(
-        data,
-        peak_badge_label=peak_badge_label,
-        mode=mode,
-        accessibility=accessibility,
-        theme=theme,
-        title=title or None,
-    )
+    svg = build_svg(data, peak_badge_label=peak_badge_label, mode=mode, accessibility=accessibility, theme=theme, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "radial-bar")
     return write_svg(dest, svg, theme=theme)
 

@@ -36,25 +36,19 @@ QUARTERS = ["Q1", "Q2", "Q3", "Q4"]
 TYPES = ["New", "Renewal", "Expansion"]
 
 DEMO_DATA: List[Dict[str, Any]] = [
-    {"quarter": "Q1", "type": "New", "share": 55},
-    {"quarter": "Q1", "type": "Renewal", "share": 30},
-    {"quarter": "Q1", "type": "Expansion", "share": 15},
-    {"quarter": "Q2", "type": "New", "share": 48},
-    {"quarter": "Q2", "type": "Renewal", "share": 36},
-    {"quarter": "Q2", "type": "Expansion", "share": 16},
-    {"quarter": "Q3", "type": "New", "share": 40},
-    {"quarter": "Q3", "type": "Renewal", "share": 42},
-    {"quarter": "Q3", "type": "Expansion", "share": 18},
-    {"quarter": "Q4", "type": "New", "share": 33},
-    {"quarter": "Q4", "type": "Renewal", "share": 47},
-    {"quarter": "Q4", "type": "Expansion", "share": 20},
+    {"quarter": "Q1", "type": "New", "share": 55}, {"quarter": "Q1", "type": "Renewal", "share": 30},
+    {"quarter": "Q1", "type": "Expansion", "share": 15}, {"quarter": "Q2", "type": "New", "share": 48},
+    {"quarter": "Q2", "type": "Renewal", "share": 36}, {"quarter": "Q2", "type": "Expansion", "share": 16},
+    {"quarter": "Q3", "type": "New", "share": 40}, {"quarter": "Q3", "type": "Renewal", "share": 42},
+    {"quarter": "Q3", "type": "Expansion", "share": 18}, {"quarter": "Q4", "type": "New", "share": 33},
+    {"quarter": "Q4", "type": "Renewal", "share": 47}, {"quarter": "Q4", "type": "Expansion", "share": 20},
 ]
 
 
 def _type_colors(
     types: List[str], accessibility: str = "universal", theme: str = "corporate"
 ) -> Dict[str, str]:
-    return cycle_hues(types, accessibility, hues=["Blue", "Green", "Orange", "Purple"], theme=theme)
+    return cycle_hues(types, accessibility, hues=['Blue', 'Green', 'Orange', 'Purple'], theme=theme)
 
 
 def build_svg(
@@ -102,9 +96,7 @@ def build_svg(
     for r in rows:
         if r["quarter"] not in seen_quarters:
             seen_quarters.append(r["quarter"])
-    quarters = [q for q in QUARTERS if q in seen_quarters] + [
-        q for q in seen_quarters if q not in QUARTERS
-    ]
+    quarters = [q for q in QUARTERS if q in seen_quarters] + [q for q in seen_quarters if q not in QUARTERS]
     seen_types: List[str] = []
     for r in rows:
         if r["type"] not in seen_types:
@@ -125,13 +117,11 @@ def build_svg(
         return plot_y + plot_h - frac * plot_h
 
     parts: List[str] = []
-    parts.append(
-        svg_open(width, height, "sb-title", "sb-desc", font_family=chrome_stack_for_theme(theme))
-    )
+    parts.append(svg_open(width, height, "sb-title", "sb-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="sb-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="sb-desc">100% stacked bar chart of {len(types)} segments across '
-        f"{n} quarters. Hover or focus a segment for its exact share.</desc>"
+        f'{n} quarters. Hover or focus a segment for its exact share.</desc>'
     )
     parts.append(
         "<style>"
@@ -148,20 +138,14 @@ def build_svg(
         f'<text x="40" y="46" font-size="22" font-weight="700" fill="{INK}" '
         f'letter-spacing="-0.3">{xml_escape(title)}</text>'
     )
-    parts.append(
-        f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>'
-    )
+    parts.append(f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>')
 
     # ---- legend ----
     lx, ly = 40.0, 100.0
     cursor = lx
     for t in types:
-        parts.append(
-            f'<rect x="{cursor:.1f}" y="{ly - 12:.1f}" width="14" height="14" rx="3" fill="{colors[t]}"/>'
-        )
-        parts.append(
-            f'<text x="{cursor + 20:.1f}" y="{ly:.1f}" font-size="12" fill="{INK}">{xml_escape(t)}</text>'
-        )
+        parts.append(f'<rect x="{cursor:.1f}" y="{ly - 12:.1f}" width="14" height="14" rx="3" fill="{colors[t]}"/>')
+        parts.append(f'<text x="{cursor + 20:.1f}" y="{ly:.1f}" font-size="12" fill="{INK}">{xml_escape(t)}</text>')
         cursor += 20 + 7.0 * len(t) + 22
 
     # ---- y-axis gridlines (0%, 25%, ..., 100%) ----
@@ -209,19 +193,10 @@ def build_svg(
             )
             bubbles.append(
                 tooltip_bubble(
-                    x0 + bar_w / 2.0,
-                    min(y_top, y_bot) - 14,
-                    [
-                        f"{t} — {quarter}",
-                        f"{frac * 100:.0f}% of revenue",
-                        f"#{rank} of {len(types)} segments",
-                    ],
-                    anchor="middle",
-                    canvas_w=width,
-                    canvas_h=height,
-                    ink=INK,
-                    secondary=SECONDARY,
-                    border=GRIDLINE,
+                    x0 + bar_w / 2.0, min(y_top, y_bot) - 14,
+                    [f"{t} — {quarter}", f"{frac * 100:.0f}% of revenue", f"#{rank} of {len(types)} segments"],
+                    anchor="middle", canvas_w=width, canvas_h=height,
+                    ink=INK, secondary=SECONDARY, border=GRIDLINE,
                     elem_id=f"tip-{pair_idx}",
                 )
             )
@@ -297,30 +272,16 @@ def make_stacked_bar(
     >>> p.exists()
     True
     """
-    svg = build_svg(
-        data,
-        title=title,
-        subtitle=subtitle,
-        width=width,
-        height=height,
-        mode=mode,
-        accessibility=accessibility,
-        theme=theme,
-        y_axis_title=y_axis_title,
-        x_axis_title=x_axis_title,
-    )
+    svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
+                     mode=mode, accessibility=accessibility, theme=theme,
+                     y_axis_title=y_axis_title, x_axis_title=x_axis_title)
     dest = Path(out) if out else svg_example_path(__file__, "stacked-bar")
     return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:
     """CLI entry point: build the SVG and write it to disk."""
-    render_cli(
-        __file__,
-        "stacked-bar",
-        build_svg,
-        description="Generate a 100%-normalised stacked bar chart.",
-    )
+    render_cli(__file__, "stacked-bar", build_svg, description="Generate a 100%-normalised stacked bar chart.")
 
 
 if __name__ == "__main__":

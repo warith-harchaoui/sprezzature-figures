@@ -35,12 +35,12 @@ _BG = "#FFFFFF"
 _MESH = "#FFFFFF"
 
 # Blue height ramp (low -> high).
-_LO = (234, 243, 255)  # #EAF3FF
-_HI = (10, 77, 160)  # #0A4DA0
+_LO = (234, 243, 255)   # #EAF3FF
+_HI = (10, 77, 160)     # #0A4DA0
 
 _ELEV = 24.0
 _AZIM = -58.0
-_N = 30  # grid resolution
+_N = 30                 # grid resolution
 
 
 def _shade(t: float) -> str:
@@ -65,7 +65,7 @@ def _sample() -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """A central-peak surface on a regular grid; z runs about -1 .. 3."""
     g = np.linspace(-1.4, 1.4, _N)
     xx, yy = np.meshgrid(g, g)
-    zz = 3.0 * np.exp(-(xx**2 + yy**2) / 0.45) - 0.9
+    zz = 3.0 * np.exp(-(xx ** 2 + yy ** 2) / 0.45) - 0.9
     return xx, yy, zz
 
 
@@ -165,19 +165,16 @@ def build_svg(
     quads.sort(key=lambda q: q[0])
 
     parts: List[str] = []
+    parts.append(svg_open(_WIDTH, _HEIGHT, "s3d-title", "s3d-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(
-        svg_open(
-            _WIDTH, _HEIGHT, "s3d-title", "s3d-desc", font_family=chrome_stack_for_theme(theme)
-        )
-    )
-    parts.append(
-        '<title id="s3d-title">A 3-D surface with a single central peak, shaded by height</title>'
+        '<title id="s3d-title">A 3-D surface with a single central peak, shaded '
+        'by height</title>'
     )
     parts.append(
         '<desc id="s3d-desc">A smooth surface with one central peak, sampled on '
-        "a regular grid and drawn as a static isometric 3-D projection: "
-        "depth-sorted mesh quads shaded on a blue ramp by height, from about -1 "
-        "at the edges to 3 at the peak, with a height legend.</desc>"
+        'a regular grid and drawn as a static isometric 3-D projection: '
+        'depth-sorted mesh quads shaded on a blue ramp by height, from about -1 '
+        'at the edges to 3 at the peak, with a height legend.</desc>'
     )
     # The mesh geometry is static (a projected isometric render, no orbit
     # controls), but the one genuinely useful reading -- the peak's exact
@@ -205,16 +202,16 @@ def build_svg(
     )
     parts.append(
         f'<text x="40" y="84" font-size="14" fill="{_SUBTLE}">'
-        f"Static isometric projection · colour maps to height</text>"
+        f'Static isometric projection · colour maps to height</text>'
     )
 
-    parts.append("<g>")
+    parts.append('<g>')
     for _d, poly, fill in quads:
         parts.append(
             f'<polygon points="{poly}" fill="{fill}" stroke="{_MESH}" '
             f'stroke-width="0.6" stroke-linejoin="round"/>'
         )
-    parts.append("</g>")
+    parts.append('</g>')
 
     # ---- peak marker: the one point on the surface worth an exact reading ----
     peak_i, peak_j = np.unravel_index(np.argmax(zz), zz.shape)
@@ -230,15 +227,10 @@ def build_svg(
     )
     parts.append(
         tooltip_bubble(
-            peak_px,
-            peak_py - 14,
+            peak_px, peak_py - 14,
             ["Peak", f"height {peak_z:.2f}"],
-            anchor="middle",
-            canvas_w=_WIDTH,
-            canvas_h=_HEIGHT,
-            ink=_INK,
-            secondary=_SUBTLE,
-            border="#E5E5EA",
+            anchor="middle", canvas_w=_WIDTH, canvas_h=_HEIGHT,
+            ink=_INK, secondary=_SUBTLE, border="#E5E5EA",
         )
     )
 
@@ -305,21 +297,15 @@ def make_surface3d(
     Path
         Absolute path to the written SVG file.
     """
-    svg = build_svg(
-        data,
-        z_axis_title=z_axis_title,
-        mode=mode,
-        accessibility=accessibility,
-        theme=theme,
-        title=title or None,
-    )
+    svg = build_svg(data, z_axis_title=z_axis_title, mode=mode, accessibility=accessibility, theme=theme, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "surface3d")
     return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:
     """Write the 3-D surface SVG to the canonical assets path."""
-    render_cli(__file__, "surface3d", build_svg, description="Render the 3-D surface SVG.")
+    render_cli(__file__, "surface3d", build_svg,
+               description="Render the 3-D surface SVG.")
 
 
 if __name__ == "__main__":

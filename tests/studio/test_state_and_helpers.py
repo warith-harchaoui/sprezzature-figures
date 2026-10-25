@@ -48,11 +48,7 @@ def test_session_state_defaults_are_isolated_and_flags_track_content() -> None:
     assert a.has_data is False
     assert a.has_render is False
     a.dataset_profile = DatasetProfile(
-        dataset_id="d",
-        fingerprint="f",
-        source_name="t.csv",
-        row_count=1,
-        column_count=1,
+        dataset_id="d", fingerprint="f", source_name="t.csv", row_count=1, column_count=1,
         columns=[ColumnProfile(name="x", physical_dtype="int64", semantic_type="numeric")],
     )
     a.data = [{"x": 1}]
@@ -86,9 +82,7 @@ def test_load_upload_accepts_json_and_jsonl() -> None:
     assert state.data == [{"region": "North", "value": 42}]
 
     state2 = SessionState()
-    err2 = _load_upload(
-        state2, "revenue.jsonl", b'{"region": "N", "value": 1}\n{"region": "S", "value": 2}\n'
-    )
+    err2 = _load_upload(state2, "revenue.jsonl", b'{"region": "N", "value": 1}\n{"region": "S", "value": 2}\n')
     assert err2 is None
     assert state2.dataset_profile is not None and state2.dataset_profile.row_count == 2
 
@@ -98,10 +92,7 @@ def test_resolve_data_maps_role_bindings_to_column_names() -> None:
     state.data = [{"city": "Paris", "amount": 10}, {"city": "Lyon", "amount": 20}]
     plan = FigurePlan(
         figure_kind="bar",
-        bindings={
-            "region": ColumnBinding(columns=["city"]),
-            "value": ColumnBinding(columns=["amount"]),
-        },
+        bindings={"region": ColumnBinding(columns=["city"]), "value": ColumnBinding(columns=["amount"])},
     )
     resolved = _resolve_data(state, plan)
     assert resolved == [{"region": "Paris", "value": 10}, {"region": "Lyon", "value": 20}]
@@ -135,13 +126,8 @@ def test_editor_records_iterations_so_undo_and_export_work(
             "bar", data, project_id=project_dir.name, iteration_dir=iteration_dir, title=title
         )
         _record_iteration(
-            project_dir,
-            render,
-            parent_id=parent,
-            plan_before=plan,
-            plan_after=plan,
-            user_message=None,
-            summary=title,
+            project_dir, render, parent_id=parent, plan_before=plan, plan_after=plan,
+            user_message=None, summary=title,
         )
 
     render_and_record("v1")
@@ -157,10 +143,7 @@ def test_resolve_data_and_notes_reports_a_skipped_transform() -> None:
     state.data = [{"city": "Paris", "amount": 10}, {"city": "Lyon", "amount": 20}]
     plan = FigurePlan(
         figure_kind="bar",
-        bindings={
-            "region": ColumnBinding(columns=["city"]),
-            "value": ColumnBinding(columns=["amount"]),
-        },
+        bindings={"region": ColumnBinding(columns=["city"]), "value": ColumnBinding(columns=["amount"])},
         transformations=[FilterByValue(column="ghost", op="eq", values=["x"])],
     )
     resolved, notes = _resolve_data_and_notes(state, plan)
@@ -175,14 +158,8 @@ def _render_result(tmp_path: Path) -> RenderResult:
     svg.write_text("<svg></svg>")
     png.write_bytes(b"\x89PNG\r\n\x1a\n")
     return RenderResult(
-        project_id="p1",
-        iteration_id="0001",
-        figure_kind="bar",
-        source_path=svg,
-        preview_path=png,
-        mime_type="image/svg+xml",
-        width=100,
-        height=100,
+        project_id="p1", iteration_id="0001", figure_kind="bar",
+        source_path=svg, preview_path=png, mime_type="image/svg+xml", width=100, height=100,
     )
 
 
@@ -191,23 +168,16 @@ def test_summarize_result_reflects_what_happened(tmp_path: Path) -> None:
 
     # Applied operations + a critique -> critique text surfaces in the summary.
     critique = VisualCritique(
-        verdict="satisfied",
-        message_alignment_score=90,
-        readability_score=90,
-        visual_hierarchy_score=90,
-        accessibility_score=90,
-        data_fidelity_score=90,
+        verdict="satisfied", message_alignment_score=90, readability_score=90,
+        visual_hierarchy_score=90, accessibility_score=90, data_fidelity_score=90,
         concise_summary="Looks great.",
     )
-    applied = RalphResult(
-        plan=plan, render=_render_result(tmp_path), critique=critique, applied_operations=[]
-    )
+    applied = RalphResult(plan=plan, render=_render_result(tmp_path), critique=critique, applied_operations=[])
     assert "Looks great." in _summarize_result(applied)
 
     # Pending changes -> the summary asks for confirmation.
     pending = RalphResult(
-        plan=plan,
-        render=_render_result(tmp_path),
+        plan=plan, render=_render_result(tmp_path),
         pending_confirmation=[SetFigureKind(operation_id="op1", new_kind="line")],
     )
     assert "1 change(s) need your confirmation" in _summarize_result(pending)
@@ -218,9 +188,7 @@ def test_summarize_result_reflects_what_happened(tmp_path: Path) -> None:
 
     # A model-failure note is surfaced, never swallowed.
     noted = RalphResult(
-        plan=plan,
-        render=_render_result(tmp_path),
-        stopped_reason="critique_unavailable",
-        notes=["Visual inspection unavailable (timeout)."],
+        plan=plan, render=_render_result(tmp_path),
+        stopped_reason="critique_unavailable", notes=["Visual inspection unavailable (timeout)."],
     )
     assert "Visual inspection unavailable" in _summarize_result(noted)

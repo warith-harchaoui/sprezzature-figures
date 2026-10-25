@@ -52,14 +52,17 @@ import numpy as np
 
 # Repo-relative default output — the one SVG artifact this figure ships.
 _DEFAULT_OUT = (
-    Path(__file__).resolve().parent.parent / "assets" / "svg-examples" / "imshow-interpolated.svg"
+    Path(__file__).resolve().parent.parent
+    / "assets"
+    / "svg-examples"
+    / "imshow-interpolated.svg"
 )
 
 # House-style tokens (mirrors the house-style constants, kept literal so this
 # generator needs no import of the dataviz tier at build time).
-_INK = "#1D1D1F"  # primary text
+_INK = "#1D1D1F"        # primary text
 _SECONDARY = "#6E6E73"  # subtitle / secondary text
-_BG = "#FFFFFF"  # white ground
+_BG = "#FFFFFF"         # white ground
 _FONT = "Roboto, system-ui, sans-serif"
 _MONO = "Roboto Mono, ui-monospace, monospace"
 
@@ -107,9 +110,9 @@ def _survey_grid(seed: int = 7) -> Dict[str, np.ndarray]:
     rng = np.random.default_rng(seed)
     # Coarse survey nodes: 9 columns east-west, 7 rows south-north.
     n_cols, n_rows = 9, 7
-    xs = np.linspace(0.0, 40.0, n_cols)  # metres east of the datum peg
-    ys = np.linspace(0.0, 30.0, n_rows)  # metres north of the datum peg
-    gx, gy = np.meshgrid(xs, ys)  # (n_rows, n_cols)
+    xs = np.linspace(0.0, 40.0, n_cols)   # metres east of the datum peg
+    ys = np.linspace(0.0, 30.0, n_rows)   # metres north of the datum peg
+    gx, gy = np.meshgrid(xs, ys)          # (n_rows, n_cols)
 
     # Wet hollow: a broad Gaussian centred low-left, the moisture-holding basin.
     hollow = 34.0 * np.exp(-(((gx - 14.0) / 13.0) ** 2 + ((gy - 11.0) / 9.0) ** 2))
@@ -123,7 +126,7 @@ def _survey_grid(seed: int = 7) -> Dict[str, np.ndarray]:
 
     # A dry baseline plus the features, with a little measurement noise.
     field = 18.0 + hollow + ridge + seam + rng.normal(0.0, 0.7, size=gx.shape)
-    field = np.clip(field, 4.0, 55.0)  # moisture stays in a sane percent range
+    field = np.clip(field, 4.0, 55.0)     # moisture stays in a sane percent range
     return {"field": field, "xs": xs, "ys": ys}
 
 
@@ -163,8 +166,8 @@ def _bilinear_upsample(field: np.ndarray, factor: int = 26) -> np.ndarray:
     c0 = np.floor(src_c).astype(int)
     r1 = np.minimum(r0 + 1, n_rows - 1)
     c1 = np.minimum(c0 + 1, n_cols - 1)
-    wr = (src_r - r0)[:, None]  # row weights, column vector
-    wc = (src_c - c0)[None, :]  # col weights, row vector
+    wr = (src_r - r0)[:, None]            # row weights, column vector
+    wc = (src_c - c0)[None, :]            # col weights, row vector
 
     # Gather the four corners for the whole fine grid at once, then blend.
     top = field[np.ix_(r0, c0)] * (1 - wc) + field[np.ix_(r0, c1)] * wc
@@ -190,9 +193,7 @@ def _bilinear_upsample(field: np.ndarray, factor: int = 26) -> np.ndarray:
 _RAMP_LEVELS = 64
 
 
-def _ramp_hex(
-    t: float, stops: Sequence[Tuple[float, str]] = _BLUE_RAMP, theme: str = "corporate"
-) -> str:
+def _ramp_hex(t: float, stops: Sequence[Tuple[float, str]] = _BLUE_RAMP, theme: str = "corporate") -> str:
     """Sample a multi-stop sRGB colour ramp at position ``t`` in ``[0, 1]``.
 
     Thin wrapper around the shared :func:`_svg.color_ramp`.
@@ -279,7 +280,7 @@ def build_svg(
     # the blue sequential ramp is already CVD/greyscale-safe (see the parameter
     # note above), so levelling it would only de-tune it.
     _ = accessibility
-    field: np.ndarray = grid["field"]  # (n_rows, n_cols)
+    field: np.ndarray = grid["field"]          # (n_rows, n_cols)
     xs: np.ndarray = grid["xs"]
     ys: np.ndarray = grid["ys"]
 
@@ -290,7 +291,7 @@ def build_svg(
     # ---- canvas geometry -------------------------------------------------- #
     # Poster-size canvas: generous, readable at a glance, no cramping.
     width, height = 1240, 860
-    m_left, m_right = 108, 168  # right margin holds the colour legend
+    m_left, m_right = 108, 168        # right margin holds the colour legend
     m_top, m_bottom = 138, 112
     plot_w = width - m_left - m_right
     plot_h = height - m_top - m_bottom
@@ -313,7 +314,10 @@ def build_svg(
 
     # ---- header ----------------------------------------------------------- #
     title = title or "Soil moisture pools in the field's low hollow"
-    subtitle = "Bilinearly interpolated survey grid (imshow) · deeper blue = wetter soil "
+    subtitle = (
+        "Bilinearly interpolated survey grid (imshow) · deeper blue = wetter soil "
+        ""
+    )
     parts.append(
         f'<svg role="img" aria-label="{title}" '
         f'xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" '
@@ -353,7 +357,8 @@ def build_svg(
         f'fill="{_INK}">{title}</text>'
     )
     parts.append(
-        f'<text x="{m_left - 44}" y="94" font-size="17" fill="{_SECONDARY}">{subtitle}</text>'
+        f'<text x="{m_left - 44}" y="94" font-size="17" '
+        f'fill="{_SECONDARY}">{subtitle}</text>'
     )
 
     # ---- heatmap cells (clipped to the plot rectangle) -------------------- #
@@ -373,10 +378,7 @@ def build_svg(
         y = m_top + plot_h - (j + 1) * cell_h
         row = fine[j]
         colours = [
-            _ramp_hex(
-                round((float(v) - v_lo) / span * (_RAMP_LEVELS - 1)) / (_RAMP_LEVELS - 1),
-                theme=theme,
-            )
+            _ramp_hex(round((float(v) - v_lo) / span * (_RAMP_LEVELS - 1)) / (_RAMP_LEVELS - 1), theme=theme)
             for v in row
         ]
         parts.extend(raster_row_rects(colours, m_left, y, cell_w, cell_h))
@@ -445,7 +447,7 @@ def build_svg(
     ) -> None:
         """Place a feature label with a soft translucent backing pill."""
         pad_x = 9.0
-        char_w = 8.8  # rough advance for 15px Roboto 600
+        char_w = 8.8                       # rough advance for 15px Roboto 600
         w = len(text) * char_w + 2 * pad_x
         h = 25.0
         if anchor == "start":
@@ -482,7 +484,7 @@ def build_svg(
                 f'<circle class="node-hit" cx="{fmt_compact(nx, decimals=2)}" '
                 f'cy="{fmt_compact(ny, decimals=2)}" r="11" tabindex="0" '
                 f'role="listitem"><title>Survey node ({xm:.0f} m east, {ym:.0f} m '
-                f"north): {val:.1f}% moisture</title></circle>"
+                f'north): {val:.1f}% moisture</title></circle>'
             )
             parts.append(
                 f'<circle class="node-mark" cx="{fmt_compact(nx, decimals=2)}" '
@@ -490,14 +492,9 @@ def build_svg(
             )
             parts.append(
                 tooltip_bubble(
-                    nx,
-                    ny - 14,
-                    [f"{val:.1f}% moisture", f"{xm:.0f} m east, {ym:.0f} m north"],
-                    anchor="middle",
-                    canvas_w=width,
-                    canvas_h=height,
-                    ink=_INK,
-                    secondary=_SECONDARY,
+                    nx, ny - 14, [f"{val:.1f}% moisture", f"{xm:.0f} m east, {ym:.0f} m north"],
+                    anchor="middle", canvas_w=width, canvas_h=height,
+                    ink=_INK, secondary=_SECONDARY,
                 )
             )
     parts.append("</g>")
@@ -509,7 +506,7 @@ def build_svg(
     leg_h = plot_h - 20
     grad_id = "value-ramp"
     parts.append(f'<defs><linearGradient id="{grad_id}" x1="0" y1="1" x2="0" y2="0">')
-    for pos, col in VIRIDIS_STOPS if theme == "academic" else _BLUE_RAMP:
+    for pos, col in (VIRIDIS_STOPS if theme == "academic" else _BLUE_RAMP):
         parts.append(f'<stop offset="{fmt_compact(pos * 100, decimals=2)}%" stop-color="{col}"/>')
     parts.append("</linearGradient></defs>")
     # A hairline light-neutral border keeps the ramp crisp on white — no hard
@@ -613,14 +610,8 @@ def make_imshow_interpolated(
     rows = data if data else DEMO_DATA
     grid = _rows_to_grid(rows)
     svg = build_svg(
-        grid,
-        mode=mode,
-        accessibility=accessibility,
-        theme=theme,
-        x_axis_title=x_axis_title,
-        y_axis_title=y_axis_title,
-        legend_title=legend_title,
-        title=title or None,
+        grid, mode=mode, accessibility=accessibility, theme=theme,
+        x_axis_title=x_axis_title, y_axis_title=y_axis_title, legend_title=legend_title, title=title or None,
     )
     dest = Path(out) if out else svg_example_path(__file__, "imshow-interpolated")
     return write_svg(dest, svg, theme=theme)
@@ -653,12 +644,8 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--accessibility",
         choices=(
-            "universal",
-            "high-contrast",
-            "monochrome",
-            "deuteranopia",
-            "protanopia",
-            "tritanopia",
+            "universal", "high-contrast", "monochrome",
+            "deuteranopia", "protanopia", "tritanopia",
         ),
         default="universal",
         help=(

@@ -58,18 +58,18 @@ from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_the
 # One shared type scale for the whole figure, so nothing drifts.              #
 # In-river band names and the right-margin legend names share a size; the two #
 # secondary (mono, share-value) sizes match too — label harmony by construction.
-_FS_TITLE = 31  # headline
-_FS_SUB = 17.5  # subtitle lines
-_FS_LABEL = 18  # band name + legend name (primary label size)
-_FS_VALUE = 13.5  # share value under a label (mono)
-_FS_AXIS = 14  # year ticks (mono)
+_FS_TITLE = 31       # headline
+_FS_SUB = 17.5       # subtitle lines
+_FS_LABEL = 18       # band name + legend name (primary label size)
+_FS_VALUE = 13.5     # share value under a label (mono)
+_FS_AXIS = 14        # year ticks (mono)
 _FS_AXIS_TITLE = 16  # "Year"
 
 # House-style tokens (mirrors the house-style constants, kept literal so this
 # generator needs no import of the dataviz tier at build time).
-_INK = "#1D1D1F"  # primary text
+_INK = "#1D1D1F"        # primary text
 _SECONDARY = "#6E6E73"  # subtitle / secondary text
-_BG = "#FFFFFF"  # white ground
+_BG = "#FFFFFF"         # white ground
 _FONT = "Roboto, system-ui, sans-serif"
 _MONO = "Roboto Mono, ui-monospace, monospace"
 
@@ -117,26 +117,26 @@ def _sample_genre_share() -> Tuple[np.ndarray, List[str], np.ndarray]:
     # sit at the river core; volatile thin bands ride the edges — this keeps the
     # wiggle baseline calm and every ribbon legible.
     mix: Dict[str, np.ndarray] = {
-        "Pop": 22.0 + _bump(0.55, 0.5, 4.0),
-        "Hip-Hop / R&B": _logistic(15.0, 34.0, 0.5, 6.5),
-        "Rock": _logistic(30.0, 11.0, 0.42, 6.0),
-        "Latin": 5.0 + _logistic(0.0, 10.0, 0.74, 9.0),
-        "Country": 9.0 + _bump(0.5, 0.6, 1.5),
+        "Pop":               22.0 + _bump(0.55, 0.5, 4.0),
+        "Hip-Hop / R&B":     _logistic(15.0, 34.0, 0.5, 6.5),
+        "Rock":              _logistic(30.0, 11.0, 0.42, 6.0),
+        "Latin":             5.0 + _logistic(0.0, 10.0, 0.74, 9.0),
+        "Country":           9.0 + _bump(0.5, 0.6, 1.5),
         "Dance / Electronic": 4.0 + _bump(0.62, 0.22, 6.5),
     }
 
     genres = list(mix.keys())
-    frac = np.vstack([mix[g] for g in genres])  # (n_genres, n_years)
+    frac = np.vstack([mix[g] for g in genres])         # (n_genres, n_years)
     frac = np.clip(frac, 0.4, None)
-    frac = frac / frac.sum(axis=0, keepdims=True)  # each column sums to 1
+    frac = frac / frac.sum(axis=0, keepdims=True)       # each column sums to 1
 
     # Total on-demand streaming, billions/year: a slow trickle in the CD era,
     # a logistic surge as streaming takes over through the 2010s, still climbing.
     # Midpoint ~2013, gentle steepness so the swell fills the canvas rather than
     # snapping open at the right edge.
-    total = 6.0 + _logistic(0.0, 116.0, 0.54, 6.0)  # ~6b → ~122b
+    total = 6.0 + _logistic(0.0, 116.0, 0.54, 6.0)      # ~6b → ~122b
 
-    volume = frac * total  # (n_genres, n_years)
+    volume = frac * total                               # (n_genres, n_years)
     return years, genres, volume
 
 
@@ -258,12 +258,12 @@ def _band_colors(n: int, accessibility: str = "universal") -> List[str]:
     # identity. Orange stays bright because it takes *ink* text (dark on orange
     # is high-contrast). Deuteranope-checked ordering; Red and Green never touch.
     base = {
-        "Pop": "#007AFF",  # Blue        (white text)
+        "Pop":         "#007AFF",  # Blue        (white text)
         "Hip-Hop/R&B": "#FF9500",  # Orange      (ink text — dark on orange)
-        "Rock": "#5C5C61",  # Slate gray  (deepened so white text reads)
-        "Latin": "#248A3D",  # Deep green  (deepened so white text reads)
-        "Country": "#8A6A46",  # Deep brown  (white text)
-        "Dance/Elec": "#AF52DE",  # Purple      (white text)
+        "Rock":        "#5C5C61",  # Slate gray  (deepened so white text reads)
+        "Latin":       "#248A3D",  # Deep green  (deepened so white text reads)
+        "Country":     "#8A6A46",  # Deep brown  (white text)
+        "Dance/Elec":  "#AF52DE",  # Purple      (white text)
     }
     ramp = list(leveled_colors(base, accessibility).values())
     if n <= len(ramp):
@@ -410,11 +410,11 @@ def build_svg(
 
     # Per-year share of the mix (percent) — used only for labels, not geometry.
     col_total = volume.sum(axis=0, keepdims=True)
-    shares_pct = 100.0 * volume / col_total  # (n_genres, n_years)
+    shares_pct = 100.0 * volume / col_total       # (n_genres, n_years)
 
     # ---- baseline + cumulative stack, in data units ----------------------- #
-    g0 = _wiggle_baseline(volume)  # bottom of lowest layer
-    lowers = np.zeros_like(volume)  # (n_genres, n_years)
+    g0 = _wiggle_baseline(volume)                 # bottom of lowest layer
+    lowers = np.zeros_like(volume)                # (n_genres, n_years)
     uppers = np.zeros_like(volume)
     running = g0.copy()
     for i in range(n_genres):
@@ -425,7 +425,7 @@ def build_svg(
     # Value span across the whole river, for a symmetric, headroom-safe y-map.
     v_lo = float(lowers.min())
     v_hi = float(uppers.max())
-    v_pad = (v_hi - v_lo) * 0.06  # 6 % vertical headroom
+    v_pad = (v_hi - v_lo) * 0.06                   # 6 % vertical headroom
     v_lo -= v_pad
     v_hi += v_pad
 
@@ -486,7 +486,7 @@ def build_svg(
     # in the river loop, so both agree on the same "best" spot in the ribbon.
     anchors: list[tuple[int, float, float]] = []
     for i in range(n_genres):
-        thick = uppers[i] - lowers[i]  # band thickness per year
+        thick = uppers[i] - lowers[i]                 # band thickness per year
         centre = (uppers[i] + lowers[i]) / 2.0
         slope = np.abs(np.gradient(centre))
         score = thick - 5.5 * slope
@@ -522,19 +522,10 @@ def build_svg(
         peak_share = float(shares_pct[i, a_yi])
         river_tips.append(
             tooltip_bubble(
-                a_cx,
-                a_cy - 16,
-                [
-                    genre,
-                    f"{peak_share:.0f}% of listening in {int(years[a_yi])}",
-                    f"{float(volume[i, a_yi]):.0f}B streams that year",
-                ],
-                anchor="middle",
-                canvas_w=width,
-                canvas_h=height,
-                ink=_INK,
-                secondary=_SECONDARY,
-                border="#F0F0F3",
+                a_cx, a_cy - 16,
+                [genre, f"{peak_share:.0f}% of listening in {int(years[a_yi])}", f"{float(volume[i, a_yi]):.0f}B streams that year"],
+                anchor="middle", canvas_w=width, canvas_h=height,
+                ink=_INK, secondary=_SECONDARY, border="#F0F0F3",
                 elem_id=f"tip-{i}",
             )
         )
@@ -750,27 +741,14 @@ def make_streamgraph(
         Absolute path to the written SVG file.
     """
     years, genres, volume = _rows_to_matrix(list(data)) if data else _sample_genre_share()
-    svg = build_svg(
-        years,
-        genres,
-        volume,
-        mode=mode,
-        accessibility=accessibility,
-        theme=theme,
-        title=title or None,
-    )
+    svg = build_svg(years, genres, volume, mode=mode, accessibility=accessibility, theme=theme, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "streamgraph")
     return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:
     """CLI entry point: build the SVG and write it to disk."""
-    render_cli(
-        __file__,
-        "streamgraph",
-        build_svg,
-        description="Write the house-style streamgraph (themeRiver) SVG example.",
-    )
+    render_cli(__file__, "streamgraph", build_svg, description="Write the house-style streamgraph (themeRiver) SVG example.")
 
 
 if __name__ == "__main__":

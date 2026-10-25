@@ -6,7 +6,6 @@ Invoke via:
 
 ```python
 from sprezzature_figures import make_figure
-
 path = make_figure("bar", data, out="output.png")
 ```
 

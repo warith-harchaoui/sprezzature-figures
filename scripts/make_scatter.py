@@ -44,14 +44,12 @@ def _make_demo_data() -> List[Dict[str, Any]]:
     }
     for segment, (mpg_lo, mpg_hi, hp_lo, hp_hi) in segments.items():
         for _ in range(15):
-            rows.append(
-                {
-                    "segment": segment,
-                    "horsepower": round(rng.uniform(hp_lo, hp_hi), 1),
-                    "mpg": round(rng.uniform(mpg_lo, mpg_hi), 1),
-                    "weight": round(rng.uniform(1100, 1900), 0),
-                }
-            )
+            rows.append({
+                "segment": segment,
+                "horsepower": round(rng.uniform(hp_lo, hp_hi), 1),
+                "mpg": round(rng.uniform(mpg_lo, mpg_hi), 1),
+                "weight": round(rng.uniform(1100, 1900), 0),
+            })
     return rows
 
 
@@ -117,9 +115,7 @@ def build_svg(
         seg = r.get("segment")
         if seg is not None and seg not in seen_segments:
             seen_segments.append(seg)
-    segments = [s for s in SEGMENTS if s in seen_segments] + [
-        s for s in seen_segments if s not in SEGMENTS
-    ]
+    segments = [s for s in SEGMENTS if s in seen_segments] + [s for s in seen_segments if s not in SEGMENTS]
     colors = _segment_colors(segments, accessibility, theme=theme)
     has_weight = any("weight" in r and r["weight"] is not None for r in rows)
 
@@ -168,15 +164,13 @@ def build_svg(
         return r_min + (r_max - r_min) * math.sqrt(max(w, 0.0) / w_max)
 
     parts: List[str] = []
-    parts.append(
-        svg_open(width, height, "sc-title", "sc-desc", font_family=chrome_stack_for_theme(theme))
-    )
+    parts.append(svg_open(width, height, "sc-title", "sc-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="sc-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="sc-desc">Scatter plot of {len(rows)} points. Horizontal axis is the '
-        f"first measure, vertical axis the second{'; bubble size is weight' if has_weight else ''}"
-        f"{'; colour marks the segment' if len(segments) > 1 else ''}. Hover or focus a point "
-        f"for its exact reading.</desc>"
+        f'first measure, vertical axis the second{"; bubble size is weight" if has_weight else ""}'
+        f'{"; colour marks the segment" if len(segments) > 1 else ""}. Hover or focus a point '
+        f'for its exact reading.</desc>'
     )
 
     parts.append(
@@ -194,9 +188,7 @@ def build_svg(
         f'<text x="40" y="46" font-size="24" font-weight="700" fill="{INK}" '
         f'letter-spacing="-0.3">{xml_escape(title)}</text>'
     )
-    parts.append(
-        f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>'
-    )
+    parts.append(f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>')
 
     # ---- y-axis gridlines ----
     y_ticks = 6
@@ -282,15 +274,10 @@ def build_svg(
             tip_lines.append(f"Weight {row['weight']:.0f} kg")
         tips.append(
             tooltip_bubble(
-                cx,
-                cy - radius - 12,
+                cx, cy - radius - 12,
                 tip_lines,
-                anchor="middle",
-                canvas_w=width,
-                canvas_h=height,
-                ink=INK,
-                secondary=SECONDARY,
-                border=GRIDLINE,
+                anchor="middle", canvas_w=width, canvas_h=height,
+                ink=INK, secondary=SECONDARY, border=GRIDLINE,
                 elem_id=f"tip-{i}",
             )
         )
@@ -300,23 +287,15 @@ def build_svg(
     if len(segments) > 1:
         leg_x = width - right_margin + 28
         leg_y = 118.0
-        parts.append(
-            f'<text x="{leg_x:.1f}" y="{leg_y:.1f}" font-size="13" font-weight="700" fill="{INK}">{xml_escape(segment_legend_title)}</text>'
-        )
+        parts.append(f'<text x="{leg_x:.1f}" y="{leg_y:.1f}" font-size="13" font-weight="700" fill="{INK}">{xml_escape(segment_legend_title)}</text>')
         for i, seg in enumerate(segments):
             ry = leg_y + 26 + i * 26
-            parts.append(
-                f'<circle cx="{leg_x + 7:.1f}" cy="{ry - 5:.1f}" r="7" fill="{colors[seg]}" fill-opacity="0.85"/>'
-            )
-            parts.append(
-                f'<text x="{leg_x + 20:.1f}" y="{ry:.1f}" font-size="13" fill="{INK}">{xml_escape(seg)}</text>'
-            )
+            parts.append(f'<circle cx="{leg_x + 7:.1f}" cy="{ry - 5:.1f}" r="7" fill="{colors[seg]}" fill-opacity="0.85"/>')
+            parts.append(f'<text x="{leg_x + 20:.1f}" y="{ry:.1f}" font-size="13" fill="{INK}">{xml_escape(seg)}</text>')
 
         if has_weight:
             size_leg_y = leg_y + 26 + len(segments) * 26 + 30
-            parts.append(
-                f'<text x="{leg_x:.1f}" y="{size_leg_y:.1f}" font-size="13" font-weight="700" fill="{INK}">{xml_escape(weight_legend_title)}</text>'
-            )
+            parts.append(f'<text x="{leg_x:.1f}" y="{size_leg_y:.1f}" font-size="13" font-weight="700" fill="{INK}">{xml_escape(weight_legend_title)}</text>')
             cursor_y = size_leg_y + 22
             # Bracket the *actual* weight range in the plotted data (not an
             # arbitrary fraction of the max) -- a legend value smaller than
@@ -326,9 +305,7 @@ def build_svg(
             for val in (w_max, w_min):
                 radius = r_for(val)
                 cy = cursor_y + radius
-                parts.append(
-                    f'<circle cx="{leg_x + r_max:.1f}" cy="{cy:.1f}" r="{radius:.1f}" fill="none" stroke="{SECONDARY}" stroke-width="1"/>'
-                )
+                parts.append(f'<circle cx="{leg_x + r_max:.1f}" cy="{cy:.1f}" r="{radius:.1f}" fill="none" stroke="{SECONDARY}" stroke-width="1"/>')
                 parts.append(
                     f'<text x="{leg_x + r_max * 2 + 10:.1f}" y="{cy + 4:.1f}" font-size="12" '
                     f'font-family="{mono_family}" fill="{SECONDARY}">{val:.0f}</text>'
@@ -390,22 +367,10 @@ def make_scatter(
     >>> p.exists()
     True
     """
-    svg = build_svg(
-        data,
-        title=title,
-        subtitle=subtitle,
-        width=width,
-        height=height,
-        mode=mode,
-        accessibility=accessibility,
-        x_label=x_label,
-        y_label=y_label,
-        diagonal=diagonal,
-        square=square,
-        theme=theme,
-        segment_legend_title=segment_legend_title,
-        weight_legend_title=weight_legend_title,
-    )
+    svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
+                     mode=mode, accessibility=accessibility, x_label=x_label, y_label=y_label,
+                     diagonal=diagonal, square=square, theme=theme,
+                     segment_legend_title=segment_legend_title, weight_legend_title=weight_legend_title)
     dest = Path(out) if out else svg_example_path(__file__, "scatter")
     return write_svg(dest, svg, theme=theme)
 

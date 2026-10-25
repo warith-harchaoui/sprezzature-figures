@@ -54,7 +54,8 @@ from _svg import (  # noqa: E402
 from _textfit import fit_font_size  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
-_QUARTERS = ["2024 Q1", "2024 Q2", "2024 Q3", "2024 Q4", "2025 Q1", "2025 Q2", "2025 Q3", "2025 Q4"]
+_QUARTERS = ["2024 Q1", "2024 Q2", "2024 Q3", "2024 Q4",
+             "2025 Q1", "2025 Q2", "2025 Q3", "2025 Q4"]
 
 #: Starting share and quarterly drift for each browser-like competitor.
 _FIELD = [
@@ -85,13 +86,11 @@ def _standings(seed: int = 3) -> List[Dict[str, Any]]:
         share = start
         for quarter in _QUARTERS:
             share = max(0.4, share + drift + rng.gauss(0.0, 0.45))
-            rows.append(
-                {
-                    "quarter": quarter,
-                    "product": name,
-                    "share": round(share, 2),
-                }
-            )
+            rows.append({
+                "quarter": quarter,
+                "product": name,
+                "share": round(share, 2),
+            })
     return rows
 
 
@@ -172,12 +171,16 @@ def build_svg(
             names.append(name)
         measured[(name, period)] = float(row[value])
     if len(periods) < 2:
-        raise ValueError(f"a bump chart needs at least two periods; this data has {len(periods)}")
+        raise ValueError(
+            f"a bump chart needs at least two periods; this data has {len(periods)}"
+        )
 
     ranks: Dict[Tuple[str, str], int] = {}
     for period in periods:
         present = [name for name in names if (name, period) in measured]
-        present.sort(key=lambda name: measured[(name, period)], reverse=higher_is_better)
+        present.sort(
+            key=lambda name: measured[(name, period)], reverse=higher_is_better
+        )
         for position, name in enumerate(present, start=1):
             ranks[(name, period)] = position
     missing = len(names) * len(periods) - len(measured)
@@ -190,14 +193,9 @@ def build_svg(
     mono_family = mono_stack_for_theme(theme)
     palette = load_palette(accessibility, theme=theme)
     wheel = [
-        palette.get(key, fallback)
-        for key, fallback in (
-            ("Blue", "#007AFF"),
-            ("Orange", "#FF9500"),
-            ("Green", "#28CD41"),
-            ("Purple", "#5856D6"),
-            ("Red", "#FF3B30"),
-            ("Teal", "#30B0C7"),
+        palette.get(key, fallback) for key, fallback in (
+            ("Blue", "#007AFF"), ("Orange", "#FF9500"), ("Green", "#28CD41"),
+            ("Purple", "#5856D6"), ("Red", "#FF3B30"), ("Teal", "#30B0C7"),
         )
     ]
     ink_for = {name: wheel[index % len(wheel)] for index, name in enumerate(names)}
@@ -236,15 +234,14 @@ def build_svg(
         return abs(present[0] - present[1]) if len(present) > 1 else 0.0
 
     rank_lines = (
-        [rank_note]
-        if rank_note is not None
+        [rank_note] if rank_note is not None
         else [
             f"{len(names)} competitors ranked by {value} each period, "
             + ("highest first" if higher_is_better else "lowest first"),
             f"a crossing between two within {fmt_number(tie_within)} is drawn thin: "
             f"that order is a coin toss",
-        ]
-        + ([f"{missing} competitor-periods have no value and are left as gaps"] if missing else [])
+        ] + ([f"{missing} competitor-periods have no value and are left as gaps"]
+             if missing else [])
     )
     said_rank = " · ".join(rank_lines)
     said_parts: List[str] = []
@@ -269,16 +266,15 @@ def build_svg(
 
     parts: List[str] = []
     parts.append(
-        svg_open(
-            width, height, "bump-title", "bump-desc", font_family=chrome_stack_for_theme(theme)
-        )
+        svg_open(width, height, "bump-title", "bump-desc",
+                 font_family=chrome_stack_for_theme(theme))
     )
     parts.append(f'<title id="bump-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="bump-desc">A bump chart of {len(names)} competitors across '
-        f"{len(periods)} periods from {xml_escape(periods[0])} to "
-        f"{xml_escape(periods[-1])}, each a line at its rank with rank 1 at the top. "
-        f"{xml_escape(said_rank)}. {xml_escape(' '.join(said_parts))}</desc>"
+        f'{len(periods)} periods from {xml_escape(periods[0])} to '
+        f'{xml_escape(periods[-1])}, each a line at its rank with rank 1 at the top. '
+        f'{xml_escape(said_rank)}. {xml_escape(" ".join(said_parts))}</desc>'
     )
     parts.append(
         "<style>"
@@ -338,14 +334,11 @@ def build_svg(
             if position:
                 before = periods[position - 1]
                 rival = [
-                    other
-                    for other in names
-                    if other != name
-                    and (other, period) in measured
+                    other for other in names
+                    if other != name and (other, period) in measured
                     and (other, before) in measured
                     and (ranks[(other, period)] - ranks[(name, period)])
-                    * (ranks[(other, before)] - ranks[(name, before)])
-                    < 0
+                    * (ranks[(other, before)] - ranks[(name, before)]) < 0
                 ]
                 # Measured at the closest of the two periods, not at the
                 # far end. Two competitors three tenths apart in Q1 and a
@@ -356,8 +349,7 @@ def build_svg(
                     min(
                         abs(measured[(other, period)] - measured[(name, period)]),
                         abs(measured[(other, before)] - measured[(name, before)]),
-                    )
-                    <= tie_within
+                    ) <= tie_within
                     for other in rival
                 )
             segments[-1].append((px(position), py(ranks[(name, period)]), tied))
@@ -380,44 +372,39 @@ def build_svg(
             parts.append(
                 f'<text x="{plot_x - 12:.1f}" y="{py(ranks[(name, periods[0])]) + 4:.1f}" '
                 f'font-size="12" fill="{colour}" text-anchor="end" opacity="{opacity}">'
-                f"{xml_escape(name)}</text>"
+                f'{xml_escape(name)}</text>'
             )
         if (name, periods[-1]) in measured:
             parts.append(
                 f'<text x="{plot_x + plot_w + 12:.1f}" '
                 f'y="{py(ranks[(name, periods[-1])]) + 4:.1f}" font-size="12" '
                 f'fill="{colour}" opacity="{opacity}">'
-                f"{fmt_measured(measured[(name, periods[-1])], precision)}</text>"
+                f'{fmt_measured(measured[(name, periods[-1])], precision)}</text>'
             )
-        moved = ranks.get((name, periods[0]), 0) - ranks.get((name, periods[-1]), 0)
+        moved = (
+            ranks.get((name, periods[0]), 0) - ranks.get((name, periods[-1]), 0)
+        )
         parts.append(
             f'<rect id="lane-{index}" class="lane hit" tabindex="0" role="img" '
             f'aria-label="{xml_escape(name)}: rank '
-            f"{ranks.get((name, periods[0]), 0)} at {xml_escape(periods[0])}, "
-            f"{ranks.get((name, periods[-1]), 0)} at {xml_escape(periods[-1])}, "
-            f"{'up' if moved > 0 else ('down' if moved < 0 else 'unchanged')} "
+            f'{ranks.get((name, periods[0]), 0)} at {xml_escape(periods[0])}, '
+            f'{ranks.get((name, periods[-1]), 0)} at {xml_escape(periods[-1])}, '
+            f'{"up" if moved > 0 else ("down" if moved < 0 else "unchanged")} '
             f'{abs(moved)}" x="{plot_x:.1f}" '
             f'y="{py(ranks.get((name, periods[-1]), 1)) - lane / 2:.1f}" '
             f'width="{plot_w:.1f}" height="{lane:.1f}" fill="transparent">'
-            f"<title>{xml_escape(name)}</title></rect>"
+            f'<title>{xml_escape(name)}</title></rect>'
         )
         tips.append(
             tooltip_bubble(
-                plot_x + plot_w * 0.5,
-                py(ranks.get((name, periods[-1]), 1)),
-                [
-                    name,
-                    f"rank {ranks.get((name, periods[0]), 0)} → "
-                    f"{ranks.get((name, periods[-1]), 0)}",
-                    f"{fmt_measured(measured.get((name, periods[-1]), 0.0), precision)} "
-                    f"at {periods[-1]}",
-                ],
-                canvas_w=width,
-                canvas_h=height,
-                ink=INK,
-                secondary=SECONDARY,
-                border=GRIDLINE,
-                elem_id=f"lanetip-{index}",
+                plot_x + plot_w * 0.5, py(ranks.get((name, periods[-1]), 1)),
+                [name,
+                 f"rank {ranks.get((name, periods[0]), 0)} → "
+                 f"{ranks.get((name, periods[-1]), 0)}",
+                 f"{fmt_measured(measured.get((name, periods[-1]), 0.0), precision)} "
+                 f"at {periods[-1]}"],
+                canvas_w=width, canvas_h=height, ink=INK, secondary=SECONDARY,
+                border=GRIDLINE, elem_id=f"lanetip-{index}",
             )
         )
 
@@ -425,16 +412,16 @@ def build_svg(
         parts.append(
             f'<text x="{px(position):.1f}" y="{plot_y + plot_h + 20:.1f}" font-size="11" '
             f'fill="{SECONDARY}" text-anchor="middle" font-family="{mono_family}">'
-            f"{xml_escape(period)}</text>"
+            f'{xml_escape(period)}</text>'
         )
     parts.append(
         f'<text x="{plot_x + plot_w / 2:.1f}" y="{plot_y + plot_h + 46:.1f}" '
         f'font-size="12" fill="{SECONDARY}" text-anchor="middle">'
-        f"{xml_escape(x_label)}</text>"
+        f'{xml_escape(x_label)}</text>'
     )
     parts.append(
         f'<text x="40" y="{plot_y - 12:.1f}" font-size="12" fill="{SECONDARY}">'
-        f"{xml_escape(rank_label)}</text>"
+        f'{xml_escape(rank_label)}</text>'
     )
 
     parts.extend(tips)
@@ -507,24 +494,11 @@ def make_bump(
     True
     """
     svg = build_svg(
-        data,
-        title=title,
-        subtitle=subtitle,
-        width=width,
-        height=height,
-        x=x,
-        series=series,
-        value=value,
-        highlight=highlight,
-        tie_within=tie_within,
-        higher_is_better=higher_is_better,
-        x_label=x_label,
-        rank_label=rank_label,
-        rank_note=rank_note,
-        finding=finding,
-        mode=mode,
-        accessibility=accessibility,
-        theme=theme,
+        data, title=title, subtitle=subtitle, width=width, height=height,
+        x=x, series=series, value=value, highlight=highlight,
+        tie_within=tie_within, higher_is_better=higher_is_better,
+        x_label=x_label, rank_label=rank_label, rank_note=rank_note,
+        finding=finding, mode=mode, accessibility=accessibility, theme=theme,
     )
     dest = Path(out) if out else svg_example_path(__file__, "bump")
     return write_svg(dest, svg, theme=theme)
@@ -532,9 +506,8 @@ def make_bump(
 
 def main() -> None:
     """CLI entry point: build the SVG and write it to disk."""
-    render_cli(
-        __file__, "bump", build_svg, description="Draw rank over time, one ribbon per competitor."
-    )
+    render_cli(__file__, "bump", build_svg,
+               description="Draw rank over time, one ribbon per competitor.")
 
 
 if __name__ == "__main__":

@@ -81,9 +81,9 @@ from _interactive import fullscreen_control, hover_isolate_css  # noqa: E402
 WIDTH = 1500
 HEIGHT = 1220
 
-SUBINK = "#6E6E73"  # secondary text
-HAIRLINE = "#E5E5EA"  # neutral hairline
-LEADER = "#B8B8BE"  # slightly darker hairline for call-out leaders
+SUBINK = "#6E6E73"     # secondary text
+HAIRLINE = "#E5E5EA"   # neutral hairline
+LEADER = "#B8B8BE"     # slightly darker hairline for call-out leaders
 
 # The packed disk is centred in the lower ~78 % of the canvas, clear of
 # the header block. These are resolved after the pack solve (below).
@@ -113,27 +113,32 @@ MODULES: List[Tuple[str, int]] = [
     ("services/webhooks.py", 430),
     ("services/reporting.py", 380),
     ("services/exports.py", 260),
+
     # ---- api/ : the HTTP surface ----
     ("api/routes.py", 880),
     ("api/schemas.py", 640),
     ("api/auth.py", 560),
     ("api/middleware.py", 340),
     ("api/errors.py", 190),
+
     # ---- models/ : the data layer ----
     ("models/user.py", 720),
     ("models/order.py", 680),
     ("models/invoice.py", 540),
     ("models/product.py", 400),
     ("models/migrations.py", 300),
+
     # ---- workers/ : background jobs ----
     ("workers/scheduler.py", 460),
     ("workers/email_queue.py", 380),
     ("workers/retry.py", 220),
+
     # ---- core/ : shared utilities ----
     ("core/config.py", 300),
     ("core/logging.py", 240),
     ("core/db.py", 360),
     ("core/cache.py", 210),
+
     # ---- tests/ : the test suite ----
     ("tests/test_payments.py", 520),
     ("tests/test_api.py", 410),
@@ -177,10 +182,10 @@ HERO_PATH = "services/payments.py"
 # on the plain centre→package ray (0, 0). Tuned once against the solved
 # layout so every pill lands in open canvas.
 PKG_LABEL_NUDGE: Dict[str, Tuple[float, float]] = {
-    "services": (140.0, 40.0),  # push its name out to the right edge
-    "tests": (60.0, 90.0),  # steer down-right into the corner
-    "core": (-30.0, 90.0),  # straight down under the disk
-    "workers": (-120.0, 40.0),  # out to the lower-left
+    "services": (140.0, 40.0),   # push its name out to the right edge
+    "tests": (60.0, 90.0),       # steer down-right into the corner
+    "core": (-30.0, 90.0),       # straight down under the disk
+    "workers": (-120.0, 40.0),   # out to the lower-left
 }
 
 
@@ -251,9 +256,7 @@ def _circle_contains(c: Tuple[float, float, float], d: Tuple[float, float, float
     return dr >= 0 and (dr * dr) >= (dx * dx + dy * dy) - 1e-9
 
 
-def _encloses_weak_all(
-    c: Tuple[float, float, float], circles: List[Tuple[float, float, float]]
-) -> bool:
+def _encloses_weak_all(c: Tuple[float, float, float], circles: List[Tuple[float, float, float]]) -> bool:
     """Return True if circle ``c`` encloses every circle in ``circles``."""
     return all(_circle_contains(c, d) for d in circles)
 
@@ -458,7 +461,8 @@ def _pack_siblings(radii: List[float]) -> List[Tuple[float, float, float]]:
 
     # Node objects mirror d3's circular doubly-linked list nodes.
     nodes: List[Dict[str, Any]] = [
-        {"r": radii[i], "x": 0.0, "y": 0.0, "idx": i, "next": None, "prev": None} for i in range(n)
+        {"r": radii[i], "x": 0.0, "y": 0.0, "idx": i, "next": None, "prev": None}
+        for i in range(n)
     ]
 
     a = nodes[0]
@@ -534,7 +538,9 @@ def _as_c(node: Dict[str, Any]) -> Tuple[float, float, float]:
     return (float(node["x"]), float(node["y"]), float(node["r"]))
 
 
-def _finalise(nodes: List[Dict[str, Any]], radii: List[float]) -> List[Tuple[float, float, float]]:
+def _finalise(
+    nodes: List[Dict[str, Any]], radii: List[float]
+) -> List[Tuple[float, float, float]]:
     """Centre the packed cluster on its enclosing circle, return in input order."""
     circles = [_as_c(nd) for nd in nodes]
     cx, cy, _r = _enclose(circles)
@@ -748,9 +754,7 @@ def _text_color_for(fill: str) -> str:
 
 
 def build_svg(
-    mode: str = "self-contained",
-    accessibility: str = "universal",
-    theme: str = "corporate",
+    mode: str = "self-contained", accessibility: str = "universal", theme: str = "corporate",
     legend_title: str = "PACKAGES BY SHARE",
     title: Optional[str] = None,
 ) -> str:
@@ -834,9 +838,7 @@ def build_svg(
         "core, and tests. The packing is gap-free: bigger balls mean more code."
     )
 
-    parts.append(
-        svg_open(WIDTH, HEIGHT, "cp-title", "cp-desc", font_family=chrome_stack_for_theme(theme))
-    )
+    parts.append(svg_open(WIDTH, HEIGHT, "cp-title", "cp-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="cp-title">{escape(title_txt)}</title>')
     parts.append(f'<desc id="cp-desc">{escape(desc_txt)}</desc>')
 
@@ -853,8 +855,9 @@ def build_svg(
     # shading.
     pkg_fill_series = {f".pkgfill-{pkg['id']}": str(pkg["color"]) for pkg in root["children"]}  # type: ignore[index]
     pkg_ring_series = {f".pkgring-{pkg['id']}": str(pkg["color"]) for pkg in root["children"]}  # type: ignore[index]
-    adaptive = os_adaptive_style(pkg_fill_series, role="fill") + os_adaptive_style(
-        pkg_ring_series, role="stroke"
+    adaptive = (
+        os_adaptive_style(pkg_fill_series, role="fill")
+        + os_adaptive_style(pkg_ring_series, role="stroke")
     )
     # --- CSS: hover/focus a package lifts it, dims the rest (shared helper) ---
     n_pkg = len(root["children"])  # type: ignore[arg-type]
@@ -864,8 +867,8 @@ def build_svg(
         + "#packs .pkg:focus-within{opacity:1}"
         ".hit:focus{outline:none}"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        + foreground_tip_css(n_pkg + len(leaf_values))
-        + "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
+        + foreground_tip_css(n_pkg + len(leaf_values)) +
+        "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
         + adaptive
         # Additive dark mode. The default map flips the paper and all on-paper
         # ink (title, subtitle, legend, footnote, hero call-out). The leaf
@@ -921,10 +924,11 @@ def build_svg(
         px, py, pr = float(pkg["x"]), float(pkg["y"]), float(pkg["r"])
         n_mod = len(pkg["children"])  # type: ignore[arg-type]
         pkg_loc = int(sum(float(ch["value"]) for ch in pkg["children"]))  # type: ignore[index]
-        pkg_tip = f"{pkg['label']} — {n_mod} modules, {pkg_loc:,} lines"
+        pkg_tip = f'{pkg["label"]} — {n_mod} modules, {pkg_loc:,} lines'
 
         parts.append(
-            f'<g class="pkg pkg-{pkg_idx}" tabindex="0" role="img" aria-label="{escape(pkg_tip)}">'
+            f'<g class="pkg pkg-{pkg_idx}" tabindex="0" role="img" '
+            f'aria-label="{escape(pkg_tip)}">'
         )
         pkg_tip_cards: List[str] = []
         # Package container: a very pale wash of the hue + a hairline ring
@@ -938,19 +942,10 @@ def build_svg(
         pkg_share = pkg_loc / total_lines * 100.0 if total_lines else 0.0
         pkg_tip_cards.append(
             tooltip_bubble(
-                px,
-                py - pr - 10,
-                [
-                    str(pkg["label"]),
-                    f"{n_mod} modules, {pkg_loc:,} lines",
-                    f"{pkg_share:.1f}% of codebase",
-                ],
-                anchor="middle",
-                canvas_w=WIDTH,
-                canvas_h=HEIGHT,
-                ink=INK,
-                secondary=SUBINK,
-                border=HAIRLINE,
+                px, py - pr - 10,
+                [str(pkg["label"]), f"{n_mod} modules, {pkg_loc:,} lines", f"{pkg_share:.1f}% of codebase"],
+                anchor="middle", canvas_w=WIDTH, canvas_h=HEIGHT,
+                ink=INK, secondary=SUBINK, border=HAIRLINE,
                 elem_id=f"tip-{hit_idx}",
             )
         )
@@ -961,7 +956,7 @@ def build_svg(
             cx, cy, cr = float(ch["x"]), float(ch["y"]), float(ch["r"])
             loc = int(ch["value"])
             fill = _leaf_fill(pkg_color, float(loc), vmin, vmax)
-            leaf_tip = f"{ch['id']} — {loc:,} lines"
+            leaf_tip = f'{ch["id"]} — {loc:,} lines'
             parts.append(
                 f'<circle id="hit-{hit_idx}" class="hit" tabindex="0" cx="{cx:.1f}" cy="{cy:.1f}" r="{cr:.1f}" '
                 f'fill="{fill}"><title>{escape(leaf_tip)}</title></circle>'
@@ -969,15 +964,10 @@ def build_svg(
             leaf_share = loc / total_lines * 100.0 if total_lines else 0.0
             pkg_tip_cards.append(
                 tooltip_bubble(
-                    cx,
-                    cy - cr - 10,
+                    cx, cy - cr - 10,
                     [str(ch["id"]), f"{loc:,} lines", f"{leaf_share:.1f}% of codebase"],
-                    anchor="middle",
-                    canvas_w=WIDTH,
-                    canvas_h=HEIGHT,
-                    ink=INK,
-                    secondary=SUBINK,
-                    border=HAIRLINE,
+                    anchor="middle", canvas_w=WIDTH, canvas_h=HEIGHT,
+                    ink=INK, secondary=SUBINK, border=HAIRLINE,
                     elem_id=f"tip-{hit_idx}",
                 )
             )
@@ -1032,7 +1022,7 @@ def build_svg(
     parts.append(
         f'<text x="{margin_left}" y="{HEIGHT - 26}" font-size="15" '
         f'fill="{SUBINK}">Circle area is proportional to lines of code. '
-        f"Hover or focus a package to isolate it.</text>"
+        f'Hover or focus a package to isolate it.</text>'
     )
 
     parts.append(fullscreen_control(WIDTH, HEIGHT, mode))
@@ -1131,17 +1121,12 @@ def _emit_hero_callout(parts: List[str], hero: Dict[str, Any], mono_family: str)
     parts.append(
         f'<text x="{cap_x:.1f}" y="{cap_y + 27:.1f}" text-anchor="end" '
         f'font-size="17" fill="{INK}"><tspan font-weight="700">'
-        f"{escape(line2)}</tspan> — {escape(line3)}</text>"
+        f'{escape(line2)}</tspan> — {escape(line3)}</text>'
     )
     parts.append("</g>")
 
 
-def _emit_legend(
-    parts: List[str],
-    root: Dict[str, Any],
-    mono_family: str,
-    legend_title: str = "PACKAGES BY SHARE",
-) -> None:
+def _emit_legend(parts: List[str], root: Dict[str, Any], mono_family: str, legend_title: str = "PACKAGES BY SHARE") -> None:
     """Emit the package legend as a swatch column, bottom-left.
 
     Each row: a hue swatch, the package name, and its share of the total
@@ -1186,12 +1171,7 @@ def _emit_legend(
 
 def main() -> None:
     """Write the circle-packing SVG to the skill's example asset folder."""
-    render_cli(
-        __file__,
-        "circle-packing",
-        build_svg,
-        description="Render a house-styled hierarchical circle-packing diagram as SVG.",
-    )
+    render_cli(__file__, "circle-packing", build_svg, description="Render a house-styled hierarchical circle-packing diagram as SVG.")
 
 
 def make_circle_packing(
@@ -1240,13 +1220,7 @@ def make_circle_packing(
     True
     """
     _ = data, title
-    svg = build_svg(
-        mode=mode,
-        accessibility=accessibility,
-        theme=theme,
-        legend_title=legend_title,
-        title=title or None,
-    )
+    svg = build_svg(mode=mode, accessibility=accessibility, theme=theme, legend_title=legend_title, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "circle-packing")
     return write_svg(dest, svg, theme=theme)
 

@@ -35,62 +35,14 @@ from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_the
 
 PLATFORMS = ["Desktop", "Mobile"]
 
-_DESKTOP = [
-    41,
-    41,
-    42,
-    40,
-    39,
-    43,
-    58,
-    77,
-    92,
-    98,
-    101,
-    103,
-    99,
-    104,
-    108,
-    106,
-    99,
-    91,
-    80,
-    70,
-    62,
-    55,
-    48,
-    44,
-]
-_MOBILE = [
-    30,
-    30,
-    30,
-    28,
-    27,
-    29,
-    35,
-    44,
-    52,
-    58,
-    61,
-    63,
-    66,
-    68,
-    71,
-    78,
-    90,
-    105,
-    118,
-    124,
-    116,
-    98,
-    74,
-    48,
-]
+_DESKTOP = [41, 41, 42, 40, 39, 43, 58, 77, 92, 98, 101, 103, 99, 104, 108, 106, 99, 91, 80, 70, 62, 55, 48, 44]
+_MOBILE = [30, 30, 30, 28, 27, 29, 35, 44, 52, 58, 61, 63, 66, 68, 71, 78, 90, 105, 118, 124, 116, 98, 74, 48]
 
 DEMO_DATA: List[Dict[str, Any]] = [
     {"hour": h, "platform": "Desktop", "sessions": v} for h, v in enumerate(_DESKTOP)
-] + [{"hour": h, "platform": "Mobile", "sessions": v} for h, v in enumerate(_MOBILE)]
+] + [
+    {"hour": h, "platform": "Mobile", "sessions": v} for h, v in enumerate(_MOBILE)
+]
 
 
 def _series_colors(
@@ -164,23 +116,17 @@ def build_svg(
     for r in rows:
         if r["platform"] not in seen_platforms:
             seen_platforms.append(r["platform"])
-    series = [s for s in PLATFORMS if s in seen_platforms] + [
-        s for s in seen_platforms if s not in PLATFORMS
-    ]
+    series = [s for s in PLATFORMS if s in seen_platforms] + [s for s in seen_platforms if s not in PLATFORMS]
     colors = _series_colors(series, accessibility, theme=theme)
 
-    lookup: Dict[tuple, float] = {
-        (r["platform"], float(r["hour"])): float(r["sessions"]) for r in rows
-    }
+    lookup: Dict[tuple, float] = {(r["platform"], float(r["hour"])): float(r["sessions"]) for r in rows}
 
     hours = sorted({float(r["hour"]) for r in rows})
     all_vals = list(lookup.values())
     max_val = max(all_vals) if all_vals else 1.0
     pos_vals = [v for v in all_vals if v > 0]
     min_pos = min(pos_vals) if pos_vals else 1.0
-    x_min, x_max = (
-        (float(x_domain[0]), float(x_domain[1])) if x_domain else (min(hours), max(hours))
-    )
+    x_min, x_max = (float(x_domain[0]), float(x_domain[1])) if x_domain else (min(hours), max(hours))
     x_pos = [h for h in hours if h > 0]
     xlog_min = min(x_pos) if x_pos else 1.0
 
@@ -203,11 +149,7 @@ def build_svg(
             return log_position(v, y_lo, y_hi, plot_y + plot_h, plot_y)
     elif y_domain:
         y_lo, y_hi = float(y_domain[0]), float(y_domain[1])
-        y_ticks = (
-            fixed_step_ticks(y_lo, y_hi, y_tick_step)
-            if y_tick_step
-            else nice_ticks_range(y_lo, y_hi)
-        )
+        y_ticks = fixed_step_ticks(y_lo, y_hi, y_tick_step) if y_tick_step else nice_ticks_range(y_lo, y_hi)
 
         def y_for(v: float) -> float:
             return plot_y + plot_h - (v - y_lo) / ((y_hi - y_lo) or 1.0) * plot_h
@@ -222,21 +164,20 @@ def build_svg(
             return plot_y + plot_h - (v / y_hi * plot_h)
 
     parts: List[str] = []
-    parts.append(
-        svg_open(width, height, "lm-title", "lm-desc", font_family=chrome_stack_for_theme(theme))
-    )
+    parts.append(svg_open(width, height, "lm-title", "lm-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="lm-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="lm-desc">Multi-series line chart of {len(series)} series over '
-        f"{len(hours)} hours, peaking at {max_val:.0f}. Hover or focus a point for its exact "
-        f"value.</desc>"
+        f'{len(hours)} hours, peaking at {max_val:.0f}. Hover or focus a point for its exact '
+        f'value.</desc>'
     )
     parts.append(
         "<style>"
         ".series-group{transition:opacity .15s ease;}"
         "svg:hover .series-group,svg:focus-within .series-group{opacity:.35;}"
         + "".join(
-            f"svg:has(.s{i}:hover,.s{i}:focus) .s{i}{{opacity:1;}}" for i in range(len(series))
+            f'svg:has(.s{i}:hover,.s{i}:focus) .s{i}{{opacity:1;}}'
+            for i in range(len(series))
         )
         + ".pt{transition:r .12s ease;}"
         ".pt:hover,.pt:focus{r:5.5;outline:none;}"
@@ -250,9 +191,7 @@ def build_svg(
         f'<text x="40" y="46" font-size="24" font-weight="700" fill="{INK}" '
         f'letter-spacing="-0.3">{xml_escape(title)}</text>'
     )
-    parts.append(
-        f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>'
-    )
+    parts.append(f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>')
 
     # ---- legend ----
     lx, ly = 40.0, 100.0
@@ -263,9 +202,7 @@ def build_svg(
             f'<line x1="{cursor:.1f}" y1="{ly2 - 5:.1f}" x2="{cursor + 16:.1f}" y2="{ly2 - 5:.1f}" '
             f'stroke="{colors[s]}" stroke-width="2.5"/>'
         )
-        parts.append(
-            f'<text x="{cursor + 22:.1f}" y="{ly2:.1f}" font-size="12" fill="{INK}">{xml_escape(s)}</text>'
-        )
+        parts.append(f'<text x="{cursor + 22:.1f}" y="{ly2:.1f}" font-size="12" fill="{INK}">{xml_escape(s)}</text>')
         cursor += 22 + 7.2 * len(s) + 20
 
     # ---- y-axis minor gridlines (unlabeled, finer than the labeled ticks) ----
@@ -315,7 +252,7 @@ def build_svg(
             parts.append(
                 f'<circle id="pt-{pt_id}" class="pt hit" tabindex="0" cx="{cx:.1f}" cy="{cy:.1f}" r="3.5" '
                 f'fill="{colors[s]}" stroke="{BG}" stroke-width="1.5">'
-                f"<title>{xml_escape(tip)}</title></circle>"
+                f'<title>{xml_escape(tip)}</title></circle>'
             )
             series_tips.append(
                 tooltip_bubble(
@@ -421,37 +358,18 @@ def make_line_multi(
     >>> p.exists()
     True
     """
-    svg = build_svg(
-        data,
-        title=title,
-        subtitle=subtitle,
-        width=width,
-        height=height,
-        mode=mode,
-        accessibility=accessibility,
-        x_label=x_label,
-        y_label=y_label,
-        log_x=log_x,
-        log_y=log_y,
-        theme=theme,
-        x_domain=x_domain,
-        x_tick_step=x_tick_step,
-        y_domain=y_domain,
-        y_tick_step=y_tick_step,
-        y_minor_step=y_minor_step,
-    )
+    svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
+                     mode=mode, accessibility=accessibility, x_label=x_label, y_label=y_label,
+                     log_x=log_x, log_y=log_y, theme=theme, x_domain=x_domain,
+                     x_tick_step=x_tick_step, y_domain=y_domain, y_tick_step=y_tick_step,
+                     y_minor_step=y_minor_step)
     dest = Path(out) if out else svg_example_path(__file__, "line-multi")
     return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:
     """CLI entry point: build the SVG and write it to disk."""
-    render_cli(
-        __file__,
-        "line-multi",
-        build_svg,
-        description="Generate a multi-series line chart over a continuous axis.",
-    )
+    render_cli(__file__, "line-multi", build_svg, description="Generate a multi-series line chart over a continuous axis.")
 
 
 if __name__ == "__main__":

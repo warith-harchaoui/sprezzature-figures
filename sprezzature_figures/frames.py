@@ -207,7 +207,9 @@ def as_rows(data: Any) -> list[dict[str, Any]] | None:
             )
         lengths = {len(column) for column in data.values()}
         if len(lengths) > 1:
-            sizes = ", ".join(f"{name}: {len(column)}" for name, column in data.items())
+            sizes = ", ".join(
+                f"{name}: {len(column)}" for name, column in data.items()
+            )
             raise TypeError(f"the columns are of different lengths ({sizes}).")
         height = lengths.pop()
         return [

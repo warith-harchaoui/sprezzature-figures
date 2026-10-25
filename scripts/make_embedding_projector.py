@@ -73,14 +73,17 @@ from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
 # Repo-relative default output — the one SVG artifact this figure ships.
 _DEFAULT_OUT = (
-    Path(__file__).resolve().parent.parent / "assets" / "svg-examples" / "embedding-projector.svg"
+    Path(__file__).resolve().parent.parent
+    / "assets"
+    / "svg-examples"
+    / "embedding-projector.svg"
 )
 
 # House-style tokens (mirror the house-style constants, kept literal so this
 # generator needs no import of the dataviz tier at build time).
-_INK = "#1D1D1F"  # primary text
+_INK = "#1D1D1F"        # primary text
 _SECONDARY = "#6E6E73"  # subtitle / secondary text
-_BG = "#FFFFFF"  # white ground
+_BG = "#FFFFFF"         # white ground
 _FONT = "Roboto, system-ui, sans-serif"
 _MONO = "Roboto Mono, ui-monospace, monospace"
 
@@ -109,214 +112,50 @@ _CLUSTERS: List[Tuple[str, str]] = [
 
 _WORDS: Dict[str, List[str]] = {
     "Animals": [
-        "dog",
-        "cat",
-        "horse",
-        "elephant",
-        "tiger",
-        "lion",
-        "wolf",
-        "fox",
-        "bear",
-        "rabbit",
-        "deer",
-        "mouse",
-        "otter",
-        "badger",
-        "hedgehog",
-        "squirrel",
-        "raccoon",
-        "panda",
-        "koala",
-        "leopard",
-        "cheetah",
-        "giraffe",
-        "zebra",
-        "camel",
-        "donkey",
-        "goat",
-        "sheep",
-        "cow",
-        "pig",
-        "hamster",
-        "ferret",
-        "beaver",
-        "moose",
-        "bison",
+        "dog", "cat", "horse", "elephant", "tiger", "lion", "wolf", "fox",
+        "bear", "rabbit", "deer", "mouse", "otter", "badger", "hedgehog",
+        "squirrel", "raccoon", "panda", "koala", "leopard", "cheetah",
+        "giraffe", "zebra", "camel", "donkey", "goat", "sheep", "cow",
+        "pig", "hamster", "ferret", "beaver", "moose", "bison",
     ],
     "Colours": [
-        "red",
-        "orange",
-        "yellow",
-        "green",
-        "blue",
-        "purple",
-        "violet",
-        "indigo",
-        "crimson",
-        "scarlet",
-        "magenta",
-        "turquoise",
-        "teal",
-        "cyan",
-        "amber",
-        "maroon",
-        "olive",
-        "lavender",
-        "coral",
-        "beige",
-        "ivory",
-        "azure",
-        "emerald",
-        "ruby",
-        "sapphire",
-        "cobalt",
-        "charcoal",
-        "khaki",
-        "lilac",
-        "peach",
-        "mint",
-        "salmon",
+        "red", "orange", "yellow", "green", "blue", "purple", "violet",
+        "indigo", "crimson", "scarlet", "magenta", "turquoise", "teal",
+        "cyan", "amber", "maroon", "olive", "lavender", "coral", "beige",
+        "ivory", "azure", "emerald", "ruby", "sapphire", "cobalt",
+        "charcoal", "khaki", "lilac", "peach", "mint", "salmon",
     ],
     "Countries": [
-        "France",
-        "Spain",
-        "Italy",
-        "Germany",
-        "Portugal",
-        "Greece",
-        "Norway",
-        "Sweden",
-        "Poland",
-        "Ireland",
-        "Brazil",
-        "Argentina",
-        "Chile",
-        "Mexico",
-        "Canada",
-        "Egypt",
-        "Kenya",
-        "Morocco",
-        "Japan",
-        "China",
-        "India",
-        "Vietnam",
-        "Thailand",
-        "Turkey",
-        "Iceland",
-        "Finland",
-        "Austria",
-        "Belgium",
-        "Croatia",
-        "Peru",
-        "Nigeria",
-        "Ghana",
-        "Nepal",
-        "Jordan",
+        "France", "Spain", "Italy", "Germany", "Portugal", "Greece",
+        "Norway", "Sweden", "Poland", "Ireland", "Brazil", "Argentina",
+        "Chile", "Mexico", "Canada", "Egypt", "Kenya", "Morocco",
+        "Japan", "China", "India", "Vietnam", "Thailand", "Turkey",
+        "Iceland", "Finland", "Austria", "Belgium", "Croatia", "Peru",
+        "Nigeria", "Ghana", "Nepal", "Jordan",
     ],
     "Fruits": [
-        "apple",
-        "banana",
-        "orange",
-        "grape",
-        "peach",
-        "pear",
-        "cherry",
-        "plum",
-        "mango",
-        "melon",
-        "lemon",
-        "lime",
-        "kiwi",
-        "papaya",
-        "apricot",
-        "fig",
-        "guava",
-        "lychee",
-        "coconut",
-        "pineapple",
-        "raspberry",
-        "blueberry",
-        "blackberry",
-        "cranberry",
-        "pomegranate",
-        "nectarine",
-        "tangerine",
-        "clementine",
-        "date",
-        "olive",
-        "avocado",
-        "passionfruit",
-        "starfruit",
-        "quince",
+        "apple", "banana", "orange", "grape", "peach", "pear", "cherry",
+        "plum", "mango", "melon", "lemon", "lime", "kiwi", "papaya",
+        "apricot", "fig", "guava", "lychee", "coconut", "pineapple",
+        "raspberry", "blueberry", "blackberry", "cranberry", "pomegranate",
+        "nectarine", "tangerine", "clementine", "date", "olive", "avocado",
+        "passionfruit", "starfruit", "quince",
     ],
     "Instruments": [
-        "violin",
-        "cello",
-        "viola",
-        "guitar",
-        "banjo",
-        "harp",
-        "piano",
-        "flute",
-        "clarinet",
-        "oboe",
-        "bassoon",
-        "trumpet",
-        "trombone",
-        "tuba",
-        "saxophone",
-        "drums",
-        "timpani",
-        "xylophone",
-        "accordion",
-        "mandolin",
-        "ukulele",
-        "harmonica",
-        "organ",
-        "sitar",
-        "lute",
-        "bagpipes",
-        "recorder",
-        "cymbal",
-        "tambourine",
-        "marimba",
-        "kazoo",
-        "fiddle",
+        "violin", "cello", "viola", "guitar", "banjo", "harp", "piano",
+        "flute", "clarinet", "oboe", "bassoon", "trumpet", "trombone",
+        "tuba", "saxophone", "drums", "timpani", "xylophone", "accordion",
+        "mandolin", "ukulele", "harmonica", "organ", "sitar", "lute",
+        "bagpipes", "recorder", "cymbal", "tambourine", "marimba",
+        "kazoo", "fiddle",
     ],
     "Sports": [
-        "soccer",
-        "basketball",
-        "tennis",
-        "cricket",
-        "rugby",
-        "baseball",
-        "hockey",
-        "golf",
-        "boxing",
-        "cycling",
-        "swimming",
-        "rowing",
-        "sailing",
-        "skiing",
-        "surfing",
-        "climbing",
-        "fencing",
-        "archery",
-        "judo",
-        "karate",
-        "wrestling",
-        "volleyball",
-        "badminton",
-        "squash",
-        "handball",
-        "curling",
-        "diving",
-        "gymnastics",
-        "marathon",
-        "triathlon",
-        "skating",
-        "snowboarding",
+        "soccer", "basketball", "tennis", "cricket", "rugby", "baseball",
+        "hockey", "golf", "boxing", "cycling", "swimming", "rowing",
+        "sailing", "skiing", "surfing", "climbing", "fencing", "archery",
+        "judo", "karate", "wrestling", "volleyball", "badminton", "squash",
+        "handball", "curling", "diving", "gymnastics", "marathon",
+        "triathlon", "skating", "snowboarding",
     ],
 }
 
@@ -385,15 +224,13 @@ def _build_points(seed: int) -> List[Dict[str, Any]]:
             # Independent capped-Gaussian jitter on each axis, mild anisotropy.
             x = cxm + _capped(rng, sd_x)
             y = cym + _capped(rng, sd_y)
-            records.append(
-                {
-                    "word": word,
-                    "cluster": name,
-                    "ci": ci,
-                    "x": round(x, 4),
-                    "y": round(y, 4),
-                }
-            )
+            records.append({
+                "word": word,
+                "cluster": name,
+                "ci": ci,
+                "x": round(x, 4),
+                "y": round(y, 4),
+            })
     return records
 
 
@@ -431,21 +268,19 @@ def _nearest_neighbours(records: List[Dict[str, Any]], k: int) -> List[List[int]
     for i in range(n):
         xi, yi = xs[i], ys[i]
         # (distance^2, index) for every other point; keep the k smallest.
-        dists = [((xs[j] - xi) ** 2 + (ys[j] - yi) ** 2, j) for j in range(n) if j != i]
+        dists = [
+            ((xs[j] - xi) ** 2 + (ys[j] - yi) ** 2, j)
+            for j in range(n) if j != i
+        ]
         dists.sort(key=lambda t: t[0])
         neighbours.append([j for _d, j in dists[:k]])
     return neighbours
 
 
 def _dodge_pill(
-    lx: float,
-    ly: float,
-    w: float,
-    h: float,
+    lx: float, ly: float, w: float, h: float,
     placed: List[Tuple[float, float, float, float]],
-    *,
-    y_min: float,
-    y_max: float,
+    *, y_min: float, y_max: float,
 ) -> Tuple[float, float]:
     """Nudge a label pill vertically until it clears every already-placed one.
 
@@ -473,7 +308,6 @@ def _dodge_pill(
     tuple of float
         The (possibly adjusted) ``(lx, ly)``.
     """
-
     def collides(x: float, y: float) -> bool:
         for bx, by, bw, bh in placed:
             if x < bx + bw + 3 and x + w + 3 > bx and y < by + bh + 2 and y + h + 2 > by:
@@ -547,12 +381,8 @@ def _representative_labels(records: List[Dict[str, Any]], per_cluster: int) -> L
 # --------------------------------------------------------------------------- #
 _PALETTE = load_palette()
 _FALLBACK = {
-    "Blue": "#007AFF",
-    "Purple": "#AF52DE",
-    "Orange": "#FF9500",
-    "Green": "#34C759",
-    "Teal": "#5AC8FA",
-    "Red": "#FF3B30",
+    "Blue": "#007AFF", "Purple": "#AF52DE", "Orange": "#FF9500",
+    "Green": "#34C759", "Teal": "#5AC8FA", "Red": "#FF3B30",
 }
 
 
@@ -574,7 +404,7 @@ def _hex(key: str, palette: Dict[str, str] | None = None) -> str:
 
 def _lighten(hexv: str, t: float) -> str:
     """Blend ``hexv`` toward white by fraction ``t`` (0 = same, 1 = white)."""
-    r, g, b = (int(hexv[i : i + 2], 16) for i in (1, 3, 5))
+    r, g, b = (int(hexv[i:i + 2], 16) for i in (1, 3, 5))
     r, g, b = (round(c + (255 - c) * t) for c in (r, g, b))
     return f"#{r:02X}{g:02X}{b:02X}"
 
@@ -886,10 +716,10 @@ svg.addEventListener('focusout', function (e) {
 # --------------------------------------------------------------------------- #
 _VIEW_W = 1400
 _VIEW_H = 1120
-_M_TOP = 150  # y where the plot area begins (below the header)
+_M_TOP = 150       # y where the plot area begins (below the header)
 _M_LEFT = 64
 _M_RIGHT = 64
-_LEGEND_H = 70  # reserved strip at the bottom for the legend
+_LEGEND_H = 70     # reserved strip at the bottom for the legend
 
 
 # --------------------------------------------------------------------------- #
@@ -946,8 +776,7 @@ def build_svg(
     # byte-identical); any other accessibility level, or the academic theme,
     # re-reads the palette instead.
     palette = (
-        None
-        if accessibility == "universal" and theme == "corporate"
+        None if accessibility == "universal" and theme == "corporate"
         else load_palette(accessibility, theme=theme)
     )
     colors = [_hex(key, palette) for _name, key in _CLUSTERS]
@@ -958,12 +787,8 @@ def build_svg(
     plot_w = _VIEW_W - _M_LEFT - _M_RIGHT
     plot_h = _VIEW_H - _M_TOP - _LEGEND_H
     positions = _project_positions(
-        records,
-        plot_x=plot_x,
-        plot_y=plot_y,
-        plot_w=plot_w,
-        plot_h=plot_h,
-        pad=54,
+        records, plot_x=plot_x, plot_y=plot_y,
+        plot_w=plot_w, plot_h=plot_h, pad=54,
     )
 
     rep = set(_representative_labels(records, per_cluster=4))
@@ -1042,7 +867,8 @@ def build_svg(
     # spatial blob (position) and carries an always-visible legend label plus a
     # few named word pills, so cluster identity survives with no colour.
     cluster_series = {
-        f".c-{c} .pt-core,.sw-{c} circle,.rl-{c} circle": colors[c] for c in range(len(_CLUSTERS))
+        f".c-{c} .pt-core,.sw-{c} circle,.rl-{c} circle": colors[c]
+        for c in range(len(_CLUSTERS))
     }
     css += os_adaptive_style(cluster_series, role="both", forced=True)
     # Additive dark mode: flip paper + the two ink tiers (data hues untouched).
@@ -1059,12 +885,12 @@ def build_svg(
     )
     parts.append(
         f'<text x="{_M_LEFT}" y="102" font-size="21" fill="{_SECONDARY}">'
-        f"{escape(subtitle_txt)}</text>"
+        f'{escape(subtitle_txt)}</text>'
     )
     parts.append(
         f'<text x="{_M_LEFT}" y="130" font-size="16" fill="{_SECONDARY}">'
-        f"Colour marks the semantic family · hover a legend swatch to isolate "
-        f"one family</text>"
+        f'Colour marks the semantic family · hover a legend swatch to isolate '
+        f'one family</text>'
     )
 
     parts.append('<g id="ep">')
@@ -1085,24 +911,18 @@ def build_svg(
         parts.append(
             f'<g id="pt-{i}" class="pt c-{ci} hit" tabindex="0" role="listitem" '
             f'aria-label="{word}, {cluster}">'
-            f"<title>{word} — {cluster}</title>"
+            f'<title>{word} — {cluster}</title>'
             # WHITE halo for separation in dense areas (no dark grounding ring).
             f'<circle class="pt-halo c-{ci}" cx="{fmt_compact(px)}" cy="{fmt_compact(py)}" '
             f'r="8.5" fill="{_BG}"/>'
             f'<circle class="pt-core" cx="{fmt_compact(px)}" cy="{fmt_compact(py)}" r="6.4" '
             f'fill="{fills[ci]}" stroke="{colors[ci]}" stroke-width="1.6"/>'
-            f"</g>"
+            f'</g>'
         )
         point_tips.append(
             tooltip_bubble(
-                px,
-                py + 14,
-                [str(r["word"]), str(r["cluster"]), f"nearest: {nn_words}"],
-                canvas_w=_VIEW_W,
-                canvas_h=_VIEW_H,
-                ink=_INK,
-                secondary=_SECONDARY,
-                border=GRIDLINE,
+                px, py + 14, [str(r["word"]), str(r["cluster"]), f"nearest: {nn_words}"],
+                canvas_w=_VIEW_W, canvas_h=_VIEW_H, ink=_INK, secondary=_SECONDARY, border=GRIDLINE,
                 elem_id=f"pt-tip-{i}",
             )
         )
@@ -1138,13 +958,8 @@ def build_svg(
         # points in the same cluster) -- dodge against every pill already
         # placed this render, same search the hover pills use in JS.
         lx, ly = _dodge_pill(
-            lx,
-            ly,
-            pill_w,
-            pill_h,
-            _placed_pills,
-            y_min=_M_TOP - 8,
-            y_max=_VIEW_H - _LEGEND_H - pill_h,
+            lx, ly, pill_w, pill_h, _placed_pills,
+            y_min=_M_TOP - 8, y_max=_VIEW_H - _LEGEND_H - pill_h,
         )
         _placed_pills.append((lx, ly, pill_w, pill_h))
         parts.append(
@@ -1157,7 +972,7 @@ def build_svg(
             f'fill="{colors[ci]}"/>'
             f'<text x="{fmt_compact(lx + 27)}" y="{fmt_compact(ly + pill_h / 2 + 5)}" '
             f'font-size="16" font-weight="600" fill="{_INK}">{word}</text>'
-            f"</g>"
+            f'</g>'
         )
     parts.append("</g>")
 
@@ -1172,13 +987,13 @@ def build_svg(
         parts.append(
             f'<g class="sw-{c}" tabindex="0" role="button" '
             f'aria-label="Isolate the {escape(name)} family">'
-            f"<title>Isolate the {escape(name)} family "
-            f"({counts[name]} words)</title>"
+            f'<title>Isolate the {escape(name)} family '
+            f'({counts[name]} words)</title>'
             f'<circle cx="{cursor + 10:.1f}" cy="{ly - 6:.1f}" r="10" '
             f'fill="{colors[c]}"/>'
             f'<text x="{cursor + 28:.1f}" y="{ly:.1f}" font-size="19" '
             f'fill="{_INK}">{escape(seg)}</text>'
-            f"</g>"
+            f'</g>'
         )
         cursor += 40 + 11.0 * len(seg) + 30
     parts.append("</g>")  # /legend
@@ -1244,9 +1059,7 @@ def make_embedding_projector(
         Absolute path to the written SVG file.
     """
     _ = data, title  # accepted for dispatcher parity; see docstring
-    svg = build_svg(
-        seed=seed, mode=mode, accessibility=accessibility, theme=theme, title=title or None
-    )
+    svg = build_svg(seed=seed, mode=mode, accessibility=accessibility, theme=theme, title=title or None)
     dest = Path(out) if out else _DEFAULT_OUT
     return write_svg(dest, svg, theme=theme)
 
@@ -1263,7 +1076,9 @@ def _build_parser() -> argparse.ArgumentParser:
         default=_DEFAULT_OUT,
         help="Destination SVG path (default: the shipped example).",
     )
-    parser.add_argument("--seed", type=int, default=_SEED, help="Random seed for the word layout.")
+    parser.add_argument(
+        "--seed", type=int, default=_SEED, help="Random seed for the word layout."
+    )
     parser.add_argument(
         "--mode",
         choices=("self-contained", "external", "static"),
@@ -1295,9 +1110,7 @@ def _build_parser() -> argparse.ArgumentParser:
 def main(argv: List[str] | None = None) -> int:
     """CLI entry point: build the SVG and write it to disk."""
     args = _build_parser().parse_args(argv)
-    svg = build_svg(
-        seed=args.seed, mode=args.mode, accessibility=args.accessibility, theme=args.theme
-    )
+    svg = build_svg(seed=args.seed, mode=args.mode, accessibility=args.accessibility, theme=args.theme)
     write_svg(args.out, svg, theme=args.theme)
     return 0
 

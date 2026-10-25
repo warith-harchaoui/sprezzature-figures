@@ -329,8 +329,6 @@ def _tourne(transform: str) -> bool:
     angle is not a rotation.
     """
     return any(abs(float(a)) > 0.01 for a in _ROTATE_ANGLE.findall(transform))
-
-
 _AUTRE_TRANSFORM = re.compile(r"\b(scale|matrix|skewX|skewY)\s*\(")
 
 
@@ -463,7 +461,7 @@ def _check_overlaps(labels: Sequence[_Label]) -> list[RenderFinding]:
     for i, gauche in enumerate(droits):
         g_x1, g_x2 = gauche.box
         g_y1, g_y2 = gauche.bande
-        for droite in droits[i + 1 :]:
+        for droite in droits[i + 1:]:
             d_x1, d_x2 = droite.box
             recouvrement_x = min(g_x2, d_x2) - max(g_x1, d_x1)
             if recouvrement_x <= _OVERLAP_TOLERANCE_PX:
@@ -483,9 +481,7 @@ def _check_overlaps(labels: Sequence[_Label]) -> list[RenderFinding]:
     return findings
 
 
-def _check_inside_canvas(
-    labels: Sequence[_Label], width: float, height: float
-) -> list[RenderFinding]:
+def _check_inside_canvas(labels: Sequence[_Label], width: float, height: float) -> list[RenderFinding]:
     if not width or not height:
         return []
     findings: list[RenderFinding] = []
@@ -508,7 +504,9 @@ def _check_inside_canvas(
     return findings
 
 
-def _check_placeholders(labels: Sequence[_Label], forbidden: Iterable[str]) -> list[RenderFinding]:
+def _check_placeholders(
+    labels: Sequence[_Label], forbidden: Iterable[str]
+) -> list[RenderFinding]:
     interdits = tuple(_PLACEHOLDER_TEXT) + tuple(forbidden)
     findings: list[RenderFinding] = []
     for label in labels:
@@ -663,7 +661,9 @@ def _check_text_is_text(root: ET.Element, labels: Sequence[_Label]) -> list[Rend
     ]
 
 
-def _check_legible_size(labels: Sequence[_Label], scale: float) -> list[RenderFinding]:
+def _check_legible_size(
+    labels: Sequence[_Label], scale: float
+) -> list[RenderFinding]:
     """Report labels too small to read at the size the figure is shown."""
     findings: list[RenderFinding] = []
     for label in labels:
@@ -790,10 +790,7 @@ def _fond(root: ET.Element) -> str | None:
     if not width or not height:
         return None
     for rect in root.iter(f"{_SVG_NS}rect"):
-        if (
-            _float(rect.get("width")) >= width * 0.95
-            and _float(rect.get("height")) >= height * 0.95
-        ):
+        if _float(rect.get("width")) >= width * 0.95 and _float(rect.get("height")) >= height * 0.95:
             fill = _presentation(rect, "fill")
             if fill and _HEX.match(fill):
                 return fill
@@ -828,9 +825,7 @@ def _couvre(element: ET.Element, tag: str, dx: float, dy: float, x: float, y: fl
     """
     if tag == "rect":
         gx, gy = _float(element.get("x")) + dx, _float(element.get("y")) + dy
-        return gx <= x <= gx + _float(element.get("width")) and gy <= y <= gy + _float(
-            element.get("height")
-        )
+        return gx <= x <= gx + _float(element.get("width")) and gy <= y <= gy + _float(element.get("height"))
     if tag == "circle":
         cx, cy = _float(element.get("cx")) + dx, _float(element.get("cy")) + dy
         return (x - cx) ** 2 + (y - cy) ** 2 <= _float(element.get("r")) ** 2
@@ -918,9 +913,7 @@ def _surface_sous(
     return surfaces
 
 
-def _check_invisible_text(
-    root: ET.Element, ancestors: dict, fond: str | None
-) -> list[RenderFinding]:
+def _check_invisible_text(root: ET.Element, ancestors: dict, fond: str | None) -> list[RenderFinding]:
     """Report text drawn in the colour of the surface it sits on.
 
     Deliberately blunt: it fires only below 1.5:1, which is not "hard to

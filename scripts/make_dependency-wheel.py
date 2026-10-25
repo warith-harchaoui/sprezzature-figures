@@ -58,15 +58,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from xml.sax.saxutils import escape
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _style import (
-    BG,
-    GRIDLINE,
-    INK,
-    forced_color_patterns,
-    leveled_colors,
-    load_palette,
-    os_dark_style,
-)  # noqa: E402
+from _style import BG, GRIDLINE, INK, forced_color_patterns, leveled_colors, load_palette, os_dark_style  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 from _svg import foreground_tip_css, point_on_circle, svg_open, tooltip_bubble  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
@@ -78,14 +70,14 @@ from _interactive import fullscreen_control  # noqa: E402
 WIDTH = 1160
 HEIGHT = 1260
 CX = WIDTH / 2.0
-CY = HEIGHT / 2.0 + 58  # nudge down to leave room for the title block
-R_OUTER = 392  # outer radius of the node-arc ring
-ARC_THICK = 30  # radial thickness of a node arc
+CY = HEIGHT / 2.0 + 58       # nudge down to leave room for the title block
+R_OUTER = 392               # outer radius of the node-arc ring
+ARC_THICK = 30              # radial thickness of a node arc
 R_INNER = R_OUTER - ARC_THICK
-GAP_DEG = 3.2  # angular gap (deg) between adjacent node arcs
-LABEL_PAD = 22  # radial gap between arc and its text label
+GAP_DEG = 3.2               # angular gap (deg) between adjacent node arcs
+LABEL_PAD = 22              # radial gap between arc and its text label
 
-SUBINK = "#6E6E73"  # secondary text
+SUBINK = "#6E6E73"          # secondary text
 
 
 # ------------------------------------------------------------------
@@ -111,12 +103,12 @@ REGIONS: List[str] = [
 # Values are thousands of people who relocated over the decade.
 MATRIX: List[List[int]] = [
     #        NE   MW   SE   MtW  PC   GP   <- destination
-    [0, 38, 186, 74, 22, 19],  # Northeast left for ...
-    [41, 0, 158, 96, 31, 44],  # Midwest
-    [52, 47, 0, 61, 40, 33],  # Southeast
-    [17, 22, 58, 0, 46, 20],  # Mountain West
-    [34, 29, 171, 138, 0, 27],  # Pacific Coast
-    [12, 40, 49, 57, 18, 0],  # Great Plains
+    [0,   38,  186,  74,  22,  19],   # Northeast left for ...
+    [41,   0,  158,  96,  31,  44],   # Midwest
+    [52,  47,   0,   61,  40,  33],   # Southeast
+    [17,  22,   58,   0,  46,  20],   # Mountain West
+    [34,  29,  171, 138,   0,  27],   # Pacific Coast
+    [12,  40,   49,  57,  18,   0],   # Great Plains
 ]
 
 #: Row-record view of :data:`MATRIX`, the shape the ``make_<kind>`` contract
@@ -127,7 +119,6 @@ DEMO_DATA: List[Dict[str, Any]] = [
     for j in range(len(REGIONS))
     if i != j and MATRIX[i][j]
 ]
-
 
 # Brand hue per region — the origin colour travels with the ribbon so a
 # reader can follow one region's outflow around the wheel.
@@ -149,12 +140,12 @@ def _region_color(accessibility: str = "universal", theme: str = "corporate") ->
     """
     palette = load_palette(accessibility, theme=theme)
     return {
-        "Northeast": palette.get("Blue", "#007AFF"),
-        "Midwest": palette.get("Purple", "#AF52DE"),
-        "Southeast": palette.get("Orange", "#FF9500"),
+        "Northeast":     palette.get("Blue", "#007AFF"),
+        "Midwest":       palette.get("Purple", "#AF52DE"),
+        "Southeast":     palette.get("Orange", "#FF9500"),
         "Mountain West": palette.get("Green", "#34C759"),
         "Pacific Coast": palette.get("Teal", "#5AC8FA"),
-        "Great Plains": palette.get("Mint", "#00C7BE"),
+        "Great Plains":  palette.get("Mint", "#00C7BE"),
     }
 
 
@@ -291,9 +282,7 @@ def _ribbon_path(
 # ------------------------------------------------------------------
 # Wheel layout maths
 # ------------------------------------------------------------------
-def _compute_layout(
-    region_color: Optional[Dict[str, str]] = None,
-) -> Tuple[Dict[int, dict], List[dict]]:
+def _compute_layout(region_color: Optional[Dict[str, str]] = None) -> Tuple[Dict[int, dict], List[dict]]:
     """Place node arcs and every directed ribbon around the ring.
 
     The angular budget (360 deg minus the inter-node gaps) is split
@@ -381,28 +370,23 @@ def _compute_layout(
                 continue
             a = out_slice[(i, j)]
             b = in_slice[(i, j)]
-            ribbons.append(
-                {
-                    "src": i,
-                    "dst": j,
-                    "a0": a[0],
-                    "a1": a[1],
-                    "b0": b[0],
-                    "b1": b[1],
-                    "value": v,
-                    "color": groups[i]["color"],
-                }
-            )
+            ribbons.append({
+                "src": i,
+                "dst": j,
+                "a0": a[0],
+                "a1": a[1],
+                "b0": b[0],
+                "b1": b[1],
+                "value": v,
+                "color": groups[i]["color"],
+            })
     return groups, ribbons
 
 
 # ------------------------------------------------------------------
 # SVG emission
 # ------------------------------------------------------------------
-def build_svg(
-    mode: str = "self-contained",
-    accessibility: str = "universal",
-    theme: str = "corporate",
+def build_svg(mode: str = "self-contained", accessibility: str = "universal", theme: str = "corporate",
     title: Optional[str] = None,
 ) -> str:
     """Assemble the full dependency-wheel SVG document as a string.
@@ -435,7 +419,10 @@ def build_svg(
     parts: List[str] = []
 
     title_txt = title or "The Sun Belt keeps drawing people from the Rust Belt and the Coasts"
-    subtitle_txt = "Internal migration between six regions over a decade, in thousands of people"
+    subtitle_txt = (
+        "Internal migration between six regions over a decade, in thousands of "
+        "people"
+    )
     desc_txt = (
         "Dependency wheel of internal migration between six regions of a "
         "country over a decade. Each region owns an arc on the ring sized by "
@@ -447,9 +434,7 @@ def build_svg(
         "way, so the population drain runs in one direction."
     )
 
-    parts.append(
-        svg_open(WIDTH, HEIGHT, "dw-title", "dw-desc", font_family=chrome_stack_for_theme(theme))
-    )
+    parts.append(svg_open(WIDTH, HEIGHT, "dw-title", "dw-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="dw-title">{escape(title_txt)}</title>')
     parts.append(f'<desc id="dw-desc">{escape(desc_txt)}</desc>')
 
@@ -465,7 +450,8 @@ def build_svg(
         for rid in REGION_ID.values()
     )
     arc_hover_dim = "".join(
-        f"#arc-{rid}:hover ~ #flows .flow,#arc-{rid}:focus ~ #flows .flow{{opacity:.08}}"
+        f"#arc-{rid}:hover ~ #flows .flow,"
+        f"#arc-{rid}:focus ~ #flows .flow{{opacity:.08}}"
         for rid in REGION_ID.values()
     )
     # Arc bubbles: SVG has no z-index, so a bubble drawn right next to its
@@ -492,7 +478,9 @@ def build_svg(
     # outflow take the same tile, so the six origins stay pairwise distinguishable
     # without any colour. The patterns live in <defs> and are only referenced
     # inside the forced-colors media block, so the default render is unchanged.
-    region_hc = leveled_colors({r["name"]: r["color"] for r in groups.values()}, "high-contrast")
+    region_hc = leveled_colors(
+        {r["name"]: r["color"] for r in groups.values()}, "high-contrast"
+    )
     contrast_rows = "".join(
         f"#arc-{REGION_ID[groups[i]['name']]}{{fill:{region_hc[groups[i]['name']]};}}"
         f".src-{REGION_ID[groups[i]['name']]}"
@@ -544,7 +532,8 @@ def build_svg(
         f'fill="{INK}">{escape(title_txt)}</text>'
     )
     parts.append(
-        f'<text x="52" y="102" font-size="18" fill="{SUBINK}">{escape(subtitle_txt)}</text>'
+        f'<text x="52" y="102" font-size="18" fill="{SUBINK}">'
+        f'{escape(subtitle_txt)}</text>'
     )
 
     # --- node arcs FIRST so the CSS ``~`` sibling combinator can reach
@@ -560,23 +549,20 @@ def build_svg(
         d = _arc_path(R_OUTER, R_INNER, g["a0"], g["a1"])
         net = g["in"] - g["out"]
         sign = "+" if net > 0 else ""
-        arc_tip = f"{g['name']}: {g['out']}k left, {g['in']}k arrived (net {sign}{net}k)"
+        arc_tip = (
+            f"{g['name']}: {g['out']}k left, {g['in']}k arrived "
+            f"(net {sign}{net}k)"
+        )
         parts.append(
             f'<path id="arc-{rid}" class="arc-hit hit" tabindex="0" role="img" '
             f'aria-label="{escape(arc_tip)}" d="{d}" fill="{g["color"]}">'
-            f"<title>{escape(arc_tip)}</title></path>"
+            f'<title>{escape(arc_tip)}</title></path>'
         )
         amx, amy = _polar((R_OUTER + R_INNER) / 2.0, g["mid"])
         arc_tips.append(
             tooltip_bubble(
-                amx,
-                amy,
-                [g["name"], f"{g['out']}k left, {g['in']}k arrived", f"net {sign}{net}k"],
-                canvas_w=WIDTH,
-                canvas_h=HEIGHT,
-                ink=INK,
-                secondary=SUBINK,
-                border=GRIDLINE,
+                amx, amy, [g["name"], f"{g['out']}k left, {g['in']}k arrived", f"net {sign}{net}k"],
+                canvas_w=WIDTH, canvas_h=HEIGHT, ink=INK, secondary=SUBINK, border=GRIDLINE,
                 elem_id=f"arctip-{rid}",
             )
         )
@@ -592,13 +578,8 @@ def build_svg(
         # deeper source-side pull, make each ribbon fan out where it
         # leaves and converge where it arrives — a read of direction.
         d = _ribbon_path(
-            rb["a0"],
-            rb["a1"],
-            rb["b0"],
-            rb["b1"],
-            R_INNER,
-            src_pull=0.86,
-            dst_pull=0.72,
+            rb["a0"], rb["a1"], rb["b0"], rb["b1"], R_INNER,
+            src_pull=0.86, dst_pull=0.72,
         )
         src_name = groups[rb["src"]]["name"]
         dst_name = groups[rb["dst"]]["name"]
@@ -610,19 +591,13 @@ def build_svg(
             f'role="img" aria-label="{escape(tip)}" d="{d}" '
             f'fill="{rb["color"]}" fill-opacity="0.62" '
             f'stroke="{rb["color"]}" stroke-opacity="0.28" stroke-width="0.6">'
-            f"<title>{escape(tip)}</title></path>"
+            f'<title>{escape(tip)}</title></path>'
         )
         rmx, rmy = _polar(R_INNER * 0.92, (rb["a0"] + rb["a1"]) / 2.0)
         flow_tips.append(
             tooltip_bubble(
-                rmx,
-                rmy,
-                [f"{src_name} → {dst_name}", f"{rb['value']}k people moved"],
-                canvas_w=WIDTH,
-                canvas_h=HEIGHT,
-                ink=INK,
-                secondary=SUBINK,
-                border=GRIDLINE,
+                rmx, rmy, [f"{src_name} → {dst_name}", f"{rb['value']}k people moved"],
+                canvas_w=WIDTH, canvas_h=HEIGHT, ink=INK, secondary=SUBINK, border=GRIDLINE,
                 elem_id=f"flowtip-{flow_i}",
             )
         )
@@ -653,7 +628,7 @@ def build_svg(
             f'<text x="{lx:.2f}" y="{ly + 15:.2f}" font-size="15" '
             f'font-family="{mono_family}" fill="{SUBINK}" '
             f'text-anchor="{anchor}" dominant-baseline="middle">'
-            f"net {sign}{net}k</text>"
+            f'net {sign}{net}k</text>'
         )
     parts.append("</g>")
 
@@ -661,10 +636,15 @@ def build_svg(
     # Mountain West combined net gain vs the three losing regions. ---
     se = REGIONS.index("Southeast")
     mtw = REGIONS.index("Mountain West")
-    sunbelt_net = (groups[se]["in"] - groups[se]["out"]) + (groups[mtw]["in"] - groups[mtw]["out"])
+    sunbelt_net = (
+        (groups[se]["in"] - groups[se]["out"]) + (groups[mtw]["in"] - groups[mtw]["out"])
+    )
     # Soft white backing disk so the hub label stays legible over the
     # ribbon crossings without any dark halo or hard outline.
-    parts.append(f'<circle cx="{CX:.1f}" cy="{CY:.1f}" r="104" fill="{BG}" fill-opacity="0.86"/>')
+    parts.append(
+        f'<circle cx="{CX:.1f}" cy="{CY:.1f}" r="104" fill="{BG}" '
+        f'fill-opacity="0.86"/>'
+    )
     parts.append(
         f'<text x="{CX:.1f}" y="{CY - 30:.1f}" text-anchor="middle" '
         f'font-size="17" fill="{SUBINK}">Sun Belt net gain</text>'
@@ -686,8 +666,8 @@ def build_svg(
     parts.append(
         f'<text x="52" y="{HEIGHT - 40}" font-size="15" '
         f'fill="{SUBINK}">Arc size ∝ a region’s total migration · '
-        f"ribbon width ∝ people moved · ribbon colour = where they left "
-        f"from · hover or focus a region to trace its flows</text>"
+        f'ribbon width ∝ people moved · ribbon colour = where they left '
+        f'from · hover or focus a region to trace its flows</text>'
     )
 
     parts.append(fullscreen_control(WIDTH, HEIGHT, mode))
@@ -742,9 +722,7 @@ def make_dependency_wheel(
 
 def main() -> None:
     """Write the dependency-wheel SVG to the skill's example asset folder."""
-    render_cli(
-        __file__, "dependency-wheel", build_svg, description="Render the dependency-wheel SVG."
-    )
+    render_cli(__file__, "dependency-wheel", build_svg, description="Render the dependency-wheel SVG.")
 
 
 if __name__ == "__main__":

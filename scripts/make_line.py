@@ -57,15 +57,15 @@ _STRINGS: Dict[str, Dict[str, str]] = {
         "y_axis": "Value",
         "x_axis": "Month",
         "desc": "Multi-series line chart of {n_series} series over {n_months} months, "
-        "peaking at {max_val:.0f}. Hover or focus a point for its exact value.",
+                "peaking at {max_val:.0f}. Hover or focus a point for its exact value.",
     },
     "fr": {
         "legend_header": "Séries",
         "y_axis": "Valeur",
         "x_axis": "Mois",
         "desc": "Graphique en courbes de {n_series} séries sur {n_months} mois, "
-        "culminant à {max_val:.0f}. Survolez ou activez le focus sur un "
-        "point pour sa valeur exacte.",
+                "culminant à {max_val:.0f}. Survolez ou activez le focus sur un "
+                "point pour sa valeur exacte.",
     },
 }
 
@@ -154,16 +154,10 @@ def build_svg(
     # the axis order silently fell back to Python's set-hash order instead of
     # the CSV's already-chronological row order.
     months_seen = list(dict.fromkeys(r["month"] for r in rows))
-    months = (
-        sorted(months_seen, key=MONTHS.index)
-        if all(m in MONTHS for m in months_seen)
-        else months_seen
-    )
+    months = sorted(months_seen, key=MONTHS.index) if all(m in MONTHS for m in months_seen) else months_seen
     colors = _series_colors(series, accessibility, theme=theme)
 
-    lookup: Dict[tuple, float] = {
-        (r.get("series") or "Value", r["month"]): float(r["value"]) for r in rows
-    }
+    lookup: Dict[tuple, float] = {(r.get("series") or "Value", r["month"]): float(r["value"]) for r in rows}
     all_vals = list(lookup.values())
     max_val = max(all_vals) if all_vals else 1.0
 
@@ -211,16 +205,12 @@ def build_svg(
             return plot_y + plot_h - (v / y_domain * plot_h)
 
     parts: List[str] = []
-    parts.append(
-        svg_open(
-            width, height, "line-title", "line-desc", font_family=chrome_stack_for_theme(theme)
-        )
-    )
+    parts.append(svg_open(width, height, "line-title", "line-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="line-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="line-desc">'
-        f"{strings['desc'].format(n_series=len(series), n_months=n, max_val=max_val)}"
-        f"</desc>"
+        f'{strings["desc"].format(n_series=len(series), n_months=n, max_val=max_val)}'
+        f'</desc>'
     )
 
     parts.append(
@@ -228,7 +218,8 @@ def build_svg(
         ".series-group{transition:opacity .15s ease;}"
         "svg:hover .series-group,svg:focus-within .series-group{opacity:.35;}"
         + "".join(
-            f"svg:has(.s{i}:hover,.s{i}:focus) .s{i}{{opacity:1;}}" for i in range(len(series))
+            f'svg:has(.s{i}:hover,.s{i}:focus) .s{i}{{opacity:1;}}'
+            for i in range(len(series))
         )
         + ".pt{transition:r .12s ease;}"
         ".pt:hover,.pt:focus{r:5.5;outline:none;}"
@@ -246,9 +237,7 @@ def build_svg(
         f'<text x="40" y="46" font-size="24" font-weight="700" fill="{INK}" '
         f'letter-spacing="-0.3">{xml_escape(title)}</text>'
     )
-    parts.append(
-        f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>'
-    )
+    parts.append(f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>')
 
     # ---- legend (a single-series line doesn't need one to label itself) ----
     if len(series) > 1:
@@ -313,7 +302,7 @@ def build_svg(
             parts.append(
                 f'<circle id="pt-{si}-{i}" class="pt hit" tabindex="0" cx="{cx:.1f}" cy="{cy:.1f}" r="4" '
                 f'fill="{colors[s]}" stroke="{BG}" stroke-width="1.5">'
-                f"<title>{xml_escape(tip)}</title></circle>"
+                f'<title>{xml_escape(tip)}</title></circle>'
             )
             bubbles.append(
                 tooltip_bubble(
@@ -410,20 +399,9 @@ def make_line(
     >>> p.exists()
     True
     """
-    svg = build_svg(
-        data,
-        title=title,
-        subtitle=subtitle,
-        width=width,
-        height=height,
-        mode=mode,
-        accessibility=accessibility,
-        language=language,
-        x_label=x_label,
-        y_label=y_label,
-        log_y=log_y,
-        theme=theme,
-    )
+    svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
+                     mode=mode, accessibility=accessibility, language=language,
+                     x_label=x_label, y_label=y_label, log_y=log_y, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "line")
     return write_svg(dest, svg, theme=theme)
 

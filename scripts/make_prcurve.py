@@ -463,9 +463,7 @@ def build_svg(
     parts: List[str] = []
 
     # --- SVG root + accessible description ------------------------
-    parts.append(
-        svg_open(width, height, "pr-title", "pr-desc", font_family=chrome_stack_for_theme(theme))
-    )
+    parts.append(svg_open(width, height, "pr-title", "pr-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(
         # The accessible name is the headline a sighted reader sees: when
         # the two disagree, a screen-reader user is told about a different
@@ -474,19 +472,19 @@ def build_svg(
     )
     parts.append(
         f'<desc id="pr-desc">Precision-recall curves for two fraud-detection '
-        f"classifiers on an imbalanced problem (fraud prevalence "
-        f"{prevalence:.0%}). The horizontal axis is recall (share of fraud "
-        f"caught); the vertical axis is precision (share of flagged "
-        f"transactions that are fraud); both run from 0 to 1. The strong "
-        f"gradient-boosted model (solid blue, circle marker, average "
-        f"precision {strong_ap:.2f}) sits well above the weaker logistic "
-        f"baseline (dashed orange, square marker, average precision "
-        f"{weak_ap:.2f}) across the whole recall range. A dashed grey "
-        f"no-skill baseline runs flat at precision equal to the {prevalence:.0%} "
-        f"prevalence; the vertical gap above it is the signal each model has "
-        f"learned. Faint iso-F1 contours arc through the plot, and each "
-        f"model is marked at its shipped maximum-F1 operating point. "
-        f"</desc>"
+        f'classifiers on an imbalanced problem (fraud prevalence '
+        f'{prevalence:.0%}). The horizontal axis is recall (share of fraud '
+        f'caught); the vertical axis is precision (share of flagged '
+        f'transactions that are fraud); both run from 0 to 1. The strong '
+        f'gradient-boosted model (solid blue, circle marker, average '
+        f'precision {strong_ap:.2f}) sits well above the weaker logistic '
+        f'baseline (dashed orange, square marker, average precision '
+        f'{weak_ap:.2f}) across the whole recall range. A dashed grey '
+        f'no-skill baseline runs flat at precision equal to the {prevalence:.0%} '
+        f'prevalence; the vertical gap above it is the signal each model has '
+        f'learned. Faint iso-F1 contours arc through the plot, and each '
+        f'model is marked at its shipped maximum-F1 operating point. '
+        f'</desc>'
     )
 
     # OS-adaptive overrides are appended (additive; every rule lives inside an
@@ -526,11 +524,8 @@ def build_svg(
         ".sw:focus{outline:none}"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
         "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
-        + "\n"
-        + contrast_block
-        + "\n"
-        + os_dark_style()
-        + "\n"
+        + "\n" + contrast_block + "\n"
+        + os_dark_style() + "\n"
         "</style>"
     )
 
@@ -542,16 +537,13 @@ def build_svg(
         f'<text x="{m_left}" y="96" font-size="44" font-weight="700" '
         f'fill="{ink}">{xml_escape(title)}</text>'
     )
-    said = (
-        subtitle
-        if subtitle is not None
-        else (
-            f"Precision vs recall as the threshold varies \u2014 AP "
-            f"{strong_ap:.2f} vs {weak_ap:.2f}"
-        )
+    said = subtitle if subtitle is not None else (
+        f"Precision vs recall as the threshold varies \u2014 AP "
+        f"{strong_ap:.2f} vs {weak_ap:.2f}"
     )
     parts.append(
-        f'<text x="{m_left}" y="148" font-size="25" fill="{secondary}">{xml_escape(said)}</text>'
+        f'<text x="{m_left}" y="148" font-size="25" fill="{secondary}">'
+        f'{xml_escape(said)}</text>'
     )
 
     # --- gridlines (very light) ----------------------------------
@@ -655,7 +647,7 @@ def build_svg(
     parts.append(
         f'<text x="{plot_x + plot_w / 2:.1f}" y="{ax_bottom + 84:.1f}" '
         f'font-size="24" fill="{ink}" text-anchor="middle">'
-        f"Recall — share of fraud caught → better</text>"
+        f'Recall — share of fraud caught → better</text>'
     )
     ytitle_x = 66
     ytitle_y = plot_y + plot_h / 2
@@ -663,7 +655,7 @@ def build_svg(
         f'<text x="{ytitle_x:.1f}" y="{ytitle_y:.1f}" font-size="24" '
         f'fill="{ink}" text-anchor="middle" '
         f'transform="rotate(-90 {ytitle_x:.1f} {ytitle_y:.1f})">'
-        f"Precision — share of flags that are fraud → better</text>"
+        f'Precision — share of flags that are fraud → better</text>'
     )
 
     # --- the two model curves ------------------------------------
@@ -696,7 +688,10 @@ def build_svg(
         pts = [(sx(r), sy(p)) for r, p, _thr in per_model[label]]
         d_curve = _curve_path(pts)
         tip = f"{label}: average precision {ap[label]:.2f}"
-        parts.append(f'<g class="curve" tabindex="0" role="img" aria-label="{xml_escape(tip)}">')
+        parts.append(
+            f'<g class="curve" tabindex="0" role="img" '
+            f'aria-label="{xml_escape(tip)}">'
+        )
         parts.append(f"<title>{xml_escape(tip)}</title>")
         # White under-stroke (halo-free crispness where curves cross).
         parts.append(
@@ -729,7 +724,10 @@ def build_svg(
             for i in hover_idx:
                 r, p, thr = series[i]
                 hx, hy = sx(r), sy(p)
-                htip = f"{label} — recall {r:.0%}, precision {p:.0%} at {_threshold_words(thr)}"
+                htip = (
+                    f"{label} — recall {r:.0%}, precision {p:.0%} at "
+                    f"{_threshold_words(thr)}"
+                )
                 parts.append(
                     f'<g id="sw-{sw_i}" class="sw hit" tabindex="0" role="img" '
                     f'aria-label="{xml_escape(htip)}">'
@@ -738,19 +736,14 @@ def build_svg(
                     f'<circle class="pr-mark-{st["slug"]}" cx="{hx:.1f}" '
                     f'cy="{hy:.1f}" r="3.4" fill="{st["col"]}" '
                     f'fill-opacity="0.85" stroke="#FFFFFF" stroke-width="1.2"/>'
-                    f"</g>"
+                    f'</g>'
                 )
                 sw_tips.append(
                     tooltip_bubble(
-                        hx,
-                        hy - 18,
+                        hx, hy - 18,
                         [label, f"recall {r:.0%}, precision {p:.0%}", _threshold_words(thr)],
-                        anchor="middle",
-                        canvas_w=width,
-                        canvas_h=height,
-                        ink=ink,
-                        secondary=secondary,
-                        border=grid_col,
+                        anchor="middle", canvas_w=width, canvas_h=height,
+                        ink=ink, secondary=secondary, border=grid_col,
                         elem_id=f"tip-sw-{sw_i}",
                     )
                 )
@@ -764,9 +757,9 @@ def build_svg(
         st = style[label]
         cx, cy = sx(float(rec["recall"])), sy(float(rec["precision"]))
         tip = (
-            f"{label} — shipped (max-F1) operating point: recall "
-            f"{rec['recall']:.0%}, precision {rec['precision']:.0%}, "
-            f"F1 {rec['f1']:.2f}, {_threshold_words(rec['threshold'])}"
+            f'{label} — shipped (max-F1) operating point: recall '
+            f'{rec["recall"]:.0%}, precision {rec["precision"]:.0%}, '
+            f'F1 {rec["f1"]:.2f}, {_threshold_words(rec["threshold"])}'
         )
         parts.append(
             f'<g id="op-{op_i}" class="op hit" tabindex="0" role="img" '
@@ -796,19 +789,14 @@ def build_svg(
         parts.append("</g>")
         op_tips.append(
             tooltip_bubble(
-                cx,
-                cy - 34,
+                cx, cy - 34,
                 [
                     f"{label} — shipped operating point",
                     f"recall {rec['recall']:.0%}, precision {rec['precision']:.0%}",
                     f"F1 {rec['f1']:.2f}, {_threshold_words(rec['threshold'])}",
                 ],
-                anchor="middle",
-                canvas_w=width,
-                canvas_h=height,
-                ink=ink,
-                secondary=secondary,
-                border=grid_col,
+                anchor="middle", canvas_w=width, canvas_h=height,
+                ink=ink, secondary=secondary, border=grid_col,
                 elem_id=f"tip-op-{op_i}",
             )
         )
@@ -851,7 +839,7 @@ def build_svg(
         parts.append(
             f'<text x="{key_x + 84:.1f}" y="{ry + 8:.1f}" font-size="23" '
             f'fill="{ink}"><tspan font-weight="600">{xml_escape(label)}</tspan>'
-            f"  ·  AP {ap[label]:.2f}</text>"
+            f'  ·  AP {ap[label]:.2f}</text>'
         )
 
     # Every bubble drawn last, after everything else in the document, so
@@ -902,12 +890,8 @@ def make_prcurve(
         Absolute path to the written SVG file.
     """
     svg = build_svg(
-        data,
-        title=title,
-        subtitle=subtitle,
-        mode=mode,
-        accessibility=accessibility,
-        theme=theme,
+        data, title=title, subtitle=subtitle,
+        mode=mode, accessibility=accessibility, theme=theme,
     )
     dest = Path(out) if out else svg_example_path(__file__, "prcurve")
     return write_svg(dest, svg, theme=theme)
@@ -916,9 +900,7 @@ def make_prcurve(
 def main() -> None:
     """Write the precision-recall-curve SVG to the canonical path (or --out)."""
     render_cli(
-        __file__,
-        "prcurve",
-        build_svg,
+        __file__, "prcurve", build_svg,
         description="Render the precision-recall curve SVG (with average "
         "precision, no-skill baseline and iso-F1 contours).",
     )

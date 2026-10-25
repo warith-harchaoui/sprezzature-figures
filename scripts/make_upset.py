@@ -58,11 +58,11 @@ from _interactive import fullscreen_control  # noqa: E402
 # ------------------------------------------------------------------
 # House-style inks
 # ------------------------------------------------------------------
-_INK: str = "#1D1D1F"  # primary text
-_SUBTLE: str = "#6E6E73"  # secondary text
-_EMPTY: str = "#D6D6DB"  # inactive matrix dot (set NOT in this combination)
-_BG: str = "#FFFFFF"  # background
-_FOCUS: str = "#0A4DA0"  # focus-ring blue
+_INK: str = "#1D1D1F"       # primary text
+_SUBTLE: str = "#6E6E73"    # secondary text
+_EMPTY: str = "#D6D6DB"     # inactive matrix dot (set NOT in this combination)
+_BG: str = "#FFFFFF"        # background
+_FOCUS: str = "#0A4DA0"     # focus-ring blue
 
 
 # ------------------------------------------------------------------
@@ -192,7 +192,7 @@ def build_svg(
     """
     sets, combinations = _reshape(data)
     palette = load_palette(accessibility, theme=theme)
-    bar_color = palette.get("Blue", "#007AFF")  # intersection-size bars
+    bar_color = palette.get("Blue", "#007AFF")   # intersection-size bars
     dot_color = palette.get("Purple", "#AF52DE")  # active matrix dots + set bars
 
     # --- panel geometry ------------------------------------------
@@ -203,20 +203,20 @@ def build_svg(
 
     # Poster-scale geometry — a generous, roomy figure that reads well
     # both in the gallery and when dropped into a slide.
-    col_w = 82.0  # width of one combination column
-    row_h = 52.0  # height of one set row in the matrix
-    dot_r = 13.0  # matrix dot radius
+    col_w = 82.0          # width of one combination column
+    row_h = 52.0          # height of one set row in the matrix
+    dot_r = 13.0          # matrix dot radius
 
     # Left block: the set-size bars + set labels sit to the left of the
     # matrix, so the matrix's left edge (matrix_x0) is pushed right.
-    setbar_w = 160.0  # max pixel length of a set-size bar
-    label_w = 150.0  # room for the set name between bars and matrix
+    setbar_w = 160.0      # max pixel length of a set-size bar
+    label_w = 150.0       # room for the set name between bars and matrix
     left_pad = 48.0
     matrix_x0 = left_pad + setbar_w + label_w
 
-    top_pad = 150.0  # room for title + subtitle
-    isize_h = 260.0  # height of the intersection-size bar panel
-    isize_gap = 30.0  # gap between size bars and the matrix
+    top_pad = 150.0                # room for title + subtitle
+    isize_h = 260.0                # height of the intersection-size bar panel
+    isize_gap = 30.0               # gap between size bars and the matrix
     matrix_y0 = top_pad + isize_h + isize_gap
 
     plot_w = n_combos * col_w
@@ -254,11 +254,10 @@ def build_svg(
     parts: List[str] = []
 
     # ---- header ----
+    parts.append(svg_open(width, height, "up-title", "up-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(
-        svg_open(width, height, "up-title", "up-desc", font_family=chrome_stack_for_theme(theme))
-    )
-    parts.append(
-        '<title id="up-title">How many users each combination of contact channels reaches</title>'
+        '<title id="up-title">How many users each combination of '
+        'contact channels reaches</title>'
     )
     top = combinations[0]
     desc = (
@@ -292,11 +291,17 @@ def build_svg(
     # prefers-contrast the two role hues deepen: the intersection-size bars
     # (Blue) as a fill, and the set-size bars, active membership dots and the
     # connector line (Purple) as fill or stroke as each mark uses it.
-    style_rows.append(os_adaptive_style({".isize": bar_color}, role="fill"))
     style_rows.append(
-        os_adaptive_style({".setbar": dot_color, ".activedot": dot_color}, role="fill")
+        os_adaptive_style({".isize": bar_color}, role="fill")
     )
-    style_rows.append(os_adaptive_style({".conn": dot_color}, role="stroke"))
+    style_rows.append(
+        os_adaptive_style(
+            {".setbar": dot_color, ".activedot": dot_color}, role="fill"
+        )
+    )
+    style_rows.append(
+        os_adaptive_style({".conn": dot_color}, role="stroke")
+    )
     # Additive OS dark-mode block. The white page darkens and the ink tiers flip
     # to light via the ink-map default; the light-grey "set absent" placeholder
     # dots (#D6D6DB) darken to a quiet grey so the matrix still reads its empty
@@ -305,7 +310,8 @@ def build_svg(
     style_rows.append(
         os_dark_style(
             screen_blend=False,
-            extra='[fill="#D6D6DB"]{fill:#3A3A3C;} [fill="#F5F5F7"]{fill:#1A1A1C;}',
+            extra='[fill="#D6D6DB"]{fill:#3A3A3C;} '
+            '[fill="#F5F5F7"]{fill:#1A1A1C;}',
         )
     )
     parts.append("<style>\n" + "\n".join(style_rows) + "\n</style>")
@@ -316,15 +322,15 @@ def build_svg(
     # ---- title + subtitle (the takeaway) ----
     # The headline the figure writes about its own data, used only when
     # the caller supplies none.
-    title = title or "Most reachable users live on a single channel"
+    title = title or 'Most reachable users live on a single channel'
     parts.append(
         f'<text x="{left_pad:.0f}" y="52" font-size="28" font-weight="700" '
         f'fill="{_INK}">{xml_escape(title)}</text>'
     )
     parts.append(
         f'<text x="{left_pad:.0f}" y="82" font-size="17" fill="{_SUBTLE}">'
-        f"Monthly-active users (thousands) by exact combination of contact "
-        f"channels</text>"
+        f'Monthly-active users (thousands) by exact combination of contact '
+        f'channels</text>'
     )
 
     # ---- shaded alternating matrix rows (subtle zebra for readability) ----
@@ -362,8 +368,8 @@ def build_svg(
         parts.append(
             f'<rect class="setbar" x="{bx:.1f}" y="{by:.1f}" width="{bar_len:.1f}" '
             f'height="{bar_h:.0f}" rx="7" fill="{dot_color}" fill-opacity="0.55">'
-            f"<title>{_xml(s)}: {total}k monthly-active users total</title>"
-            f"</rect>"
+            f'<title>{_xml(s)}: {total}k monthly-active users total</title>'
+            f'</rect>'
         )
         # Count at the (left) tip of the bar.
         parts.append(
@@ -375,7 +381,7 @@ def build_svg(
         parts.append(
             f'<text x="{setbar_right + 20:.1f}" y="{cy:.1f}" font-size="19" '
             f'font-weight="600" fill="{_INK}" dominant-baseline="middle">'
-            f"{_xml(s)}</text>"
+            f'{_xml(s)}</text>'
         )
 
     # ---- one group per combination: size bar + matrix column + connector ----
@@ -401,10 +407,10 @@ def build_svg(
         bar_y = isize_base_y - bar_h
         parts.append(
             f'<g class="ibar">'
-            f"<title>{_xml(tip)}</title>"
+            f'<title>{_xml(tip)}</title>'
             f'<rect class="isize" x="{bar_x:.1f}" y="{bar_y:.1f}" width="{bar_w:.1f}" '
             f'height="{bar_h:.1f}" rx="6" fill="{bar_color}"/>'
-            f"</g>"
+            f'</g>'
         )
         # Count label above the bar (always visible).
         parts.append(
@@ -434,9 +440,10 @@ def build_svg(
             # "set absent" placeholders.
             cls = ' class="activedot"' if active else ""
             parts.append(
-                f'<circle{cls} cx="{cx:.1f}" cy="{cy_dot:.1f}" r="{dot_r:.1f}" fill="{fill}"/>'
+                f'<circle{cls} cx="{cx:.1f}" cy="{cy_dot:.1f}" r="{dot_r:.1f}" '
+                f'fill="{fill}"/>'
             )
-        parts.append("</g>")
+        parts.append('</g>')
 
         # -- invisible hit-rect: keyboard focus + hover target for the column --
         hit_y = top_pad - 10
@@ -445,13 +452,13 @@ def build_svg(
             f'<rect class="hit" x="{cx - col_w / 2:.1f}" y="{hit_y:.1f}" '
             f'width="{col_w:.1f}" height="{hit_h:.1f}" tabindex="0" '
             f'role="img" aria-label="{_xml(tip)}">'
-            f"<title>{_xml(tip)}</title></rect>"
+            f'<title>{_xml(tip)}</title></rect>'
         )
 
-        parts.append("</g>")  # /combo
+        parts.append('</g>')  # /combo
 
     parts.append(fullscreen_control(width, height, mode))
-    parts.append("</svg>")
+    parts.append('</svg>')
     return "\n".join(parts)
 
 
@@ -489,14 +496,8 @@ def make_upset(
     Path
         Absolute path to the written SVG file.
     """
-    svg = build_svg(
-        data,
-        set_size_title=set_size_title,
-        mode=mode,
-        accessibility=accessibility,
-        theme=theme,
-        title=title or None,
-    )
+    svg = build_svg(data, set_size_title=set_size_title,
+                     mode=mode, accessibility=accessibility, theme=theme, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "upset")
     return write_svg(dest, svg, theme=theme)
 

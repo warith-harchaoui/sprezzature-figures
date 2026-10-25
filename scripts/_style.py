@@ -53,19 +53,19 @@ FONT_MONO = "Roboto Mono, ui-monospace, monospace"
 # ------------------------------------------------------------------
 _FALLBACK_PALETTE: Dict[str, str] = {
     # 8 saturated hues.
-    "Red": "#FF3B30",
+    "Red":    "#FF3B30",
     "Orange": "#FF9500",
     "Yellow": "#FFCC00",
-    "Green": "#34C759",
-    "Mint": "#00C7BE",
-    "Teal": "#5AC8FA",
-    "Blue": "#007AFF",
+    "Green":  "#34C759",
+    "Mint":   "#00C7BE",
+    "Teal":   "#5AC8FA",
+    "Blue":   "#007AFF",
     "Purple": "#AF52DE",
     # 4 neutrals.
-    "Gray": "#8E8E93",
-    "Brown": "#A2845E",
-    "Black": "#000000",
-    "White": "#FFFFFF",
+    "Gray":   "#8E8E93",
+    "Brown":  "#A2845E",
+    "Black":  "#000000",
+    "White":  "#FFFFFF",
 }
 
 
@@ -84,18 +84,18 @@ _FALLBACK_PALETTE: Dict[str, str] = {
 # Sky Blue respectively rather than inventing an unvetted seventh hue.
 # ------------------------------------------------------------------
 _ACADEMIC_PALETTE: Dict[str, str] = {
-    "Red": "#D55E00",  # vermilion -- Okabe-Ito's red substitute (pure red excluded by design)
+    "Red":    "#D55E00",  # vermilion -- Okabe-Ito's red substitute (pure red excluded by design)
     "Orange": "#E69F00",
     "Yellow": "#F0E442",
-    "Green": "#009E73",  # bluish green
-    "Mint": "#009E73",  # no distinct Okabe-Ito equivalent; shares Green
-    "Teal": "#56B4E9",  # sky blue
-    "Blue": "#0072B2",
+    "Green":  "#009E73",  # bluish green
+    "Mint":   "#009E73",  # no distinct Okabe-Ito equivalent; shares Green
+    "Teal":   "#56B4E9",  # sky blue
+    "Blue":   "#0072B2",
     "Purple": "#CC79A7",  # reddish purple
-    "Gray": "#8E8E93",
-    "Brown": "#A2845E",
-    "Black": "#000000",
-    "White": "#FFFFFF",
+    "Gray":   "#8E8E93",
+    "Brown":  "#A2845E",
+    "Black":  "#000000",
+    "White":  "#FFFFFF",
 }
 
 
@@ -103,18 +103,18 @@ _ACADEMIC_PALETTE: Dict[str, str] = {
 #: sprezzature-colors CSV. Anger / Sadness / Joy etc. Source:
 #: <https://deraison.ai/colors/>.
 _FALLBACK_EMOTIONS: Dict[str, str] = {
-    "Anger": "#FF3B30",
-    "Surprise": "#FF9500",
-    "Joy": "#FFCC00",
-    "Disgust": "#34C759",
+    "Anger":     "#FF3B30",
+    "Surprise":  "#FF9500",
+    "Joy":       "#FFCC00",
+    "Disgust":   "#34C759",
     "Happiness": "#00C7BE",
-    "Sadness": "#007AFF",
-    "Fear": "#AF52DE",
-    "Love": "#FF2D55",
-    "Comfort": "#A2845E",
-    "Silence": "#000000",
-    "Neutral": "#8E8E93",
-    "Peace": "#FFFFFF",
+    "Sadness":   "#007AFF",
+    "Fear":      "#AF52DE",
+    "Love":      "#FF2D55",
+    "Comfort":   "#A2845E",
+    "Silence":   "#000000",
+    "Neutral":   "#8E8E93",
+    "Peace":     "#FFFFFF",
 }
 
 
@@ -132,9 +132,7 @@ def _sibling_palette_csv() -> Optional[Path]:
         3. ``~/.claude/skills/sprezzature-colors/references/palette.csv``.
         4. ``~/.opencode/skills/sprezzature-colors/references/palette.csv``.
     """
-    env = (
-        os.environ.get("SPREZZATURE_COLORS_PALETTE") or os.environ.get("FRONT_COLORS_PALETTE") or ""
-    ).strip()
+    env = (os.environ.get("SPREZZATURE_COLORS_PALETTE") or os.environ.get("FRONT_COLORS_PALETTE") or "").strip()
     if env:
         p = Path(env).expanduser()
         if p.is_file():
@@ -147,14 +145,7 @@ def _sibling_palette_csv() -> Optional[Path]:
         return sibling
 
     for runtime in ("claude", "opencode"):
-        p = (
-            Path.home()
-            / f".{runtime}"
-            / "skills"
-            / "sprezzature-colors"
-            / "references"
-            / "palette.csv"
-        )
+        p = Path.home() / f".{runtime}" / "skills" / "sprezzature-colors" / "references" / "palette.csv"
         if p.is_file():
             return p
 
@@ -201,9 +192,7 @@ def _apply_accessibility_level(palette: Dict[str, str], level: str) -> Dict[str,
 
         return apply_level(palette, level)
     except Exception as exc:  # pragma: no cover - defensive; never break a figure
-        warnings.warn(
-            f"accessibility level {level!r} failed ({exc}); using universal", stacklevel=2
-        )
+        warnings.warn(f"accessibility level {level!r} failed ({exc}); using universal", stacklevel=2)
         return palette
 
 
@@ -309,9 +298,7 @@ _DEFAULT_CYCLE = ("Blue", "Orange", "Purple", "Green")
 
 
 def cycle_hues(
-    keys: List[str],
-    accessibility: str = "universal",
-    hues: Optional[List[str]] = None,
+    keys: List[str], accessibility: str = "universal", hues: Optional[List[str]] = None,
     theme: str = "corporate",
 ) -> Dict[str, str]:
     """Assign each of `keys` a hue, cycling through a small qualitative set.
@@ -447,14 +434,18 @@ def os_adaptive_style(
     if extra_contrast:
         contrast_rows.append(extra_contrast)
     if contrast_rows:
-        blocks.append("@media (prefers-contrast: more){\n  " + "\n  ".join(contrast_rows) + "\n}")
+        blocks.append(
+            "@media (prefers-contrast: more){\n  " + "\n  ".join(contrast_rows) + "\n}"
+        )
 
     # ---- forced-colors: active -> hand identity to the system palette ----
     if forced or extra_forced:
         forced_rows = [f"{selector}{{fill:{forced_keyword};}}" for selector in series]
         if extra_forced:
             forced_rows.append(extra_forced)
-        blocks.append("@media (forced-colors: active){\n  " + "\n  ".join(forced_rows) + "\n}")
+        blocks.append(
+            "@media (forced-colors: active){\n  " + "\n  ".join(forced_rows) + "\n}"
+        )
 
     return "\n".join(blocks)
 
@@ -464,15 +455,13 @@ def os_adaptive_style(
 #: single attribute-selector block flips the whole catalogue to a dark surface
 #: without per-figure bespoke selectors.
 _DARK_INK_MAP: Dict[str, str] = {
-    "#FFFFFF": "#0B0B0C",  # paper -> near-black surface
-    "#1D1D1F": "#F2F2F7",  # primary ink -> off-white
-    "#6E6E73": "#9C9CA3",  # secondary ink -> light grey
+    "#FFFFFF": "#0B0B0C",   # paper -> near-black surface
+    "#1D1D1F": "#F2F2F7",   # primary ink -> off-white
+    "#6E6E73": "#9C9CA3",   # secondary ink -> light grey
 }
 
 
-def os_dark_style(
-    *, ink_map: Optional[Dict[str, str]] = None, screen_blend: bool = True, extra: str = ""
-) -> str:
+def os_dark_style(*, ink_map: Optional[Dict[str, str]] = None, screen_blend: bool = True, extra: str = "") -> str:
     """Emit an additive ``prefers-color-scheme: dark`` block for a house figure.
 
     Because every generator inks its text and paper from the same fixed
@@ -521,11 +510,11 @@ def os_dark_style(
 #: stroked/dotted in `CanvasText`, so it renders in the reader's system theme
 #: and survives Windows High Contrast, where a colour encoding would collapse.
 _FC_PATTERN_TILES: List[str] = [
-    '<rect width="8" height="8" fill="Canvas"/><path d="M0,8L8,0" stroke="CanvasText" stroke-width="1.6"/>',  # diag /
-    '<rect width="8" height="8" fill="Canvas"/><path d="M0,0L8,8" stroke="CanvasText" stroke-width="1.6"/>',  # diag \
-    '<rect width="8" height="8" fill="Canvas"/><path d="M0,4L8,4" stroke="CanvasText" stroke-width="1.6"/>',  # horizontal
-    '<rect width="8" height="8" fill="Canvas"/><path d="M4,0L4,8" stroke="CanvasText" stroke-width="1.6"/>',  # vertical
-    '<rect width="10" height="10" fill="Canvas"/><circle cx="5" cy="5" r="1.8" fill="CanvasText"/>',  # dots
+    '<rect width="8" height="8" fill="Canvas"/><path d="M0,8L8,0" stroke="CanvasText" stroke-width="1.6"/>',       # diag /
+    '<rect width="8" height="8" fill="Canvas"/><path d="M0,0L8,8" stroke="CanvasText" stroke-width="1.6"/>',       # diag \
+    '<rect width="8" height="8" fill="Canvas"/><path d="M0,4L8,4" stroke="CanvasText" stroke-width="1.6"/>',       # horizontal
+    '<rect width="8" height="8" fill="Canvas"/><path d="M4,0L4,8" stroke="CanvasText" stroke-width="1.6"/>',       # vertical
+    '<rect width="10" height="10" fill="Canvas"/><circle cx="5" cy="5" r="1.8" fill="CanvasText"/>',               # dots
     '<rect width="8" height="8" fill="Canvas"/><path d="M0,4L8,4M4,0L4,8" stroke="CanvasText" stroke-width="1.4"/>',  # cross
 ]
 
@@ -610,9 +599,7 @@ def load_semantic_palette() -> Dict[str, Dict[str, Any]]:
                 "hex": hex_,
                 "light": (row.get("LightHex") or "").strip().upper() or hex_,
                 "emotion": (row.get("Emotion") or "").strip(),
-                "concepts": [
-                    c.strip() for c in (row.get("Concepts") or "").split(",") if c.strip()
-                ],
+                "concepts": [c.strip() for c in (row.get("Concepts") or "").split(",") if c.strip()],
                 "psychology_positive": [
                     c.strip() for c in (row.get("PsychologyPositive") or "").split(",") if c.strip()
                 ],
@@ -795,23 +782,23 @@ def diverging_pair(cvd_safe: bool = True) -> tuple:
 #: The house radius scale in user-space pixels (figures). The UI mirrors these
 #: as rem tokens in studio/theme.py and sprezzature-ui's generated CSS.
 CORNERS: Dict[str, float] = {
-    "none": 0.0,  # measurements, grids, adjacent/baseline corners
-    "hairline": 1.0,  # the MOST a grid cell may ever have
-    "xs": 2.5,  # tiles (treemap/mosaic/waffle), arc segments, small chips
-    "sm": 4.0,  # bar value-ends, legend swatches, small controls
-    "md": 7.0,  # buttons, inputs, node boxes, badges, tooltips
-    "lg": 12.0,  # cards, chart panels, the figure frame
-    "xl": 16.0,  # large containers / hero panels
+    "none": 0.0,       # measurements, grids, adjacent/baseline corners
+    "hairline": 1.0,   # the MOST a grid cell may ever have
+    "xs": 2.5,         # tiles (treemap/mosaic/waffle), arc segments, small chips
+    "sm": 4.0,         # bar value-ends, legend swatches, small controls
+    "md": 7.0,         # buttons, inputs, node boxes, badges, tooltips
+    "lg": 12.0,        # cards, chart panels, the figure frame
+    "xl": 16.0,        # large containers / hero panels
 }
 
 #: Per-family size coefficient and cap token for the sizing rule
 #: ``radius = clamp(0, k * min(w, h), cap)``.
 _FAMILY_RULE: Dict[str, Tuple[float, str]] = {
-    "bar": (0.18, "sm"),  # round the value-end only; a flat enough cap to read
-    "tile": (0.12, "xs"),  # treemap / mosaic / waffle; also clamp to gap/2 at call site
-    "arc": (1.0, "xs"),  # pie / donut / sunburst / rose; gentle, subtle
-    "box": (0.20, "md"),  # text/node boxes
-    "panel": (1.0, "lg"),  # cards / chart frame (fixed, not size-scaled)
+    "bar": (0.18, "sm"),      # round the value-end only; a flat enough cap to read
+    "tile": (0.12, "xs"),     # treemap / mosaic / waffle; also clamp to gap/2 at call site
+    "arc": (1.0, "xs"),       # pie / donut / sunburst / rose; gentle, subtle
+    "box": (0.20, "md"),      # text/node boxes
+    "panel": (1.0, "lg"),     # cards / chart frame (fixed, not size-scaled)
 }
 
 
@@ -840,35 +827,35 @@ def inner_radius(outer: float, gap: float) -> float:
 # ------------------------------------------------------------------
 POLARITY_HINTS: Dict[str, str] = {
     # metric substring (lowercase) -> "higher-better" | "lower-better"
-    "latency": "lower-better",
-    "response": "lower-better",
+    "latency":       "lower-better",
+    "response":      "lower-better",
     "response_time": "lower-better",
-    "error": "lower-better",
-    "errors": "lower-better",
-    "bug": "lower-better",
-    "bugs": "lower-better",
-    "cost": "lower-better",
-    "churn": "lower-better",
-    "attrition": "lower-better",
-    "conversion": "higher-better",
-    "revenue": "higher-better",
-    "sales": "higher-better",
-    "retention": "higher-better",
-    "engagement": "higher-better",
-    "accuracy": "higher-better",
-    "f1": "higher-better",
-    "recall": "higher-better",
-    "precision": "higher-better",
-    "auc": "higher-better",
-    "roc_auc": "higher-better",
-    "r2": "higher-better",
-    "throughput": "higher-better",
-    "uptime": "higher-better",
-    "availability": "higher-better",
-    "mae": "lower-better",
-    "mse": "lower-better",
-    "rmse": "lower-better",
-    "loss": "lower-better",
+    "error":         "lower-better",
+    "errors":        "lower-better",
+    "bug":           "lower-better",
+    "bugs":          "lower-better",
+    "cost":          "lower-better",
+    "churn":         "lower-better",
+    "attrition":     "lower-better",
+    "conversion":    "higher-better",
+    "revenue":       "higher-better",
+    "sales":         "higher-better",
+    "retention":     "higher-better",
+    "engagement":    "higher-better",
+    "accuracy":      "higher-better",
+    "f1":            "higher-better",
+    "recall":        "higher-better",
+    "precision":     "higher-better",
+    "auc":           "higher-better",
+    "roc_auc":       "higher-better",
+    "r2":            "higher-better",
+    "throughput":    "higher-better",
+    "uptime":        "higher-better",
+    "availability":  "higher-better",
+    "mae":           "lower-better",
+    "mse":           "lower-better",
+    "rmse":          "lower-better",
+    "loss":          "lower-better",
 }
 
 
@@ -910,10 +897,10 @@ def infer_polarity(metric_name: str) -> Optional[str]:
 #: encoding. Source: <https://deraison.ai/colors/>.
 POLARITY_COLOR: Dict[str, str] = {
     "higher-better": "Green",
-    "lower-better": "Green",
-    "target": "Blue",
-    "breach": "Red",
-    "neutral": "Gray",
+    "lower-better":  "Green",
+    "target":        "Blue",
+    "breach":        "Red",
+    "neutral":       "Gray",
 }
 
 
@@ -983,18 +970,8 @@ def polarity_tag(polarity: Optional[str], lang: str = "en") -> str:
     if not polarity:
         return ""
     translations = {
-        "higher-better": {
-            "en": " (higher is better)",
-            "fr": " (plus c’est haut, mieux c’est)",
-            "de": " (höher ist besser)",
-            "es": " (más alto es mejor)",
-        },
-        "lower-better": {
-            "en": " (lower is better)",
-            "fr": " (plus c’est bas, mieux c’est)",
-            "de": " (niedriger ist besser)",
-            "es": " (más bajo es mejor)",
-        },
+        "higher-better": {"en": " (higher is better)", "fr": " (plus c’est haut, mieux c’est)", "de": " (höher ist besser)", "es": " (más alto es mejor)"},
+        "lower-better":  {"en": " (lower is better)",  "fr": " (plus c’est bas, mieux c’est)",  "de": " (niedriger ist besser)", "es": " (más bajo es mejor)"},
     }
     if polarity.startswith("target="):
         n = polarity.split("=", 1)[1]

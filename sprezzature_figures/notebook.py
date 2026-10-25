@@ -107,19 +107,18 @@ class FigurePath(_ConcretePath):  # type: ignore[misc,valid-type]
         suffix = self.suffix.lower()
         if suffix in (".svg", ".png"):
             return None
-        media = {
-            ".jpg": "image/jpeg",
-            ".jpeg": "image/jpeg",
-            ".webp": "image/webp",
-            ".gif": "image/gif",
-        }.get(suffix)
+        media = {".jpg": "image/jpeg", ".jpeg": "image/jpeg",
+                 ".webp": "image/webp", ".gif": "image/gif"}.get(suffix)
         if media is None:
             return None
         payload = self._payload()
         if payload is None:
             return None
         encoded = base64.b64encode(payload).decode("ascii")
-        return f'<img src="data:{media};base64,{encoded}" alt="{self.name}" style="max-width:100%">'
+        return (
+            f'<img src="data:{media};base64,{encoded}" '
+            f'alt="{self.name}" style="max-width:100%">'
+        )
 
 
 def as_figure_path(path: Any) -> FigurePath:

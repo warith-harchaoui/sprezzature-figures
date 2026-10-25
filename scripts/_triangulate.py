@@ -145,7 +145,10 @@ def triangulate(points: Sequence[Tuple[float, float]]) -> List[Triangle]:
             if count == 1:
                 mesh.append((left, right, index))
 
-    return [triangle for triangle in mesh if all(corner < first for corner in triangle)]
+    return [
+        triangle for triangle in mesh
+        if all(corner < first for corner in triangle)
+    ]
 
 
 def edges_of(triangles: Sequence[Triangle]) -> List[Tuple[int, int]]:

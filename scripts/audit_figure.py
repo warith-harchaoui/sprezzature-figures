@@ -56,9 +56,7 @@ from _argparse import make_parser  # noqa: E402
 # ------------------------------------------------------------------
 # Finding model
 # ------------------------------------------------------------------
-def make_finding(
-    rule: str, severity: str, message: str, path: str = "", line: int = 1
-) -> Dict[str, Any]:
+def make_finding(rule: str, severity: str, message: str, path: str = "", line: int = 1) -> Dict[str, Any]:
     """Build a finding dict."""
     return {"path": path, "line": line, "rule": rule, "severity": severity, "message": message}
 
@@ -79,20 +77,13 @@ class _FigureScanner(HTMLParser):
         """Track ``<figure>`` / ``<figcaption>`` / ``<img>`` openings and their nesting."""
         attr_map = {k.lower(): (v or "") for k, v in attrs}
         if tag == "figure":
-            entry = {
-                "role": attr_map.get("role", ""),
-                "has_caption": False,
-                "imgs": [],
-                "line": self.getpos()[0],
-            }
+            entry = {"role": attr_map.get("role", ""), "has_caption": False, "imgs": [], "line": self.getpos()[0]}
             self.figures.append(entry)
             self._stack.append(entry)
         elif tag == "figcaption" and self._stack:
             self._stack[-1]["has_caption"] = True
         elif tag == "img" and self._stack:
-            self._stack[-1]["imgs"].append(
-                {"alt": attr_map.get("alt", None), "line": self.getpos()[0]}
-            )
+            self._stack[-1]["imgs"].append({"alt": attr_map.get("alt", None), "line": self.getpos()[0]})
 
     def handle_endtag(self, tag: str) -> None:
         """Pop the current ``<figure>`` off the stack when it closes."""
@@ -107,26 +98,18 @@ def rules_for_html(text: str, path: str) -> List[Dict[str, Any]]:
     scanner.feed(text)
     for fig in scanner.figures:
         if fig["role"] != "img" and not fig["has_caption"]:
-            findings.append(
-                make_finding(
-                    "role-img-missing",
-                    "error",
-                    '<figure> without role="img" and no <figcaption>',
-                    path,
-                    fig["line"],
-                )
-            )
+            findings.append(make_finding(
+                "role-img-missing", "error",
+                "<figure> without role=\"img\" and no <figcaption>",
+                path, fig["line"],
+            ))
         for img in fig["imgs"]:
             if img["alt"] is None:
-                findings.append(
-                    make_finding(
-                        "alt-missing",
-                        "error",
-                        "<img> inside <figure> has no alt attribute",
-                        path,
-                        img["line"],
-                    )
-                )
+                findings.append(make_finding(
+                    "alt-missing", "error",
+                    "<img> inside <figure> has no alt attribute",
+                    path, img["line"],
+                ))
     return findings
 
 
@@ -139,20 +122,15 @@ def rules_for_svg(text: str, path: str) -> List[Dict[str, Any]]:
 
     # rainbow palette heuristic
     if re.search(r"\b(jet|hsv|rainbow)\b", text, re.IGNORECASE):
-        findings.append(
-            make_finding(
-                "rainbow-palette",
-                "error",
-                "SVG references a rainbow colormap (jet/hsv/rainbow)",
-                path,
-            )
-        )
+        findings.append(make_finding(
+            "rainbow-palette", "error",
+            "SVG references a rainbow colormap (jet/hsv/rainbow)",
+            path,
+        ))
 
     # chartjunk — shadows / filter blurs
     if "<filter" in text and ("feDropShadow" in text or "feGaussianBlur" in text):
-        findings.append(
-            make_finding("chartjunk", "warning", "SVG uses a drop-shadow / blur filter", path)
-        )
+        findings.append(make_finding("chartjunk", "warning", "SVG uses a drop-shadow / blur filter", path))
 
     # pie-3d — perspective transform
     if re.search(r"transform=\"matrix\([^\"]*perspective", text, re.IGNORECASE):
@@ -183,14 +161,10 @@ def rules_for_svg(text: str, path: str) -> List[Dict[str, Any]]:
     outside = re.sub(r"<rect\b[^>]*>", "", text)
     over |= {float(m) for m in re.findall(r'rx="([0-9.]+)"', outside) if float(m) > 16}
     if over:
-        findings.append(
-            make_finding(
-                "radius-over-cap",
-                "warning",
-                f"rx over the 16px corner cap: {', '.join(f'{v:g}' for v in sorted(over))}",
-                path,
-            )
-        )
+        findings.append(make_finding(
+            "radius-over-cap", "warning",
+            f"rx over the 16px corner cap: {', '.join(f'{v:g}' for v in sorted(over))}",
+            path))
 
     # Both label rules read the text a reader SEES, which is not all the text
     # in the file. A `<title>` is a tooltip and a `<desc>` is the long
@@ -206,7 +180,9 @@ def rules_for_svg(text: str, path: str) -> List[Dict[str, Any]]:
     # dates and magnitudes inside are not "shown" in the sense these two rules
     # mean. An ohlc chart with eight dates on its axis carries forty-eight
     # more in its bubbles.
-    visible = re.sub(r'<g\b[^>]*class="[^"]*\btip\b[^"]*"[^>]*>.*?</g>', "", visible, flags=re.S)
+    visible = re.sub(
+        r'<g\b[^>]*class="[^"]*\btip\b[^"]*"[^>]*>.*?</g>', "", visible, flags=re.S
+    )
 
     # Raw, unformatted magnitudes shown to a reader: "1000000" instead of
     # "1M" or "1 000 000". Found by eyeballing a real revenue chart whose y-axis
@@ -218,40 +194,27 @@ def rules_for_svg(text: str, path: str) -> List[Dict[str, Any]]:
     # an axis tick from a value printed inside a bar or a cell of a table
     # figure, and the message used to claim the first while finding all three.
     # A rule that names the wrong thing sends the reader to the wrong place.
-    bare = sorted(
-        {
-            m
-            for m in re.findall(r">\s*(\d{5,})\s*<", visible)
-            if not (len(m) == 4 and m.startswith(("19", "20")))
-        },
-        key=len,
-        reverse=True,
-    )
+    bare = sorted({
+        m for m in re.findall(r">\s*(\d{5,})\s*<", visible)
+        if not (len(m) == 4 and m.startswith(("19", "20")))
+    }, key=len, reverse=True)
     if len(bare) >= 3:
-        findings.append(
-            make_finding(
-                "unformatted-tick",
-                "warning",
-                "raw magnitudes shown with no separator or unit suffix "
-                f"({', '.join(bare[:3])}...): a reader has to count digits",
-                path,
-            )
-        )
+        findings.append(make_finding(
+            "unformatted-tick", "warning",
+            "raw magnitudes shown with no separator or unit suffix "
+            f"({', '.join(bare[:3])}...): a reader has to count digits",
+            path))
 
     # Labels left as ISO dates. A time axis reading "2024-07-01" twenty-four
     # times, rotated to fit, is machine output shown to a human: "juil. 2024" or
     # "Jul 2024" carries the same information in half the width.
     iso = re.findall(r">\s*(\d{4}-\d{2}-\d{2})\s*<", visible)
     if len(iso) >= 4:
-        findings.append(
-            make_finding(
-                "iso-date-tick",
-                "warning",
-                f"{len(iso)} labels are raw ISO dates ({iso[0]}...): format them "
-                "for a reader, not for a machine",
-                path,
-            )
-        )
+        findings.append(make_finding(
+            "iso-date-tick", "warning",
+            f"{len(iso)} labels are raw ISO dates ({iso[0]}...): format them "
+            "for a reader, not for a machine",
+            path))
 
     return findings
 
@@ -283,12 +246,8 @@ def format_human(findings: List[Dict[str, Any]], kinds: Optional[set] = None) ->
     counts = {"error": 0, "warning": 0, "info": 0}
     for f in findings:
         counts[f["severity"]] += 1
-        lines.append(
-            f"  {f['path']}:{f['line']}:1  {f['severity']:<8} {f['rule']:<24} {f['message']}"
-        )
-    lines.append(
-        f"{counts['error']} error(s), {counts['warning']} warning(s), {counts['info']} info"
-    )
+        lines.append(f"  {f['path']}:{f['line']}:1  {f['severity']:<8} {f['rule']:<24} {f['message']}")
+    lines.append(f"{counts['error']} error(s), {counts['warning']} warning(s), {counts['info']} info")
     return "\n".join(lines)
 
 
@@ -314,16 +273,10 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument("paths", nargs="+", help="Files or directories to audit.")
-    parser.add_argument(
-        "--json", action="store_true", help="Emit JSON instead of the human-readable summary."
-    )
-    parser.add_argument(
-        "--strict", action="store_true", help="Treat warnings as errors for the exit code."
-    )
+    parser.add_argument("--json", action="store_true", help="Emit JSON instead of the human-readable summary.")
+    parser.add_argument("--strict", action="store_true", help="Treat warnings as errors for the exit code.")
     parser.add_argument("--ignore", default="", help="Comma-separated rule IDs to skip.")
-    parser.add_argument(
-        "--only", default="", help="Comma-separated rule IDs to keep (exclusive with --ignore)."
-    )
+    parser.add_argument("--only", default="", help="Comma-separated rule IDs to keep (exclusive with --ignore).")
     return parser
 
 

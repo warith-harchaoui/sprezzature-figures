@@ -56,9 +56,7 @@ from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_the
 _WEEKS = 26
 
 
-def _walk(
-    start: float, drift: float, wobble: float, seed: int, shape: str = "drift"
-) -> List[float]:
+def _walk(start: float, drift: float, wobble: float, seed: int, shape: str = "drift") -> List[float]:
     """A deterministic series with a shape worth looking at.
 
     A plain random walk makes every sparkline look like every other
@@ -187,17 +185,16 @@ def build_svg(
 
     parts: List[str] = []
     parts.append(
-        svg_open(
-            width, height, "spark-title", "spark-desc", font_family=chrome_stack_for_theme(theme)
-        )
+        svg_open(width, height, "spark-title", "spark-desc",
+                 font_family=chrome_stack_for_theme(theme))
     )
     parts.append(f'<title id="spark-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="spark-desc">{len(order)} sparklines stacked, one metric per row, each on '
-        f"its own vertical scale over {len(points[order[0]]) if order else 0} periods. Behind "
-        f"each line is a pale band holding the middle half of its own values, so a line leaving "
-        f"the band marks an unusual stretch; the last point is marked. Each row ends with its "
-        f"latest reading and its change over the window.</desc>"
+        f'its own vertical scale over {len(points[order[0]]) if order else 0} periods. Behind '
+        f'each line is a pale band holding the middle half of its own values, so a line leaving '
+        f'the band marks an unusual stretch; the last point is marked. Each row ends with its '
+        f'latest reading and its change over the window.</desc>'
     )
     parts.append(
         "<style>"
@@ -215,16 +212,14 @@ def build_svg(
     )
     parts.append(
         f'<text x="{left:.1f}" y="74" font-size="14" fill="{SECONDARY}">'
-        f"{xml_escape(subtitle)}</text>"
+        f'{xml_escape(subtitle)}</text>'
     )
-    window = (
-        window_label
-        if window_label is not None
-        else (f"Last {len(points[order[0]]) if order else 0} periods")
+    window = window_label if window_label is not None else (
+        f"Last {len(points[order[0]]) if order else 0} periods"
     )
     parts.append(
         f'<text x="{left + label_w:.1f}" y="104" font-size="11" fill="{SECONDARY}">'
-        f"{xml_escape(window)}</text>"
+        f'{xml_escape(window)}</text>'
     )
     parts.append(
         f'<text x="{left + label_w + spark_w + 86:.1f}" y="104" font-size="11" '
@@ -254,6 +249,7 @@ def build_svg(
         change = last - first
         colour = rising if change >= 0 else falling
 
+
         # The band is the series' usual range -- the middle half of the
         # window, between its first and third quartiles. The first render
         # banded the whole row instead, which is the same thing as the row
@@ -277,7 +273,8 @@ def build_svg(
         )
         first_p, last_p = values[0][0], values[-1][0]
         line = " ".join(
-            f"{px(p, first_p, last_p):.1f},{py(v, row_y, lo, span):.1f}" for p, v in values
+            f"{px(p, first_p, last_p):.1f},{py(v, row_y, lo, span):.1f}"
+            for p, v in values
         )
         parts.append(
             f'<polyline points="{line}" fill="none" stroke="{colour}" stroke-width="1.6" '
@@ -293,11 +290,11 @@ def build_svg(
         parts.append(
             f'<text x="{left + label_w + spark_w + 86:.1f}" y="{row_y + spark_h / 2 + 4:.1f}" '
             f'font-size="12" fill="{INK}" text-anchor="end" font-family="{mono_family}">'
-            f"{xml_escape(latest)}</text>"
+            f'{xml_escape(latest)}</text>'
         )
         shown = fmt_number(abs(change))
-        signed = (
-            "0" if float(shown.replace(",", "")) == 0 else (f"{'+' if change > 0 else '−'}{shown}")
+        signed = "0" if float(shown.replace(",", "")) == 0 else (
+            f'{"+" if change > 0 else "−"}{shown}'
         )
         parts.append(
             f'<text x="{width - 44:.1f}" y="{row_y + spark_h / 2 + 4:.1f}" font-size="12" '
@@ -306,27 +303,22 @@ def build_svg(
         parts.append(
             f'<rect id="sparkrow-{index}" class="sparkrow hit" tabindex="0" role="img" '
             f'aria-label="{xml_escape(name)}: latest {xml_escape(latest)}, '
-            f"{'up' if change > 0 else 'down' if change < 0 else 'unchanged'} "
+            f'{"up" if change > 0 else "down" if change < 0 else "unchanged"} '
             f'{fmt_number(abs(change))} over the window" '
             f'x="{left:.1f}" y="{row_y:.1f}" width="{width - left - 36:.1f}" '
             f'height="{spark_h:.1f}" fill="transparent">'
-            f"<title>{xml_escape(name)}: {xml_escape(latest)}</title></rect>"
+            f'<title>{xml_escape(name)}: {xml_escape(latest)}</title></rect>'
         )
         tips.append(
             tooltip_bubble(
-                left + label_w + spark_w / 2,
-                row_y + spark_h,
+                left + label_w + spark_w / 2, row_y + spark_h,
                 [
                     name,
                     f"latest {latest} · range {fmt_number(lo)} to {fmt_number(hi)}",
                     f"{signed} over {len(values)} periods",
                 ],
-                canvas_w=width,
-                canvas_h=height,
-                ink=INK,
-                secondary=SECONDARY,
-                border=GRIDLINE,
-                elem_id=f"sparktip-{index}",
+                canvas_w=width, canvas_h=height, ink=INK, secondary=SECONDARY,
+                border=GRIDLINE, elem_id=f"sparktip-{index}",
             )
         )
 
@@ -390,21 +382,10 @@ def make_sparkline(
     True
     """
     svg = build_svg(
-        data,
-        title=title,
-        subtitle=subtitle,
-        width=width,
-        height=height,
-        series=series,
-        x=x,
-        y=y,
-        unit=unit,
-        window_label=window_label,
-        latest_label=latest_label,
-        change_label=change_label,
-        mode=mode,
-        accessibility=accessibility,
-        theme=theme,
+        data, title=title, subtitle=subtitle, width=width, height=height,
+        series=series, x=x, y=y, unit=unit, window_label=window_label,
+        latest_label=latest_label, change_label=change_label, mode=mode,
+        accessibility=accessibility, theme=theme,
     )
     dest = Path(out) if out else svg_example_path(__file__, "sparkline")
     return write_svg(dest, svg, theme=theme)

@@ -54,36 +54,24 @@ OUT = HERE.parent / "assets" / "data" / "tribute-hans-rosling-1950-2025.csv"
 BASE = "https://ourworldindata.org/grapher"
 SUFFIX = "?v=1&csvType=full&useColumnShortNames=true"
 GDP_MADDISON = ("gdp-per-capita-maddison-project-database", ["gdp_per_capita"])
-GDP_WORLDBANK = ("gdp-per-capita-worldbank", ["ny_gdp_pcap_pp_kd"])  # PPP, reaches 2024
-LIFE = (
-    "life-expectancy-at-birth-including-the-un-projections",
-    [
-        "life_expectancy__sex_all__age_0__variant_estimates",
-        "life_expectancy__sex_all__age_0__variant_medium__projected",
-    ],
-)
-POP = (
-    "population-with-un-projections",
-    [
-        "population__sex_all__age_all__variant_estimates",
-        "population__sex_all__age_all__variant_medium__projected",
-    ],
-)
+GDP_WORLDBANK = ("gdp-per-capita-worldbank", ["ny_gdp_pcap_pp_kd"])   # PPP, reaches 2024
+LIFE = ("life-expectancy-at-birth-including-the-un-projections",
+        ["life_expectancy__sex_all__age_0__variant_estimates",
+         "life_expectancy__sex_all__age_0__variant_medium__projected"])
+POP = ("population-with-un-projections",
+       ["population__sex_all__age_all__variant_estimates",
+        "population__sex_all__age_all__variant_medium__projected"])
 REGION = ("continents-according-to-our-world-in-data", "owid_region")
 
 Y0, Y1 = 1950, 2025
 YEARS = list(range(Y0, Y1 + 1))
-MIN_REAL = 20  # min real income observations to keep a country
-GDP_CLAMP = (0.94, 1.06)  # per-year growth band for the 2025 income extrapolation
+MIN_REAL = 20                # min real income observations to keep a country
+GDP_CLAMP = (0.94, 1.06)     # per-year growth band for the 2025 income extrapolation
 
 # Collapse OWID's six continents onto Gapminder's five world regions.
 REGION_MAP = {
-    "Africa": "Africa",
-    "Asia": "Asia",
-    "Europe": "Europe",
-    "Oceania": "Oceania",
-    "North America": "Americas",
-    "South America": "Americas",
+    "Africa": "Africa", "Asia": "Asia", "Europe": "Europe", "Oceania": "Oceania",
+    "North America": "Americas", "South America": "Americas",
 }
 
 # Real splits & merges. A federation is shown as **one bubble while it existed**
@@ -96,31 +84,16 @@ REGION_MAP = {
 FED_SUCCESSORS = {
     "Czechoslovakia": ["CZE", "SVK"],
     "Yugoslavia": ["HRV", "SVN", "BIH", "MKD", "MNE", "SRB"],
-    "USSR": [
-        "RUS",
-        "EST",
-        "LVA",
-        "LTU",
-        "UKR",
-        "BLR",
-        "MDA",
-        "ARM",
-        "AZE",
-        "GEO",
-        "KAZ",
-        "KGZ",
-        "TJK",
-        "TKM",
-        "UZB",
-    ],
+    "USSR": ["RUS", "EST", "LVA", "LTU", "UKR", "BLR", "MDA", "ARM", "AZE",
+             "GEO", "KAZ", "KGZ", "TJK", "TKM", "UZB"],
 }
 DISSOLVE = {"Czechoslovakia": 1992, "Yugoslavia": 1991, "USSR": 1991}
 FED_REGION = {"Czechoslovakia": "Europe", "Yugoslavia": "Europe", "USSR": "Europe"}
 # Successor -> first year it appears as its own bubble (the year after dissolution).
 APPEAR = {s: DISSOLVE[fed] + 1 for fed, succs in FED_SUCCESSORS.items() for s in succs}
-APPEAR["DEU"] = 1991  # unified Germany appears at reunification; West/East before it
-APPEAR["VNM"] = 1976  # unified Vietnam appears at reunification; North/South before it
-APPEAR["YEM"] = 1991  # unified Yemen appears at unification; North/South before it
+APPEAR["DEU"] = 1991     # unified Germany appears at reunification; West/East before it
+APPEAR["VNM"] = 1976     # unified Vietnam appears at reunification; North/South before it
+APPEAR["YEM"] = 1991     # unified Yemen appears at unification; North/South before it
 
 # Divided Germany (real merge, reunification 3 Oct 1990), benchmark data every 5
 # years 1950-1990. West Germany income == Maddison's German series pre-1991
@@ -130,28 +103,8 @@ APPEAR["YEM"] = 1991  # unified Yemen appears at unification; North/South before
 # yearbooks. East life expectancy = the (West-proxy) German series minus the
 # Human-Mortality-Database-anchored East-below-West gap. See PROVENANCE.
 GER_BENCH = list(range(1950, 1991, 5))
-WEST_POP = [
-    50.958e6,
-    52.382e6,
-    55.958e6,
-    59.297e6,
-    61.001e6,
-    61.645e6,
-    61.658e6,
-    61.020e6,
-    63.726e6,
-]
-EAST_POP = [
-    18.388e6,
-    17.832e6,
-    17.188e6,
-    17.048e6,
-    17.057e6,
-    16.820e6,
-    16.740e6,
-    16.640e6,
-    16.028e6,
-]
+WEST_POP = [50.958e6, 52.382e6, 55.958e6, 59.297e6, 61.001e6, 61.645e6, 61.658e6, 61.020e6, 63.726e6]
+EAST_POP = [18.388e6, 17.832e6, 17.188e6, 17.048e6, 17.057e6, 16.820e6, 16.740e6, 16.640e6, 16.028e6]
 EAST_WEST_GDP_RATIO = [0.491, 0.457, 0.464, 0.446, 0.440, 0.483, 0.463, 0.479, 0.273]
 EAST_LIFE_GAP = [0.0, 0.0, 0.2, 0.3, 0.5, 1.0, 1.5, 2.0, 2.5]
 
@@ -164,22 +117,18 @@ EAST_LIFE_GAP = [0.0, 0.0, 0.2, 0.3, 0.5, 1.0, 1.5, 2.0, 2.5]
 # ``code`` is the unified Maddison entity; halves exist over ``span``.
 DIVIDED: dict[str, dict[str, Any]] = {
     "Vietnam": {
-        "code": "VNM",
-        "region": "Asia",
-        "span": (1954, 1975),
+        "code": "VNM", "region": "Asia", "span": (1954, 1975),
         "bench": [1955, 1960, 1965, 1970, 1975],
         "north": ("North Vietnam", [16.1e6, 16.7e6, 18.7e6, 21.6e6, 24.0e6]),
         "south": ("South Vietnam", [12.0e6, 14.0e6, 16.3e6, 18.3e6, 19.6e6]),
-        "ratio_ns": [0.645, 0.486, 0.508, 0.741, 1.0],  # North per-capita / South
+        "ratio_ns": [0.645, 0.486, 0.508, 0.741, 1.0],   # North per-capita / South
     },
     "Yemen": {
-        "code": "YEM",
-        "region": "Asia",
-        "span": (1970, 1990),
+        "code": "YEM", "region": "Asia", "span": (1970, 1990),
         "bench": [1970, 1975, 1980, 1985, 1990],
         "north": ("North Yemen", [4.8e6, 5.3e6, 5.8e6, 6.5e6, 7.161e6]),
         "south": ("South Yemen", [1.5e6, 1.7e6, 1.9e6, 2.2e6, 2.585e6]),
-        "ratio_ns": [1.30, 1.30, 1.335, 1.221, 1.433],  # North per-capita / South
+        "ratio_ns": [1.30, 1.30, 1.335, 1.221, 1.433],   # North per-capita / South
     },
 }
 
@@ -187,7 +136,7 @@ DIVIDED: dict[str, dict[str, Any]] = {
 def fetch(slug: str) -> list[dict[str, str]]:
     """Download one OWID grapher CSV and return its rows as dicts."""
     url = f"{BASE}/{slug}.csv{SUFFIX}"
-    with urllib.request.urlopen(url, timeout=90) as resp:  # noqa: S310 (trusted host)
+    with urllib.request.urlopen(url, timeout=90) as resp:   # noqa: S310 (trusted host)
         return list(csv.DictReader(io.StringIO(resp.read().decode("utf-8"))))
 
 
@@ -221,7 +170,7 @@ def extend_gdp(mad: dict[int, float], wb: dict[int, float]) -> dict[int, float]:
     last = max(mad)
     for y in range(last + 1, Y1 + 1):
         if y in wb and (y - 1) in wb and (y - 1) in s and wb[y - 1] > 0:
-            s[y] = s[y - 1] * (wb[y] / wb[y - 1])  # real growth, Maddison base
+            s[y] = s[y - 1] * (wb[y] / wb[y - 1])     # real growth, Maddison base
     return s
 
 
@@ -231,7 +180,7 @@ def densify(series: dict[int, float], min_real: int) -> list[float] | None:
         return None
     known = sorted(series)
     first, last = known[0], known[-1]
-    recent = known[-min(10, len(known)) :]  # last decade of real points
+    recent = known[-min(10, len(known)):]              # last decade of real points
     span = max(recent[-1] - recent[0], 1)
     cagr = (series[recent[-1]] / series[recent[0]]) ** (1 / span) if series[recent[0]] > 0 else 1.0
     cagr = min(max(cagr, GDP_CLAMP[0]), GDP_CLAMP[1])
@@ -240,11 +189,11 @@ def densify(series: dict[int, float], min_real: int) -> list[float] | None:
         if y in series:
             dense.append(series[y])
         elif y < first:
-            dense.append(series[first])  # back-fill the left edge
+            dense.append(series[first])                # back-fill the left edge
         elif y > last:
-            dense.append(series[last] * cagr ** (y - last))  # short trend extrapolation
+            dense.append(series[last] * cagr ** (y - last))   # short trend extrapolation
         else:
-            lo = max(k for k in known if k < y)  # linear interior interpolation
+            lo = max(k for k in known if k < y)        # linear interior interpolation
             hi = min(k for k in known if k > y)
             t = (y - lo) / (hi - lo)
             dense.append(series[lo] + t * (series[hi] - series[lo]))
@@ -286,7 +235,7 @@ def main() -> None:
             continue
         kept += 1
         name, region = name_of.get(code, code), region_of[code]
-        appear = APPEAR.get(code, Y0)  # successors hidden before independence
+        appear = APPEAR.get(code, Y0)                 # successors hidden before independence
         for i, y in enumerate(YEARS):
             if y >= appear:
                 rows.append((name, y, region, round(dg[i], 2), round(dl[i], 2), int(dp[i])))
@@ -300,11 +249,8 @@ def main() -> None:
             if y > DISSOLVE[fed]:
                 break
             pops = [pop[s][y] for s in succs if s in pop and y in pop[s]]
-            lifes = [
-                (life[s][y], pop[s][y])
-                for s in succs
-                if s in life and s in pop and y in life[s] and y in pop[s]
-            ]
+            lifes = [(life[s][y], pop[s][y]) for s in succs
+                     if s in life and s in pop and y in life[s] and y in pop[s]]
             if not pops or not lifes:
                 continue
             tot = sum(pops)
@@ -330,26 +276,10 @@ def main() -> None:
         if wg is None or wl is None:
             continue
         ratio, gap = interp(GER_BENCH, EAST_WEST_GDP_RATIO, y), interp(GER_BENCH, EAST_LIFE_GAP, y)
-        rows.append(
-            (
-                "West Germany",
-                y,
-                "Europe",
-                round(wg, 2),
-                round(wl, 2),
-                int(interp(GER_BENCH, WEST_POP, y)),
-            )
-        )
-        rows.append(
-            (
-                "East Germany",
-                y,
-                "Europe",
-                round(wg * ratio, 2),
-                round(wl - gap, 2),
-                int(interp(GER_BENCH, EAST_POP, y)),
-            )
-        )
+        rows.append(("West Germany", y, "Europe", round(wg, 2), round(wl, 2),
+                     int(interp(GER_BENCH, WEST_POP, y))))
+        rows.append(("East Germany", y, "Europe", round(wg * ratio, 2), round(wl - gap, 2),
+                     int(interp(GER_BENCH, EAST_POP, y))))
     kept += 2
 
     # Vietnam, Yemen: population-weighted split of the unified Maddison level, so
@@ -364,7 +294,7 @@ def main() -> None:
                 continue
             pn, ps = interp(cfg["bench"], npop, y), interp(cfg["bench"], spop, y)
             r = interp(cfg["bench"], cfg["ratio_ns"], y)
-            gs = ug * (pn + ps) / (pn * r + ps)  # keeps the pop-weighted mean == ug
+            gs = ug * (pn + ps) / (pn * r + ps)      # keeps the pop-weighted mean == ug
             rows.append((nname, y, cfg["region"], round(r * gs, 2), round(ul, 2), int(pn)))
             rows.append((sname, y, cfg["region"], round(gs, 2), round(ul, 2), int(ps)))
         kept += 2

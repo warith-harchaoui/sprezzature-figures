@@ -24,12 +24,8 @@ def _plan() -> FigurePlan:
 def _critique(safe_repairs, **overrides) -> VisualCritique:
     defaults = {
         "verdict": "needs_changes",
-        "message_alignment_score": 70,
-        "readability_score": 70,
-        "visual_hierarchy_score": 70,
-        "accessibility_score": 70,
-        "data_fidelity_score": 70,
-        "safe_repairs": safe_repairs,
+        "message_alignment_score": 70, "readability_score": 70, "visual_hierarchy_score": 70,
+        "accessibility_score": 70, "data_fidelity_score": 70, "safe_repairs": safe_repairs,
     }
     defaults.update(overrides)
     return VisualCritique(**defaults)

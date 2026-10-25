@@ -26,3 +26,7 @@ coverage.xml
 
 
 demo-data/
+
+# Local editor settings, per-machine. Committed once by a careless `git add -A`
+# and removed again; ignored so it cannot come back.
+.claude/

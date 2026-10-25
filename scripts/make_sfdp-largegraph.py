@@ -59,14 +59,14 @@ from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 # ------------------------------------------------------------------
 WIDTH = 1400
 HEIGHT = 1120
-PLOT_TOP = 150  # y where the graph area begins (below the title)
-PLOT_PAD = 64  # inner margin around the layout box
-LEGEND_H = 64  # reserved strip at the bottom for the legend
+PLOT_TOP = 150             # y where the graph area begins (below the title)
+PLOT_PAD = 64              # inner margin around the layout box
+LEGEND_H = 64              # reserved strip at the bottom for the legend
 
-SUBINK = "#6E6E73"  # secondary text
-EDGE = "#D6D6DB"  # resting edge colour (very light neutral)
+SUBINK = "#6E6E73"         # secondary text
+EDGE = "#D6D6DB"           # resting edge colour (very light neutral)
 
-SEED = 20260725  # fixed so the committed SVG is byte-reproducible
+SEED = 20260725            # fixed so the committed SVG is byte-reproducible
 
 
 # ------------------------------------------------------------------
@@ -91,8 +91,8 @@ COMMUNITIES: List[Tuple[str, str]] = [
 # Node budget per community (a few hundred total, uneven for realism).
 SIZES: List[int] = [64, 58, 52, 46, 54, 44]  # 318 nodes
 
-P_IN = 0.09  # edge probability inside a community
-P_OUT = 0.0016  # edge probability across two communities
+P_IN = 0.09      # edge probability inside a community
+P_OUT = 0.0016   # edge probability across two communities
 
 
 #: Row-record demo data: one row per community, the contract's
@@ -133,12 +133,8 @@ def _communities_from_rows(
 # ------------------------------------------------------------------
 PALETTE = load_palette()
 _FALLBACK = {
-    "Blue": "#007AFF",
-    "Purple": "#AF52DE",
-    "Orange": "#FF9500",
-    "Green": "#34C759",
-    "Teal": "#5AC8FA",
-    "Red": "#FF3B30",
+    "Blue": "#007AFF", "Purple": "#AF52DE", "Orange": "#FF9500",
+    "Green": "#34C759", "Teal": "#5AC8FA", "Red": "#FF3B30",
 }
 
 
@@ -157,17 +153,13 @@ def _hex(key: str, accessibility: str = "universal", theme: str = "corporate") -
         Forwarded to :func:`_style.load_palette`. ``"corporate"`` (default)
         is the only theme that can reuse the cached ``PALETTE``.
     """
-    palette = (
-        PALETTE
-        if (accessibility == "universal" and theme == "corporate")
-        else load_palette(accessibility, theme=theme)
-    )
+    palette = PALETTE if (accessibility == "universal" and theme == "corporate") else load_palette(accessibility, theme=theme)
     return palette.get(key, _FALLBACK[key])
 
 
 def _lighten(hexv: str, t: float) -> str:
     """Blend ``hexv`` toward white by fraction ``t`` (0 = same, 1 = white)."""
-    r, g, b = (int(hexv[i : i + 2], 16) for i in (1, 3, 5))
+    r, g, b = (int(hexv[i:i + 2], 16) for i in (1, 3, 5))
     r, g, b = (round(c + (255 - c) * t) for c in (r, g, b))
     return f"#{r:02X}{g:02X}{b:02X}"
 
@@ -296,12 +288,10 @@ def layout(
     pos: List[List[float]] = []
     for i in range(n):
         ax, ay = anchors[comm[i]]
-        pos.append(
-            [
-                ax + rng.uniform(-70, 70),
-                ay + rng.uniform(-70, 70),
-            ]
-        )
+        pos.append([
+            ax + rng.uniform(-70, 70),
+            ay + rng.uniform(-70, 70),
+        ])
 
     temp = 0.10 * min(width, height)
     cool = temp / (iterations + 1)
@@ -403,7 +393,10 @@ def _fit(
     # Centre inside the box.
     off_x = pad + (avail_w - span_x * scale) / 2
     off_y = pad + (avail_h - span_y * scale) / 2
-    return [(off_x + (x - minx) * scale, off_y + (y - miny) * scale) for x, y in pts]
+    return [
+        (off_x + (x - minx) * scale, off_y + (y - miny) * scale)
+        for x, y in pts
+    ]
 
 
 def _radius(degree: int, max_deg: int) -> float:
@@ -466,15 +459,16 @@ def build_svg(
 
     labels = [c[0] for c in communities]
     colors = [_hex(c[1], accessibility, theme=theme) for c in communities]
-    light = [
-        _lighten(c, 0.55) for c in colors
-    ]  # pale fill so overlapping same-colour nodes read as rings
+    light = [_lighten(c, 0.55) for c in colors]   # pale fill so overlapping same-colour nodes read as rings
 
     # Cross-community edge count for the subtitle takeaway.
     cross = sum(1 for a, b in edges if comm[a] != comm[b])
 
     title_txt = title or "Six labs, one connected research network"
-    subtitle_txt = f"{n} researchers, {len(edges)} co-authorships — illustrative data"
+    subtitle_txt = (
+        f"{n} researchers, {len(edges)} co-authorships — "
+        "illustrative data"
+    )
     desc_txt = (
         "Force-directed (sfdp-style) layout of a synthetic research "
         f"collaboration network: {n} researchers grouped into six labs, "
@@ -489,11 +483,7 @@ def build_svg(
     )
 
     parts: List[str] = []
-    parts.append(
-        svg_open(
-            WIDTH, HEIGHT, "sfdp-title", "sfdp-desc", font_family=chrome_stack_for_theme(theme)
-        )
-    )
+    parts.append(svg_open(WIDTH, HEIGHT, "sfdp-title", "sfdp-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="sfdp-title">{escape(title_txt)}</title>')
     parts.append(f'<desc id="sfdp-desc">{escape(desc_txt)}</desc>')
 
@@ -506,7 +496,7 @@ def build_svg(
         ".legend g{cursor:pointer}",
     ]
     for c in range(len(communities)):
-        cond = f"#fig:has(.legend .sw-{c}:is(:hover,:focus))"
+        cond = f'#fig:has(.legend .sw-{c}:is(:hover,:focus))'
         css.append(f"{cond} .comm{{opacity:.10}}")
         css.append(f"{cond} .cedge{{opacity:.05}}")
         css.append(f"{cond} .clabel{{opacity:.12}}")
@@ -558,12 +548,13 @@ def build_svg(
         f'fill="{INK}">{escape(title_txt)}</text>'
     )
     parts.append(
-        f'<text x="52" y="102" font-size="21" fill="{SUBINK}">{escape(subtitle_txt)}</text>'
+        f'<text x="52" y="102" font-size="21" fill="{SUBINK}">'
+        f'{escape(subtitle_txt)}</text>'
     )
     parts.append(
         f'<text x="52" y="128" font-size="16" fill="{SUBINK}">'
-        f"Node size grows with number of collaborators · hover a lab in "
-        f"the legend to isolate it</text>"
+        f'Node size grows with number of collaborators · hover a lab in '
+        f'the legend to isolate it</text>'
     )
 
     parts.append('<g id="fig">')
@@ -610,15 +601,10 @@ def build_svg(
         )
         bubbles.append(
             tooltip_bubble(
-                x,
-                y - r - 12,
+                x, y - r - 12,
                 [lab, f"{degree[i]} co-authorships", f"{sizes[comm[i]]} researchers in {lab}"],
-                anchor="middle",
-                canvas_w=WIDTH,
-                canvas_h=HEIGHT,
-                ink=INK,
-                secondary=SUBINK,
-                border=EDGE,
+                anchor="middle", canvas_w=WIDTH, canvas_h=HEIGHT,
+                ink=INK, secondary=SUBINK, border=EDGE,
                 elem_id=f"tip-{i}",
             )
         )
@@ -697,17 +683,8 @@ def build_svg(
             )
         lxp, lyp = spot
         label_placements.append(
-            {
-                "c": c,
-                "x": lxp,
-                "y": lyp,
-                "w": pill_w,
-                "h": pill_h,
-                "x_lo": x_lo,
-                "x_hi": x_hi,
-                "y_lo": y_lo,
-                "y_hi": y_hi,
-            }
+            {"c": c, "x": lxp, "y": lyp, "w": pill_w, "h": pill_h,
+             "x_lo": x_lo, "x_hi": x_hi, "y_lo": y_lo, "y_hi": y_hi}
         )
 
     # Pairwise separation: any two pill rectangles that still overlap get
@@ -753,7 +730,7 @@ def build_svg(
             f'cy="{lyp:.1f}" r="9" fill="{colors[c]}"/>'
             f'<text x="{lxp - pill_w / 2 + 37:.1f}" y="{lyp + 9:.1f}" '
             f'font-size="26" font-weight="700" fill="{INK}">{label}</text>'
-            f"</g>"
+            f'</g>'
         )
     parts.append("</g>")
 
@@ -770,13 +747,13 @@ def build_svg(
         parts.append(
             f'<g class="sw-{c}" tabindex="0" role="button" '
             f'aria-label="Highlight the {escape(label)} lab">'
-            f"<title>Highlight the {escape(label)} lab "
-            f"({count} researchers)</title>"
+            f'<title>Highlight the {escape(label)} lab '
+            f'({count} researchers)</title>'
             f'<circle class="sfdp-dot-{c}" cx="{cursor + 9:.1f}" cy="{ly - 6:.1f}" r="9" '
             f'fill="{colors[c]}"/>'
             f'<text x="{cursor + 26:.1f}" y="{ly:.1f}" font-size="18" '
             f'fill="{INK}">{escape(seg)}</text>'
-            f"</g>"
+            f'</g>'
         )
         cursor += 36 + 10.4 * len(seg) + 28
     parts.append("</g>")  # /legend

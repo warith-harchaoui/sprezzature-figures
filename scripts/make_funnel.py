@@ -37,8 +37,8 @@ from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_the
 # ---------------------------------------------------------------------------
 WIDTH = 900
 HEIGHT = 600
-MARGIN_H = 60  # left and right margin
-MARGIN_V = 120  # top and bottom margin
+MARGIN_H = 60     # left and right margin
+MARGIN_V = 120    # top and bottom margin
 # Horizontal room reserved on each side for the outside stage labels (name on
 # the left, count on the right). The widest trapezoid stops short of the canvas
 # edge by this much so its labels never spill past the viewBox.
@@ -53,12 +53,12 @@ STAGE_COLORS = [
     # used to sit at positions 4 and 5 (directly touching); Red is moved to
     # the end so it instead borders Turquoise, a safe pair under every CVD
     # type, and Green now borders Turquoise on its other side too.
-    "#007AFF",  # Blue (top: largest audience)
-    "#AF52DE",  # Purple
-    "#FF9500",  # Orange
-    "#28CD41",  # Green
-    "#79DBDC",  # Turquoise
-    "#FF3B30",  # Red (bottom: smallest group)
+    "#007AFF",   # Blue (top: largest audience)
+    "#AF52DE",   # Purple
+    "#FF9500",   # Orange
+    "#28CD41",   # Green
+    "#79DBDC",   # Turquoise
+    "#FF3B30",   # Red (bottom: smallest group)
 ]
 
 
@@ -67,12 +67,12 @@ STAGE_COLORS = [
 # Each stage records the count entering that stage.
 # ---------------------------------------------------------------------------
 DEMO_DATA: List[Dict[str, Any]] = [
-    {"stage": "Website visits", "count": 124800},
-    {"stage": "Trial sign-ups", "count": 18720},
-    {"stage": "Activated users", "count": 9360},
-    {"stage": "Feature adoption", "count": 4212},
-    {"stage": "Upgrade intent", "count": 1684},
-    {"stage": "Paying customers", "count": 842},
+    {"stage": "Website visits",    "count": 124800},
+    {"stage": "Trial sign-ups",    "count": 18720},
+    {"stage": "Activated users",   "count": 9360},
+    {"stage": "Feature adoption",  "count": 4212},
+    {"stage": "Upgrade intent",    "count": 1684},
+    {"stage": "Paying customers",  "count": 842},
 ]
 
 
@@ -145,7 +145,7 @@ def build_svg(
         )
     else:
         resume = "Empty funnel."
-    lines.append(f"<desc>{escape(subtitle or resume)}</desc>")
+    lines.append(f'<desc>{escape(subtitle or resume)}</desc>')
     lines.append(
         "<style>"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
@@ -159,7 +159,7 @@ def build_svg(
     lines.append(
         f'<text x="{WIDTH // 2}" y="52" font-size="26" font-weight="600" '
         f'fill="{INK}" text-anchor="middle" letter-spacing="-0.3">'
-        f"{escape(title)}</text>"
+        f'{escape(title)}</text>'
     )
     lines.append(
         f'<text x="{WIDTH // 2}" y="80" font-size="14" fill="{SECONDARY}" '
@@ -167,7 +167,7 @@ def build_svg(
     )
 
     # Funnel trapezoids
-    cx = WIDTH / 2.0  # horizontal center
+    cx = WIDTH / 2.0   # horizontal center
     funnel_tips: List[str] = []
     for i, row in enumerate(data):
         count = float(row["count"])
@@ -215,7 +215,7 @@ def build_svg(
         tooltip = f"{stage}: {count:,.0f}{conv_str}"
         lines.append(
             f'<path id="stage-{i}" class="hit" tabindex="0" d="{d}" fill="{color}" opacity="0.88">'
-            f"<title>{escape(tooltip)}</title></path>"
+            f'<title>{escape(tooltip)}</title></path>'
         )
         bubble_lines = [str(stage), f"{count:,.0f} users"]
         if i > 0:
@@ -225,15 +225,9 @@ def build_svg(
         bubble_lines.append(f"{share:.1f}% of stage 1")
         funnel_tips.append(
             tooltip_bubble(
-                cx,
-                (y_top + y_bot) / 2.0 - 12,
-                bubble_lines,
-                anchor="middle",
-                canvas_w=WIDTH,
-                canvas_h=HEIGHT,
-                ink=INK,
-                secondary=SECONDARY,
-                border=GRIDLINE,
+                cx, (y_top + y_bot) / 2.0 - 12, bubble_lines,
+                anchor="middle", canvas_w=WIDTH, canvas_h=HEIGHT,
+                ink=INK, secondary=SECONDARY, border=GRIDLINE,
                 elem_id=f"stagetip-{i}",
             )
         )
@@ -243,7 +237,7 @@ def build_svg(
         lines.append(
             f'<text x="{cx - half_top - 10:.1f}" y="{label_y:.1f}" '
             f'font-size="13" fill="{INK}" text-anchor="end">'
-            f"{escape(stage)}</text>"
+            f'{escape(stage)}</text>'
         )
         count_txt = f"{count:,.0f}"
         if i > 0:

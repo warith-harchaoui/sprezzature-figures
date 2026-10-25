@@ -27,12 +27,8 @@ from sprezzature_figures.studio.recommendation.compatibility import column_fits_
 
 def _profile(columns: list[ColumnProfile], rows: int = 20) -> DatasetProfile:
     return DatasetProfile(
-        dataset_id="d",
-        fingerprint="f",
-        source_name="s.csv",
-        row_count=rows,
-        column_count=len(columns),
-        columns=columns,
+        dataset_id="d", fingerprint="f", source_name="s.csv",
+        row_count=rows, column_count=len(columns), columns=columns,
     )
 
 
@@ -41,9 +37,7 @@ def _num(name: str) -> ColumnProfile:
 
 
 def _cat(name: str, unique: int = 4) -> ColumnProfile:
-    return ColumnProfile(
-        name=name, physical_dtype="object", semantic_type="categorical", unique_count=unique
-    )
+    return ColumnProfile(name=name, physical_dtype="object", semantic_type="categorical", unique_count=unique)
 
 
 def _dt(name: str) -> ColumnProfile:
@@ -79,16 +73,10 @@ def test_data_blind_hero_generators_are_never_recommended() -> None:
 def test_column_fits_role_maps_fine_types_onto_coarse_role_types() -> None:
     # A percentage/currency column fills a numeric role; a boolean fills a
     # categorical one.
-    scatter = next(
-        d for d in compatible_definitions(_profile([_num("a"), _num("b")])) if d.kind == "scatter"
-    )
+    scatter = next(d for d in compatible_definitions(_profile([_num("a"), _num("b")])) if d.kind == "scatter")
     numeric_role = scatter.required_roles[0]
-    assert column_fits_role(
-        ColumnProfile(name="p", physical_dtype="float64", semantic_type="percentage"), numeric_role
-    )
-    assert not column_fits_role(
-        ColumnProfile(name="c", physical_dtype="object", semantic_type="categorical"), numeric_role
-    )
+    assert column_fits_role(ColumnProfile(name="p", physical_dtype="float64", semantic_type="percentage"), numeric_role)
+    assert not column_fits_role(ColumnProfile(name="c", physical_dtype="object", semantic_type="categorical"), numeric_role)
 
 
 def test_scoring_penalises_too_many_categories() -> None:
@@ -126,7 +114,8 @@ def test_rank_and_recommend_are_deterministic_and_bounded() -> None:
     assert all(d.kind in compatible for d in top)  # never recommends the incompatible
 
 
-def test_recommend_figures_without_goal_can_truncate_before_the_tie_breaks() -> None:
+def test_recommend_figures_without_goal_can_truncate_before_the_tie_breaks(
+) -> None:
     """Regression (TAB-03): a datetime+measure profile is compatible with
     several univariate-distribution kinds (area/dotplot/ecdf/histogram/
     kde1d/line/qqplot/rug) that all tie at the readability-only score of
@@ -214,9 +203,7 @@ def test_infer_goal_tells_hierarchy_from_a_flat_two_way_comparison() -> None:
     # region/quarter/revenue (ventes-trimestrielles.csv): both categorical
     # columns repeat (4 and 2 unique values over 8 rows), so this must stay a
     # plain comparison, not get pulled toward treemap/sunburst.
-    two_way = _profile(
-        [_cat("region", unique=4), _cat("quarter", unique=2), _num("revenue")], rows=8
-    )
+    two_way = _profile([_cat("region", unique=4), _cat("quarter", unique=2), _num("revenue")], rows=8)
     assert infer_goal(two_way) == "comparison"
 
 

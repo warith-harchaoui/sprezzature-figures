@@ -38,17 +38,9 @@ from sprezzature_figures.studio.ralph.policy import (
     ("op", "safe"),
     [
         (SetStyleOption(operation_id="op1", option="font_scale", value=1.3), True),
-        (
-            SetStyleOption(operation_id="op1", option="theme", value="dark"),
-            False,
-        ),  # not in safe list
+        (SetStyleOption(operation_id="op1", option="theme", value="dark"), False),  # not in safe list
         (SetOutputSize(operation_id="op1", width=1000, height=600), True),
-        (
-            AddAnnotation(
-                operation_id="op1", annotation=Annotation(annotation_id="a1", text="note")
-            ),
-            True,
-        ),
+        (AddAnnotation(operation_id="op1", annotation=Annotation(annotation_id="a1", text="note")), True),
         (SetTitle(operation_id="op1", title="x"), False),  # editorial, not a cosmetic repair
     ],
 )
@@ -61,14 +53,8 @@ def test_is_safe_repair(op: FigureOperation, safe: bool) -> None:
     [
         (SetFigureKind(operation_id="op1", new_kind="line"), True),
         (AddFilter(operation_id="op1", transform=FilterByValue(column="x", values=["a"])), True),
-        (
-            BindColumn(operation_id="op1", role="x", columns=["a"]),
-            True,
-        ),  # rebinding changes meaning
-        (
-            SortRows(operation_id="op1", transform=SortTransform(column="x")),
-            False,
-        ),  # display-only reorder
+        (BindColumn(operation_id="op1", role="x", columns=["a"]), True),  # rebinding changes meaning
+        (SortRows(operation_id="op1", transform=SortTransform(column="x")), False),  # display-only reorder
         (SetTitle(operation_id="op1", title="x"), False),
     ],
 )

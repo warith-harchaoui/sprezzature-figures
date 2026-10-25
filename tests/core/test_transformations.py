@@ -42,17 +42,9 @@ def _rows() -> list[dict]:
     "rows, transform, expected_regions",
     [
         # membership keeps only the listed values
-        (
-            _rows(),
-            FilterByValue(column="region", op="in", values=["North", "East"]),
-            {"North", "East"},
-        ),
+        (_rows(), FilterByValue(column="region", op="in", values=["North", "East"]), {"North", "East"}),
         # not_in excludes the listed values
-        (
-            _rows(),
-            FilterByValue(column="region", op="not_in", values=["North"]),
-            {"South", "East", "West"},
-        ),
+        (_rows(), FilterByValue(column="region", op="not_in", values=["North"]), {"South", "East", "West"}),
         # range drops out-of-bounds AND non-numeric cells (the "n/a" row vanishes)
         (
             _rows() + [{"region": "NaNland", "value": "n/a"}],
@@ -60,11 +52,7 @@ def _rows() -> list[dict]:
             {"North", "South"},
         ),
         # temporal keeps only rows inside the window
-        (
-            _rows(),
-            FilterTemporal(column="date", start="2022-01-01", end="2023-12-31"),
-            {"North", "East"},
-        ),
+        (_rows(), FilterTemporal(column="date", start="2022-01-01", end="2023-12-31"), {"North", "East"}),
     ],
 )
 def test_filters_select_expected_rows(rows, transform, expected_regions) -> None:
@@ -113,11 +101,7 @@ def test_aggregate_groups_and_computes(agg, output_column, expected) -> None:
     rows = [{"cat": "a", "amt": 10}, {"cat": "b", "amt": 5}, {"cat": "a", "amt": 7}]
     out, _ = apply_transformations(
         rows,
-        [
-            AggregateTransform(
-                group_by=["cat"], value_column="amt", agg=agg, output_column=output_column
-            )
-        ],
+        [AggregateTransform(group_by=["cat"], value_column="amt", agg=agg, output_column=output_column)],
     )
     assert out == expected
 
@@ -138,13 +122,9 @@ def test_top_n_selection(by, expected) -> None:
 
 def test_calculate_difference_and_ratio() -> None:
     rows = [{"a": 10, "b": 4}, {"a": 6, "b": 0}]
-    diff, _ = apply_transformations(
-        rows, [CalculateDerived(calc="difference", left="a", right="b", output_column="d")]
-    )
+    diff, _ = apply_transformations(rows, [CalculateDerived(calc="difference", left="a", right="b", output_column="d")])
     assert [r["d"] for r in diff] == [6.0, 6.0]
-    ratio, _ = apply_transformations(
-        rows, [CalculateDerived(calc="ratio", left="a", right="b", output_column="r")]
-    )
+    ratio, _ = apply_transformations(rows, [CalculateDerived(calc="ratio", left="a", right="b", output_column="r")])
     assert ratio[0]["r"] == 2.5
     assert ratio[1]["r"] is None  # divide-by-zero -> None, never raises
 
@@ -177,8 +157,6 @@ def test_executor_contract_invariants() -> None:
     assert "nope" in notes[0]
 
     # GroupOthers relabels non-kept values -- without mutating the input rows
-    out, _ = apply_transformations(
-        rows, [GroupOthers(column="region", keep=["North"], other_label="Rest")]
-    )
+    out, _ = apply_transformations(rows, [GroupOthers(column="region", keep=["North"], other_label="Rest")])
     assert [r["region"] for r in out] == ["North", "Rest", "Rest", "Rest"]
     assert rows == snapshot  # every step returns fresh dicts; inputs untouched

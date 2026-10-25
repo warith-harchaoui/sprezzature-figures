@@ -34,11 +34,8 @@ from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
 
 _RAMP: Tuple[Tuple[float, str], ...] = (
-    (0.00, "#EAF3FF"),
-    (0.25, "#9CC7FF"),
-    (0.55, "#3E9BFF"),
-    (0.80, "#007AFF"),
-    (1.00, "#0A4DA0"),
+    (0.00, "#EAF3FF"), (0.25, "#9CC7FF"), (0.55, "#3E9BFF"),
+    (0.80, "#007AFF"), (1.00, "#0A4DA0"),
 )
 
 
@@ -154,13 +151,11 @@ def build_svg(
         return plot_y + plot_h - (v - y_min) / ((y_max - y_min) or 1.0) * plot_h
 
     parts: List[str] = []
-    parts.append(
-        svg_open(width, height, "qv-title", "qv-desc", font_family=chrome_stack_for_theme(theme))
-    )
+    parts.append(svg_open(width, height, "qv-title", "qv-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="qv-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="qv-desc">Vector field over a {n_cols}x{len(set(ys))} grid, peak '
-        f"magnitude {max_mag:.1f}. Hover or focus an arrow for its exact vector.</desc>"
+        f'magnitude {max_mag:.1f}. Hover or focus an arrow for its exact vector.</desc>'
     )
     parts.append(
         "<style>"
@@ -173,9 +168,7 @@ def build_svg(
         f'<text x="40" y="46" font-size="22" font-weight="700" fill="{INK}" '
         f'letter-spacing="-0.3">{xml_escape(title)}</text>'
     )
-    parts.append(
-        f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>'
-    )
+    parts.append(f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>')
 
     # Bubbles are collected here and drawn only once, all together, as the
     # last thing in the document: SVG has no z-index, so a bubble sitting
@@ -213,13 +206,8 @@ def build_svg(
         points = " ".join(
             f"{px:.1f},{py:.1f}"
             for px, py in (
-                (tail, shaft_half),
-                (base, shaft_half),
-                (base, head_half),
-                (tip_x, 0.0),
-                (base, -head_half),
-                (base, -shaft_half),
-                (tail, -shaft_half),
+                (tail, shaft_half), (base, shaft_half), (base, head_half), (tip_x, 0.0),
+                (base, -head_half), (base, -shaft_half), (tail, -shaft_half),
             )
         )
         tip = f"({x:.0f}, {y:.0f}): vector ({fx:.1f}, {fy:.1f}), magnitude {mag:.2f}"
@@ -231,23 +219,14 @@ def build_svg(
             # even at the pale end of the magnitude ramp.
             f'<polygon points="{points}" fill="{_ramp_hex(t, theme)}" stroke="{INK}" '
             f'stroke-opacity="0.22" stroke-width="0.75"/>'
-            f"</g>"
+            f'</g>'
         )
         tips.append(
             tooltip_bubble(
-                cx,
-                cy - arrow_max / 2 - 14,
-                [
-                    f"({x:.0f}, {y:.0f})",
-                    f"vector ({fx:.1f}, {fy:.1f})",
-                    f"magnitude {mag:.2f} ({t * 100:.0f}% of peak)",
-                ],
-                anchor="middle",
-                canvas_w=width,
-                canvas_h=height,
-                ink=INK,
-                secondary=SECONDARY,
-                border=GRIDLINE,
+                cx, cy - arrow_max / 2 - 14,
+                [f"({x:.0f}, {y:.0f})", f"vector ({fx:.1f}, {fy:.1f})", f"magnitude {mag:.2f} ({t * 100:.0f}% of peak)"],
+                anchor="middle", canvas_w=width, canvas_h=height,
+                ink=INK, secondary=SECONDARY, border=GRIDLINE,
                 elem_id=f"tip-{i}",
             )
         )
@@ -260,9 +239,7 @@ def build_svg(
     n_swatches = 8
     for i in range(n_swatches):
         t = i / (n_swatches - 1)
-        parts.append(
-            f'<rect x="{swatch_x + i * 16:.1f}" y="{ly - 11:.1f}" width="14" height="12" fill="{_ramp_hex(t, theme)}"/>'
-        )
+        parts.append(f'<rect x="{swatch_x + i * 16:.1f}" y="{ly - 11:.1f}" width="14" height="12" fill="{_ramp_hex(t, theme)}"/>')
     parts.append(
         f'<text x="{swatch_x + n_swatches * 16 + 6:.1f}" y="{ly:.1f}" font-size="11" '
         f'fill="{SECONDARY}">{max_mag:.1f} (Magnitude)</text>'
@@ -316,16 +293,8 @@ def make_quiver(
     >>> p.exists()
     True
     """
-    svg = build_svg(
-        data,
-        title=title,
-        subtitle=subtitle,
-        width=width,
-        height=height,
-        mode=mode,
-        accessibility=accessibility,
-        theme=theme,
-    )
+    svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
+                     mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "quiver")
     return write_svg(dest, svg, theme=theme)
 

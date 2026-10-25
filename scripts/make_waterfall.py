@@ -38,17 +38,17 @@ from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_the
 # ---------------------------------------------------------------------------
 WIDTH = 1100
 HEIGHT = 640
-MARGIN_LEFT = 88  # room for Y-axis labels
+MARGIN_LEFT = 88        # room for Y-axis labels
 MARGIN_RIGHT = 44
-MARGIN_TOP = 148  # title + subtitle
-MARGIN_BOTTOM = 88  # X-axis labels
+MARGIN_TOP = 148        # title + subtitle
+MARGIN_BOTTOM = 88      # X-axis labels
 
-BAR_GAP = 0.22  # fraction of bar slot reserved as gap between bars
+BAR_GAP = 0.22          # fraction of bar slot reserved as gap between bars
 
 # House palette for waterfall semantics
-COLOR_POSITIVE = "#28CD41"  # Green: gains
-COLOR_NEGATIVE = "#FF3B30"  # Red: losses
-COLOR_TOTAL = "#007AFF"  # Blue: opening and closing totals
+COLOR_POSITIVE = "#28CD41"    # Green: gains
+COLOR_NEGATIVE = "#FF3B30"    # Red: losses
+COLOR_TOTAL = "#007AFF"       # Blue: opening and closing totals
 
 
 # ---------------------------------------------------------------------------
@@ -58,16 +58,16 @@ COLOR_TOTAL = "#007AFF"  # Blue: opening and closing totals
 # increased support headcount.
 # ---------------------------------------------------------------------------
 DEMO_DATA: List[Dict[str, Any]] = [
-    {"label": "FY-2023\noperating\nincome", "value": 48.2, "kind": "total"},
-    {"label": "Subscription\nrevenue", "value": +19.4, "kind": "positive"},
-    {"label": "Professional\nservices", "value": +4.1, "kind": "positive"},
-    {"label": "Upsell /\nexpansion", "value": +7.8, "kind": "positive"},
-    {"label": "Churn\nimpact", "value": -5.3, "kind": "negative"},
-    {"label": "R&D\ninvestment", "value": -11.6, "kind": "negative"},
-    {"label": "S&M\nheadcount", "value": -6.2, "kind": "negative"},
-    {"label": "Infrastructure\nefficiency", "value": +3.7, "kind": "positive"},
-    {"label": "G&A\nreduction", "value": +1.4, "kind": "positive"},
-    {"label": "FY-2024\noperating\nincome", "value": 61.5, "kind": "total"},
+    {"label": "FY-2023\noperating\nincome", "value": 48.2,  "kind": "total"},
+    {"label": "Subscription\nrevenue",       "value": +19.4, "kind": "positive"},
+    {"label": "Professional\nservices",      "value": +4.1,  "kind": "positive"},
+    {"label": "Upsell /\nexpansion",         "value": +7.8,  "kind": "positive"},
+    {"label": "Churn\nimpact",               "value": -5.3,  "kind": "negative"},
+    {"label": "R&D\ninvestment",             "value": -11.6, "kind": "negative"},
+    {"label": "S&M\nheadcount",             "value": -6.2,  "kind": "negative"},
+    {"label": "Infrastructure\nefficiency", "value": +3.7,  "kind": "positive"},
+    {"label": "G&A\nreduction",             "value": +1.4,  "kind": "positive"},
+    {"label": "FY-2024\noperating\nincome",  "value": 61.5,  "kind": "total"},
 ]
 
 
@@ -146,21 +146,14 @@ def build_svg(
         kind = row.get("kind") or ("positive" if val >= 0 else "negative")
         if kind == "total":
             # Total bars always anchor at zero
-            bars.append(
-                {"label": row["label"], "value": val, "base": 0.0, "kind": kind, "raw": val}
-            )
+            bars.append({"label": row["label"], "value": val,
+                         "base": 0.0, "kind": kind, "raw": val})
             running = val
         else:
             base = running
-            bars.append(
-                {
-                    "label": row["label"],
-                    "value": abs(val),
-                    "base": base if val >= 0 else base + val,
-                    "kind": kind,
-                    "raw": val,
-                }
-            )
+            bars.append({"label": row["label"], "value": abs(val),
+                         "base": base if val >= 0 else base + val,
+                         "kind": kind, "raw": val})
             running += val
 
     # ------------------------------------------------------------------
@@ -199,7 +192,8 @@ def build_svg(
     # ------------------------------------------------------------------
     # Axis ticks
     # ------------------------------------------------------------------
-    ticks = [t for t in _y_axis_ticks(y_min, y_max, 6) if y_min <= t <= y_max]
+    ticks = [t for t in _y_axis_ticks(y_min, y_max, 6)
+             if y_min <= t <= y_max]
 
     # ------------------------------------------------------------------
     # Start building SVG
@@ -223,7 +217,7 @@ def build_svg(
         f'style="background:{BG};max-width:100%;height:auto">'
     )
     lines.append(f"<style>{style}</style>")
-    lines.append(f"<desc>{escape(subtitle)}</desc>")
+    lines.append(f'<desc>{escape(subtitle)}</desc>')
 
     # Background
     lines.append(f'<rect width="{WIDTH}" height="{HEIGHT}" fill="{BG}"/>')
@@ -235,16 +229,14 @@ def build_svg(
     )
     lines.append(
         f'<text x="{MARGIN_LEFT}" y="88" font-size="16" fill="{SECONDARY}">'
-        f"{escape(subtitle)}</text>"
+        f'{escape(subtitle)}</text>'
     )
 
     # Legend
     legend_x = MARGIN_LEFT
     legend_y = 112
     for color, label in [
-        (COLOR_POSITIVE, "Gain"),
-        (COLOR_NEGATIVE, "Loss"),
-        (COLOR_TOTAL, "Total"),
+        (COLOR_POSITIVE, "Gain"), (COLOR_NEGATIVE, "Loss"), (COLOR_TOTAL, "Total"),
     ]:
         lines.append(
             f'<rect x="{legend_x}" y="{legend_y - 10}" width="12" height="12" '
@@ -291,10 +283,8 @@ def build_svg(
     for i, bar in enumerate(bars):
         x = MARGIN_LEFT + i * slot_w + (slot_w - bar_w) / 2.0
         color = (
-            COLOR_TOTAL
-            if bar["kind"] == "total"
-            else COLOR_POSITIVE
-            if bar["raw"] >= 0
+            COLOR_TOTAL if bar["kind"] == "total"
+            else COLOR_POSITIVE if bar["raw"] >= 0
             else COLOR_NEGATIVE
         )
         # Pixel coordinates of the bar rectangle
@@ -318,15 +308,10 @@ def build_svg(
         )
         bubbles.append(
             tooltip_bubble(
-                x + bar_w / 2.0,
-                py_top - 16,
+                x + bar_w / 2.0, py_top - 16,
                 [bar_label_flat, f"{val_str}M", bar["kind"].capitalize()],
-                anchor="middle",
-                canvas_w=WIDTH,
-                canvas_h=HEIGHT,
-                ink=INK,
-                secondary=SECONDARY,
-                border=GRIDLINE,
+                anchor="middle", canvas_w=WIDTH, canvas_h=HEIGHT,
+                ink=INK, secondary=SECONDARY, border=GRIDLINE,
                 elem_id=f"tip-{i}",
             )
         )
@@ -346,7 +331,7 @@ def build_svg(
             lines.append(
                 f'<text x="{x + bar_w / 2:.1f}" y="{label_base_y + j * 14:.1f}" '
                 f'font-size="11" fill="{INK}" text-anchor="middle">'
-                f"{escape(part)}</text>"
+                f'{escape(part)}</text>'
             )
 
     lines.extend(bubbles)
@@ -405,7 +390,9 @@ def make_waterfall(
     """
     if data is None:
         data = DEMO_DATA
-    svg = build_svg(data, title=title, subtitle=subtitle, accessibility=accessibility, theme=theme)
+    svg = build_svg(
+        data, title=title, subtitle=subtitle, accessibility=accessibility, theme=theme
+    )
     dest = Path(out) if out else svg_example_path(__file__, "waterfall")
     return write_svg(dest, svg, theme=theme)
 

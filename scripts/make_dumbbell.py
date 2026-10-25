@@ -72,15 +72,15 @@ from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 #: rows are *unsorted* on purpose; :func:`build_svg` sorts them by gap so
 #: the story is ordered.
 DEMO_DATA: List[Dict[str, Any]] = [
-    {"category": "Sales director", "group_a": 58.20, "group_b": 71.40},
-    {"category": "Software engineer", "group_a": 52.10, "group_b": 60.30},
-    {"category": "Product manager", "group_a": 55.40, "group_b": 65.90},
-    {"category": "Data scientist", "group_a": 51.80, "group_b": 58.20},
-    {"category": "Marketing lead", "group_a": 44.60, "group_b": 50.10},
-    {"category": "Financial analyst", "group_a": 41.30, "group_b": 47.80},
-    {"category": "UX designer", "group_a": 43.90, "group_b": 47.20},
-    {"category": "Customer success", "group_a": 33.70, "group_b": 37.10},
-    {"category": "Recruiter", "group_a": 34.20, "group_b": 36.40},
+    {"category": "Sales director",     "group_a": 58.20, "group_b": 71.40},
+    {"category": "Software engineer",  "group_a": 52.10, "group_b": 60.30},
+    {"category": "Product manager",    "group_a": 55.40, "group_b": 65.90},
+    {"category": "Data scientist",     "group_a": 51.80, "group_b": 58.20},
+    {"category": "Marketing lead",     "group_a": 44.60, "group_b": 50.10},
+    {"category": "Financial analyst",  "group_a": 41.30, "group_b": 47.80},
+    {"category": "UX designer",        "group_a": 43.90, "group_b": 47.20},
+    {"category": "Customer success",   "group_a": 33.70, "group_b": 37.10},
+    {"category": "Recruiter",          "group_a": 34.20, "group_b": 36.40},
     {"category": "Support specialist", "group_a": 28.90, "group_b": 30.50},
 ]
 
@@ -207,7 +207,7 @@ def build_svg(
     m_top = 208
     m_bottom = 118
 
-    label_w = 300  # left column: category names
+    label_w = 300           # left column: category names
     plot_x = m_left + label_w
     plot_w = width - m_right - plot_x
 
@@ -242,9 +242,7 @@ def build_svg(
     # (relative to the larger of the two group values, so it stays in
     # [0, 100] regardless of which group happens to lead a given row).
     gaps_pct = [
-        100.0
-        * abs(float(r_["group_b"]) - float(r_["group_a"]))
-        / max(abs(float(r_["group_b"])), abs(float(r_["group_a"])), 1e-9)
+        100.0 * abs(float(r_["group_b"]) - float(r_["group_a"])) / max(abs(float(r_["group_b"])), abs(float(r_["group_a"])), 1e-9)
         for r_ in rows
     ]
     mean_gap_pct = round(sum(gaps_pct) / len(gaps_pct))
@@ -254,17 +252,15 @@ def build_svg(
     parts: List[str] = []
 
     # --- SVG root + accessible description ------------------------
-    parts.append(
-        svg_open(width, height, "db-title", "db-desc", font_family=chrome_stack_for_theme(theme))
-    )
+    parts.append(svg_open(width, height, "db-title", "db-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="db-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="db-desc">Dumbbell plot comparing {xml_escape(group_a_label)} '
-        f"(purple) and {xml_escape(group_b_label)} (teal) across {n_rows} "
-        f"categories, sorted by the size of the gap. Each row joins the two "
-        f"values with a segment whose length is the gap. The gap averages "
-        f"{mean_gap_pct}% and is widest for {xml_escape(str(widest['category']))} at "
-        f"{value_prefix}{widest_gap:.0f}{value_suffix}.</desc>"
+        f'(purple) and {xml_escape(group_b_label)} (teal) across {n_rows} '
+        f'categories, sorted by the size of the gap. Each row joins the two '
+        f'values with a segment whose length is the gap. The gap averages '
+        f'{mean_gap_pct}% and is widest for {xml_escape(str(widest["category"]))} at '
+        f'{value_prefix}{widest_gap:.0f}{value_suffix}.</desc>'
     )
 
     # Hover / focus highlight only — the figure is static, so there is no
@@ -354,7 +350,7 @@ def build_svg(
     parts.append(
         f'<text x="{ref_x:.1f}" y="{m_top - 16:.1f}" font-size="17" '
         f'fill="{secondary}" text-anchor="middle">Overall median '
-        f"{value_prefix}{ref:.0f}{value_suffix}</text>"
+        f'{value_prefix}{ref:.0f}{value_suffix}</text>'
     )
 
     # --- x-axis gridlines (very light) ---------------------------
@@ -394,9 +390,9 @@ def build_svg(
         category = xml_escape(str(rec["category"]))
 
         tip = (
-            f"{category}: {group_a_label} {value_prefix}{w_val:.2f}{value_suffix} vs "
-            f"{group_b_label} {value_prefix}{m_val:.2f}{value_suffix} — "
-            f"gap {value_prefix}{abs(gap):.2f}{value_suffix} ({gap_pct}%)"
+            f'{category}: {group_a_label} {value_prefix}{w_val:.2f}{value_suffix} vs '
+            f'{group_b_label} {value_prefix}{m_val:.2f}{value_suffix} — '
+            f'gap {value_prefix}{abs(gap):.2f}{value_suffix} ({gap_pct}%)'
         )
 
         parts.append(f'<g id="row-{i}" class="row hit" tabindex="0" role="img" aria-label="{tip}">')
@@ -420,7 +416,10 @@ def build_svg(
 
         # Connecting segment (the dumbbell bar) — drawn in its finished
         # state so the static figure is complete.
-        parts.append(f'<line class="seg" x1="{xw:.1f}" y1="{cy:.1f}" x2="{xm:.1f}" y2="{cy:.1f}"/>')
+        parts.append(
+            f'<line class="seg" x1="{xw:.1f}" y1="{cy:.1f}" x2="{xm:.1f}" '
+            f'y2="{cy:.1f}"/>'
+        )
 
         # Endpoint dots. Pure fills, thin white keyline so a dot stays
         # crisp where it meets the segment — never a dark ring.
@@ -474,19 +473,11 @@ def build_svg(
         parts.append("</g>")
         row_tips.append(
             tooltip_bubble(
-                mid_x,
-                chip_y - 34,
-                [
-                    category,
-                    f"{group_a_label} {value_prefix}{w_val:.0f}{value_suffix} vs "
-                    f"{group_b_label} {value_prefix}{m_val:.0f}{value_suffix}",
-                    f"gap {gap_sign}{value_prefix}{abs(gap):.0f}{value_suffix} ({gap_pct}%)",
-                ],
-                canvas_w=width,
-                canvas_h=height,
-                ink=ink,
-                secondary=secondary,
-                border=band,
+                mid_x, chip_y - 34,
+                [category, f"{group_a_label} {value_prefix}{w_val:.0f}{value_suffix} vs "
+                           f"{group_b_label} {value_prefix}{m_val:.0f}{value_suffix}",
+                 f"gap {gap_sign}{value_prefix}{abs(gap):.0f}{value_suffix} ({gap_pct}%)"],
+                canvas_w=width, canvas_h=height, ink=ink, secondary=secondary, border=band,
                 elem_id=f"tip-{i}",
             )
         )
@@ -514,7 +505,7 @@ def build_svg(
     parts.append(
         f'<text x="{(sx(x_min) + sx(x_max)) / 2:.1f}" y="{axis_y + 62:.1f}" '
         f'font-size="21" fill="{ink}" text-anchor="middle">'
-        f"{xml_escape(axis_title)}</text>"
+        f'{xml_escape(axis_title)}</text>'
     )
 
     parts.append(fullscreen_control(width, height, mode))

@@ -127,7 +127,9 @@ def test_every_look_alike_pair_says_how_it_differs() -> None:
 def test_the_distinguishing_notes_name_real_kinds() -> None:
     """A renamed or removed figure must not leave a promise behind."""
     known = set(list_kinds())
-    dangling = sorted({kind for pair in DISTINCT_PAIRS for kind in pair if kind not in known})
+    dangling = sorted(
+        {kind for pair in DISTINCT_PAIRS for kind in pair if kind not in known}
+    )
     assert dangling == [], f"DISTINCT_PAIRS names kinds that no longer exist: {dangling}"
 
 
@@ -150,7 +152,8 @@ def test_each_note_is_a_sentence_a_reader_can_use() -> None:
         if len(note) < 80 or not any(word in note.lower() for word in ("when", "for", "than"))
     }
     assert thin == {}, (
-        f"these notes do not say when to reach for one rather than the other: {sorted(thin)}"
+        "these notes do not say when to reach for one rather than the other: "
+        f"{sorted(thin)}"
     )
 
 

@@ -75,12 +75,12 @@ _MAP_W: float = 1420.0
 _MAP_H: float = 660.0
 
 #: House-style inks.
-_INK: str = "#1D1D1F"  # primary text
-_SUBTLE: str = "#6E6E73"  # secondary text
-_BG: str = "#FFFFFF"  # background
-_LAND: str = "#EDEDF2"  # faint land silhouette
+_INK: str = "#1D1D1F"       # primary text
+_SUBTLE: str = "#6E6E73"    # secondary text
+_BG: str = "#FFFFFF"        # background
+_LAND: str = "#EDEDF2"      # faint land silhouette
 _LAND_EDGE: str = "#DDDDE3"  # land hairline
-_GRAT: str = "#F4F4F7"  # graticule / ocean grid
+_GRAT: str = "#F4F4F7"      # graticule / ocean grid
 
 #: The spike ink — a single saturated hue keeps the skyline coherent.
 _SPIKE_KEY: str = "Red"
@@ -110,66 +110,66 @@ _SPIKE_HALF: float = 4.6
 #: the label side actually rendered comes from :data:`_LABELLED`, which
 #: is hand-tuned so no two name labels collide.
 _CITIES: List[Tuple[str, float, float, float, str]] = [
-    ("Tokyo", 139.69, 35.68, 37.1, "R"),
-    ("Delhi", 77.10, 28.70, 33.8, "R"),
-    ("Shanghai", 121.47, 31.23, 29.9, "R"),
-    ("Dhaka", 90.41, 23.81, 24.7, "R"),
-    ("São Paulo", -46.63, -23.55, 22.8, "L"),
-    ("Cairo", 31.24, 30.04, 22.6, "R"),
-    ("Mexico City", -99.13, 19.43, 22.3, "L"),
-    ("Beijing", 116.41, 39.90, 22.2, "R"),
-    ("Mumbai", 72.88, 19.08, 21.7, "L"),
-    ("Osaka", 135.50, 34.69, 19.0, "R"),
-    ("New York", -74.01, 40.71, 18.9, "L"),
-    ("Karachi", 67.01, 24.86, 17.6, "L"),
-    ("Chongqing", 106.55, 29.56, 17.3, "R"),
-    ("Istanbul", 28.98, 41.01, 16.0, "R"),
-    ("Buenos Aires", -58.38, -34.60, 15.6, "L"),
-    ("Kolkata", 88.36, 22.57, 15.6, "R"),
-    ("Kinshasa", 15.31, -4.32, 15.6, "L"),
-    ("Lagos", 3.39, 6.52, 15.4, "L"),
-    ("Manila", 120.98, 14.60, 14.9, "R"),
-    ("Guangzhou", 113.26, 23.13, 14.6, "R"),
-    ("Los Angeles", -118.24, 34.05, 12.9, "L"),
-    ("Moscow", 37.62, 55.75, 12.7, "R"),
+    ("Tokyo",         139.69,  35.68, 37.1, "R"),
+    ("Delhi",          77.10,  28.70, 33.8, "R"),
+    ("Shanghai",      121.47,  31.23, 29.9, "R"),
+    ("Dhaka",          90.41,  23.81, 24.7, "R"),
+    ("São Paulo",     -46.63, -23.55, 22.8, "L"),
+    ("Cairo",          31.24,  30.04, 22.6, "R"),
+    ("Mexico City",   -99.13,  19.43, 22.3, "L"),
+    ("Beijing",       116.41,  39.90, 22.2, "R"),
+    ("Mumbai",         72.88,  19.08, 21.7, "L"),
+    ("Osaka",         135.50,  34.69, 19.0, "R"),
+    ("New York",      -74.01,  40.71, 18.9, "L"),
+    ("Karachi",        67.01,  24.86, 17.6, "L"),
+    ("Chongqing",     106.55,  29.56, 17.3, "R"),
+    ("Istanbul",       28.98,  41.01, 16.0, "R"),
+    ("Buenos Aires",  -58.38, -34.60, 15.6, "L"),
+    ("Kolkata",        88.36,  22.57, 15.6, "R"),
+    ("Kinshasa",       15.31,  -4.32, 15.6, "L"),
+    ("Lagos",           3.39,   6.52, 15.4, "L"),
+    ("Manila",        120.98,  14.60, 14.9, "R"),
+    ("Guangzhou",     113.26,  23.13, 14.6, "R"),
+    ("Los Angeles",  -118.24,  34.05, 12.9, "L"),
+    ("Moscow",         37.62,  55.75, 12.7, "R"),
     ("Rio de Janeiro", -43.20, -22.91, 12.6, "L"),
-    ("Shenzhen", 114.06, 22.54, 12.4, "R"),
-    ("Lahore", 74.36, 31.55, 12.3, "R"),
-    ("Bangalore", 77.59, 12.97, 12.3, "R"),
-    ("Paris", 2.35, 48.86, 11.2, "L"),
-    ("Jakarta", 106.85, -6.21, 11.1, "R"),
-    ("Chennai", 80.27, 13.08, 11.0, "R"),
-    ("London", -0.13, 51.51, 9.7, "L"),
-    ("Bangkok", 100.50, 13.76, 10.9, "R"),
-    ("Tehran", 51.39, 35.69, 9.6, "R"),
-    ("Bogotá", -74.07, 4.71, 11.3, "L"),
+    ("Shenzhen",      114.06,  22.54, 12.4, "R"),
+    ("Lahore",         74.36,  31.55, 12.3, "R"),
+    ("Bangalore",      77.59,  12.97, 12.3, "R"),
+    ("Paris",           2.35,  48.86, 11.2, "L"),
+    ("Jakarta",       106.85,  -6.21, 11.1, "R"),
+    ("Chennai",        80.27,  13.08, 11.0, "R"),
+    ("London",         -0.13,  51.51,  9.7, "L"),
+    ("Bangkok",       100.50,  13.76,  10.9, "R"),
+    ("Tehran",         51.39,  35.69,  9.6, "R"),
+    ("Bogotá",        -74.07,   4.71, 11.3, "L"),
     ("Ho Chi Minh City", 106.66, 10.82, 9.3, "R"),
-    ("Hyderabad", 78.49, 17.39, 10.5, "R"),
-    ("Chengdu", 104.07, 30.57, 10.4, "R"),
-    ("Nagoya", 136.91, 35.18, 9.6, "R"),
-    ("Tianjin", 117.20, 39.08, 14.0, "R"),
-    ("Lima", -77.04, -12.05, 11.2, "L"),
-    ("Wuhan", 114.30, 30.59, 9.8, "R"),
-    ("Nanjing", 118.80, 32.06, 9.4, "R"),
-    ("Luanda", 13.23, -8.84, 9.3, "L"),
-    ("Chicago", -87.63, 41.88, 8.9, "L"),
-    ("Kuala Lumpur", 101.69, 3.14, 8.6, "R"),
-    ("Hangzhou", 120.16, 30.29, 10.7, "R"),
-    ("Hong Kong", 114.17, 22.32, 7.6, "R"),
-    ("Ahmedabad", 72.57, 23.03, 8.9, "L"),
-    ("Baghdad", 44.36, 33.31, 7.7, "R"),
-    ("Riyadh", 46.72, 24.71, 7.7, "R"),
-    ("Santiago", -70.65, -33.46, 6.9, "L"),
-    ("Madrid", -3.70, 40.42, 6.7, "L"),
-    ("Toronto", -79.38, 43.65, 6.6, "L"),
-    ("Johannesburg", 28.05, -26.20, 6.2, "R"),
-    ("Dar es Salaam", 39.28, -6.79, 7.8, "R"),
-    ("Barcelona", 2.15, 41.39, 5.7, "L"),
-    ("Sydney", 151.21, -33.87, 5.3, "R"),
-    ("Nairobi", 36.82, -1.29, 5.3, "R"),
-    ("Berlin", 13.40, 52.52, 4.9, "L"),
-    ("Khartoum", 32.53, 15.50, 6.2, "R"),
-    ("Addis Ababa", 38.74, 9.03, 5.5, "R"),
+    ("Hyderabad",      78.49,  17.39, 10.5, "R"),
+    ("Chengdu",       104.07,  30.57, 10.4, "R"),
+    ("Nagoya",        136.91,  35.18,  9.6, "R"),
+    ("Tianjin",       117.20,  39.08, 14.0, "R"),
+    ("Lima",          -77.04, -12.05, 11.2, "L"),
+    ("Wuhan",         114.30,  30.59,  9.8, "R"),
+    ("Nanjing",       118.80,  32.06,  9.4, "R"),
+    ("Luanda",         13.23,  -8.84,  9.3, "L"),
+    ("Chicago",       -87.63,  41.88,  8.9, "L"),
+    ("Kuala Lumpur",  101.69,   3.14,  8.6, "R"),
+    ("Hangzhou",      120.16,  30.29, 10.7, "R"),
+    ("Hong Kong",     114.17,  22.32,  7.6, "R"),
+    ("Ahmedabad",      72.57,  23.03,  8.9, "L"),
+    ("Baghdad",        44.36,  33.31,  7.7, "R"),
+    ("Riyadh",         46.72,  24.71,  7.7, "R"),
+    ("Santiago",      -70.65, -33.46,  6.9, "L"),
+    ("Madrid",         -3.70,  40.42,  6.7, "L"),
+    ("Toronto",       -79.38,  43.65,  6.6, "L"),
+    ("Johannesburg",   28.05, -26.20,  6.2, "R"),
+    ("Dar es Salaam",  39.28,  -6.79,  7.8, "R"),
+    ("Barcelona",       2.15,  41.39,  5.7, "L"),
+    ("Sydney",        151.21, -33.87,  5.3, "R"),
+    ("Nairobi",        36.82,  -1.29,  5.3, "R"),
+    ("Berlin",         13.40,  52.52,  4.9, "L"),
+    ("Khartoum",       32.53,  15.50,  6.2, "R"),
+    ("Addis Ababa",    38.74,   9.03,  5.5, "R"),
 ]
 
 #: Row records: one per city, with ``name``, ``lon``, ``lat`` and
@@ -189,18 +189,18 @@ DEMO_DATA: List[Dict[str, Any]] = [
 #: deliberately sparse and spread out so no two labels collide; the rest
 #: of the skyline stays unlabelled so the poster does not choke on text.
 _LABELLED: dict[str, str] = {
-    "Tokyo": "L",
-    "Delhi": "R",
-    "São Paulo": "L",
-    "New York": "L",
-    "Lagos": "L",
-    "Moscow": "R",
-    "Jakarta": "R",
-    "London": "L",
-    "Los Angeles": "L",
-    "Mexico City": "R",
+    "Tokyo":        "L",
+    "Delhi":        "R",
+    "São Paulo":    "L",
+    "New York":     "L",
+    "Lagos":        "L",
+    "Moscow":       "R",
+    "Jakarta":      "R",
+    "London":       "L",
+    "Los Angeles":  "L",
+    "Mexico City":  "R",
     "Buenos Aires": "L",
-    "Sydney": "R",
+    "Sydney":       "R",
 }
 
 
@@ -381,7 +381,8 @@ def build_svg(
 
     rows = list(data) if data else DEMO_DATA
     cities: List[Tuple[str, float, float, float, str]] = [
-        (str(r["name"]), float(r["lon"]), float(r["lat"]), float(r["population"]), "") for r in rows
+        (str(r["name"]), float(r["lon"]), float(r["lat"]), float(r["population"]), "")
+        for r in rows
     ]
 
     palette = load_palette(accessibility, theme=theme)
@@ -404,12 +405,10 @@ def build_svg(
 
     # ---- header scaffold ----
     parts: List[str] = []
-    parts.append(
-        svg_open(_WIDTH, _HEIGHT, "sm-title", "sm-desc", font_family=chrome_stack_for_theme(theme))
-    )
+    parts.append(svg_open(_WIDTH, _HEIGHT, "sm-title", "sm-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(
         '<title id="sm-title">The world\'s tallest skyline of people stands '
-        "over Asia — spike height is metropolitan population</title>"
+        'over Asia — spike height is metropolitan population</title>'
     )
     desc = (
         "Spike map of the world's largest urban agglomerations. A vertical "
@@ -445,7 +444,8 @@ def build_svg(
         # active spike, so the resting poster stays uncluttered.
         ".flag { opacity: 0; transition: opacity .16s ease; pointer-events: none; }",
         ".spike:hover .flag, .spike:focus .flag { opacity: 1; }",
-        "@media (prefers-reduced-motion: reduce) { .spike, .flag { transition: none; } }",
+        "@media (prefers-reduced-motion: reduce) { "
+        ".spike, .flag { transition: none; } }",
     ]
     # OS-adaptive override (additive; the default render stays byte-identical
     # because the rule lives inside a media query). This is a single-hue figure
@@ -456,7 +456,9 @@ def build_svg(
     # body, stem and tip disc, via role "both") and the legend reference
     # spikes, so the skyline reads harder against the faint land silhouette.
     # The hover flag chips stay ink-on-white and untouched.
-    spike_sel = ".spike path, .spike line, .spike circle, .legspike"
+    spike_sel = (
+        ".spike path, .spike line, .spike circle, .legspike"
+    )
     contrast_css = os_adaptive_style({spike_sel: spike_color}, role="both")
     # Additive OS dark-mode block. The near-white land silhouette (#EDEDF2 fill /
     # #DDDDE3 edge) and the faint ocean graticule (#F4F4F7) would glare as bright
@@ -480,28 +482,28 @@ def build_svg(
     # ---- title + subtitle ----
     # The headline the figure writes about its own data, used only when
     # the caller supplies none.
-    title = title or "The century’s tallest skyline is made of people"
+    title = title or 'The century’s tallest skyline is made of people'
     parts.append(
         f'<text x="{_MAP_X + 6:.1f}" y="70" font-size="38" font-weight="700" '
         f'fill="{_INK}">{xml_escape(title)}</text>'
     )
     parts.append(
         f'<text x="{_MAP_X + 6:.1f}" y="108" font-size="21" fill="{_SUBTLE}">'
-        f"Spike height = metropolitan population · the megacity belt runs "
-        f"through East and South Asia, from Tokyo to Delhi to Dhaka</text>"
+        f'Spike height = metropolitan population · the megacity belt runs '
+        f'through East and South Asia, from Tokyo to Delhi to Dhaka</text>'
     )
 
     # ---- ocean graticule (faint, drawn first) ----
     parts.append('<g stroke="' + _GRAT + '" stroke-width="1" fill="none">')
     for d in _graticule_paths(fit):
         parts.append(f'<path d="{d}"/>')
-    parts.append("</g>")
+    parts.append('</g>')
 
     # ---- land silhouette (faint backdrop) ----
     parts.append('<g fill="' + _LAND + '" stroke="' + _LAND_EDGE + '" stroke-width="0.6">')
     for ring in rings:
         parts.append(f'<path d="{_ring_path(ring, fit)}"/>')
-    parts.append("</g>")
+    parts.append('</g>')
 
     # ---- spikes ----
     # Sort by latitude descending so northern (upper) spikes render first
@@ -509,7 +511,7 @@ def build_svg(
     order = sorted(range(len(cities)), key=lambda i: -cities[i][2])
 
     label_parts: List[str] = []  # labels drawn last, above every spike
-    parts.append("<g>")
+    parts.append('<g>')
     for i in order:
         name, lon, lat, pop, _side = cities[i]
         bx, by = _to_screen(lon, lat, fit)
@@ -518,9 +520,9 @@ def build_svg(
         # A soft-filled triangle body plus a crisp ink edge, capped with a
         # tiny disc at the tip — the disc doubles as the hover target.
         tri = (
-            f"M{bx - _SPIKE_HALF:.1f},{by:.1f} "
-            f"L{bx:.1f},{tip_y:.1f} "
-            f"L{bx + _SPIKE_HALF:.1f},{by:.1f} Z"
+            f'M{bx - _SPIKE_HALF:.1f},{by:.1f} '
+            f'L{bx:.1f},{tip_y:.1f} '
+            f'L{bx + _SPIKE_HALF:.1f},{by:.1f} Z'
         )
         # The hover flag: a small rounded chip with the city name + population
         # that rises just above the tip and only shows on hover / focus (CSS).
@@ -530,14 +532,14 @@ def build_svg(
         flag = _hover_flag(name, pop, bx, tip_y)
         parts.append(
             f'<g class="spike" tabindex="0" role="listitem">'
-            f"<title>{_xml(name)}: {pop:.1f} million</title>"
+            f'<title>{_xml(name)}: {pop:.1f} million</title>'
             f'<path d="{tri}" fill="{spike_color}" fill-opacity="0.30"/>'
             f'<line x1="{bx:.1f}" y1="{by:.1f}" x2="{bx:.1f}" y2="{tip_y:.1f}" '
             f'stroke="{spike_color}" stroke-width="1.7" stroke-linecap="round"/>'
             f'<circle class="cap" cx="{bx:.1f}" cy="{tip_y:.1f}" r="2.6" '
             f'fill="{spike_color}"/>'
-            f"{flag}"
-            f"</g>"
+            f'{flag}'
+            f'</g>'
         )
 
         # City name label for the called-out cities, on the empty side of
@@ -553,16 +555,16 @@ def build_svg(
             label_parts.append(
                 f'<text x="{lx:.1f}" y="{ly:.1f}" font-size="16" '
                 f'font-weight="600" fill="{_INK}" text-anchor="{anchor}">'
-                f"{_xml(name)}</text>"
+                f'{_xml(name)}</text>'
             )
             label_parts.append(
                 f'<text x="{lx:.1f}" y="{ly + 17:.1f}" font-size="13.5" '
                 f'fill="{_SUBTLE}" text-anchor="{anchor}">{pop:.0f} M</text>'
             )
-    parts.append("</g>")
+    parts.append('</g>')
 
     # ---- labels on top ----
-    parts.append("<g>" + "".join(label_parts) + "</g>")
+    parts.append('<g>' + "".join(label_parts) + '</g>')
 
     # ---- size legend (bottom-left, three reference spikes) ----
     parts.extend(_size_legend(spike_color, px_per_m))
@@ -571,12 +573,12 @@ def build_svg(
     parts.append(
         f'<text x="{_MAP_X + 6:.1f}" y="{_HEIGHT - 22}" font-size="14" '
         f'fill="{_SUBTLE}">One spike per urban agglomeration · height '
-        f"∝ metropolitan population (2024, UN World Urbanization "
-        f"Prospects order of magnitude) · Equal Earth projection</text>"
+        f'∝ metropolitan population (2024, UN World Urbanization '
+        f'Prospects order of magnitude) · Equal Earth projection</text>'
     )
 
     parts.append(fullscreen_control(_WIDTH, _HEIGHT, mode))
-    parts.append("</svg>")
+    parts.append('</svg>')
     return "\n".join(parts)
 
 
@@ -627,7 +629,7 @@ def _hover_flag(name: str, pop: float, bx: float, tip_y: float) -> str:
         f'stroke="{_LAND_EDGE}" stroke-width="1"/>'
         f'<text x="{text_x:.1f}" y="{text_y:.1f}" font-size="13" '
         f'font-weight="600" fill="{_INK}">{_xml(label)}</text>'
-        f"</g>"
+        f'</g>'
     )
 
 
@@ -655,9 +657,9 @@ def _size_legend(spike_color: str, px_per_m: float) -> List[str]:
     out.append(
         f'<text x="{lx:.1f}" y="{baseline - 37.0 * px_per_m - 22:.1f}" '
         f'font-size="15" font-weight="700" fill="{_INK}">Metropolitan '
-        f"population</text>"
+        f'population</text>'
     )
-    out.append("<g>")
+    out.append('<g>')
     # Shared baseline rule under the reference spikes.
     x0 = lx
     x1 = lx + gap * (len(refs) - 1) + 40.0
@@ -670,9 +672,9 @@ def _size_legend(spike_color: str, px_per_m: float) -> List[str]:
         h = pop * px_per_m
         tip = baseline - h
         tri = (
-            f"M{cx - _SPIKE_HALF:.1f},{baseline:.1f} "
-            f"L{cx:.1f},{tip:.1f} "
-            f"L{cx + _SPIKE_HALF:.1f},{baseline:.1f} Z"
+            f'M{cx - _SPIKE_HALF:.1f},{baseline:.1f} '
+            f'L{cx:.1f},{tip:.1f} '
+            f'L{cx + _SPIKE_HALF:.1f},{baseline:.1f} Z'
         )
         out.append(f'<path class="legspike" d="{tri}" fill="{spike_color}" fill-opacity="0.30"/>')
         out.append(
@@ -680,13 +682,14 @@ def _size_legend(spike_color: str, px_per_m: float) -> List[str]:
             f'stroke="{spike_color}" stroke-width="1.7" stroke-linecap="round"/>'
         )
         out.append(
-            f'<circle class="legspike" cx="{cx:.1f}" cy="{tip:.1f}" r="2.6" fill="{spike_color}"/>'
+            f'<circle class="legspike" cx="{cx:.1f}" cy="{tip:.1f}" r="2.6" '
+            f'fill="{spike_color}"/>'
         )
         out.append(
             f'<text x="{cx + 9:.1f}" y="{tip + 4:.1f}" font-size="13.5" '
             f'fill="{_SUBTLE}">{pop:.0f} M</text>'
         )
-    out.append("</g>")
+    out.append('</g>')
     return out
 
 

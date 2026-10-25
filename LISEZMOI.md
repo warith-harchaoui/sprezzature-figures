@@ -74,9 +74,9 @@ make-figure bar --out check.svg
 from sprezzature_figures import make_figure
 
 donnees = [
-    {"region": "Nord", "value": 42},
-    {"region": "Sud", "value": 28},
-    {"region": "Est", "value": 19},
+    {"region": "Nord",  "value": 42},
+    {"region": "Sud",   "value": 28},
+    {"region": "Est",   "value": 19},
     {"region": "Ouest", "value": 11},
 ]
 chemin = make_figure("bar", donnees, out="revenu.png", title="Revenu par région")
@@ -95,7 +95,7 @@ dépendance et celui qui n'en a aucune ne paie rien.
 import pandas as pd
 from sprezzature_figures import make_figure
 
-df = pd.read_csv("revenu.csv")  # region, value
+df = pd.read_csv("revenu.csv")           # region, value
 make_figure("bar", df, out="revenu.svg", title="Revenu par région")
 ```
 
@@ -232,9 +232,9 @@ sprezzature-figures redraw leur-graphique.png --kind bar --language fr
 from sprezzature_figures import redraw
 
 resultat = redraw("leur-graphique.png", out="le-notre.svg", data=lignes, language="fr")
-resultat.kind  # 'bar'
-resultat.data_origin  # 'your-data'
-resultat.changes  # ce qui change, le plus coûteux d'abord
+resultat.kind          # 'bar'
+resultat.data_origin   # 'your-data'
+resultat.changes       # ce qui change, le plus coûteux d'abord
 ```
 
 L'image d'un graphique porte deux choses, avec des certitudes très

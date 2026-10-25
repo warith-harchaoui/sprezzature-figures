@@ -87,7 +87,9 @@ def test_committed_example_passes_the_linter(svg_path: Path) -> None:
             f"{svg_path.name} has no generator in this repo or in "
             "sprezzature-maps; see _NO_GENERATOR_ANYWHERE"
         )
-    assert not findings, "\n".join(f"  [{f.check}] {f.message} ({f.detail})" for f in findings)
+    assert not findings, "\n".join(
+        f"  [{f.check}] {f.message} ({f.detail})" for f in findings
+    )
 
 
 @pytest.mark.parametrize("svg_path", _examples(), ids=lambda p: p.stem)
@@ -104,6 +106,8 @@ def test_committed_example_has_no_illegible_text(svg_path: Path) -> None:
     if svg_path.stem in _NO_GENERATOR_ANYWHERE:
         pytest.skip("no generator; covered by test_committed_example_passes_the_linter")
     small = [
-        f for f in check_render(svg_path.read_text(encoding="utf-8")) if f.check == "text_too_small"
+        f
+        for f in check_render(svg_path.read_text(encoding="utf-8"))
+        if f.check == "text_too_small"
     ]
     assert not small, "\n".join(f"  {f.detail}" for f in small)

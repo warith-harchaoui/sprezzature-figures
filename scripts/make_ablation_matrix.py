@@ -298,8 +298,8 @@ def build_svg(
     # ---- geometry ----
     left_pad = 40.0
     right_pad = 40.0
-    top_pad = 100.0  # title (y=52) + subtitle (y=82) sit above this
-    header_h = 84.0  # rotated component-column labels
+    top_pad = 100.0          # title (y=52) + subtitle (y=82) sit above this
+    header_h = 84.0          # rotated component-column labels
     row_h = 34.0
     axis_h = 46.0
     bottom_pad = 30.0
@@ -313,7 +313,7 @@ def build_svg(
     # that panel's plot area and the generous gap goes *after* it. The first
     # layout had these the other way round and every number read as if it
     # labelled the next metric (found via the Ralph Eyeball Loop).
-    value_w = 54.0  # right-aligned mono value column, per panel
+    value_w = 54.0           # right-aligned mono value column, per panel
     panel_gap = 52.0
     panels_x0 = matrix_x0 + matrix_w + 34.0
     panels_total = width - panels_x0 - right_pad
@@ -336,9 +336,7 @@ def build_svg(
     # Per-panel domains, computed once.
     domains: List[Tuple[float, float, List[float]]] = []
     for metric in metrics:
-        pairs = [
-            scores[(_SEP.join(v), metric)] for v in variants if (_SEP.join(v), metric) in scores
-        ]
+        pairs = [scores[(_SEP.join(v), metric)] for v in variants if (_SEP.join(v), metric) in scores]
         domains.append(_domain(pairs, zero_based=(mark == "bar")))
 
     def x_for(m: int, v: float) -> float:
@@ -349,10 +347,7 @@ def build_svg(
     # left for the reader to find by eye.
     best_row: Dict[str, int] = {}
     for metric in metrics:
-        vals = [
-            (scores.get((_SEP.join(v), metric), (float("-inf"), 0.0))[0], r)
-            for r, v in enumerate(variants)
-        ]
+        vals = [(scores.get((_SEP.join(v), metric), (float("-inf"), 0.0))[0], r) for r, v in enumerate(variants)]
         best_row[metric] = max(vals)[1]
 
     parts: List[str] = []
@@ -362,9 +357,9 @@ def build_svg(
     parts.append(f'<title id="am-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="am-desc">Ablation study of {n_rows} model variants over '
-        f"{n_comp} components ({xml_escape(', '.join(components))}), scored on "
-        f"{xml_escape(', '.join(metrics))}. Hover or focus a row to highlight that "
-        f"variant across every metric panel.</desc>"
+        f'{n_comp} components ({xml_escape(", ".join(components))}), scored on '
+        f'{xml_escape(", ".join(metrics))}. Hover or focus a row to highlight that '
+        f'variant across every metric panel.</desc>'
     )
 
     # ---- styles ----
@@ -408,7 +403,7 @@ def build_svg(
     )
     parts.append(
         f'<text x="{left_pad:.0f}" y="80" font-size="15" fill="{SECONDARY}">'
-        f"{xml_escape(subtitle)}</text>"
+        f'{xml_escape(subtitle)}</text>'
     )
 
     # ---- component column headers (rotated, anchored at the column) ----
@@ -419,7 +414,7 @@ def build_svg(
             f'<text x="{cx:.1f}" y="{header_baseline:.1f}" font-size="13" '
             f'font-weight="600" fill="{comp_hues[comp]}" text-anchor="start" '
             f'transform="rotate(-42 {cx:.1f} {header_baseline:.1f})">'
-            f"{xml_escape(comp)}</text>"
+            f'{xml_escape(comp)}</text>'
         )
     parts.append(
         f'<text x="{matrix_x0:.1f}" y="{matrix_y0 + rows_h + 30:.1f}" font-size="12" '
@@ -489,7 +484,9 @@ def build_svg(
             kept = comp in members
             fill = comp_hues[comp] if kept else _EMPTY
             cls = f' class="c-{_slug(comp)}"' if kept else ""
-            parts.append(f'<circle{cls} cx="{col_cx(i):.1f}" cy="{cy:.1f}" r="6" fill="{fill}"/>')
+            parts.append(
+                f'<circle{cls} cx="{col_cx(i):.1f}" cy="{cy:.1f}" r="6" fill="{fill}"/>'
+            )
 
         # -- one mark per metric panel --
         for m, metric in enumerate(metrics):
@@ -517,7 +514,7 @@ def build_svg(
                     f'<line x1="{x_lo:.1f}" y1="{cy:.1f}" x2="{x_hi:.1f}" y2="{cy:.1f}"/>'
                     f'<line x1="{x_lo:.1f}" y1="{cy - cap:.1f}" x2="{x_lo:.1f}" y2="{cy + cap:.1f}"/>'
                     f'<line x1="{x_hi:.1f}" y1="{cy - cap:.1f}" x2="{x_hi:.1f}" y2="{cy + cap:.1f}"/>'
-                    f"</g>"
+                    f'</g>'
                 )
             if mark == "bar":
                 bx0 = x_for(m, domains[m][0])
@@ -544,7 +541,7 @@ def build_svg(
             f'<rect class="hit" x="{left_pad:.1f}" y="{band_y:.1f}" '
             f'width="{width - left_pad - right_pad + 8:.1f}" height="{row_h:.1f}" '
             f'tabindex="0" role="img" aria-label="{xml_escape(tip)}">'
-            f"<title>{xml_escape(tip)}</title></rect>"
+            f'<title>{xml_escape(tip)}</title></rect>'
         )
         parts.append("</g>")
 

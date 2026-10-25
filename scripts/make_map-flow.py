@@ -234,13 +234,16 @@ def arc_path(
         else:
             segments[-1].append(project(*cur))
     return "".join(
-        f"M{seg[0][0]:.1f},{seg[0][1]:.1f}" + "".join(f"L{px:.1f},{py:.1f}" for px, py in seg[1:])
+        f"M{seg[0][0]:.1f},{seg[0][1]:.1f}"
+        + "".join(f"L{px:.1f},{py:.1f}" for px, py in seg[1:])
         for seg in segments
         if len(seg) > 1
     )
 
 
-def _label_box(cx: float, cy: float, pose: str, name: str) -> Tuple[float, float, float, float]:
+def _label_box(
+    cx: float, cy: float, pose: str, name: str
+) -> Tuple[float, float, float, float]:
     """Bounding box a name would occupy in `pose`, next to a dot at (cx, cy)."""
     w = text_width(name, _NAME_PX)
     h = _NAME_PX
@@ -272,7 +275,7 @@ def _inside_map(box: Tuple[float, ...]) -> bool:
 
 
 def _place_labels(
-    dots: List[Tuple[str, float, float]],
+    dots: List[Tuple[str, float, float]]
 ) -> Dict[str, Tuple[str, Tuple[float, float, float, float]]]:
     """Choose a pose per endpoint so the names clear each other.
 
@@ -349,7 +352,9 @@ def build_svg(
         "line width is the size of the flow"
     )
 
-    parts: List[str] = [svg_open(_WIDTH, _HEIGHT, "flow-title", "flow-desc", font_family=fonts)]
+    parts: List[str] = [
+        svg_open(_WIDTH, _HEIGHT, "flow-title", "flow-desc", font_family=fonts)
+    ]
     parts.append(
         f'<title id="flow-title">{xml_escape(head)}</title>'
         f'<desc id="flow-desc">{xml_escape(sub)}. Ten great-circle links on an '
@@ -396,21 +401,16 @@ def build_svg(
             f'<path id="hit-{len(rows) - 1 - idx}" class="hit" tabindex="0" d="{d}" '
             f'fill="none" stroke="{blue}" stroke-opacity="0.52" '
             f'stroke-width="{stroke(people):.1f}" stroke-linecap="round">'
-            f"<title>{xml_escape(origin)} to {xml_escape(dest)} — "
-            f"{people:.1f} million people</title></path>"
+            f'<title>{xml_escape(origin)} to {xml_escape(dest)} — '
+            f'{people:.1f} million people</title></path>'
         )
         ox, oy = project(*PLACES[origin])
         tips.append(
             tooltip_bubble(
-                ox,
-                oy - 14.0,
+                ox, oy - 14.0,
                 [f"{origin} → {dest}", f"{people:.1f} million people"],
-                anchor="middle",
-                canvas_w=_WIDTH,
-                canvas_h=_HEIGHT,
-                ink=_INK,
-                secondary=_SUBTLE,
-                border=_LAND_EDGE,
+                anchor="middle", canvas_w=_WIDTH, canvas_h=_HEIGHT,
+                ink=_INK, secondary=_SUBTLE, border=_LAND_EDGE,
                 elem_id=f"tip-{len(rows) - 1 - idx}",
             )
         )
@@ -479,7 +479,7 @@ def build_svg(
         parts.append(
             f'<text x="{rx + col * 330:.1f}" y="{row_y:.1f}" '
             f'font-size="13.5" fill="{_INK}">{i + 1}. {xml_escape(str(row["origin"]))} '
-            f"→ {xml_escape(str(row['destination']))}</text>"
+            f'→ {xml_escape(str(row["destination"]))}</text>'
         )
         parts.append(
             f'<text x="{rx + col * 330 + 300:.1f}" y="{row_y:.1f}" '
@@ -491,12 +491,12 @@ def build_svg(
     parts.append(
         f'<text x="{_WIDTH - 24:.1f}" y="{_HEIGHT - 38:.1f}" font-size="12.5" '
         f'fill="{_SUBTLE}" text-anchor="end">Equal Earth (equal-area) projection · '
-        f"links are great circles, sampled and projected, not straight lines</text>"
+        f'links are great circles, sampled and projected, not straight lines</text>'
     )
     parts.append(
         f'<text x="{_WIDTH - 24:.1f}" y="{_HEIGHT - 18:.1f}" font-size="12.5" '
         f'fill="{_SUBTLE}" text-anchor="end">Migrant stock, 2020 order of '
-        f"magnitude, UN DESA · hover a link for its figure</text>"
+        f'magnitude, UN DESA · hover a link for its figure</text>'
     )
 
     parts.append(fullscreen_control(_WIDTH, _HEIGHT, mode))
@@ -530,7 +530,9 @@ def make_map_flow(
     mode, accessibility, theme : str
         Forwarded to :func:`build_svg`.
     """
-    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme, title=title or None)
+    svg = build_svg(
+        data, mode=mode, accessibility=accessibility, theme=theme, title=title or None
+    )
     dest = Path(out) if out else svg_example_path(__file__, "map-flow")
     return write_svg(dest, svg, theme=theme)
 

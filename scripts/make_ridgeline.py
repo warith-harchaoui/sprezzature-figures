@@ -47,13 +47,18 @@ from typing import Any, Dict, List, Optional, Sequence, Tuple
 import numpy as np
 
 # Repo-relative default output — the one SVG artifact this figure ships.
-_DEFAULT_OUT = Path(__file__).resolve().parent.parent / "assets" / "svg-examples" / "ridgeline.svg"
+_DEFAULT_OUT = (
+    Path(__file__).resolve().parent.parent
+    / "assets"
+    / "svg-examples"
+    / "ridgeline.svg"
+)
 
 # House-style tokens (mirrors the house-style constants, kept literal so this
 # generator needs no import of the dataviz tier at build time).
-_INK = "#1D1D1F"  # primary text
+_INK = "#1D1D1F"        # primary text
 _SECONDARY = "#6E6E73"  # subtitle / secondary text
-_BG = "#FFFFFF"  # white ground
+_BG = "#FFFFFF"         # white ground
 
 
 # --------------------------------------------------------------------------- #
@@ -80,26 +85,16 @@ def _sample_monthly_highs(seed: int = 7) -> Dict[str, np.ndarray]:
     """
     rng = np.random.default_rng(seed)
     months = [
-        "January",
-        "February",
-        "March",
-        "April",
-        "May",
-        "June",
-        "July",
-        "August",
-        "September",
-        "October",
-        "November",
-        "December",
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December",
     ]
     # Seasonal mean: cosine peaking in July (month index 6), 4 C ↔ 30 C swing.
     out: Dict[str, np.ndarray] = {}
     for i, name in enumerate(months):
         # phase = 0 in July (i = 6): cos = 1 → warmest; January → coldest.
         phase = 2.0 * np.pi * (i - 6) / 12.0
-        mean = 17.0 + 13.0 * np.cos(phase)  # ~4 C (Jan) … 30 C (Jul)
-        spread = 3.0 + 1.4 * abs(np.sin(phase))  # wider in the shoulders
+        mean = 17.0 + 13.0 * np.cos(phase)          # ~4 C (Jan) … 30 C (Jul)
+        spread = 3.0 + 1.4 * abs(np.sin(phase))     # wider in the shoulders
         out[name] = rng.normal(mean, spread, size=200)
     # Top-of-stack first: December down to January.
     return {name: out[name] for name in reversed(months)}
@@ -114,36 +109,22 @@ def _sample_monthly_highs(seed: int = 7) -> Dict[str, np.ndarray]:
 def _monthly_params() -> List[Dict[str, Any]]:
     """Return the twelve months' seasonal mean/spread as row records."""
     months = [
-        "January",
-        "February",
-        "March",
-        "April",
-        "May",
-        "June",
-        "July",
-        "August",
-        "September",
-        "October",
-        "November",
-        "December",
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December",
     ]
     rows: List[Dict[str, Any]] = []
     for i, name in enumerate(months):
         phase = 2.0 * np.pi * (i - 6) / 12.0
         mean = 17.0 + 13.0 * np.cos(phase)
         spread = 3.0 + 1.4 * abs(np.sin(phase))
-        rows.append(
-            {"month": name, "mean_c": round(float(mean), 2), "spread_c": round(float(spread), 2)}
-        )
+        rows.append({"month": name, "mean_c": round(float(mean), 2), "spread_c": round(float(spread), 2)})
     return list(reversed(rows))  # December first, top of stack
 
 
 DEMO_DATA: List[Dict[str, Any]] = _monthly_params()
 
 
-def _samples_from_rows(
-    rows: List[Dict[str, Any]], *, seed: int = 7, n: int = 200
-) -> Dict[str, np.ndarray]:
+def _samples_from_rows(rows: List[Dict[str, Any]], *, seed: int = 7, n: int = 200) -> Dict[str, np.ndarray]:
     """Draw Gaussian samples per row from its ``mean_c``/``spread_c``.
 
     Parameters
@@ -163,7 +144,8 @@ def _samples_from_rows(
     """
     rng = np.random.default_rng(seed)
     return {
-        str(r["month"]): rng.normal(float(r["mean_c"]), float(r["spread_c"]), size=n) for r in rows
+        str(r["month"]): rng.normal(float(r["mean_c"]), float(r["spread_c"]), size=n)
+        for r in rows
     }
 
 
@@ -402,7 +384,10 @@ def build_svg(
     # Dark mode: invert paper + inks, dim the light month gridlines (#E5E5EA)
     # and re-light the ink axis / crest strokes (#1D1D1F) so they read on dark.
     # The ridges' white crest underlay (stroke #FFFFFF) is left as-is.
-    dark_extra = '[stroke="#E5E5EA"]{stroke:#2C2C2E;}[stroke="#1D1D1F"]{stroke:#F2F2F7;}'
+    dark_extra = (
+        '[stroke="#E5E5EA"]{stroke:#2C2C2E;}'
+        '[stroke="#1D1D1F"]{stroke:#F2F2F7;}'
+    )
     parts.append(
         "<style>"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
@@ -418,7 +403,8 @@ def build_svg(
         f'fill="{_INK}">{title}</text>'
     )
     parts.append(
-        f'<text x="{m_left - 104}" y="90" font-size="18" fill="{_SECONDARY}">{subtitle}</text>'
+        f'<text x="{m_left - 104}" y="90" font-size="18" '
+        f'fill="{_SECONDARY}">{subtitle}</text>'
     )
 
     # ---- x gridlines (light, behind ridges) ------------------------------- #
@@ -469,7 +455,10 @@ def build_svg(
         # Hover tooltip: median + interquartile spread, no JavaScript.
         med = float(np.median(data[label]))
         q1, q3 = np.percentile(data[label], [25, 75])
-        tip = f"{label}: median {med:.0f} °C (middle-half {q1:.0f}–{q3:.0f} °C)"
+        tip = (
+            f"{label}: median {med:.0f} °C "
+            f"(middle-half {q1:.0f}–{q3:.0f} °C)"
+        )
 
         parts.append(
             f'<g id="hit-{i}" class="ridge hit" tabindex="0" role="img" aria-label="{xml_escape(tip)}">'
@@ -486,15 +475,10 @@ def build_svg(
         peak_y = base_y - float(dens[peak_i]) * peak_h
         tips.append(
             tooltip_bubble(
-                peak_x,
-                peak_y - 14,
+                peak_x, peak_y - 14,
                 [label, f"Median {med:.0f} °C", f"Middle half {q1:.0f}–{q3:.0f} °C"],
-                anchor="middle",
-                canvas_w=width,
-                canvas_h=height,
-                ink=_INK,
-                secondary=_SECONDARY,
-                border="#E5E5EA",
+                anchor="middle", canvas_w=width, canvas_h=height,
+                ink=_INK, secondary=_SECONDARY, border="#E5E5EA",
                 elem_id=f"tip-{i}",
             )
         )
@@ -572,9 +556,7 @@ def make_ridgeline(
     _ = title
     rows = data if data else DEMO_DATA
     samples = _samples_from_rows(rows, seed=seed)
-    svg = build_svg(
-        samples, mode=mode, accessibility=accessibility, theme=theme, title=title or None
-    )
+    svg = build_svg(samples, mode=mode, accessibility=accessibility, theme=theme, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "ridgeline")
     return write_svg(dest, svg, theme=theme)
 
@@ -594,7 +576,9 @@ def _build_parser() -> argparse.ArgumentParser:
         default=_DEFAULT_OUT,
         help="Destination SVG path (default: the shipped example).",
     )
-    parser.add_argument("--seed", type=int, default=7, help="Random seed for the sample data.")
+    parser.add_argument(
+        "--seed", type=int, default=7, help="Random seed for the sample data."
+    )
     parser.add_argument(
         "--mode",
         choices=("self-contained", "external", "static"),
@@ -604,12 +588,8 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--accessibility",
         choices=(
-            "universal",
-            "high-contrast",
-            "monochrome",
-            "deuteranopia",
-            "protanopia",
-            "tritanopia",
+            "universal", "high-contrast", "monochrome",
+            "deuteranopia", "protanopia", "tritanopia",
         ),
         default="universal",
         help="palette accessibility level (default: universal, the CVD-safe standard)",

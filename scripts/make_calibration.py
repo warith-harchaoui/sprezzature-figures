@@ -251,10 +251,10 @@ def build_svg(
         A complete, standalone SVG document.
     """
     palette: Dict[str, str] = load_palette(accessibility, theme=theme)
-    over = palette.get("Red", "#FF3B30")  # model over-states the probability
-    under = palette.get("Blue", "#007AFF")  # model under-states the probability
+    over = palette.get("Red", "#FF3B30")      # model over-states the probability
+    under = palette.get("Blue", "#007AFF")    # model under-states the probability
     curve = palette.get("Purple", "#AF52DE")  # the reliability curve itself
-    hist = palette.get("Teal", "#5AC8FA")  # the confidence histogram
+    hist = palette.get("Teal", "#5AC8FA")     # the confidence histogram
     ink = "#1D1D1F"
     secondary = "#6E6E73"
 
@@ -281,14 +281,14 @@ def build_svg(
     m_left = 128
     m_right = 56
     m_top = 226
-    sq = width - m_left - m_right  # the top view is a square
+    sq = width - m_left - m_right          # the top view is a square
     plot_x = m_left
     plot_y = m_top
     plot_w = sq
     plot_h = sq
 
     hist_h = 176
-    hist_gap = 132  # room for the x-axis + size legend
+    hist_gap = 132                          # room for the x-axis + size legend
     hist_y = plot_y + plot_h + hist_gap
     # Canvas height: fit the histogram baseline, its x-axis labels, and
     # the x-title below it with a comfortable bottom margin.
@@ -309,27 +309,25 @@ def build_svg(
     parts: List[str] = []
 
     # --- SVG root + accessible description ------------------------
-    parts.append(
-        svg_open(width, height, "cal-title", "cal-desc", font_family=chrome_stack_for_theme(theme))
-    )
+    parts.append(svg_open(width, height, "cal-title", "cal-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(
         '<title id="cal-title">The churn model is overconfident: its '
-        "high-risk calls miss the diagonal</title>"
+        'high-risk calls miss the diagonal</title>'
     )
     parts.append(
         f'<desc id="cal-desc">Reliability diagram (calibration curve) for an '
-        f"overconfident customer-churn classifier. The horizontal axis is the "
-        f"model’s predicted probability of churn; the vertical axis is the "
-        f"observed churn rate in each bin. A dashed 45-degree line marks "
-        f"perfect calibration, ringed by a faint grey tolerance band. The "
-        f"reliability curve sags below the diagonal at the confident end, so "
-        f"the model’s high-probability calls happen less often than it claims "
-        f"(overconfident, labelled in red on the right); Expected Calibration "
-        f"Error {ece:.0%}. At the timid end it floats above the diagonal, so "
-        f"it under-states churn (underconfident, labelled in blue on the "
-        f"left). Each point is sized by how many predictions fell in the bin, "
-        f"and a histogram below shows where the model spends its predictions. "
-        f"</desc>"
+        f'overconfident customer-churn classifier. The horizontal axis is the '
+        f'model’s predicted probability of churn; the vertical axis is the '
+        f'observed churn rate in each bin. A dashed 45-degree line marks '
+        f'perfect calibration, ringed by a faint grey tolerance band. The '
+        f'reliability curve sags below the diagonal at the confident end, so '
+        f'the model’s high-probability calls happen less often than it claims '
+        f'(overconfident, labelled in red on the right); Expected Calibration '
+        f'Error {ece:.0%}. At the timid end it floats above the diagonal, so '
+        f'it under-states churn (underconfident, labelled in blue on the '
+        f'left). Each point is sized by how many predictions fell in the bin, '
+        f'and a histogram below shows where the model spends its predictions. '
+        f'</desc>'
     )
 
     # OS-adaptive overrides (additive; the default render is byte-for-byte
@@ -343,9 +341,8 @@ def build_svg(
     # default: the over/under split is already carried by position (below vs
     # above the diagonal) and worded labels, and the ~4-colour system palette
     # could not hold four distinct reference hues.
-    hc = leveled_colors(
-        {"over": over, "under": under, "curve": curve, "hist": hist}, "high-contrast"
-    )
+    hc = leveled_colors({"over": over, "under": under, "curve": curve, "hist": hist},
+                        "high-contrast")
     contrast_rows = (
         f".cal-stem-over{{stroke:{hc['over']};}}"
         f".cal-stem-under{{stroke:{hc['under']};}}"
@@ -365,8 +362,8 @@ def build_svg(
         ".bar{cursor:pointer}"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
         + foreground_tip_css(len(bins), mark_prefix="pt", tip_prefix="pt-tip")
-        + foreground_tip_css(len(bins), mark_prefix="bar", tip_prefix="bar-tip")
-        + "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
+        + foreground_tip_css(len(bins), mark_prefix="bar", tip_prefix="bar-tip") +
+        "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
         + adaptive
         # Light gridlines are strokes the ink map misses; darken them for a dark
         # ground. The grey diagonal / reference band reads at medium grey either
@@ -381,7 +378,7 @@ def build_svg(
     # --- title + subtitle (the takeaway) -------------------------
     # The headline the figure writes about its own data, used only when
     # the caller supplies none.
-    title = title or "The churn model is overconfident:"
+    title = title or 'The churn model is overconfident:'
     parts.append(
         f'<text x="{m_left}" y="82" font-size="36" font-weight="700" '
         f'fill="{ink}">{xml_escape(title)}</text>'
@@ -392,11 +389,11 @@ def build_svg(
     )
     parts.append(
         f'<text x="{m_left}" y="166" font-size="22" fill="{secondary}">'
-        f"Reliability diagram: confident “90%” churn calls happen far less</text>"
+        f'Reliability diagram: confident “90%” churn calls happen far less</text>'
     )
     parts.append(
         f'<text x="{m_left}" y="194" font-size="22" fill="{secondary}">'
-        f"Expected Calibration Error {ece:.0%}</text>"
+        f'Expected Calibration Error {ece:.0%}</text>'
     )
 
     # --- tolerance ribbon (faint grey band around the diagonal) --
@@ -407,8 +404,12 @@ def build_svg(
     # lower offset back, each clamped to [0, 1].
     upper = [(x, min(1.0, x + band)) for x in (0.0, 1.0)]
     lower = [(x, max(0.0, x - band)) for x in (1.0, 0.0)]
-    ribbon_pts = " ".join(f"{sx(x):.1f},{sy(y):.1f}" for x, y in upper + lower)
-    parts.append(f'<polygon points="{ribbon_pts}" fill="#8E8E93" fill-opacity="0.12"/>')
+    ribbon_pts = " ".join(
+        f"{sx(x):.1f},{sy(y):.1f}" for x, y in upper + lower
+    )
+    parts.append(
+        f'<polygon points="{ribbon_pts}" fill="#8E8E93" fill-opacity="0.12"/>'
+    )
 
     # --- gridlines (very light) ----------------------------------
     for t in ticks:
@@ -472,7 +473,7 @@ def build_svg(
         f'<text x="{ytitle_x:.1f}" y="{ytitle_y:.1f}" font-size="22" '
         f'fill="{ink}" text-anchor="middle" '
         f'transform="rotate(-90 {ytitle_x:.1f} {ytitle_y:.1f})">'
-        f"Observed churn rate</text>"
+        f'Observed churn rate</text>'
     )
 
     # --- per-bin gap stems (point down/up to the diagonal) -------
@@ -493,7 +494,9 @@ def build_svg(
         )
 
     # --- calibration curve (Purple line through the points) ------
-    curve_pts = [(sx(r["predicted"]), sy(r["observed"])) for r in bins]
+    curve_pts = [
+        (sx(r["predicted"]), sy(r["observed"])) for r in bins
+    ]
     d = "M " + " L ".join(f"{x:.1f} {y:.1f}" for x, y in curve_pts)
     parts.append(
         f'<path class="cal-curve" d="{d}" fill="none" stroke="{curve}" '
@@ -529,11 +532,12 @@ def build_svg(
         col = over if rec["over"] else under
         side = "over-states" if rec["over"] else "under-states"
         tip = (
-            f"Predicted {rec['predicted']:.0%}, observed {rec['observed']:.0%} "
-            f"(gap {rec['gap']:+.0%}, {side}); {int(rec['count'])} predictions"
+            f'Predicted {rec["predicted"]:.0%}, observed {rec["observed"]:.0%} '
+            f'(gap {rec["gap"]:+.0%}, {side}); {int(rec["count"])} predictions'
         )
         parts.append(
-            f'<g id="pt-{i}" class="pt hit" tabindex="0" role="img" aria-label="{xml_escape(tip)}">'
+            f'<g id="pt-{i}" class="pt hit" tabindex="0" role="img" '
+            f'aria-label="{xml_escape(tip)}">'
         )
         parts.append(f"<title>{xml_escape(tip)}</title>")
         parts.append(
@@ -549,19 +553,14 @@ def build_svg(
         parts.append("</g>")
         pt_tip_cards.append(
             tooltip_bubble(
-                cx,
-                cy - rr - 14,
+                cx, cy - rr - 14,
                 [
-                    f"predicted {rec['predicted']:.0%} vs observed {rec['observed']:.0%}",
-                    f"gap {rec['gap']:+.0%} ({side})",
-                    f"{int(rec['count'])} predictions",
+                    f'predicted {rec["predicted"]:.0%} vs observed {rec["observed"]:.0%}',
+                    f'gap {rec["gap"]:+.0%} ({side})',
+                    f'{int(rec["count"])} predictions',
                 ],
-                anchor="middle",
-                canvas_w=width,
-                canvas_h=height,
-                ink=ink,
-                secondary=secondary,
-                border=GRIDLINE,
+                anchor="middle", canvas_w=width, canvas_h=height,
+                ink=ink, secondary=secondary, border=GRIDLINE,
                 elem_id=f"pt-tip-{i}",
             )
         )
@@ -585,7 +584,7 @@ def build_svg(
         f'fill="{secondary}" stroke="#FFFFFF" stroke-width="4" paint-order="stroke" '
         f'text-anchor="middle" '
         f'transform="rotate(-45 {cap_x:.1f} {cap_y - 12:.1f})">'
-        f"Perfect calibration</text>"
+        f'Perfect calibration</text>'
     )
 
     # --- direct on-plot annotations (over / under sides) ---------
@@ -594,20 +593,24 @@ def build_svg(
     # (underconfident, Blue). Labels sit in the empty triangle on each
     # side of the diagonal so they never crowd the marks, side-aware.
     over_x, over_y = sx(0.80), sy(0.50)
-    for i, line in enumerate(["Overconfident:", "says more churn", "than happens"]):
+    for i, line in enumerate(
+        ["Overconfident:", "says more churn", "than happens"]
+    ):
         parts.append(
             f'<text class="cal-mark-over" x="{over_x:.1f}" '
             f'y="{over_y + i * 24:.1f}" font-size="20" '
             f'font-weight="600" fill="{over}" text-anchor="middle">'
-            f"{line}</text>"
+            f'{line}</text>'
         )
     under_x, under_y = sx(0.17), sy(0.52)
-    for i, line in enumerate(["Underconfident:", "says less churn", "than happens"]):
+    for i, line in enumerate(
+        ["Underconfident:", "says less churn", "than happens"]
+    ):
         parts.append(
             f'<text class="cal-mark-under" x="{under_x:.1f}" '
             f'y="{under_y + i * 24:.1f}" font-size="20" '
             f'font-weight="600" fill="{under}" text-anchor="middle">'
-            f"{line}</text>"
+            f'{line}</text>'
         )
 
     # --- confidence histogram (bottom panel) ---------------------
@@ -641,7 +644,7 @@ def build_svg(
         by = hy(rec["count"])
         bw = bin_w - gutter
         bh = h_ax_bottom - by
-        tip = f"{int(rec['count'])} predictions near {rec['predicted']:.0%}"
+        tip = f'{int(rec["count"])} predictions near {rec["predicted"]:.0%}'
         parts.append(
             f'<g id="bar-{i}" class="bar hit" tabindex="0" role="img" '
             f'aria-label="{xml_escape(tip)}">'
@@ -654,15 +657,10 @@ def build_svg(
         parts.append("</g>")
         bar_tip_cards.append(
             tooltip_bubble(
-                bx + bw / 2,
-                by - 10,
-                [f"near {rec['predicted']:.0%} predicted", f"{int(rec['count'])} predictions"],
-                anchor="middle",
-                canvas_w=width,
-                canvas_h=height,
-                ink=ink,
-                secondary=secondary,
-                border=GRIDLINE,
+                bx + bw / 2, by - 10,
+                [f'near {rec["predicted"]:.0%} predicted', f'{int(rec["count"])} predictions'],
+                anchor="middle", canvas_w=width, canvas_h=height,
+                ink=ink, secondary=secondary, border=GRIDLINE,
                 elem_id=f"bar-tip-{i}",
             )
         )
@@ -707,7 +705,7 @@ def build_svg(
     parts.append(
         f'<text x="{plot_x + plot_w / 2:.1f}" y="{h_ax_bottom + 74:.1f}" '
         f'font-size="22" fill="{ink}" text-anchor="middle">'
-        f"Predicted probability of churn</text>"
+        f'Predicted probability of churn</text>'
     )
     htitle_x = 52
     htitle_y = hist_y + hist_h / 2
@@ -715,7 +713,7 @@ def build_svg(
         f'<text x="{htitle_x:.1f}" y="{htitle_y:.1f}" font-size="20" '
         f'fill="{ink}" text-anchor="middle" '
         f'transform="rotate(-90 {htitle_x:.1f} {htitle_y:.1f})">'
-        f"Predictions</text>"
+        f'Predictions</text>'
     )
 
     # --- size legend (between the two panels, laid out horizontally) --
@@ -753,10 +751,11 @@ def build_svg(
 def main() -> None:
     """Write the calibration-curve SVG to the canonical assets path (or --out)."""
     render_cli(
-        __file__,
-        "calibration",
-        build_svg,
-        description=("Render the house-style calibration curve (reliability diagram) to SVG."),
+        __file__, "calibration", build_svg,
+        description=(
+            "Render the house-style calibration curve (reliability diagram) "
+            "to SVG."
+        ),
     )
 
 

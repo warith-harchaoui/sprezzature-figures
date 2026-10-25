@@ -73,7 +73,12 @@ def test_the_linter_can_reach_every_directory_of_hand_written_code(directory: st
 
 def test_scripts_keeps_the_rules_that_catch_mistakes() -> None:
     """The per-file relief for ``scripts/`` stays cosmetic."""
-    ignores = _ruff_config().get("lint", {}).get("per-file-ignores", {}).get("scripts/*", [])
+    ignores = (
+        _ruff_config()
+        .get("lint", {})
+        .get("per-file-ignores", {})
+        .get("scripts/*", [])
+    )
     kept_out = [rule for rule in ignores if rule.startswith(_ERROR_GRADE)]
     assert not kept_out, (
         f"{kept_out} silenced for scripts/*. Those rules report real mistakes, "

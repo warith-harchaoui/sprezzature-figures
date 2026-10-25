@@ -74,12 +74,10 @@ def _signal(seed: int = 19) -> List[Dict[str, Any]]:
         daily = 1.0 + 0.45 * math.sin(2.0 * math.pi * (hour - 4) / 24.0)
         base = 17.0 * daily
         spike = 54.0 if hour in (27, 28) else 0.0
-        rows.append(
-            {
-                "hour": hour,
-                "declines": max(0, int(round(base + spike + rng.gauss(0.0, 3.2)))),
-            }
-        )
+        rows.append({
+            "hour": hour,
+            "declines": max(0, int(round(base + spike + rng.gauss(0.0, 3.2)))),
+        })
     return rows
 
 
@@ -183,15 +181,13 @@ def build_svg(
     n = len(values)
 
     floor = (
-        0.0
-        if baseline == "zero"
+        0.0 if baseline == "zero"
         else (_mean(values) if baseline == "mean" else float(baseline_value or 0.0))
     )
     spread = _standard_deviation(values)
     threshold = mark_beyond * spread
     standout = [
-        index
-        for index, value in enumerate(values)
+        index for index, value in enumerate(values)
         if spread > 0.0 and abs(value - floor) > threshold
     ]
 
@@ -216,19 +212,16 @@ def build_svg(
         return plot_y + plot_h - (value - axis_low) / (axis_high - axis_low) * plot_h
 
     floor_lines = (
-        [floor_note]
-        if floor_note is not None
+        [floor_note] if floor_note is not None
         else [
             f"stalks rooted at the {baseline_label} of "
             f"{fmt_measured(floor, precision)}, not at zero"
             if baseline != "zero"
             else "stalks rooted at zero",
-        ]
-        + (
-            [f"{n} samples is dense for stalks: a line would read better above {dense_at}"]
-            if n > dense_at
-            else []
-        )
+        ] + ([
+            f"{n} samples is dense for stalks: a line would read better above "
+            f"{dense_at}"
+        ] if n > dense_at else [])
     )
     said_floor = " · ".join(floor_lines)
     said_parts: List[str] = []
@@ -245,7 +238,9 @@ def build_svg(
             f"{named}{more}."
         )
         if total:
-            said_parts.append(f"They carry {fmt_number(carried / total * 100.0)}% of the total.")
+            said_parts.append(
+                f"They carry {fmt_number(carried / total * 100.0)}% of the total."
+            )
     else:
         said_parts.append(
             f"No sample sits more than {fmt_number(mark_beyond)} standard deviations "
@@ -257,15 +252,14 @@ def build_svg(
 
     parts: List[str] = []
     parts.append(
-        svg_open(
-            width, height, "stem-title", "stem-desc", font_family=chrome_stack_for_theme(theme)
-        )
+        svg_open(width, height, "stem-title", "stem-desc",
+                 font_family=chrome_stack_for_theme(theme))
     )
     parts.append(f'<title id="stem-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="stem-desc">A stem plot of {n} samples from {xml_escape(labels[0])} '
-        f"to {xml_escape(labels[-1])}, each a stalk from the baseline to its value. "
-        f"{xml_escape(said_floor)}. {xml_escape(' '.join(said_parts))}</desc>"
+        f'to {xml_escape(labels[-1])}, each a stalk from the baseline to its value. '
+        f'{xml_escape(said_floor)}. {xml_escape(" ".join(said_parts))}</desc>'
     )
     parts.append(
         "<style>"
@@ -309,7 +303,7 @@ def build_svg(
         parts.append(
             f'<text x="{plot_x - 10:.1f}" y="{py(tick) + 4:.1f}" font-size="11" '
             f'fill="{SECONDARY}" text-anchor="end" font-family="{mono_family}">'
-            f"{fmt_number(tick)}</text>"
+            f'{fmt_number(tick)}</text>'
         )
     parts.append(
         f'<line x1="{plot_x:.1f}" y1="{py(floor):.1f}" x2="{plot_x + plot_w:.1f}" '
@@ -338,25 +332,20 @@ def build_svg(
         parts.append(
             f'<rect id="stalk-{index}" class="stalk hit" tabindex="0" role="img" '
             f'aria-label="{xml_escape(x)} {xml_escape(labels[index])}: '
-            f"{fmt_measured(value, precision)}"
+            f'{fmt_measured(value, precision)}'
             f'{", beyond the threshold" if hit else ""}" '
             f'x="{px(index) - plot_w / (2 * n):.1f}" y="{plot_y:.1f}" '
             f'width="{plot_w / n:.1f}" height="{plot_h:.1f}" fill="transparent">'
-            f"<title>{xml_escape(labels[index])}: "
-            f"{fmt_measured(value, precision)}</title></rect>"
+            f'<title>{xml_escape(labels[index])}: '
+            f'{fmt_measured(value, precision)}</title></rect>'
         )
         tips.append(
             tooltip_bubble(
-                px(index),
-                py(value),
+                px(index), py(value),
                 [f"{x} {labels[index]}", fmt_measured(value, precision)]
                 + (["beyond the threshold"] if hit else []),
-                canvas_w=width,
-                canvas_h=height,
-                ink=INK,
-                secondary=SECONDARY,
-                border=GRIDLINE,
-                elem_id=f"stalktip-{index}",
+                canvas_w=width, canvas_h=height, ink=INK, secondary=SECONDARY,
+                border=GRIDLINE, elem_id=f"stalktip-{index}",
             )
         )
 
@@ -365,16 +354,16 @@ def build_svg(
         parts.append(
             f'<text x="{px(index):.1f}" y="{plot_y + plot_h + 20:.1f}" font-size="11" '
             f'fill="{SECONDARY}" text-anchor="middle" font-family="{mono_family}">'
-            f"{xml_escape(labels[index])}</text>"
+            f'{xml_escape(labels[index])}</text>'
         )
     parts.append(
         f'<text x="{plot_x + plot_w / 2:.1f}" y="{plot_y + plot_h + 46:.1f}" '
         f'font-size="12" fill="{SECONDARY}" text-anchor="middle">'
-        f"{xml_escape(x_label)}</text>"
+        f'{xml_escape(x_label)}</text>'
     )
     parts.append(
         f'<text x="40" y="{plot_y - 12:.1f}" font-size="12" fill="{SECONDARY}">'
-        f"{xml_escape(y_label)}</text>"
+        f'{xml_escape(y_label)}</text>'
     )
 
     parts.extend(tips)
@@ -452,25 +441,11 @@ def make_stem(
     True
     """
     svg = build_svg(
-        data,
-        title=title,
-        subtitle=subtitle,
-        width=width,
-        height=height,
-        x=x,
-        y=y,
-        baseline=baseline,
-        baseline_value=baseline_value,
-        mark_beyond=mark_beyond,
-        dense_at=dense_at,
-        x_label=x_label,
-        y_label=y_label,
-        baseline_label=baseline_label,
-        floor_note=floor_note,
-        finding=finding,
-        mode=mode,
-        accessibility=accessibility,
-        theme=theme,
+        data, title=title, subtitle=subtitle, width=width, height=height,
+        x=x, y=y, baseline=baseline, baseline_value=baseline_value,
+        mark_beyond=mark_beyond, dense_at=dense_at, x_label=x_label,
+        y_label=y_label, baseline_label=baseline_label, floor_note=floor_note,
+        finding=finding, mode=mode, accessibility=accessibility, theme=theme,
     )
     dest = Path(out) if out else svg_example_path(__file__, "stem")
     return write_svg(dest, svg, theme=theme)
@@ -478,9 +453,8 @@ def make_stem(
 
 def main() -> None:
     """CLI entry point: build the SVG and write it to disk."""
-    render_cli(
-        __file__, "stem", build_svg, description="Draw a discrete signal as one stalk per sample."
-    )
+    render_cli(__file__, "stem", build_svg,
+               description="Draw a discrete signal as one stalk per sample.")
 
 
 if __name__ == "__main__":

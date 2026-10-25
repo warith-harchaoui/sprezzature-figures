@@ -67,9 +67,7 @@ def _nice_step(span: float, target_ticks: int = 6) -> float:
     raw_step = span / target_ticks
     exponent = math.floor(math.log10(raw_step))
     fraction = raw_step / (10.0**exponent)
-    nice_fraction = (
-        1.0 if fraction < 1.5 else 2.0 if fraction < 3 else 5.0 if fraction < 7 else 10.0
-    )
+    nice_fraction = 1.0 if fraction < 1.5 else 2.0 if fraction < 3 else 5.0 if fraction < 7 else 10.0
     return nice_fraction * (10.0**exponent)
 
 
@@ -192,15 +190,11 @@ def build_svg(
         return plot_y + plot_h - cum * plot_h
 
     parts: List[str] = []
-    parts.append(
-        svg_open(
-            width, height, "ecdf-title", "ecdf-desc", font_family=chrome_stack_for_theme(theme)
-        )
-    )
+    parts.append(svg_open(width, height, "ecdf-title", "ecdf-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="ecdf-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="ecdf-desc">Empirical CDF of {n} observations, ranging {v_min:.0f} to '
-        f"{v_max:.0f}. Dashed line marks the {percentile * 100:.0f}th percentile at {p_value:.0f}.</desc>"
+        f'{v_max:.0f}. Dashed line marks the {percentile * 100:.0f}th percentile at {p_value:.0f}.</desc>'
     )
     parts.append(
         "<style>"
@@ -214,9 +208,7 @@ def build_svg(
         f'<text x="40" y="46" font-size="22" font-weight="700" fill="{INK}" '
         f'letter-spacing="-0.3">{xml_escape(title)}</text>'
     )
-    parts.append(
-        f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>'
-    )
+    parts.append(f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>')
 
     # ---- y-axis gridlines (0%, 25%, ..., 100%) ----
     for i in range(5):
@@ -259,7 +251,7 @@ def build_svg(
     tip = f"{n} observations, {percentile * 100:.0f}th percentile = {p_value:.0f} ms"
     parts.append(
         f'<path tabindex="0" d="{path_d}" fill="none" stroke="{COLOR_LINE}" stroke-width="2.2">'
-        f"<title>{xml_escape(tip)}</title></path>"
+        f'<title>{xml_escape(tip)}</title></path>'
     )
     marker_tip = f"p{percentile * 100:.0f} = {p_value:.0f} ms"
     parts.append(
@@ -268,14 +260,8 @@ def build_svg(
     )
     parts.append(
         tooltip_bubble(
-            px,
-            py + 12,
-            [f"{percentile * 100:.0f}th percentile", f"{p_value:.0f} ms", f"{n} observations"],
-            canvas_w=width,
-            canvas_h=height,
-            ink=INK,
-            secondary=SECONDARY,
-            border=GRIDLINE,
+            px, py + 12, [f"{percentile * 100:.0f}th percentile", f"{p_value:.0f} ms", f"{n} observations"],
+            canvas_w=width, canvas_h=height, ink=INK, secondary=SECONDARY, border=GRIDLINE,
             elem_id="tip-0",
         )
     )
@@ -364,20 +350,9 @@ def make_ecdf(
     >>> p.exists()
     True
     """
-    svg = build_svg(
-        data,
-        percentile=percentile,
-        title=title,
-        subtitle=subtitle,
-        y_axis_title=y_axis_title,
-        x_axis_title=x_axis_title,
-        width=width,
-        height=height,
-        mode=mode,
-        accessibility=accessibility,
-        theme=theme,
-        language=language,
-    )
+    svg = build_svg(data, percentile=percentile, title=title, subtitle=subtitle,
+                     y_axis_title=y_axis_title, x_axis_title=x_axis_title, width=width, height=height,
+                     mode=mode, accessibility=accessibility, theme=theme, language=language)
     dest = Path(out) if out else svg_example_path(__file__, "ecdf")
     return write_svg(dest, svg, theme=theme)
 

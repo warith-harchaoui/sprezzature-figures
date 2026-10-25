@@ -53,11 +53,8 @@ def _nice_step(span: float, target_ticks: int = 5) -> float:
     raw_step = span / target_ticks
     exponent = math.floor(math.log10(raw_step))
     fraction = raw_step / (10.0**exponent)
-    nice_fraction = (
-        1.0 if fraction < 1.5 else 2.0 if fraction < 3 else 5.0 if fraction < 7 else 10.0
-    )
+    nice_fraction = 1.0 if fraction < 1.5 else 2.0 if fraction < 3 else 5.0 if fraction < 7 else 10.0
     return nice_fraction * (10.0**exponent)
-
 
 COLOR_BAND = "#3E9BFF"
 COLOR_SAMPLE = "#9CC7FF"
@@ -65,12 +62,8 @@ COLOR_MEAN = "#007AFF"
 COLOR_POINT = "#1D1D1F"
 
 DEMO_DATA: List[Dict[str, Any]] = [
-    {"x": -4.0, "y": 0.93},
-    {"x": -3.0, "y": -0.19},
-    {"x": -1.5, "y": -0.99},
-    {"x": 0.0, "y": 0.05},
-    {"x": 1.5, "y": 0.97},
-    {"x": 3.5, "y": -0.55},
+    {"x": -4.0, "y": 0.93}, {"x": -3.0, "y": -0.19}, {"x": -1.5, "y": -0.99},
+    {"x": 0.0, "y": 0.05}, {"x": 1.5, "y": 0.97}, {"x": 3.5, "y": -0.55},
 ]
 
 
@@ -81,12 +74,8 @@ def _rbf_kernel(a: np.ndarray, b: np.ndarray, length_scale: float, sigma_f: floa
 
 
 def _gp_posterior(
-    x_train: np.ndarray,
-    y_train: np.ndarray,
-    x_test: np.ndarray,
-    length_scale: float = 1.1,
-    sigma_f: float = 1.0,
-    sigma_n: float = 0.08,
+    x_train: np.ndarray, y_train: np.ndarray, x_test: np.ndarray,
+    length_scale: float = 1.1, sigma_f: float = 1.0, sigma_n: float = 0.08,
 ) -> Tuple[np.ndarray, np.ndarray]:
     """Return ``(mean, covariance)`` of the GP posterior at ``x_test``."""
     k = _rbf_kernel(x_train, x_train, length_scale, sigma_f) + sigma_n**2 * np.eye(len(x_train))
@@ -172,13 +161,11 @@ def build_svg(
         return plot_y + plot_h - (v - (y_min - pad)) / ((y_max + pad) - (y_min - pad)) * plot_h
 
     parts: List[str] = []
-    parts.append(
-        svg_open(width, height, "gp-title", "gp-desc", font_family=chrome_stack_for_theme(theme))
-    )
+    parts.append(svg_open(width, height, "gp-title", "gp-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="gp-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="gp-desc">Gaussian process posterior fit to {len(rows)} observed points. '
-        f"Shaded band is the 95% credible interval; three faint lines are posterior samples.</desc>"
+        f'Shaded band is the 95% credible interval; three faint lines are posterior samples.</desc>'
     )
     parts.append(
         "<style>"
@@ -192,9 +179,7 @@ def build_svg(
         f'<text x="40" y="46" font-size="22" font-weight="700" fill="{INK}" '
         f'letter-spacing="-0.3">{xml_escape(title)}</text>'
     )
-    parts.append(
-        f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>'
-    )
+    parts.append(f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>')
 
     # ---- gridlines (round "nice" steps, not a naive 5-way split) ----
     y_axis_lo, y_axis_hi = y_min - pad, y_max + pad
@@ -228,9 +213,7 @@ def build_svg(
     for s in range(n_samples):
         pts = [(x_for(x), y_for(v)) for x, v in zip(x_test, samples[:, s], strict=True)]
         path_d = "M " + " L ".join(f"{x:.1f},{y:.1f}" for x, y in pts)
-        parts.append(
-            f'<path d="{path_d}" fill="none" stroke="{COLOR_SAMPLE}" stroke-width="1" opacity="0.6"/>'
-        )
+        parts.append(f'<path d="{path_d}" fill="none" stroke="{COLOR_SAMPLE}" stroke-width="1" opacity="0.6"/>')
 
     # ---- posterior mean ----
     mean_pts = [(x_for(x), y_for(v)) for x, v in zip(x_test, mean, strict=True)]
@@ -238,7 +221,7 @@ def build_svg(
     tip = f"GP posterior mean, {len(rows)} observations, RBF kernel"
     parts.append(
         f'<path tabindex="0" d="{mean_d}" fill="none" stroke="{COLOR_MEAN}" stroke-width="2.5">'
-        f"<title>{xml_escape(tip)}</title></path>"
+        f'<title>{xml_escape(tip)}</title></path>'
     )
 
     # ---- observed points ----
@@ -255,15 +238,10 @@ def build_svg(
         )
         tip_bubbles.append(
             tooltip_bubble(
-                cx,
-                cy - 16,
+                cx, cy - 16,
                 [f"x = {float(r['x']):.2f}", f"y = {float(r['y']):.2f}", "observed point"],
-                anchor="middle",
-                canvas_w=width,
-                canvas_h=height,
-                ink=INK,
-                secondary=SECONDARY,
-                border=GRIDLINE,
+                anchor="middle", canvas_w=width, canvas_h=height,
+                ink=INK, secondary=SECONDARY, border=GRIDLINE,
                 elem_id=f"tip-{i}",
             )
         )
@@ -337,28 +315,15 @@ def make_gaussian_process(
     >>> p.exists()
     True
     """
-    svg = build_svg(
-        data,
-        title=title,
-        subtitle=subtitle,
-        width=width,
-        height=height,
-        mode=mode,
-        accessibility=accessibility,
-        theme=theme,
-    )
+    svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
+                     mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "gaussian-process")
     return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:
     """CLI entry point: build the SVG and write it to disk."""
-    render_cli(
-        __file__,
-        "gaussian-process",
-        build_svg,
-        description="Generate a Gaussian-process regression figure.",
-    )
+    render_cli(__file__, "gaussian-process", build_svg, description="Generate a Gaussian-process regression figure.")
 
 
 if __name__ == "__main__":

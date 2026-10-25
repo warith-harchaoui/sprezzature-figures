@@ -84,13 +84,11 @@ def _signups(seed: int = 23) -> List[Dict[str, Any]]:
                 if calendar == _OUTAGE_MONTH:
                     leaving += 0.18
                 alive *= 1.0 - leaving * rng.uniform(0.9, 1.1)
-            rows.append(
-                {
-                    "cohort": f"2025-{cohort_index + 1:02d}",
-                    "period": age,
-                    "users": int(round(alive)),
-                }
-            )
+            rows.append({
+                "cohort": f"2025-{cohort_index + 1:02d}",
+                "period": age,
+                "users": int(round(alive)),
+            })
     return rows
 
 
@@ -204,14 +202,17 @@ def build_svg(
                 f"{len(missing_base)} cohort(s) have no period-{min(ages)} row to divide "
                 f"by, so their retention cannot be computed: {', '.join(missing_base[:4])}"
             )
-        measured = {(name, age): amount / base[name] for (name, age), amount in measured.items()}
+        measured = {
+            (name, age): amount / base[name] for (name, age), amount in measured.items()
+        }
 
     shown_ages = [age for age in ages if include_period_zero or age != min(ages)]
     if not shown_ages:
         raise ValueError("nothing left to draw once period zero is dropped")
 
     present = [
-        measured[(name, age)] for name in cohorts for age in shown_ages if (name, age) in measured
+        measured[(name, age)]
+        for name in cohorts for age in shown_ages if (name, age) in measured
     ]
     if not present:
         raise ValueError("no cell has a value to draw")
@@ -236,7 +237,9 @@ def build_svg(
             for name in cohorts
             if (name, previous) in measured and (name, current) in measured
         ]
-        usable = sorted((before - after) / before for before, after in pairs if before > 0.0)
+        usable = sorted(
+            (before - after) / before for before, after in pairs if before > 0.0
+        )
         if not usable:
             return None
         # The median, not the mean. One cohort caught by a bad calendar
@@ -244,7 +247,10 @@ def build_svg(
         # that across the threshold for every pair it appears in -- which
         # moved the plateau this figure reports from month 5 to month 10.
         middle = len(usable) // 2
-        return usable[middle] if len(usable) % 2 else (usable[middle - 1] + usable[middle]) / 2.0
+        return (
+            usable[middle] if len(usable) % 2
+            else (usable[middle - 1] + usable[middle]) / 2.0
+        )
 
     plateau: Optional[int] = None
     for index in range(1, len(shown_ages)):
@@ -289,13 +295,11 @@ def build_svg(
     cell_h = plot_h / len(cohorts)
 
     scale_lines = (
-        [scale_note]
-        if scale_note is not None
+        [scale_note] if scale_note is not None
         else [
             f"colour runs {fmt_number(low * 100.0)}% to {fmt_number(high * 100.0)}%, "
             f"the range of the measured cells, not 0 to 100"
-        ]
-        + ([] if include_period_zero else ["period 0 omitted, it is 100% by definition"])
+        ] + ([] if include_period_zero else ["period 0 omitted, it is 100% by definition"])
     )
     said_scale = " · ".join(scale_lines)
     said_parts: List[str] = []
@@ -320,7 +324,8 @@ def build_svg(
             )
         if pending:
             said_parts.append(
-                f"{pending} of {len(cohorts) * len(shown_ages)} cells are {pending_label}."
+                f"{pending} of {len(cohorts) * len(shown_ages)} cells are "
+                f"{pending_label}."
             )
     said_lines: List[str] = []
     for sentence in said_parts:
@@ -328,25 +333,23 @@ def build_svg(
 
     parts: List[str] = []
     parts.append(
-        svg_open(
-            width, height, "cohort-title", "cohort-desc", font_family=chrome_stack_for_theme(theme)
-        )
+        svg_open(width, height, "cohort-title", "cohort-desc",
+                 font_family=chrome_stack_for_theme(theme))
     )
     parts.append(f'<title id="cohort-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="cohort-desc">A retention triangle of {len(cohorts)} cohorts against '
-        f"{len(shown_ages)} periods of age, each cell shaded by the share of its cohort "
-        f"still present. {xml_escape(said_scale)}. "
-        f"{xml_escape(' '.join(said_parts))}</desc>"
+        f'{len(shown_ages)} periods of age, each cell shaded by the share of its cohort '
+        f'still present. {xml_escape(said_scale)}. '
+        f'{xml_escape(" ".join(said_parts))}</desc>'
     )
     parts.append(
         "<style>"
         ".cell{cursor:default;}"
         ".cell:hover,.cell:focus{outline:none;}"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        + foreground_tip_css(
-            len(cohorts) * len(shown_ages), mark_prefix="cell", tip_prefix="celltip"
-        )
+        + foreground_tip_css(len(cohorts) * len(shown_ages),
+                             mark_prefix="cell", tip_prefix="celltip")
         + "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
         "</style>"
     )
@@ -382,7 +385,7 @@ def build_svg(
         parts.append(
             f'<text x="{plot_x - 10:.1f}" y="{top + cell_h / 2 + 4:.1f}" font-size="11" '
             f'fill="{SECONDARY}" text-anchor="end" font-family="{mono_family}">'
-            f"{xml_escape(name)}</text>"
+            f'{xml_escape(name)}</text>'
         )
         for age_index, age in enumerate(shown_ages):
             left = plot_x + age_index * cell_w
@@ -413,20 +416,15 @@ def build_svg(
                 f'{fmt_number(rate * 100.0)}% still present" '
                 f'x="{left + 1:.1f}" y="{top + 1:.1f}" width="{cell_w - 2:.1f}" '
                 f'height="{cell_h - 2:.1f}" fill="transparent">'
-                f"<title>{xml_escape(name)} month {age}: "
-                f"{fmt_number(rate * 100.0)}%</title></rect>"
+                f'<title>{xml_escape(name)} month {age}: '
+                f'{fmt_number(rate * 100.0)}%</title></rect>'
             )
             tips.append(
                 tooltip_bubble(
-                    left + cell_w / 2,
-                    top + cell_h / 2,
+                    left + cell_w / 2, top + cell_h / 2,
                     [f"{name} · month {age}", f"{fmt_number(rate * 100.0)}%"],
-                    canvas_w=width,
-                    canvas_h=height,
-                    ink=INK,
-                    secondary=SECONDARY,
-                    border=GRIDLINE,
-                    elem_id=f"celltip-{element}",
+                    canvas_w=width, canvas_h=height, ink=INK, secondary=SECONDARY,
+                    border=GRIDLINE, elem_id=f"celltip-{element}",
                 )
             )
 
@@ -466,7 +464,7 @@ def build_svg(
     parts.append(
         f'<text x="{plot_x + 220:.1f}" y="{key_y + 4:.1f}" font-size="11" '
         f'fill="{SECONDARY}" font-family="{mono_family}">'
-        f"{fmt_number(high * 100.0)}%</text>"
+        f'{fmt_number(high * 100.0)}%</text>'
     )
     parts.append(
         f'<rect x="{plot_x + 276:.1f}" y="{key_y - 8:.1f}" width="14" height="11" '
@@ -557,26 +555,13 @@ def make_cohort_retention(
     True
     """
     svg = build_svg(
-        data,
-        title=title,
-        subtitle=subtitle,
-        width=width,
-        height=height,
-        cohort=cohort,
-        period=period,
-        value=value,
-        value_is_rate=value_is_rate,
-        include_period_zero=include_period_zero,
-        plateau_at=plateau_at,
-        diagonal_gap=diagonal_gap,
-        cohort_label=cohort_label,
-        period_label=period_label,
-        pending_label=pending_label,
-        scale_note=scale_note,
-        finding=finding,
-        mode=mode,
-        accessibility=accessibility,
-        theme=theme,
+        data, title=title, subtitle=subtitle, width=width, height=height,
+        cohort=cohort, period=period, value=value, value_is_rate=value_is_rate,
+        include_period_zero=include_period_zero, plateau_at=plateau_at,
+        diagonal_gap=diagonal_gap, cohort_label=cohort_label,
+        period_label=period_label, pending_label=pending_label,
+        scale_note=scale_note, finding=finding, mode=mode,
+        accessibility=accessibility, theme=theme,
     )
     dest = Path(out) if out else svg_example_path(__file__, "cohort-retention")
     return write_svg(dest, svg, theme=theme)
@@ -584,12 +569,8 @@ def make_cohort_retention(
 
 def main() -> None:
     """CLI entry point: build the SVG and write it to disk."""
-    render_cli(
-        __file__,
-        "cohort-retention",
-        build_svg,
-        description="Draw a retention triangle: who stays, by when they arrived.",
-    )
+    render_cli(__file__, "cohort-retention", build_svg,
+               description="Draw a retention triangle: who stays, by when they arrived.")
 
 
 if __name__ == "__main__":

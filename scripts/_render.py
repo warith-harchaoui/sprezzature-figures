@@ -97,7 +97,10 @@ def svg_example_path(script_file: str, figure_id: str) -> Path:
     # ``.parent`` is the scripts/ dir; ``.parent.parent`` is the skill root that
     # holds assets/. Resolve first so a relative ``__file__`` still works.
     return (
-        Path(script_file).resolve().parent.parent / "assets" / "svg-examples" / f"{figure_id}.svg"
+        Path(script_file).resolve().parent.parent
+        / "assets"
+        / "svg-examples"
+        / f"{figure_id}.svg"
     )
 
 
@@ -273,7 +276,7 @@ def _write_in_format(out: Path, svg: str) -> None:
 def _svg_to_html(svg: str) -> str:
     """Wrap a standalone SVG in a minimal, responsive HTML document."""
     return (
-        '<!doctype html>\n<html lang="en">\n<head>\n'
+        "<!doctype html>\n<html lang=\"en\">\n<head>\n"
         '<meta charset="utf-8">\n'
         '<meta name="viewport" content="width=device-width, initial-scale=1">\n'
         "<style>html,body{margin:0;height:100%}"
@@ -313,23 +316,11 @@ _OPTIONAL_FLAGS: dict = {
     "log_y": ("--log-y", "flag", "use a logarithmic y-axis"),
     "vmin": ("--vmin", float, "explicit color-scale minimum (default: this call's own data min)"),
     "vmax": ("--vmax", float, "explicit color-scale maximum (default: this call's own data max)"),
-    "x_domain": (
-        "--x-domain",
-        _parse_float_pair,
-        "explicit 'lo,hi' x-axis bounds (default: data min/max)",
-    ),
-    "y_domain": (
-        "--y-domain",
-        _parse_float_pair,
-        "explicit 'lo,hi' y-axis bounds (default: a 0-anchored nice ceiling)",
-    ),
+    "x_domain": ("--x-domain", _parse_float_pair, "explicit 'lo,hi' x-axis bounds (default: data min/max)"),
+    "y_domain": ("--y-domain", _parse_float_pair, "explicit 'lo,hi' y-axis bounds (default: a 0-anchored nice ceiling)"),
     "x_tick_step": ("--x-tick-step", float, "explicit x tick spacing (requires --x-domain)"),
     "y_tick_step": ("--y-tick-step", float, "explicit y tick spacing (requires --y-domain)"),
-    "y_minor_step": (
-        "--y-minor-step",
-        float,
-        "unlabeled minor gridline spacing (requires --y-domain)",
-    ),
+    "y_minor_step": ("--y-minor-step", float, "unlabeled minor gridline spacing (requires --y-domain)"),
 }
 
 
@@ -391,12 +382,8 @@ def render_cli(
     parser.add_argument(
         "--accessibility",
         choices=(
-            "universal",
-            "high-contrast",
-            "monochrome",
-            "deuteranopia",
-            "protanopia",
-            "tritanopia",
+            "universal", "high-contrast", "monochrome",
+            "deuteranopia", "protanopia", "tritanopia",
         ),
         default="universal",
         help="palette accessibility level (default: universal, the CVD-safe standard)",
@@ -427,9 +414,7 @@ def render_cli(
         else:
             default = params[name].default
             parser.add_argument(
-                flag,
-                type=type_,
-                default=None,
+                flag, type=type_, default=None,
                 help=f"{help_text} (default: {default!r})",
             )
     args = parser.parse_args()

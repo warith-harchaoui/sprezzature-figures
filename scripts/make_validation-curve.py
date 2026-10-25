@@ -79,24 +79,16 @@ def _sweep(seed: int = 17, folds: int = 5) -> List[Dict[str, Any]]:
         # does land one step past the peak. Writing a demo whose title asserts
         # a disagreement, then not checking the arithmetic, is how a figure
         # ends up contradicting its own headline.
-        valid_mean = 0.930 - (0.016 if offset < 0 else 0.0006) * offset**2
+        valid_mean = 0.930 - (0.016 if offset < 0 else 0.0006) * offset ** 2
         for fold in range(folds):
-            rows.append(
-                {
-                    "alpha": alpha,
-                    "split": "Training",
-                    "fold": fold,
-                    "score": round(train_mean + (rng.random() - 0.5) * 0.010, 4),
-                }
-            )
-            rows.append(
-                {
-                    "alpha": alpha,
-                    "split": "Validation",
-                    "fold": fold,
-                    "score": round(valid_mean + (rng.random() - 0.5) * 0.021, 4),
-                }
-            )
+            rows.append({
+                "alpha": alpha, "split": "Training", "fold": fold,
+                "score": round(train_mean + (rng.random() - 0.5) * 0.010, 4),
+            })
+            rows.append({
+                "alpha": alpha, "split": "Validation", "fold": fold,
+                "score": round(valid_mean + (rng.random() - 0.5) * 0.021, 4),
+            })
     return rows
 
 
@@ -128,10 +120,8 @@ def _one_standard_error_choice(
     eligible = [row for row in points if row[1] >= threshold]
     if not eligible:
         return best_param, best_mean
-    pick = (
-        max(eligible, key=lambda row: row[0])
-        if simpler_is == "larger"
-        else min(eligible, key=lambda row: row[0])
+    pick = max(eligible, key=lambda row: row[0]) if simpler_is == "larger" else min(
+        eligible, key=lambda row: row[0]
     )
     return pick[0], pick[1]
 
@@ -280,14 +270,15 @@ def build_svg(
 
     parts: List[str] = []
     parts.append(
-        svg_open(width, height, "vc-title", "vc-desc", font_family=chrome_stack_for_theme(theme))
+        svg_open(width, height, "vc-title", "vc-desc",
+                 font_family=chrome_stack_for_theme(theme))
     )
     parts.append(f'<title id="vc-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="vc-desc">A sweep of {len(values)} values of '
-        f"{xml_escape(x_label)}, from {shown(values[0])} to {shown(values[-1])}, with "
-        f"{xml_escape(', '.join(series_names))} scored at each. Each band is the range "
-        f"across folds. {xml_escape(said)}</desc>"
+        f'{xml_escape(x_label)}, from {shown(values[0])} to {shown(values[-1])}, with '
+        f'{xml_escape(", ".join(series_names))} scored at each. Each band is the range '
+        f'across folds. {xml_escape(said)}</desc>'
     )
     parts.append(
         "<style>"
@@ -305,7 +296,7 @@ def build_svg(
     )
     parts.append(
         f'<text x="{plot_x:.1f}" y="72" font-size="14" fill="{SECONDARY}">'
-        f"{xml_escape(subtitle)}</text>"
+        f'{xml_escape(subtitle)}</text>'
     )
     parts.append(
         f'<text x="{plot_x:.1f}" y="98" font-size="12" fill="{SECONDARY}" '
@@ -313,7 +304,7 @@ def build_svg(
     )
     parts.append(
         f'<text x="{plot_x:.1f}" y="{plot_y - 14:.1f}" font-size="12" fill="{SECONDARY}">'
-        f"{xml_escape(y_label)}</text>"
+        f'{xml_escape(y_label)}</text>'
     )
 
     for value_at in ticks:
@@ -330,7 +321,7 @@ def build_svg(
         parts.append(
             f'<text x="{px(value):.1f}" y="{plot_y + plot_h + 22:.1f}" font-size="11" '
             f'fill="{SECONDARY}" text-anchor="middle" font-family="{mono_family}">'
-            f"{xml_escape(shown(value))}</text>"
+            f'{xml_escape(shown(value))}</text>'
         )
     parts.append(
         f'<text x="{plot_x + plot_w / 2:.1f}" y="{height - 24:.1f}" font-size="12" '
@@ -350,7 +341,7 @@ def build_svg(
     parts.append(
         f'<text x="{plot_x + plot_w:.1f}" y="{py(threshold) - 6:.1f}" font-size="10" '
         f'fill="{hues["valid"]}" text-anchor="end" font-family="{mono_family}">'
-        f"one standard error below the peak</text>"
+        f'one standard error below the peak</text>'
     )
 
     tips: List[str] = []
@@ -358,7 +349,9 @@ def build_svg(
         colour = hues["train"] if name.lower().startswith("train") else hues["valid"]
         present = [v for v in values if (name, v) in stats]
         upper = " ".join(f"{px(v):.1f},{py(stats[(name, v)][2]):.1f}" for v in present)
-        lower = " ".join(f"{px(v):.1f},{py(stats[(name, v)][1]):.1f}" for v in reversed(present))
+        lower = " ".join(
+            f"{px(v):.1f},{py(stats[(name, v)][1]):.1f}" for v in reversed(present)
+        )
         parts.append(f'<polygon points="{upper} {lower}" fill="{colour}" opacity="0.16"/>')
         parts.append(
             '<polyline points="'
@@ -378,24 +371,19 @@ def build_svg(
                 f'{fmt_number(mean)}, folds {fmt_number(low)} to {fmt_number(high)}" '
                 f'x="{px(value) - 10:.1f}" y="{py(high) - 10:.1f}" width="20" '
                 f'height="{max(py(low) - py(high) + 20, 20):.1f}" fill="transparent">'
-                f"<title>{xml_escape(name)} · {xml_escape(shown(value))}: "
-                f"{fmt_number(mean)}</title></rect>"
+                f'<title>{xml_escape(name)} · {xml_escape(shown(value))}: '
+                f'{fmt_number(mean)}</title></rect>'
             )
             tips.append(
                 tooltip_bubble(
-                    px(value),
-                    py(mean),
+                    px(value), py(mean),
                     [
                         f"{name} · {shown(value)}",
                         f"mean {fmt_number(mean)}",
                         f"folds {fmt_number(low)} to {fmt_number(high)}",
                     ],
-                    canvas_w=width,
-                    canvas_h=height,
-                    ink=INK,
-                    secondary=SECONDARY,
-                    border=GRIDLINE,
-                    elem_id=f"vptip-{element}",
+                    canvas_w=width, canvas_h=height, ink=INK, secondary=SECONDARY,
+                    border=GRIDLINE, elem_id=f"vptip-{element}",
                 )
             )
         last = present[-1]
@@ -427,7 +415,7 @@ def build_svg(
             f'<text x="{anchor_x + 2:.1f}" '
             f'y="{plot_y + (19 if label == "peak" else 41):.1f}" font-size="11" '
             f'font-weight="700" fill="{INK}" font-family="{mono_family}">'
-            f"{xml_escape(text)}</text>"
+            f'{xml_escape(text)}</text>'
         )
 
     parts.extend(tips)
@@ -499,22 +487,10 @@ def make_validation_curve(
     True
     """
     svg = build_svg(
-        data,
-        title=title,
-        subtitle=subtitle,
-        width=width,
-        height=height,
-        x=x,
-        series=series,
-        y=y,
-        x_label=x_label,
-        y_label=y_label,
-        simpler_is=simpler_is,
-        log_scale=log_scale,
-        advice=advice,
-        mode=mode,
-        accessibility=accessibility,
-        theme=theme,
+        data, title=title, subtitle=subtitle, width=width, height=height,
+        x=x, series=series, y=y, x_label=x_label, y_label=y_label,
+        simpler_is=simpler_is, log_scale=log_scale, advice=advice, mode=mode,
+        accessibility=accessibility, theme=theme,
     )
     dest = Path(out) if out else svg_example_path(__file__, "validation-curve")
     return write_svg(dest, svg, theme=theme)
@@ -522,12 +498,8 @@ def make_validation_curve(
 
 def main() -> None:
     """CLI entry point: build the SVG and write it to disk."""
-    render_cli(
-        __file__,
-        "validation-curve",
-        build_svg,
-        description="Generate a validation curve over one hyper-parameter.",
-    )
+    render_cli(__file__, "validation-curve", build_svg,
+               description="Generate a validation curve over one hyper-parameter.")
 
 
 if __name__ == "__main__":

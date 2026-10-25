@@ -212,17 +212,13 @@ def build_svg(
     peak_idx = counts.index(max_count) if counts else 0
 
     parts: List[str] = []
-    parts.append(
-        svg_open(
-            width, height, "hist-title", "hist-desc", font_family=chrome_stack_for_theme(theme)
-        )
-    )
+    parts.append(svg_open(width, height, "hist-title", "hist-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="hist-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="hist-desc">Histogram of {total} observations across {n_bins} bins '
-        f"from {_fmt_edge(edges[0])} to {_fmt_edge(edges[-1])}. The tallest bin is "
-        f"{_fmt_edge(edges[peak_idx])}-{_fmt_edge(edges[peak_idx + 1])} with {max_count} "
-        f"observations, {max_count / total * 100:.0f}% of the sample.</desc>"
+        f'from {_fmt_edge(edges[0])} to {_fmt_edge(edges[-1])}. The tallest bin is '
+        f'{_fmt_edge(edges[peak_idx])}-{_fmt_edge(edges[peak_idx + 1])} with {max_count} '
+        f'observations, {max_count / total * 100:.0f}% of the sample.</desc>'
     )
 
     # Hover: brighten + lift the bar under the pointer so it reads as
@@ -245,9 +241,7 @@ def build_svg(
         f'<text x="40" y="56" font-size="26" font-weight="600" fill="{INK}" '
         f'letter-spacing="-0.3">{xml_escape(title)}</text>'
     )
-    parts.append(
-        f'<text x="40" y="84" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>'
-    )
+    parts.append(f'<text x="40" y="84" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>')
 
     # ---- y-axis gridlines + labels --------------------------------------
     for tick in y_ticks:
@@ -263,7 +257,7 @@ def build_svg(
     parts.append(
         f'<text x="24" y="{plot_y + plot_h / 2:.1f}" font-size="14" fill="{INK}" '
         f'text-anchor="middle" transform="rotate(-90 24 {plot_y + plot_h / 2:.1f})">'
-        f"{xml_escape(y_label)}</text>"
+        f'{xml_escape(y_label)}</text>'
     )
 
     # ---- bars: round the free (top) end only, capped per the bar family -
@@ -284,39 +278,28 @@ def build_svg(
         path = bar_path(x, y, bar_w, h, r, side="top")
         parts.append(
             f'<path id="bar-{i}" class="bar hit" tabindex="0" d="{path}" fill="{COLOR_BAR}" fill-opacity="0.88">'
-            f"<title>{xml_escape(tip)}</title></path>"
+            f'<title>{xml_escape(tip)}</title></path>'
         )
         tip_bubbles.append(
             tooltip_bubble(
-                x + bar_w / 2,
-                y - 12,
-                [
-                    f"{_fmt_edge(edges[i])}-{_fmt_edge(edges[i + 1])}",
-                    f"{count} students ({share:.1f}% of sample)",
-                ],
-                anchor="middle",
-                canvas_w=width,
-                canvas_h=height,
-                ink=INK,
-                secondary=SECONDARY,
-                border=GRIDLINE,
+                x + bar_w / 2, y - 12,
+                [f"{_fmt_edge(edges[i])}-{_fmt_edge(edges[i + 1])}",
+                 f"{count} students ({share:.1f}% of sample)"],
+                anchor="middle", canvas_w=width, canvas_h=height,
+                ink=INK, secondary=SECONDARY, border=GRIDLINE,
                 elem_id=f"tip-{i}",
             )
         )
 
     # ---- x-axis: a tick at every other bin edge so labels never crowd ---
     axis_y = plot_y + plot_h
-    parts.append(
-        f'<line x1="{plot_x:.1f}" y1="{axis_y:.1f}" x2="{plot_x + plot_w:.1f}" y2="{axis_y:.1f}" stroke="{INK}" stroke-width="1.2"/>'
-    )
+    parts.append(f'<line x1="{plot_x:.1f}" y1="{axis_y:.1f}" x2="{plot_x + plot_w:.1f}" y2="{axis_y:.1f}" stroke="{INK}" stroke-width="1.2"/>')
     label_stride = 2 if n_bins > 12 else 1
     for i, edge in enumerate(edges):
         if i % label_stride != 0 and i != n_bins:
             continue
         tx = plot_x + i * bin_w
-        parts.append(
-            f'<line x1="{tx:.1f}" y1="{axis_y:.1f}" x2="{tx:.1f}" y2="{axis_y + 6:.1f}" stroke="{INK}" stroke-width="1"/>'
-        )
+        parts.append(f'<line x1="{tx:.1f}" y1="{axis_y:.1f}" x2="{tx:.1f}" y2="{axis_y + 6:.1f}" stroke="{INK}" stroke-width="1"/>')
         parts.append(
             f'<text x="{tx:.1f}" y="{axis_y + 22:.1f}" font-size="11" font-family="{mono_family}" '
             f'fill="{SECONDARY}" text-anchor="middle">{_fmt_edge(edge)}</text>'
@@ -384,18 +367,9 @@ def make_histogram(
     True
     """
     svg = build_svg(
-        data,
-        title=title,
-        subtitle=subtitle,
-        width=width,
-        height=height,
-        bin_count=bin_count,
-        mode=mode,
-        accessibility=accessibility,
-        x_label=x_label,
-        y_label=y_label,
-        log_y=log_y,
-        theme=theme,
+        data, title=title, subtitle=subtitle, width=width, height=height,
+        bin_count=bin_count, mode=mode, accessibility=accessibility,
+        x_label=x_label, y_label=y_label, log_y=log_y, theme=theme,
         language=language,
     )
     dest = Path(out) if out else svg_example_path(__file__, "histogram")
@@ -404,12 +378,7 @@ def make_histogram(
 
 def main() -> None:
     """CLI entry point: build the SVG and write it to disk."""
-    render_cli(
-        __file__,
-        "histogram",
-        build_svg,
-        description="Generate a distribution histogram (hand-authored SVG).",
-    )
+    render_cli(__file__, "histogram", build_svg, description="Generate a distribution histogram (hand-authored SVG).")
 
 
 if __name__ == "__main__":

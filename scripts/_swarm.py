@@ -23,9 +23,7 @@ from typing import List, Optional, Tuple
 
 
 def _swarm_positions(
-    items: List[Tuple[float, float]],
-    center_y: float,
-    radius: float,
+    items: List[Tuple[float, float]], center_y: float, radius: float,
     max_offset: Optional[float] = None,
 ) -> List[float]:
     """Greedy collision-avoidance layout: return one y per (x, _) in *items*.
@@ -56,11 +54,7 @@ def _swarm_positions(
         offset = 0
         tried = 0
         while True:
-            raw_candidate = (
-                center_y
-                if offset == 0
-                else center_y + (step * ((offset + 1) // 2) * (1 if offset % 2 else -1))
-            )
+            raw_candidate = center_y if offset == 0 else center_y + (step * ((offset + 1) // 2) * (1 if offset % 2 else -1))
             at_bound = max_offset is not None and abs(raw_candidate - center_y) >= max_offset
             # Written as a statement, not a conditional expression: `at_bound`
             # already implies `max_offset is not None`, but only a reader can
@@ -83,3 +77,4 @@ def _swarm_positions(
             offset += 1
             tried += 1
     return ys
+

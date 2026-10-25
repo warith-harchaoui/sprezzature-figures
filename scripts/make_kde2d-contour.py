@@ -48,20 +48,10 @@ COLOR_CONTOUR = "#007AFF"
 # and 10 are the ambiguous saddle configurations; either diagonal resolution
 # is visually fine for a line contour (no fill to get wrong).
 _CASE_EDGES: Dict[int, List[Tuple[str, str]]] = {
-    1: [("l", "b")],
-    2: [("b", "r")],
-    3: [("l", "r")],
-    4: [("r", "t")],
-    5: [("l", "b"), ("r", "t")],
-    6: [("b", "t")],
-    7: [("l", "t")],
-    8: [("l", "t")],
-    9: [("b", "t")],
-    10: [("b", "r"), ("l", "t")],
-    11: [("r", "t")],
-    12: [("l", "r")],
-    13: [("b", "r")],
-    14: [("l", "b")],
+    1: [("l", "b")], 2: [("b", "r")], 3: [("l", "r")], 4: [("r", "t")],
+    5: [("l", "b"), ("r", "t")], 6: [("b", "t")], 7: [("l", "t")],
+    8: [("l", "t")], 9: [("b", "t")], 10: [("b", "r"), ("l", "t")],
+    11: [("r", "t")], 12: [("l", "r")], 13: [("b", "r")], 14: [("l", "b")],
 }
 
 
@@ -79,9 +69,7 @@ DEMO_DATA: List[Dict[str, Any]] = _make_demo_data()
 
 
 def _kde2d_grid(
-    samples: np.ndarray,
-    x_coords: np.ndarray,
-    y_coords: np.ndarray,
+    samples: np.ndarray, x_coords: np.ndarray, y_coords: np.ndarray,
 ) -> np.ndarray:
     """Evaluate a bivariate Gaussian KDE of *samples* on the *x*/*y* grid.
 
@@ -101,10 +89,7 @@ def _kde2d_grid(
 
 
 def _marching_squares(
-    grid: np.ndarray,
-    level: float,
-    x_coords: np.ndarray,
-    y_coords: np.ndarray,
+    grid: np.ndarray, level: float, x_coords: np.ndarray, y_coords: np.ndarray,
 ) -> List[Tuple[Tuple[float, float], Tuple[float, float]]]:
     """Extract line segments where *grid* crosses *level* (marching squares)."""
     ny, nx = grid.shape
@@ -208,15 +193,11 @@ def build_svg(
         return plot_y + plot_h - (v - y_lo) / (y_hi - y_lo) * plot_h
 
     parts: List[str] = []
-    parts.append(
-        svg_open(
-            width, height, "kdec-title", "kdec-desc", font_family=chrome_stack_for_theme(theme)
-        )
-    )
+    parts.append(svg_open(width, height, "kdec-title", "kdec-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="kdec-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="kdec-desc">2-D kernel density contours of {len(rows)} points at '
-        f"{n_levels} density levels.</desc>"
+        f'{n_levels} density levels.</desc>'
     )
     parts.append(
         "<style>"
@@ -231,9 +212,7 @@ def build_svg(
         f'<text x="40" y="46" font-size="22" font-weight="700" fill="{INK}" '
         f'letter-spacing="-0.3">{xml_escape(title)}</text>'
     )
-    parts.append(
-        f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>'
-    )
+    parts.append(f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>')
 
     # ---- gridlines + tick labels ----
     # Without these the reader can see the density shape but has no scale
@@ -398,28 +377,15 @@ def make_kde2d_contour(
     >>> p.exists()
     True
     """
-    svg = build_svg(
-        data,
-        title=title,
-        subtitle=subtitle,
-        width=width,
-        height=height,
-        mode=mode,
-        accessibility=accessibility,
-        theme=theme,
-    )
+    svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
+                     mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "kde2d-contour")
     return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:
     """CLI entry point: build the SVG and write it to disk."""
-    render_cli(
-        __file__,
-        "kde2d-contour",
-        build_svg,
-        description="Generate a 2-D kernel density contour plot.",
-    )
+    render_cli(__file__, "kde2d-contour", build_svg, description="Generate a 2-D kernel density contour plot.")
 
 
 if __name__ == "__main__":

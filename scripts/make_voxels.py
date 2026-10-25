@@ -94,14 +94,14 @@ def _search() -> List[Dict[str, Any]]:
                 # interaction that stops the volume being a stack of
                 # independent slabs.
                 interaction = -0.040 * max(0.0, depth - 6) * max(0.0, 0.8 - subsample)
-                rows.append(
-                    {
-                        "learning_rate": rate,
-                        "max_depth": depth,
-                        "subsample": subsample,
-                        "auc": round(0.806 + from_rate + from_depth + from_rows + interaction, 4),
-                    }
-                )
+                rows.append({
+                    "learning_rate": rate,
+                    "max_depth": depth,
+                    "subsample": subsample,
+                    "auc": round(
+                        0.806 + from_rate + from_depth + from_rows + interaction, 4
+                    ),
+                })
     return rows
 
 
@@ -109,14 +109,8 @@ DEMO_DATA: List[Dict[str, Any]] = _search()
 
 #: The eight corners of a unit cell, as offsets in ``(i, j, k)``.
 _CORNERS: Tuple[Tuple[int, int, int], ...] = (
-    (0, 0, 0),
-    (1, 0, 0),
-    (1, 1, 0),
-    (0, 1, 0),
-    (0, 0, 1),
-    (1, 0, 1),
-    (1, 1, 1),
-    (0, 1, 1),
+    (0, 0, 0), (1, 0, 0), (1, 1, 0), (0, 1, 0),
+    (0, 0, 1), (1, 0, 1), (1, 1, 1), (0, 1, 1),
 )
 
 #: The six faces of a cell, as corner indices wound consistently, with
@@ -345,7 +339,11 @@ def build_svg(
     filled = {key: val for key, val in cells.items() if val >= cut_at}
 
     best_key = max(cells, key=lambda k: cells[k])
-    on_face = best_key[0] in (0, nx - 1) or best_key[1] in (0, ny - 1) or best_key[2] in (0, nz - 1)
+    on_face = (
+        best_key[0] in (0, nx - 1)
+        or best_key[1] in (0, ny - 1)
+        or best_key[2] in (0, nz - 1)
+    )
 
     # ---- the cutaway, decided from where the camera actually is ----
     # Which octant is nearest is a fact about the camera, not about the
@@ -355,12 +353,7 @@ def build_svg(
         np.array([c[0] for c in _CORNERS], dtype=float) * nx,
         np.array([c[1] for c in _CORNERS], dtype=float) * ny,
         np.array([c[2] for c in _CORNERS], dtype=float) * nz,
-        elev_deg=elev,
-        azim_deg=azim,
-        plot_w=1.0,
-        plot_h=1.0,
-        cx=0.0,
-        cy=0.0,
+        elev_deg=elev, azim_deg=azim, plot_w=1.0, plot_h=1.0, cx=0.0, cy=0.0,
     )
     near_corner = _CORNERS[int(np.argmax(corner_depth))]
     removed = 0
@@ -370,15 +363,22 @@ def build_svg(
         # octant would otherwise make `cut` a no-op, and an option that
         # silently does nothing is worse than no option.
         middles = [
-            (min(key[axis] for key in filled) + max(key[axis] for key in filled) + 1) / 2.0
+            (min(key[axis] for key in filled) + max(key[axis] for key in filled) + 1)
+            / 2.0
             for axis in range(3)
         ]
 
         def in_near_half(key: Tuple[int, int, int], axis: int) -> bool:
-            return key[axis] >= middles[axis] if near_corner[axis] else key[axis] < middles[axis]
+            return (
+                key[axis] >= middles[axis] if near_corner[axis]
+                else key[axis] < middles[axis]
+            )
 
         if cut == "corner":
-            doomed = {key for key in filled if all(in_near_half(key, axis) for axis in range(3))}
+            doomed = {
+                key for key in filled
+                if all(in_near_half(key, axis) for axis in range(3))
+            }
         else:
             # The axis the camera faces most squarely is the one whose
             # halves separate cleanly on screen; cutting any other one
@@ -416,7 +416,8 @@ def build_svg(
     # The lines are composed below, once the occlusion is known; their
     # *count* is known now, and the count is all the layout needs.
     chrome_count = (
-        len(wrap_no_orphan(summary, mono_chars)) if summary is not None else 3 + len(cut_said)
+        len(wrap_no_orphan(summary, mono_chars)) if summary is not None
+        else 3 + len(cut_said)
     )
     if finding is not None:
         found_count = len(wrap_no_orphan(finding, mono_chars))
@@ -439,24 +440,20 @@ def build_svg(
         their proportion, so a 5 by 4 by 4 grid stays a 5 by 4 by 4 box
         rather than being squared off into a cube it is not.
         """
-        return (2.0 * i / span - nx / span, 2.0 * j / span - ny / span, 2.0 * k / span - nz / span)
+        return (2.0 * i / span - nx / span,
+                2.0 * j / span - ny / span,
+                2.0 * k / span - nz / span)
 
     def project_many(
-        points: Sequence[Tuple[float, float, float]],
+        points: Sequence[Tuple[float, float, float]]
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         arr = np.array(points, dtype=float)
         return project3d(
-            arr[:, 0],
-            arr[:, 1],
-            arr[:, 2],
-            elev_deg=elev,
-            azim_deg=azim,
-            plot_w=plot_w,
-            plot_h=plot_h,
-            cx=plot_x + plot_w / 2.0,
-            cy=plot_y + plot_h / 2.0,
-            zoom=zoom,
-            fit="box",
+            arr[:, 0], arr[:, 1], arr[:, 2],
+            elev_deg=elev, azim_deg=azim,
+            plot_w=plot_w, plot_h=plot_h,
+            cx=plot_x + plot_w / 2.0, cy=plot_y + plot_h / 2.0,
+            zoom=zoom, fit="box",
         )
 
     inset = max(0.0, min(0.45, gap / 2.0))
@@ -469,11 +466,9 @@ def build_svg(
     for key in filled:
         i, j, k = key
         points = [
-            model(
-                i + inset + dx * (1.0 - 2.0 * inset),
-                j + inset + dy * (1.0 - 2.0 * inset),
-                k + inset + dz * (1.0 - 2.0 * inset),
-            )
+            model(i + inset + dx * (1.0 - 2.0 * inset),
+                  j + inset + dy * (1.0 - 2.0 * inset),
+                  k + inset + dz * (1.0 - 2.0 * inset))
             for dx, dy, dz in _CORNERS
         ]
         points.append(model(i + 0.5, j + 0.5, k + 0.5))
@@ -498,7 +493,7 @@ def build_svg(
     hidden: set[Tuple[int, int, int]] = set()
     for position, key in enumerate(order):
         probes = corners_px[key] + [centres[key]]
-        nearer = order[position + 1 :]
+        nearer = order[position + 1:]
         covered = 0
         for probe in probes:
             for other in nearer:
@@ -542,6 +537,7 @@ def build_svg(
     def shown(axis: str, raw: Any) -> str:
         return str(spellers[axis](raw))
 
+
     x_name = x_label if x_label is not None else x.replace("_", " ")
     y_name = y_label if y_label is not None else y.replace("_", " ")
     z_name = z_label if z_label is not None else z.replace("_", " ")
@@ -551,9 +547,7 @@ def build_svg(
         return fmt_measured(number, scale_of / 10.0)
 
     said_lines = (
-        wrap_no_orphan(summary, mono_chars)
-        if summary is not None
-        else [
+        wrap_no_orphan(summary, mono_chars) if summary is not None else [
             # "at or above" rather than a greater-or-equal sign: the
             # mono face the chrome is set in has the glyph in its cmap
             # and the renderer still falls back on it, which re-shapes
@@ -596,15 +590,14 @@ def build_svg(
 
     parts: List[str] = []
     parts.append(
-        svg_open(
-            width, height, "voxels-title", "voxels-desc", font_family=chrome_stack_for_theme(theme)
-        )
+        svg_open(width, height, "voxels-title", "voxels-desc",
+                 font_family=chrome_stack_for_theme(theme))
     )
     parts.append(f'<title id="voxels-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="voxels-desc">A voxel plot of {xml_escape(v_name)} over a '
-        f"{nx} by {ny} by {nz} grid of {xml_escape(x_name)}, {xml_escape(y_name)} and "
-        f"{xml_escape(z_name)}. {xml_escape(said)}. {xml_escape(found)}</desc>"
+        f'{nx} by {ny} by {nz} grid of {xml_escape(x_name)}, {xml_escape(y_name)} and '
+        f'{xml_escape(z_name)}. {xml_escape(said)}. {xml_escape(found)}</desc>'
     )
     parts.append(
         "<style>"
@@ -620,7 +613,7 @@ def build_svg(
     parts.append(
         f'<text x="{plot_x:.1f}" y="46" font-size="{title_size:.1f}" '
         f'font-weight="700" fill="{INK}" letter-spacing="-0.3">'
-        f"{xml_escape(title)}</text>"
+        f'{xml_escape(title)}</text>'
     )
     for line_no, line in enumerate(subtitle_lines):
         parts.append(
@@ -637,18 +630,9 @@ def build_svg(
     box_points = [model(c[0] * nx, c[1] * ny, c[2] * nz) for c in _CORNERS]
     box_px, box_py, _ = project_many(box_points)
     box_edges = (
-        (0, 1),
-        (1, 2),
-        (2, 3),
-        (3, 0),
-        (4, 5),
-        (5, 6),
-        (6, 7),
-        (7, 4),
-        (0, 4),
-        (1, 5),
-        (2, 6),
-        (3, 7),
+        (0, 1), (1, 2), (2, 3), (3, 0),
+        (4, 5), (5, 6), (6, 7), (7, 4),
+        (0, 4), (1, 5), (2, 6), (3, 7),
     )
     if show_box:
         path = " ".join(
@@ -656,7 +640,8 @@ def build_svg(
             for a, b in box_edges
         )
         parts.append(
-            f'<path d="{path}" fill="none" stroke="{GRIDLINE}" stroke-width="1" opacity="0.8"/>'
+            f'<path d="{path}" fill="none" stroke="{GRIDLINE}" stroke-width="1" '
+            f'opacity="0.8"/>'
         )
 
     # ---- the cells, back to front ----
@@ -667,8 +652,13 @@ def build_svg(
             if _screen_area(quad) * _FACING <= 0.0:
                 continue
             drawn = " ".join(f"{px:.1f},{py:.1f}" for px, py in quad)
-            edge = f' stroke="{_shade(colour, 0.45)}" stroke-width="0.6"' if show_edges else ""
-            parts.append(f'<polygon points="{drawn}" fill="{_shade(colour, lightness)}"{edge}/>')
+            edge = (
+                f' stroke="{_shade(colour, 0.45)}" stroke-width="0.6"'
+                if show_edges else ""
+            )
+            parts.append(
+                f'<polygon points="{drawn}" fill="{_shade(colour, lightness)}"{edge}/>'
+            )
 
     # ---- the axes, on whichever edges of the box face outward ----
     box_centre = (float(np.mean(box_px)), float(np.mean(box_py)))
@@ -699,7 +689,9 @@ def build_svg(
         if abs(off_x) > 7.0:
             anchor = "start" if off_x > 0 else "end"
         spelled = [shown(column, level) for level in levels]
-        edge_px = math.hypot(float(box_px[end] - box_px[start]), float(box_py[end] - box_py[start]))
+        edge_px = math.hypot(
+            float(box_px[end] - box_px[start]), float(box_py[end] - box_py[start])
+        )
         widest = max((len(text) for text in spelled), default=1) * 6.0 + 6.0
         # A foreshortened edge cannot carry every tick: showing fewer is
         # legible, showing all of them is a smudge.
@@ -721,7 +713,7 @@ def build_svg(
             f'<text x="{(box_px[start] + box_px[end]) / 2.0 + off_x * 3.4:.1f}" '
             f'y="{(box_py[start] + box_py[end]) / 2.0 + off_y * 3.4 + 3:.1f}" '
             f'font-size="11" fill="{SECONDARY}" text-anchor="{anchor}">'
-            f"{xml_escape(name)}</text>"
+            f'{xml_escape(name)}</text>'
         )
 
     # ---- the best cell, called out where it sits ----
@@ -734,7 +726,7 @@ def build_svg(
         parts.append(
             f'<text x="{bx:.1f}" y="{by - 10:.1f}" font-size="10.5" font-weight="700" '
             f'fill="{INK}" text-anchor="middle" font-family="{mono_family}">'
-            f"{xml_escape(measured(cells[best_key]))}</text>"
+            f'{xml_escape(measured(cells[best_key]))}</text>'
         )
 
     # ---- hover: every cell says its three coordinates and its value ----
@@ -748,25 +740,21 @@ def build_svg(
             f'<circle class="hit" id="cell-{index}" cx="{cx:.1f}" cy="{cy:.1f}" '
             f'r="9" fill="transparent" tabindex="0" role="img" '
             f'aria-label="{xml_escape(label)}">'
-            f"<title>{xml_escape(label)}</title></circle>"
+            f'<title>{xml_escape(label)}</title></circle>'
         )
     for index, key in enumerate(order):
         cx, cy = centres[key]
         parts.append(
             tooltip_bubble(
-                cx,
-                cy - 12.0,
+                cx, cy - 12.0,
                 [
                     f"{v_name} {measured(cells[key])}",
-                    f"{x_name} {shown('x', xs[key[0]])} · {y_name} {shown('y', ys[key[1]])}",
+                    f"{x_name} {shown('x', xs[key[0]])} · {y_name} "
+                    f"{shown('y', ys[key[1]])}",
                     f"{z_name} {shown('z', zs[key[2]])}",
                 ],
-                canvas_w=width,
-                canvas_h=height,
-                bg=BG,
-                border=GRIDLINE,
-                ink=INK,
-                secondary=SECONDARY,
+                canvas_w=width, canvas_h=height,
+                bg=BG, border=GRIDLINE, ink=INK, secondary=SECONDARY,
                 font_family=chrome_stack_for_theme(theme),
                 elem_id=f"celltip-{index}",
             )
@@ -814,7 +802,7 @@ def build_svg(
             f'<text x="{plot_x:.1f}" '
             f'y="{height - 24 - (len(found_lines) - 1 - line_no) * 17:.1f}" '
             f'font-size="12" fill="{SECONDARY}" font-family="{mono_family}">'
-            f"{xml_escape(line)}</text>"
+            f'{xml_escape(line)}</text>'
         )
     parts.append(fullscreen_control(width, height, mode))
     parts.append("</svg>")
@@ -903,34 +891,13 @@ def make_voxels(
     True
     """
     svg = build_svg(
-        data,
-        title=title,
-        subtitle=subtitle,
-        width=width,
-        height=height,
-        x=x,
-        y=y,
-        z=z,
-        value=value,
-        threshold=threshold,
-        keep_share=keep_share,
-        gap=gap,
-        cut=cut,
-        elev=elev,
-        azim=azim,
-        zoom=zoom,
-        show_edges=show_edges,
-        show_box=show_box,
-        mark_best=mark_best,
-        x_label=x_label,
-        y_label=y_label,
-        z_label=z_label,
-        value_label=value_label,
-        summary=summary,
-        finding=finding,
-        mode=mode,
-        accessibility=accessibility,
-        theme=theme,
+        data, title=title, subtitle=subtitle, width=width, height=height,
+        x=x, y=y, z=z, value=value, threshold=threshold, keep_share=keep_share,
+        gap=gap, cut=cut, elev=elev, azim=azim, zoom=zoom,
+        show_edges=show_edges, show_box=show_box, mark_best=mark_best,
+        x_label=x_label, y_label=y_label, z_label=z_label,
+        value_label=value_label, summary=summary, finding=finding,
+        mode=mode, accessibility=accessibility, theme=theme,
     )
     dest = Path(out) if out else svg_example_path(__file__, "voxels")
     return write_svg(dest, svg, theme=theme)
@@ -939,9 +906,7 @@ def make_voxels(
 def main() -> None:
     """CLI entry point: build the SVG and write it to disk."""
     render_cli(
-        __file__,
-        "voxels",
-        build_svg,
+        __file__, "voxels", build_svg,
         description="Generate a voxel plot of a three-dimensional grid.",
     )
 

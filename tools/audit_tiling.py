@@ -180,7 +180,7 @@ def audit(path: Path) -> None:
     pairs = set()
     for members in buckets.values():
         for i, a in enumerate(members):
-            for b in members[i + 1 :]:
+            for b in members[i + 1:]:
                 pairs.add((min(a, b), max(a, b)))
 
     overlap = 0.0

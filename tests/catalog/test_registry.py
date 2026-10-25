@@ -33,9 +33,7 @@ def test_registry_loads_and_validates() -> None:
 
 
 def test_every_generator_script_has_a_registry_entry() -> None:
-    on_disk = {
-        p.stem[len("make_") :] for p in SCRIPTS_DIR.glob("make_*.py") if p.stem != "make_figure"
-    }
+    on_disk = {p.stem[len("make_") :] for p in SCRIPTS_DIR.glob("make_*.py") if p.stem != "make_figure"}
     registered = {e.kind for e in get_registry()}
     missing = on_disk - registered
     assert not missing, f"generator scripts missing from figures.json: {sorted(missing)}"
@@ -44,12 +42,7 @@ def test_every_generator_script_has_a_registry_entry() -> None:
 def test_resolve_kind_handles_aliases_and_unknowns() -> None:
     """A canonical kind resolves from every alias spelling (case, hyphen,
     underscore, space interchangeable); an unknown name resolves to None."""
-    for spelling in (
-        "connected-scatter",
-        "connected_scatter",
-        "connected scatter",
-        "Connected-Scatter",
-    ):
+    for spelling in ("connected-scatter", "connected_scatter", "connected scatter", "Connected-Scatter"):
         assert resolve_kind(spelling) == "connected-scatter"
     assert resolve_kind("totally-not-a-chart") is None
 

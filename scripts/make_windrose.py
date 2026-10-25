@@ -62,30 +62,16 @@ _CY: float = 460.0
 _R_MAX: float = 310.0
 
 #: House-style inks.
-_INK: str = "#1D1D1F"  # primary text
-_SUBTLE: str = "#6E6E73"  # secondary text
-_GRID: str = "#E5E5EA"  # rings + spokes
-_BG: str = "#FFFFFF"  # background
-_FOCUS: str = "#0A4DA0"  # focus-ring blue
+_INK: str = "#1D1D1F"      # primary text
+_SUBTLE: str = "#6E6E73"   # secondary text
+_GRID: str = "#E5E5EA"     # rings + spokes
+_BG: str = "#FFFFFF"       # background
+_FOCUS: str = "#0A4DA0"    # focus-ring blue
 
 #: The sixteen compass points, clockwise from due North.
 _DIRECTIONS: List[str] = [
-    "N",
-    "NNE",
-    "NE",
-    "ENE",
-    "E",
-    "ESE",
-    "SE",
-    "SSE",
-    "S",
-    "SSW",
-    "SW",
-    "WSW",
-    "W",
-    "WNW",
-    "NW",
-    "NNW",
+    "N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE",
+    "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW",
 ]
 
 #: The cardinal labels drawn on the compass frame.
@@ -142,22 +128,8 @@ DEMO_DATA: List[Dict[str, Any]] = [
     {"direction": direction, "band": band, "value": value}
     for direction, row in zip(
         (
-            "N",
-            "NNE",
-            "NE",
-            "ENE",
-            "E",
-            "ESE",
-            "SE",
-            "SSE",
-            "S",
-            "SSW",
-            "SW",
-            "WSW",
-            "W",
-            "WNW",
-            "NW",
-            "NNW",
+            "N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE",
+            "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW",
         ),
         [
             # <5    5-10  10-16 16-22 22-28  >=28
@@ -177,8 +149,7 @@ DEMO_DATA: List[Dict[str, Any]] = [
             [1.4, 2.4, 2.1, 1.3, 0.7, 0.3],  # WNW
             [1.2, 1.7, 1.2, 0.7, 0.3, 0.1],  # NW
             [1.1, 1.4, 0.9, 0.4, 0.1, 0.0],  # NNW
-        ],
-        strict=True,
+        ], strict=True,
     )
     for band, value in zip(
         ("< 5 kt", "5–10 kt", "10–16 kt", "16–22 kt", "22–28 kt", "≥ 28 kt"), row, strict=True
@@ -240,7 +211,9 @@ def _polar(cx: float, cy: float, r: float, angle_deg: float) -> Tuple[float, flo
     return point_on_circle(cx, cy, r, theta)
 
 
-def _annular_sector(cx: float, cy: float, r0: float, r1: float, a0: float, a1: float) -> str:
+def _annular_sector(
+    cx: float, cy: float, r0: float, r1: float, a0: float, a1: float
+) -> str:
     """Build an SVG path for a filled annular sector (a stacked wedge).
 
     Parameters
@@ -334,27 +307,25 @@ def build_svg(
     bands = _speed_bands()
     grid = _dataset(data)
     n_dir = len(_DIRECTIONS)
-    sector_deg = 360.0 / n_dir  # 22.5° per compass sector
-    pad_deg = 3.0  # gap between petals so they read as columns
+    sector_deg = 360.0 / n_dir       # 22.5° per compass sector
+    pad_deg = 3.0                    # gap between petals so they read as columns
     slugs = [_slug(str(b["label"])) for b in bands]
 
     # Radial scale: the longest petal (its total across bands) fills _R_MAX.
     totals = [sum(row) for row in grid]
     r_data_max = max(totals)
     # Round the axis up to a friendly tick so rings land on whole percents.
-    ring_step = 4.0  # percent per ring
+    ring_step = 4.0                                    # percent per ring
     axis_max = math.ceil(r_data_max / ring_step) * ring_step
-    scale = _R_MAX / axis_max  # px per percent
+    scale = _R_MAX / axis_max                           # px per percent
 
     parts: List[str] = []
 
     # ---- header ----
-    parts.append(
-        svg_open(_WIDTH, _HEIGHT, "wr-title", "wr-desc", font_family=chrome_stack_for_theme(theme))
-    )
+    parts.append(svg_open(_WIDTH, _HEIGHT, "wr-title", "wr-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(
         '<title id="wr-title">Wind rose for Cap Gris-Nez: prevailing '
-        "winds blow from the west-south-west</title>"
+        'winds blow from the west-south-west</title>'
     )
     prevailing = _DIRECTIONS[totals.index(max(totals))]
     desc = (
@@ -382,27 +353,25 @@ def build_svg(
             f"svg:has(.band-{s}:hover) .band-{s}, "
             f"svg:has(.band-{s}:focus) .band-{s} {{ opacity: 1; }}"
         )
-    style_rows.extend(
-        [
-            ".legend-row { cursor: pointer; }",
-            f".legend-row:focus {{ outline: 3px solid {_FOCUS}; outline-offset: 2px; }}",
-            ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}",
-            # Each wedge's bubble is collected and appended once, after every
-            # band (see the loop below), rather than staying next to its own
-            # wedge: SVG has no z-index, and later bands are drawn at a
-            # larger radius that can reach back over an earlier band's
-            # bubble at a neighbouring direction. Wedges live inside their
-            # own per-band <g>, so a bubble moved out of it is no longer a
-            # *sibling* of its own wedge (`~`/`+` need a shared parent) --
-            # this keys off :has() on the shared svg root instead.
-            "".join(
-                f"svg:has(#wedge-{i}:hover) #wedgetip-{i},"
-                f"svg:has(#wedge-{i}:focus) #wedgetip-{i}{{opacity:1}}"
-                for i in range(len(bands) * len(_DIRECTIONS))
-            ),
-            "@media (prefers-reduced-motion: reduce) { .wedge { transition: none; } .tip{transition:none} }",
-        ]
-    )
+    style_rows.extend([
+        ".legend-row { cursor: pointer; }",
+        f".legend-row:focus {{ outline: 3px solid {_FOCUS}; outline-offset: 2px; }}",
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}",
+        # Each wedge's bubble is collected and appended once, after every
+        # band (see the loop below), rather than staying next to its own
+        # wedge: SVG has no z-index, and later bands are drawn at a
+        # larger radius that can reach back over an earlier band's
+        # bubble at a neighbouring direction. Wedges live inside their
+        # own per-band <g>, so a bubble moved out of it is no longer a
+        # *sibling* of its own wedge (`~`/`+` need a shared parent) --
+        # this keys off :has() on the shared svg root instead.
+        "".join(
+            f"svg:has(#wedge-{i}:hover) #wedgetip-{i},"
+            f"svg:has(#wedge-{i}:focus) #wedgetip-{i}{{opacity:1}}"
+            for i in range(len(bands) * len(_DIRECTIONS))
+        ),
+        "@media (prefers-reduced-motion: reduce) { .wedge { transition: none; } .tip{transition:none} }",
+    ])
     # OS-adaptive style (additive; media-gated so the default light render is
     # byte-for-byte unchanged). PERCEPTUAL figure — the YlOrBr speed ramp is NOT
     # re-spaced.
@@ -425,7 +394,8 @@ def build_svg(
     style_rows.append(
         os_dark_style(
             screen_blend=False,
-            extra='[stroke="#E5E5EA"]{stroke:#3A3A3C;} .wedge[stroke="#FFFFFF"]{stroke:#0B0B0C;}',
+            extra='[stroke="#E5E5EA"]{stroke:#3A3A3C;} '
+            '.wedge[stroke="#FFFFFF"]{stroke:#0B0B0C;}',
         )
     )
     parts.append("<style>\n" + "\n".join(style_rows) + "\n</style>")
@@ -436,20 +406,20 @@ def build_svg(
     # ---- title + subtitle ----
     # The headline the figure writes about its own data, used only when
     # the caller supplies none.
-    title = title or "The wind here comes off the Atlantic"
+    title = title or 'The wind here comes off the Atlantic'
     parts.append(
         f'<text x="48" y="62" font-size="30" font-weight="700" '
         f'fill="{_INK}">{xml_escape(title)}</text>'
     )
     parts.append(
         f'<text x="48" y="94" font-size="17" fill="{_SUBTLE}">'
-        f"Cap Gris-Nez · frequency of wind by direction and speed · "
-        f"8,760 hourly readings</text>"
+        f'Cap Gris-Nez · frequency of wind by direction and speed · '
+        f'8,760 hourly readings</text>'
     )
 
     # ---- polar grid: concentric rings + radial labels ----
     n_rings = int(round(axis_max / ring_step))
-    parts.append("<g>")
+    parts.append('<g>')
     for k in range(1, n_rings + 1):
         r = k * ring_step * scale
         parts.append(
@@ -464,10 +434,10 @@ def build_svg(
             f'font-family="Roboto Mono, monospace" fill="{_SUBTLE}" '
             f'text-anchor="end">{val}%</text>'
         )
-    parts.append("</g>")
+    parts.append('</g>')
 
     # ---- spokes + compass labels (every sector; cardinals emphasised) ----
-    parts.append("<g>")
+    parts.append('<g>')
     for i, _direction in enumerate(_DIRECTIONS):
         bearing = i * sector_deg
         x_out, y_out = _polar(_CX, _CY, _R_MAX, bearing)
@@ -500,7 +470,7 @@ def build_svg(
             f'font-weight="{weight}" fill="{fill}" text-anchor="{anchor}" '
             f'dominant-baseline="middle">{direction}</text>'
         )
-    parts.append("</g>")
+    parts.append('</g>')
 
     # ---- petals: one stacked column per compass sector ----
     # Grouped by band so a single CSS rule highlights that band across
@@ -524,7 +494,10 @@ def build_svg(
             a0 = centre - (sector_deg - pad_deg) / 2.0
             a1 = centre + (sector_deg - pad_deg) / 2.0
             path = _annular_sector(_CX, _CY, r0, r1, a0, a1)
-            tip = f"{_xml(direction)} · {_xml(str(band['label']))}: {v:.1f}% of hours"
+            tip = (
+                f'{_xml(direction)} · {_xml(str(band["label"]))}: '
+                f'{v:.1f}% of hours'
+            )
             mid_x, mid_y = _polar(_CX, _CY, (r0 + r1) / 2.0, (a0 + a1) / 2.0)
             parts.append(
                 f'<path id="wedge-{wedge_i}" class="wedge hit band-{s}" tabindex="0" role="listitem" '
@@ -534,19 +507,14 @@ def build_svg(
             )
             bubbles.append(
                 tooltip_bubble(
-                    mid_x,
-                    mid_y - 10,
+                    mid_x, mid_y - 10,
                     [direction, str(band["label"]), f"{v:.1f}% of hours"],
-                    anchor="middle",
-                    canvas_w=_WIDTH,
-                    canvas_h=_HEIGHT,
-                    ink=_INK,
-                    secondary=_SUBTLE,
-                    border=_GRID,
+                    anchor="middle", canvas_w=_WIDTH, canvas_h=_HEIGHT,
+                    ink=_INK, secondary=_SUBTLE, border=_GRID,
                     elem_id=f"wedgetip-{wedge_i}",
                 )
             )
-        parts.append("</g>")
+        parts.append('</g>')
 
     # ---- legend (speed ramp, right of the compass) ----
     legend_x = 840.0
@@ -566,24 +534,25 @@ def build_svg(
         parts.append(
             f'<g class="band band-{s} legend-row" tabindex="0" role="listitem" '
             f'transform="translate(0,{cy:.1f})">'
-            f"<title>{_xml(str(band['label']))}: {band_total:.1f}% of all hours</title>"
+            f'<title>{_xml(str(band["label"]))}: {band_total:.1f}% of all hours</title>'
         )
         parts.append(
-            f'<rect class="band-{s}" x="0" y="0" width="26" height="26" rx="7" fill="{color}"/>'
+            f'<rect class="band-{s}" x="0" y="0" width="26" height="26" '
+            f'rx="7" fill="{color}"/>'
         )
         parts.append(
             f'<text x="38" y="14" font-size="18" font-weight="600" '
             f'fill="{_INK}" dominant-baseline="middle">'
-            f"{_xml(str(band['label']))}</text>"
+            f'{_xml(str(band["label"]))}</text>'
         )
         parts.append(
             f'<text x="200" y="14" font-size="16" '
             f'font-family="Roboto Mono, monospace" fill="{_SUBTLE}" '
             f'text-anchor="end" dominant-baseline="middle">'
-            f"{band_total:.1f}%</text>"
+            f'{band_total:.1f}%</text>'
         )
-        parts.append("</g>")
-    parts.append("</g>")
+        parts.append('</g>')
+    parts.append('</g>')
 
     # ---- footnote: how to read it ----
     parts.append(
@@ -599,7 +568,7 @@ def build_svg(
     # Fullscreen control per interactivity mode, just before the close.
     parts.extend(bubbles)
     parts.append(fullscreen_control(_WIDTH, _HEIGHT, mode))
-    parts.append("</svg>")
+    parts.append('</svg>')
     return "\n".join(parts)
 
 
@@ -637,14 +606,8 @@ def make_windrose(
     Path
         Absolute path to the written SVG file.
     """
-    svg = build_svg(
-        data,
-        legend_title=legend_title,
-        mode=mode,
-        accessibility=accessibility,
-        theme=theme,
-        title=title or None,
-    )
+    svg = build_svg(data, legend_title=legend_title,
+                     mode=mode, accessibility=accessibility, theme=theme, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "windrose")
     return write_svg(dest, svg, theme=theme)
 

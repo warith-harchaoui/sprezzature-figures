@@ -121,14 +121,12 @@ def _trajectory() -> List[Dict[str, Any]]:
         # thousand segments to draw and square to count crossings over.
         for _ in range(_SUBSTEPS):
             state = step(state, _STEP_SIZE)
-        rows.append(
-            {
-                "step": index,
-                "x": round(state[0], 4),
-                "y": round(state[1], 4),
-                "z": round(state[2], 4),
-            }
-        )
+        rows.append({
+            "step": index,
+            "x": round(state[0], 4),
+            "y": round(state[1], 4),
+            "z": round(state[2], 4),
+        })
     return rows
 
 
@@ -230,28 +228,12 @@ def build_svg(
     centre_x, centre_y = width / 2.0, 168.0 + plot_h / 2.0
 
     px, py, depth = project3d(
-        nx,
-        ny,
-        nz,
-        elev_deg=elev,
-        azim_deg=azim,
-        plot_w=plot_w,
-        plot_h=plot_h,
-        cx=centre_x,
-        cy=centre_y,
-        fit="box",
+        nx, ny, nz, elev_deg=elev, azim_deg=azim, plot_w=plot_w, plot_h=plot_h,
+        cx=centre_x, cy=centre_y, fit="box",
     )
     floor_x, floor_y, _ = project3d(
-        nx,
-        ny,
-        np.full_like(nz, -1.0),
-        elev_deg=elev,
-        azim_deg=azim,
-        plot_w=plot_w,
-        plot_h=plot_h,
-        cx=centre_x,
-        cy=centre_y,
-        fit="box",
+        nx, ny, np.full_like(nz, -1.0), elev_deg=elev, azim_deg=azim,
+        plot_w=plot_w, plot_h=plot_h, cx=centre_x, cy=centre_y, fit="box",
     )
 
     # How often the projection crosses itself: the number that says why
@@ -261,7 +243,8 @@ def build_svg(
         p1, p2 = (px[a], py[a]), (px[a + 1], py[a + 1])
         p3, p4 = (px[b], py[b]), (px[b + 1], py[b + 1])
 
-        def side(p: Tuple[float, float], q: Tuple[float, float], r: Tuple[float, float]) -> float:
+        def side(p: Tuple[float, float], q: Tuple[float, float],
+                 r: Tuple[float, float]) -> float:
             return (q[0] - p[0]) * (r[1] - p[1]) - (q[1] - p[1]) * (r[0] - p[0])
 
         # Each pair asks whether one segment's ends fall on opposite sides
@@ -275,7 +258,10 @@ def build_svg(
         return a_about_b < 0.0 and b_about_a < 0.0
 
     crossings = sum(
-        1 for a in range(len(rows) - 1) for b in range(a + 2, len(rows) - 1) if crosses(a, b)
+        1
+        for a in range(len(rows) - 1)
+        for b in range(a + 2, len(rows) - 1)
+        if crosses(a, b)
     )
 
     low_depth, high_depth = float(depth.min()), float(depth.max())
@@ -284,15 +270,16 @@ def build_svg(
     def shade(value: float) -> str:
         """Blend far to near ink by `value`'s distance from the camera."""
         fraction = (value - low_depth) / span_depth
-        start = tuple(int(far_ink[i : i + 2], 16) for i in (1, 3, 5))
-        finish = tuple(int(near_ink[i : i + 2], 16) for i in (1, 3, 5))
-        blend = tuple(round(start[i] + (finish[i] - start[i]) * fraction) for i in range(3))
+        start = tuple(int(far_ink[i:i + 2], 16) for i in (1, 3, 5))
+        finish = tuple(int(near_ink[i:i + 2], 16) for i in (1, 3, 5))
+        blend = tuple(
+            round(start[i] + (finish[i] - start[i]) * fraction) for i in range(3)
+        )
         return f"rgb({blend[0]},{blend[1]},{blend[2]})"
 
     precision = (max(zs.max() - zs.min(), 1e-9)) / 200.0
     depth_lines = (
-        [depth_note]
-        if depth_note is not None
+        [depth_note] if depth_note is not None
         else [
             f"camera at {fmt_number(elev)}° elevation, {fmt_number(azim)}° azimuth · "
             f"near segments drawn darker and last",
@@ -317,16 +304,15 @@ def build_svg(
 
     parts: List[str] = []
     parts.append(
-        svg_open(
-            width, height, "line3d-title", "line3d-desc", font_family=chrome_stack_for_theme(theme)
-        )
+        svg_open(width, height, "line3d-title", "line3d-desc",
+                 font_family=chrome_stack_for_theme(theme))
     )
     parts.append(f'<title id="line3d-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="line3d-desc">A path of {len(rows)} points through three dimensions, '
-        f"drawn in projection with each segment shaded by its distance from the camera "
-        f"and its shadow cast on the floor. {xml_escape(said_depth)}. "
-        f"{xml_escape(' '.join(said_parts))}</desc>"
+        f'drawn in projection with each segment shaded by its distance from the camera '
+        f'and its shadow cast on the floor. {xml_escape(said_depth)}. '
+        f'{xml_escape(" ".join(said_parts))}</desc>'
     )
     parts.append(
         "<style>"
@@ -368,7 +354,8 @@ def build_svg(
             for index in range(len(rows))
         )
         parts.append(
-            f'<path d="{floor_path}" fill="none" stroke="{INK}" stroke-width="1" opacity="0.10"/>'
+            f'<path d="{floor_path}" fill="none" stroke="{INK}" stroke-width="1" '
+            f'opacity="0.10"/>'
         )
 
     # Back to front, so a near strand covers the far one it crosses.
@@ -396,14 +383,18 @@ def build_svg(
             tip_x, tip_y = px[index] + ux * 9.0, py[index] + uy * 9.0
             parts.append(
                 f'<path d="M{tip_x:.1f},{tip_y:.1f} '
-                f"L{tip_x - ux * 8 + uy * 4:.1f},{tip_y - uy * 8 - ux * 4:.1f} "
+                f'L{tip_x - ux * 8 + uy * 4:.1f},{tip_y - uy * 8 - ux * 4:.1f} '
                 f'L{tip_x - ux * 8 - uy * 4:.1f},{tip_y - uy * 8 + ux * 4:.1f} Z" '
                 f'fill="{INK}" opacity="0.5"/>'
             )
 
-    for index, (label, colour) in enumerate(((start_label, accent), (end_label, INK))):
+    for index, (label, colour) in enumerate(
+        ((start_label, accent), (end_label, INK))
+    ):
         spot = 0 if index == 0 else len(rows) - 1
-        parts.append(f'<circle cx="{px[spot]:.1f}" cy="{py[spot]:.1f}" r="5.5" fill="{colour}"/>')
+        parts.append(
+            f'<circle cx="{px[spot]:.1f}" cy="{py[spot]:.1f}" r="5.5" fill="{colour}"/>'
+        )
         parts.append(
             f'<text x="{px[spot] + 10:.1f}" y="{py[spot] + 4:.1f}" font-size="12" '
             f'font-weight="700" fill="{colour}">{xml_escape(label)}</text>'
@@ -411,27 +402,20 @@ def build_svg(
         parts.append(
             f'<rect id="node-{index}" class="node hit" tabindex="0" role="img" '
             f'aria-label="{xml_escape(label)}: {x} {fmt_measured(xs[spot], precision)}, '
-            f"{y} {fmt_measured(ys[spot], precision)}, {z} "
+            f'{y} {fmt_measured(ys[spot], precision)}, {z} '
             f'{fmt_measured(zs[spot], precision)}" '
             f'x="{px[spot] - 12:.1f}" y="{py[spot] - 12:.1f}" width="24" height="24" '
             f'fill="transparent"><title>{xml_escape(label)}</title></rect>'
         )
         parts.append(
             tooltip_bubble(
-                float(px[spot]),
-                float(py[spot]),
-                [
-                    label,
-                    f"{x} {fmt_measured(xs[spot], precision)}",
-                    f"{y} {fmt_measured(ys[spot], precision)} · {z} "
-                    f"{fmt_measured(zs[spot], precision)}",
-                ],
-                canvas_w=width,
-                canvas_h=height,
-                ink=INK,
-                secondary=SECONDARY,
-                border=GRIDLINE,
-                elem_id=f"nodetip-{index}",
+                float(px[spot]), float(py[spot]),
+                [label,
+                 f"{x} {fmt_measured(xs[spot], precision)}",
+                 f"{y} {fmt_measured(ys[spot], precision)} · {z} "
+                 f"{fmt_measured(zs[spot], precision)}"],
+                canvas_w=width, canvas_h=height, ink=INK, secondary=SECONDARY,
+                border=GRIDLINE, elem_id=f"nodetip-{index}",
             )
         )
 
@@ -509,26 +493,11 @@ def make_line3d(
     True
     """
     svg = build_svg(
-        data,
-        title=title,
-        subtitle=subtitle,
-        width=width,
-        height=height,
-        x=x,
-        y=y,
-        z=z,
-        order=order,
-        elev=elev,
-        azim=azim,
-        arrows=arrows,
-        shadow=shadow,
-        start_label=start_label,
-        end_label=end_label,
-        depth_note=depth_note,
-        finding=finding,
-        mode=mode,
-        accessibility=accessibility,
-        theme=theme,
+        data, title=title, subtitle=subtitle, width=width, height=height,
+        x=x, y=y, z=z, order=order, elev=elev, azim=azim, arrows=arrows,
+        shadow=shadow, start_label=start_label, end_label=end_label,
+        depth_note=depth_note, finding=finding, mode=mode,
+        accessibility=accessibility, theme=theme,
     )
     dest = Path(out) if out else svg_example_path(__file__, "line3d")
     return write_svg(dest, svg, theme=theme)
@@ -536,12 +505,8 @@ def make_line3d(
 
 def main() -> None:
     """CLI entry point: build the SVG and write it to disk."""
-    render_cli(
-        __file__,
-        "line3d",
-        build_svg,
-        description="Draw a path through three dimensions, shaded by depth.",
-    )
+    render_cli(__file__, "line3d", build_svg,
+               description="Draw a path through three dimensions, shaded by depth.")
 
 
 if __name__ == "__main__":

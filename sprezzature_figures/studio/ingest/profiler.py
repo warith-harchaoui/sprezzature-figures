@@ -267,7 +267,9 @@ def profile_dataframe(
     # make label-based indexing return a DataFrame instead of a Series.
     columns = [profile_column(sample.iloc[:, i], name=str(col)) for i, col in enumerate(df.columns)]
     warnings = (
-        _structural_warnings(df) + _data_quality_warnings(sample, columns) + (extra_warnings or [])
+        _structural_warnings(df)
+        + _data_quality_warnings(sample, columns)
+        + (extra_warnings or [])
     )
 
     return DatasetProfile(

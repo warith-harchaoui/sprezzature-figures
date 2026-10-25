@@ -85,17 +85,15 @@ def _field() -> List[Dict[str, Any]]:
                     continue  # the singularity, and its immediate neighbours
                 rx, ry, rz = x / r, y / r, z / r
                 dot = rz  # the dipole moment is (0, 0, 1)
-                scale = 1.0 / (r**3)
-                rows.append(
-                    {
-                        "x": round(float(x), 4),
-                        "y": round(float(y), 4),
-                        "z": round(float(z), 4),
-                        "u": round(float(scale * 3.0 * dot * rx), 5),
-                        "v": round(float(scale * 3.0 * dot * ry), 5),
-                        "w": round(float(scale * (3.0 * dot * rz - 1.0)), 5),
-                    }
-                )
+                scale = 1.0 / (r ** 3)
+                rows.append({
+                    "x": round(float(x), 4),
+                    "y": round(float(y), 4),
+                    "z": round(float(z), 4),
+                    "u": round(float(scale * 3.0 * dot * rx), 5),
+                    "v": round(float(scale * 3.0 * dot * ry), 5),
+                    "w": round(float(scale * (3.0 * dot * rz - 1.0)), 5),
+                })
     return rows
 
 
@@ -211,7 +209,8 @@ def build_svg(
         drawn_share = np.ones_like(share)
     else:
         raise ValueError(
-            f"length_scale is 'linear', 'sqrt', 'log' or 'uniform', got {length_scale!r}"
+            f"length_scale is 'linear', 'sqrt', 'log' or 'uniform', "
+            f"got {length_scale!r}"
         )
     directions = vectors / np.maximum(magnitudes, 1e-12)[:, None]
     tips = unit + directions * (arrow_scale * drawn_share[:, None])
@@ -226,28 +225,12 @@ def build_svg(
     centre_x, centre_y = width / 2.0 - 30.0, 178.0 + plot_h / 2.0
 
     base_x, base_y, depth = project3d(
-        unit[:, 0],
-        unit[:, 1],
-        unit[:, 2],
-        elev_deg=elev,
-        azim_deg=azim,
-        plot_w=plot_w,
-        plot_h=plot_h,
-        cx=centre_x,
-        cy=centre_y,
-        fit="box",
+        unit[:, 0], unit[:, 1], unit[:, 2], elev_deg=elev, azim_deg=azim,
+        plot_w=plot_w, plot_h=plot_h, cx=centre_x, cy=centre_y, fit="box",
     )
     tip_x, tip_y, _ = project3d(
-        tips[:, 0],
-        tips[:, 1],
-        tips[:, 2],
-        elev_deg=elev,
-        azim_deg=azim,
-        plot_w=plot_w,
-        plot_h=plot_h,
-        cx=centre_x,
-        cy=centre_y,
-        fit="box",
+        tips[:, 0], tips[:, 1], tips[:, 2], elev_deg=elev, azim_deg=azim,
+        plot_w=plot_w, plot_h=plot_h, cx=centre_x, cy=centre_y, fit="box",
     )
 
     # The number that makes the figure's own point: how far the drawn
@@ -262,7 +245,9 @@ def build_svg(
     # name. Against the share, the projection is isolated.
     drawn_length = np.hypot(tip_x - base_x, tip_y - base_y)
     expected = drawn_length.max() / max(drawn_share.max(), 1e-12) * drawn_share
-    shortened = float(np.max(np.where(expected > 1e-9, 1.0 - drawn_length / expected, 0.0)) * 100.0)
+    shortened = float(
+        np.max(np.where(expected > 1e-9, 1.0 - drawn_length / expected, 0.0)) * 100.0
+    )
 
     def shade(fraction: float) -> str:
         """Blend weak to strong ink across a already-compressed `fraction`.
@@ -275,15 +260,16 @@ def build_svg(
         second time by another door.
         """
         fraction = max(0.0, min(1.0, fraction))
-        start = tuple(int(weak_ink[i : i + 2], 16) for i in (1, 3, 5))
-        finish = tuple(int(strong_ink[i : i + 2], 16) for i in (1, 3, 5))
-        blend = tuple(round(start[i] + (finish[i] - start[i]) * fraction) for i in range(3))
+        start = tuple(int(weak_ink[i:i + 2], 16) for i in (1, 3, 5))
+        finish = tuple(int(strong_ink[i:i + 2], 16) for i in (1, 3, 5))
+        blend = tuple(
+            round(start[i] + (finish[i] - start[i]) * fraction) for i in range(3)
+        )
         return f"rgb({blend[0]},{blend[1]},{blend[2]})"
 
     precision = strongest / 200.0
     scale_lines = (
-        [scale_note]
-        if scale_note is not None
+        [scale_note] if scale_note is not None
         else [
             f"{len(drawn)} of {len(rows)} samples drawn"
             + (f", every {stride}th" if stride > 1 else "")
@@ -315,20 +301,15 @@ def build_svg(
 
     parts: List[str] = []
     parts.append(
-        svg_open(
-            width,
-            height,
-            "quiver3d-title",
-            "quiver3d-desc",
-            font_family=chrome_stack_for_theme(theme),
-        )
+        svg_open(width, height, "quiver3d-title", "quiver3d-desc",
+                 font_family=chrome_stack_for_theme(theme))
     )
     parts.append(f'<title id="quiver3d-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="quiver3d-desc">A three-dimensional vector field of {len(drawn)} '
-        f"arrows, each at its sample point, pointing the way the field points and both "
-        f"scaled and coloured by its magnitude. {xml_escape(said_scale)}. "
-        f"{xml_escape(' '.join(said_parts))}</desc>"
+        f'arrows, each at its sample point, pointing the way the field points and both '
+        f'scaled and coloured by its magnitude. {xml_escape(said_scale)}. '
+        f'{xml_escape(" ".join(said_parts))}</desc>'
     )
     parts.append(
         "<style>"
@@ -379,7 +360,7 @@ def build_svg(
             ux, uy = (x2 - x1) / length, (y2 - y1) / length
             parts.append(
                 f'<path d="M{x2:.1f},{y2:.1f} '
-                f"L{x2 - ux * 5 + uy * 2.6:.1f},{y2 - uy * 5 - ux * 2.6:.1f} "
+                f'L{x2 - ux * 5 + uy * 2.6:.1f},{y2 - uy * 5 - ux * 2.6:.1f} '
                 f'L{x2 - ux * 5 - uy * 2.6:.1f},{y2 - uy * 5 + ux * 2.6:.1f} Z" '
                 f'fill="{colour}" opacity="0.9"/>'
             )
@@ -387,7 +368,8 @@ def build_svg(
             # Pointing at or away from the camera: a dot, not a stub,
             # because a two-pixel line reads as a weak arrow and is not.
             parts.append(
-                f'<circle cx="{x1:.1f}" cy="{y1:.1f}" r="2.2" fill="{colour}" opacity="0.9"/>'
+                f'<circle cx="{x1:.1f}" cy="{y1:.1f}" r="2.2" fill="{colour}" '
+                f'opacity="0.9"/>'
             )
 
     key_x, key_y = width - 150.0, 206.0
@@ -408,12 +390,12 @@ def build_svg(
     parts.append(
         f'<text x="{key_x + 19:.1f}" y="{key_y + 9:.1f}" font-size="10" '
         f'fill="{SECONDARY}" font-family="{mono_family}">'
-        f"{fmt_measured(strongest, precision)}</text>"
+        f'{fmt_measured(strongest, precision)}</text>'
     )
     parts.append(
         f'<text x="{key_x + 19:.1f}" y="{key_y + 12 * 11:.1f}" font-size="10" '
         f'fill="{SECONDARY}" font-family="{mono_family}">'
-        f"{fmt_measured(weakest, precision)}</text>"
+        f'{fmt_measured(weakest, precision)}</text>'
     )
 
     # Three representative arrows carry the hover detail: the strongest,
@@ -430,30 +412,23 @@ def build_svg(
         parts.append(
             f'<rect id="arrow-{element}" class="arrow hit" tabindex="0" role="img" '
             f'aria-label="{xml_escape(label)} arrow at {x} '
-            f"{fmt_number(positions[index][0])}, {y} {fmt_number(positions[index][1])}, "
-            f"{z} {fmt_number(positions[index][2])}: magnitude "
+            f'{fmt_number(positions[index][0])}, {y} {fmt_number(positions[index][1])}, '
+            f'{z} {fmt_number(positions[index][2])}: magnitude '
             f'{fmt_measured(float(magnitudes[index]), precision)}" '
             f'x="{spot_x - 9:.1f}" y="{spot_y - 9:.1f}" width="18" height="18" '
             f'fill="transparent"><title>{xml_escape(label)}: '
-            f"{fmt_measured(float(magnitudes[index]), precision)}</title></rect>"
+            f'{fmt_measured(float(magnitudes[index]), precision)}</title></rect>'
         )
         parts.append(
             tooltip_bubble(
-                spot_x,
-                spot_y,
-                [
-                    label,
-                    f"magnitude {fmt_measured(float(magnitudes[index]), precision)}",
-                    f"{x} {fmt_number(positions[index][0])} · {y} "
-                    f"{fmt_number(positions[index][1])} · {z} "
-                    f"{fmt_number(positions[index][2])}",
-                ],
-                canvas_w=width,
-                canvas_h=height,
-                ink=INK,
-                secondary=SECONDARY,
-                border=GRIDLINE,
-                elem_id=f"arrowtip-{element}",
+                spot_x, spot_y,
+                [label,
+                 f"magnitude {fmt_measured(float(magnitudes[index]), precision)}",
+                 f"{x} {fmt_number(positions[index][0])} · {y} "
+                 f"{fmt_number(positions[index][1])} · {z} "
+                 f"{fmt_number(positions[index][2])}"],
+                canvas_w=width, canvas_h=height, ink=INK, secondary=SECONDARY,
+                border=GRIDLINE, elem_id=f"arrowtip-{element}",
             )
         )
 
@@ -536,29 +511,11 @@ def make_quiver3d(
     True
     """
     svg = build_svg(
-        data,
-        title=title,
-        subtitle=subtitle,
-        width=width,
-        height=height,
-        x=x,
-        y=y,
-        z=z,
-        u=u,
-        v=v,
-        w=w,
-        stride=stride,
-        arrow_scale=arrow_scale,
-        length_scale=length_scale,
-        elev=elev,
-        azim=azim,
-        weak_label=weak_label,
-        strong_label=strong_label,
-        scale_note=scale_note,
-        finding=finding,
-        mode=mode,
-        accessibility=accessibility,
-        theme=theme,
+        data, title=title, subtitle=subtitle, width=width, height=height,
+        x=x, y=y, z=z, u=u, v=v, w=w, stride=stride, arrow_scale=arrow_scale,
+        length_scale=length_scale, elev=elev, azim=azim, weak_label=weak_label, strong_label=strong_label,
+        scale_note=scale_note, finding=finding, mode=mode,
+        accessibility=accessibility, theme=theme,
     )
     dest = Path(out) if out else svg_example_path(__file__, "quiver3d")
     return write_svg(dest, svg, theme=theme)
@@ -566,9 +523,8 @@ def make_quiver3d(
 
 def main() -> None:
     """CLI entry point: build the SVG and write it to disk."""
-    render_cli(
-        __file__, "quiver3d", build_svg, description="Draw a vector field in three dimensions."
-    )
+    render_cli(__file__, "quiver3d", build_svg,
+               description="Draw a vector field in three dimensions.")
 
 
 if __name__ == "__main__":

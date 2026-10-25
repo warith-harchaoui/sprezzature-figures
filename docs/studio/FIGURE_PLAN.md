@@ -19,16 +19,16 @@ Ralph never edits the rendered image directly.
 ```python
 class FigurePlan(BaseModel):
     version: int = 1
-    figure_kind: str  # e.g. "bar", "connected-scatter"
-    intent: UserIntent  # what the user is trying to show
-    bindings: dict[str, ColumnBinding]  # role name -> bound column(s)
-    transformations: list[Transform]  # filter/sort/aggregate/... (see below)
+    figure_kind: str                          # e.g. "bar", "connected-scatter"
+    intent: UserIntent                        # what the user is trying to show
+    bindings: dict[str, ColumnBinding]         # role name -> bound column(s)
+    transformations: list[Transform]           # filter/sort/aggregate/... (see below)
     title: str
     subtitle: str | None
     source_note: str | None
     annotations: list[Annotation]
-    style: StyleOptions  # theme, width/height, font_scale, legend, ...
-    output: OutputOptions  # export format/dimensions
+    style: StyleOptions                       # theme, width/height, font_scale, legend, ...
+    output: OutputOptions                     # export format/dimensions
 ```
 
 `UserIntent` (in the same module) is deliberately the same type the plan's

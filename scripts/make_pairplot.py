@@ -82,25 +82,13 @@ VARIABLES: List[Dict[str, Any]] = [
 #: silicon-anode cell charges fast at a high-density, shorter-life cost.
 CHEMISTRIES: Dict[str, Dict[str, float]] = {
     "NMC-811 (high nickel)": {
-        "density": 265,
-        "charge": 42,
-        "resistance": 22.0,
-        "cycles": 1500,
-        "spread": 0.06,
+        "density": 265, "charge": 42, "resistance": 22.0, "cycles": 1500, "spread": 0.06,
     },
     "LFP (iron phosphate)": {
-        "density": 165,
-        "charge": 55,
-        "resistance": 30.0,
-        "cycles": 4200,
-        "spread": 0.06,
+        "density": 165, "charge": 55, "resistance": 30.0, "cycles": 4200, "spread": 0.06,
     },
     "Silicon-anode (fast)": {
-        "density": 305,
-        "charge": 25,
-        "resistance": 15.0,
-        "cycles": 900,
-        "spread": 0.07,
+        "density": 305, "charge": 25, "resistance": 15.0, "cycles": 900, "spread": 0.07,
     },
 }
 
@@ -147,10 +135,10 @@ COLORS: List[str] = [_PALETTE[5], _PALETTE[1], _PALETTE[6]]  # Blue, Orange, Pur
 # families apart there. Circle / square / triangle read cleanly at scatter size.
 SHAPES: List[str] = ["circle", "square", "triangle"]
 
-INK = "#1D1D1F"  # primary text
-SECONDARY = "#6E6E73"  # subtitle / axis titles
-KEYLINE = "#FFFFFF"  # white keyline that lifts a mark off its neighbours
-GRID = "#ECECEE"  # very light cell gridline / frame
+INK = "#1D1D1F"          # primary text
+SECONDARY = "#6E6E73"    # subtitle / axis titles
+KEYLINE = "#FFFFFF"      # white keyline that lifts a mark off its neighbours
+GRID = "#ECECEE"         # very light cell gridline / frame
 BG = "#FFFFFF"
 
 
@@ -324,8 +312,7 @@ def _legend_glyph(shape: str, cx: float, cy: float, r: float, fill: str, cls: st
 
 
 def build_svg(
-    rows: "List[Dict[str, Any]] | None" = None,
-    mode: str = "self-contained",
+    rows: "List[Dict[str, Any]] | None" = None, mode: str = "self-contained",
     title: str = "Three battery chemistries, three clean clusters",
     legend_title: str = "Cell chemistry",
     theme: str = "corporate",
@@ -390,12 +377,12 @@ def build_svg(
         scales[key] = {"min": axis_min, "max": axis_max, "ticks": ticks}
 
     # --- canvas geometry (poster scale) ------------------------------
-    cell = 210  # inner plotting size of one grid cell, px
-    gap = 22  # gutter between cells
-    m_left = 150  # room for the left y-labels + tick labels
+    cell = 210          # inner plotting size of one grid cell, px
+    gap = 22            # gutter between cells
+    m_left = 150        # room for the left y-labels + tick labels
     m_right = 40
-    m_top = 250  # title + subtitle + legend band
-    m_bottom = 150  # bottom x-labels + tick labels
+    m_top = 250         # title + subtitle + legend band
+    m_bottom = 150      # bottom x-labels + tick labels
     grid_w = n * cell + (n - 1) * gap
     grid_h = grid_w
     width = m_left + grid_w + m_right
@@ -422,9 +409,7 @@ def build_svg(
     parts: List[str] = []
 
     # --- SVG root + accessible title/description ---------------------
-    parts.append(
-        svg_open(width, height, "pp-title", "pp-desc", font_family=chrome_stack_for_theme(theme))
-    )
+    parts.append(svg_open(width, height, "pp-title", "pp-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(
         # The accessible name is the headline a sighted reader sees: when
         # the two disagree, a screen-reader user is told about a different
@@ -433,18 +418,18 @@ def build_svg(
     )
     parts.append(
         '<desc id="pp-desc">A scatterplot matrix (pair plot) of a fleet of '
-        "lithium-ion battery cells from three chemistries: NMC-811 high-nickel, "
-        "LFP iron-phosphate, and a fast-charging silicon-anode cell. The four "
-        "measured properties crossed in the grid are usable energy density, "
-        "fast-charge time, internal resistance, and rated cycle life. "
-        "Off-diagonal cells are scatter plots where each chemistry has its own "
-        "hue and marker shape (circle, square, triangle) so the families stay "
-        "apart for colour-blind and greyscale readers; diagonal cells show each "
-        "property’s per-chemistry distribution as a density curve. On every "
-        "pair the three chemistries form three separated clusters: silicon-anode "
-        "is high-density and fast-charging but short-lived, LFP is the durable "
-        "long-cycle-life workhorse, and NMC-811 sits between them, so one cell "
-        "measurement is enough to identify the family.</desc>"
+        'lithium-ion battery cells from three chemistries: NMC-811 high-nickel, '
+        'LFP iron-phosphate, and a fast-charging silicon-anode cell. The four '
+        'measured properties crossed in the grid are usable energy density, '
+        'fast-charge time, internal resistance, and rated cycle life. '
+        'Off-diagonal cells are scatter plots where each chemistry has its own '
+        'hue and marker shape (circle, square, triangle) so the families stay '
+        'apart for colour-blind and greyscale readers; diagonal cells show each '
+        'property’s per-chemistry distribution as a density curve. On every '
+        'pair the three chemistries form three separated clusters: silicon-anode '
+        'is high-density and fast-charging but short-lived, LFP is the durable '
+        'long-cycle-life workhorse, and NMC-811 sits between them, so one cell '
+        'measurement is enough to identify the family.</desc>'
     )
 
     # OS-adaptive overrides only (this figure has no motion / interactivity, so
@@ -481,13 +466,13 @@ def build_svg(
     )
     parts.append(
         f'<text x="{m_left}" y="108" font-size="20" fill="{SECONDARY}">'
-        f"Pair plot of four measured properties across a fleet of lithium-ion "
-        f"cells. The chemistries separate on every</text>"
+        f'Pair plot of four measured properties across a fleet of lithium-ion '
+        f'cells. The chemistries separate on every</text>'
     )
     parts.append(
         f'<text x="{m_left}" y="134" font-size="20" fill="{SECONDARY}">'
-        f"pair, so one cell measurement tells the families apart. The diagonal "
-        f"shows each distribution.</text>"
+        f'pair, so one cell measurement tells the families apart. The diagonal '
+        f'shows each distribution.</text>'
     )
 
     # --- legend (hue + shape fused, one swatch per chemistry) --------
@@ -548,8 +533,8 @@ def build_svg(
                 # module docstring deliberately opts out of (see _marker's
                 # `title` parameter docs).
                 tip = (
-                    f"{chem}: {var_x['label']} {_fmt_tick(float(r[kx]))} {var_x['unit']}, "
-                    f"{var_y['label']} {_fmt_tick(float(r[ky]))} {var_y['unit']}"
+                    f'{chem}: {var_x["label"]} {_fmt_tick(float(r[kx]))} {var_x["unit"]}, '
+                    f'{var_y["label"]} {_fmt_tick(float(r[ky]))} {var_y["unit"]}'
                 )
                 parts.append(_marker(shape, cx, cy, 3.6, fill, f"chem-{ci}", title=tip))
 
@@ -597,12 +582,14 @@ def build_svg(
                 px_ = scale_x(key, x0, vx)
                 py_ = baseline - (d / peak) * usable_h
                 poly.append((px_, py_))
-            area_d = f"M {poly[0][0]:.2f} {baseline:.2f}"
-            area_d += "".join(f" L {x:.2f} {y:.2f}" for x, y in poly)
-            area_d += f" L {poly[-1][0]:.2f} {baseline:.2f} Z"
-            parts.append(f'<path class="{cls}" d="{area_d}" fill="{fill}" fill-opacity="0.42"/>')
-            line_d = f"M {poly[0][0]:.2f} {poly[0][1]:.2f}"
-            line_d += "".join(f" L {x:.2f} {y:.2f}" for x, y in poly[1:])
+            area_d = f'M {poly[0][0]:.2f} {baseline:.2f}'
+            area_d += "".join(f' L {x:.2f} {y:.2f}' for x, y in poly)
+            area_d += f' L {poly[-1][0]:.2f} {baseline:.2f} Z'
+            parts.append(
+                f'<path class="{cls}" d="{area_d}" fill="{fill}" fill-opacity="0.42"/>'
+            )
+            line_d = f'M {poly[0][0]:.2f} {poly[0][1]:.2f}'
+            line_d += "".join(f' L {x:.2f} {y:.2f}' for x, y in poly[1:])
             parts.append(
                 f'<path class="{cls}" d="{line_d}" fill="none" stroke="{fill}" '
                 f'stroke-width="2" stroke-linejoin="round"/>'
@@ -649,19 +636,19 @@ def build_svg(
             parts.append(
                 f'<text x="{gx + dx:.1f}" y="{base_y + 24:.1f}" font-size="14" '
                 f'{tick_font} fill="{SECONDARY}" text-anchor="{anchor}">'
-                f"{_fmt_tick(float(t))}</text>"
+                f'{_fmt_tick(float(t))}</text>'
             )
         # Column variable title, centred under its column.
         cx = x0 + cell / 2
         parts.append(
             f'<text x="{cx:.1f}" y="{base_y + 58:.1f}" font-size="18" '
             f'font-weight="600" fill="{INK}" text-anchor="middle">'
-            f"{xml_escape(str(var['label']))}</text>"
+            f'{xml_escape(str(var["label"]))}</text>'
         )
         parts.append(
             f'<text x="{cx:.1f}" y="{base_y + 80:.1f}" font-size="15" '
             f'fill="{SECONDARY}" text-anchor="middle">'
-            f"({xml_escape(str(var['unit']))})</text>"
+            f'({xml_escape(str(var["unit"]))})</text>'
         )
 
     for row in range(n):
@@ -678,17 +665,17 @@ def build_svg(
             parts.append(
                 f'<text x="{left - 11:.1f}" y="{gy + 5:.1f}" font-size="14" '
                 f'{tick_font} fill="{SECONDARY}" text-anchor="end">'
-                f"{_fmt_tick(float(t))}</text>"
+                f'{_fmt_tick(float(t))}</text>'
             )
         # Row variable title, rotated along the left edge of its row.
         cy = y0 + cell / 2
         title_x = float(m_left) - 92
-        label = f"{var['label']} ({var['unit']})"
+        label = f'{var["label"]} ({var["unit"]})'
         parts.append(
             f'<text x="{title_x:.1f}" y="{cy:.1f}" font-size="18" '
             f'font-weight="600" fill="{INK}" text-anchor="middle" '
             f'transform="rotate(-90 {title_x:.1f} {cy:.1f})">'
-            f"{xml_escape(label)}</text>"
+            f'{xml_escape(label)}</text>'
         )
 
     # --- fullscreen control (mode-dependent) + close -----------------
@@ -740,7 +727,9 @@ def make_pairplot(
     """
     _ = accessibility
     rows = data if data else DEMO_DATA
-    svg = build_svg(rows, mode=mode, title=title, legend_title=legend_title, theme=theme)
+    svg = build_svg(
+        rows, mode=mode, title=title, legend_title=legend_title, theme=theme
+    )
     dest = Path(out) if out else svg_example_path(__file__, "pairplot")
     return write_svg(dest, svg, theme=theme)
 
@@ -748,9 +737,7 @@ def make_pairplot(
 def main() -> None:
     """Write the pair-plot SVG to the canonical assets path (or ``--out``)."""
     render_cli(
-        __file__,
-        "pairplot",
-        build_svg,
+        __file__, "pairplot", build_svg,
         description="Render the house-style pair plot / scatterplot matrix (SPLOM) to SVG.",
     )
 

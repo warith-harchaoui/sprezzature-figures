@@ -55,41 +55,16 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
     # each element is, and the generators normalise the row themselves.
     "map-flow": {
         "required_roles": [
-            {
-                "name": "origin",
-                "label": "Origin place",
-                "accepted_types": ["categorical"],
-                "required": True,
-            },
-            {
-                "name": "destination",
-                "label": "Destination place",
-                "accepted_types": ["categorical"],
-                "required": True,
-            },
-            {
-                "name": "people",
-                "label": "Size of the flow",
-                "accepted_types": ["numeric"],
-                "required": True,
-            },
+            {"name": "origin", "label": "Origin place", "accepted_types": ["categorical"], "required": True},
+            {"name": "destination", "label": "Destination place", "accepted_types": ["categorical"], "required": True},
+            {"name": "people", "label": "Size of the flow", "accepted_types": ["numeric"], "required": True},
         ],
         "optional_roles": [],
     },
     "map-tilegrid": {
         "required_roles": [
-            {
-                "name": "code",
-                "label": "Country code",
-                "accepted_types": ["categorical"],
-                "required": True,
-            },
-            {
-                "name": "percent",
-                "label": "Rate shading the tile",
-                "accepted_types": ["numeric"],
-                "required": True,
-            },
+            {"name": "code", "label": "Country code", "accepted_types": ["categorical"], "required": True},
+            {"name": "percent", "label": "Rate shading the tile", "accepted_types": ["numeric"], "required": True},
         ],
         "optional_roles": [],
     },
@@ -98,50 +73,25 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
             {"name": "name", "label": "Place", "accepted_types": ["categorical"], "required": True},
             {"name": "lon", "label": "Longitude", "accepted_types": ["numeric"], "required": True},
             {"name": "lat", "label": "Latitude", "accepted_types": ["numeric"], "required": True},
-            {
-                "name": "gt",
-                "label": "Quantity sized by area",
-                "accepted_types": ["numeric"],
-                "required": True,
-            },
+            {"name": "gt", "label": "Quantity sized by area", "accepted_types": ["numeric"], "required": True},
         ],
         "optional_roles": [],
     },
     "map-bars": {
         "required_roles": [
-            {
-                "name": "region",
-                "label": "Place",
-                "accepted_types": ["categorical"],
-                "required": True,
-            },
+            {"name": "region", "label": "Place", "accepted_types": ["categorical"], "required": True},
             {"name": "lon", "label": "Longitude", "accepted_types": ["numeric"], "required": True},
             {"name": "lat", "label": "Latitude", "accepted_types": ["numeric"], "required": True},
-            {
-                "name": "values",
-                "label": "One magnitude per series",
-                "accepted_types": ["numeric"],
-                "required": True,
-            },
+            {"name": "values", "label": "One magnitude per series", "accepted_types": ["numeric"], "required": True},
         ],
         "optional_roles": [],
     },
     "map-pie": {
         "required_roles": [
-            {
-                "name": "region",
-                "label": "Place",
-                "accepted_types": ["categorical"],
-                "required": True,
-            },
+            {"name": "region", "label": "Place", "accepted_types": ["categorical"], "required": True},
             {"name": "lon", "label": "Longitude", "accepted_types": ["numeric"], "required": True},
             {"name": "lat", "label": "Latitude", "accepted_types": ["numeric"], "required": True},
-            {
-                "name": "values",
-                "label": "One share per part of the whole",
-                "accepted_types": ["numeric"],
-                "required": True,
-            },
+            {"name": "values", "label": "One share per part of the whole", "accepted_types": ["numeric"], "required": True},
         ],
         "optional_roles": [],
     },
@@ -537,220 +487,106 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
     },
     "quiver3d": {
         "required_roles": [
-            {
-                "name": "x",
-                "label": "First coordinate",
-                "accepted_types": ["numeric"],
-                "required": True,
-            },
-            {
-                "name": "y",
-                "label": "Second coordinate",
-                "accepted_types": ["numeric"],
-                "required": True,
-            },
-            {
-                "name": "z",
-                "label": "Third coordinate",
-                "accepted_types": ["numeric"],
-                "required": True,
-            },
-            {
-                "name": "u",
-                "label": "First vector component",
-                "accepted_types": ["numeric"],
-                "required": True,
-            },
-            {
-                "name": "v",
-                "label": "Second vector component",
-                "accepted_types": ["numeric"],
-                "required": True,
-            },
-            {
-                "name": "w",
-                "label": "Third vector component",
-                "accepted_types": ["numeric"],
-                "required": True,
-            },
+            {"name": "x", "label": "First coordinate",
+             "accepted_types": ["numeric"], "required": True},
+            {"name": "y", "label": "Second coordinate",
+             "accepted_types": ["numeric"], "required": True},
+            {"name": "z", "label": "Third coordinate",
+             "accepted_types": ["numeric"], "required": True},
+            {"name": "u", "label": "First vector component",
+             "accepted_types": ["numeric"], "required": True},
+            {"name": "v", "label": "Second vector component",
+             "accepted_types": ["numeric"], "required": True},
+            {"name": "w", "label": "Third vector component",
+             "accepted_types": ["numeric"], "required": True},
         ],
         "optional_roles": [],
     },
     "funnel-area": {
         "required_roles": [
-            {
-                "name": "stage",
-                "label": "Stage",
-                "accepted_types": ["categorical"],
-                "required": True,
-            },
-            {
-                "name": "count",
-                "label": "How many reached it",
-                "accepted_types": ["numeric"],
-                "required": True,
-            },
+            {"name": "stage", "label": "Stage",
+             "accepted_types": ["categorical"], "required": True},
+            {"name": "count", "label": "How many reached it",
+             "accepted_types": ["numeric"], "required": True},
         ],
         "optional_roles": [],
     },
     "progress": {
         "required_roles": [
-            {"name": "goal", "label": "Goal", "accepted_types": ["categorical"], "required": True},
-            {
-                "name": "done",
-                "label": "Achieved so far",
-                "accepted_types": ["numeric"],
-                "required": True,
-            },
-            {"name": "target", "label": "Target", "accepted_types": ["numeric"], "required": True},
+            {"name": "goal", "label": "Goal",
+             "accepted_types": ["categorical"], "required": True},
+            {"name": "done", "label": "Achieved so far",
+             "accepted_types": ["numeric"], "required": True},
+            {"name": "target", "label": "Target",
+             "accepted_types": ["numeric"], "required": True},
         ],
         "optional_roles": [
-            {
-                "name": "paced",
-                "label": "Whether the goal accumulates",
-                "accepted_types": ["numeric", "categorical"],
-                "required": False,
-            },
+            {"name": "paced", "label": "Whether the goal accumulates",
+             "accepted_types": ["numeric", "categorical"], "required": False},
         ],
     },
     "fishbone": {
         "required_roles": [
-            {
-                "name": "category",
-                "label": "Cause group",
-                "accepted_types": ["categorical"],
-                "required": True,
-            },
-            {
-                "name": "cause",
-                "label": "The cause itself",
-                "accepted_types": ["categorical"],
-                "required": True,
-            },
+            {"name": "category", "label": "Cause group",
+             "accepted_types": ["categorical"], "required": True},
+            {"name": "cause", "label": "The cause itself",
+             "accepted_types": ["categorical"], "required": True},
         ],
         "optional_roles": [
-            {
-                "name": "weight",
-                "label": "How much it contributes",
-                "accepted_types": ["numeric"],
-                "required": False,
-            },
-            {
-                "name": "evidenced",
-                "label": "Whether evidence backs it",
-                "accepted_types": ["numeric", "categorical"],
-                "required": False,
-            },
+            {"name": "weight", "label": "How much it contributes",
+             "accepted_types": ["numeric"], "required": False},
+            {"name": "evidenced", "label": "Whether evidence backs it",
+             "accepted_types": ["numeric", "categorical"], "required": False},
         ],
     },
     "table": {
         "required_roles": [
-            {
-                "name": "region",
-                "label": "Row label",
-                "accepted_types": ["categorical"],
-                "required": True,
-            },
-            {
-                "name": "revenue",
-                "label": "A numeric column",
-                "accepted_types": ["numeric"],
-                "required": True,
-            },
+            {"name": "region", "label": "Row label",
+             "accepted_types": ["categorical"], "required": True},
+            {"name": "revenue", "label": "A numeric column",
+             "accepted_types": ["numeric"], "required": True},
         ],
         "optional_roles": [
-            {
-                "name": "teams",
-                "label": "Another numeric column",
-                "accepted_types": ["numeric"],
-                "required": False,
-            },
-            {
-                "name": "churn",
-                "label": "Another numeric column",
-                "accepted_types": ["numeric"],
-                "required": False,
-            },
-            {
-                "name": "nps",
-                "label": "Another numeric column",
-                "accepted_types": ["numeric"],
-                "required": False,
-            },
+            {"name": "teams", "label": "Another numeric column",
+             "accepted_types": ["numeric"], "required": False},
+            {"name": "churn", "label": "Another numeric column",
+             "accepted_types": ["numeric"], "required": False},
+            {"name": "nps", "label": "Another numeric column",
+             "accepted_types": ["numeric"], "required": False},
         ],
     },
     "voxels": {
         "required_roles": [
-            {
-                "name": "learning_rate",
-                "label": "First grid axis",
-                "accepted_types": ["numeric", "categorical"],
-                "required": True,
-            },
-            {
-                "name": "max_depth",
-                "label": "Second grid axis",
-                "accepted_types": ["numeric", "categorical"],
-                "required": True,
-            },
-            {
-                "name": "subsample",
-                "label": "Third grid axis",
-                "accepted_types": ["numeric", "categorical"],
-                "required": True,
-            },
-            {
-                "name": "auc",
-                "label": "Measured value",
-                "accepted_types": ["numeric"],
-                "required": True,
-            },
+            {"name": "learning_rate", "label": "First grid axis",
+             "accepted_types": ["numeric", "categorical"], "required": True},
+            {"name": "max_depth", "label": "Second grid axis",
+             "accepted_types": ["numeric", "categorical"], "required": True},
+            {"name": "subsample", "label": "Third grid axis",
+             "accepted_types": ["numeric", "categorical"], "required": True},
+            {"name": "auc", "label": "Measured value",
+             "accepted_types": ["numeric"], "required": True},
         ],
         "optional_roles": [],
     },
     "tricontour": {
         "required_roles": [
-            {
-                "name": "east_km",
-                "label": "First ground coordinate",
-                "accepted_types": ["numeric"],
-                "required": True,
-            },
-            {
-                "name": "north_km",
-                "label": "Second ground coordinate",
-                "accepted_types": ["numeric"],
-                "required": True,
-            },
-            {
-                "name": "pm25",
-                "label": "Measured value",
-                "accepted_types": ["numeric"],
-                "required": True,
-            },
+            {"name": "east_km", "label": "First ground coordinate",
+             "accepted_types": ["numeric"], "required": True},
+            {"name": "north_km", "label": "Second ground coordinate",
+             "accepted_types": ["numeric"], "required": True},
+            {"name": "pm25", "label": "Measured value",
+             "accepted_types": ["numeric"], "required": True},
         ],
         "optional_roles": [],
     },
     "trisurface": {
         "required_roles": [
-            {
-                "name": "x",
-                "label": "First ground coordinate",
-                "accepted_types": ["numeric"],
-                "required": True,
-            },
-            {
-                "name": "y",
-                "label": "Second ground coordinate",
-                "accepted_types": ["numeric"],
-                "required": True,
-            },
-            {
-                "name": "depth",
-                "label": "Measured value",
-                "accepted_types": ["numeric"],
-                "required": True,
-            },
+            {"name": "x", "label": "First ground coordinate",
+             "accepted_types": ["numeric"], "required": True},
+            {"name": "y", "label": "Second ground coordinate",
+             "accepted_types": ["numeric"], "required": True},
+            {"name": "depth", "label": "Measured value",
+             "accepted_types": ["numeric"], "required": True},
         ],
         "optional_roles": [],
     },
@@ -2211,13 +2047,7 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
                 # A gap here is data, not a mistake: only the swept components have one.
                 "tolerates_gaps": True,
             },
-            {
-                "name": "end_hz",
-                "label": "End hz",
-                "accepted_types": ["numeric"],
-                "required": True,
-                "tolerates_gaps": True,
-            },
+            {"name": "end_hz", "label": "End hz", "accepted_types": ["numeric"], "required": True, "tolerates_gaps": True},
             {
                 "name": "amplitude",
                 "label": "Amplitude",
@@ -3332,7 +3162,7 @@ def introspect_entry_options(filename: str, callable_name: str) -> dict[str, Any
     if function is None:
         return {}
     return {
-        name:  # ``name`` is the key and ``cli_flag`` is derived from it: storing
+        name: # ``name`` is the key and ``cli_flag`` is derived from it: storing
         # either would be a second copy to keep in step with the first.
         option.model_dump(mode="json", exclude={"name", "cli_flag"})
         for name, option in introspect_options(function).items()

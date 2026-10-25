@@ -62,7 +62,7 @@ from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_the
 # ------------------------------------------------------------------
 WIDTH = 1280
 HEIGHT = 1040
-SUBINK = "#6E6E73"  # secondary text
+SUBINK = "#6E6E73"         # secondary text
 
 FONT = "Roboto, system-ui, sans-serif"
 
@@ -172,17 +172,7 @@ def _family_color(accessibility: str = "universal", theme: str = "corporate") ->
 #: four default families already use (Blue/Green/Orange/Purple, with Blue
 #: and Purple darkened) so a custom dataset whose families happen to appear
 #: in the same declaration order gets the same colours as the default story.
-_FAMILY_HUE_ORDER = [
-    "Blue",
-    "Green",
-    "Orange",
-    "Purple",
-    "Teal",
-    "Pink",
-    "Yellow",
-    "Indigo",
-    "Gray",
-]
+_FAMILY_HUE_ORDER = ["Blue", "Green", "Orange", "Purple", "Teal", "Pink", "Yellow", "Indigo", "Gray"]
 _DARKEN_HUES = {"Blue", "Purple"}
 
 
@@ -424,12 +414,9 @@ def build_svg(
     mono_family = mono_stack_for_theme(theme)
     languages = languages if languages else LANGUAGES
     is_default = languages == LANGUAGES
-    family_order = (
-        FAMILY_ORDER if is_default else list(dict.fromkeys(fam for _, _, fam in languages))
-    )
+    family_order = FAMILY_ORDER if is_default else list(dict.fromkeys(fam for _, _, fam in languages))
     family_color = (
-        _family_color(accessibility, theme)
-        if is_default
+        _family_color(accessibility, theme) if is_default
         else _family_color_for(family_order, accessibility, theme)
     )
     family_label = _family_label(family_color)
@@ -460,18 +447,10 @@ def build_svg(
     # already fits, which is the common case.
     safe_top, safe_bottom = 200.0, HEIGHT - 70.0
     safe_left, safe_right = 40.0, WIDTH - 40.0
-    reach_up = max(
-        (PACK_CY - (y - r) for (x, y), r in zip(centres, radii, strict=True)), default=0.0
-    )
-    reach_down = max(
-        ((y + r) - PACK_CY for (x, y), r in zip(centres, radii, strict=True)), default=0.0
-    )
-    reach_left = max(
-        (PACK_CX - (x - r) for (x, y), r in zip(centres, radii, strict=True)), default=0.0
-    )
-    reach_right = max(
-        ((x + r) - PACK_CX for (x, y), r in zip(centres, radii, strict=True)), default=0.0
-    )
+    reach_up = max((PACK_CY - (y - r) for (x, y), r in zip(centres, radii, strict=True)), default=0.0)
+    reach_down = max(((y + r) - PACK_CY for (x, y), r in zip(centres, radii, strict=True)), default=0.0)
+    reach_left = max((PACK_CX - (x - r) for (x, y), r in zip(centres, radii, strict=True)), default=0.0)
+    reach_right = max(((x + r) - PACK_CX for (x, y), r in zip(centres, radii, strict=True)), default=0.0)
     fit_scale = min(
         1.0,
         (PACK_CY - safe_top) / reach_up if reach_up > 0 else 1.0,
@@ -480,10 +459,7 @@ def build_svg(
         (safe_right - PACK_CX) / reach_right if reach_right > 0 else 1.0,
     )
     if fit_scale < 1.0:
-        centres = [
-            (PACK_CX + (x - PACK_CX) * fit_scale, PACK_CY + (y - PACK_CY) * fit_scale)
-            for x, y in centres
-        ]
+        centres = [(PACK_CX + (x - PACK_CX) * fit_scale, PACK_CY + (y - PACK_CY) * fit_scale) for x, y in centres]
         radii = [r * fit_scale for r in radii]
 
     title_txt = title or "JavaScript and Python still anchor the working web"
@@ -502,9 +478,7 @@ def build_svg(
     )
 
     parts: List[str] = []
-    parts.append(
-        svg_open(WIDTH, HEIGHT, "pb-title", "pb-desc", font_family=chrome_stack_for_theme(theme))
-    )
+    parts.append(svg_open(WIDTH, HEIGHT, "pb-title", "pb-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="pb-title">{escape(title_txt)}</title>')
     parts.append(f'<desc id="pb-desc">{escape(desc_txt)}</desc>')
 
@@ -553,7 +527,8 @@ def build_svg(
         f'fill="{INK}">{escape(title_txt)}</text>'
     )
     parts.append(
-        f'<text x="56" y="112" font-size="20" fill="{SUBINK}">{escape(subtitle_txt)}</text>'
+        f'<text x="56" y="112" font-size="20" fill="{SUBINK}">'
+        f'{escape(subtitle_txt)}</text>'
     )
 
     parts.append('<g id="pack">')
@@ -567,9 +542,7 @@ def build_svg(
     # construction.
     parts.append('<g id="bubbles">')
     bubble_tips: List[str] = []
-    for bub_i, ((name, share, fam), (x, y), r) in enumerate(
-        zip(ordered, centres, radii, strict=True)
-    ):
+    for bub_i, ((name, share, fam), (x, y), r) in enumerate(zip(ordered, centres, radii, strict=True)):
         color = family_color[fam]
         label_ink = family_label[fam]
         slug = fam_slug[fam]
@@ -587,13 +560,13 @@ def build_svg(
             parts.append(
                 f'<text x="{x:.1f}" y="{y - fs * 0.18:.1f}" text-anchor="middle" '
                 f'font-size="{fs:.1f}" font-weight="700" fill="{label_ink}">'
-                f"{escape(name)}</text>"
+                f'{escape(name)}</text>'
             )
             parts.append(
                 f'<text x="{x:.1f}" y="{y + fs * 0.98:.1f}" text-anchor="middle" '
                 f'font-size="{fs * 0.82:.1f}" fill="{label_ink}" '
                 f'font-family="{mono_family}" opacity="0.92">'
-                f"{escape(_fmt_share(share))}</text>"
+                f'{escape(_fmt_share(share))}</text>'
             )
         else:
             # Smaller bubble: one fitted name line with the share tucked
@@ -602,26 +575,21 @@ def build_svg(
             parts.append(
                 f'<text x="{x:.1f}" y="{y - fs * 0.06:.1f}" text-anchor="middle" '
                 f'font-size="{fs:.1f}" font-weight="700" fill="{label_ink}">'
-                f"{escape(name)}</text>"
+                f'{escape(name)}</text>'
             )
             parts.append(
                 f'<text x="{x:.1f}" y="{y + fs * 1.08:.1f}" text-anchor="middle" '
                 f'font-size="{fs * 0.8:.1f}" fill="{label_ink}" '
                 f'font-family="{mono_family}" opacity="0.92">'
-                f"{escape(_fmt_share(share))}</text>"
+                f'{escape(_fmt_share(share))}</text>'
             )
         parts.append("</g>")
         bubble_tips.append(
             tooltip_bubble(
-                x,
-                y - r - 12,
+                x, y - r - 12,
                 [name, fam, f"{_fmt_share(share)} of developers"],
-                anchor="middle",
-                canvas_w=WIDTH,
-                canvas_h=HEIGHT,
-                ink=INK,
-                secondary=SUBINK,
-                border=GRIDLINE,
+                anchor="middle", canvas_w=WIDTH, canvas_h=HEIGHT,
+                ink=INK, secondary=SUBINK, border=GRIDLINE,
                 elem_id=f"bubble-tip-{bub_i}",
             )
         )
@@ -636,7 +604,9 @@ def build_svg(
     cursor = 56.0
     for fam in family_order:
         color = family_color[fam]
-        parts.append(f'<circle cx="{cursor + 9:.1f}" cy="{ly - 6:.1f}" r="9" fill="{color}"/>')
+        parts.append(
+            f'<circle cx="{cursor + 9:.1f}" cy="{ly - 6:.1f}" r="9" fill="{color}"/>'
+        )
         parts.append(
             f'<text x="{cursor + 26:.1f}" y="{ly:.1f}" text-anchor="start" '
             f'font-size="18" fill="{INK}">{escape(fam)}</text>'
@@ -647,8 +617,8 @@ def build_svg(
     hint_y = HEIGHT - 40
     parts.append(
         f'<text x="56" y="{hint_y:.1f}" font-size="16" fill="{SUBINK}">'
-        f"Bubble area ∝ share of developers using the language · "
-        f"hover or focus a bubble to lift its family</text>"
+        f'Bubble area ∝ share of developers using the language · '
+        f'hover or focus a bubble to lift its family</text>'
     )
 
     parts.append(fullscreen_control(WIDTH, HEIGHT, mode))
@@ -697,9 +667,7 @@ def make_packed_bubble(
     _ = title
     rows = data if data else DEMO_DATA
     languages = [(str(r["name"]), float(r["share"]), str(r["family"])) for r in rows]
-    svg = build_svg(
-        languages, mode=mode, accessibility=accessibility, theme=theme, title=title or None
-    )
+    svg = build_svg(languages, mode=mode, accessibility=accessibility, theme=theme, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "packed-bubble")
     return write_svg(dest, svg, theme=theme)
 

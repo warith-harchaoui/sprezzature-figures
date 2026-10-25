@@ -37,10 +37,7 @@ from sprezzature_figures.studio.assistant.schemas import ChartReading, ReadSerie
 # The 8-byte PNG signature is all _image_bytes() inspects; a real raster
 # would only make the fixtures heavier.
 PNG = b"\x89PNG\r\n\x1a\n" + b"\x00" * 32
-SVG = (
-    b'<svg xmlns="http://www.w3.org/2000/svg" width="40" height="20">'
-    b"<rect width='40' height='20' fill='#333'/></svg>"
-)
+SVG = b'<svg xmlns="http://www.w3.org/2000/svg" width="40" height="20">' b"<rect width='40' height='20' fill='#333'/></svg>"
 
 
 def reading(**overrides: Any) -> ChartReading:
@@ -329,7 +326,9 @@ def test_changes_are_ordered_worst_first(tmp_path: Path) -> None:
 
 @pytest.mark.slow
 def test_low_confidence_is_reported(tmp_path: Path) -> None:
-    result = redraw(PNG, out=tmp_path / "u.svg", client=client_for(reading(kind_confidence="low")))
+    result = redraw(
+        PNG, out=tmp_path / "u.svg", client=client_for(reading(kind_confidence="low"))
+    )
     assert any("unsure" in w for w in result.warnings)
 
 

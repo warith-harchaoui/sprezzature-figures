@@ -147,16 +147,14 @@ def build_svg(
             )
         achieved = float(row[done])
         accumulates = bool(row.get(paced, 1))
-        goals.append(
-            {
-                "name": str(row[label]),
-                "done": achieved,
-                "target": aim,
-                "share": achieved / aim,
-                "paced": accumulates,
-                "lag": (achieved / aim - elapsed) if accumulates else None,
-            }
-        )
+        goals.append({
+            "name": str(row[label]),
+            "done": achieved,
+            "target": aim,
+            "share": achieved / aim,
+            "paced": accumulates,
+            "lag": (achieved / aim - elapsed) if accumulates else None,
+        })
     if sort_by_lag:
         # Unpaced goals have no lag to sort on, so they sit below the
         # ones a schedule can be argued about.
@@ -183,8 +181,7 @@ def build_svg(
         return plot_x + min(share, reach) / reach * plot_w
 
     pace_lines = (
-        [pace_note]
-        if pace_note is not None
+        [pace_note] if pace_note is not None
         else [
             f"{fmt_number(elapsed * 100.0)}% of the period has gone, so the rule on each "
             f"bar is where it should stand",
@@ -212,19 +209,14 @@ def build_svg(
 
     parts: List[str] = []
     parts.append(
-        svg_open(
-            width,
-            height,
-            "progress-title",
-            "progress-desc",
-            font_family=chrome_stack_for_theme(theme),
-        )
+        svg_open(width, height, "progress-title", "progress-desc",
+                 font_family=chrome_stack_for_theme(theme))
     )
     parts.append(f'<title id="progress-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="progress-desc">Progress toward {len(goals)} goals, each a bar filled '
-        f"to what has been achieved with a rule marking where it should stand. "
-        f"{xml_escape(said_pace)}. {xml_escape(' '.join(said_parts))}</desc>"
+        f'to what has been achieved with a rule marking where it should stand. '
+        f'{xml_escape(said_pace)}. {xml_escape(" ".join(said_parts))}</desc>'
     )
     parts.append(
         "<style>"
@@ -265,8 +257,8 @@ def build_svg(
         top = plot_y + index * lane + lane * 0.22
         thickness = lane * 0.46
         share = goal["share"]
-        colour = (
-            over if share >= 1.0 else (lagging if goal["paced"] and goal["lag"] < 0.0 else on_track)
+        colour = over if share >= 1.0 else (
+            lagging if goal["paced"] and goal["lag"] < 0.0 else on_track
         )
         parts.append(
             f'<rect x="{plot_x:.1f}" y="{top:.1f}" width="{plot_w:.1f}" '
@@ -292,59 +284,54 @@ def build_svg(
         parts.append(
             f'<text x="{plot_x - 14:.1f}" y="{top + thickness * 0.75:.1f}" '
             f'font-size="12" fill="{INK}" text-anchor="end">{xml_escape(goal["name"])}'
-            f"</text>"
+            f'</text>'
         )
         # The precision that matters for a row is the gap it is about:
         # an uptime target of 0.999 against 0.9994 needs four decimals,
         # a target of 9 against 11 needs none. Keyed to the target alone
         # this printed "11.0000 / 9.0000".
-        precision = max(abs(goal["target"] - goal["done"]), abs(goal["target"]) / 1000.0)
+        precision = max(
+            abs(goal["target"] - goal["done"]), abs(goal["target"]) / 1000.0
+        )
         parts.append(
             f'<text x="{plot_x + plot_w + 12:.1f}" y="{top + thickness * 0.75:.1f}" '
             f'font-size="11" fill="{SECONDARY}" font-family="{mono_family}">'
-            f"{fmt_measured(goal['done'], precision)} / "
-            f"{fmt_measured(goal['target'], precision)}</text>"
+            f'{fmt_measured(goal["done"], precision)} / '
+            f'{fmt_measured(goal["target"], precision)}</text>'
         )
         gap = (goal["lag"] or 0.0) * 100.0
         standing = (
-            f"{fmt_number(abs(gap))} points {behind_label if gap < 0 else ahead_label}"
-            if goal["paced"]
-            else "not on a schedule"
+            f"{fmt_number(abs(gap))} points "
+            f"{behind_label if gap < 0 else ahead_label}"
+            if goal["paced"] else "not on a schedule"
         )
         parts.append(
             f'<text x="{plot_x - 14:.1f}" y="{top + thickness + 13:.1f}" font-size="10" '
             f'fill="{lagging if goal["paced"] and gap < 0 else SECONDARY}" '
             f'text-anchor="end" font-family="{mono_family}">'
-            f"{fmt_number(share * 100.0)}% · {xml_escape(standing)}</text>"
+            f'{fmt_number(share * 100.0)}% · {xml_escape(standing)}</text>'
         )
         parts.append(
             f'<rect id="goal-{index}" class="goal hit" tabindex="0" role="img" '
             f'aria-label="{xml_escape(goal["name"])}: '
-            f"{fmt_measured(goal['done'], precision)} of "
-            f"{fmt_measured(goal['target'], precision)}, {fmt_number(share * 100.0)}%, "
+            f'{fmt_measured(goal["done"], precision)} of '
+            f'{fmt_measured(goal["target"], precision)}, {fmt_number(share * 100.0)}%, '
             f'{xml_escape(standing)}" '
             f'x="{plot_x:.1f}" y="{plot_y + index * lane:.1f}" width="{plot_w:.1f}" '
             f'height="{lane:.1f}" fill="transparent">'
-            f"<title>{xml_escape(goal['name'])}: "
-            f"{fmt_number(share * 100.0)}%</title></rect>"
+            f'<title>{xml_escape(goal["name"])}: '
+            f'{fmt_number(share * 100.0)}%</title></rect>'
         )
         tips.append(
             tooltip_bubble(
-                px(min(share, reach)),
-                top + thickness / 2.0,
-                [
-                    goal["name"],
-                    f"{fmt_measured(goal['done'], precision)} / "
-                    f"{fmt_measured(goal['target'], precision)} · "
-                    f"{fmt_number(share * 100.0)}%",
-                    standing,
-                ],
-                canvas_w=width,
-                canvas_h=height,
-                ink=INK,
-                secondary=SECONDARY,
-                border=GRIDLINE,
-                elem_id=f"goaltip-{index}",
+                px(min(share, reach)), top + thickness / 2.0,
+                [goal["name"],
+                 f"{fmt_measured(goal['done'], precision)} / "
+                 f"{fmt_measured(goal['target'], precision)} · "
+                 f"{fmt_number(share * 100.0)}%",
+                 standing],
+                canvas_w=width, canvas_h=height, ink=INK, secondary=SECONDARY,
+                border=GRIDLINE, elem_id=f"goaltip-{index}",
             )
         )
 
@@ -355,7 +342,7 @@ def build_svg(
     parts.append(
         f'<text x="{px(1.0):.1f}" y="{plot_y + plot_h + 22:.1f}" font-size="11" '
         f'fill="{SECONDARY}" text-anchor="middle" font-family="{mono_family}">target'
-        f"</text>"
+        f'</text>'
     )
 
     parts.extend(tips)
@@ -432,25 +419,12 @@ def make_progress(
     True
     """
     svg = build_svg(
-        data,
-        title=title,
-        subtitle=subtitle,
-        width=width,
-        height=height,
-        label=label,
-        done=done,
-        target=target,
-        paced=paced,
-        elapsed=elapsed,
-        sort_by_lag=sort_by_lag,
-        pace_label=pace_label,
-        behind_label=behind_label,
-        ahead_label=ahead_label,
-        pace_note=pace_note,
-        finding=finding,
-        mode=mode,
-        accessibility=accessibility,
-        theme=theme,
+        data, title=title, subtitle=subtitle, width=width, height=height,
+        label=label, done=done, target=target, paced=paced, elapsed=elapsed,
+        sort_by_lag=sort_by_lag, pace_label=pace_label,
+        behind_label=behind_label, ahead_label=ahead_label,
+        pace_note=pace_note, finding=finding, mode=mode,
+        accessibility=accessibility, theme=theme,
     )
     dest = Path(out) if out else svg_example_path(__file__, "progress")
     return write_svg(dest, svg, theme=theme)
@@ -458,12 +432,8 @@ def make_progress(
 
 def main() -> None:
     """CLI entry point: build the SVG and write it to disk."""
-    render_cli(
-        __file__,
-        "progress",
-        build_svg,
-        description="Draw progress toward goals against the pace they should keep.",
-    )
+    render_cli(__file__, "progress", build_svg,
+               description="Draw progress toward goals against the pace they should keep.")
 
 
 if __name__ == "__main__":

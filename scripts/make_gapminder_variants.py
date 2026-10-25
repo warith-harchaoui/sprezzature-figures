@@ -70,11 +70,11 @@ DATA = HERE.parent / "assets" / "data"
 SVG_DIR = HERE.parent / "assets" / "svg-examples"
 
 W, H = 1020, 520
-X0, X1 = 100, 710  # plot x range; the wide right margin holds the legends
-Y0, Y1 = 448, 60  # plot y range (y is inverted, i.e. Y0 is the bottom)
+X0, X1 = 100, 710       # plot x range; the wide right margin holds the legends
+Y0, Y1 = 448, 60        # plot y range (y is inverted, i.e. Y0 is the bottom)
 R_MIN, R_MAX = 2.6, 46.0
 TOP_LABELS = 10
-SEC_PER_YEAR = 1  # one year of the sweep lasts one second
+SEC_PER_YEAR = 1        # one year of the sweep lasts one second
 
 
 # ------------------------------------------------------------------
@@ -169,20 +169,20 @@ def _unit(kind: str, lo: float, hi: float, v: float) -> float:
 class Variant:
     """One Gapminder-family chart: its data, scales, ticks and bilingual copy."""
 
-    key: str  # short id, only used in messages
-    csv_name: str  # base CSV file name (no .fr)
-    xcol: str  # x column in the CSV
-    ycol: str  # y column in the CSV
-    xkind: str  # "lin" | "log" | "surv"
-    ykind: str  # "lin" | "log" | "surv"
-    xdom: tuple[float, float]  # x data-domain (lo, hi)
-    ydom: tuple[float, float]  # y data-domain (lo, hi)
-    xticks: list[float]  # x gridline values
-    yticks: list[float]  # y gridline values
-    out_name: str  # base output SVG file name (no .fr)
+    key: str                          # short id, only used in messages
+    csv_name: str                     # base CSV file name (no .fr)
+    xcol: str                         # x column in the CSV
+    ycol: str                         # y column in the CSV
+    xkind: str                        # "lin" | "log" | "surv"
+    ykind: str                        # "lin" | "log" | "surv"
+    xdom: tuple[float, float]         # x data-domain (lo, hi)
+    ydom: tuple[float, float]         # y data-domain (lo, hi)
+    xticks: list[float]               # x gridline values
+    yticks: list[float]               # y gridline values
+    out_name: str                     # base output SVG file name (no .fr)
     labels_en: dict[str, str]
     labels_fr: dict[str, str]
-    fr_header: list[str]  # header row for the French CSV
+    fr_header: list[str]              # header row for the French CSV
     xfmt: Callable[[float], str] = str
     yfmt: Callable[[float], str] = str
     ar_frames: dict[str, int] = field(default_factory=dict)  # Ralph frames (unused here)
@@ -214,17 +214,13 @@ def year_tick(v: float) -> str:
 FERTILITY = Variant(
     key="fertility",
     csv_name="tribute-fertility-life-1950-2025.csv",
-    xcol="fertility",
-    ycol="lifeExp",
-    xkind="lin",
-    ykind="lin",
-    xdom=(0.0, 9.0),
-    ydom=(8.0, 92.0),
+    xcol="fertility", ycol="lifeExp",
+    xkind="lin", ykind="lin",
+    xdom=(0.0, 9.0), ydom=(8.0, 92.0),
     xticks=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
     yticks=[10, 20, 30, 40, 50, 60, 70, 80, 90],
     out_name="gapminder-fertility.svg",
-    xfmt=baby_tick,
-    yfmt=year_tick,
+    xfmt=baby_tick, yfmt=year_tick,
     fr_header=["pays", "annee", "region", "fecondite", "esperanceDeVie", "population"],
     labels_en={
         "title_link": "Tribute to Hans ROSLING",
@@ -232,13 +228,10 @@ FERTILITY = Variant(
         "subtitle": "Each bubble is a country with size for population and color for region",
         "x_axis": "&#8592; Fertility rate (births per woman)",
         "y_axis": "Life expectancy (years) &#8594;",
-        "legend_region": "REGION",
-        "legend_population": "POPULATION",
+        "legend_region": "REGION", "legend_population": "POPULATION",
         "data_link": "Fertility and life-expectancy data",
         "title_a11y": "Fertility rate and life expectancy",
-        "pop_1b": "1 billion",
-        "pop_250m": "250 million",
-        "pop_50m": "50 million",
+        "pop_1b": "1 billion", "pop_250m": "250 million", "pop_50m": "50 million",
         "desc": (
             "An animated bubble chart in homage to Hans ROSLING, one frame per year from 1950 to "
             "2025. Each bubble is a country: horizontal is the fertility rate (births per woman, "
@@ -250,8 +243,7 @@ FERTILITY = Variant(
             "high-fertility right edge but is closing the gap. Historical federations (USSR, "
             "Yugoslavia, Czechoslovakia) show as one bubble until they dissolve; divided nations "
             "(East and West Germany, North and South Vietnam and Yemen) show as two until they "
-            "merge. Recent years are part-projected."
-        ),
+            "merge. Recent years are part-projected."),
     },
     labels_fr={
         "title_link": "Hommage à Hans ROSLING",
@@ -259,13 +251,10 @@ FERTILITY = Variant(
         "subtitle": "Chaque bulle représente un pays. Sa taille indique la population et sa couleur la région.",
         "x_axis": "&#8592; Indice de fécondité (naissances par femme)",
         "y_axis": "Espérance de vie (années) &#8594;",
-        "legend_region": "RÉGION",
-        "legend_population": "POPULATION",
+        "legend_region": "RÉGION", "legend_population": "POPULATION",
         "data_link": "Données de fécondité et d'espérance de vie",
         "title_a11y": "Indice de fécondité et espérance de vie",
-        "pop_1b": "1 milliard",
-        "pop_250m": "250 millions",
-        "pop_50m": "50 millions",
+        "pop_1b": "1 milliard", "pop_250m": "250 millions", "pop_50m": "50 millions",
         "desc": (
             "Graphique à bulles animé en hommage à Hans ROSLING, une image par année de 1950 à 2025. "
             "Chaque bulle est un pays : l'horizontale est l'indice de fécondité (naissances par femme, "
@@ -278,25 +267,20 @@ FERTILITY = Variant(
             "Les fédérations (URSS, Yougoslavie, Tchécoslovaquie) apparaissent comme une seule bulle "
             "jusqu'à leur dissolution ; les nations divisées (Allemagne de l'Est et de l'Ouest, "
             "Vietnam et Yémen du Nord et du Sud) comme deux jusqu'à leur fusion. Les années récentes "
-            "sont en partie projetées."
-        ),
+            "sont en partie projetées."),
     },
 )
 
 INCOME_SURVIVAL = Variant(
     key="incomesurvival",
-    csv_name="tribute-childsurvival-income-1950-2025.csv",  # shares CHILDSURVIVAL's data
-    xcol="gdpPercap",
-    ycol="childSurvival",
-    xkind="log",
-    ykind="surv",
-    xdom=(300.0, 200000.0),
-    ydom=(50.0, 99.9),
+    csv_name="tribute-childsurvival-income-1950-2025.csv",   # shares CHILDSURVIVAL's data
+    xcol="gdpPercap", ycol="childSurvival",
+    xkind="log", ykind="surv",
+    xdom=(300.0, 200000.0), ydom=(50.0, 99.9),
     xticks=[300, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000, 200000],
     yticks=[50, 70, 90, 95, 99, 99.9],
     out_name="gapminder-income-survival.svg",
-    xfmt=money,
-    yfmt=surv_tick,
+    xfmt=money, yfmt=surv_tick,
     fr_header=["pays", "annee", "region", "survieEnfant", "pibParHabitant", "population"],
     labels_en={
         "title_link": "Tribute to Hans ROSLING",
@@ -304,13 +288,10 @@ INCOME_SURVIVAL = Variant(
         "subtitle": "Each bubble is a country with size for population and color for region",
         "x_axis": "GDP per capita ($, log scale) &#8594;",
         "y_axis": "Children surviving to age 5 (% of births) &#8594;",
-        "legend_region": "REGION",
-        "legend_population": "POPULATION",
+        "legend_region": "REGION", "legend_population": "POPULATION",
         "data_link": "GDP and child-survival data",
         "title_a11y": "GDP per capita and child survival",
-        "pop_1b": "1 billion",
-        "pop_250m": "250 million",
-        "pop_50m": "50 million",
+        "pop_1b": "1 billion", "pop_250m": "250 million", "pop_50m": "50 million",
         "desc": (
             "An animated bubble chart in homage to Hans ROSLING, one frame per year from 1950 to "
             "2025. Each bubble is a country: horizontal is GDP per capita on a log scale, vertical is "
@@ -321,8 +302,7 @@ INCOME_SURVIVAL = Variant(
             "grow richer, far more of their children live. Historical federations (USSR, Yugoslavia, "
             "Czechoslovakia) show as one bubble until they dissolve; divided nations (East and West "
             "Germany, North and South Vietnam and Yemen) show as two until they merge. Recent years "
-            "are part-projected."
-        ),
+            "are part-projected."),
     },
     labels_fr={
         "title_link": "Hommage à Hans ROSLING",
@@ -330,13 +310,10 @@ INCOME_SURVIVAL = Variant(
         "subtitle": "Chaque bulle représente un pays. Sa taille indique la population et sa couleur la région.",
         "x_axis": "PIB par habitant ($, échelle log) &#8594;",
         "y_axis": "Enfants atteignant 5 ans (% des naissances) &#8594;",
-        "legend_region": "RÉGION",
-        "legend_population": "POPULATION",
+        "legend_region": "RÉGION", "legend_population": "POPULATION",
         "data_link": "Données de PIB et de survie des enfants",
         "title_a11y": "PIB par habitant et survie des enfants",
-        "pop_1b": "1 milliard",
-        "pop_250m": "250 millions",
-        "pop_50m": "50 millions",
+        "pop_1b": "1 milliard", "pop_250m": "250 millions", "pop_50m": "50 millions",
         "desc": (
             "Graphique à bulles animé en hommage à Hans ROSLING, une image par année de 1950 à 2025. "
             "Chaque bulle est un pays : l'horizontale est le PIB par habitant en échelle logarithmique, "
@@ -348,8 +325,7 @@ INCOME_SURVIVAL = Variant(
             "fédérations (URSS, Yougoslavie, Tchécoslovaquie) apparaissent comme une seule bulle "
             "jusqu'à leur dissolution ; les nations divisées (Allemagne de l'Est et de l'Ouest, "
             "Vietnam et Yémen du Nord et du Sud) comme deux jusqu'à leur fusion. Les années récentes "
-            "sont en partie projetées."
-        ),
+            "sont en partie projetées."),
     },
 )
 
@@ -367,203 +343,81 @@ VARIANTS = {
 # Values are illustrative order-of-magnitude figures, not a transcription of
 # the real series.
 # ------------------------------------------------------------------
-DEMO_DATA_FERTILITY: list[dict[str, Any]] = (
-    [
-        {
-            "country": "United States",
-            "continent": "Americas",
-            "year": year,
-            "fertility": fert,
-            "lifeExp": life,
-            "pop": pop,
-        }
-        for year, fert, life, pop in [
-            (1950, 3.0, 68.0, 152_000_000),
-            (1980, 1.8, 74.0, 227_000_000),
-            (2000, 2.0, 77.0, 281_000_000),
-            (2025, 1.7, 79.0, 335_000_000),
-        ]
+DEMO_DATA_FERTILITY: list[dict[str, Any]] = [
+    {"country": "United States", "continent": "Americas", "year": year, "fertility": fert, "lifeExp": life, "pop": pop}
+    for year, fert, life, pop in [
+        (1950, 3.0, 68.0, 152_000_000), (1980, 1.8, 74.0, 227_000_000),
+        (2000, 2.0, 77.0, 281_000_000), (2025, 1.7, 79.0, 335_000_000),
     ]
-    + [
-        {
-            "country": "China",
-            "continent": "Asia",
-            "year": year,
-            "fertility": fert,
-            "lifeExp": life,
-            "pop": pop,
-        }
-        for year, fert, life, pop in [
-            (1950, 6.0, 43.0, 550_000_000),
-            (1980, 2.5, 65.0, 985_000_000),
-            (2000, 1.5, 71.0, 1_267_000_000),
-            (2025, 1.1, 78.0, 1_410_000_000),
-        ]
+] + [
+    {"country": "China", "continent": "Asia", "year": year, "fertility": fert, "lifeExp": life, "pop": pop}
+    for year, fert, life, pop in [
+        (1950, 6.0, 43.0, 550_000_000), (1980, 2.5, 65.0, 985_000_000),
+        (2000, 1.5, 71.0, 1_267_000_000), (2025, 1.1, 78.0, 1_410_000_000),
     ]
-    + [
-        {
-            "country": "Nigeria",
-            "continent": "Africa",
-            "year": year,
-            "fertility": fert,
-            "lifeExp": life,
-            "pop": pop,
-        }
-        for year, fert, life, pop in [
-            (1950, 6.5, 36.0, 38_000_000),
-            (1980, 6.8, 46.0, 73_000_000),
-            (2000, 6.0, 46.0, 123_000_000),
-            (2025, 4.6, 55.0, 220_000_000),
-        ]
+] + [
+    {"country": "Nigeria", "continent": "Africa", "year": year, "fertility": fert, "lifeExp": life, "pop": pop}
+    for year, fert, life, pop in [
+        (1950, 6.5, 36.0, 38_000_000), (1980, 6.8, 46.0, 73_000_000),
+        (2000, 6.0, 46.0, 123_000_000), (2025, 4.6, 55.0, 220_000_000),
     ]
-    + [
-        {
-            "country": "Germany",
-            "continent": "Europe",
-            "year": year,
-            "fertility": fert,
-            "lifeExp": life,
-            "pop": pop,
-        }
-        for year, fert, life, pop in [
-            (1950, 2.1, 67.0, 68_000_000),
-            (1980, 1.4, 73.0, 78_000_000),
-            (2000, 1.4, 78.0, 82_000_000),
-            (2025, 1.5, 81.0, 84_000_000),
-        ]
+] + [
+    {"country": "Germany", "continent": "Europe", "year": year, "fertility": fert, "lifeExp": life, "pop": pop}
+    for year, fert, life, pop in [
+        (1950, 2.1, 67.0, 68_000_000), (1980, 1.4, 73.0, 78_000_000),
+        (2000, 1.4, 78.0, 82_000_000), (2025, 1.5, 81.0, 84_000_000),
     ]
-    + [
-        {
-            "country": "Brazil",
-            "continent": "Americas",
-            "year": year,
-            "fertility": fert,
-            "lifeExp": life,
-            "pop": pop,
-        }
-        for year, fert, life, pop in [
-            (1950, 6.2, 46.0, 54_000_000),
-            (1980, 4.1, 63.0, 121_000_000),
-            (2000, 2.3, 70.0, 174_000_000),
-            (2025, 1.6, 76.0, 216_000_000),
-        ]
+] + [
+    {"country": "Brazil", "continent": "Americas", "year": year, "fertility": fert, "lifeExp": life, "pop": pop}
+    for year, fert, life, pop in [
+        (1950, 6.2, 46.0, 54_000_000), (1980, 4.1, 63.0, 121_000_000),
+        (2000, 2.3, 70.0, 174_000_000), (2025, 1.6, 76.0, 216_000_000),
     ]
-    + [
-        {
-            "country": "India",
-            "continent": "Asia",
-            "year": year,
-            "fertility": fert,
-            "lifeExp": life,
-            "pop": pop,
-        }
-        for year, fert, life, pop in [
-            (1950, 5.9, 36.0, 376_000_000),
-            (1980, 4.7, 54.0, 699_000_000),
-            (2000, 3.3, 62.0, 1_059_000_000),
-            (2025, 2.0, 70.0, 1_428_000_000),
-        ]
+] + [
+    {"country": "India", "continent": "Asia", "year": year, "fertility": fert, "lifeExp": life, "pop": pop}
+    for year, fert, life, pop in [
+        (1950, 5.9, 36.0, 376_000_000), (1980, 4.7, 54.0, 699_000_000),
+        (2000, 3.3, 62.0, 1_059_000_000), (2025, 2.0, 70.0, 1_428_000_000),
     ]
-)
+]
 
-DEMO_DATA_INCOME_SURVIVAL: list[dict[str, Any]] = (
-    [
-        {
-            "country": "United States",
-            "continent": "Americas",
-            "year": year,
-            "gdpPercap": gdp,
-            "childSurvival": surv,
-            "pop": pop,
-        }
-        for year, gdp, surv, pop in [
-            (1950, 14000, 97.0, 152_000_000),
-            (1980, 28000, 98.5, 227_000_000),
-            (2000, 42000, 99.2, 281_000_000),
-            (2025, 70000, 99.4, 335_000_000),
-        ]
+DEMO_DATA_INCOME_SURVIVAL: list[dict[str, Any]] = [
+    {"country": "United States", "continent": "Americas", "year": year, "gdpPercap": gdp, "childSurvival": surv, "pop": pop}
+    for year, gdp, surv, pop in [
+        (1950, 14000, 97.0, 152_000_000), (1980, 28000, 98.5, 227_000_000),
+        (2000, 42000, 99.2, 281_000_000), (2025, 70000, 99.4, 335_000_000),
     ]
-    + [
-        {
-            "country": "China",
-            "continent": "Asia",
-            "year": year,
-            "gdpPercap": gdp,
-            "childSurvival": surv,
-            "pop": pop,
-        }
-        for year, gdp, surv, pop in [
-            (1950, 600, 78.0, 550_000_000),
-            (1980, 1000, 95.0, 985_000_000),
-            (2000, 3000, 97.0, 1_267_000_000),
-            (2025, 14000, 99.3, 1_410_000_000),
-        ]
+] + [
+    {"country": "China", "continent": "Asia", "year": year, "gdpPercap": gdp, "childSurvival": surv, "pop": pop}
+    for year, gdp, surv, pop in [
+        (1950, 600, 78.0, 550_000_000), (1980, 1000, 95.0, 985_000_000),
+        (2000, 3000, 97.0, 1_267_000_000), (2025, 14000, 99.3, 1_410_000_000),
     ]
-    + [
-        {
-            "country": "Nigeria",
-            "continent": "Africa",
-            "year": year,
-            "gdpPercap": gdp,
-            "childSurvival": surv,
-            "pop": pop,
-        }
-        for year, gdp, surv, pop in [
-            (1950, 900, 68.0, 38_000_000),
-            (1980, 1800, 78.0, 73_000_000),
-            (2000, 1200, 82.0, 123_000_000),
-            (2025, 2300, 92.5, 220_000_000),
-        ]
+] + [
+    {"country": "Nigeria", "continent": "Africa", "year": year, "gdpPercap": gdp, "childSurvival": surv, "pop": pop}
+    for year, gdp, surv, pop in [
+        (1950, 900, 68.0, 38_000_000), (1980, 1800, 78.0, 73_000_000),
+        (2000, 1200, 82.0, 123_000_000), (2025, 2300, 92.5, 220_000_000),
     ]
-    + [
-        {
-            "country": "Germany",
-            "continent": "Europe",
-            "year": year,
-            "gdpPercap": gdp,
-            "childSurvival": surv,
-            "pop": pop,
-        }
-        for year, gdp, surv, pop in [
-            (1950, 4000, 94.0, 68_000_000),
-            (1980, 20000, 98.8, 78_000_000),
-            (2000, 32000, 99.4, 82_000_000),
-            (2025, 55000, 99.6, 84_000_000),
-        ]
+] + [
+    {"country": "Germany", "continent": "Europe", "year": year, "gdpPercap": gdp, "childSurvival": surv, "pop": pop}
+    for year, gdp, surv, pop in [
+        (1950, 4000, 94.0, 68_000_000), (1980, 20000, 98.8, 78_000_000),
+        (2000, 32000, 99.4, 82_000_000), (2025, 55000, 99.6, 84_000_000),
     ]
-    + [
-        {
-            "country": "Brazil",
-            "continent": "Americas",
-            "year": year,
-            "gdpPercap": gdp,
-            "childSurvival": surv,
-            "pop": pop,
-        }
-        for year, gdp, surv, pop in [
-            (1950, 1500, 80.0, 54_000_000),
-            (1980, 5000, 91.0, 121_000_000),
-            (2000, 7500, 96.5, 174_000_000),
-            (2025, 12000, 98.6, 216_000_000),
-        ]
+] + [
+    {"country": "Brazil", "continent": "Americas", "year": year, "gdpPercap": gdp, "childSurvival": surv, "pop": pop}
+    for year, gdp, surv, pop in [
+        (1950, 1500, 80.0, 54_000_000), (1980, 5000, 91.0, 121_000_000),
+        (2000, 7500, 96.5, 174_000_000), (2025, 12000, 98.6, 216_000_000),
     ]
-    + [
-        {
-            "country": "India",
-            "continent": "Asia",
-            "year": year,
-            "gdpPercap": gdp,
-            "childSurvival": surv,
-            "pop": pop,
-        }
-        for year, gdp, surv, pop in [
-            (1950, 650, 74.0, 376_000_000),
-            (1980, 900, 82.0, 699_000_000),
-            (2000, 1700, 90.0, 1_059_000_000),
-            (2025, 8000, 97.0, 1_428_000_000),
-        ]
+] + [
+    {"country": "India", "continent": "Asia", "year": year, "gdpPercap": gdp, "childSurvival": surv, "pop": pop}
+    for year, gdp, surv, pop in [
+        (1950, 650, 74.0, 376_000_000), (1980, 900, 82.0, 699_000_000),
+        (2000, 1700, 90.0, 1_059_000_000), (2025, 8000, 97.0, 1_428_000_000),
     ]
-)
+]
 
 #: Per-variant DEMO_DATA lookup, keyed like :data:`VARIANTS`.
 _DEMO_DATA_BY_VARIANT: dict[str, list[dict[str, Any]]] = {
@@ -577,9 +431,7 @@ _DEMO_DATA_BY_VARIANT: dict[str, list[dict[str, Any]]] = {
 DEMO_DATA: list[dict[str, Any]] = DEMO_DATA_FERTILITY
 
 
-def load(
-    var: Variant, rows: "list[dict[str, Any]] | None" = None
-) -> tuple[list[int], dict[str, dict]]:
+def load(var: Variant, rows: "list[dict[str, Any]] | None" = None) -> tuple[list[int], dict[str, dict]]:
     """Return (years grid, {country: {continent, x[], y[], pop[], appear, disappear}}).
 
     Same ragged-dataset handling as the first tribute: every entity is placed on
@@ -603,7 +455,8 @@ def load(
     years = sorted({int(r["year"]) for r in rows})
     by: dict[str, dict] = {}
     for r in rows:
-        c = by.setdefault(r["country"], {"continent": r["continent"], "x": {}, "y": {}, "pop": {}})
+        c = by.setdefault(
+            r["country"], {"continent": r["continent"], "x": {}, "y": {}, "pop": {}})
         y = int(r["year"])
         c["x"][y] = float(r[var.xcol])
         c["y"][y] = float(r[var.ycol])
@@ -616,14 +469,9 @@ def load(
         def edge(s: dict[int, float], lo: int = lo, hi: int = hi) -> list[float]:
             return [s[y] if y in s else s[lo] if y < lo else s[hi] for y in years]
 
-        out[name] = {
-            "continent": c["continent"],
-            "x": edge(c["x"]),
-            "y": edge(c["y"]),
-            "pop": edge(c["pop"]),
-            "appear": lo,
-            "disappear": hi,
-        }
+        out[name] = {"continent": c["continent"], "x": edge(c["x"]),
+                     "y": edge(c["y"]), "pop": edge(c["pop"]),
+                     "appear": lo, "disappear": hi}
     return years, out
 
 
@@ -696,13 +544,13 @@ def build(
             out_path = out_path.with_suffix(".fr.svg")
     lab = var.labels_fr if fr else var.labels_en
 
-    def tc(name: str) -> str:  # translate a country label
+    def tc(name: str) -> str:                       # translate a country label
         return COUNTRIES_FR.get(name, name) if fr else name
 
-    def tr(region: str) -> str:  # translate a region label
+    def tr(region: str) -> str:                     # translate a region label
         return REGIONS_FR.get(region, region) if fr else region
 
-    def th(disp: str) -> str:  # translate a historical-name label
+    def th(disp: str) -> str:                        # translate a historical-name label
         return HISTORY_FR.get(disp, disp) if fr else disp
 
     years, data = load(var, rows)
@@ -737,8 +585,8 @@ def build(
         # one: a screen-reader user hearing a different title from the one
         # on screen is being told about a different figure.
         f'<title id="gm-t">'
-        f"{_xml(title) if title is not None else lab['title_a11y']}"
-        f", {years[0]} to {years[-1]}</title>",
+        f'{_xml(title) if title is not None else lab["title_a11y"]}'
+        f', {years[0]} to {years[-1]}</title>',
         f'<desc id="gm-d">{lab["desc"]}</desc>',
         f'<rect width="{W}" height="{H}" fill="#FFFFFF"/>',
         # OS-adaptive overrides (additive; the default render is unchanged
@@ -750,11 +598,11 @@ def build(
         # scatter, so the ~4-colour system palette cannot preserve the five-way
         # encoding. Each region instead becomes a distinct Canvas/CanvasText
         # pattern (see ``fc_style`` / ``fc_defs``), keyed on ``.rg-<region>``.
-        "<style>.gm-name{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        ".gm-b:hover .gm-name,.gm-b:focus-within .gm-name{opacity:1}"
-        ".gm-b:hover circle{stroke-width:2.4}"
-        ".gm-b.gm-follow .gm-name{opacity:1}"
-        ".gm-b.gm-follow circle{stroke:#1D1D1F;stroke-width:3}"
+        '<style>.gm-name{opacity:0;pointer-events:none;transition:opacity .12s ease}'
+        '.gm-b:hover .gm-name,.gm-b:focus-within .gm-name{opacity:1}'
+        '.gm-b:hover circle{stroke-width:2.4}'
+        '.gm-b.gm-follow .gm-name{opacity:1}'
+        '.gm-b.gm-follow circle{stroke:#1D1D1F;stroke-width:3}'
         + os_adaptive_style(
             {f".rg-{r.lower()}": REGION_COLOR[r] for r in REGION_COLOR},
             role="both",
@@ -763,9 +611,9 @@ def build(
         # Additive dark mode: flip paper + the two ink tiers, and lift the
         # follow-ring stroke (dark ink) to the light ink so it stays visible.
         + os_dark_style(extra=".gm-b.gm-follow circle{stroke:#F2F2F7;}")
-        + "</style>",
+        + '</style>',
         # Forced-colors pattern tiles (inert unless forced-colors is active).
-        "<defs>" + fc_defs + "</defs>",
+        '<defs>' + fc_defs + '</defs>',
     ]
 
     # Big faint year counter — one text per year, fading in only during its window.
@@ -778,8 +626,7 @@ def build(
             f'<text x="{(X0 + X1) / 2:.0f}" y="{(Y0 + Y1) / 2 + 48:.0f}" text-anchor="middle" '
             f'font-size="150" font-weight="700" fill="#1D1D1F" opacity="0">{y0 + k}'
             f'<animate attributeName="opacity" values="{vals}" keyTimes="{ykt}" '
-            f'dur="{dur}" repeatCount="indefinite"/></text>'
-        )
+            f'dur="{dur}" repeatCount="indefinite"/></text>')
 
     # Axes + gridlines.
     svg.append(f'<line x1="{X0}" y1="{Y0}" x2="{X1}" y2="{Y0}" stroke="#1D1D1F" stroke-width="1"/>')
@@ -788,56 +635,39 @@ def build(
         if not (xlo <= xv <= xhi):
             continue
         x = sx(xv)
-        svg.append(
-            f'<line x1="{x:.1f}" y1="{Y1}" x2="{x:.1f}" y2="{Y0}" stroke="#EFEFF4" stroke-width="1"/>'
-        )
-        svg.append(
-            f'<text x="{x:.1f}" y="{Y0 + 18:.0f}" text-anchor="middle" font-size="12" fill="#6E6E73">{var.xfmt(xv)}</text>'
-        )
+        svg.append(f'<line x1="{x:.1f}" y1="{Y1}" x2="{x:.1f}" y2="{Y0}" stroke="#EFEFF4" stroke-width="1"/>')
+        svg.append(f'<text x="{x:.1f}" y="{Y0 + 18:.0f}" text-anchor="middle" font-size="12" fill="#6E6E73">{var.xfmt(xv)}</text>')
     for yv in var.yticks:
         if not (ylo <= yv <= yhi):
             continue
         y = sy(yv)
-        svg.append(
-            f'<line x1="{X0}" y1="{y:.1f}" x2="{X1}" y2="{y:.1f}" stroke="#EFEFF4" stroke-width="1"/>'
-        )
-        svg.append(
-            f'<text x="{X0 - 8:.0f}" y="{y + 4:.1f}" text-anchor="end" font-size="12" fill="#6E6E73">{var.yfmt(yv)}</text>'
-        )
-    svg.append(
-        f'<text x="{(X0 + X1) / 2:.0f}" y="{Y0 + 48:.0f}" text-anchor="middle" font-size="13" fill="#1D1D1F">{lab["x_axis"]}</text>'
-    )
-    svg.append(
-        f'<text x="20" y="{(Y0 + Y1) / 2:.0f}" font-size="13" fill="#1D1D1F" transform="rotate(-90 20 {(Y0 + Y1) / 2:.0f})" text-anchor="middle">{lab["y_axis"]}</text>'
-    )
+        svg.append(f'<line x1="{X0}" y1="{y:.1f}" x2="{X1}" y2="{y:.1f}" stroke="#EFEFF4" stroke-width="1"/>')
+        svg.append(f'<text x="{X0 - 8:.0f}" y="{y + 4:.1f}" text-anchor="end" font-size="12" fill="#6E6E73">{var.yfmt(yv)}</text>')
+    svg.append(f'<text x="{(X0 + X1) / 2:.0f}" y="{Y0 + 48:.0f}" text-anchor="middle" font-size="13" fill="#1D1D1F">{lab["x_axis"]}</text>')
+    svg.append(f'<text x="20" y="{(Y0 + Y1) / 2:.0f}" font-size="13" fill="#1D1D1F" transform="rotate(-90 20 {(Y0 + Y1) / 2:.0f})" text-anchor="middle">{lab["y_axis"]}</text>')
 
     # Title (linked to Rosling's video) + subtitle + a link to the data we provide.
     # The default headline links to Rosling's talk, because the default
     # figure *is* the tribute. A caller's own title is their sentence, not
     # a link to somebody else's video, so the override drops the anchor.
     if title is None:
-        svg.append(
-            '<text x="20" y="24" font-size="15" font-weight="700" fill="#1D1D1F">'
-            '<a href="https://www.youtube.com/watch?v=hVimVzgtD6w" target="_blank">'
-            f'<tspan fill="#007AFF" text-decoration="underline">{lab["title_link"]}</tspan></a>'
-            f"{lab['title_rest']}</text>"
-        )
+        svg.append('<text x="20" y="24" font-size="15" font-weight="700" fill="#1D1D1F">'
+                   '<a href="https://www.youtube.com/watch?v=hVimVzgtD6w" target="_blank">'
+                   f'<tspan fill="#007AFF" text-decoration="underline">{lab["title_link"]}</tspan></a>'
+                   f'{lab["title_rest"]}</text>')
     else:
-        svg.append(
-            '<text x="20" y="24" font-size="15" font-weight="700" '
-            f'fill="#1D1D1F">{_xml(title)}</text>'
-        )
+        svg.append('<text x="20" y="24" font-size="15" font-weight="700" '
+                   f'fill="#1D1D1F">{_xml(title)}</text>')
     svg.append(
         '<text x="20" y="40" font-size="11" fill="#6E6E73">'
-        f"{_xml(subtitle if subtitle is not None else lab['subtitle'])}</text>"
+        f'{_xml(subtitle if subtitle is not None else lab["subtitle"])}</text>'
     )
-    csv_stem = var.csv_name[:-4]  # strip ".csv"
+    csv_stem = var.csv_name[:-4]                       # strip ".csv"
     csv_name = csv_stem + (".fr.csv" if fr else ".csv")
     svg.append(
         f'<a href="../../data/{csv_name}" target="_blank">'
         f'<text x="20" y="{H - 8}" text-anchor="start" font-size="10" fill="#007AFF" '
-        f'text-decoration="underline">{lab["data_link"]}</text></a>'
-    )
+        f'text-decoration="underline">{lab["data_link"]}</text></a>')
 
     order = sorted(data.items(), key=lambda kv: -max(kv[1]["pop"]))
     y0i, y1i = years[0], years[-1]
@@ -872,20 +702,19 @@ def build(
             f'keyTimes="{keytimes}" dur="{dur}" repeatCount="indefinite"/>'
             f'<circle class="rg-{str(d["continent"]).lower()}" r="{br:.1f}" '
             f'fill="{col}" fill-opacity="0.55" stroke="{col}" stroke-width="1.1">'
-            f"<title>{tc(name)} ({tr(d['continent'])})</title>"
+            f'<title>{tc(name)} ({tr(d["continent"])})</title>'
             f'<animate attributeName="r" values="{rs}" keyTimes="{keytimes}" dur="{dur}" repeatCount="indefinite"/>'
-            f"</circle>"
+            f'</circle>'
             f'<text class="gm-name" y="{-(br + 3):.1f}" text-anchor="middle" font-size="10" '
             f'font-weight="600" fill="#1D1D1F" stroke="#FFFFFF" stroke-width="2.4" paint-order="stroke">{tc(name)}'
             f'<animate attributeName="y" values="{lys}" keyTimes="{keytimes}" dur="{dur}" repeatCount="indefinite"/>'
-            f"</text>",
+            f'</text>',
         ]
         if wop is not None:
             parts.append(
                 f'<animate attributeName="opacity" values="{wop}" keyTimes="{keytimes}" '
-                f'calcMode="discrete" dur="{dur}" repeatCount="indefinite"/>'
-            )
-        parts.append("</g>")
+                f'calcMode="discrete" dur="{dur}" repeatCount="indefinite"/>')
+        parts.append('</g>')
         svg.append("".join(parts))
 
     # Where does the name go: above the bubble, below it, or out to one
@@ -927,7 +756,6 @@ def build(
 
     pose_de: dict[str, str] = {}
     for name, _ in order:
-
         def _cout(pose: str, nom: str = name) -> tuple[bool, int]:
             heurts = [
                 i
@@ -952,8 +780,7 @@ def build(
             f'<animate attributeName="x" values="{lxs}" keyTimes="{keytimes}" dur="{dur}" repeatCount="indefinite"/>'
             f'<animate attributeName="y" values="{lys}" keyTimes="{keytimes}" dur="{dur}" repeatCount="indefinite"/>'
             f'<animate attributeName="opacity" values="{opacity}" keyTimes="{keytimes}" '
-            f'calcMode="discrete" dur="{dur}" repeatCount="indefinite"/></text>'
-        )
+            f'calcMode="discrete" dur="{dur}" repeatCount="indefinite"/></text>')
 
     for name, _d in order:
         points = [_point(name, i, pose_de[name]) for i in range(n)]
@@ -961,9 +788,7 @@ def build(
         lys = ";".join(f"{y:.1f}" for _, y in points)
         lx0, ly0 = points[0]
         for start, end, disp in NAME_HISTORY.get(name, [(y0i, y1i, name)]):
-            op = ";".join(
-                "1" if (label_on[name][i] and start <= years[i] <= end) else "0" for i in range(n)
-            )
+            op = ";".join("1" if (label_on[name][i] and start <= years[i] <= end) else "0" for i in range(n))
             if "1" in op:
                 shown = th(disp) if name in NAME_HISTORY else tc(disp)
                 svg.append(label(shown, lx0, ly0, lxs, lys, op, _ancre(pose_de[name])))
@@ -971,61 +796,42 @@ def build(
     # Region legend, out in the right margin.
     present = [r for r in region_color if any(d["continent"] == r for d in data.values())]
     lx, ly = X1 + 78, Y1 + 6
-    svg.append(
-        f'<text x="{lx - 6}" y="{ly - 12}" font-size="10" font-weight="700" fill="#6E6E73" letter-spacing="0.5">{lab["legend_region"]}</text>'
-    )
+    svg.append(f'<text x="{lx - 6}" y="{ly - 12}" font-size="10" font-weight="700" fill="#6E6E73" letter-spacing="0.5">{lab["legend_region"]}</text>')
     for i, region in enumerate(present):
         yy = ly + i * 18
         col = region_color[region]
-        svg.append(
-            f'<circle class="rg-{region.lower()}" cx="{lx}" cy="{yy}" r="6" fill="{col}" fill-opacity="0.6" stroke="{col}"/>'
-        )
-        svg.append(
-            f'<text x="{lx + 14}" y="{yy + 4}" font-size="12" fill="#1D1D1F">{tr(region)}</text>'
-        )
+        svg.append(f'<circle class="rg-{region.lower()}" cx="{lx}" cy="{yy}" r="6" fill="{col}" fill-opacity="0.6" stroke="{col}"/>')
+        svg.append(f'<text x="{lx + 14}" y="{yy + 4}" font-size="12" fill="#1D1D1F">{tr(region)}</text>')
 
     # Population-size legend: nested grey disks on a common baseline.
-    refs = [
-        (1_000_000_000, lab["pop_1b"]),
-        (250_000_000, lab["pop_250m"]),
-        (50_000_000, lab["pop_50m"]),
-    ]
+    refs = [(1_000_000_000, lab["pop_1b"]), (250_000_000, lab["pop_250m"]), (50_000_000, lab["pop_50m"])]
     refs = [(p, txt) for p, txt in refs if p <= pop_max]
     scx = lx + 4
     rmax = sr(refs[0][0])
     base = ly + len(present) * 18 + 30 + 2 * rmax
-    svg.append(
-        f'<text x="{lx - 6}" y="{base - 2 * rmax - 14:.0f}" font-size="10" font-weight="700" fill="#6E6E73" letter-spacing="0.5">{lab["legend_population"]}</text>'
-    )
+    svg.append(f'<text x="{lx - 6}" y="{base - 2 * rmax - 14:.0f}" font-size="10" font-weight="700" fill="#6E6E73" letter-spacing="0.5">{lab["legend_population"]}</text>')
     for p, txt in refs:
         r = sr(p)
         cy = base - r
-        svg.append(
-            f'<circle cx="{scx:.1f}" cy="{cy:.1f}" r="{r:.1f}" fill="none" stroke="#AEAEB2" stroke-width="1"/>'
-        )
+        svg.append(f'<circle cx="{scx:.1f}" cy="{cy:.1f}" r="{r:.1f}" fill="none" stroke="#AEAEB2" stroke-width="1"/>')
         top = cy - r
-        svg.append(
-            f'<line x1="{scx:.1f}" y1="{top:.1f}" x2="{scx + rmax + 10:.1f}" y2="{top:.1f}" stroke="#C7C7CC" stroke-width="0.7"/>'
-        )
-        svg.append(
-            f'<text x="{scx + rmax + 13:.1f}" y="{top + 3.5:.1f}" font-size="10" fill="#6E6E73">{txt}</text>'
-        )
+        svg.append(f'<line x1="{scx:.1f}" y1="{top:.1f}" x2="{scx + rmax + 10:.1f}" y2="{top:.1f}" stroke="#C7C7CC" stroke-width="0.7"/>')
+        svg.append(f'<text x="{scx + rmax + 13:.1f}" y="{top + 3.5:.1f}" font-size="10" fill="#6E6E73">{txt}</text>')
 
     # Player + fullscreen pan/zoom. The scale-kind consts let the player invert
     # a followed bubble back to its real fertility / survival / income / life.
     consts = (
-        f"var X0={X0},X1={X1},Y0={Y0},Y1={Y1},"
-        f"XLO={xlo:g},XHI={xhi:g},YLO={ylo:g},YHI={yhi:g},"
+        f'var X0={X0},X1={X1},Y0={Y0},Y1={Y1},'
+        f'XLO={xlo:g},XHI={xhi:g},YLO={ylo:g},YHI={yhi:g},'
         f'XKIND="{var.xkind}",YKIND="{var.ykind}",'
-        f"RMIN={R_MIN},RMAX={R_MAX},POPMAX={pop_max:.0f},"
-        f"Y0i={years[0]},Y1i={years[-1]},DUR={dur_s};"
-    )
-    svg.append('<script type="text/javascript"><![CDATA[' + consts + PLAYER_JS + "]]></script>")
+        f'RMIN={R_MIN},RMAX={R_MAX},POPMAX={pop_max:.0f},'
+        f'Y0i={years[0]},Y1i={years[-1]},DUR={dur_s};')
+    svg.append('<script type="text/javascript"><![CDATA[' + consts + PLAYER_JS + ']]></script>')
 
     _fc = fullscreen_control(W, H, mode)
     if _fc:
         svg.append(_fc)
-    svg.append("</svg>")
+    svg.append('</svg>')
     print(f"{len(data)} entities, {n} snapshots ({lang})")
     return write_svg(out_path, "\n".join(svg) + "\n", theme=theme)
 
@@ -1039,16 +845,9 @@ def write_fr_csv(var: Variant) -> None:
         w = csv.writer(fh)
         w.writerow(var.fr_header)
         for r in rows:
-            w.writerow(
-                [
-                    COUNTRIES_FR.get(r["country"], r["country"]),
-                    r["year"],
-                    REGIONS_FR.get(r["continent"], r["continent"]),
-                    r[var.xcol],
-                    r[var.ycol],
-                    r["pop"],
-                ]
-            )
+            w.writerow([COUNTRIES_FR.get(r["country"], r["country"]), r["year"],
+                        REGIONS_FR.get(r["continent"], r["continent"]),
+                        r[var.xcol], r[var.ycol], r["pop"]])
     print(f"wrote {dst}")
 
 
@@ -1098,15 +897,8 @@ def make_gapminder_variants(
     var = VARIANTS.get(variant, FERTILITY)
     rows = data if data else _DEMO_DATA_BY_VARIANT.get(var.key, DEMO_DATA_FERTILITY)
     return build(
-        var,
-        lang,
-        mode=mode,
-        accessibility=accessibility,
-        rows=rows,
-        out=out,
-        title=title,
-        subtitle=subtitle,
-        theme=theme,
+        var, lang, mode=mode, accessibility=accessibility, rows=rows, out=out,
+        title=title, subtitle=subtitle, theme=theme,
     )
 
 
@@ -1129,7 +921,8 @@ def main(accessibility: str = "universal", theme: str = "corporate") -> None:
         # still runs end to end.
         csv_path = DATA / var.csv_name
         var_rows = (
-            list(csv.DictReader(csv_path.open(encoding="utf-8"))) if csv_path.exists() else None
+            list(csv.DictReader(csv_path.open(encoding="utf-8")))
+            if csv_path.exists() else None
         )
         if var_rows is None:
             print(f"note: {csv_path} not found; rendering from the synthetic DEMO_DATA")
@@ -1147,25 +940,14 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(description=__doc__.strip().splitlines()[0])
+    parser.add_argument("--en-only", action="store_true",
+                        help="build only the English SVGs (skip the French pairs + CSVs)")
     parser.add_argument(
-        "--en-only",
-        action="store_true",
-        help="build only the English SVGs (skip the French pairs + CSVs)",
-    )
-    parser.add_argument(
-        "--accessibility",
-        default="universal",
-        choices=[
-            "universal",
-            "high-contrast",
-            "monochrome",
-            "deuteranopia",
-            "protanopia",
-            "tritanopia",
-        ],
+        "--accessibility", default="universal",
+        choices=["universal", "high-contrast", "monochrome",
+                 "deuteranopia", "protanopia", "tritanopia"],
         help="colour-vision level for the region palette (default: universal, "
-        "the identity that keeps the shipped SVGs byte-identical)",
-    )
+             "the identity that keeps the shipped SVGs byte-identical)")
     parser.add_argument(
         "--theme",
         choices=("corporate", "academic"),

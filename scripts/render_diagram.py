@@ -122,29 +122,19 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument("source", help="Input source file (.tex, .mmd, .svg).")
-    parser.add_argument("--out", default=None, help="Output image path. Required unless --dry-run.")
-    parser.add_argument(
-        "--background",
-        default="auto",
-        help='Canvas background: "white", "transparent", "dark", '
-        '"auto" (follow --dark), or an explicit #RRGGBB.',
-    )
-    parser.add_argument(
-        "--dark", action="store_true", help="Use the dark-mode house canvas / foreground."
-    )
-    parser.add_argument(
-        "--dpi", type=int, default=300, help="TikZ PDF->PNG rasterisation density. Default: 300."
-    )
-    parser.add_argument(
-        "--no-theme",
-        action="store_true",
-        help="Do not inject the sprezzature-colors palette (render the source verbatim).",
-    )
-    parser.add_argument(
-        "--dry-run",
-        action="store_true",
-        help="Print the palette-themed source and exit (no toolchain needed).",
-    )
+    parser.add_argument("--out", default=None,
+                        help="Output image path. Required unless --dry-run.")
+    parser.add_argument("--background", default="auto",
+                        help='Canvas background: "white", "transparent", "dark", '
+                             '"auto" (follow --dark), or an explicit #RRGGBB.')
+    parser.add_argument("--dark", action="store_true",
+                        help="Use the dark-mode house canvas / foreground.")
+    parser.add_argument("--dpi", type=int, default=300,
+                        help="TikZ PDF->PNG rasterisation density. Default: 300.")
+    parser.add_argument("--no-theme", action="store_true",
+                        help="Do not inject the sprezzature-colors palette (render the source verbatim).")
+    parser.add_argument("--dry-run", action="store_true",
+                        help="Print the palette-themed source and exit (no toolchain needed).")
     return parser
 
 
@@ -199,21 +189,9 @@ def _looks_like_mermaid(head: str) -> bool:
     """Return True when the first line opens a known Mermaid diagram type."""
     first = head.splitlines()[0].strip() if head.splitlines() else ""
     starters = (
-        "graph ",
-        "flowchart ",
-        "sequenceDiagram",
-        "classDiagram",
-        "stateDiagram",
-        "erDiagram",
-        "gantt",
-        "pie",
-        "journey",
-        "gitGraph",
-        "mindmap",
-        "timeline",
-        "quadrantChart",
-        "xychart",
-        "C4Context",
+        "graph ", "flowchart ", "sequenceDiagram", "classDiagram", "stateDiagram",
+        "erDiagram", "gantt", "pie", "journey", "gitGraph", "mindmap", "timeline",
+        "quadrantChart", "xychart", "C4Context",
     )
     return first.startswith(starters)
 
@@ -317,10 +295,8 @@ def wrap_tikz_document(source: str, dark: bool, theme: bool) -> str:
     if "\\documentclass" in source:
         return source
 
-    body = (
-        source
-        if "\\begin{tikzpicture}" in source
-        else ("\\begin{tikzpicture}\n" + source.strip() + "\n\\end{tikzpicture}")
+    body = source if "\\begin{tikzpicture}" in source else (
+        "\\begin{tikzpicture}\n" + source.strip() + "\n\\end{tikzpicture}"
     )
     preamble = tikz_color_preamble(dark) if theme else ""
     default_pen = "\\tikzset{every picture/.style={color=sprezzatureFg}}\n" if theme else ""
@@ -364,10 +340,10 @@ def mermaid_init_directive(dark: bool, background: Optional[str]) -> str:
     fg = _DARK_FG if dark else _LIGHT_FG
 
     def _light(name: str, fallback: str) -> str:
-        return sem.get(name, {}).get("light") or fallback
+        return (sem.get(name, {}).get("light") or fallback)
 
     def _hex(name: str, fallback: str) -> str:
-        return sem.get(name, {}).get("hex") or fallback
+        return (sem.get(name, {}).get("hex") or fallback)
 
     theme_vars: Dict[str, str] = {
         "primaryColor": _light("Blue", "#CCE4FF"),
@@ -478,22 +454,14 @@ def render_tikz(source: str, out: str, dpi: int, background: Optional[str]) -> N
                 "Install a TeX engine: tectonic (brew install tectonic — see "
                 "https://brew.sh) or TeX Live (apt install texlive-latex-extra).",
             )
-            cmd = [
-                engine,
-                "-interaction=nonstopmode",
-                "-halt-on-error",
-                "-output-directory",
-                tmp,
-                str(tex),
-            ]
+            cmd = [engine, "-interaction=nonstopmode", "-halt-on-error",
+                   "-output-directory", tmp, str(tex)]
 
         proc = subprocess.run(cmd, capture_output=True, text=True)
         pdf = Path(tmp) / "figure.pdf"
         if proc.returncode != 0 or not pdf.is_file():
             raise SystemExit(
-                "TikZ compilation failed:\n"
-                + (proc.stdout or "")[-2000:]
-                + (proc.stderr or "")[-500:]
+                "TikZ compilation failed:\n" + (proc.stdout or "")[-2000:] + (proc.stderr or "")[-500:]
             )
 
         _rasterise_pdf(pdf, Path(out), dpi, background)
@@ -511,17 +479,8 @@ def _rasterise_pdf(pdf: Path, out: Path, dpi: int, background: Optional[str]) ->
                 "A transparent TikZ PNG needs ImageMagick.\n"
                 "  brew install imagemagick  (https://brew.sh)  |  apt install imagemagick"
             )
-        cmd = [
-            magick,
-            "-density",
-            str(dpi),
-            str(pdf),
-            "-background",
-            "none",
-            "-trim",
-            "+repage",
-            str(out),
-        ]
+        cmd = [magick, "-density", str(dpi), str(pdf), "-background", "none",
+               "-trim", "+repage", str(out)]
         _run_or_die(cmd, "ImageMagick rasterisation failed")
         return
 
@@ -532,18 +491,8 @@ def _rasterise_pdf(pdf: Path, out: Path, dpi: int, background: Optional[str]) ->
         return
 
     if magick is not None:
-        cmd = [
-            magick,
-            "-density",
-            str(dpi),
-            str(pdf),
-            "-background",
-            background,
-            "-flatten",
-            "-trim",
-            "+repage",
-            str(out),
-        ]
+        cmd = [magick, "-density", str(dpi), str(pdf), "-background",
+               background, "-flatten", "-trim", "+repage", str(out)]
         _run_or_die(cmd, "ImageMagick rasterisation failed")
         return
 
@@ -578,15 +527,8 @@ def render_mermaid(source: str, out: str, background: Optional[str]) -> None:
     with tempfile.TemporaryDirectory() as tmp:
         src = Path(tmp) / "diagram.mmd"
         src.write_text(source, encoding="utf-8")
-        cmd = [
-            mmdc,
-            "-i",
-            str(src),
-            "-o",
-            out,
-            "-b",
-            ("transparent" if background is None else background),
-        ]
+        cmd = [mmdc, "-i", str(src), "-o", out, "-b",
+               ("transparent" if background is None else background)]
         _run_or_die(cmd, "Mermaid (mmdc) rendering failed")
 
 
@@ -627,9 +569,8 @@ def render_svg(source: str, out: str, background: Optional[str]) -> None:
         magick = shutil.which("magick") or shutil.which("convert")
         if magick is not None:
             bg = "none" if background is None else background
-            _run_or_die(
-                [magick, "-background", bg, str(svg), out], "ImageMagick SVG rasterisation failed"
-            )
+            _run_or_die([magick, "-background", bg, str(svg), out],
+                        "ImageMagick SVG rasterisation failed")
             return
         raise SystemExit(
             "No SVG rasteriser found.\n"

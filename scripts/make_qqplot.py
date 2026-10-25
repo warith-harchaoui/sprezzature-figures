@@ -40,35 +40,14 @@ COLOR_REF = "#C7C7CC"
 
 # Acklam's rational approximation coefficients for the inverse standard
 # normal CDF (public-domain algorithm, accurate to ~1.15e-9).
-_ACKLAM_A = (
-    -3.969683028665376e01,
-    2.209460984245205e02,
-    -2.759285104469687e02,
-    1.383577518672690e02,
-    -3.066479806614716e01,
-    2.506628277459239e00,
-)
-_ACKLAM_B = (
-    -5.447609879822406e01,
-    1.615858368580409e02,
-    -1.556989798598866e02,
-    6.680131188771972e01,
-    -1.328068155288572e01,
-)
-_ACKLAM_C = (
-    -7.784894002430293e-03,
-    -3.223964580411365e-01,
-    -2.400758277161838e00,
-    -2.549732539343734e00,
-    4.374664141464968e00,
-    2.938163982698783e00,
-)
-_ACKLAM_D = (
-    7.784695709041462e-03,
-    3.224671290700398e-01,
-    2.445134137142996e00,
-    3.754408661907416e00,
-)
+_ACKLAM_A = (-3.969683028665376e01, 2.209460984245205e02, -2.759285104469687e02,
+             1.383577518672690e02, -3.066479806614716e01, 2.506628277459239e00)
+_ACKLAM_B = (-5.447609879822406e01, 1.615858368580409e02, -1.556989798598866e02,
+             6.680131188771972e01, -1.328068155288572e01)
+_ACKLAM_C = (-7.784894002430293e-03, -3.223964580411365e-01, -2.400758277161838e00,
+             -2.549732539343734e00, 4.374664141464968e00, 2.938163982698783e00)
+_ACKLAM_D = (7.784695709041462e-03, 3.224671290700398e-01, 2.445134137142996e00,
+             3.754408661907416e00)
 
 
 def _norm_ppf(p: float) -> float:
@@ -76,45 +55,19 @@ def _norm_ppf(p: float) -> float:
     p_low, p_high = 0.02425, 1.0 - 0.02425
     if p < p_low:
         q = math.sqrt(-2.0 * math.log(p))
-        return (
-            (
-                (((_ACKLAM_C[0] * q + _ACKLAM_C[1]) * q + _ACKLAM_C[2]) * q + _ACKLAM_C[3]) * q
-                + _ACKLAM_C[4]
-            )
-            * q
-            + _ACKLAM_C[5]
-        ) / ((((_ACKLAM_D[0] * q + _ACKLAM_D[1]) * q + _ACKLAM_D[2]) * q + _ACKLAM_D[3]) * q + 1.0)
+        return (((((_ACKLAM_C[0] * q + _ACKLAM_C[1]) * q + _ACKLAM_C[2]) * q + _ACKLAM_C[3]) * q + _ACKLAM_C[4]) * q + _ACKLAM_C[5]) / (
+            (((_ACKLAM_D[0] * q + _ACKLAM_D[1]) * q + _ACKLAM_D[2]) * q + _ACKLAM_D[3]) * q + 1.0
+        )
     if p <= p_high:
         q = p - 0.5
         r = q * q
-        return (
-            (
-                (
-                    (((_ACKLAM_A[0] * r + _ACKLAM_A[1]) * r + _ACKLAM_A[2]) * r + _ACKLAM_A[3]) * r
-                    + _ACKLAM_A[4]
-                )
-                * r
-                + _ACKLAM_A[5]
-            )
-            * q
-            / (
-                (
-                    (((_ACKLAM_B[0] * r + _ACKLAM_B[1]) * r + _ACKLAM_B[2]) * r + _ACKLAM_B[3]) * r
-                    + _ACKLAM_B[4]
-                )
-                * r
-                + 1.0
-            )
+        return (((((_ACKLAM_A[0] * r + _ACKLAM_A[1]) * r + _ACKLAM_A[2]) * r + _ACKLAM_A[3]) * r + _ACKLAM_A[4]) * r + _ACKLAM_A[5]) * q / (
+            ((((_ACKLAM_B[0] * r + _ACKLAM_B[1]) * r + _ACKLAM_B[2]) * r + _ACKLAM_B[3]) * r + _ACKLAM_B[4]) * r + 1.0
         )
     q = math.sqrt(-2.0 * math.log(1.0 - p))
-    return -(
-        (
-            (((_ACKLAM_C[0] * q + _ACKLAM_C[1]) * q + _ACKLAM_C[2]) * q + _ACKLAM_C[3]) * q
-            + _ACKLAM_C[4]
-        )
-        * q
-        + _ACKLAM_C[5]
-    ) / ((((_ACKLAM_D[0] * q + _ACKLAM_D[1]) * q + _ACKLAM_D[2]) * q + _ACKLAM_D[3]) * q + 1.0)
+    return -(((((_ACKLAM_C[0] * q + _ACKLAM_C[1]) * q + _ACKLAM_C[2]) * q + _ACKLAM_C[3]) * q + _ACKLAM_C[4]) * q + _ACKLAM_C[5]) / (
+        (((_ACKLAM_D[0] * q + _ACKLAM_D[1]) * q + _ACKLAM_D[2]) * q + _ACKLAM_D[3]) * q + 1.0
+    )
 
 
 def _make_demo_data() -> List[Dict[str, Any]]:
@@ -202,13 +155,11 @@ def build_svg(
         return plot_y + plot_h - (v - lo) / (hi - lo) * plot_h
 
     parts: List[str] = []
-    parts.append(
-        svg_open(width, height, "qq-title", "qq-desc", font_family=chrome_stack_for_theme(theme))
-    )
+    parts.append(svg_open(width, height, "qq-title", "qq-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="qq-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="qq-desc">Normal Q-Q plot of {n} observations. Points on the dashed line '
-        f"indicate an approximately normal sample.</desc>"
+        f'indicate an approximately normal sample.</desc>'
     )
     parts.append(
         "<style>"
@@ -221,21 +172,15 @@ def build_svg(
         f'<text x="40" y="46" font-size="22" font-weight="700" fill="{INK}" '
         f'letter-spacing="-0.3">{xml_escape(title)}</text>'
     )
-    parts.append(
-        f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>'
-    )
+    parts.append(f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>')
 
     # ---- gridlines ----
     ticks = 5
     for i in range(ticks + 1):
         val = lo + (hi - lo) * i / ticks
         tx, ty = x_for(val), y_for(val)
-        parts.append(
-            f'<line x1="{plot_x:.1f}" y1="{ty:.1f}" x2="{plot_x + plot_w:.1f}" y2="{ty:.1f}" stroke="{GRIDLINE}" stroke-width="1"/>'
-        )
-        parts.append(
-            f'<line x1="{tx:.1f}" y1="{plot_y:.1f}" x2="{tx:.1f}" y2="{plot_y + plot_h:.1f}" stroke="{GRIDLINE}" stroke-width="1"/>'
-        )
+        parts.append(f'<line x1="{plot_x:.1f}" y1="{ty:.1f}" x2="{plot_x + plot_w:.1f}" y2="{ty:.1f}" stroke="{GRIDLINE}" stroke-width="1"/>')
+        parts.append(f'<line x1="{tx:.1f}" y1="{plot_y:.1f}" x2="{tx:.1f}" y2="{plot_y + plot_h:.1f}" stroke="{GRIDLINE}" stroke-width="1"/>')
         parts.append(
             f'<text x="{plot_x - 10:.1f}" y="{ty + 4:.1f}" font-size="11" font-family="{mono_family}" '
             f'fill="{SECONDARY}" text-anchor="end">{val:.0f}</text>'
@@ -276,19 +221,14 @@ def build_svg(
         )
         tips.append(
             tooltip_bubble(
-                cx,
-                cy - 16,
+                cx, cy - 16,
                 [
                     f"Rank {i + 1} of {n}",
                     f"theoretical {t:.1f}, sample {s:.1f}",
                     f"{abs(deviation):.1f} {'above' if deviation >= 0 else 'below'} the line",
                 ],
-                anchor="middle",
-                canvas_w=width,
-                canvas_h=height,
-                ink=INK,
-                secondary=SECONDARY,
-                border=GRIDLINE,
+                anchor="middle", canvas_w=width, canvas_h=height,
+                ink=INK, secondary=SECONDARY, border=GRIDLINE,
                 elem_id=f"tip-{i}",
             )
         )
@@ -345,16 +285,10 @@ def make_qqplot(
     True
     """
     svg = build_svg(
-        data,
-        title=title,
-        subtitle=subtitle,
-        y_axis_title=y_axis_title,
-        x_axis_title=x_axis_title,
-        width=width,
-        height=height,
-        mode=mode,
-        accessibility=accessibility,
-        theme=theme,
+        data, title=title, subtitle=subtitle,
+        y_axis_title=y_axis_title, x_axis_title=x_axis_title,
+        width=width, height=height,
+        mode=mode, accessibility=accessibility, theme=theme,
     )
     dest = Path(out) if out else svg_example_path(__file__, "qqplot")
     return write_svg(dest, svg, theme=theme)

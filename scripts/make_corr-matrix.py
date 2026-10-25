@@ -59,30 +59,18 @@ def _ramp_hex(r: float) -> str:
 
 # Symmetric feature-correlation demo values (5x5, diagonal = 1.0).
 DEMO_DATA: List[Dict[str, Any]] = [
-    {"a": "mpg", "b": "mpg", "r": 1.0},
-    {"a": "mpg", "b": "hp", "r": -0.78},
-    {"a": "mpg", "b": "wt", "r": -0.87},
-    {"a": "mpg", "b": "accel", "r": 0.42},
-    {"a": "mpg", "b": "disp", "r": -0.85},
-    {"a": "hp", "b": "mpg", "r": -0.78},
-    {"a": "hp", "b": "hp", "r": 1.0},
-    {"a": "hp", "b": "wt", "r": 0.66},
-    {"a": "hp", "b": "accel", "r": -0.69},
-    {"a": "hp", "b": "disp", "r": 0.79},
-    {"a": "wt", "b": "mpg", "r": -0.87},
-    {"a": "wt", "b": "hp", "r": 0.66},
-    {"a": "wt", "b": "wt", "r": 1.0},
-    {"a": "wt", "b": "accel", "r": -0.42},
-    {"a": "wt", "b": "disp", "r": 0.89},
-    {"a": "accel", "b": "mpg", "r": 0.42},
-    {"a": "accel", "b": "hp", "r": -0.69},
-    {"a": "accel", "b": "wt", "r": -0.42},
-    {"a": "accel", "b": "accel", "r": 1.0},
-    {"a": "accel", "b": "disp", "r": -0.55},
-    {"a": "disp", "b": "mpg", "r": -0.85},
-    {"a": "disp", "b": "hp", "r": 0.79},
-    {"a": "disp", "b": "wt", "r": 0.89},
-    {"a": "disp", "b": "accel", "r": -0.55},
+    {"a": "mpg", "b": "mpg", "r": 1.0}, {"a": "mpg", "b": "hp", "r": -0.78},
+    {"a": "mpg", "b": "wt", "r": -0.87}, {"a": "mpg", "b": "accel", "r": 0.42},
+    {"a": "mpg", "b": "disp", "r": -0.85}, {"a": "hp", "b": "mpg", "r": -0.78},
+    {"a": "hp", "b": "hp", "r": 1.0}, {"a": "hp", "b": "wt", "r": 0.66},
+    {"a": "hp", "b": "accel", "r": -0.69}, {"a": "hp", "b": "disp", "r": 0.79},
+    {"a": "wt", "b": "mpg", "r": -0.87}, {"a": "wt", "b": "hp", "r": 0.66},
+    {"a": "wt", "b": "wt", "r": 1.0}, {"a": "wt", "b": "accel", "r": -0.42},
+    {"a": "wt", "b": "disp", "r": 0.89}, {"a": "accel", "b": "mpg", "r": 0.42},
+    {"a": "accel", "b": "hp", "r": -0.69}, {"a": "accel", "b": "wt", "r": -0.42},
+    {"a": "accel", "b": "accel", "r": 1.0}, {"a": "accel", "b": "disp", "r": -0.55},
+    {"a": "disp", "b": "mpg", "r": -0.85}, {"a": "disp", "b": "hp", "r": 0.79},
+    {"a": "disp", "b": "wt", "r": 0.89}, {"a": "disp", "b": "accel", "r": -0.55},
     {"a": "disp", "b": "disp", "r": 1.0},
 ]
 
@@ -131,9 +119,7 @@ def build_svg(
     for r in rows:
         if r["a"] not in seen_features:
             seen_features.append(r["a"])
-    features = [f for f in FEATURES if f in seen_features] + [
-        f for f in seen_features if f not in FEATURES
-    ]
+    features = [f for f in FEATURES if f in seen_features] + [f for f in seen_features if f not in FEATURES]
     lookup: Dict[Tuple[str, str], float] = {(r["a"], r["b"]): float(r["r"]) for r in rows}
 
     plot_x, plot_y = 100.0, 118.0
@@ -144,13 +130,11 @@ def build_svg(
     cell = min(grid_w / n, grid_h / n)
 
     parts: List[str] = []
-    parts.append(
-        svg_open(width, height, "cm2-title", "cm2-desc", font_family=chrome_stack_for_theme(theme))
-    )
+    parts.append(svg_open(width, height, "cm2-title", "cm2-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="cm2-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="cm2-desc">Correlation matrix of {n} features. Hover or focus a cell '
-        f"for its exact coefficient.</desc>"
+        f'for its exact coefficient.</desc>'
     )
     parts.append(
         "<style>"
@@ -158,8 +142,8 @@ def build_svg(
         ".cell:hover,.cell:focus{stroke:#1D1D1F;stroke-width:1.5;outline:none;}"
         "@media (prefers-reduced-motion: reduce){.cell{transition:none;}}"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        + foreground_tip_css(len(features) * len(features))
-        + "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
+        + foreground_tip_css(len(features) * len(features)) +
+        "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
         "</style>"
     )
     parts.append(f'<rect width="{width}" height="{height}" fill="{BG}"/>')
@@ -167,9 +151,7 @@ def build_svg(
         f'<text x="20" y="42" font-size="21" font-weight="700" fill="{INK}" '
         f'letter-spacing="-0.3">{xml_escape(title)}</text>'
     )
-    parts.append(
-        f'<text x="20" y="64" font-size="13" fill="{SECONDARY}">{xml_escape(subtitle)}</text>'
-    )
+    parts.append(f'<text x="20" y="64" font-size="13" fill="{SECONDARY}">{xml_escape(subtitle)}</text>')
 
     # ---- column labels (top) ----
     for ci, f in enumerate(features):
@@ -209,18 +191,12 @@ def build_svg(
             parts.append(
                 f'<rect id="hit-{idx}" class="cell hit" tabindex="0" x="{x:.1f}" y="{y:.1f}" width="{cell:.1f}" '
                 f'height="{cell:.1f}" fill="{_ramp_hex(corr)}" stroke="{BG}" stroke-width="1">'
-                f"<title>{xml_escape(tip)}</title></rect>"
+                f'<title>{xml_escape(tip)}</title></rect>'
             )
             tip_cards.append(
                 tooltip_bubble(
-                    x + cell / 2,
-                    y + cell + 4,
-                    [f"{a} x {b}", f"r = {corr:.2f}", corr_desc],
-                    canvas_w=width,
-                    canvas_h=height,
-                    ink=INK,
-                    secondary=SECONDARY,
-                    border=GRIDLINE,
+                    x + cell / 2, y + cell + 4, [f"{a} x {b}", f"r = {corr:.2f}", corr_desc],
+                    canvas_w=width, canvas_h=height, ink=INK, secondary=SECONDARY, border=GRIDLINE,
                     elem_id=f"tip-{idx}",
                 )
             )
@@ -239,12 +215,8 @@ def build_svg(
     n_swatches = 9
     for i in range(n_swatches):
         corr = -1.0 + 2.0 * i / (n_swatches - 1)
-        parts.append(
-            f'<rect x="{swatch_x + i * 14:.1f}" y="{ly - 10:.1f}" width="12" height="11" fill="{_ramp_hex(corr)}" stroke="#E5E5EA" stroke-width="0.5"/>'
-        )
-    parts.append(
-        f'<text x="{swatch_x + n_swatches * 14 + 6:.1f}" y="{ly:.1f}" font-size="10" fill="{SECONDARY}">+1</text>'
-    )
+        parts.append(f'<rect x="{swatch_x + i * 14:.1f}" y="{ly - 10:.1f}" width="12" height="11" fill="{_ramp_hex(corr)}" stroke="#E5E5EA" stroke-width="0.5"/>')
+    parts.append(f'<text x="{swatch_x + n_swatches * 14 + 6:.1f}" y="{ly:.1f}" font-size="10" fill="{SECONDARY}">+1</text>')
 
     parts.append(fullscreen_control(width, height, mode))
     parts.append("</svg>")
@@ -292,25 +264,15 @@ def make_corr_matrix(
     >>> p.exists()
     True
     """
-    svg = build_svg(
-        data,
-        title=title,
-        subtitle=subtitle,
-        width=width,
-        height=height,
-        mode=mode,
-        accessibility=accessibility,
-        theme=theme,
-    )
+    svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
+                     mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "corr-matrix")
     return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:
     """CLI entry point: build the SVG and write it to disk."""
-    render_cli(
-        __file__, "corr-matrix", build_svg, description="Generate a correlation matrix heatmap."
-    )
+    render_cli(__file__, "corr-matrix", build_svg, description="Generate a correlation matrix heatmap.")
 
 
 if __name__ == "__main__":

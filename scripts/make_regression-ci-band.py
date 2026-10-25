@@ -137,18 +137,14 @@ def build_svg(
         return plot_x + (v - (x_min - x_pad)) / ((x_max + x_pad) - (x_min - x_pad)) * plot_w
 
     def y_for(v: float) -> float:
-        return (
-            plot_y + plot_h - (v - (y_min - y_pad)) / ((y_max + y_pad) - (y_min - y_pad)) * plot_h
-        )
+        return plot_y + plot_h - (v - (y_min - y_pad)) / ((y_max + y_pad) - (y_min - y_pad)) * plot_h
 
     parts: List[str] = []
-    parts.append(
-        svg_open(width, height, "reg-title", "reg-desc", font_family=chrome_stack_for_theme(theme))
-    )
+    parts.append(svg_open(width, height, "reg-title", "reg-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="reg-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="reg-desc">Linear regression of {len(rows)} points: '
-        f"y = {fit['intercept']:.2f} + {fit['slope']:.2f}x, with a 95% confidence band.</desc>"
+        f'y = {fit["intercept"]:.2f} + {fit["slope"]:.2f}x, with a 95% confidence band.</desc>'
     )
     parts.append(
         "<style>"
@@ -161,9 +157,7 @@ def build_svg(
         f'<text x="40" y="46" font-size="22" font-weight="700" fill="{INK}" '
         f'letter-spacing="-0.3">{xml_escape(title)}</text>'
     )
-    parts.append(
-        f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>'
-    )
+    parts.append(f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>')
 
     # ---- gridlines ----
     y_ticks = 5
@@ -208,15 +202,10 @@ def build_svg(
         )
         tips.append(
             tooltip_bubble(
-                cx,
-                cy - 12,
+                cx, cy - 12,
                 [f"x = {x:.2f}", f"y = {y:.2f}", f"residual {resid:+.2f}"],
-                anchor="middle",
-                canvas_w=width,
-                canvas_h=height,
-                ink=INK,
-                secondary=SECONDARY,
-                border=GRIDLINE,
+                anchor="middle", canvas_w=width, canvas_h=height,
+                ink=INK, secondary=SECONDARY, border=GRIDLINE,
                 elem_id=f"tip-{i}",
             )
         )
@@ -233,19 +222,10 @@ def build_svg(
     mid_x, mid_y = line_pts[len(line_pts) // 2]
     tips.append(
         tooltip_bubble(
-            mid_x,
-            mid_y - 16,
-            [
-                "OLS fit",
-                f"y = {fit['intercept']:.2f} + {fit['slope']:.2f}x",
-                f"n = {fit['n']:.0f} points",
-            ],
-            anchor="middle",
-            canvas_w=width,
-            canvas_h=height,
-            ink=INK,
-            secondary=SECONDARY,
-            border=GRIDLINE,
+            mid_x, mid_y - 16,
+            ["OLS fit", f"y = {fit['intercept']:.2f} + {fit['slope']:.2f}x", f"n = {fit['n']:.0f} points"],
+            anchor="middle", canvas_w=width, canvas_h=height,
+            ink=INK, secondary=SECONDARY, border=GRIDLINE,
             elem_id="tip-line",
         )
     )
@@ -320,28 +300,15 @@ def make_regression_ci_band(
     >>> p.exists()
     True
     """
-    svg = build_svg(
-        data,
-        title=title,
-        subtitle=subtitle,
-        width=width,
-        height=height,
-        mode=mode,
-        accessibility=accessibility,
-        theme=theme,
-    )
+    svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
+                     mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "regression-ci-band")
     return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:
     """CLI entry point: build the SVG and write it to disk."""
-    render_cli(
-        __file__,
-        "regression-ci-band",
-        build_svg,
-        description="Generate a linear regression with a confidence band.",
-    )
+    render_cli(__file__, "regression-ci-band", build_svg, description="Generate a linear regression with a confidence band.")
 
 
 if __name__ == "__main__":
