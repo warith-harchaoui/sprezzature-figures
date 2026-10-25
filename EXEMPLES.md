@@ -33,9 +33,9 @@ path = make_figure("treemap", data, out="budget.png", title="Répartition du bud
 ```python
 data = [
     {"source": "Charbon", "target": "Électricité", "value": 120},
-    {"source": "Gaz", "target": "Électricité", "value": 80},
+    {"source": "Gaz",  "target": "Électricité", "value": 80},
     {"source": "Électricité", "target": "Industrie", "value": 90},
-    {"source": "Électricité", "target": "Foyers", "value": 110},
+    {"source": "Électricité", "target": "Foyers",    "value": 110},
 ]
 path = make_figure("sankey", data, out="energie.png", title="Flux d'énergie")
 ```
@@ -50,7 +50,6 @@ attend.
 
 ```python
 import random
-
 data = [{"horsepower": random.uniform(80, 320), "mpg": random.uniform(10, 40)} for _ in range(200)]
 path = make_figure("scatter", data, out="nuage.png")
 ```
@@ -88,14 +87,14 @@ resultat = redraw(
     data=[{"region": "Nord", "value": 61}, {"region": "Sud", "value": 39}],
     language="fr",
 )
-print(resultat.kind)  # 'bar' — ce que le modèle de vision a reconnu
+print(resultat.kind)         # 'bar' — ce que le modèle de vision a reconnu
 print(resultat.data_origin)  # 'your-data' — les chiffres sont les vôtres
 for changement in resultat.changes:
-    print("-", changement)  # ce qui change, le plus coûteux d'abord
+    print("-", changement)   # ce qui change, le plus coûteux d'abord
 
 # Sans données sous la main : la refonte sur des lignes d'exemple, légendée
 maquette = redraw("leur-graphique.png", out="maquette.svg", language="fr")
-maquette.data_origin  # 'demo' — à regarder, pas à publier
+maquette.data_origin         # 'demo' — à regarder, pas à publier
 ```
 
 ```bash
@@ -110,7 +109,6 @@ Ollama qui tourne). Accepte PNG, JPEG, GIF, WebP et SVG.
 
 ```python
 from sprezzature_figures.make_figure import list_kinds
-
 print(list_kinds())
 # ['alluvial', 'andrews', 'arcdiagram', 'bar3d', 'bellcurve', ...]
 ```

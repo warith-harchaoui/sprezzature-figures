@@ -50,14 +50,7 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
-from _svg import (
-    foreground_tip_css,
-    fmt_compact,
-    point_on_circle,
-    svg_open,
-    tooltip_bubble,
-    xml_escape,
-)  # noqa: E402
+from _svg import foreground_tip_css, fmt_compact, point_on_circle, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _style import (  # noqa: E402
     forced_color_patterns,
@@ -71,10 +64,10 @@ from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_the
 
 # House-style tokens (mirrors the house-style constants, kept literal so this
 # generator needs no import of the dataviz tier at build time).
-_INK = "#1D1D1F"  # primary text
+_INK = "#1D1D1F"        # primary text
 _SECONDARY = "#6E6E73"  # subtitle / secondary text
-_BG = "#FFFFFF"  # white ground
-_GRID = "#E5E5EA"  # light grid rings / spokes
+_BG = "#FFFFFF"         # white ground
+_GRID = "#E5E5EA"       # light grid rings / spokes
 _GRID_STRONG = "#C7C7CC"  # the outer ring, a touch stronger for a clean rim
 _FONT = "Roboto, system-ui, sans-serif"
 _MONO = "Roboto Mono, ui-monospace, monospace"
@@ -288,7 +281,7 @@ def build_svg(
 
     cx = width / 2.0
     cy = 588.0
-    r_outer = 344.0  # outermost grid ring == score 100
+    r_outer = 344.0     # outermost grid ring == score 100
     score_max = 100.0
     rings = [20.0, 40.0, 60.0, 80.0, 100.0]  # radial gridlines
 
@@ -313,11 +306,7 @@ def build_svg(
         "and ease of use; Cosmos reaches furthest on global reach and price. "
         "The three profiles cross, so no single database dominates."
     )
-    parts.append(
-        svg_open(
-            width, height, "radar-title", "radar-desc", font_family=chrome_stack_for_theme(theme)
-        )
-    )
+    parts.append(svg_open(width, height, "radar-title", "radar-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="radar-title">{xml_escape(title)}</title>')
     parts.append(f'<desc id="radar-desc">{xml_escape(aria)}</desc>')
     # 16 is the house corner cap, the one `audit_figure`'s `radius-over-cap`
@@ -344,7 +333,10 @@ def build_svg(
     # Dark mode: paper + inks invert via os_dark_style defaults; the light grid
     # rings / spokes (strokes) are dimmed to a dark-surface grey so they frame
     # without glaring, and any multiply blend flips to screen.
-    dark_extra = '[stroke="#E5E5EA"]{stroke:#2C2C2E;}[stroke="#C7C7CC"]{stroke:#3A3A3C;}'
+    dark_extra = (
+        '[stroke="#E5E5EA"]{stroke:#2C2C2E;}'
+        '[stroke="#C7C7CC"]{stroke:#3A3A3C;}'
+    )
     parts.append(
         "<style>"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
@@ -361,7 +353,8 @@ def build_svg(
         f"{xml_escape(title)}</text>"
     )
     parts.append(
-        f'<text x="64" y="120" font-size="21" fill="{_SECONDARY}">{xml_escape(subtitle)}</text>'
+        f'<text x="64" y="120" font-size="21" fill="{_SECONDARY}">'
+        f"{xml_escape(subtitle)}</text>"
     )
 
     # ---- grid rings + radial tick labels ---------------------------------- #
@@ -372,11 +365,16 @@ def build_svg(
         rr = r_px(ring_val)
         pts = " ".join(
             f"{fmt_compact(x)},{fmt_compact(y)}"
-            for x, y in (_polar_to_xy(cx, cy, rr, _spoke_angle_deg(i, n)) for i in range(n))
+            for x, y in (
+                _polar_to_xy(cx, cy, rr, _spoke_angle_deg(i, n)) for i in range(n)
+            )
         )
         stroke = _GRID_STRONG if ring_val == rings[-1] else _GRID
         sw = 1.6 if ring_val == rings[-1] else 1.0
-        parts.append(f'<polygon points="{pts}" fill="none" stroke="{stroke}" stroke-width="{sw}"/>')
+        parts.append(
+            f'<polygon points="{pts}" fill="none" stroke="{stroke}" '
+            f'stroke-width="{sw}"/>'
+        )
         # Radial tick label along the top spoke, nudged just right of it so it
         # never sits on the vertical gridline.
         lx, ly = _polar_to_xy(cx, cy, rr, 0.0)
@@ -443,7 +441,8 @@ def build_svg(
         dash_attr = f' stroke-dasharray="{dash}"' if dash else ""
 
         verts: List[Tuple[float, float]] = [
-            _polar_to_xy(cx, cy, r_px(values[i]), _spoke_angle_deg(i, n)) for i in range(n)
+            _polar_to_xy(cx, cy, r_px(values[i]), _spoke_angle_deg(i, n))
+            for i in range(n)
         ]
         pts = " ".join(f"{fmt_compact(x)},{fmt_compact(y)}" for x, y in verts)
         parts.append(
@@ -465,15 +464,10 @@ def build_svg(
             )
             tips.append(
                 tooltip_bubble(
-                    vx,
-                    vy - 18,
+                    vx, vy - 18,
                     [name, f"{axes[i]}: {values[i]:.0f}/100", standing],
-                    anchor="middle",
-                    canvas_w=width,
-                    canvas_h=height,
-                    ink=_INK,
-                    secondary=_SECONDARY,
-                    border=_GRID,
+                    anchor="middle", canvas_w=width, canvas_h=height,
+                    ink=_INK, secondary=_SECONDARY, border=_GRID,
                     elem_id=f"tip-{tip_i}",
                 )
             )
@@ -571,21 +565,14 @@ def make_radar(
     _ = title
     rows = data if data else DEMO_DATA
     radar_data = _rows_to_radar_data(rows)
-    svg = build_svg(
-        radar_data, mode=mode, accessibility=accessibility, theme=theme, title=title or None
-    )
+    svg = build_svg(radar_data, mode=mode, accessibility=accessibility, theme=theme, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "radar")
     return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:
     """CLI entry point: build the SVG and write it to disk."""
-    render_cli(
-        __file__,
-        "radar",
-        build_svg,
-        description="Write the house-style radar (spider) chart SVG example.",
-    )
+    render_cli(__file__, "radar", build_svg, description="Write the house-style radar (spider) chart SVG example.")
 
 
 if __name__ == "__main__":

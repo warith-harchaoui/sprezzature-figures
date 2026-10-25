@@ -48,9 +48,7 @@ def _nice_step(span: float, target_ticks: int = 6) -> float:
     raw_step = span / target_ticks
     exponent = math.floor(math.log10(raw_step))
     fraction = raw_step / (10.0**exponent)
-    nice_fraction = (
-        1.0 if fraction < 1.5 else 2.0 if fraction < 3 else 5.0 if fraction < 7 else 10.0
-    )
+    nice_fraction = 1.0 if fraction < 1.5 else 2.0 if fraction < 3 else 5.0 if fraction < 7 else 10.0
     return nice_fraction * (10.0**exponent)
 
 
@@ -91,9 +89,7 @@ def _team_colors(
     dict of str to str
         ``{team: hex_color}`` for every entry in `teams`.
     """
-    return cycle_hues(
-        teams, accessibility, hues=["Blue", "Purple", "Orange", "Teal", "Red"], theme=theme
-    )
+    return cycle_hues(teams, accessibility, hues=['Blue', 'Purple', 'Orange', 'Teal', 'Red'], theme=theme)
 
 
 def build_svg(
@@ -155,15 +151,11 @@ def build_svg(
         return plot_x + v / max_end * plot_w
 
     parts: List[str] = []
-    parts.append(
-        svg_open(
-            width, height, "gantt-title", "gantt-desc", font_family=chrome_stack_for_theme(theme)
-        )
-    )
+    parts.append(svg_open(width, height, "gantt-title", "gantt-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="gantt-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="gantt-desc">Gantt chart of {n} tasks spanning {max_end:.0f} days. '
-        f"Hover or focus a bar for its exact span.</desc>"
+        f'Hover or focus a bar for its exact span.</desc>'
     )
     parts.append(
         "<style>"
@@ -180,20 +172,14 @@ def build_svg(
         f'<text x="40" y="46" font-size="24" font-weight="700" fill="{INK}" '
         f'letter-spacing="-0.3">{xml_escape(title)}</text>'
     )
-    parts.append(
-        f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>'
-    )
+    parts.append(f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>')
 
     # ---- legend ----
     lx, ly = 40.0, 104.0
     cursor = lx
     for t in teams:
-        parts.append(
-            f'<rect x="{cursor:.1f}" y="{ly - 12:.1f}" width="14" height="14" rx="3" fill="{colors[t]}"/>'
-        )
-        parts.append(
-            f'<text x="{cursor + 20:.1f}" y="{ly:.1f}" font-size="12" fill="{INK}">{xml_escape(t)}</text>'
-        )
+        parts.append(f'<rect x="{cursor:.1f}" y="{ly - 12:.1f}" width="14" height="14" rx="3" fill="{colors[t]}"/>')
+        parts.append(f'<text x="{cursor + 20:.1f}" y="{ly:.1f}" font-size="12" fill="{INK}">{xml_escape(t)}</text>')
         cursor += 20 + 7.0 * len(t) + 22
 
     # ---- x-axis gridlines (round "nice" steps, not a naive 6-way split) ----
@@ -235,19 +221,14 @@ def build_svg(
         parts.append(
             f'<rect id="bar-{i}" class="task hit" tabindex="0" x="{x0:.1f}" y="{y:.1f}" width="{w:.1f}" '
             f'height="{bar_h:.1f}" rx="{r_corner:.1f}" fill="{color}">'
-            f"<title>{xml_escape(tip)}</title></rect>"
+            f'<title>{xml_escape(tip)}</title></rect>'
         )
         tip_bubbles.append(
             tooltip_bubble(
-                x0 + w / 2,
-                y - 12,
+                x0 + w / 2, y - 12,
                 [str(r["task"]), team, f"day {start:.0f}-{end:.0f} ({end - start:.0f} days)"],
-                anchor="middle",
-                canvas_w=width,
-                canvas_h=height,
-                ink=INK,
-                secondary=SECONDARY,
-                border=GRIDLINE,
+                anchor="middle", canvas_w=width, canvas_h=height,
+                ink=INK, secondary=SECONDARY, border=GRIDLINE,
                 elem_id=f"tip-{i}",
             )
         )
@@ -313,17 +294,9 @@ def make_gantt(
     >>> p.exists()
     True
     """
-    svg = build_svg(
-        data,
-        title=title,
-        subtitle=subtitle,
-        width=width,
-        height=height,
-        mode=mode,
-        accessibility=accessibility,
-        theme=theme,
-        x_axis_title=x_axis_title,
-    )
+    svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
+                     mode=mode, accessibility=accessibility, theme=theme,
+                     x_axis_title=x_axis_title)
     dest = Path(out) if out else svg_example_path(__file__, "gantt")
     return write_svg(dest, svg, theme=theme)
 

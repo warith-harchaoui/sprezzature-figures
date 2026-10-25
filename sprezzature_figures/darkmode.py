@@ -27,10 +27,10 @@ from __future__ import annotations
 import re
 
 # Chrome colours emitted by scripts/_style.py, and their dark-canvas equivalents.
-_BG = "#FFFFFF"  # full-canvas background rect (opaque) -> dropped
-_INK = "#1D1D1F"  # titles, labels -> near white
-_SECONDARY = "#6E6E73"  # secondary text -> light gray
-_GRIDLINE = "#E5E5EA"  # gridlines -> subtle dark-on-dark line
+_BG = "#FFFFFF"          # full-canvas background rect (opaque) -> dropped
+_INK = "#1D1D1F"         # titles, labels -> near white
+_SECONDARY = "#6E6E73"   # secondary text -> light gray
+_GRIDLINE = "#E5E5EA"    # gridlines -> subtle dark-on-dark line
 
 #: Light plot panel used by a dozen generators (the band behind a Pareto's
 #: bars, a heatmap's frame, a forest plot's zebra rows). It is a SURFACE, not
@@ -85,7 +85,9 @@ def _drop_background(svg: str) -> str:
     return svg
 
 
-_PANEL_RECT = re.compile(rf'(<rect\b[^>]*?)fill="{_PANEL}"([^>]*?/?>)', re.I)
+_PANEL_RECT = re.compile(
+    rf'(<rect\b[^>]*?)fill="{_PANEL}"([^>]*?/?>)', re.I
+)
 
 
 #: Gridline elements carry a class ending in ``-grid`` (``pa-grid``,
@@ -122,8 +124,8 @@ def to_dark(svg: str) -> str:
     out = _dim_gridlines(_darken_panels(_drop_background(svg)))
     for src, dst in _REMAP.items():
         for s in (src, src.lower()):
-            out = out.replace(f'"{s}"', f'"{dst}"')  # inline attributes
-            out = out.replace(f":{s}", f":{dst}")  # CSS declarations (prop:value)
+            out = out.replace(f'"{s}"', f'"{dst}"')   # inline attributes
+            out = out.replace(f":{s}", f":{dst}")     # CSS declarations (prop:value)
     return out
 
 

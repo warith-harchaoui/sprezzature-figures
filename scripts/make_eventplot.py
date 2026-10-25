@@ -254,17 +254,18 @@ def build_svg(
     if wanted == "first-after-onset":
         names = sorted(given, key=lambda name: (first_burst_after(name), name))
 
-    responders = [name for name in names if first_burst_after(name) != float("inf")]
+    responders = [
+        name for name in names if first_burst_after(name) != float("inf")
+    ]
     order_lines = (
-        [order_note]
-        if order_note is not None
+        [order_note] if order_note is not None
         else [
             {
                 "given": "rows in the order the data arrived",
                 "first": "rows sorted by earliest event",
                 "count": "rows sorted by how many events they carry",
                 "first-after-onset": f"rows sorted by how soon they burst after the "
-                f"{onset_label}, not by when they next fired",
+                                     f"{onset_label}, not by when they next fired",
             }[wanted],
             f"a burst is {burst_of} or more events each within "
             f"{fmt_number(burst_within)} of the last",
@@ -280,13 +281,15 @@ def build_svg(
             for name in responders[:3]
         )
         said_parts.append(
-            f"{len(responders)} of {len(names)} rows burst after the {onset_label}: {delays}."
+            f"{len(responders)} of {len(names)} rows burst after the {onset_label}: "
+            f"{delays}."
         )
     else:
         said_parts.append(
             f"No row bursts after the {onset_label}."
             if onset is not None
-            else f"{sum(len(bursts[name]) for name in names)} bursts across {len(names)} rows."
+            else f"{sum(len(bursts[name]) for name in names)} bursts across "
+                 f"{len(names)} rows."
         )
     said_lines: List[str] = []
     for sentence in said_parts:
@@ -294,15 +297,14 @@ def build_svg(
 
     parts: List[str] = []
     parts.append(
-        svg_open(
-            width, height, "raster-title", "raster-desc", font_family=chrome_stack_for_theme(theme)
-        )
+        svg_open(width, height, "raster-title", "raster-desc",
+                 font_family=chrome_stack_for_theme(theme))
     )
     parts.append(f'<title id="raster-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="raster-desc">A raster of {len(moments)} events across {len(names)} '
-        f"rows, each event a tick at the moment it happened. {xml_escape(said_order)}. "
-        f"{xml_escape(' '.join(said_parts))}</desc>"
+        f'rows, each event a tick at the moment it happened. {xml_escape(said_order)}. '
+        f'{xml_escape(" ".join(said_parts))}</desc>'
     )
     parts.append(
         "<style>"
@@ -347,7 +349,7 @@ def build_svg(
         parts.append(
             f'<text x="{px(onset) + 6:.1f}" y="{plot_y - 20:.1f}" font-size="11" '
             f'fill="{INK}">{xml_escape(onset_label)} '
-            f"{fmt_measured(onset, precision)}</text>"
+            f'{fmt_measured(onset, precision)}</text>'
         )
 
     tips: List[str] = []
@@ -355,9 +357,7 @@ def build_svg(
         middle = plot_y + (index + 0.5) * lane
         half = min(lane * 0.34, 9.0)
         inside = {
-            moment
-            for start, stop in bursts[name]
-            for moment in events[name]
+            moment for start, stop in bursts[name] for moment in events[name]
             if start <= moment <= stop
         }
         for moment in events[name]:
@@ -372,43 +372,31 @@ def build_svg(
         parts.append(
             f'<text x="{plot_x - 56:.1f}" y="{middle + 4:.1f}" font-size="12" '
             f'fill="{INK}" text-anchor="end" font-family="{mono_family}">'
-            f"{xml_escape(name)}</text>"
+            f'{xml_escape(name)}</text>'
         )
         parts.append(
             f'<text x="{plot_x - 10:.1f}" y="{middle + 4:.1f}" font-size="10" '
             f'fill="{SECONDARY}" text-anchor="end" font-family="{mono_family}">'
-            f"{len(events[name])}</text>"
+            f'{len(events[name])}</text>'
         )
         delay = first_burst_after(name)
         parts.append(
             f'<rect id="lane-{index}" class="lane hit" tabindex="0" role="img" '
             f'aria-label="{xml_escape(name)}: {len(events[name])} events, '
-            f"{len(bursts[name])} burst{'' if len(bursts[name]) == 1 else 's'}"
-            + (
-                f", first burst after the {xml_escape(onset_label)} at "
-                f"{fmt_measured(delay, precision)}"
-                if delay != float("inf")
-                else ""
-            )
+            f'{len(bursts[name])} burst{"" if len(bursts[name]) == 1 else "s"}'
+            + (f", first burst after the {xml_escape(onset_label)} at "
+               f"{fmt_measured(delay, precision)}" if delay != float("inf") else "")
             + f'" x="{plot_x:.1f}" y="{middle - lane / 2:.1f}" width="{plot_w:.1f}" '
             f'height="{lane:.1f}" fill="transparent">'
-            f"<title>{xml_escape(name)}: {len(events[name])}</title></rect>"
+            f'<title>{xml_escape(name)}: {len(events[name])}</title></rect>'
         )
         tips.append(
             tooltip_bubble(
-                plot_x + plot_w * 0.5,
-                middle,
-                [
-                    name,
-                    f"{len(events[name])} events",
-                    f"{len(bursts[name])} burst{'' if len(bursts[name]) == 1 else 's'}",
-                ],
-                canvas_w=width,
-                canvas_h=height,
-                ink=INK,
-                secondary=SECONDARY,
-                border=GRIDLINE,
-                elem_id=f"lanetip-{index}",
+                plot_x + plot_w * 0.5, middle,
+                [name, f"{len(events[name])} events",
+                 f"{len(bursts[name])} burst{'' if len(bursts[name]) == 1 else 's'}"],
+                canvas_w=width, canvas_h=height, ink=INK, secondary=SECONDARY,
+                border=GRIDLINE, elem_id=f"lanetip-{index}",
             )
         )
 
@@ -417,12 +405,12 @@ def build_svg(
         parts.append(
             f'<text x="{px(moment):.1f}" y="{plot_y + plot_h + 20:.1f}" font-size="11" '
             f'fill="{SECONDARY}" text-anchor="middle" font-family="{mono_family}">'
-            f"{fmt_number(moment)}</text>"
+            f'{fmt_number(moment)}</text>'
         )
     parts.append(
         f'<text x="{plot_x + plot_w / 2:.1f}" y="{plot_y + plot_h + 46:.1f}" '
         f'font-size="12" fill="{SECONDARY}" text-anchor="middle">'
-        f"{xml_escape(x_label)}</text>"
+        f'{xml_escape(x_label)}</text>'
     )
     parts.append(
         f'<text x="{plot_x - 10:.1f}" y="{plot_y - 20:.1f}" font-size="10" '
@@ -503,24 +491,11 @@ def make_eventplot(
     True
     """
     svg = build_svg(
-        data,
-        title=title,
-        subtitle=subtitle,
-        width=width,
-        height=height,
-        row=row,
-        at=at,
-        order=order,
-        onset=onset,
-        onset_label=onset_label,
-        burst_within=burst_within,
-        burst_of=burst_of,
-        x_label=x_label,
-        order_note=order_note,
-        finding=finding,
-        mode=mode,
-        accessibility=accessibility,
-        theme=theme,
+        data, title=title, subtitle=subtitle, width=width, height=height,
+        row=row, at=at, order=order, onset=onset, onset_label=onset_label,
+        burst_within=burst_within, burst_of=burst_of, x_label=x_label,
+        order_note=order_note, finding=finding, mode=mode,
+        accessibility=accessibility, theme=theme,
     )
     dest = Path(out) if out else svg_example_path(__file__, "eventplot")
     return write_svg(dest, svg, theme=theme)
@@ -528,12 +503,8 @@ def make_eventplot(
 
 def main() -> None:
     """CLI entry point: build the SVG and write it to disk."""
-    render_cli(
-        __file__,
-        "eventplot",
-        build_svg,
-        description="Draw a raster: one tick per event, one row per thing.",
-    )
+    render_cli(__file__, "eventplot", build_svg,
+               description="Draw a raster: one tick per event, one row per thing.")
 
 
 if __name__ == "__main__":

@@ -99,13 +99,11 @@ def _repeats(seed: int = 1) -> List[Dict[str, Any]]:
     rows: List[Dict[str, Any]] = []
     for feature, effect, spread in _TRUE_EFFECT:
         for repeat in range(_REPEATS):
-            rows.append(
-                {
-                    "feature": feature,
-                    "repeat": repeat + 1,
-                    "drop": round(rng.gauss(effect, spread), 5),
-                }
-            )
+            rows.append({
+                "feature": feature,
+                "repeat": repeat + 1,
+                "drop": round(rng.gauss(effect, spread), 5),
+            })
     return rows
 
 
@@ -203,8 +201,7 @@ def build_svg(
     repeats = min(count for _, _, _, count in summary)
 
     uncertain = [
-        name
-        for name, mean, error, _ in summary
+        name for name, mean, error, _ in summary
         if error > 0.0 and abs(mean) <= error_multiple * error
     ]
     harmful = [name for name, mean, _, _ in summary if mean < 0.0]
@@ -234,13 +231,9 @@ def build_svg(
     def px(amount: float) -> float:
         return plot_x + (amount - axis_low) / (axis_high - axis_low) * plot_w
 
-    said_measure = (
-        measure_note
-        if measure_note is not None
-        else (
-            f"mean of {repeats} shuffles per column on {set_label}, bars span "
-            f"±{fmt_number(error_multiple)} standard errors"
-        )
+    said_measure = measure_note if measure_note is not None else (
+        f"mean of {repeats} shuffles per column on {set_label}, bars span "
+        f"±{fmt_number(error_multiple)} standard errors"
     )
     said_parts: List[str] = []
     if finding is not None:
@@ -266,18 +259,17 @@ def build_svg(
 
     parts: List[str] = []
     parts.append(
-        svg_open(
-            width, height, "perm-title", "perm-desc", font_family=chrome_stack_for_theme(theme)
-        )
+        svg_open(width, height, "perm-title", "perm-desc",
+                 font_family=chrome_stack_for_theme(theme))
     )
     parts.append(f'<title id="perm-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="perm-desc">Permutation importance for {len(summary)} columns, '
-        f"ordered by mean drop from {xml_escape(summary[0][0])} at "
-        f"{fmt_measured(summary[0][1], precision)} down to "
-        f"{xml_escape(summary[-1][0])} at "
-        f"{fmt_measured(summary[-1][1], precision)}. {xml_escape(said_measure)}. "
-        f"{xml_escape(' '.join(said_parts))} {xml_escape(caveat)}.</desc>"
+        f'ordered by mean drop from {xml_escape(summary[0][0])} at '
+        f'{fmt_measured(summary[0][1], precision)} down to '
+        f'{xml_escape(summary[-1][0])} at '
+        f'{fmt_measured(summary[-1][1], precision)}. {xml_escape(said_measure)}. '
+        f'{xml_escape(" ".join(said_parts))} {xml_escape(caveat)}.</desc>'
     )
     parts.append(
         "<style>"
@@ -313,7 +305,7 @@ def build_svg(
         )
     parts.append(
         f'<text x="40" y="{height - 26:.1f}" font-size="11" fill="{SECONDARY}">'
-        f"{xml_escape(caveat)}</text>"
+        f'{xml_escape(caveat)}</text>'
     )
 
     for tick in ticks:
@@ -324,7 +316,7 @@ def build_svg(
         parts.append(
             f'<text x="{px(tick):.1f}" y="{plot_y + plot_h + 18:.1f}" font-size="11" '
             f'fill="{SECONDARY}" text-anchor="middle" font-family="{mono_family}">'
-            f"{fmt_number(tick)}</text>"
+            f'{fmt_number(tick)}</text>'
         )
     parts.append(
         f'<line x1="{px(0.0):.1f}" y1="{plot_y - 6:.1f}" x2="{px(0.0):.1f}" '
@@ -333,7 +325,7 @@ def build_svg(
     parts.append(
         f'<text x="{plot_x + plot_w / 2:.1f}" y="{plot_y + plot_h + 44:.1f}" '
         f'font-size="12" fill="{SECONDARY}" text-anchor="middle">'
-        f"{xml_escape(score_label)}</text>"
+        f'{xml_escape(score_label)}</text>'
     )
 
     tips: List[str] = []
@@ -354,11 +346,8 @@ def build_svg(
         parts.append(
             f'<rect x="{left:.1f}" y="{middle - row_h * 0.26:.1f}" '
             f'width="{max(right - left, 1.0):.1f}" height="{row_h * 0.52:.1f}" '
-            + (
-                f'fill="none" stroke="{colour}" stroke-width="1.6" stroke-dasharray="4 3"/>'
-                if spans_zero
-                else f'fill="{colour}"/>'
-            )
+            + (f'fill="none" stroke="{colour}" stroke-width="1.6" stroke-dasharray="4 3"/>'
+               if spans_zero else f'fill="{colour}"/>')
         )
         bar_low, bar_high = mean - error_multiple * error, mean + error_multiple * error
         parts.append(
@@ -373,33 +362,25 @@ def build_svg(
         parts.append(
             f'<text x="{plot_x - 12:.1f}" y="{middle + 4:.1f}" font-size="12" '
             f'fill="{INK}" text-anchor="end" font-family="{mono_family}">'
-            f"{xml_escape(name)}</text>"
+            f'{xml_escape(name)}</text>'
         )
         parts.append(
             f'<rect id="bar-{index}" class="bar hit" tabindex="0" role="img" '
             f'aria-label="{xml_escape(name)}: {fmt_measured(mean, precision)} mean drop '
-            f"over {count} shuffles, interval {fmt_measured(bar_low, precision)} "
-            f"to {fmt_measured(bar_high, precision)}"
+            f'over {count} shuffles, interval {fmt_measured(bar_low, precision)} '
+            f'to {fmt_measured(bar_high, precision)}'
             f'{", crossing zero" if spans_zero else ""}" '
             f'x="{plot_x:.1f}" y="{middle - row_h / 2:.1f}" width="{plot_w:.1f}" '
             f'height="{row_h:.1f}" fill="transparent">'
-            f"<title>{xml_escape(name)}: {fmt_measured(mean, precision)}</title></rect>"
+            f'<title>{xml_escape(name)}: {fmt_measured(mean, precision)}</title></rect>'
         )
         tips.append(
             tooltip_bubble(
-                px(mean),
-                middle,
-                [
-                    name,
-                    f"{fmt_measured(mean, precision)} over {count} shuffles",
-                    f"{fmt_measured(bar_low, precision)} to {fmt_measured(bar_high, precision)}",
-                ],
-                canvas_w=width,
-                canvas_h=height,
-                ink=INK,
-                secondary=SECONDARY,
-                border=GRIDLINE,
-                elem_id=f"bartip-{index}",
+                px(mean), middle,
+                [name, f"{fmt_measured(mean, precision)} over {count} shuffles",
+                 f"{fmt_measured(bar_low, precision)} to {fmt_measured(bar_high, precision)}"],
+                canvas_w=width, canvas_h=height, ink=INK, secondary=SECONDARY,
+                border=GRIDLINE, elem_id=f"bartip-{index}",
             )
         )
 
@@ -474,23 +455,11 @@ def make_permutation_importance(
     True
     """
     svg = build_svg(
-        data,
-        title=title,
-        subtitle=subtitle,
-        width=width,
-        height=height,
-        feature=feature,
-        value=value,
-        error_multiple=error_multiple,
-        top=top,
-        set_label=set_label,
-        score_label=score_label,
-        caveat=caveat,
-        measure_note=measure_note,
-        finding=finding,
-        mode=mode,
-        accessibility=accessibility,
-        theme=theme,
+        data, title=title, subtitle=subtitle, width=width, height=height,
+        feature=feature, value=value, error_multiple=error_multiple, top=top,
+        set_label=set_label, score_label=score_label, caveat=caveat,
+        measure_note=measure_note, finding=finding, mode=mode,
+        accessibility=accessibility, theme=theme,
     )
     dest = Path(out) if out else svg_example_path(__file__, "permutation-importance")
     return write_svg(dest, svg, theme=theme)
@@ -498,12 +467,8 @@ def make_permutation_importance(
 
 def main() -> None:
     """CLI entry point: build the SVG and write it to disk."""
-    render_cli(
-        __file__,
-        "permutation-importance",
-        build_svg,
-        description="Draw what a model loses when each column is shuffled.",
-    )
+    render_cli(__file__, "permutation-importance", build_svg,
+               description="Draw what a model loses when each column is shuffled.")
 
 
 if __name__ == "__main__":

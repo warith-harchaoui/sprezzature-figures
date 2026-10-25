@@ -52,18 +52,14 @@ BASE = "https://ourworldindata.org/grapher"
 SUFFIX = "?v=1&csvType=full&useColumnShortNames=true"
 
 FERT = ("children-per-woman-un", "fertility_rate__sex_all__age_all__variant_estimates")
-CHILDMORT = ("child-mortality", "child_mortality_rate")  # % of live births dying < age 5
-POP = (
-    "population-with-un-projections",
-    [
-        "population__sex_all__age_all__variant_estimates",
-        "population__sex_all__age_all__variant_medium__projected",
-    ],
-)
+CHILDMORT = ("child-mortality", "child_mortality_rate")   # % of live births dying < age 5
+POP = ("population-with-un-projections",
+       ["population__sex_all__age_all__variant_estimates",
+        "population__sex_all__age_all__variant_medium__projected"])
 
 Y0, Y1 = 1950, 2025
 YEARS = list(range(Y0, Y1 + 1))
-MIN_REAL = 12  # min real observations to keep a country's series
+MIN_REAL = 12                 # min real observations to keep a country's series
 TREND_CLAMP = (0.985, 1.015)  # per-year band for the 2024-2025 trend fill
 
 # The first tribute's entity backbone — its (country, year) rows already
@@ -77,42 +73,20 @@ TRIBUTE = DATA / "tribute-hans-rosling-1950-2025.csv"
 FED_SUCCESSORS = {
     "Czechoslovakia": ["CZE", "SVK"],
     "Yugoslavia": ["HRV", "SVN", "BIH", "MKD", "MNE", "SRB"],
-    "USSR": [
-        "RUS",
-        "EST",
-        "LVA",
-        "LTU",
-        "UKR",
-        "BLR",
-        "MDA",
-        "ARM",
-        "AZE",
-        "GEO",
-        "KAZ",
-        "KGZ",
-        "TJK",
-        "TKM",
-        "UZB",
-    ],
+    "USSR": ["RUS", "EST", "LVA", "LTU", "UKR", "BLR", "MDA", "ARM", "AZE",
+             "GEO", "KAZ", "KGZ", "TJK", "TKM", "UZB"],
 }
 # Divided halves → present-border parent ISO whose series both halves carry.
 DIVIDED_PARENT = {
-    "West Germany": "DEU",
-    "East Germany": "DEU",
-    "North Vietnam": "VNM",
-    "South Vietnam": "VNM",
-    "North Yemen": "YEM",
-    "South Yemen": "YEM",
+    "West Germany": "DEU", "East Germany": "DEU",
+    "North Vietnam": "VNM", "South Vietnam": "VNM",
+    "North Yemen": "YEM", "South Yemen": "YEM",
 }
 # Tribute country name → ISO overrides where the name differs from OWID's.
 NAME_ISO_OVERRIDE = {
-    "Democratic Republic of Congo": "COD",
-    "Congo": "COG",
-    "Cote d'Ivoire": "CIV",
-    "Timor": "TLS",
-    "Laos": "LAO",
-    "Micronesia (country)": "FSM",
-    "Czechia": "CZE",
+    "Democratic Republic of Congo": "COD", "Congo": "COG",
+    "Cote d'Ivoire": "CIV", "Timor": "TLS", "Laos": "LAO",
+    "Micronesia (country)": "FSM", "Czechia": "CZE",
 }
 
 
@@ -120,10 +94,8 @@ def fetch(slug: str) -> list[dict[str, str]]:
     """Download one OWID grapher CSV and return its rows as dicts."""
     url = f"{BASE}/{slug}.csv{SUFFIX}"
     # OWID rejects the default urllib user-agent (403), so present a browser one.
-    req = urllib.request.Request(
-        url, headers={"User-Agent": "Mozilla/5.0 (sprezzature-figures data gather)"}
-    )
-    with urllib.request.urlopen(req, timeout=120) as resp:  # noqa: S310 (trusted host)
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (sprezzature-figures data gather)"})
+    with urllib.request.urlopen(req, timeout=120) as resp:   # noqa: S310 (trusted host)
         return list(csv.DictReader(io.StringIO(resp.read().decode("utf-8"))))
 
 
@@ -157,7 +129,7 @@ def densify(series: dict[int, float], lo_clamp: float, hi_clamp: float) -> list[
         return None
     known = sorted(series)
     first, last = known[0], known[-1]
-    recent = known[-min(10, len(known)) :]
+    recent = known[-min(10, len(known)):]
     span = max(recent[-1] - recent[0], 1)
     base = series[recent[0]]
     cagr = (series[recent[-1]] / base) ** (1 / span) if base > 0 else 1.0
@@ -221,8 +193,8 @@ def main() -> None:
 
     # Walk the tribute rows and attach the two series.
     tribute = list(csv.DictReader(TRIBUTE.open()))
-    rows_a: list[tuple] = []  # fertility vs life
-    rows_b: list[tuple] = []  # child survival vs income
+    rows_a: list[tuple] = []   # fertility vs life
+    rows_b: list[tuple] = []   # child survival vs income
     missing: set[str] = set()
     for r in tribute:
         name, year = r["country"], int(r["year"])
@@ -250,10 +222,8 @@ def main() -> None:
     print(f"wrote {out_a.name}: {len(rows_a)} rows")
     print(f"wrote {out_b.name}: {len(rows_b)} rows")
     if missing:
-        print(
-            f"entities with no fertility/survival match ({len(missing)}): "
-            f"{', '.join(sorted(missing))}"
-        )
+        print(f"entities with no fertility/survival match ({len(missing)}): "
+              f"{', '.join(sorted(missing))}")
 
 
 if __name__ == "__main__":

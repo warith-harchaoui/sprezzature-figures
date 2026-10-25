@@ -152,13 +152,11 @@ def build_svg(
         return plot_y + plot_h - v * plot_h
 
     parts: List[str] = []
-    parts.append(
-        svg_open(width, height, "roc-title", "roc-desc", font_family=chrome_stack_for_theme(theme))
-    )
+    parts.append(svg_open(width, height, "roc-title", "roc-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="roc-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="roc-desc">ROC curve over {len(rows)} scored observations, area under '
-        f"the curve {auc:.3f}.</desc>"
+        f'the curve {auc:.3f}.</desc>'
     )
     parts.append(
         "<style>"
@@ -171,21 +169,15 @@ def build_svg(
         f'<text x="40" y="46" font-size="22" font-weight="700" fill="{INK}" '
         f'letter-spacing="-0.3">{xml_escape(title)}</text>'
     )
-    parts.append(
-        f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>'
-    )
+    parts.append(f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>')
 
     # ---- gridlines ----
     ticks = 5
     for i in range(ticks + 1):
         val = i / ticks
         tx, ty = x_for(val), y_for(val)
-        parts.append(
-            f'<line x1="{plot_x:.1f}" y1="{ty:.1f}" x2="{plot_x + plot_w:.1f}" y2="{ty:.1f}" stroke="{GRIDLINE}" stroke-width="1"/>'
-        )
-        parts.append(
-            f'<line x1="{tx:.1f}" y1="{plot_y:.1f}" x2="{tx:.1f}" y2="{plot_y + plot_h:.1f}" stroke="{GRIDLINE}" stroke-width="1"/>'
-        )
+        parts.append(f'<line x1="{plot_x:.1f}" y1="{ty:.1f}" x2="{plot_x + plot_w:.1f}" y2="{ty:.1f}" stroke="{GRIDLINE}" stroke-width="1"/>')
+        parts.append(f'<line x1="{tx:.1f}" y1="{plot_y:.1f}" x2="{tx:.1f}" y2="{plot_y + plot_h:.1f}" stroke="{GRIDLINE}" stroke-width="1"/>')
         parts.append(
             f'<text x="{plot_x - 10:.1f}" y="{ty + 4:.1f}" font-size="11" font-family="{mono_family}" '
             f'fill="{SECONDARY}" text-anchor="end">{val:.1f}</text>'
@@ -224,15 +216,10 @@ def build_svg(
     # own mark would be covered by any mark drawn afterward.
     tips: List[str] = [
         tooltip_bubble(
-            mid_x,
-            mid_y - 16,
+            mid_x, mid_y - 16,
             ["ROC curve", f"AUC = {auc:.3f}", f"n = {len(rows)} scored"],
-            anchor="middle",
-            canvas_w=width,
-            canvas_h=height,
-            ink=INK,
-            secondary=SECONDARY,
-            border=GRIDLINE,
+            anchor="middle", canvas_w=width, canvas_h=height,
+            ink=INK, secondary=SECONDARY, border=GRIDLINE,
             elem_id="tip-curve",
         )
     ]
@@ -269,15 +256,10 @@ def build_svg(
         )
         tips.append(
             tooltip_bubble(
-                mx,
-                my - 14,
+                mx, my - 14,
                 [f"FPR {fpr:.2f}, TPR {tpr:.2f}", thr_txt],
-                anchor="middle",
-                canvas_w=width,
-                canvas_h=height,
-                ink=INK,
-                secondary=SECONDARY,
-                border=GRIDLINE,
+                anchor="middle", canvas_w=width, canvas_h=height,
+                ink=INK, secondary=SECONDARY, border=GRIDLINE,
                 elem_id=f"tip-marker-{m_i}",
             )
         )
@@ -339,17 +321,8 @@ def make_roc_curve(
     True
     """
     _ = title
-    svg = build_svg(
-        data,
-        width=width,
-        height=height,
-        mode=mode,
-        accessibility=accessibility,
-        x_label=x_label,
-        y_label=y_label,
-        theme=theme,
-        title=title or None,
-    )
+    svg = build_svg(data, width=width, height=height, mode=mode, accessibility=accessibility,
+                     x_label=x_label, y_label=y_label, theme=theme, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "roc-curve")
     return write_svg(dest, svg, theme=theme)
 

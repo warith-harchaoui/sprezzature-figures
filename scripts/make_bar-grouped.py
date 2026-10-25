@@ -37,18 +37,12 @@ PERIODS = ["Q1", "Q2", "Q3", "Q4"]
 REGIONS = ["North", "South", "East"]
 
 DEMO_DATA: List[Dict[str, Any]] = [
-    {"period": "Q1", "region": "North", "v": 42},
-    {"period": "Q1", "region": "South", "v": 55},
-    {"period": "Q1", "region": "East", "v": 30},
-    {"period": "Q2", "region": "North", "v": 65},
-    {"period": "Q2", "region": "South", "v": 48},
-    {"period": "Q2", "region": "East", "v": 38},
-    {"period": "Q3", "region": "North", "v": 71},
-    {"period": "Q3", "region": "South", "v": 52},
-    {"period": "Q3", "region": "East", "v": 44},
-    {"period": "Q4", "region": "North", "v": 58},
-    {"period": "Q4", "region": "South", "v": 40},
-    {"period": "Q4", "region": "East", "v": 33},
+    {"period": "Q1", "region": "North", "v": 42}, {"period": "Q1", "region": "South", "v": 55},
+    {"period": "Q1", "region": "East", "v": 30}, {"period": "Q2", "region": "North", "v": 65},
+    {"period": "Q2", "region": "South", "v": 48}, {"period": "Q2", "region": "East", "v": 38},
+    {"period": "Q3", "region": "North", "v": 71}, {"period": "Q3", "region": "South", "v": 52},
+    {"period": "Q3", "region": "East", "v": 44}, {"period": "Q4", "region": "North", "v": 58},
+    {"period": "Q4", "region": "South", "v": 40}, {"period": "Q4", "region": "East", "v": 33},
 ]
 
 # Chrome text (title/subtitle/legend heading/axis titles/desc/tooltip
@@ -108,7 +102,7 @@ def _region_colors(
     # cycle_hues' full default cycle (4 hues) once there are more than 3
     # regions, same as every other caller of cycle_hues in this repo.
     if len(regions) <= 3:
-        return cycle_hues(regions, accessibility, hues=["Blue", "Brown", "Yellow"], theme=theme)
+        return cycle_hues(regions, accessibility, hues=['Blue', 'Brown', 'Yellow'], theme=theme)
     return cycle_hues(regions, accessibility, theme=theme)
 
 
@@ -163,9 +157,7 @@ def build_svg(
     for row in rows:
         if row["period"] not in seen_periods:
             seen_periods.append(row["period"])
-    periods = [p for p in PERIODS if p in seen_periods] + [
-        p for p in seen_periods if p not in PERIODS
-    ]
+    periods = [p for p in PERIODS if p in seen_periods] + [p for p in seen_periods if p not in PERIODS]
     # "region" may carry values outside the built-in demo set (REGIONS is only
     # the canonical ordering/colour preference, not an allowlist) -- keep the
     # canonical ones first for stable colours, then append whatever else the
@@ -174,9 +166,7 @@ def build_svg(
     for row in rows:
         if row["region"] not in seen_regions:
             seen_regions.append(row["region"])
-    regions = [r for r in REGIONS if r in seen_regions] + [
-        r for r in seen_regions if r not in REGIONS
-    ]
+    regions = [r for r in REGIONS if r in seen_regions] + [r for r in seen_regions if r not in REGIONS]
     colors = _region_colors(regions, accessibility, theme=theme)
     lookup: Dict[tuple, float] = {(r["period"], r["region"]): float(r["v"]) for r in rows}
     max_val = max(lookup.values()) if lookup else 1.0
@@ -210,9 +200,7 @@ def build_svg(
         return plot_y + plot_h - (v / y_domain * plot_h)
 
     parts: List[str] = []
-    parts.append(
-        svg_open(width, height, "bg-title", "bg-desc", font_family=chrome_stack_for_theme(theme))
-    )
+    parts.append(svg_open(width, height, "bg-title", "bg-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="bg-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="bg-desc">{strings["desc_template"].format(n_regions=n_regions, n_periods=n_periods, max_val=max_val)}</desc>'
@@ -229,9 +217,7 @@ def build_svg(
         # _svg.foreground_tip_css. Upper-bound count (some (period, region)
         # cells have no bar to draw when their value is 0) is harmless: an
         # id with no matching mark just never fires.
-        + foreground_tip_css(
-            len(periods) * len(regions), mark_prefix="bar-hit", tip_prefix="bar-tip"
-        )
+        + foreground_tip_css(len(periods) * len(regions), mark_prefix="bar-hit", tip_prefix="bar-tip")
         + "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
         "</style>"
     )
@@ -240,24 +226,16 @@ def build_svg(
         f'<text x="40" y="46" font-size="24" font-weight="700" fill="{INK}" '
         f'letter-spacing="-0.3">{xml_escape(title)}</text>'
     )
-    parts.append(
-        f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>'
-    )
+    parts.append(f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>')
 
     # ---- legend ----
     lx, ly = 40.0, 100.0
-    parts.append(
-        f'<text x="{lx:.1f}" y="{ly:.1f}" font-size="13" font-weight="700" fill="{INK}">{xml_escape(strings["legend_heading"])}</text>'
-    )
+    parts.append(f'<text x="{lx:.1f}" y="{ly:.1f}" font-size="13" font-weight="700" fill="{INK}">{xml_escape(strings["legend_heading"])}</text>')
     cursor = lx
     ly2 = ly + 22
     for reg in regions:
-        parts.append(
-            f'<rect x="{cursor:.1f}" y="{ly2 - 12:.1f}" width="14" height="14" rx="3" fill="{colors[reg]}"/>'
-        )
-        parts.append(
-            f'<text x="{cursor + 20:.1f}" y="{ly2:.1f}" font-size="12" fill="{INK}">{xml_escape(reg)}</text>'
-        )
+        parts.append(f'<rect x="{cursor:.1f}" y="{ly2 - 12:.1f}" width="14" height="14" rx="3" fill="{colors[reg]}"/>')
+        parts.append(f'<text x="{cursor + 20:.1f}" y="{ly2:.1f}" font-size="12" fill="{INK}">{xml_escape(reg)}</text>')
         cursor += 20 + 7.0 * len(reg) + 22
 
     # ---- y-axis gridlines ----
@@ -276,7 +254,7 @@ def build_svg(
     parts.append(
         f'<text x="{axis_units_x:.1f}" y="{axis_units_y:.1f}" font-size="13" fill="{INK}" '
         f'text-anchor="middle" transform="rotate(-90 {axis_units_x:.1f} {axis_units_y:.1f})">'
-        f"{xml_escape(strings['axis_units'])}</text>"
+        f'{xml_escape(strings["axis_units"])}</text>'
     )
 
     # ---- bars ----
@@ -296,20 +274,15 @@ def build_svg(
             path = bar_path(x, y, bar_w * 0.88, h, r, side="top")
             parts.append(
                 f'<path id="bar-hit-{bar_idx}" class="bar hit" tabindex="0" d="{path}" fill="{colors.get(region, "#007AFF")}">'
-                f"<title>{xml_escape(tip)}</title></path>"
+                f'<title>{xml_escape(tip)}</title></path>'
             )
             period_total = sum(lookup.get((period, r2), 0.0) for r2 in regions) or 1.0
             share = value / period_total * 100.0
             bar_tips.append(
                 tooltip_bubble(
-                    x + bar_w * 0.44,
-                    y - 6,
+                    x + bar_w * 0.44, y - 6,
                     [f"{region}, {period}", f"{value:.0f}", f"{share:.0f}% of {period} total"],
-                    canvas_w=width,
-                    canvas_h=height,
-                    ink=INK,
-                    secondary=SECONDARY,
-                    border=GRIDLINE,
+                    canvas_w=width, canvas_h=height, ink=INK, secondary=SECONDARY, border=GRIDLINE,
                     elem_id=f"bar-tip-{bar_idx}",
                 )
             )
@@ -383,26 +356,15 @@ def make_bar_grouped(
     >>> p.exists()
     True
     """
-    svg = build_svg(
-        data,
-        title=title,
-        subtitle=subtitle,
-        width=width,
-        height=height,
-        mode=mode,
-        accessibility=accessibility,
-        language=language,
-        theme=theme,
-    )
+    svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
+                     mode=mode, accessibility=accessibility, language=language, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "bar-grouped")
     return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:
     """CLI entry point: build the SVG and write it to disk."""
-    render_cli(
-        __file__, "bar-grouped", build_svg, description="Generate a grouped (clustered) bar chart."
-    )
+    render_cli(__file__, "bar-grouped", build_svg, description="Generate a grouped (clustered) bar chart.")
 
 
 if __name__ == "__main__":

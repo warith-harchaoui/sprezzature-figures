@@ -81,13 +81,11 @@ def _soundings(seed: int = 12) -> List[Dict[str, Any]]:
         channel = -26.0 * math.exp(-((x + 0.45) ** 2 + (y - 0.30) ** 2) / 0.10)
         slope = -14.0 * (1.0 - (x * 0.5 + y * 0.5 + 1.0) / 2.0)
         ripple = 1.8 * math.sin(4.2 * x) * math.cos(3.6 * y)
-        rows.append(
-            {
-                "x": round(x, 4),
-                "y": round(y, 4),
-                "depth": round(channel + slope + ripple + rng.gauss(0.0, 0.35), 3),
-            }
-        )
+        rows.append({
+            "x": round(x, 4),
+            "y": round(y, 4),
+            "depth": round(channel + slope + ripple + rng.gauss(0.0, 0.35), 3),
+        })
     return rows
 
 
@@ -160,21 +158,22 @@ def build_svg(
     """
     rows = list(data if data else DEMO_DATA)
     if len(rows) < 3:
-        raise ValueError(f"a surface needs at least three points; this data has {len(rows)}")
+        raise ValueError(
+            f"a surface needs at least three points; this data has {len(rows)}"
+        )
     ground = [(float(row[x]), float(row[y])) for row in rows]
     heights = [float(row[z]) for row in rows]
 
     triangles = triangulate(ground)
     if not triangles:
-        raise ValueError("these points are collinear, so there is no surface between them")
-
-    span = (
-        max(
-            max(p[0] for p in ground) - min(p[0] for p in ground),
-            max(p[1] for p in ground) - min(p[1] for p in ground),
+        raise ValueError(
+            "these points are collinear, so there is no surface between them"
         )
-        or 1.0
-    )
+
+    span = max(
+        max(p[0] for p in ground) - min(p[0] for p in ground),
+        max(p[1] for p in ground) - min(p[1] for p in ground),
+    ) or 1.0
     limit = max_edge * span
 
     def longest(triangle: Tuple[int, int, int]) -> float:
@@ -217,16 +216,8 @@ def build_svg(
     plot_h = height - 190.0
     centre_x, centre_y = width / 2.0 - 40.0, 176.0 + plot_h / 2.0
     px, py, depth = project3d(
-        nx,
-        ny,
-        nz,
-        elev_deg=elev,
-        azim_deg=azim,
-        plot_w=plot_w,
-        plot_h=plot_h,
-        cx=centre_x,
-        cy=centre_y,
-        fit="box",
+        nx, ny, nz, elev_deg=elev, azim_deg=azim, plot_w=plot_w, plot_h=plot_h,
+        cx=centre_x, cy=centre_y, fit="box",
     )
 
     # Slope: the facet's rise over its run, in the data's own units, so
@@ -258,23 +249,20 @@ def build_svg(
     def shade(slope: float) -> str:
         """Blend flat to steep ink by where `slope` falls in the range."""
         fraction = max(0.0, min(1.0, (slope - gentle_at) / slope_span))
-        start = tuple(int(flat_ink[i : i + 2], 16) for i in (1, 3, 5))
-        finish = tuple(int(steep_ink[i : i + 2], 16) for i in (1, 3, 5))
-        blend = tuple(round(start[i] + (finish[i] - start[i]) * fraction) for i in range(3))
+        start = tuple(int(flat_ink[i:i + 2], 16) for i in (1, 3, 5))
+        finish = tuple(int(steep_ink[i:i + 2], 16) for i in (1, 3, 5))
+        blend = tuple(
+            round(start[i] + (finish[i] - start[i]) * fraction) for i in range(3)
+        )
         return f"rgb({blend[0]},{blend[1]},{blend[2]})"
 
     precision = depth_span / 200.0
     mesh_lines = (
-        [mesh_note]
-        if mesh_note is not None
+        [mesh_note] if mesh_note is not None
         else [
             f"{len(rows)} samples, {len(kept)} triangles"
-            + (
-                f", {dropped} dropped for spanning more than "
-                f"{fmt_number(max_edge * 100.0)}% of the width"
-                if dropped
-                else ""
-            ),
+            + (f", {dropped} dropped for spanning more than "
+               f"{fmt_number(max_edge * 100.0)}% of the width" if dropped else ""),
             f"shaded by slope, not by depth, the ramp clamped to the middle 90% of "
             f"slopes ({fmt_number(gentle_at)} to {fmt_number(steep_at)} per unit)",
             f"height exaggerated · camera at {fmt_number(elev)}° elevation, "
@@ -302,19 +290,14 @@ def build_svg(
 
     parts: List[str] = []
     parts.append(
-        svg_open(
-            width,
-            height,
-            "trisurf-title",
-            "trisurf-desc",
-            font_family=chrome_stack_for_theme(theme),
-        )
+        svg_open(width, height, "trisurf-title", "trisurf-desc",
+                 font_family=chrome_stack_for_theme(theme))
     )
     parts.append(f'<title id="trisurf-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="trisurf-desc">A surface over {len(rows)} scattered samples, '
-        f"triangulated into {len(kept)} facets and lifted into three dimensions, shaded "
-        f"by slope. {xml_escape(said_mesh)}. {xml_escape(' '.join(said_parts))}</desc>"
+        f'triangulated into {len(kept)} facets and lifted into three dimensions, shaded '
+        f'by slope. {xml_escape(said_mesh)}. {xml_escape(" ".join(said_parts))}</desc>'
     )
     parts.append(
         "<style>"
@@ -351,7 +334,9 @@ def build_svg(
         )
 
     # Painter's algorithm: far facets first, so near ones cover them.
-    ordered = sorted(kept, key=lambda t: (depth[t[0]] + depth[t[1]] + depth[t[2]]) / 3.0)
+    ordered = sorted(
+        kept, key=lambda t: (depth[t[0]] + depth[t[1]] + depth[t[2]]) / 3.0
+    )
     for triangle in ordered:
         a, b, c = triangle
         colour = shade(slopes[triangle])
@@ -359,7 +344,7 @@ def build_svg(
             f'<path d="M{px[a]:.1f},{py[a]:.1f} L{px[b]:.1f},{py[b]:.1f} '
             f'L{px[c]:.1f},{py[c]:.1f} Z" fill="{colour}" opacity="0.88"'
             + (f' stroke="{BG}" stroke-width="0.4"' if show_mesh else "")
-            + "/>"
+            + '/>'
         )
     if show_points:
         for index in range(len(rows)):
@@ -371,7 +356,7 @@ def build_svg(
     key_x, key_y = width - 160.0, 210.0
     parts.append(
         f'<text x="{key_x:.1f}" y="{key_y - 12:.1f}" font-size="11" fill="{SECONDARY}">'
-        f"{xml_escape(steep_label)}</text>"
+        f'{xml_escape(steep_label)}</text>'
     )
     for step in range(12):
         fraction = 1.0 - step / 11.0
@@ -386,32 +371,29 @@ def build_svg(
 
     deepest = min(range(len(rows)), key=lambda index: heights[index])
     shallowest = max(range(len(rows)), key=lambda index: heights[index])
-    for element, (label, index) in enumerate((("deepest", deepest), ("shallowest", shallowest))):
-        parts.append(f'<circle cx="{px[index]:.1f}" cy="{py[index]:.1f}" r="4" fill="{INK}"/>')
+    for element, (label, index) in enumerate(
+        (("deepest", deepest), ("shallowest", shallowest))
+    ):
+        parts.append(
+            f'<circle cx="{px[index]:.1f}" cy="{py[index]:.1f}" r="4" fill="{INK}"/>'
+        )
         parts.append(
             f'<rect id="facet-{element}" class="facet hit" tabindex="0" role="img" '
             f'aria-label="{label} sample at {x} {fmt_number(ground[index][0])}, {y} '
-            f"{fmt_number(ground[index][1])}: {z} "
+            f'{fmt_number(ground[index][1])}: {z} '
             f'{fmt_measured(heights[index], precision)}" '
             f'x="{px[index] - 9:.1f}" y="{py[index] - 9:.1f}" width="18" height="18" '
             f'fill="transparent"><title>{label}: '
-            f"{fmt_measured(heights[index], precision)}</title></rect>"
+            f'{fmt_measured(heights[index], precision)}</title></rect>'
         )
         parts.append(
             tooltip_bubble(
-                float(px[index]),
-                float(py[index]),
-                [
-                    label,
-                    f"{z} {fmt_measured(heights[index], precision)}",
-                    f"{x} {fmt_number(ground[index][0])} · {y} {fmt_number(ground[index][1])}",
-                ],
-                canvas_w=width,
-                canvas_h=height,
-                ink=INK,
-                secondary=SECONDARY,
-                border=GRIDLINE,
-                elem_id=f"facettip-{element}",
+                float(px[index]), float(py[index]),
+                [label, f"{z} {fmt_measured(heights[index], precision)}",
+                 f"{x} {fmt_number(ground[index][0])} · {y} "
+                 f"{fmt_number(ground[index][1])}"],
+                canvas_w=width, canvas_h=height, ink=INK, secondary=SECONDARY,
+                border=GRIDLINE, elem_id=f"facettip-{element}",
             )
         )
 
@@ -487,26 +469,11 @@ def make_trisurface(
     True
     """
     svg = build_svg(
-        data,
-        title=title,
-        subtitle=subtitle,
-        width=width,
-        height=height,
-        x=x,
-        y=y,
-        z=z,
-        max_edge=max_edge,
-        elev=elev,
-        azim=azim,
-        show_mesh=show_mesh,
-        show_points=show_points,
-        flat_label=flat_label,
-        steep_label=steep_label,
-        mesh_note=mesh_note,
-        finding=finding,
-        mode=mode,
-        accessibility=accessibility,
-        theme=theme,
+        data, title=title, subtitle=subtitle, width=width, height=height,
+        x=x, y=y, z=z, max_edge=max_edge, elev=elev, azim=azim,
+        show_mesh=show_mesh, show_points=show_points, flat_label=flat_label,
+        steep_label=steep_label, mesh_note=mesh_note, finding=finding,
+        mode=mode, accessibility=accessibility, theme=theme,
     )
     dest = Path(out) if out else svg_example_path(__file__, "trisurface")
     return write_svg(dest, svg, theme=theme)
@@ -514,12 +481,8 @@ def make_trisurface(
 
 def main() -> None:
     """CLI entry point: build the SVG and write it to disk."""
-    render_cli(
-        __file__,
-        "trisurface",
-        build_svg,
-        description="Draw a surface over scattered points, mesh and all.",
-    )
+    render_cli(__file__, "trisurface", build_svg,
+               description="Draw a surface over scattered points, mesh and all.")
 
 
 if __name__ == "__main__":

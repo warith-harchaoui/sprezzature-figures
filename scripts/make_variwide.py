@@ -160,9 +160,9 @@ def build_svg(
     height = 968
     m_left = 92
     m_right = 60
-    m_top = 210  # clear band for title + subtitle + legend
-    baseline_y = 786  # y of the shared column baseline
-    axis_title_y = 936  # y of the width-axis title (below the callout row)
+    m_top = 210          # clear band for title + subtitle + legend
+    baseline_y = 786     # y of the shared column baseline
+    axis_title_y = 936   # y of the width-axis title (below the callout row)
 
     plot_w = width - m_left - m_right
     plot_h = baseline_y - m_top
@@ -180,21 +180,19 @@ def build_svg(
     parts: List[str] = []
 
     # --- document + accessibility --------------------------------
-    parts.append(
-        svg_open(width, height, "vw-title", "vw-desc", font_family=chrome_stack_for_theme(theme))
-    )
+    parts.append(svg_open(width, height, "vw-title", "vw-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(
         '<title id="vw-title">GDP per capita times population equals total '
-        "GDP, as column area</title>"
+        'GDP, as column area</title>'
     )
     parts.append(
         '<desc id="vw-desc">A variable-width column chart of the eight largest '
-        "economies in 2023. Each column height is GDP per capita, each width is "
-        "population, so the area is total GDP. The United States, a tall narrow "
-        "column, and China, a short wide one, enclose similar area — 27.4 and "
-        "17.8 trillion US dollars — reached two different ways. India is the "
-        "widest but shortest column. , World Bank and IMF "
-        "2023 estimates.</desc>"
+        'economies in 2023. Each column height is GDP per capita, each width is '
+        'population, so the area is total GDP. The United States, a tall narrow '
+        'column, and China, a short wide one, enclose similar area — 27.4 and '
+        '17.8 trillion US dollars — reached two different ways. India is the '
+        'widest but shortest column. , World Bank and IMF '
+        '2023 estimates.</desc>'
     )
 
     # Focus ring for keyboard users; the panel is static, no motion guard.
@@ -208,7 +206,10 @@ def build_svg(
     # because the country name, the population figure and the column's position
     # on the population axis all identify it with no colour, and the on-column
     # value labels remain the colour-independent readout.
-    col_series = {f".col-{str(c['iso'])}": palette.get(str(c["color"]), "#007AFF") for c in rows}
+    col_series = {
+        f".col-{str(c['iso'])}": palette.get(str(c["color"]), "#007AFF")
+        for c in rows
+    }
     contrast_css = os_adaptive_style(col_series, role="fill", forced=True)
     # Additive OS dark-mode block. White is used both as the page surface and as
     # the on-column area labels, so only the white background RECT is darkened
@@ -218,20 +219,21 @@ def build_svg(
     dark_css = os_dark_style(
         ink_map={"#1D1D1F": "#F2F2F7", "#6E6E73": "#9C9CA3"},
         screen_blend=False,
-        extra='rect[fill="#FFFFFF"]{fill:#0B0B0C;} [stroke="#C7C7CC"]{stroke:#5A5A5E;}',
+        extra='rect[fill="#FFFFFF"]{fill:#0B0B0C;} '
+        '[stroke="#C7C7CC"]{stroke:#5A5A5E;}',
     )
     parts.append(
-        "<style>"
-        ".col{cursor:pointer;transition:filter .12s ease}"
-        ".col:hover,.col:focus{filter:brightness(1.06)}"
-        ".col:focus{outline:none}"
-        ".colframe{fill:none;pointer-events:none}"
-        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        f"{foreground_tip_css(len(rows), mark_prefix='col')}"
-        "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
+        '<style>'
+        '.col{cursor:pointer;transition:filter .12s ease}'
+        '.col:hover,.col:focus{filter:brightness(1.06)}'
+        '.col:focus{outline:none}'
+        '.colframe{fill:none;pointer-events:none}'
+        '.tip{opacity:0;pointer-events:none;transition:opacity .12s ease}'
+        f'{foreground_tip_css(len(rows), mark_prefix="col")}'
+        '@media (prefers-reduced-motion: reduce){.tip{transition:none}}'
         + contrast_css
         + dark_css
-        + "</style>"
+        + '</style>'
     )
 
     # --- background ----------------------------------------------
@@ -259,22 +261,22 @@ def build_svg(
         f'<text x="{lax_x}" y="{lax_y:.1f}" font-size="19" fill="{ink}" '
         f'font-weight="600" text-anchor="middle" '
         f'transform="rotate(-90 {lax_x} {lax_y:.1f})">'
-        f"Height = GDP per capita (US$ thousands)</text>"
+        f'Height = GDP per capita (US$ thousands)</text>'
     )
 
     # --- title + subtitle (the takeaway) -------------------------
     # The headline the figure writes about its own data, used only when
     # the caller supplies none.
-    title = title or "Two ways to build a multi-trillion economy"
+    title = title or 'Two ways to build a multi-trillion economy'
     parts.append(
         f'<text x="{m_left}" y="72" font-size="38" font-weight="700" '
         f'fill="{ink}">{xml_escape(title)}</text>'
     )
     parts.append(
         f'<text x="{m_left}" y="112" font-size="21" fill="{secondary}">'
-        f"Column area is total GDP: the United States reaches it with high "
-        f"output per person, China with sheer population &#183; World Bank / "
-        f"IMF 2023</text>"
+        f'Column area is total GDP: the United States reaches it with high '
+        f'output per person, China with sheer population &#183; World Bank / '
+        f'IMF 2023</text>'
     )
 
     # --- how-to-read legend (glyph strip under the subtitle) -----
@@ -283,17 +285,23 @@ def build_svg(
     leg_y = 162
     leg_x = m_left
     # height glyph — a short vertical rule with up-caps
-    parts.append(f'<rect x="{leg_x}" y="{leg_y - 15}" width="6" height="30" rx="3" fill="{ink}"/>')
+    parts.append(
+        f'<rect x="{leg_x}" y="{leg_y - 15}" width="6" height="30" rx="3" '
+        f'fill="{ink}"/>'
+    )
     parts.append(
         f'<text x="{leg_x + 18}" y="{leg_y + 5}" font-size="17" fill="{ink}">'
-        f"height = output per person</text>"
+        f'height = output per person</text>'
     )
     # width glyph — a short horizontal rule
     wg_x = leg_x + 320
-    parts.append(f'<rect x="{wg_x}" y="{leg_y - 3}" width="34" height="6" rx="3" fill="{ink}"/>')
+    parts.append(
+        f'<rect x="{wg_x}" y="{leg_y - 3}" width="34" height="6" rx="3" '
+        f'fill="{ink}"/>'
+    )
     parts.append(
         f'<text x="{wg_x + 46}" y="{leg_y + 5}" font-size="17" fill="{ink}">'
-        f"width = population</text>"
+        f'width = population</text>'
     )
     # area glyph — a small filled block
     ag_x = wg_x + 250
@@ -302,7 +310,8 @@ def build_svg(
         f'fill="{ink}" opacity="0.16"/>'
     )
     parts.append(
-        f'<text x="{ag_x + 38}" y="{leg_y + 5}" font-size="17" fill="{ink}">area = total GDP</text>'
+        f'<text x="{ag_x + 38}" y="{leg_y + 5}" font-size="17" fill="{ink}">'
+        f'area = total GDP</text>'
     )
 
     # --- pass 1: geometry -----------------------------------------
@@ -316,20 +325,18 @@ def build_svg(
         gdp_cap = float(c["gdp_cap"])
         col_w = pop * px_per_pop
         col_h = gdp_cap * height_scale
-        cols.append(
-            {
-                "name": str(c["name"]),
-                "iso": str(c["iso"]),
-                "pop": pop,
-                "gdp_cap": gdp_cap,
-                "hex": palette.get(str(c["color"]), "#007AFF"),
-                "x": x_cursor,
-                "w": col_w,
-                "h": col_h,
-                "y": baseline_y - col_h,
-                "cx": x_cursor + col_w / 2.0,
-            }
-        )
+        cols.append({
+            "name": str(c["name"]),
+            "iso": str(c["iso"]),
+            "pop": pop,
+            "gdp_cap": gdp_cap,
+            "hex": palette.get(str(c["color"]), "#007AFF"),
+            "x": x_cursor,
+            "w": col_w,
+            "h": col_h,
+            "y": baseline_y - col_h,
+            "cx": x_cursor + col_w / 2.0,
+        })
         x_cursor += col_w
 
     # --- shared baseline + cumulative-width axis -----------------
@@ -375,12 +382,12 @@ def build_svg(
         cx = col_x + seam / 2.0
         cw = max(0.0, col_w - seam)
         path = (
-            f"M{cx:.2f},{baseline_y:.1f} "
-            f"L{cx:.2f},{col_y + r:.2f} "
-            f"Q{cx:.2f},{col_y:.2f} {cx + r:.2f},{col_y:.2f} "
-            f"L{cx + cw - r:.2f},{col_y:.2f} "
-            f"Q{cx + cw:.2f},{col_y:.2f} {cx + cw:.2f},{col_y + r:.2f} "
-            f"L{cx + cw:.2f},{baseline_y:.1f} Z"
+            f'M{cx:.2f},{baseline_y:.1f} '
+            f'L{cx:.2f},{col_y + r:.2f} '
+            f'Q{cx:.2f},{col_y:.2f} {cx + r:.2f},{col_y:.2f} '
+            f'L{cx + cw - r:.2f},{col_y:.2f} '
+            f'Q{cx + cw:.2f},{col_y:.2f} {cx + cw:.2f},{col_y + r:.2f} '
+            f'L{cx + cw:.2f},{baseline_y:.1f} Z'
         )
         tip = (
             f"{name}: ${gdp_cap:.1f}k per capita x {_fmt_pop(pop)} people "
@@ -400,19 +407,10 @@ def build_svg(
             tip_anchor = "middle"
         bubbles.append(
             tooltip_bubble(
-                cxm,
-                col_y - 16,
-                [
-                    name,
-                    f"${gdp_cap:.1f}k per capita x {_fmt_pop(pop)}",
-                    f"{_fmt_total(pop, gdp_cap)} total GDP",
-                ],
-                anchor=tip_anchor,
-                canvas_w=width,
-                canvas_h=height,
-                ink=ink,
-                secondary=secondary,
-                border="#E8E8ED",
+                cxm, col_y - 16,
+                [name, f"${gdp_cap:.1f}k per capita x {_fmt_pop(pop)}", f"{_fmt_total(pop, gdp_cap)} total GDP"],
+                anchor=tip_anchor, canvas_w=width, canvas_h=height,
+                ink=ink, secondary=secondary, border="#E8E8ED",
                 elem_id=f"tip-{col_i}",
             )
         )
@@ -449,9 +447,7 @@ def build_svg(
     # overlapped; this mirrors pass 3's width-aware min-gap below).
     top_font_size = 20.0
     top_char_w_ratio = 0.62  # Roboto Mono glyph width as a fraction of font-size
-    top_label_widths = [
-        len(f"${float(col['gdp_cap']):.1f}k") * top_font_size * top_char_w_ratio for col in cols
-    ]
+    top_label_widths = [len(f"${float(col['gdp_cap']):.1f}k") * top_font_size * top_char_w_ratio for col in cols]
     top_anchors = [float(col["cx"]) for col in cols]
     top_placed: List[float] = []
     for i, ax in enumerate(top_anchors):
@@ -472,7 +468,7 @@ def build_svg(
         if moved:
             parts.append(
                 f'<path d="M{cxm:.1f},{col_y - 4:.1f} '
-                f"L{cxm:.1f},{col_y - 10:.1f} L{tx:.1f},{col_y - 16:.1f} "
+                f'L{cxm:.1f},{col_y - 10:.1f} L{tx:.1f},{col_y - 16:.1f} '
                 f'L{tx:.1f},{lab_y - 3:.1f}" fill="none" stroke="#C7C7CC" '
                 f'stroke-width="1.2"/>'
             )
@@ -480,7 +476,7 @@ def build_svg(
             f'<text x="{tx:.1f}" y="{lab_y:.1f}" text-anchor="middle" '
             f'font-size="20" font-weight="700" '
             f'font-family="Roboto Mono, monospace" fill="{ink}">'
-            f"${gdp_cap:.1f}k</text>"
+            f'${gdp_cap:.1f}k</text>'
         )
 
     # --- pass 3: de-collided baseline callouts -------------------
@@ -489,7 +485,7 @@ def build_svg(
     # Because China and India swallow most of the width, the six smaller
     # columns cluster tightly; a min-gap sweep pushes their labels apart
     # and a thin leader line ties each pushed label back to its column.
-    label_y = baseline_y + 30  # first text line of a callout
+    label_y = baseline_y + 30      # first text line of a callout
     # The gap between two adjacent anchors must clear half of each label's
     # own rendered width, or a long name (e.g. "United Kingdom") still
     # collides with its neighbour even after the sweep -- a fixed 96px
@@ -527,15 +523,15 @@ def build_svg(
         if abs(lx - cxm) > 1.5:
             parts.append(
                 f'<path d="M{cxm:.1f},{baseline_y + 9:.1f} '
-                f"L{cxm:.1f},{baseline_y + 15:.1f} "
-                f"L{lx:.1f},{baseline_y + 20:.1f} "
+                f'L{cxm:.1f},{baseline_y + 15:.1f} '
+                f'L{lx:.1f},{baseline_y + 20:.1f} '
                 f'L{lx:.1f},{label_y - 12:.1f}" fill="none" '
                 f'stroke="#C7C7CC" stroke-width="1.2"/>'
             )
         parts.append(
             f'<text x="{lx:.1f}" y="{label_y:.1f}" text-anchor="middle" '
             f'font-size="18" font-weight="600" fill="{ink}">'
-            f"{xml_escape(str(col['name']))}</text>"
+            f'{xml_escape(str(col["name"]))}</text>'
         )
         parts.append(
             f'<text x="{lx:.1f}" y="{label_y + 22:.1f}" text-anchor="middle" '
@@ -556,8 +552,8 @@ def build_svg(
     parts.append(
         f'<text x="{m_left + plot_w / 2.0:.1f}" y="{axis_title_y}" '
         f'text-anchor="middle" font-size="19" font-weight="600" fill="{ink}">'
-        f"Width = population &#183; column widths sum to "
-        f"{_fmt_pop(total_pop)} people</text>"
+        f'Width = population &#183; column widths sum to '
+        f'{_fmt_pop(total_pop)} people</text>'
     )
 
     # Every bubble renders last of all, on top of every later label too

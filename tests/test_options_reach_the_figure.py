@@ -56,6 +56,7 @@ KNOWN_UNWIRED: dict[str, tuple[str, ...]] = {
 }
 
 
+
 def _selects_from_the_data(kind: str, option: OptionDefinition) -> bool:
     """Whether `option` picks something out of the data rather than saying it.
 
@@ -73,7 +74,11 @@ def _selects_from_the_data(kind: str, option: OptionDefinition) -> bool:
     roles = {role.name for role in definition.required_roles + definition.optional_roles}
     if option.default in roles:
         return True
-    return any(str(cell) == option.default for row in _demo_rows(kind) for cell in row.values())
+    return any(
+        str(cell) == option.default
+        for row in _demo_rows(kind)
+        for cell in row.values()
+    )
 
 
 def _demo_rows(kind: str) -> list[dict[str, object]]:
@@ -98,7 +103,9 @@ def _text_options(kind: str) -> dict[str, OptionDefinition]:
     return {
         name: option
         for name, option in options_for(kind).items()
-        if option.type == "str" and not option.choices and not _selects_from_the_data(kind, option)
+        if option.type == "str"
+        and not option.choices
+        and not _selects_from_the_data(kind, option)
     }
 
 
@@ -133,7 +140,9 @@ def _unwired(kind: str, tmp_path: Path) -> list[str]:
         if options[name].default is not None
     }
     overriding = {
-        name: f"ZW{index}X" for index, name in enumerate(options) if options[name].default is None
+        name: f"ZW{index}X"
+        for index, name in enumerate(options)
+        if options[name].default is None
     }
     return sorted(
         _render_with(kind, composing, tmp_path) + _render_with(kind, overriding, tmp_path)

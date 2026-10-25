@@ -21,7 +21,6 @@ Author
 ------
 `Warith HARCHAOUI, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
 """
-
 from __future__ import annotations
 
 # Per-character advance widths in em units, calibrated to Roboto. Only the
@@ -30,67 +29,17 @@ from __future__ import annotations
 # errs toward whitespace, never toward a clip.
 _DEFAULT_EM = 0.52
 _EM: dict[str, float] = {
-    " ": 0.26,
-    "i": 0.24,
-    "j": 0.24,
-    "l": 0.24,
-    "I": 0.30,
-    "t": 0.31,
-    "f": 0.32,
-    "r": 0.34,
-    "'": 0.20,
-    "’": 0.20,
-    "!": 0.26,
-    ".": 0.26,
-    ",": 0.26,
-    ":": 0.26,
-    ";": 0.26,
-    "|": 0.22,
-    "(": 0.31,
-    ")": 0.31,
-    "[": 0.31,
-    "]": 0.31,
-    "-": 0.33,
-    "m": 0.82,
-    "M": 0.84,
-    "w": 0.72,
-    "W": 0.92,
-    "%": 0.82,
-    "@": 0.92,
-    "0": 0.55,
-    "1": 0.55,
-    "2": 0.55,
-    "3": 0.55,
-    "4": 0.55,
-    "5": 0.55,
-    "6": 0.55,
-    "7": 0.55,
-    "8": 0.55,
-    "9": 0.55,
+    " ": 0.26, "i": 0.24, "j": 0.24, "l": 0.24, "I": 0.30, "t": 0.31, "f": 0.32,
+    "r": 0.34, "'": 0.20, "’": 0.20, "!": 0.26, ".": 0.26, ",": 0.26, ":": 0.26,
+    ";": 0.26, "|": 0.22, "(": 0.31, ")": 0.31, "[": 0.31, "]": 0.31, "-": 0.33,
+    "m": 0.82, "M": 0.84, "w": 0.72, "W": 0.92, "%": 0.82, "@": 0.92,
+    "0": 0.55, "1": 0.55, "2": 0.55, "3": 0.55, "4": 0.55, "5": 0.55,
+    "6": 0.55, "7": 0.55, "8": 0.55, "9": 0.55,
 }
 # Function words that must not be stranded at the end of a wrapped line.
 _ORPHANS_EN = {
-    "of",
-    "the",
-    "a",
-    "an",
-    "to",
-    "and",
-    "or",
-    "for",
-    "in",
-    "on",
-    "is",
-    "from",
-    "with",
-    "by",
-    "at",
-    "as",
-    "into",
-    "over",
-    "than",
-    "per",
-    "vs",
+    "of", "the", "a", "an", "to", "and", "or", "for", "in", "on", "is", "from",
+    "with", "by", "at", "as", "into", "over", "than", "per", "vs",
 }
 _ORPHANS_FR = {"le", "la", "les", "de", "des", "du", "un", "une", "et", "ou", "à"}
 _ORPHANS = _ORPHANS_EN | _ORPHANS_FR
@@ -105,7 +54,9 @@ _ORPHANS = _ORPHANS_EN | _ORPHANS_FR
 _MONO_EM = 0.6
 
 
-def text_width(text: str, font_size: float, *, bold: bool = False, mono: bool = False) -> float:
+def text_width(
+    text: str, font_size: float, *, bold: bool = False, mono: bool = False
+) -> float:
     """Estimate the rendered width, in pixels, of ``text`` at ``font_size``.
 
     Bold Roboto is a little wider; ``bold`` scales the estimate by 3%.

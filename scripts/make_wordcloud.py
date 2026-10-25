@@ -73,19 +73,17 @@ _FIELD_LEFT: float = 56.0
 _FIELD_RIGHT: float = 1184.0
 
 #: House-style inks.
-_INK: str = "#1D1D1F"  # primary text
-_SUBTLE: str = "#6E6E73"  # secondary text
-_HAIR: str = "#E5E5EA"  # hairline separators
-_BG: str = "#FFFFFF"  # background
-_FOCUS: str = "#0A4DA0"  # focus-ring blue
+_INK: str = "#1D1D1F"      # primary text
+_SUBTLE: str = "#6E6E73"   # secondary text
+_HAIR: str = "#E5E5EA"     # hairline separators
+_BG: str = "#FFFFFF"       # background
+_FOCUS: str = "#0A4DA0"    # focus-ring blue
 
 
 # ------------------------------------------------------------------
 # Semantic groups (the three review themes)
 # ------------------------------------------------------------------
-def _groups(
-    accessibility: str = "universal", theme: str = "corporate"
-) -> Dict[str, Dict[str, str]]:
+def _groups(accessibility: str = "universal", theme: str = "corporate") -> Dict[str, Dict[str, str]]:
     """Return the three review themes with colour *and* a sign glyph.
 
     Colour alone cannot carry the theme: praise Green and complaint Red
@@ -361,7 +359,7 @@ def _place_words(data: Optional[List[Dict[str, Any]]] = None) -> List[Dict[str, 
     # therefore set from the arc it covers, so sampling stays as fine far out
     # as it is at the centre.
     d_theta_centre, pas_arc = 0.22, 7.0
-    theta_max = 60.0 * math.pi  # plenty of turns for ~40 words
+    theta_max = 60.0 * math.pi   # plenty of turns for ~40 words
 
     placed_boxes: List[Tuple[float, float, float, float]] = []
     placed: List[Dict[str, Any]] = []
@@ -466,22 +464,18 @@ def build_svg(
     by_count = sorted(placed, key=lambda p: int(p["count"]), reverse=True)
     praise_ranked = [p for p in by_count if p["group"] == "praise"]
     top_praise = praise_ranked[0] if praise_ranked else by_count[0]
-    second_praise = (
-        praise_ranked[1] if len(praise_ranked) > 1 else by_count[min(1, len(by_count) - 1)]
-    )
+    second_praise = praise_ranked[1] if len(praise_ranked) > 1 else by_count[min(1, len(by_count) - 1)]
     gripe_ranked = [p for p in by_count if p["group"] == "gripe"]
     top_gripe = gripe_ranked[0] if gripe_ranked else by_count[0]
 
     parts: List[str] = []
 
     # ---- header ----
-    parts.append(
-        svg_open(_WIDTH, _HEIGHT, "wc-title", "wc-desc", font_family=chrome_stack_for_theme(theme))
-    )
+    parts.append(svg_open(_WIDTH, _HEIGHT, "wc-title", "wc-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(
         '<title id="wc-title">Word cloud of coffee-grinder reviews: '
-        "buyers love how quietly it grinds, and the one gripe is "
-        "noise</title>"
+        'buyers love how quietly it grinds, and the one gripe is '
+        'noise</title>'
     )
     desc = (
         "A spiral-packed word cloud of a year of product reviews for a "
@@ -501,7 +495,8 @@ def build_svg(
         ".word { transition: opacity .18s ease; }",
         # Hover/focus a legend swatch dims the other two themes so one
         # colour group stands out across the whole cloud.
-        "svg:has(.legend-row:hover) .word, svg:has(.legend-row:focus) .word { opacity: .12; }",
+        "svg:has(.legend-row:hover) .word, "
+        "svg:has(.legend-row:focus) .word { opacity: .12; }",
     ]
     for key in groups:
         style_rows.append(
@@ -548,7 +543,8 @@ def build_svg(
     style_rows.append(
         os_dark_style(
             screen_blend=False,
-            extra='[stroke="#E5E5EA"]{stroke:#3A3A3C;} [fill="#E5E5EA"]{fill:#3A3A3C;}',
+            extra='[stroke="#E5E5EA"]{stroke:#3A3A3C;} '
+            '[fill="#E5E5EA"]{fill:#3A3A3C;}',
         )
     )
     parts.append("<style>\n" + "\n".join(style_rows) + "\n</style>")
@@ -559,16 +555,16 @@ def build_svg(
     # ---- title + subtitle ----
     # The headline the figure writes about its own data, used only when
     # the caller supplies none.
-    title = title or "Reviewers love the quiet, consistent grind"
+    title = title or 'Reviewers love the quiet, consistent grind'
     parts.append(
         f'<text x="56" y="66" font-size="32" font-weight="700" '
         f'fill="{_INK}">{xml_escape(title)}</text>'
     )
     parts.append(
         f'<text x="56" y="98" font-size="18" fill="{_SUBTLE}">'
-        f"{total_reviews:,} reviews of the Aurora Grind One · words sized "
-        f"by how often they appear, tagged by theme with a sign and a "
-        f"colour</text>"
+        f'{total_reviews:,} reviews of the Aurora Grind One · words sized '
+        f'by how often they appear, tagged by theme with a sign and a '
+        f'colour</text>'
     )
     # Hairline under the title band.
     parts.append(
@@ -613,15 +609,10 @@ def build_svg(
             )
             bubbles.append(
                 tooltip_bubble(
-                    x,
-                    y - size / 2.0 - 16,
+                    x, y - size / 2.0 - 16,
                     [word, meta["label"], f"{count:,} mentions ({share:.0f}%)"],
-                    anchor="middle",
-                    canvas_w=_WIDTH,
-                    canvas_h=_HEIGHT,
-                    ink=_INK,
-                    secondary=_SUBTLE,
-                    border=_HAIR,
+                    anchor="middle", canvas_w=_WIDTH, canvas_h=_HEIGHT,
+                    ink=_INK, secondary=_SUBTLE, border=_HAIR,
                     elem_id=f"wordtip-{word_i}",
                 )
             )
@@ -642,16 +633,17 @@ def build_svg(
         parts.append(
             f'<g class="legend-row legend-{key}" tabindex="0" '
             f'role="listitem" transform="translate({lx:.0f},{legend_y:.0f})">'
-            f"<title>{_xml(str(meta['label']))}: {grp_mentions:,} total "
-            f"mentions</title>"
+            f'<title>{_xml(str(meta["label"]))}: {grp_mentions:,} total '
+            f'mentions</title>'
         )
         parts.append(
-            f'<rect class="grp-{key}" x="0" y="-16" width="26" height="26" rx="7" fill="{color}"/>'
+            f'<rect class="grp-{key}" x="0" y="-16" width="26" height="26" '
+            f'rx="7" fill="{color}"/>'
         )
         parts.append(
             f'<text x="38" y="0" font-size="19" font-weight="600" '
             f'fill="{_INK}" dominant-baseline="middle">'
-            f"{_xml(str(meta['label']))}</text>"
+            f'{_xml(str(meta["label"]))}</text>'
         )
         parts.append("</g>")
 

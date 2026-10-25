@@ -118,13 +118,9 @@ def _nice_num(value: float, round_up_only: bool) -> float:
     exponent = math.floor(math.log10(value))
     fraction = value / (10.0**exponent)
     if round_up_only:
-        nice_fraction = (
-            10.0 if fraction > 5 else 5.0 if fraction > 2 else 2.0 if fraction > 1 else 1.0
-        )
+        nice_fraction = 10.0 if fraction > 5 else 5.0 if fraction > 2 else 2.0 if fraction > 1 else 1.0
     else:
-        nice_fraction = (
-            1.0 if fraction < 1.5 else 2.0 if fraction < 3 else 5.0 if fraction < 7 else 10.0
-        )
+        nice_fraction = 1.0 if fraction < 1.5 else 2.0 if fraction < 3 else 5.0 if fraction < 7 else 10.0
     return nice_fraction * (10.0**exponent)
 
 

@@ -201,9 +201,9 @@ def label_cell(
     if variant not in ("tint", "solid", "ghost"):
         raise ValueError(f"unknown variant {variant!r}")
     pad = 0.75 * size if pad_x is None else pad_x
-    h = size + 0.8 * size  # comfortable vertical breathing room
+    h = size + 0.8 * size            # comfortable vertical breathing room
     w = _text_width(text, size, mono) + 2 * pad
-    rx = h / 2.0  # full pill
+    rx = h / 2.0                     # full pill
 
     # Left edge from the anchor.
     if anchor == "middle":
@@ -236,7 +236,8 @@ def label_cell(
 
     parts: List[str] = [f'<g transform="translate({_f(left)},{_f(top)})">']
     parts.append(
-        f'<rect x="0" y="0" width="{_f(w)}" height="{_f(h)}" rx="{_f(rx)}" {rect}{stroke}/>'
+        f'<rect x="0" y="0" width="{_f(w)}" height="{_f(h)}" rx="{_f(rx)}" '
+        f'{rect}{stroke}/>'
     )
     # Vertical baseline nudge: ~0.35·size below centre optically centres the cap
     # height for these UI-scale sizes.

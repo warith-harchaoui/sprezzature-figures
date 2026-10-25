@@ -62,20 +62,20 @@ _HEIGHT: int = 820
 #: Triangle geometry. The three corners of the equilateral triangle in
 #: SVG user space. ``_TOP`` is the apex (100 % clay), ``_LEFT`` the
 #: bottom-left (100 % sand), ``_RIGHT`` the bottom-right (100 % silt).
-_SIDE: float = 620.0  # edge length in pixels
-_APEX_X: float = 495.0  # horizontal centre of the apex
-_APEX_Y: float = 168.0  # apex y
+_SIDE: float = 620.0                       # edge length in pixels
+_APEX_X: float = 495.0                     # horizontal centre of the apex
+_APEX_Y: float = 168.0                     # apex y
 _BASE_Y: float = _APEX_Y + _SIDE * math.sqrt(3) / 2.0  # bottom edge y
-_LEFT_X: float = _APEX_X - _SIDE / 2.0  # bottom-left corner x
-_RIGHT_X: float = _APEX_X + _SIDE / 2.0  # bottom-right corner x
+_LEFT_X: float = _APEX_X - _SIDE / 2.0     # bottom-left corner x
+_RIGHT_X: float = _APEX_X + _SIDE / 2.0    # bottom-right corner x
 
 #: House-style inks.
-_INK: str = "#1D1D1F"  # primary text
-_SUBTLE: str = "#6E6E73"  # secondary text
-_GRID: str = "#D8D8DD"  # inner grid lines
-_EDGE: str = "#1D1D1F"  # triangle outline
-_BG: str = "#FFFFFF"  # background
-_FOCUS: str = "#0A4DA0"  # focus-ring blue
+_INK: str = "#1D1D1F"       # primary text
+_SUBTLE: str = "#6E6E73"    # secondary text
+_GRID: str = "#D8D8DD"      # inner grid lines
+_EDGE: str = "#1D1D1F"      # triangle outline
+_BG: str = "#FFFFFF"        # background
+_FOCUS: str = "#0A4DA0"     # focus-ring blue
 
 #: Number of inner grid lines (every 20 %).
 _GRID_STEP: int = 5
@@ -92,46 +92,25 @@ DEMO_DATA: List[Dict[str, Any]] = [
         (
             "Sandy loam",
             [
-                (68, 24, 8),
-                (74, 14, 12),
-                (63, 29, 8),
-                (71, 15, 14),
-                (60, 26, 14),
-                (77, 17, 6),
-                (66, 20, 14),
-                (58, 34, 8),
-                (72, 22, 6),
-                (64, 18, 18),
+                (68, 24, 8), (74, 14, 12), (63, 29, 8), (71, 15, 14),
+                (60, 26, 14), (77, 17, 6), (66, 20, 14), (58, 34, 8),
+                (72, 22, 6), (64, 18, 18),
             ],
         ),
         (
             "Silt loam",
             [
-                (22, 66, 12),
-                (16, 68, 16),
-                (28, 58, 14),
-                (19, 63, 18),
-                (13, 72, 15),
-                (25, 65, 10),
-                (31, 55, 14),
-                (17, 61, 22),
-                (23, 70, 7),
-                (14, 66, 20),
+                (22, 66, 12), (16, 68, 16), (28, 58, 14), (19, 63, 18),
+                (13, 72, 15), (25, 65, 10), (31, 55, 14), (17, 61, 22),
+                (23, 70, 7), (14, 66, 20),
             ],
         ),
         (
             "Clay",
             [
-                (20, 22, 58),
-                (14, 24, 62),
-                (26, 16, 58),
-                (12, 20, 68),
-                (24, 14, 62),
-                (18, 28, 54),
-                (10, 26, 64),
-                (28, 18, 54),
-                (16, 18, 66),
-                (22, 26, 52),
+                (20, 22, 58), (14, 24, 62), (26, 16, 58), (12, 20, 68),
+                (24, 14, 62), (18, 28, 54), (10, 26, 64), (28, 18, 54),
+                (16, 18, 66), (22, 26, 52),
             ],
         ),
     )
@@ -144,8 +123,7 @@ _CLASS_HUES = ("Orange", "Blue", "Purple", "Green", "Teal", "Red")
 
 
 def _dataset(
-    accessibility: str = "universal",
-    data: Optional[List[Dict[str, Any]]] = None,
+    accessibility: str = "universal", data: Optional[List[Dict[str, Any]]] = None,
     theme: str = "corporate",
 ) -> List[Dict[str, Any]]:
     """Group row records into the internal per-class plotting shape.
@@ -237,14 +215,14 @@ def _grid_lines() -> List[str]:
         f = k / _GRID_STEP  # the constant share, e.g. 0.2, 0.4, ...
         # Constant clay = f: a horizontal-ish line from the sand edge to
         # the silt edge at height f up the triangle.
-        p1 = _project((1 - f) * 100, 0, f * 100)  # on the sand-clay edge
-        p2 = _project(0, (1 - f) * 100, f * 100)  # on the silt-clay edge
+        p1 = _project((1 - f) * 100, 0, f * 100)      # on the sand-clay edge
+        p2 = _project(0, (1 - f) * 100, f * 100)      # on the silt-clay edge
         # Constant sand = f: from the silt-clay edge to the silt-sand edge.
-        p3 = _project(f * 100, (1 - f) * 100, 0)  # on the sand-silt edge
-        p4 = _project(f * 100, 0, (1 - f) * 100)  # on the sand-clay edge
+        p3 = _project(f * 100, (1 - f) * 100, 0)      # on the sand-silt edge
+        p4 = _project(f * 100, 0, (1 - f) * 100)      # on the sand-clay edge
         # Constant silt = f: from the sand-clay edge to the sand-silt edge.
-        p5 = _project((1 - f) * 100, f * 100, 0)  # on the sand-silt edge
-        p6 = _project(0, f * 100, (1 - f) * 100)  # on the silt-clay edge
+        p5 = _project((1 - f) * 100, f * 100, 0)      # on the sand-silt edge
+        p6 = _project(0, f * 100, (1 - f) * 100)      # on the silt-clay edge
         for (ax, ay), (bx, by) in ((p1, p2), (p3, p4), (p5, p6)):
             lines.append(
                 f'<line x1="{ax:.1f}" y1="{ay:.1f}" x2="{bx:.1f}" '
@@ -365,9 +343,7 @@ def build_svg(
 
     # ---- header ----
     parts: List[str] = []
-    parts.append(
-        svg_open(_WIDTH, _HEIGHT, "tn-title", "tn-desc", font_family=chrome_stack_for_theme(theme))
-    )
+    parts.append(svg_open(_WIDTH, _HEIGHT, "tn-title", "tn-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(
         # The accessible name is the headline a sighted reader sees: when
         # the two disagree, a screen-reader user is told about a different
@@ -398,15 +374,13 @@ def build_svg(
             f".cls-{s}:hover .cls-{s}, .cls-{s}:focus .cls-{s}, "
             f".cls-{s}:hover, .cls-{s}:focus {{ opacity: 1; }}"
         )
-    style_rows.extend(
-        [
-            ".legend-row { cursor: pointer; }",
-            f".legend-row:focus {{ outline: 3px solid {_FOCUS}; outline-offset: 2px; }}",
-            ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}",
-            foreground_tip_css(sum(len(d["points"]) for d in grouped)),
-            "@media (prefers-reduced-motion: reduce) { .dot { transition: none; } .tip{transition:none} }",
-        ]
-    )
+    style_rows.extend([
+        ".legend-row { cursor: pointer; }",
+        f".legend-row:focus {{ outline: 3px solid {_FOCUS}; outline-offset: 2px; }}",
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}",
+        foreground_tip_css(sum(len(d["points"]) for d in grouped)),
+        "@media (prefers-reduced-motion: reduce) { .dot { transition: none; } .tip{transition:none} }",
+    ])
     # OS-adaptive overrides (additive; the default render is byte-identical
     # because every rule below lives inside a media query and a class rule only
     # outranks the inline fill once a preference is active). Under
@@ -446,13 +420,22 @@ def build_svg(
 
     # ---- title + subtitle ----
     parts.append(
-        f'<text x="56" y="60" font-size="29" font-weight="700" fill="{_INK}">{_xml(title)}</text>'
+        f'<text x="56" y="60" font-size="29" font-weight="700" '
+        f'fill="{_INK}">{_xml(title)}</text>'
     )
-    parts.append(f'<text x="56" y="94" font-size="18" fill="{_SUBTLE}">{_xml(subtitle)}</text>')
+    parts.append(
+        f'<text x="56" y="94" font-size="18" fill="{_SUBTLE}">'
+        f'{_xml(subtitle)}</text>'
+    )
 
     # ---- triangle fill + inner grid ----
-    tri = f"{_LEFT_X:.1f},{_BASE_Y:.1f} {_RIGHT_X:.1f},{_BASE_Y:.1f} {_APEX_X:.1f},{_APEX_Y:.1f}"
-    parts.append(f'<polygon points="{tri}" fill="#FCFCFD" stroke="none"/>')
+    tri = (
+        f'{_LEFT_X:.1f},{_BASE_Y:.1f} {_RIGHT_X:.1f},{_BASE_Y:.1f} '
+        f'{_APEX_X:.1f},{_APEX_Y:.1f}'
+    )
+    parts.append(
+        f'<polygon points="{tri}" fill="#FCFCFD" stroke="none"/>'
+    )
     parts.extend(_grid_lines())
     parts.append(
         f'<polygon points="{tri}" fill="none" stroke="{_EDGE}" '
@@ -478,7 +461,7 @@ def build_svg(
         color = str(d["color"])
         parts.append(f'<g class="cls cls-{s}">')
         group_bubbles: List[str] = []
-        for sand, silt, clay in d["points"]:  # type: ignore[union-attr]
+        for (sand, silt, clay) in d["points"]:  # type: ignore[union-attr]
             x, y = _project(float(sand), float(silt), float(clay))
             tip = f"{d['label']} — sand {sand} %, silt {silt} %, clay {clay} %"
             parts.append(
@@ -489,21 +472,16 @@ def build_svg(
             )
             group_bubbles.append(
                 tooltip_bubble(
-                    x,
-                    y - 16,
+                    x, y - 16,
                     [str(d["label"]), f"sand {sand} %", f"silt {silt} % · clay {clay} %"],
-                    anchor="middle",
-                    canvas_w=_WIDTH,
-                    canvas_h=_HEIGHT,
-                    ink=_INK,
-                    secondary=_SUBTLE,
-                    border=_GRID,
+                    anchor="middle", canvas_w=_WIDTH, canvas_h=_HEIGHT,
+                    ink=_INK, secondary=_SUBTLE, border=_GRID,
                     elem_id=f"tip-{pt_idx}",
                 )
             )
             pt_idx += 1
         parts.extend(group_bubbles)
-        parts.append("</g>")
+        parts.append('</g>')
 
     # ---- legend (top-right) ----
     legend_x = 812.0
@@ -521,8 +499,8 @@ def build_svg(
         parts.append(
             f'<g class="cls cls-{s} legend-row" tabindex="0" role="listitem" '
             f'transform="translate(0,{cy:.1f})">'
-            f"<title>{_xml(str(d['label']))}: "
-            f"{len(d['points'])} samples</title>"  # type: ignore[arg-type]
+            f'<title>{_xml(str(d["label"]))}: '
+            f'{len(d["points"])} samples</title>'  # type: ignore[arg-type]
         )
         parts.append(
             f'<circle class="cls-{s}" cx="11" cy="11" r="11" fill="{color}" '
@@ -532,18 +510,18 @@ def build_svg(
             f'<text x="34" y="17" font-size="19" font-weight="600" '
             f'fill="{_INK}">{_xml(str(d["label"]))}</text>'
         )
-        parts.append("</g>")
-    parts.append("</g>")
+        parts.append('</g>')
+    parts.append('</g>')
 
     # ---- reading hint ----
     parts.append(
         f'<text x="56" y="{_HEIGHT - 26:.1f}" font-size="15" '
         f'fill="{_SUBTLE}">Read each corner as 100 % of that grain size; '
-        f"a dot near an edge means the opposite corner is near 0 %.</text>"
+        f'a dot near an edge means the opposite corner is near 0 %.</text>'
     )
 
     parts.append(fullscreen_control(_WIDTH, _HEIGHT, mode))
-    parts.append("</svg>")
+    parts.append('</svg>')
     return "\n".join(parts)
 
 
@@ -588,16 +566,10 @@ def make_ternary(
         Absolute path to the written SVG file.
     """
     svg = build_svg(
-        data,
-        title=title,
-        subtitle=subtitle,
-        legend_title=legend_title,
-        clay_label=clay_label,
-        sand_label=sand_label,
-        silt_label=silt_label,
-        mode=mode,
-        accessibility=accessibility,
-        theme=theme,
+        data, title=title, subtitle=subtitle,
+        legend_title=legend_title, clay_label=clay_label,
+        sand_label=sand_label, silt_label=silt_label,
+        mode=mode, accessibility=accessibility, theme=theme,
     )
     dest = Path(out) if out else svg_example_path(__file__, "ternary")
     return write_svg(dest, svg, theme=theme)

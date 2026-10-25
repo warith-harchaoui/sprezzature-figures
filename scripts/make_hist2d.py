@@ -201,17 +201,16 @@ def build_svg(
 
     parts: List[str] = []
     parts.append(
-        svg_open(
-            width, height, "hist2d-title", "hist2d-desc", font_family=chrome_stack_for_theme(theme)
-        )
+        svg_open(width, height, "hist2d-title", "hist2d-desc",
+                 font_family=chrome_stack_for_theme(theme))
     )
     parts.append(f'<title id="hist2d-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="hist2d-desc">A two-dimensional histogram of {len(rows):,} points, '
-        f"binned {fmt_number(x_step)} by {fmt_number(y_step)} into a {n_x} by {n_y} grid. "
-        f"Colour is the count in a bin, from 1 to {busiest}; a bin with no points is left "
-        f"blank rather than coloured. {xml_escape(x_label or x)} runs across, "
-        f"{xml_escape(y_label or y)} up.</desc>"
+        f'binned {fmt_number(x_step)} by {fmt_number(y_step)} into a {n_x} by {n_y} grid. '
+        f'Colour is the count in a bin, from 1 to {busiest}; a bin with no points is left '
+        f'blank rather than coloured. {xml_escape(x_label or x)} runs across, '
+        f'{xml_escape(y_label or y)} up.</desc>'
     )
     parts.append(
         "<style>"
@@ -228,16 +227,12 @@ def build_svg(
     )
     parts.append(
         f'<text x="{plot_x:.1f}" y="72" font-size="14" fill="{SECONDARY}">'
-        f"{xml_escape(subtitle)}</text>"
+        f'{xml_escape(subtitle)}</text>'
     )
     # The bin size is the figure's main assumption, so it is written on it.
-    said = (
-        summary
-        if summary is not None
-        else (
-            f"{len(rows):,} points · bins of {fmt_number(x_step)} × {fmt_number(y_step)} · "
-            f"busiest holds {busiest} · colour on a square-root scale"
-        )
+    said = summary if summary is not None else (
+        f"{len(rows):,} points · bins of {fmt_number(x_step)} × {fmt_number(y_step)} · "
+        f"busiest holds {busiest} · colour on a square-root scale"
     )
     parts.append(
         f'<text x="{plot_x:.1f}" y="98" font-size="12" fill="{SECONDARY}" '
@@ -272,7 +267,7 @@ def build_svg(
         parts.append(
             f'<text x="{tx:.1f}" y="{plot_y + plot_h + 20:.1f}" font-size="11" '
             f'fill="{SECONDARY}" text-anchor="middle" font-family="{mono_family}">'
-            f"{fmt_number(x_lo + i * x_step)}</text>"
+            f'{fmt_number(x_lo + i * x_step)}</text>'
         )
     y_tick_every = max(1, n_y // 6)
     for j in range(0, n_y + 1, y_tick_every):
@@ -280,7 +275,7 @@ def build_svg(
         parts.append(
             f'<text x="{plot_x - 10:.1f}" y="{ty + 4:.1f}" font-size="11" fill="{SECONDARY}" '
             f'text-anchor="end" font-family="{mono_family}">'
-            f"{fmt_number(y_lo + j * y_step)}</text>"
+            f'{fmt_number(y_lo + j * y_step)}</text>'
         )
     if x_label:
         parts.append(
@@ -290,7 +285,7 @@ def build_svg(
     if y_label:
         parts.append(
             f'<text x="{plot_x:.1f}" y="{plot_y - 12:.1f}" font-size="12" fill="{SECONDARY}">'
-            f"{xml_escape(y_label)}</text>"
+            f'{xml_escape(y_label)}</text>'
         )
 
     # ---- the scale, with both ends written ----
@@ -320,7 +315,7 @@ def build_svg(
         )
     parts.append(
         f'<text x="{legend_x:.1f}" y="{legend_y - 12:.1f}" font-size="11" fill="{SECONDARY}">'
-        f"{xml_escape(legend_title)}</text>"
+        f'{xml_escape(legend_title)}</text>'
     )
     # An empty bin is canvas, and the legend says so rather than leaving the
     # reader to guess whether white means zero or means missing.
@@ -398,22 +393,10 @@ def make_hist2d(
     True
     """
     svg = build_svg(
-        data,
-        title=title,
-        subtitle=subtitle,
-        width=width,
-        height=height,
-        x=x,
-        y=y,
-        bins=bins,
-        x_label=x_label,
-        y_label=y_label,
-        legend_title=legend_title,
-        empty_label=empty_label,
-        summary=summary,
-        mode=mode,
-        accessibility=accessibility,
-        theme=theme,
+        data, title=title, subtitle=subtitle, width=width, height=height,
+        x=x, y=y, bins=bins, x_label=x_label, y_label=y_label,
+        legend_title=legend_title, empty_label=empty_label, summary=summary,
+        mode=mode, accessibility=accessibility, theme=theme,
     )
     dest = Path(out) if out else svg_example_path(__file__, "hist2d")
     return write_svg(dest, svg, theme=theme)

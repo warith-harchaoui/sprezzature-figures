@@ -206,20 +206,19 @@ def build_svg(
 
     parts: List[str] = []
     parts.append(
-        svg_open(
-            width, height, "dual-title", "dual-desc", font_family=chrome_stack_for_theme(theme)
-        )
+        svg_open(width, height, "dual-title", "dual-desc",
+                 font_family=chrome_stack_for_theme(theme))
     )
     parts.append(f'<title id="dual-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="dual-desc">A combo chart of {len(rows)} periods. '
-        f"{xml_escape(bars_label)} is drawn as bars against the left axis, from "
-        f"{fmt_number(bar_lo)} to {fmt_number(bar_hi)}; {xml_escape(line_label)} as a line "
-        f"against the right axis, from {fmt_number(line_lo)} to {fmt_number(line_hi)}. The "
-        f"two axes are independent, so the point where the line meets the bars carries no "
-        f"meaning."
-        + (f" Pearson correlation over the window is {r:+.2f}." if r is not None else "")
-        + "</desc>"
+        f'{xml_escape(bars_label)} is drawn as bars against the left axis, from '
+        f'{fmt_number(bar_lo)} to {fmt_number(bar_hi)}; {xml_escape(line_label)} as a line '
+        f'against the right axis, from {fmt_number(line_lo)} to {fmt_number(line_hi)}. The '
+        f'two axes are independent, so the point where the line meets the bars carries no '
+        f'meaning.'
+        + (f' Pearson correlation over the window is {r:+.2f}.' if r is not None else "")
+        + '</desc>'
     )
     parts.append(
         "<style>"
@@ -237,7 +236,7 @@ def build_svg(
     )
     parts.append(
         f'<text x="{plot_x:.1f}" y="72" font-size="14" fill="{SECONDARY}">'
-        f"{xml_escape(subtitle)}</text>"
+        f'{xml_escape(subtitle)}</text>'
     )
     # The caveat belongs on the figure. A dual axis is read in seconds and
     # the footnote that would have qualified it is read by nobody.
@@ -265,7 +264,7 @@ def build_svg(
     parts.append(
         f'<text x="{plot_x + plot_w:.1f}" y="{plot_y - 16:.1f}" font-size="12" '
         f'font-weight="700" fill="{line_colour}" text-anchor="end">'
-        f"{xml_escape(line_label)}</text>"
+        f'{xml_escape(line_label)}</text>'
     )
 
     # ---- gridlines and the two value axes ----
@@ -279,12 +278,12 @@ def build_svg(
         parts.append(
             f'<text x="{plot_x - 10:.1f}" y="{gy + 4:.1f}" font-size="11" fill="{bar_colour}" '
             f'text-anchor="end" font-family="{mono_family}">'
-            f"{fmt_number(bar_lo + fraction * (bar_hi - bar_lo))}</text>"
+            f'{fmt_number(bar_lo + fraction * (bar_hi - bar_lo))}</text>'
         )
         parts.append(
             f'<text x="{plot_x + plot_w + 10:.1f}" y="{gy + 4:.1f}" font-size="11" '
             f'fill="{line_colour}" font-family="{mono_family}">'
-            f"{fmt_number(line_lo + fraction * (line_hi - line_lo))}</text>"
+            f'{fmt_number(line_lo + fraction * (line_hi - line_lo))}</text>'
         )
 
     tips: List[str] = []
@@ -300,7 +299,9 @@ def build_svg(
             f'fill="{SECONDARY}" text-anchor="middle">{xml_escape(labels[index])}</text>'
         )
 
-    polyline = " ".join(f"{centre(i):.1f},{line_y(v):.1f}" for i, v in enumerate(line_values))
+    polyline = " ".join(
+        f"{centre(i):.1f},{line_y(v):.1f}" for i, v in enumerate(line_values)
+    )
     parts.append(
         f'<polyline points="{polyline}" fill="none" stroke="{line_colour}" stroke-width="2.6" '
         f'stroke-linejoin="round" stroke-linecap="round"/>'
@@ -315,28 +316,23 @@ def build_svg(
         parts.append(
             f'<rect id="slot-{index}" class="slot hit" tabindex="0" role="img" '
             f'aria-label="{xml_escape(labels[index])}: {xml_escape(bars_label)} '
-            f"{fmt_number(bar_values[index])}, {xml_escape(line_label)} "
+            f'{fmt_number(bar_values[index])}, {xml_escape(line_label)} '
             f'{fmt_number(line_values[index])}" '
             f'x="{plot_x + index * slot:.1f}" y="{plot_y:.1f}" width="{slot:.1f}" '
             f'height="{plot_h:.1f}" fill="transparent">'
-            f"<title>{xml_escape(labels[index])}: {fmt_number(bar_values[index])} · "
-            f"{fmt_number(line_values[index])}</title></rect>"
+            f'<title>{xml_escape(labels[index])}: {fmt_number(bar_values[index])} · '
+            f'{fmt_number(line_values[index])}</title></rect>'
         )
         tips.append(
             tooltip_bubble(
-                centre(index),
-                bar_y(bar_values[index]),
+                centre(index), bar_y(bar_values[index]),
                 [
                     labels[index],
                     f"{bars_label}: {fmt_number(bar_values[index])}",
                     f"{line_label}: {fmt_number(line_values[index])}",
                 ],
-                canvas_w=width,
-                canvas_h=height,
-                ink=INK,
-                secondary=SECONDARY,
-                border=GRIDLINE,
-                elem_id=f"slottip-{index}",
+                canvas_w=width, canvas_h=height, ink=INK, secondary=SECONDARY,
+                border=GRIDLINE, elem_id=f"slottip-{index}",
             )
         )
 
@@ -409,22 +405,10 @@ def make_dual_axis(
     True
     """
     svg = build_svg(
-        data,
-        title=title,
-        subtitle=subtitle,
-        width=width,
-        height=height,
-        x=x,
-        bars=bars,
-        line=line,
-        bars_label=bars_label,
-        line_label=line_label,
-        x_label=x_label,
-        zero_anchored=zero_anchored,
-        caveat=caveat,
-        mode=mode,
-        accessibility=accessibility,
-        theme=theme,
+        data, title=title, subtitle=subtitle, width=width, height=height,
+        x=x, bars=bars, line=line, bars_label=bars_label, line_label=line_label,
+        x_label=x_label, zero_anchored=zero_anchored, caveat=caveat, mode=mode,
+        accessibility=accessibility, theme=theme,
     )
     dest = Path(out) if out else svg_example_path(__file__, "dual-axis")
     return write_svg(dest, svg, theme=theme)

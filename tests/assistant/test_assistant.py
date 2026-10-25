@@ -58,9 +58,7 @@ def _profile() -> DatasetProfile:
 
 def test_validate_or_repair_escalation() -> None:
     # (1) already-valid payload never calls the repair hook.
-    passthrough = validate_or_repair(
-        {"summary": "ok"}, EditProposal, ask=lambda _p: {"summary": "unused"}
-    )
+    passthrough = validate_or_repair({"summary": "ok"}, EditProposal, ask=lambda _p: {"summary": "unused"})
     assert passthrough.summary == "ok"
 
     # (2) one bad payload -> exactly one repair call, whose result is used.

@@ -60,30 +60,23 @@ from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_the
 
 #: Month labels, Jan -> Dec, matching :func:`_sample_revenue`'s 12 values.
 MONTHS: List[str] = [
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
-    "May",
-    "Jun",
-    "Jul",
-    "Aug",
-    "Sep",
-    "Oct",
-    "Nov",
-    "Dec",
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
 ]
 
 # Repo-relative default output — the one SVG artifact this figure ships.
 _DEFAULT_OUT = (
-    Path(__file__).resolve().parent.parent / "assets" / "svg-examples" / "difference-chart.svg"
+    Path(__file__).resolve().parent.parent
+    / "assets"
+    / "svg-examples"
+    / "difference-chart.svg"
 )
 
 # House-style tokens (mirrors the house-style constants, kept literal so this
 # generator needs no import of the dataviz tier at build time).
-_INK = "#1D1D1F"  # primary text
+_INK = "#1D1D1F"        # primary text
 _SECONDARY = "#6E6E73"  # subtitle / secondary text
-_BG = "#FFFFFF"  # white ground
+_BG = "#FFFFFF"         # white ground
 
 # Bicolour gap fill, drawn from the Apple-system palette, following the house
 # blue-vs-red convention for a signed quantity (never red-vs-green, which
@@ -96,7 +89,7 @@ _BELOW_HUE = "#FF3B30"  # Apple Red  — actual is behind plan (shortfall)
 # Line colours: the "actual" curve is the hero (deep ink-blue), the "plan"
 # curve is a calmer reference grey so the surplus / shortfall band is the star.
 _ACTUAL_LINE = "#0A2540"  # near-navy — the measured series
-_PLAN_LINE = "#8E8E93"  # neutral grey — the reference / target series
+_PLAN_LINE = "#8E8E93"    # neutral grey — the reference / target series
 
 
 # --------------------------------------------------------------------------- #
@@ -133,7 +126,7 @@ def _sample_revenue(seed: int = 7) -> Dict[str, np.ndarray]:
     # plan (red shortfall as a big customer churns and hiring slows), then a
     # late-year climb back to roughly parity.
     envelope = (
-        40.0 * np.exp(-0.5 * ((months - 2.5) / 2.0) ** 2)  # spring surplus
+        40.0 * np.exp(-0.5 * ((months - 2.5) / 2.0) ** 2)    # spring surplus
         - 52.0 * np.exp(-0.5 * ((months - 7.5) / 2.0) ** 2)  # summer shortfall
         + 20.0 * np.exp(-0.5 * ((months - 11.0) / 1.4) ** 2)  # year-end rally
     )
@@ -352,20 +345,8 @@ def build_svg(
     actual = data["actual"]
     n = len(plan)
     months = np.arange(n)
-    month_labels = [
-        "Jan",
-        "Feb",
-        "Mar",
-        "Apr",
-        "May",
-        "Jun",
-        "Jul",
-        "Aug",
-        "Sep",
-        "Oct",
-        "Nov",
-        "Dec",
-    ]
+    month_labels = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
     # ---- canvas geometry -------------------------------------------------- #
     # Poster-scale: wide enough for 12 months to breathe, tall enough that the
@@ -402,7 +383,8 @@ def build_svg(
 
     # ---- header ----------------------------------------------------------- #
     title = title or "Revenue outran plan all spring, then fell behind through the summer"
-    subtitle = "Actual vs board-planned monthly recurring revenue, one fiscal year"
+    subtitle = ("Actual vs board-planned monthly recurring revenue, "
+                "one fiscal year")
     parts.append(
         f'<svg role="img" aria-label="{title}" '
         f'xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" '
@@ -419,13 +401,17 @@ def build_svg(
     # 16: the house corner cap `audit_figure` enforces. See make_radar.
     parts.append(f'<rect width="{width}" height="{height}" rx="16" fill="{_BG}"/>')
     parts.append(
-        f'<text x="{m_left}" y="72" font-size="31" font-weight="700" fill="{_INK}">{title}</text>'
+        f'<text x="{m_left}" y="72" font-size="31" '
+        f'font-weight="700" fill="{_INK}">{title}</text>'
     )
-    parts.append(f'<text x="{m_left}" y="106" font-size="18" fill="{_SECONDARY}">{subtitle}</text>')
+    parts.append(
+        f'<text x="{m_left}" y="106" font-size="18" '
+        f'fill="{_SECONDARY}">{subtitle}</text>'
+    )
     parts.append(
         f'<text x="{m_left}" y="130" font-size="16" '
         f'fill="{_SECONDARY}">thousands of dollars '
-        f"per month</text>"
+        f'per month</text>'
     )
 
     # ---- horizontal $100k gridlines --------------------------------------- #
@@ -465,8 +451,9 @@ def build_svg(
     # sits under the plan line — clip the red shortfall there. Using the plan
     # (reference) curve as the divider keeps the two colours meeting exactly on
     # it with no overlap.
-    plan_edge = f"L{_fmt(dense_plan_pts[0][0])},{_fmt(dense_plan_pts[0][1])}" + _catmull_rom(
-        dense_plan_pts
+    plan_edge = (
+        f"L{_fmt(dense_plan_pts[0][0])},{_fmt(dense_plan_pts[0][1])}"
+        + _catmull_rom(dense_plan_pts)
     )
     # Blue surplus: the region above the plan curve (toward the top).
     clip_above = (
@@ -493,7 +480,7 @@ def build_svg(
         f'patternTransform="rotate(45)">'
         f'<rect width="8" height="8" fill="{_BELOW_HUE_C}"/>'
         f'<line x1="0" y1="0" x2="0" y2="8" stroke="#FFFFFF" stroke-width="3" stroke-opacity="0.55"/>'
-        f"</pattern>"
+        f'</pattern>'
     )
 
     # The full inter-curve band (actual on top edge, plan on bottom edge),
@@ -526,9 +513,9 @@ def build_svg(
 
     # ---- crossing markers ------------------------------------------------- #
     # White-cored dots where the lead flips, so the eye lands on the story beat.
-    cross = _crossings(
-        [float(m) for m in months], [float(a) for a in actual], [float(p) for p in plan]
-    )
+    cross = _crossings([float(m) for m in months],
+                       [float(a) for a in actual],
+                       [float(p) for p in plan])
     markers: List[str] = []
     for cx_m, cv in cross:
         px, py = x_of(cx_m), y_of(cv)
@@ -646,18 +633,10 @@ def build_svg(
         )
         tips.append(
             tooltip_bubble(
-                gx,
-                m_top - 30,
-                [
-                    month_labels[i],
-                    f"actual ${actual[i]:.0f}K vs plan ${plan[i]:.0f}K",
-                    f"${abs(gap):.0f}K {sign} plan",
-                ],
-                canvas_w=width,
-                canvas_h=height,
-                ink=_INK,
-                secondary=_SECONDARY,
-                border="#EFEFF2",
+                gx, m_top - 30,
+                [month_labels[i], f"actual ${actual[i]:.0f}K vs plan ${plan[i]:.0f}K",
+                 f"${abs(gap):.0f}K {sign} plan"],
+                canvas_w=width, canvas_h=height, ink=_INK, secondary=_SECONDARY, border="#EFEFF2",
                 elem_id=f"tip-{i}",
             )
         )
@@ -746,14 +725,8 @@ def make_difference_chart(
     rows = data if data else DEMO_DATA
     series = _rows_to_series(rows)
     svg = build_svg(
-        series,
-        mode=mode,
-        accessibility=accessibility,
-        theme=theme,
-        actual_label=actual_label,
-        plan_label=plan_label,
-        shortfall_label=shortfall_label,
-        title=title or None,
+        series, mode=mode, accessibility=accessibility, theme=theme,
+        actual_label=actual_label, plan_label=plan_label, shortfall_label=shortfall_label, title=title or None,
     )
     dest = Path(out) if out else svg_example_path(__file__, "difference-chart")
     return write_svg(dest, svg, theme=theme)
@@ -774,7 +747,9 @@ def _build_parser() -> argparse.ArgumentParser:
         default=_DEFAULT_OUT,
         help="Destination SVG path (default: the shipped example).",
     )
-    parser.add_argument("--seed", type=int, default=7, help="Random seed for the sample data.")
+    parser.add_argument(
+        "--seed", type=int, default=7, help="Random seed for the sample data."
+    )
     parser.add_argument(
         "--mode",
         choices=("self-contained", "external", "static"),

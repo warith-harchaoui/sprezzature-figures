@@ -69,7 +69,9 @@ def _runs(seed: int = 5, repeats: int = 10) -> List[Dict[str, Any]]:
             for _ in range(repeats):
                 u1 = max(rng.random(), 1e-12)
                 u2 = rng.random()
-                draw = mean + spread * math.sqrt(-2.0 * math.log(u1)) * math.cos(2.0 * math.pi * u2)
+                draw = mean + spread * math.sqrt(-2.0 * math.log(u1)) * math.cos(
+                    2.0 * math.pi * u2
+                )
                 rows.append(
                     {
                         "dataset": dataset,
@@ -159,12 +161,8 @@ def build_svg(
     hues = [
         palette.get(name, fallback)
         for name, fallback in (
-            ("Blue", "#007AFF"),
-            ("Orange", "#FF9500"),
-            ("Purple", "#AF52DE"),
-            ("Green", "#28CD41"),
-            ("Teal", "#79DBDC"),
-            ("Red", "#FF3B30"),
+            ("Blue", "#007AFF"), ("Orange", "#FF9500"), ("Purple", "#AF52DE"),
+            ("Green", "#28CD41"), ("Teal", "#79DBDC"), ("Red", "#FF3B30"),
         )
     ]
 
@@ -215,18 +213,17 @@ def build_svg(
 
     parts: List[str] = []
     parts.append(
-        svg_open(
-            width, height, "point-title", "point-desc", font_family=chrome_stack_for_theme(theme)
-        )
+        svg_open(width, height, "point-title", "point-desc",
+                 font_family=chrome_stack_for_theme(theme))
     )
     parts.append(f'<title id="point-title">{xml_escape(title)}</title>')
     sample = next(iter(estimates.values()))
     parts.append(
         f'<desc id="point-desc">A point estimate per {xml_escape(category)} and '
-        f"{xml_escape(series)}, {len(categories)} by {len(series_names)}, each with a 95% "
-        f"interval computed from {sample[3]} observations on the normal approximation. "
-        f"Series: {xml_escape(', '.join(series_names))}. Overlapping intervals are not a "
-        f"significance test and the figure does not claim one.</desc>"
+        f'{xml_escape(series)}, {len(categories)} by {len(series_names)}, each with a 95% '
+        f'interval computed from {sample[3]} observations on the normal approximation. '
+        f'Series: {xml_escape(", ".join(series_names))}. Overlapping intervals are not a '
+        f'significance test and the figure does not claim one.</desc>'
     )
     parts.append(
         "<style>"
@@ -244,15 +241,11 @@ def build_svg(
     )
     parts.append(
         f'<text x="{plot_x:.1f}" y="72" font-size="14" fill="{SECONDARY}">'
-        f"{xml_escape(subtitle)}</text>"
+        f'{xml_escape(subtitle)}</text>'
     )
-    said = (
-        interval_label
-        if interval_label is not None
-        else (
-            f"Bars: mean ± {_Z95:.2f} standard errors (95%, normal approximation) · "
-            f"n per point is in its tooltip"
-        )
+    said = interval_label if interval_label is not None else (
+        f"Bars: mean ± {_Z95:.2f} standard errors (95%, normal approximation) · "
+        f"n per point is in its tooltip"
     )
     parts.append(
         f'<text x="{plot_x:.1f}" y="98" font-size="12" fill="{SECONDARY}" '
@@ -260,7 +253,7 @@ def build_svg(
     )
     parts.append(
         f'<text x="{plot_x:.1f}" y="{plot_y - 14:.1f}" font-size="12" fill="{SECONDARY}">'
-        f"{xml_escape(y_label)}</text>"
+        f'{xml_escape(y_label)}</text>'
     )
 
     for step in range(5):
@@ -315,23 +308,18 @@ def build_svg(
                 f'95% interval {fmt_number(low)} to {fmt_number(high)}, {n} runs" '
                 f'x="{x - 11:.1f}" y="{cy(high) - 11:.1f}" width="22" '
                 f'height="{max(cy(low) - cy(high) + 22, 22):.1f}" fill="transparent">'
-                f"<title>{xml_escape(cat)} · {xml_escape(ser)}: {fmt_number(mean)}</title></rect>"
+                f'<title>{xml_escape(cat)} · {xml_escape(ser)}: {fmt_number(mean)}</title></rect>'
             )
             tips.append(
                 tooltip_bubble(
-                    x,
-                    cy(mean),
+                    x, cy(mean),
                     [
                         f"{cat} · {ser}",
                         f"{fmt_number(mean)} (95%: {fmt_number(low)} to {fmt_number(high)})",
                         f"over {n} runs",
                     ],
-                    canvas_w=width,
-                    canvas_h=height,
-                    ink=INK,
-                    secondary=SECONDARY,
-                    border=GRIDLINE,
-                    elem_id=f"esttip-{element}",
+                    canvas_w=width, canvas_h=height, ink=INK, secondary=SECONDARY,
+                    border=GRIDLINE, elem_id=f"esttip-{element}",
                 )
             )
 
@@ -418,19 +406,9 @@ def make_pointplot(
     True
     """
     svg = build_svg(
-        data,
-        title=title,
-        subtitle=subtitle,
-        width=width,
-        height=height,
-        category=category,
-        series=series,
-        value=value,
-        y_label=y_label,
-        interval_label=interval_label,
-        mode=mode,
-        accessibility=accessibility,
-        theme=theme,
+        data, title=title, subtitle=subtitle, width=width, height=height,
+        category=category, series=series, value=value, y_label=y_label,
+        interval_label=interval_label, mode=mode, accessibility=accessibility, theme=theme,
     )
     dest = Path(out) if out else svg_example_path(__file__, "pointplot")
     return write_svg(dest, svg, theme=theme)
@@ -438,12 +416,8 @@ def make_pointplot(
 
 def main() -> None:
     """CLI entry point: build the SVG and write it to disk."""
-    render_cli(
-        __file__,
-        "pointplot",
-        build_svg,
-        description="Generate a point-estimate plot with intervals.",
-    )
+    render_cli(__file__, "pointplot", build_svg,
+               description="Generate a point-estimate plot with intervals.")
 
 
 if __name__ == "__main__":

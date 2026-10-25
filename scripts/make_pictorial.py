@@ -76,11 +76,11 @@ _ROW_TOP: float = 220.0
 _ROW_H: float = 118.0
 
 #: House-style inks.
-_INK: str = "#1D1D1F"  # primary text
-_SUBTLE: str = "#6E6E73"  # secondary text
-_EMPTY: str = "#E3E3E8"  # "remainder" / unfilled ghost icons
-_BG: str = "#FFFFFF"  # background
-_FOCUS: str = "#0A4DA0"  # focus-ring blue
+_INK: str = "#1D1D1F"       # primary text
+_SUBTLE: str = "#6E6E73"    # secondary text
+_EMPTY: str = "#E3E3E8"     # "remainder" / unfilled ghost icons
+_BG: str = "#FFFFFF"        # background
+_FOCUS: str = "#0A4DA0"     # focus-ring blue
 
 
 #: Row-record demo data: cyclists per 100 commuters, one row per city.
@@ -133,13 +133,8 @@ def _dataset(
     # qualitative-sequence fallback below, which happened to land Amsterdam
     # on the exact same hex (#FF9500) as Berlin's explicit "Orange" — two
     # different cities rendered in an identical color in the same chart.
-    fallback_colors = {
-        "Copenhagen": "Green",
-        "Amsterdam": "Turquoise",
-        "Tokyo": "Blue",
-        "Berlin": "Orange",
-        "Los Angeles": "Red",
-    }
+    fallback_colors = {"Copenhagen": "Green", "Amsterdam": "Turquoise", "Tokyo": "Blue",
+                        "Berlin": "Orange", "Los Angeles": "Red"}
     hues = qualitative_sequence(len(ordered), theme=theme)
     out: List[Dict[str, Any]] = []
     for i, row in enumerate(ordered):
@@ -265,10 +260,10 @@ def _icon(
     clip = f' clip-path="url(#{clip_id})"' if clip_id else ""
     klass = f' class="{cls}"' if cls else ""
     return (
-        f"<g{clip}>"
+        f'<g{clip}>'
         f'<circle{klass} cx="{hx:.1f}" cy="{hy:.1f}" r="{hr:.1f}" fill="{fill}"{op}/>'
         f'<path{klass} d="{_person_path(cx, top)}" fill="{fill}"{op}/>'
-        f"</g>"
+        f'</g>'
     )
 
 
@@ -316,9 +311,7 @@ def build_svg(
 
     # ---- header ----
     parts: List[str] = []
-    parts.append(
-        svg_open(_WIDTH, _HEIGHT, "pc-title", "pc-desc", font_family=chrome_stack_for_theme(theme))
-    )
+    parts.append(svg_open(_WIDTH, _HEIGHT, "pc-title", "pc-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(
         # The accessible name is the headline a sighted reader sees: when
         # the two disagree, a screen-reader user is told about a different
@@ -335,7 +328,7 @@ def build_svg(
     parts.append(f'<desc id="pc-desc">{desc}</desc>')
 
     # ---- clip paths for fractional last icons + reveal wipes ----
-    parts.append("<defs>")
+    parts.append('<defs>')
     for k, d in enumerate(data):
         s = _slug(str(d["label"]))
         value = float(d["value"])
@@ -350,9 +343,9 @@ def build_svg(
                 f'<clipPath id="clip-{s}">'
                 f'<rect x="{cx - _ICON_W / 2:.1f}" y="{top - 4:.1f}" '
                 f'width="{clip_w + _ICON_W / 2:.1f}" height="{_ICON_H + 8:.1f}"/>'
-                f"</clipPath>"
+                f'</clipPath>'
             )
-    parts.append("</defs>")
+    parts.append('</defs>')
 
     # ---- interactivity + house style (pure CSS, no JS) ----
     style_rows = [
@@ -364,22 +357,24 @@ def build_svg(
     for d in data:
         s = _slug(str(d["label"]))
         # The hovered/focused row keeps full opacity and lifts slightly.
-        style_rows.append(f".row-{s}:hover .icons, .row-{s}:focus .icons {{ opacity: 1; }}")
-        style_rows.append(f".row-{s}:hover, .row-{s}:focus {{ transform: translateY(-4px); }}")
-    style_rows.extend(
-        [
-            ".row { cursor: pointer; }",
-            ".row:focus { outline: none; }",
-            f".row:focus .rowlabel {{ fill: {_FOCUS}; }}",
-            ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}",
-            foreground_tip_css(len(data), mark_prefix="row", tip_prefix="row-tip"),
-            "@media (prefers-reduced-motion: reduce) {"
-            " .row, .icons { transition: none; }"
-            " .reveal { animation: none !important; }"
-            " .tip{transition:none}"
-            "}",
-        ]
-    )
+        style_rows.append(
+            f".row-{s}:hover .icons, .row-{s}:focus .icons {{ opacity: 1; }}"
+        )
+        style_rows.append(
+            f".row-{s}:hover, .row-{s}:focus {{ transform: translateY(-4px); }}"
+        )
+    style_rows.extend([
+        ".row { cursor: pointer; }",
+        ".row:focus { outline: none; }",
+        f".row:focus .rowlabel {{ fill: {_FOCUS}; }}",
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}",
+        foreground_tip_css(len(data), mark_prefix="row", tip_prefix="row-tip"),
+        "@media (prefers-reduced-motion: reduce) {"
+        " .row, .icons { transition: none; }"
+        " .reveal { animation: none !important; }"
+        " .tip{transition:none}"
+        "}",
+    ])
     # OS-adaptive overrides (additive; the default render is byte-identical
     # because every rule below lives inside a media query). Under
     # prefers-contrast each city's filled icons deepen to their high-contrast
@@ -411,15 +406,11 @@ def build_svg(
     parts.append(
         f'<text x="{_FIELD_X - 244:.0f}" y="76" font-size="34" '
         f'font-weight="700" fill="{_INK}">'
-        f"{_xml(title)}</text>"
+        f'{_xml(title)}</text>'
     )
-    said = (
-        subtitle
-        if subtitle is not None
-        else (
-            f"Cyclists per 100 commuters on a typical weekday \u00b7 one figure "
-            f"= {int(_UNIT)} people"
-        )
+    said = subtitle if subtitle is not None else (
+        f"Cyclists per 100 commuters on a typical weekday \u00b7 one figure "
+        f"= {int(_UNIT)} people"
     )
     parts.append(
         f'<text x="{_FIELD_X - 244:.0f}" y="116" font-size="19" '
@@ -453,22 +444,22 @@ def build_svg(
             f'<text class="rowlabel" x="{_FIELD_X - 40:.0f}" y="{label_y:.1f}" '
             f'font-size="22" font-weight="600" fill="{_INK}" '
             f'text-anchor="end" dominant-baseline="middle">'
-            f"{_xml(str(d['label']))}</text>"
+            f'{_xml(str(d["label"]))}</text>'
         )
 
         # Ghost icons underneath (the "out of the maximum" backdrop).
-        parts.append("<g>")
+        parts.append('<g>')
         for c in range(n_cols):
             cx = _FIELD_X + c * (_ICON_W + _ICON_GAP) + _ICON_W / 2
             parts.append(_icon(cx, top, _EMPTY, opacity=1.0))
-        parts.append("</g>")
+        parts.append('</g>')
 
         # Filled icons — full ones, then the clipped fractional one. The
         # <g class="icons"> wraps the coloured layer for the hover dimming,
         # and the SMIL reveal wipes it in from the left at load.
         reveal_id = f"reveal-{s}"
         parts.append(f'<g class="icons" clip-path="url(#{reveal_id})">')
-        parts.append("<defs>")
+        parts.append('<defs>')
         # The reveal clip is capped at THIS row's own filled width, so the
         # animation can never show more figures than the value. It counts
         # up from most-of-the-way (base_w) to the exact value width — a
@@ -477,9 +468,7 @@ def build_svg(
         # the bars land. The static raster freezes on the final width.
         row_full_w = (
             (full + (frac if frac > 1e-6 else 0.0)) * (_ICON_W + _ICON_GAP)
-            - _ICON_GAP
-            + _ICON_W / 2
-            + 6
+            - _ICON_GAP + _ICON_W / 2 + 6
         )
         base_w = row_full_w * 0.72  # visible at t=0 — never empty
         stagger = 0.10 * k
@@ -493,17 +482,17 @@ def build_svg(
             f'dur="0.7s" begin="{stagger:.2f}s" fill="freeze" '
             f'calcMode="spline" keyTimes="0;1" '
             f'keySplines="0.22 0.61 0.36 1"/>'
-            f"</rect>"
-            f"</clipPath>"
+            f'</rect>'
+            f'</clipPath>'
         )
-        parts.append("</defs>")
+        parts.append('</defs>')
         for c in range(full):
             cx = _FIELD_X + c * (_ICON_W + _ICON_GAP) + _ICON_W / 2
             parts.append(_icon(cx, top, color, cls=f"pic-{s}"))
         if frac > 1e-6:
             cx = _FIELD_X + full * (_ICON_W + _ICON_GAP) + _ICON_W / 2
             parts.append(_icon(cx, top, color, clip_id=f"clip-{s}", cls=f"pic-{s}"))
-        parts.append("</g>")
+        parts.append('</g>')
 
         # Value read-out at the end of the row, past the longest possible run.
         val_x = _FIELD_X + n_cols * (_ICON_W + _ICON_GAP) + 24
@@ -515,21 +504,16 @@ def build_svg(
         parts.append(
             f'<text x="{val_x:.0f}" y="{label_y + 24:.1f}" font-size="13" '
             f'font-weight="600" fill="{_SUBTLE}" dominant-baseline="middle">'
-            f"per 100</text>"
+            f'per 100</text>'
         )
 
-        parts.append("</g>")
+        parts.append('</g>')
         row_tips.append(
             tooltip_bubble(
-                _FIELD_X,
-                top - 14,
+                _FIELD_X, top - 14,
                 [str(d["label"]), f"{value:.0f} per 100 commuters", f"{share:.1f}% of the top row"],
-                anchor="start",
-                canvas_w=_WIDTH,
-                canvas_h=_HEIGHT,
-                ink=_INK,
-                secondary=_SUBTLE,
-                border=_EMPTY,
+                anchor="start", canvas_w=_WIDTH, canvas_h=_HEIGHT,
+                ink=_INK, secondary=_SUBTLE, border=_EMPTY,
                 elem_id=f"row-tip-{k}",
             )
         )
@@ -543,22 +527,24 @@ def build_svg(
     # same glyph helper (reuse the icon at the origin cell).
     sample_cx = 20.0
     hx, hy, hr = _head(sample_cx, 0.0)
-    parts.append(f'<circle cx="{hx:.1f}" cy="{hy:.1f}" r="{hr:.1f}" fill="{_SUBTLE}"/>')
+    parts.append(
+        f'<circle cx="{hx:.1f}" cy="{hy:.1f}" r="{hr:.1f}" fill="{_SUBTLE}"/>'
+    )
     parts.append(f'<path d="{_person_path(sample_cx, 0.0)}" fill="{_SUBTLE}"/>')
     parts.append(
         f'<text x="{sample_cx + 30:.0f}" y="{_ICON_H * 0.42:.0f}" '
         f'font-size="18" fill="{_INK}" dominant-baseline="middle">'
-        f"= {int(_UNIT)} people per 100 commuters</text>"
+        f'= {int(_UNIT)} people per 100 commuters</text>'
     )
     parts.append(
         f'<text x="{sample_cx + 30:.0f}" y="{_ICON_H * 0.42 + 26:.0f}" '
         f'font-size="15" fill="{_SUBTLE}" dominant-baseline="middle">'
-        f"A part-figure marks the remainder · rows sorted high to low</text>"
+        f'A part-figure marks the remainder · rows sorted high to low</text>'
     )
-    parts.append("</g>")
+    parts.append('</g>')
 
     parts.append(fullscreen_control(_WIDTH, _HEIGHT, mode))
-    parts.append("</svg>")
+    parts.append('</svg>')
     return "\n".join(parts)
 
 
@@ -596,12 +582,8 @@ def make_pictorial(
         Absolute path to the written SVG file.
     """
     svg = build_svg(
-        data,
-        title=title,
-        subtitle=subtitle,
-        mode=mode,
-        accessibility=accessibility,
-        theme=theme,
+        data, title=title, subtitle=subtitle,
+        mode=mode, accessibility=accessibility, theme=theme,
     )
     dest = Path(out) if out else svg_example_path(__file__, "pictorial")
     return write_svg(dest, svg, theme=theme)

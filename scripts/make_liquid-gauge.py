@@ -61,7 +61,10 @@ _VALUE: float = 63.0
 _MEDIAN: float = 68.0
 
 _TITLE: str = "The reservoir sits at 63 %, just below its seasonal normal"
-_SUBTITLE: str = "Serre-Ponçon lake · usable capacity on 1 July · 10-year median 68 %"
+_SUBTITLE: str = (
+    "Serre-Ponçon lake · usable capacity on 1 July · "
+    "10-year median 68 %"
+)
 #: What the vessel measures, named under the readout so the number means
 #: something without a legend.
 _METRIC: str = "of usable capacity"
@@ -79,17 +82,15 @@ _CY: float = 600.0
 _R: float = 340.0
 
 #: House-style inks.
-_INK: str = "#1D1D1F"  # primary text
-_SUBTLE: str = "#6E6E73"  # secondary text
-_BG: str = "#FFFFFF"  # background
-_EMPTY: str = "#EEF1F6"  # the dry part of the vessel, above the liquid
-_RING: str = "#D6DAE2"  # thin vessel wall
-_TICK: str = "#C2C7D0"  # scale ticks on the right rim
+_INK: str = "#1D1D1F"      # primary text
+_SUBTLE: str = "#6E6E73"   # secondary text
+_BG: str = "#FFFFFF"       # background
+_EMPTY: str = "#EEF1F6"    # the dry part of the vessel, above the liquid
+_RING: str = "#D6DAE2"     # thin vessel wall
+_TICK: str = "#C2C7D0"     # scale ticks on the right rim
 
 
-def _liquid_hues(
-    accessibility: str = "universal", theme: str = "corporate"
-) -> Tuple[str, str, str]:
+def _liquid_hues(accessibility: str = "universal", theme: str = "corporate") -> Tuple[str, str, str]:
     """Return the three water tones (back crest, sprezzature crest, deep body).
 
     A single calm blue reads as water; two shifted crest bands plus a
@@ -312,12 +313,10 @@ def build_svg(
     parts: List[str] = []
 
     # ---- header ----
-    parts.append(
-        svg_open(_WIDTH, _HEIGHT, "lg-title", "lg-desc", font_family=chrome_stack_for_theme(theme))
-    )
+    parts.append(svg_open(_WIDTH, _HEIGHT, "lg-title", "lg-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(
         f'<title id="lg-title">Reservoir fill level: {_fmt_pct(value)} percent of usable '
-        f"capacity, just below the seasonal normal of {_fmt_pct(median)} percent</title>"
+        f'capacity, just below the seasonal normal of {_fmt_pct(median)} percent</title>'
     )
     desc = (
         "A circular liquid-fill gauge shaped like a water tank. Wavy blue "
@@ -373,7 +372,7 @@ def build_svg(
     parts.append(
         f'<defs><clipPath id="lg-disc">'
         f'<circle cx="{_CX}" cy="{_CY}" r="{_R:.1f}"/>'
-        f"</clipPath></defs>"
+        f'</clipPath></defs>'
     )
 
     # ---- background ----
@@ -382,19 +381,22 @@ def build_svg(
     # ---- title + subtitle (upper-left, poster weight) ----
     # The headline the figure writes about its own data, used only when
     # the caller supplies none.
-    title = title or "A reservoir running a little low"
+    title = title or 'A reservoir running a little low'
     parts.append(
         f'<text x="60" y="78" font-size="36" font-weight="700" '
         f'fill="{_INK}">{xml_escape(title)}</text>'
     )
     parts.append(
-        f'<text x="60" y="114" font-size="19" fill="{_SUBTLE}">{xml_escape(_SUBTITLE)}</text>'
+        f'<text x="60" y="114" font-size="19" fill="{_SUBTLE}">'
+        f'{xml_escape(_SUBTITLE)}</text>'
     )
 
     # ---- the vessel: empty (dry) disc first, then the clipped liquid ----
     # Dry background of the tank, so the space above the water reads as an
     # empty vessel, not blank page.
-    parts.append(f'<circle cx="{_CX}" cy="{_CY}" r="{_R:.1f}" fill="{_EMPTY}"/>')
+    parts.append(
+        f'<circle cx="{_CX}" cy="{_CY}" r="{_R:.1f}" fill="{_EMPTY}"/>'
+    )
 
     # Everything liquid is clipped to the disc.
     parts.append('<g clip-path="url(#lg-disc)">')
@@ -410,30 +412,29 @@ def build_svg(
     # Back crest (darker), then sprezzature crest (lighter) drawn on top and a
     # touch lower so a slim band of the back crest shows as a highlight
     # rim. Each is authored one wavelength wide and slides via SMIL.
-    back_d = _wave_path(surface_y, amp_back, wavelength, 0.0, span_left, span_right, floor_y)
+    back_d = _wave_path(
+        surface_y, amp_back, wavelength, 0.0, span_left, span_right, floor_y
+    )
     front_d = _wave_path(
-        surface_y + 7.0,
-        amp_front,
-        wavelength,
-        math.pi * 0.6,
-        span_left,
-        span_right,
-        floor_y,
+        surface_y + 7.0, amp_front, wavelength, math.pi * 0.6,
+        span_left, span_right, floor_y,
     )
     if animated:
         # Each crest lives in its own <g> so the drift animateTransform sits
         # on the element it moves, and the two crests slide independently.
         parts.append(
             f'<g><path d="{back_d}" fill="{back_crest}" fill-opacity="0.9"/>'
-            f"{_drift(wavelength, '7.5s')}</g>"
+            f'{_drift(wavelength, "7.5s")}</g>'
         )
         parts.append(
             f'<g><path d="{front_d}" fill="{front_crest}" fill-opacity="0.85"/>'
-            f"{_drift(wavelength, '5.5s', begin='-2s')}</g>"
+            f'{_drift(wavelength, "5.5s", begin="-2s")}</g>'
         )
     else:
         parts.append(f'<path d="{back_d}" fill="{back_crest}" fill-opacity="0.9"/>')
-        parts.append(f'<path d="{front_d}" fill="{front_crest}" fill-opacity="0.85"/>')
+        parts.append(
+            f'<path d="{front_d}" fill="{front_crest}" fill-opacity="0.85"/>'
+        )
 
     # Dashed seasonal-median line, clipped to the disc so it reads as a mark
     # on the vessel wall. Drawn inside the clip group, above the liquid.
@@ -445,7 +446,7 @@ def build_svg(
         f'stroke-dasharray="9 7" stroke-opacity="0.55"/>'
     )
 
-    parts.append("</g>")  # end clip group
+    parts.append('</g>')  # end clip group
 
     # ---- vessel wall: a clean thin ring, no dark halo ----
     parts.append(
@@ -467,7 +468,7 @@ def build_svg(
     parts.append(
         f'<circle id="hit-0" class="hit" tabindex="0" cx="{_CX}" cy="{_CY}" r="{_R:.1f}" '
         f'fill="transparent" role="img" aria-label="{xml_escape(tip_lines[0])}">'
-        f"<title>{xml_escape('; '.join(tip_lines))}</title></circle>"
+        f'<title>{xml_escape("; ".join(tip_lines))}</title></circle>'
     )
     # The bubble itself is appended at the very end of `parts` (see the
     # `gauge_tip` variable used near the return statement below), not here:
@@ -475,14 +476,9 @@ def build_svg(
     # placed here would be covered by anything drawn afterward (the
     # percentage scale, its ticks, ...) at an overlapping position.
     gauge_tip = tooltip_bubble(
-        _CX,
-        _CY - _R - 16,
-        tip_lines,
-        canvas_w=_WIDTH,
-        canvas_h=_HEIGHT,
-        ink=_INK,
-        secondary=_SUBTLE,
-        border=_RING,
+        _CX, _CY - _R - 16, tip_lines,
+        canvas_w=_WIDTH, canvas_h=_HEIGHT,
+        ink=_INK, secondary=_SUBTLE, border=_RING,
         elem_id="tip-0",
     )
 
@@ -506,12 +502,12 @@ def build_svg(
     parts.append(
         f'<text x="{_CX - _R - 12:.1f}" y="{median_y - 12:.1f}" '
         f'font-size="17" font-weight="600" fill="{_INK}" text-anchor="end">'
-        f"seasonal normal</text>"
+        f'seasonal normal</text>'
     )
     parts.append(
         f'<text x="{_CX - _R - 12:.1f}" y="{median_y + 10:.1f}" '
         f'font-size="16" fill="{_SUBTLE}" text-anchor="end">'
-        f"{_fmt_pct(median)}% median</text>"
+        f'{_fmt_pct(median)}% median</text>'
     )
 
     # ---- centre readout: the big number, its unit, and what it measures ----
@@ -534,10 +530,8 @@ def build_svg(
     delta = value - median
     below = delta < 0
     chip_palette = load_palette(accessibility, theme=theme)
-    chip_hex = (
-        (chip_palette.get("Orange") or "#FF9500")
-        if below
-        else (chip_palette.get("Green") or "#34C759")
+    chip_hex = (chip_palette.get("Orange") or "#FF9500") if below else (
+        chip_palette.get("Green") or "#34C759"
     )
     chip_txt = (
         f"{abs(int(round(delta)))} pts below normal"
@@ -556,19 +550,19 @@ def build_svg(
     parts.append(
         f'<text class="lg-chiptxt" x="{_CX:.0f}" y="{chip_y + 34:.1f}" font-size="23" '
         f'font-weight="700" fill="{_INK}" text-anchor="middle">'
-        f"{xml_escape(chip_txt)}</text>"
+        f'{xml_escape(chip_txt)}</text>'
     )
 
     # ---- footnote: how to read the vessel ----
     parts.append(
         f'<text x="{_WIDTH - 60:.0f}" y="{_HEIGHT - 40:.0f}" font-size="16" '
         f'fill="{_SUBTLE}" text-anchor="end">The waterline is the fill level; '
-        f"the dashed line is the 10-year seasonal median.</text>"
+        f'the dashed line is the 10-year seasonal median.</text>'
     )
 
     parts.append(gauge_tip)
     parts.append(fullscreen_control(_WIDTH, _HEIGHT, mode))
-    parts.append("</svg>")
+    parts.append('</svg>')
     return "\n".join(parts)
 
 
@@ -615,24 +609,14 @@ def make_liquid_gauge(
     row = rows[0] if rows else {}
     value = float(row.get("value", _VALUE))
     median = float(row.get("median", _MEDIAN))
-    svg = build_svg(
-        value=value,
-        median=median,
-        animated=animated,
-        mode=mode,
-        accessibility=accessibility,
-        theme=theme,
-        title=title or None,
-    )
+    svg = build_svg(value=value, median=median, animated=animated, mode=mode, accessibility=accessibility, theme=theme, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "liquid-gauge")
     return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:
     """Write the liquid-gauge SVG (and PNG companions) into the skill."""
-    parser = argparse.ArgumentParser(
-        description="Render the liquid-gauge SVG (and PNG companions)."
-    )
+    parser = argparse.ArgumentParser(description="Render the liquid-gauge SVG (and PNG companions).")
     parser.add_argument(
         "--mode",
         choices=("self-contained", "external", "static"),
@@ -641,14 +625,7 @@ def main() -> None:
     )
     parser.add_argument(
         "--accessibility",
-        choices=(
-            "universal",
-            "high-contrast",
-            "monochrome",
-            "deuteranopia",
-            "protanopia",
-            "tritanopia",
-        ),
+        choices=("universal", "high-contrast", "monochrome", "deuteranopia", "protanopia", "tritanopia"),
         default="universal",
         help="palette accessibility level (default: universal, the CVD-safe standard)",
     )
@@ -662,9 +639,7 @@ def main() -> None:
     out_svg = svg_example_path(__file__, "liquid-gauge")
     write_svg(
         out_svg,
-        build_svg(
-            animated=True, mode=args.mode, accessibility=args.accessibility, theme=args.theme
-        ),
+        build_svg(animated=True, mode=args.mode, accessibility=args.accessibility, theme=args.theme),
         theme=args.theme,
     )
 
@@ -673,9 +648,7 @@ def main() -> None:
     # rasteriser must not stop the primary SVG from having been written.
     try:
         write_raster_companions(
-            build_svg(
-                animated=False, mode="static", accessibility=args.accessibility, theme=args.theme
-            ),
+            build_svg(animated=False, mode="static", accessibility=args.accessibility, theme=args.theme),
             __file__,
             "liquid-gauge",
         )

@@ -45,9 +45,8 @@ def _polar(cx: float, cy: float, r: float, angle: float) -> Tuple[float, float]:
     return cx + r * math.sin(angle), cy - r * math.cos(angle)
 
 
-def _annular_sector_path(
-    cx: float, cy: float, r_inner: float, r_outer: float, a0: float, a1: float
-) -> str:
+def _annular_sector_path(cx: float, cy: float, r_inner: float, r_outer: float,
+                          a0: float, a1: float) -> str:
     large_arc = 1 if (a1 - a0) > math.pi else 0
     ox0, oy0 = _polar(cx, cy, r_outer, a0)
     ox1, oy1 = _polar(cx, cy, r_outer, a1)
@@ -106,19 +105,11 @@ def build_svg(
     # (Blue/Orange/Purple/Teal, the safest quartet for 2-4 slice donuts, the
     # most common count) and only reaches the Red/Green pair once 7+ slices
     # are in play, by which point they're separated by Yellow on one side.
-    hue_order = [
-        palette.get(h, d)
-        for h, d in (
-            ("Blue", "#007AFF"),
-            ("Orange", "#FF9500"),
-            ("Purple", "#AF52DE"),
-            ("Teal", "#79DBDC"),
-            ("Yellow", "#FFCC00"),
-            ("Red", "#FF3B30"),
-            ("Green", "#28CD41"),
-            ("Pink", "#FF2D55"),
-        )
-    ]
+    hue_order = [palette.get(h, d) for h, d in (
+        ("Blue", "#007AFF"), ("Orange", "#FF9500"), ("Purple", "#AF52DE"),
+        ("Teal", "#79DBDC"), ("Yellow", "#FFCC00"), ("Red", "#FF3B30"),
+        ("Green", "#28CD41"), ("Pink", "#FF2D55"),
+    )]
     colors = {r["source"]: hue_order[i % len(hue_order)] for i, r in enumerate(rows)}
 
     top_margin, bottom_margin = 120.0, 110.0
@@ -129,15 +120,11 @@ def build_svg(
     r_label = r_outer + 24.0
 
     parts: List[str] = []
-    parts.append(
-        svg_open(
-            width, height, "donut-title", "donut-desc", font_family=chrome_stack_for_theme(theme)
-        )
-    )
+    parts.append(svg_open(width, height, "donut-title", "donut-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="donut-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="donut-desc">Donut chart of {len(rows)} sources totalling {total:,.0f}. '
-        f"Hover or focus a wedge for its exact share.</desc>"
+        f'Hover or focus a wedge for its exact share.</desc>'
     )
     parts.append(
         "<style>"
@@ -177,18 +164,9 @@ def build_svg(
         lx, ly = _polar(cx, cy, r_label, mid)
         wedge_tips.append(
             tooltip_bubble(
-                lx,
-                ly + 12,
-                [
-                    str(r["source"]),
-                    f"{float(r['visits']):,.0f} visits ({share * 100:.0f}%)",
-                    f"rank {rank} of {len(rows)}",
-                ],
-                canvas_w=width,
-                canvas_h=height,
-                ink=INK,
-                secondary=SECONDARY,
-                border=GRIDLINE,
+                lx, ly + 12, [str(r["source"]), f"{float(r['visits']):,.0f} visits ({share * 100:.0f}%)",
+                              f"rank {rank} of {len(rows)}"],
+                canvas_w=width, canvas_h=height, ink=INK, secondary=SECONDARY, border=GRIDLINE,
                 elem_id=f"wedgetip-{i}",
             )
         )
@@ -258,16 +236,8 @@ def make_donut(
     >>> p.exists()
     True
     """
-    svg = build_svg(
-        data,
-        title=title,
-        subtitle=subtitle,
-        width=width,
-        height=height,
-        mode=mode,
-        accessibility=accessibility,
-        theme=theme,
-    )
+    svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
+                     mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "donut")
     return write_svg(dest, svg, theme=theme)
 

@@ -141,23 +141,16 @@ def test_run_shap_writes_valid_matplotlib_free_svgs(tmp_path: Path) -> None:
     import numpy as np
 
     rng = np.random.RandomState(0)
-    X = pd.DataFrame(
-        {
-            "f1": rng.normal(size=80),
-            "f2": rng.normal(size=80),
-        }
-    )
+    X = pd.DataFrame({
+        "f1": rng.normal(size=80),
+        "f2": rng.normal(size=80),
+    })
     y = X["f1"] * 2 - X["f2"] + rng.normal(scale=0.1, size=80)
     model = sklearn_ensemble.RandomForestRegressor(n_estimators=10, random_state=0).fit(X, y)
 
     ctx = {
-        "out": tmp_path,
-        "n_background": 15,
-        "n_explain": 20,
-        "top_n": 2,
-        "dark": False,
-        "waterfall_row": None,
-        "link": "identity",
+        "out": tmp_path, "n_background": 15, "n_explain": 20, "top_n": 2,
+        "dark": False, "waterfall_row": None, "link": "identity",
     }
     summary = em.run_shap(model, X, ctx)
 
@@ -178,7 +171,7 @@ def test_render_dag_is_valid_layered_svg(tmp_path: Path) -> None:
     import causal_estimate as ce
 
     dag = (
-        "graph [ directed 1 "
+        'graph [ directed 1 '
         'node [ id "T" ] node [ id "Y" ] node [ id "X1" ] '
         'edge [ source "X1" target "T" ] '
         'edge [ source "X1" target "Y" ] '

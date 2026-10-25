@@ -37,11 +37,7 @@ def _gate() -> None:
 
 def _profile() -> DatasetProfile:
     return DatasetProfile(
-        dataset_id="d1",
-        fingerprint="f",
-        source_name="sales.csv",
-        row_count=4,
-        column_count=2,
+        dataset_id="d1", fingerprint="f", source_name="sales.csv", row_count=4, column_count=2,
         columns=[
             ColumnProfile(name="region", physical_dtype="object", semantic_type="categorical"),
             ColumnProfile(name="value", physical_dtype="int64", semantic_type="numeric"),
@@ -59,12 +55,8 @@ def test_analyze_intent_returns_validated_user_intent() -> None:
 
 def test_propose_edit_returns_validated_edit_proposal() -> None:
     plan = FigurePlan(
-        figure_kind="bar",
-        title="Revenue",
-        bindings={
-            "category": ColumnBinding(columns=["region"]),
-            "value": ColumnBinding(columns=["value"]),
-        },
+        figure_kind="bar", title="Revenue",
+        bindings={"category": ColumnBinding(columns=["region"]), "value": ColumnBinding(columns=["value"])},
     )
     proposal = propose_edit(
         default_client(),

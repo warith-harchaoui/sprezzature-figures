@@ -38,10 +38,8 @@ COLOR_DOT = "#007AFF"
 #: message, and a ranking of Greek letters carries none. The same five
 #: values, attached to something a reader can weigh.
 DEMO_DATA: List[Dict[str, Any]] = [
-    {"c": "Config change", "v": 91},
-    {"c": "Failed deploy", "v": 62},
-    {"c": "Capacity limit", "v": 55},
-    {"c": "Third party", "v": 43},
+    {"c": "Config change", "v": 91}, {"c": "Failed deploy", "v": 62},
+    {"c": "Capacity limit", "v": 55}, {"c": "Third party", "v": 43},
     {"c": "Hardware fault", "v": 28},
 ]
 
@@ -141,13 +139,14 @@ def build_svg(
         return plot_x + v / x_domain * plot_w
 
     parts: List[str] = []
-    parts.append(
-        svg_open(width, height, "lp-title", "lp-desc", font_family=chrome_stack_for_theme(theme))
-    )
+    parts.append(svg_open(width, height, "lp-title", "lp-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="lp-title">{xml_escape(title)}</title>')
     top = rows[0] if rows else None
     peak_desc = strings["leads_at"].format(name=top["c"], value=top["v"]) if top else ""
-    parts.append(f'<desc id="lp-desc">{strings["desc"].format(n=n, max_v=max_v)}{peak_desc}</desc>')
+    parts.append(
+        f'<desc id="lp-desc">{strings["desc"].format(n=n, max_v=max_v)}'
+        f'{peak_desc}</desc>'
+    )
     parts.append(
         "<style>"
         ".pop{transition:r .12s ease;}"
@@ -163,9 +162,7 @@ def build_svg(
         f'<text x="40" y="46" font-size="22" font-weight="700" fill="{INK}" '
         f'letter-spacing="-0.3">{xml_escape(title)}</text>'
     )
-    parts.append(
-        f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>'
-    )
+    parts.append(f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>')
 
     # ---- x-axis gridlines ----
     for val in x_tick_vals:
@@ -194,24 +191,17 @@ def build_svg(
         x1 = x_for(v)
         share = v / total * 100.0
         tip = f"{row['c']}: {v:.0f} ({share:.1f}% {strings['of_total']})"
-        parts.append(
-            f'<line x1="{plot_x:.1f}" y1="{cy:.1f}" x2="{x1:.1f}" y2="{cy:.1f}" stroke="{COLOR_STEM}" stroke-width="2"/>'
-        )
+        parts.append(f'<line x1="{plot_x:.1f}" y1="{cy:.1f}" x2="{x1:.1f}" y2="{cy:.1f}" stroke="{COLOR_STEM}" stroke-width="2"/>')
         parts.append(
             f'<circle id="pop-{i}" class="pop hit" tabindex="0" cx="{x1:.1f}" cy="{cy:.1f}" r="7" fill="{COLOR_DOT}" '
             f'stroke="{BG}" stroke-width="1.5" role="img" aria-label="{xml_escape(tip)}"/>'
         )
         lollipop_tips.append(
             tooltip_bubble(
-                x1,
-                cy - 14,
+                x1, cy - 14,
                 [str(row["c"]), f"{v:.0f} pts", f"{share:.1f}% {strings['of_total']}"],
-                anchor="middle",
-                canvas_w=width,
-                canvas_h=height,
-                ink=INK,
-                secondary=SECONDARY,
-                border=GRIDLINE,
+                anchor="middle", canvas_w=width, canvas_h=height,
+                ink=INK, secondary=SECONDARY, border=GRIDLINE,
                 elem_id=f"pop-tip-{i}",
             )
         )
@@ -274,17 +264,8 @@ def make_lollipop(
     >>> p.exists()
     True
     """
-    svg = build_svg(
-        data,
-        title=title,
-        subtitle=subtitle,
-        width=width,
-        height=height,
-        mode=mode,
-        accessibility=accessibility,
-        language=language,
-        theme=theme,
-    )
+    svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
+                     mode=mode, accessibility=accessibility, language=language, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "lollipop")
     return write_svg(dest, svg, theme=theme)
 

@@ -40,12 +40,7 @@ DEPARTMENTS = ["Engineering", "Sales", "Marketing", "Support"]
 
 def _make_demo_data() -> List[Dict[str, Any]]:
     rng = random.Random(11)
-    ranges = {
-        "Engineering": (65, 130),
-        "Sales": (50, 110),
-        "Marketing": (45, 95),
-        "Support": (40, 80),
-    }
+    ranges = {"Engineering": (65, 130), "Sales": (50, 110), "Marketing": (45, 95), "Support": (40, 80)}
     rows: List[Dict[str, Any]] = []
     for dept, (lo, hi) in ranges.items():
         for _ in range(25):
@@ -75,15 +70,8 @@ def _five_number_summary(values: List[float]) -> Dict[str, Any]:
     outliers = [v for v in s if v < lo_fence or v > hi_fence]
     whisker_lo = min(inliers) if inliers else s[0]
     whisker_hi = max(inliers) if inliers else s[-1]
-    return {
-        "q1": q1,
-        "med": med,
-        "q3": q3,
-        "whisker_lo": whisker_lo,
-        "whisker_hi": whisker_hi,
-        "outliers": outliers,
-        "n": len(s),
-    }
+    return {"q1": q1, "med": med, "q3": q3, "whisker_lo": whisker_lo, "whisker_hi": whisker_hi,
+            "outliers": outliers, "n": len(s)}
 
 
 def build_svg(
@@ -222,13 +210,11 @@ def build_svg(
         return base + (j - (ng - 1) / 2.0) * box_w
 
     parts: List[str] = []
-    parts.append(
-        svg_open(width, height, "bp-title", "bp-desc", font_family=chrome_stack_for_theme(theme))
-    )
+    parts.append(svg_open(width, height, "bp-title", "bp-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="bp-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="bp-desc">Box plot of {n} categories. Range {_fmt(y_min)} to '
-        f"{_fmt(y_max)}. Hover or focus a box for its exact median and quartiles.</desc>"
+        f'{_fmt(y_max)}. Hover or focus a box for its exact median and quartiles.</desc>'
     )
 
     parts.append(
@@ -253,9 +239,7 @@ def build_svg(
         f'<text x="40" y="46" font-size="24" font-weight="700" fill="{INK}" '
         f'letter-spacing="-0.3">{xml_escape(title)}</text>'
     )
-    parts.append(
-        f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>'
-    )
+    parts.append(f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>')
 
     # ---- legend (grouped only) ----
     if grouped:
@@ -286,7 +270,7 @@ def build_svg(
     parts.append(
         f'<text x="18" y="{plot_y + plot_h / 2:.1f}" font-size="13" fill="{INK}" '
         f'text-anchor="middle" transform="rotate(-90 18 {plot_y + plot_h / 2:.1f})">'
-        f"{xml_escape(y_label)}</text>"
+        f'{xml_escape(y_label)}</text>'
     )
 
     # ---- boxes ----
@@ -305,18 +289,10 @@ def build_svg(
             y_med = y_for(s["med"])
             y_whisk_lo, y_whisk_hi = y_for(s["whisker_lo"]), y_for(s["whisker_hi"])
 
-            parts.append(
-                f'<line x1="{cx:.1f}" y1="{y_whisk_hi:.1f}" x2="{cx:.1f}" y2="{y_q3:.1f}" stroke="{INK}" stroke-width="1.2"/>'
-            )
-            parts.append(
-                f'<line x1="{cx:.1f}" y1="{y_q1:.1f}" x2="{cx:.1f}" y2="{y_whisk_lo:.1f}" stroke="{INK}" stroke-width="1.2"/>'
-            )
-            parts.append(
-                f'<line x1="{cx - cap:.1f}" y1="{y_whisk_hi:.1f}" x2="{cx + cap:.1f}" y2="{y_whisk_hi:.1f}" stroke="{INK}" stroke-width="1.2"/>'
-            )
-            parts.append(
-                f'<line x1="{cx - cap:.1f}" y1="{y_whisk_lo:.1f}" x2="{cx + cap:.1f}" y2="{y_whisk_lo:.1f}" stroke="{INK}" stroke-width="1.2"/>'
-            )
+            parts.append(f'<line x1="{cx:.1f}" y1="{y_whisk_hi:.1f}" x2="{cx:.1f}" y2="{y_q3:.1f}" stroke="{INK}" stroke-width="1.2"/>')
+            parts.append(f'<line x1="{cx:.1f}" y1="{y_q1:.1f}" x2="{cx:.1f}" y2="{y_whisk_lo:.1f}" stroke="{INK}" stroke-width="1.2"/>')
+            parts.append(f'<line x1="{cx - cap:.1f}" y1="{y_whisk_hi:.1f}" x2="{cx + cap:.1f}" y2="{y_whisk_hi:.1f}" stroke="{INK}" stroke-width="1.2"/>')
+            parts.append(f'<line x1="{cx - cap:.1f}" y1="{y_whisk_lo:.1f}" x2="{cx + cap:.1f}" y2="{y_whisk_lo:.1f}" stroke="{INK}" stroke-width="1.2"/>')
 
             gtxt = f"{gname}, " if grouped else ""
             tip = (
@@ -331,20 +307,15 @@ def build_svg(
             )
             box_tips.append(
                 tooltip_bubble(
-                    cx,
-                    y_q3 - 10,
+                    cx, y_q3 - 10,
                     [
                         f"{gtxt}{d}" if grouped else str(d),
                         f"median {_fmt(s['med'])}",
                         f"Q1 {_fmt(s['q1'])} — Q3 {_fmt(s['q3'])}",
                         f"whiskers {_fmt(s['whisker_lo'])}-{_fmt(s['whisker_hi'])}, n={s['n']}",
                     ],
-                    anchor="middle",
-                    canvas_w=width,
-                    canvas_h=height,
-                    ink=INK,
-                    secondary=SECONDARY,
-                    border=GRIDLINE,
+                    anchor="middle", canvas_w=width, canvas_h=height,
+                    ink=INK, secondary=SECONDARY, border=GRIDLINE,
                     elem_id=f"box-tip-{box_idx}",
                 )
             )
@@ -424,19 +395,9 @@ def make_boxplot(
     >>> p.exists()
     True
     """
-    svg = build_svg(
-        data,
-        title=title,
-        subtitle=subtitle,
-        width=width,
-        height=height,
-        mode=mode,
-        accessibility=accessibility,
-        theme=theme,
-        x_label=x_label,
-        y_label=y_label,
-        log_y=log_y,
-    )
+    svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
+                     mode=mode, accessibility=accessibility, theme=theme,
+                     x_label=x_label, y_label=y_label, log_y=log_y)
     dest = Path(out) if out else svg_example_path(__file__, "boxplot")
     return write_svg(dest, svg, theme=theme)
 

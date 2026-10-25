@@ -74,7 +74,6 @@ def _strings(language: str) -> Dict[str, str]:
     """Chrome-text dict for `language`, falling back to English."""
     return _STRINGS.get(language, _STRINGS["en"])
 
-
 # ---------------------------------------------------------------------------
 # Demo data: global R&D investment by region and country (billion USD, 2023).
 # Two-level hierarchy: region -> country.
@@ -110,9 +109,8 @@ def _polar(cx: float, cy: float, r: float, angle: float) -> Tuple[float, float]:
     return cx + r * math.sin(angle), cy - r * math.cos(angle)
 
 
-def _annular_sector_path(
-    cx: float, cy: float, r_inner: float, r_outer: float, a0: float, a1: float
-) -> str:
+def _annular_sector_path(cx: float, cy: float, r_inner: float, r_outer: float,
+                          a0: float, a1: float) -> str:
     """Return an SVG path ``d`` for a donut wedge between angles *a0* and *a1*."""
     large_arc = 1 if (a1 - a0) > math.pi else 0
     ox0, oy0 = _polar(cx, cy, r_outer, a0)
@@ -182,12 +180,8 @@ def build_svg(
     total = sum(region_totals.values()) or 1.0
 
     palette = load_palette(accessibility, theme=theme)
-    hue_order = [
-        palette.get("Blue", "#007AFF"),
-        palette.get("Green", "#34C759"),
-        palette.get("Orange", "#FF9500"),
-        palette.get("Purple", "#AF52DE"),
-    ]
+    hue_order = [palette.get("Blue", "#007AFF"), palette.get("Green", "#34C759"),
+                 palette.get("Orange", "#FF9500"), palette.get("Purple", "#AF52DE")]
     region_colors = {r: hue_order[i % len(hue_order)] for i, r in enumerate(regions_sorted)}
 
     legend_w = 190.0
@@ -203,9 +197,7 @@ def build_svg(
     ring2_inner, ring2_outer = hole + (r_outer_canvas - hole) * 0.48, r_outer_canvas
 
     parts: List[str] = []
-    parts.append(
-        svg_open(width, height, "sb-title", "sb-desc", font_family=chrome_stack_for_theme(theme))
-    )
+    parts.append(svg_open(width, height, "sb-title", "sb-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="sb-title">{xml_escape(title)}</title>')
     desc = strings["desc_template"].format(
         n_parents=len(regions_sorted), n_children=len(rows), total=f"{total:,.1f}"
@@ -228,9 +220,7 @@ def build_svg(
         f'<text x="40" y="46" font-size="24" font-weight="700" fill="{INK}" '
         f'letter-spacing="-0.3">{xml_escape(title)}</text>'
     )
-    parts.append(
-        f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>'
-    )
+    parts.append(f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>')
 
     # ---- ring 1: regions ----
     # Every arc's bubble (both rings) is queued into `bubbles` and appended
@@ -258,15 +248,10 @@ def build_svg(
         tip_x, tip_y = _polar(cx, cy, ring1_outer, (a0 + a1) / 2.0)
         bubbles.append(
             tooltip_bubble(
-                tip_x,
-                tip_y - 14,
+                tip_x, tip_y - 14,
                 [r, f"{region_totals[r]:,.1f} bn USD", f"{share * 100:.1f}% of total"],
-                anchor="middle",
-                canvas_w=width,
-                canvas_h=height,
-                ink=INK,
-                secondary=SECONDARY,
-                border=GRIDLINE,
+                anchor="middle", canvas_w=width, canvas_h=height,
+                ink=INK, secondary=SECONDARY, border=GRIDLINE,
                 elem_id=f"tip-{arc_idx}",
             )
         )
@@ -298,19 +283,10 @@ def build_svg(
             tip_x2, tip_y2 = _polar(cx, cy, ring2_outer, (a0 + a1) / 2.0)
             bubbles.append(
                 tooltip_bubble(
-                    tip_x2,
-                    tip_y2 - 14,
-                    [
-                        row["name"],
-                        f"{float(row['value']):,.1f} bn USD",
-                        f"{share_local * 100:.1f}% of {r}",
-                    ],
-                    anchor="middle",
-                    canvas_w=width,
-                    canvas_h=height,
-                    ink=INK,
-                    secondary=SECONDARY,
-                    border=GRIDLINE,
+                    tip_x2, tip_y2 - 14,
+                    [row["name"], f"{float(row['value']):,.1f} bn USD", f"{share_local * 100:.1f}% of {r}"],
+                    anchor="middle", canvas_w=width, canvas_h=height,
+                    ink=INK, secondary=SECONDARY, border=GRIDLINE,
                     elem_id=f"tip-{arc_idx}",
                 )
             )
@@ -325,12 +301,8 @@ def build_svg(
     )
     for i, r in enumerate(regions_sorted):
         ly = ly0 + 26.0 + i * 24.0
-        parts.append(
-            f'<circle cx="{lx0 + 6:.1f}" cy="{ly - 4:.1f}" r="6" fill="{region_colors[r]}"/>'
-        )
-        parts.append(
-            f'<text x="{lx0 + 20:.1f}" y="{ly:.1f}" font-size="12" fill="{INK}">{xml_escape(r)}</text>'
-        )
+        parts.append(f'<circle cx="{lx0 + 6:.1f}" cy="{ly - 4:.1f}" r="6" fill="{region_colors[r]}"/>')
+        parts.append(f'<text x="{lx0 + 20:.1f}" y="{ly:.1f}" font-size="12" fill="{INK}">{xml_escape(r)}</text>')
 
     parts.extend(bubbles)
     parts.append(fullscreen_control(width, height, mode))
@@ -384,26 +356,15 @@ def make_sunburst(
     >>> p.exists()
     True
     """
-    svg = build_svg(
-        data,
-        title=title,
-        subtitle=subtitle,
-        width=width,
-        height=height,
-        mode=mode,
-        accessibility=accessibility,
-        language=language,
-        theme=theme,
-    )
+    svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
+                     mode=mode, accessibility=accessibility, language=language, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "sunburst")
     return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:
     """CLI entry point: build the SVG and write it to disk."""
-    render_cli(
-        __file__, "sunburst", build_svg, description="Generate a sunburst radial hierarchy chart."
-    )
+    render_cli(__file__, "sunburst", build_svg, description="Generate a sunburst radial hierarchy chart.")
 
 
 if __name__ == "__main__":

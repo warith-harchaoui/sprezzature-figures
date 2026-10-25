@@ -58,22 +58,25 @@ import numpy as np
 
 # Repo-relative default output — the one SVG artifact this figure ships.
 _DEFAULT_OUT = (
-    Path(__file__).resolve().parent.parent / "assets" / "svg-examples" / "wireframe3d.svg"
+    Path(__file__).resolve().parent.parent
+    / "assets"
+    / "svg-examples"
+    / "wireframe3d.svg"
 )
 
 # House-style tokens (mirrors the house-style constants, kept literal so this
 # generator needs no import of the dataviz tier at build time).
-_INK = "#1D1D1F"  # primary text
+_INK = "#1D1D1F"        # primary text
 _SECONDARY = "#6E6E73"  # subtitle / secondary text
-_BG = "#FFFFFF"  # white ground
+_BG = "#FFFFFF"         # white ground
 
 # Depth ramp endpoints: near lines read a deep house blue, far lines fade
 # toward a pale teal so the lattice has an unambiguous front-to-back cue on
 # top of the painter-ordering — a redundant channel for the 3D read. These are
 # the ``universal`` anchors; :func:`_depth_ramp` applies the accessibility
 # level per render (see its docstring for why a two-anchor ramp survives it).
-_NEAR = "#0A4DA0"  # deep blue  — closest mesh lines
-_FAR = "#B9E4E8"  # pale teal  — farthest mesh lines
+_NEAR = "#0A4DA0"       # deep blue  — closest mesh lines
+_FAR = "#B9E4E8"        # pale teal  — farthest mesh lines
 
 
 def _depth_ramp(accessibility: str = "universal") -> Tuple[str, str]:
@@ -213,19 +216,11 @@ def _project(
     """
     n = xx.shape[0]
     px, py, depth = project3d(
-        xx.ravel(),
-        yy.ravel(),
-        (zz * 0.65).ravel(),
-        elev_deg=elev_deg,
-        azim_deg=azim_deg,
-        plot_w=plot_w,
-        plot_h=plot_h,
-        cx=cx,
-        cy=cy,
-        fit="width",
+        xx.ravel(), yy.ravel(), (zz * 0.65).ravel(),
+        elev_deg=elev_deg, azim_deg=azim_deg, plot_w=plot_w, plot_h=plot_h,
+        cx=cx, cy=cy, fit="width",
     )
     return px.reshape(n, n), py.reshape(n, n), depth.reshape(n, n)
-
 
 def _lerp_hex(a: str, b: str, t: float) -> str:
     """Linearly interpolate two ``#RRGGBB`` colours in sRGB space.
@@ -276,9 +271,9 @@ def _edge_indices(n: int) -> List[Tuple[int, int]]:
     for i in range(n):
         for j in range(n):
             flat = i * n + j
-            if j + 1 < n:  # horizontal edge
+            if j + 1 < n:                 # horizontal edge
                 edges.append((flat, flat + 1))
-            if i + 1 < n:  # vertical edge
+            if i + 1 < n:                 # vertical edge
                 edges.append((flat, i * n + n + j))
     return edges
 
@@ -303,15 +298,9 @@ def _frame_endpoints(
         ``(px_flat, py_flat, depth_flat)``, each shape ``(n * n,)``.
     """
     px, py, depth = _project(
-        xx,
-        yy,
-        zz,
-        elev_deg=elev_deg,
-        azim_deg=azim_deg,
-        plot_w=plot_w,
-        plot_h=plot_h,
-        cx=cx,
-        cy=cy,
+        xx, yy, zz,
+        elev_deg=elev_deg, azim_deg=azim_deg,
+        plot_w=plot_w, plot_h=plot_h, cx=cx, cy=cy,
     )
     return px.ravel(), py.ravel(), depth.ravel()
 
@@ -370,15 +359,9 @@ def _mesh_svg(
     # Project every keyframe once; frames[k] = (px, py, depth) flat arrays.
     frames = [
         _frame_endpoints(
-            xx,
-            yy,
-            zz,
-            azim_deg=a,
-            elev_deg=elev_deg,
-            plot_w=plot_w,
-            plot_h=plot_h,
-            cx=cx,
-            cy=cy,
+            xx, yy, zz,
+            azim_deg=a, elev_deg=elev_deg,
+            plot_w=plot_w, plot_h=plot_h, cx=cx, cy=cy,
         )
         for a in azimuths
     ]
@@ -397,7 +380,7 @@ def _mesh_svg(
     out: List[str] = []
     for k in order:
         a, b = edges[k]
-        t = (edge_depth[k] - d_lo) / span  # 0 far … 1 near
+        t = (edge_depth[k] - d_lo) / span   # 0 far … 1 near
         colour = _lerp_hex(far, near, t)
         width = 1.1 + 1.9 * t
         opacity = 0.55 + 0.45 * t
@@ -411,11 +394,9 @@ def _mesh_svg(
             f'stroke-opacity="{opacity:.2f}" stroke-linecap="round">'
         )
         if animate:
-
             def _vals(idx: int, coord: int) -> str:
                 # coord: 0 -> px, 1 -> py; idx: endpoint vertex index.
                 return ";".join(fmt_compact(frames[f][coord][idx]) for f in range(n_frames))
-
             line += (
                 f'<animate attributeName="x1" values="{_vals(a, 0)}" '
                 f'keyTimes="{key_times}" dur="{dur}" repeatCount="indefinite"/>'
@@ -480,7 +461,7 @@ def build_svg(
     # Poster-scale canvas: the figure should read big and generous, with the
     # lattice claiming most of the frame rather than floating in whitespace.
     width, height = 1120, 780
-    m_top = 132  # room for the larger title + subtitle
+    m_top = 132   # room for the larger title + subtitle
     m_bottom = 74  # room for the depth legend
     plot_w = width
     plot_h = height - m_top - m_bottom
@@ -497,28 +478,26 @@ def build_svg(
     # closes at the same angle so the SMIL loop is seamless.
     centre, sweep = -52.0, 34.0
     n_key = 13
-    azimuths = [centre + sweep * float(np.sin(2.0 * np.pi * i / (n_key - 1))) for i in range(n_key)]
+    azimuths = [
+        centre + sweep * float(np.sin(2.0 * np.pi * i / (n_key - 1)))
+        for i in range(n_key)
+    ]
 
     mesh = _mesh_svg(
-        xx,
-        yy,
-        zz,
-        elev_deg=elev,
-        azimuths=azimuths,
-        plot_w=plot_w,
-        plot_h=plot_h,
-        cx=cx,
-        cy=cy,
+        xx, yy, zz,
+        elev_deg=elev, azimuths=azimuths,
+        plot_w=plot_w, plot_h=plot_h, cx=cx, cy=cy,
         animate=animate,
-        near=near,
-        far=far,
+        near=near, far=far,
     )
 
     parts: List[str] = []
 
     # ---- header ----------------------------------------------------------- #
     title = title or "A single ripple ripples out, then fades to stillness"
-    subtitle = "Wave height across a still pond, one second after a single drop"
+    subtitle = (
+        "Wave height across a still pond, one second after a single drop"
+    )
     desc = (
         "3D wireframe surface: a mesh of projected grid lines over a "
         "radially-symmetric ripple, one central peak ringed by decaying "
@@ -555,9 +534,14 @@ def build_svg(
     )
     parts.append(f'<rect width="{width}" height="{height}" rx="16" fill="{_BG}"/>')
     parts.append(
-        f'<text x="56" y="66" font-size="34" font-weight="700" fill="{_INK}">{title}</text>'
+        f'<text x="56" y="66" font-size="34" font-weight="700" '
+        f'fill="{_INK}">{title}</text>'
     )
-    parts.append(f'<text x="56" y="100" font-size="19" fill="{_SECONDARY}">{subtitle}</text>')
+    parts.append(
+        f'<text x="56" y="100" font-size="19" '
+        f'fill="{_SECONDARY}">{subtitle}</text>'
+    )
+
 
     # ---- the rotating lattice --------------------------------------------- #
     # Each mesh edge carries its own SMIL <animate> tags driving its projected
@@ -611,7 +595,9 @@ def _build_parser() -> argparse.ArgumentParser:
         default=_DEFAULT_OUT,
         help="Destination SVG path (default: the shipped example).",
     )
-    parser.add_argument("--seed", type=int, default=3, help="Random seed for the sample surface.")
+    parser.add_argument(
+        "--seed", type=int, default=3, help="Random seed for the sample surface."
+    )
     parser.add_argument(
         "--no-animate",
         action="store_true",
@@ -626,12 +612,8 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--accessibility",
         choices=(
-            "universal",
-            "high-contrast",
-            "monochrome",
-            "deuteranopia",
-            "protanopia",
-            "tritanopia",
+            "universal", "high-contrast", "monochrome",
+            "deuteranopia", "protanopia", "tritanopia",
         ),
         default="universal",
         help="palette accessibility level (default: universal, the CVD-safe standard).",
@@ -680,16 +662,7 @@ def make_wireframe3d(
         Absolute path to the written SVG file.
     """
     xx, yy, zz = _rows_to_grid(list(data)) if data else _sample_surface()
-    svg = build_svg(
-        xx,
-        yy,
-        zz,
-        animate=animate,
-        mode=mode,
-        accessibility=accessibility,
-        theme=theme,
-        title=title or None,
-    )
+    svg = build_svg(xx, yy, zz, animate=animate, mode=mode, accessibility=accessibility, theme=theme, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "wireframe3d")
     return write_svg(dest, svg, theme=theme)
 
@@ -699,13 +672,9 @@ def main(argv: List[str] | None = None) -> int:
     args = _build_parser().parse_args(argv)
     xx, yy, zz = _sample_surface(seed=args.seed)
     svg = build_svg(
-        xx,
-        yy,
-        zz,
-        animate=not args.no_animate,
-        mode=args.mode,
-        accessibility=args.accessibility,
-        theme=args.theme,
+        xx, yy, zz,
+        animate=not args.no_animate, mode=args.mode,
+        accessibility=args.accessibility, theme=args.theme,
     )
     write_svg(args.out, svg, theme=args.theme)
     return 0

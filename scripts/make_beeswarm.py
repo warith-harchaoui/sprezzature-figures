@@ -62,23 +62,17 @@ DEMO_DATA: List[Dict[str, Any]] = _make_demo_data()
 #: mélange des deux.
 _CHROME = {
     "fr": {
-        "group_prefix": "Groupe ",
-        "y_axis_title": "Valeur",
-        "desc": (
-            "Nuage d'abeilles de {n} observations réparties en {g} groupes, "
-            "de {mini:.1f} à {maxi:.1f}. Survolez un point pour sa valeur exacte."
-        ),
+        "group_prefix": "Groupe ", "y_axis_title": "Valeur",
+        "desc": ("Nuage d'abeilles de {n} observations réparties en {g} groupes, "
+                 "de {mini:.1f} à {maxi:.1f}. Survolez un point pour sa valeur exacte."),
         "info_groupe": "Groupe {g} : {v:.1f}",
         "info_valeur": "valeur {v:.1f}",
         "info_centile": "{p:.0f}e centile de l'ensemble",
     },
     "en": {
-        "group_prefix": "Group ",
-        "y_axis_title": "Value",
-        "desc": (
-            "Beeswarm of {n} observations across {g} groups, ranging "
-            "{mini:.1f} to {maxi:.1f}. Hover or focus a dot for its exact value."
-        ),
+        "group_prefix": "Group ", "y_axis_title": "Value",
+        "desc": ("Beeswarm of {n} observations across {g} groups, ranging "
+                 "{mini:.1f} to {maxi:.1f}. Hover or focus a dot for its exact value."),
         "info_groupe": "Group {g}: {v:.1f}",
         "info_valeur": "value {v:.1f}",
         "info_centile": "{p:.0f}th percentile overall",
@@ -136,11 +130,7 @@ def build_svg(
     # ~6 apart and collapse to the same shade once desaturated -- easy to
     # miss here since the dot cloud interleaves all three groups. Brown
     # (~68) separates cleanly from both Blue (~106) and Green (~160).
-    hue_order = [
-        palette.get("Brown", "#A52A2A"),
-        palette.get("Blue", "#007AFF"),
-        palette.get("Green", "#34C759"),
-    ]
+    hue_order = [palette.get("Brown", "#A52A2A"), palette.get("Blue", "#007AFF"), palette.get("Green", "#34C759")]
     colors = {g: hue_order[i % len(hue_order)] for i, g in enumerate(groups)}
 
     # Chrome dans la langue demandée, sauf si l'appelant a donné le sien.
@@ -172,14 +162,12 @@ def build_svg(
     ys = _swarm_positions(items, center_y, _RADIUS)
 
     parts: List[str] = []
-    parts.append(
-        svg_open(width, height, "bee-title", "bee-desc", font_family=chrome_stack_for_theme(theme))
-    )
+    parts.append(svg_open(width, height, "bee-title", "bee-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="bee-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="bee-desc">'
-        f"{xml_escape(chrome['desc'].format(n=len(rows), g=len(groups), mini=v_min, maxi=v_max))}"
-        f"</desc>"
+        f'{xml_escape(chrome["desc"].format(n=len(rows), g=len(groups), mini=v_min, maxi=v_max))}'
+        f'</desc>'
     )
     parts.append(
         "<style>"
@@ -200,9 +188,7 @@ def build_svg(
         f'<text x="40" y="46" font-size="22" font-weight="700" fill="{INK}" '
         f'letter-spacing="-0.3">{xml_escape(title)}</text>'
     )
-    parts.append(
-        f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>'
-    )
+    parts.append(f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>')
 
     # ---- legend ----
     #
@@ -229,9 +215,7 @@ def build_svg(
             cursor = lx
         y = ly + ligne * _LEGEND_LINE_H
         parts.append(f'<circle cx="{cursor + 6:.1f}" cy="{y - 4:.1f}" r="6" fill="{colors[g]}"/>')
-        parts.append(
-            f'<text x="{cursor + 20:.1f}" y="{y:.1f}" font-size="12" fill="{INK}">{xml_escape(group_prefix)}{xml_escape(g)}</text>'
-        )
+        parts.append(f'<text x="{cursor + 20:.1f}" y="{y:.1f}" font-size="12" fill="{INK}">{xml_escape(group_prefix)}{xml_escape(g)}</text>')
         cursor += largeur
         fin_derniere_ligne = cursor
     if restants:
@@ -279,23 +263,15 @@ def build_svg(
         parts.append(
             f'<circle id="dot-hit-{i}" class="dot hit" tabindex="0" cx="{x:.1f}" cy="{y:.1f}" r="{_RADIUS:.0f}" '
             f'fill="{colors.get(g, "#8E8E93")}" stroke="{BG}" stroke-width="1">'
-            f"<title>{xml_escape(tip)}</title></circle>"
+            f'<title>{xml_escape(tip)}</title></circle>'
         )
         percentile = (i + 1) / n_rows * 100.0 if n_rows else 0.0
         dot_tips.append(
             tooltip_bubble(
-                x,
-                y - _RADIUS - 6,
-                [
-                    f"{chrome['group_prefix']}{g}",
-                    chrome["info_valeur"].format(v=val),
-                    chrome["info_centile"].format(p=percentile),
-                ],
-                canvas_w=width,
-                canvas_h=height,
-                ink=INK,
-                secondary=SECONDARY,
-                border=GRIDLINE,
+                x, y - _RADIUS - 6,
+                [f'{chrome["group_prefix"]}{g}', chrome["info_valeur"].format(v=val),
+                 chrome["info_centile"].format(p=percentile)],
+                canvas_w=width, canvas_h=height, ink=INK, secondary=SECONDARY, border=GRIDLINE,
                 elem_id=f"dot-tip-{i}",
             )
         )
@@ -350,19 +326,8 @@ def make_beeswarm(
     >>> p.exists()
     True
     """
-    svg = build_svg(
-        data,
-        title=title,
-        subtitle=subtitle,
-        width=width,
-        height=height,
-        mode=mode,
-        accessibility=accessibility,
-        theme=theme,
-        group_prefix=group_prefix,
-        y_axis_title=y_axis_title,
-        language=language,
-    )
+    svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
+                     mode=mode, accessibility=accessibility, theme=theme, group_prefix=group_prefix, y_axis_title=y_axis_title, language=language)
     dest = Path(out) if out else svg_example_path(__file__, "beeswarm")
     return write_svg(dest, svg, theme=theme)
 

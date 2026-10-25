@@ -72,11 +72,11 @@ from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_the
 WIDTH = 1180
 HEIGHT = 1240
 CX = WIDTH / 2.0
-CY = HEIGHT / 2.0 + 54  # nudge down to leave room for the title block
-R_LEAF = 388  # radius of the leaf ring (module dots)
-R_PARENT = 218  # radius interior subsystem nodes sit on
-LABEL_PAD = 20  # radial gap between a leaf dot and its label
-GROUP_GAP_DEG = 8.0  # angular gap between subsystem groups
+CY = HEIGHT / 2.0 + 54       # nudge down to leave room for the title block
+R_LEAF = 388                 # radius of the leaf ring (module dots)
+R_PARENT = 218               # radius interior subsystem nodes sit on
+LABEL_PAD = 20               # radial gap between a leaf dot and its label
+GROUP_GAP_DEG = 8.0          # angular gap between subsystem groups
 # Bundling strength for the cross-subsystem "root" hop: the shared
 # control point is placed this fraction of the way from the two parents'
 # midpoint toward the circle centre. Small = cables hug the parent ring
@@ -86,7 +86,7 @@ GROUP_GAP_DEG = 8.0  # angular gap between subsystem groups
 # defining mark of the technique — while keeping the centre readable.
 CENTRE_PULL = 0.52
 
-SUBINK = "#6E6E73"  # secondary text
+SUBINK = "#6E6E73"           # secondary text
 
 
 # ------------------------------------------------------------------
@@ -99,14 +99,13 @@ SUBINK = "#6E6E73"  # secondary text
 # ------------------------------------------------------------------
 # Each subsystem maps to its list of module (leaf) names, in ring order.
 SUBSYSTEMS: List[Tuple[str, List[str]]] = [
-    ("Web UI", ["Router", "Views", "Forms", "Widgets"]),
-    ("API", ["Gateway", "Handlers", "Schemas"]),
-    ("Auth", ["Login", "Tokens", "Roles"]),
-    ("Billing", ["Invoices", "Payments", "Plans"]),
-    ("Data", ["Models", "Queries", "Cache", "Migrations"]),
-    ("Infra", ["Config", "Logging", "Metrics"]),
+    ("Web UI",   ["Router", "Views", "Forms", "Widgets"]),
+    ("API",      ["Gateway", "Handlers", "Schemas"]),
+    ("Auth",     ["Login", "Tokens", "Roles"]),
+    ("Billing",  ["Invoices", "Payments", "Plans"]),
+    ("Data",     ["Models", "Queries", "Cache", "Migrations"]),
+    ("Infra",    ["Config", "Logging", "Metrics"]),
 ]
-
 
 # Brand hue per subsystem — the leaf colour and one end of every edge's
 # gradient.
@@ -128,12 +127,12 @@ def _subsys_color(accessibility: str = "universal", theme: str = "corporate") ->
     """
     palette = load_palette(accessibility, theme=theme)
     return {
-        "Web UI": palette.get("Blue", "#007AFF"),
-        "API": palette.get("Teal", "#5AC8FA"),
-        "Auth": palette.get("Red", "#FF3B30"),
+        "Web UI":  palette.get("Blue", "#007AFF"),
+        "API":     palette.get("Teal", "#5AC8FA"),
+        "Auth":    palette.get("Red", "#FF3B30"),
         "Billing": palette.get("Orange", "#FF9500"),
-        "Data": palette.get("Green", "#34C759"),
-        "Infra": palette.get("Purple", "#AF52DE"),
+        "Data":    palette.get("Green", "#34C759"),
+        "Infra":   palette.get("Purple", "#AF52DE"),
     }
 
 
@@ -168,7 +167,6 @@ def _slug(name: str) -> str:
             out.append("-")
             prev_dash = True
     return "".join(out).strip("-")
-
 
 # Dependencies as (source module, target module). Chosen so that the two
 # heavy cross-cutting cables — everyone -> Auth, and Billing -> Data —
@@ -209,7 +207,9 @@ EDGES: List[Tuple[str, str]] = [
 
 #: Row-record view of :data:`EDGES`, the shape the ``make_<kind>`` contract
 #: asks for: one dict per module-dependency edge.
-DEMO_DATA: List[Dict[str, Any]] = [{"source": u, "target": v} for u, v in EDGES]
+DEMO_DATA: List[Dict[str, Any]] = [
+    {"source": u, "target": v} for u, v in EDGES
+]
 
 
 # ------------------------------------------------------------------
@@ -271,7 +271,9 @@ def _spline_path(points: List[Tuple[float, float]]) -> str:
         c1y = p1[1] + (p2[1] - p0[1]) / 6.0
         c2x = p2[0] - (p3[0] - p1[0]) / 6.0
         c2y = p2[1] - (p3[1] - p1[1]) / 6.0
-        d.append(f"C{c1x:.2f},{c1y:.2f} {c2x:.2f},{c2y:.2f} {p2[0]:.2f},{p2[1]:.2f}")
+        d.append(
+            f"C{c1x:.2f},{c1y:.2f} {c2x:.2f},{c2y:.2f} {p2[0]:.2f},{p2[1]:.2f}"
+        )
     return " ".join(d)
 
 
@@ -404,11 +406,8 @@ def _edge_control_points(
 # SVG emission
 # ------------------------------------------------------------------
 def build_svg(
-    mode: str = "self-contained",
-    accessibility: str = "universal",
-    theme: str = "corporate",
-    stat_card_label: str = "Dependencies into",
-    stat_card_value_label: str = "Auth",
+    mode: str = "self-contained", accessibility: str = "universal", theme: str = "corporate",
+    stat_card_label: str = "Dependencies into", stat_card_value_label: str = "Auth",
     title: Optional[str] = None,
 ) -> str:
     """Assemble the full edge-bundling SVG document as a string.
@@ -448,7 +447,9 @@ def build_svg(
     leaves, parents = _compute_layout(subsys_color)
 
     title_txt = title or "Every subsystem reaches into Auth, and Billing burrows into Data"
-    subtitle_txt = "Module dependencies in a web app, bundled by subsystem"
+    subtitle_txt = (
+        "Module dependencies in a web app, bundled by subsystem"
+    )
     desc_txt = (
         "Hierarchical edge-bundling diagram of the module-dependency graph of a "
         "web application. Modules sit on a circle grouped into six subsystems "
@@ -463,9 +464,7 @@ def build_svg(
     # Count edges per source subsystem so a source's cables draw thickest
     # first (thin threads layer cleanly on top).
     parts: List[str] = []
-    parts.append(
-        svg_open(WIDTH, HEIGHT, "eb-title", "eb-desc", font_family=chrome_stack_for_theme(theme))
-    )
+    parts.append(svg_open(WIDTH, HEIGHT, "eb-title", "eb-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="eb-title">{escape(title_txt)}</title>')
     parts.append(f'<desc id="eb-desc">{escape(desc_txt)}</desc>')
 
@@ -480,7 +479,9 @@ def build_svg(
     # with no colour. The source→target edge gradients are left universal — they
     # are a redundant directional cue on top of the labelled leaves, and a
     # gradient stroke cannot be meaningfully re-tinted by a single class rule.
-    subsys_series = {f".leaf-{_slug(subsys)}": subsys_color[subsys] for subsys, _ in SUBSYSTEMS}
+    subsys_series = {
+        f".leaf-{_slug(subsys)}": subsys_color[subsys] for subsys, _ in SUBSYSTEMS
+    }
     parts.append(
         "<style>"
         ".edge{transition:opacity .18s ease,stroke-width .18s ease}"
@@ -532,7 +533,7 @@ def build_svg(
             f'x2="{pv["x"]:.1f}" y2="{pv["y"]:.1f}">'
             f'<stop offset="0" stop-color="{c0}"/>'
             f'<stop offset="1" stop-color="{c1}"/>'
-            f"</linearGradient>"
+            f'</linearGradient>'
         )
     parts.append("</defs>")
 
@@ -545,7 +546,8 @@ def build_svg(
         f'fill="{INK}">{escape(title_txt)}</text>'
     )
     parts.append(
-        f'<text x="46" y="94" font-size="19" fill="{SUBINK}">{escape(subtitle_txt)}</text>'
+        f'<text x="46" y="94" font-size="19" fill="{SUBINK}">'
+        f'{escape(subtitle_txt)}</text>'
     )
 
     # --- edges (drawn first, under the leaves) ---
@@ -553,7 +555,8 @@ def build_svg(
     # underneath the short local threads.
     def _edge_len(e: Tuple[str, str]) -> float:
         u, v = e
-        return math.dist((leaves[u]["x"], leaves[u]["y"]), (leaves[v]["x"], leaves[v]["y"]))
+        return math.dist((leaves[u]["x"], leaves[u]["y"]),
+                         (leaves[v]["x"], leaves[v]["y"]))
 
     parts.append('<g id="edges" fill="none">')
     edge_tips: List[str] = []
@@ -569,19 +572,13 @@ def build_svg(
             f'aria-label="{escape(tip)}" d="{d}" '
             f'stroke="url(#{gid})" stroke-width="2.6" stroke-opacity="0.68" '
             f'stroke-linecap="round">'
-            f"<title>{escape(tip)}</title></path>"
+            f'<title>{escape(tip)}</title></path>'
         )
         emx, emy = pts[len(pts) // 2]
         edge_tips.append(
             tooltip_bubble(
-                emx,
-                emy,
-                [f"{u} → {v}", f"{su} to {sv}"],
-                canvas_w=WIDTH,
-                canvas_h=HEIGHT,
-                ink=INK,
-                secondary=SUBINK,
-                border=GRIDLINE,
+                emx, emy, [f"{u} → {v}", f"{su} to {sv}"],
+                canvas_w=WIDTH, canvas_h=HEIGHT, ink=INK, secondary=SUBINK, border=GRIDLINE,
                 elem_id=f"edgetip-{edge_i}",
             )
         )
@@ -617,10 +614,13 @@ def build_svg(
         if deg > 180:
             rot += 180.0
             anchor = "end"
-        tip = f"{mod} · {lf['subsys']} — depended on by {indeg[mod]}, depends on {outdeg[mod]}"
+        tip = (
+            f"{mod} · {lf['subsys']} — depended on by {indeg[mod]}, "
+            f"depends on {outdeg[mod]}"
+        )
         parts.append(
             f'<g id="leaf-{leaf_i}" class="leaf hit" tabindex="0" role="img" aria-label="{escape(tip)}">'
-            f"<title>{escape(tip)}</title>"
+            f'<title>{escape(tip)}</title>'
             f'<circle class="leaf-dot leaf-{_slug(str(lf["subsys"]))}" '
             f'cx="{lf["x"]:.2f}" cy="{lf["y"]:.2f}" '
             f'r="{r_dot:.2f}" fill="{lf["color"]}" '
@@ -628,23 +628,14 @@ def build_svg(
             f'<text x="{lx:.2f}" y="{ly:.2f}" font-size="17" '
             f'fill="{INK}" text-anchor="{anchor}" dominant-baseline="middle" '
             f'transform="rotate({rot:.2f} {lx:.2f} {ly:.2f})">'
-            f"{escape(mod)}</text>"
-            f"</g>"
+            f'{escape(mod)}</text>'
+            f'</g>'
         )
         leaf_tips.append(
             tooltip_bubble(
-                lf["x"],
-                lf["y"] - r_dot - 10,
-                [
-                    f"{mod} ({lf['subsys']})",
-                    f"depended on by {indeg[mod]}",
-                    f"depends on {outdeg[mod]}",
-                ],
-                canvas_w=WIDTH,
-                canvas_h=HEIGHT,
-                ink=INK,
-                secondary=SUBINK,
-                border=GRIDLINE,
+                lf["x"], lf["y"] - r_dot - 10,
+                [f"{mod} ({lf['subsys']})", f"depended on by {indeg[mod]}", f"depends on {outdeg[mod]}"],
+                canvas_w=WIDTH, canvas_h=HEIGHT, ink=INK, secondary=SUBINK, border=GRIDLINE,
                 elem_id=f"leaftip-{leaf_i}",
             )
         )
@@ -665,7 +656,9 @@ def build_svg(
             f'<rect class="leaf-{_slug(subsys)}" x="{sx}" y="{sy - 13}" '
             f'width="18" height="18" rx="5" fill="{subsys_color[subsys]}"/>'
         )
-        parts.append(f'<text x="{sx + 26}" y="{sy + 1}">{escape(subsys)}</text>')
+        parts.append(
+            f'<text x="{sx + 26}" y="{sy + 1}">{escape(subsys)}</text>'
+        )
     parts.append("</g>")
 
     # --- takeaway callout, boxed, in the clear top-right corner ---
@@ -679,7 +672,8 @@ def build_svg(
         f'fill="{BG}" stroke="#E5E5EA" stroke-width="1.5"/>'
     )
     parts.append(
-        f'<text x="{bx + 24}" y="{by + 34}" font-size="16" fill="{SUBINK}">{stat_card_label}</text>'
+        f'<text x="{bx + 24}" y="{by + 34}" font-size="16" '
+        f'fill="{SUBINK}">{stat_card_label}</text>'
     )
     parts.append(
         f'<text x="{bx + 24}" y="{by + 76}" '
@@ -695,8 +689,8 @@ def build_svg(
     parts.append(
         f'<text x="46" y="{HEIGHT - 30}" font-size="15" '
         f'fill="{SUBINK}">Curves bundle by shared subsystem · dot size ∝ how '
-        f"often a module is depended on · colour drifts source → target · "
-        f"hover or focus an edge to trace it</text>"
+        f'often a module is depended on · colour drifts source → target · '
+        f'hover or focus an edge to trace it</text>'
     )
 
     parts.append(fullscreen_control(WIDTH, HEIGHT, mode))
@@ -748,14 +742,8 @@ def make_edge_bundling(
         Absolute path to the written SVG file.
     """
     _ = data, title  # accepted for dispatcher parity; see docstring
-    svg = build_svg(
-        mode=mode,
-        accessibility=accessibility,
-        theme=theme,
-        stat_card_label=stat_card_label,
-        stat_card_value_label=stat_card_value_label,
-        title=title or None,
-    )
+    svg = build_svg(mode=mode, accessibility=accessibility, theme=theme,
+                     stat_card_label=stat_card_label, stat_card_value_label=stat_card_value_label, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "edge-bundling")
     return write_svg(dest, svg, theme=theme)
 

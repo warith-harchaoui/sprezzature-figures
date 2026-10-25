@@ -69,15 +69,15 @@ from _svg import foreground_tip_css, svg_open, tooltip_bubble  # noqa: E402
 # ------------------------------------------------------------------
 WIDTH = 1280
 HEIGHT = 1040
-SUBINK = "#6E6E73"  # secondary text
-AXIS = "#D2D2D7"  # axis + gridline grey (light, unobtrusive)
+SUBINK = "#6E6E73"         # secondary text
+AXIS = "#D2D2D7"           # axis + gridline grey (light, unobtrusive)
 
 # Plot frame in canvas pixels. Generous left/bottom gutters hold the axis
 # titles; top gutter holds title + subtitle + legend; right gutter gives
 # the rightmost hull room to breathe so nothing clips.
 PLOT_X0 = 132.0
 PLOT_X1 = WIDTH - 96.0
-PLOT_Y0 = 250.0  # top edge of the plotting area (below the legend)
+PLOT_Y0 = 250.0            # top edge of the plotting area (below the legend)
 PLOT_Y1 = HEIGHT - 132.0  # bottom edge (above the axis title)
 
 # Data windows. Monthly spend in dollars (x); weekly active days (y).
@@ -87,8 +87,8 @@ X_MIN, X_MAX = 0.0, 260.0
 Y_MIN, Y_MAX = 0.0, 8.2
 
 # Hull cosmetics.
-HULL_PAD = 22.0  # px the hull is pushed out past its points
-CORNER = 18.0  # px corner-rounding radius on the hull polygon
+HULL_PAD = 22.0           # px the hull is pushed out past its points
+CORNER = 18.0             # px corner-rounding radius on the hull polygon
 HULL_FILL_OPACITY = 0.14  # translucent wash so hulls never fight the points
 HULL_STROKE_OPACITY = 0.9
 
@@ -106,11 +106,10 @@ SEGMENTS: List[str] = ["Occasional", "Regular", "Power users"]
 # only a thin no-man's-land between neighbours — the case a hull is meant
 # to make visible.
 _CLUSTER_PARAMS: Dict[str, Tuple[float, float, float, float, int]] = {
-    "Occasional": (40.0, 1.5, 18.0, 0.6, 34),
-    "Regular": (120.0, 3.8, 24.0, 0.6, 40),
+    "Occasional":  (40.0,  1.5, 18.0, 0.6, 34),
+    "Regular":     (120.0, 3.8, 24.0, 0.6, 40),
     "Power users": (208.0, 6.0, 22.0, 0.55, 30),
 }
-
 
 def _segment_colors(accessibility: str = "universal", theme: str = "corporate") -> Dict[str, str]:
     """Return the per-segment hue map at a given accessibility level.
@@ -130,8 +129,8 @@ def _segment_colors(accessibility: str = "universal", theme: str = "corporate") 
     """
     palette = load_palette(accessibility, theme=theme)
     return {
-        "Occasional": palette.get("Blue", "#007AFF"),
-        "Regular": palette.get("Orange", "#FF9500"),
+        "Occasional":  palette.get("Blue", "#007AFF"),
+        "Regular":     palette.get("Orange", "#FF9500"),
         "Power users": palette.get("Purple", "#AF52DE"),
     }
 
@@ -334,8 +333,8 @@ def _rounded_hull_path(hull: List[Tuple[float, float]], radius: float) -> str:
         prev = hull[(i - 1) % n]
         curr = hull[i]
         nxt = hull[(i + 1) % n]
-        p_in = _pt_toward(curr, prev, radius)  # approach point before the corner
-        p_out = _pt_toward(curr, nxt, radius)  # departure point after the corner
+        p_in = _pt_toward(curr, prev, radius)   # approach point before the corner
+        p_out = _pt_toward(curr, nxt, radius)   # departure point after the corner
         if i == 0:
             segs.append(f"M {p_in[0]:.2f} {p_in[1]:.2f}")
         else:
@@ -379,10 +378,7 @@ def _label_anchor(hull_px: List[Tuple[float, float]]) -> Tuple[float, float]:
 # SVG emission
 # ------------------------------------------------------------------
 def build_svg(
-    seed: int = 11,
-    mode: str = "self-contained",
-    accessibility: str = "universal",
-    theme: str = "corporate",
+    seed: int = 11, mode: str = "self-contained", accessibility: str = "universal", theme: str = "corporate",
     title: Optional[str] = None,
 ) -> str:
     """Assemble the full convex-hull SVG document as a string.
@@ -432,9 +428,7 @@ def build_svg(
     )
 
     parts: List[str] = []
-    parts.append(
-        svg_open(WIDTH, HEIGHT, "ch-title", "ch-desc", font_family=chrome_stack_for_theme(theme))
-    )
+    parts.append(svg_open(WIDTH, HEIGHT, "ch-title", "ch-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="ch-title">{escape(title_txt)}</title>')
     parts.append(f'<desc id="ch-desc">{escape(desc_txt)}</desc>')
 
@@ -486,7 +480,8 @@ def build_svg(
         f'fill="{INK}">{escape(title_txt)}</text>'
     )
     parts.append(
-        f'<text x="56" y="114" font-size="20" fill="{SUBINK}">{escape(subtitle_txt)}</text>'
+        f'<text x="56" y="114" font-size="20" fill="{SUBINK}">'
+        f'{escape(subtitle_txt)}</text>'
     )
 
     # --- segment legend (row below the subtitle) ---
@@ -547,13 +542,13 @@ def build_svg(
     parts.append(
         f'<text x="{(PLOT_X0 + PLOT_X1) / 2:.1f}" y="{HEIGHT - 54:.1f}" '
         f'text-anchor="middle" font-size="19" font-weight="600" fill="{INK}">'
-        f"Average monthly spend</text>"
+        f'Average monthly spend</text>'
     )
     ay = (PLOT_Y0 + PLOT_Y1) / 2
     parts.append(
         f'<text x="46" y="{ay:.1f}" text-anchor="middle" font-size="19" '
         f'font-weight="600" fill="{INK}" transform="rotate(-90 46 {ay:.1f})">'
-        f"Weekly active days</text>"
+        f'Weekly active days</text>'
     )
     parts.append("</g>")  # /axes
 
@@ -590,7 +585,7 @@ def build_svg(
     # the chip a fixed gap above the hull's top edge keeps every label in
     # clear space, out of the point cloud and clear of the boundary. The chip
     # is clamped inside the plot frame so nothing clips at the top edge.
-    label_gap = 26.0  # px from the hull's top point to the chip centre
+    label_gap = 26.0        # px from the hull's top point to the chip centre
     label_size = 19.0
     chip_half_h = label_size + 0.8 * label_size  # cell height, from label_cell
     for seg in SEGMENTS:
@@ -635,19 +630,14 @@ def build_svg(
                 f'<circle id="hit-{hit_idx}" class="dot {slug} hit" cx="{px:.1f}" cy="{py:.1f}" r="7.5" '
                 f'fill="{color}" stroke="#FFFFFF" stroke-width="1.6" '
                 f'tabindex="0" role="img" aria-label="{escape(tip)}">'
-                f"<title>{escape(tip)}</title></circle>"
+                f'<title>{escape(tip)}</title></circle>'
             )
             seg_tip_cards.append(
                 tooltip_bubble(
-                    px,
-                    py - 16,
+                    px, py - 16,
                     [str(seg), f"${spend}/mo spend", f"{days} active days/week"],
-                    anchor="middle",
-                    canvas_w=WIDTH,
-                    canvas_h=HEIGHT,
-                    ink=INK,
-                    secondary=SUBINK,
-                    border=GRIDLINE,
+                    anchor="middle", canvas_w=WIDTH, canvas_h=HEIGHT,
+                    ink=INK, secondary=SUBINK, border=GRIDLINE,
                     elem_id=f"tip-{hit_idx}",
                 )
             )
@@ -660,8 +650,8 @@ def build_svg(
     # --- footer hint ---
     parts.append(
         f'<text x="56" y="{HEIGHT - 22:.1f}" font-size="16" fill="{SUBINK}">'
-        f"Each shaded region is the convex hull of one segment · hover or "
-        f"focus a dot to isolate its segment</text>"
+        f'Each shaded region is the convex hull of one segment · hover or '
+        f'focus a dot to isolate its segment</text>'
     )
 
     # Fullscreen control per interactivity mode, just before the close.
@@ -715,9 +705,7 @@ def make_convex_hull(
         Absolute path to the written SVG file.
     """
     _ = data, title  # accepted for dispatcher parity; see docstring
-    svg = build_svg(
-        seed=seed, mode=mode, accessibility=accessibility, theme=theme, title=title or None
-    )
+    svg = build_svg(seed=seed, mode=mode, accessibility=accessibility, theme=theme, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "convex-hull")
     return write_svg(dest, svg, theme=theme)
 

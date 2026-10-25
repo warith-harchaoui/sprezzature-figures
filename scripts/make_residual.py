@@ -157,7 +157,7 @@ def loess(
     x = np.asarray(xs, dtype=float)
     y = np.asarray(ys, dtype=float)
     n = len(x)
-    k = max(2, int(round(frac * n)))  # neighbourhood size
+    k = max(2, int(round(frac * n)))     # neighbourhood size
     out: List[float] = []
     for g in grid:
         # Distances to g, take the k nearest, tricube-weight by scaled distance.
@@ -217,9 +217,9 @@ def build_svg(
         A complete, standalone SVG document.
     """
     palette: Dict[str, str] = load_palette(accessibility, theme=theme)
-    over = palette.get("Blue", "#007AFF")  # residual > 0: model under-predicts
+    over = palette.get("Blue", "#007AFF")     # residual > 0: model under-predicts
     under = palette.get("Orange", "#FF9500")  # residual < 0: model over-predicts
-    trend = palette.get("Red", "#FF3B30")  # the LOESS structure line
+    trend = palette.get("Red", "#FF3B30")     # the LOESS structure line
     ink = "#1D1D1F"
     secondary = "#6E6E73"
     grid_col = "#EEEEEE"
@@ -265,25 +265,23 @@ def build_svg(
     # this figure's pre-existing tick-label literal -- kept verbatim for the
     # corporate default so byte identity holds; only academic swaps it.
     tick_mono = "Roboto Mono, monospace" if theme == "corporate" else mono_stack_for_theme(theme)
-    parts.append(
-        svg_open(width, height, "rs-title", "rs-desc", font_family=chrome_stack_for_theme(theme))
-    )
+    parts.append(svg_open(width, height, "rs-title", "rs-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(
         '<title id="rs-title">The residuals still curve — a straight line '
-        "under-fits home prices</title>"
+        'under-fits home prices</title>'
     )
     parts.append(
         '<desc id="rs-desc">Residual plot for a straight-line fit of home '
-        "sale price against floor area. Residuals (actual minus predicted "
-        "price, thousands of dollars) are scattered on the vertical axis "
-        "against the model's fitted price on the horizontal axis, with a "
-        "dashed zero reference line. A red locally-weighted smoother bows "
-        "into a U — residuals are positive at both ends and negative in the "
-        "middle — and the spread of points widens toward the right. The "
-        "curvature and the fanning show the linear model mis-specifies both "
-        "the mean and the variance. Points above zero (model under-predicts) "
-        "are blue; points below zero (model over-predicts) are orange. "
-        "</desc>"
+        'sale price against floor area. Residuals (actual minus predicted '
+        'price, thousands of dollars) are scattered on the vertical axis '
+        'against the model\'s fitted price on the horizontal axis, with a '
+        'dashed zero reference line. A red locally-weighted smoother bows '
+        'into a U — residuals are positive at both ends and negative in the '
+        'middle — and the spread of points widens toward the right. The '
+        'curvature and the fanning show the linear model mis-specifies both '
+        'the mean and the variance. Points above zero (model under-predicts) '
+        'are blue; points below zero (model over-predicts) are orange. '
+        '</desc>'
     )
 
     # Static figure: hover / focus enlargement only, no motion to guard.
@@ -306,11 +304,8 @@ def build_svg(
         ".pt:focus{outline:none}"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
         "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
-        + "\n"
-        + contrast_block
-        + "\n"
-        + os_dark_style(extra='[stroke="#EEEEEE"]{stroke:#2C2C2E;}')
-        + "\n"
+        + "\n" + contrast_block + "\n"
+        + os_dark_style(extra='[stroke="#EEEEEE"]{stroke:#2C2C2E;}') + "\n"
         "</style>"
     )
 
@@ -327,10 +322,13 @@ def build_svg(
     )
     parts.append(
         f'<text x="{m_left}" y="102" font-size="19" fill="{secondary}">'
-        f"Residuals of a linear price-vs-size fit; the red smoother bows into "
-        f"a U and fans out on the right</text>"
+        f'Residuals of a linear price-vs-size fit; the red smoother bows into '
+        f'a U and fans out on the right</text>'
     )
-    parts.append(f'<text x="{m_left}" y="128" font-size="19" fill="{secondary}"></text>')
+    parts.append(
+        f'<text x="{m_left}" y="128" font-size="19" fill="{secondary}">'
+        f'</text>'
+    )
 
     # --- gridlines (very light) ----------------------------------
     for t in x_ticks:
@@ -385,7 +383,7 @@ def build_svg(
     parts.append(
         f'<text x="{plot_x + plot_w / 2:.1f}" y="{ax_bottom + 62:.1f}" '
         f'font-size="19" fill="{ink}" text-anchor="middle">'
-        f"Fitted sale price (thousand $)</text>"
+        f'Fitted sale price (thousand $)</text>'
     )
     ytitle_x = 42
     ytitle_y = plot_y + plot_h / 2
@@ -393,7 +391,7 @@ def build_svg(
         f'<text x="{ytitle_x:.1f}" y="{ytitle_y:.1f}" font-size="19" '
         f'fill="{ink}" text-anchor="middle" '
         f'transform="rotate(-90 {ytitle_x:.1f} {ytitle_y:.1f})">'
-        f"Residual  =  actual − predicted (thousand $)</text>"
+        f'Residual  =  actual − predicted (thousand $)</text>'
     )
 
     # --- zero reference rule (dashed grey) -----------------------
@@ -443,19 +441,11 @@ def build_svg(
         parts.append("</g>")
         tips.append(
             tooltip_bubble(
-                cx,
-                cy - 18,
-                [
-                    f"Fitted {int(round(f))} k$",
-                    f"Residual {sign}{int(round(r))} k$",
-                    "Model under-predicts" if r >= 0 else "Model over-predicts",
-                ],
-                anchor="middle",
-                canvas_w=width,
-                canvas_h=height,
-                ink=ink,
-                secondary=secondary,
-                border=grid_col,
+                cx, cy - 18,
+                [f"Fitted {int(round(f))} k$", f"Residual {sign}{int(round(r))} k$",
+                 "Model under-predicts" if r >= 0 else "Model over-predicts"],
+                anchor="middle", canvas_w=width, canvas_h=height,
+                ink=ink, secondary=secondary, border=grid_col,
                 elem_id=f"tip-{tip_i}",
             )
         )
@@ -486,12 +476,12 @@ def build_svg(
     parts.append(
         f'<text class="rs-over" x="{sx(130.0):.1f}" y="{sy(92.0):.1f}" font-size="18" '
         f'font-weight="700" fill="{over}">Model under-predicts '
-        f"(residual &gt; 0)</text>"
+        f'(residual &gt; 0)</text>'
     )
     parts.append(
         f'<text class="rs-under" x="{sx(130.0):.1f}" y="{sy(-70.0):.1f}" font-size="18" '
         f'font-weight="700" fill="{under}">Model over-predicts '
-        f"(residual &lt; 0)</text>"
+        f'(residual &lt; 0)</text>'
     )
 
     parts.extend(tips)
@@ -541,9 +531,7 @@ def make_residual(
 def main() -> None:
     """Write the residual-plot SVG to the canonical assets path (or --out)."""
     render_cli(
-        __file__,
-        "residual",
-        build_svg,
+        __file__, "residual", build_svg,
         description="Render the residual plot (residuals vs fitted, zero rule) SVG.",
     )
 

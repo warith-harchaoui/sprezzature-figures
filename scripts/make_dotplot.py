@@ -71,7 +71,8 @@ def _response_hours(n: int = 68, seed: int = 11) -> List[float]:
     """
     rng = random.Random(seed)
     vals = [
-        round(min(max(math.exp(rng.gauss(math.log(2.0), 0.52)), 0.3), 8.6), 1) for _ in range(n)
+        round(min(max(math.exp(rng.gauss(math.log(2.0), 0.52)), 0.3), 8.6), 1)
+        for _ in range(n)
     ]
     return sorted(vals)
 
@@ -205,7 +206,9 @@ def build_svg(
     str
         A complete, standalone SVG document.
     """
-    response_hours: List[float] = [float(r["hours"]) for r in data] if data else RESPONSE_HOURS
+    response_hours: List[float] = (
+        [float(r["hours"]) for r in data] if data else RESPONSE_HOURS
+    )
     palette: Dict[str, str] = load_palette(accessibility, theme=theme)
     blue = palette.get("Blue", "#007AFF")
     red = palette.get("Red", "#FF3B30")
@@ -259,9 +262,7 @@ def build_svg(
     within_label = within_label or chrome["dans_la_cible"]
     tail_label = tail_label or chrome["traine"]
 
-    parts.append(
-        svg_open(width, height, "dp-title", "dp-desc", font_family=chrome_stack_for_theme(theme))
-    )
+    parts.append(svg_open(width, height, "dp-title", "dp-desc", font_family=chrome_stack_for_theme(theme)))
     # Nom et description accessibles : dérivés des données, jamais d'une
     # prose écrite pour le jeu de démonstration. Un lecteur d'écran doit
     # entendre ce que la figure montre, pas ce qu'elle montrait en exemple.
@@ -273,8 +274,8 @@ def build_svg(
     parts.append(f'<title id="dp-title">{xml_escape(nom_accessible)}</title>')
     parts.append(
         f'<desc id="dp-desc">Wilkinson dot plot of {n} values. Each dot is one '
-        f"observation, binned every {bin_width} and stacked. {pct_within}% fall "
-        f"within the target ({within}); the {n - within} past it form the tail.</desc>"
+        f'observation, binned every {bin_width} and stacked. {pct_within}% fall '
+        f'within the target ({within}); the {n - within} past it form the tail.</desc>'
     )
 
     # Focus ring for keyboard users landing on an interactive dot. The
@@ -317,7 +318,9 @@ def build_svg(
     # mesure autre chose.
     demo = data is None or data is DEMO_DATA
     headline = title or (chrome["titre"] if demo else "")
-    sous_titre = subtitle or (chrome["sous_titre"].format(pct=pct_within, n=n) if demo else "")
+    sous_titre = subtitle or (
+        chrome["sous_titre"].format(pct=pct_within, n=n) if demo else ""
+    )
     if headline:
         parts.append(
             f'<text x="{m_left}" y="60" font-size="32" font-weight="700" '
@@ -326,7 +329,7 @@ def build_svg(
     if sous_titre:
         parts.append(
             f'<text x="{m_left}" y="96" font-size="20" fill="{secondary}">'
-            f"{xml_escape(sous_titre)}</text>"
+            f'{xml_escape(sous_titre)}</text>'
         )
 
     # --- target line + label -------------------------------------
@@ -356,7 +359,7 @@ def build_svg(
     parts.append(
         f'<text x="{m_left + plot_w / 2:.1f}" y="{baseline_y + 72:.1f}" '
         f'font-size="20" fill="{ink}" text-anchor="middle">'
-        f"{xml_escape(chrome['axe'])}</text>"
+        f'{xml_escape(chrome["axe"])}</text>'
     )
 
     # --- the dots ------------------------------------------------
@@ -380,23 +383,14 @@ def build_svg(
                 f'r="{r:.1f}" fill="{fill}" fill-opacity="0.92" '
                 f'stroke="#FFFFFF" stroke-width="1.5" tabindex="0" '
                 f'role="img" aria-label="{tip}">'
-                f"<title>{tip}</title>"
-                f"</circle>"
+                f'<title>{tip}</title>'
+                f'</circle>'
             )
             dot_tips.append(
                 tooltip_bubble(
-                    cx + r + 8,
-                    cy - 20,
-                    anchor="start",
-                    lines=[
-                        chrome["info_valeur"].format(v=v),
-                        chrome["info_depasse"] if over else chrome["info_dans"],
-                    ],
-                    canvas_w=width,
-                    canvas_h=height,
-                    ink=ink,
-                    secondary=secondary,
-                    border=GRIDLINE,
+                    cx + r + 8, cy - 20, anchor="start",
+                    lines=[chrome["info_valeur"].format(v=v), chrome["info_depasse"] if over else chrome["info_dans"]],
+                    canvas_w=width, canvas_h=height, ink=ink, secondary=secondary, border=GRIDLINE,
                     elem_id=f"tip-{dot_i}",
                 )
             )
@@ -413,14 +407,16 @@ def build_svg(
     lx_blue = m_left + plot_w - 292
     lx_red = m_left + plot_w - 118
     parts.append(
-        f'<circle class="dot-within" cx="{lx_blue:.1f}" cy="{ly:.1f}" r="{lr:.1f}" fill="{blue}"/>'
+        f'<circle class="dot-within" cx="{lx_blue:.1f}" cy="{ly:.1f}" '
+        f'r="{lr:.1f}" fill="{blue}"/>'
     )
     parts.append(
         f'<text x="{lx_blue + 16:.1f}" y="{ly + 6:.1f}" font-size="18" '
         f'fill="{ink}">{within_label}</text>'
     )
     parts.append(
-        f'<circle class="dot-tail" cx="{lx_red:.1f}" cy="{ly:.1f}" r="{lr:.1f}" fill="{red}"/>'
+        f'<circle class="dot-tail" cx="{lx_red:.1f}" cy="{ly:.1f}" '
+        f'r="{lr:.1f}" fill="{red}"/>'
     )
     parts.append(
         f'<text x="{lx_red + 16:.1f}" y="{ly + 6:.1f}" font-size="18" '
@@ -472,15 +468,9 @@ def make_dotplot(
         Absolute path to the written SVG file.
     """
     svg = build_svg(
-        data,
-        mode=mode,
-        accessibility=accessibility,
-        theme=theme,
-        within_label=within_label,
-        tail_label=tail_label,
-        title=title,
-        subtitle=subtitle,
-        language=language,
+        data, mode=mode, accessibility=accessibility, theme=theme,
+        within_label=within_label, tail_label=tail_label, title=title,
+        subtitle=subtitle, language=language,
     )
     dest = Path(out) if out else svg_example_path(__file__, "dotplot")
     return write_svg(dest, svg, theme=theme)

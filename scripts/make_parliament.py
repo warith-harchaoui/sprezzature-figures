@@ -72,15 +72,15 @@ from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_the
 WIDTH = 1280
 HEIGHT = 980
 CX = WIDTH / 2.0
-CY = 858.0  # centre of the hemicycle, low so the arch fills upward
-R_INNER = 246.0  # inner radius of the innermost seat row
-R_OUTER = 566.0  # outer radius of the outermost seat row
-N_ROWS = 10  # concentric seat rows
-SEAT_PITCH = 33.0  # target centre-to-centre spacing between seats
-SEAT_R = 12.4  # seat-dot radius
+CY = 858.0            # centre of the hemicycle, low so the arch fills upward
+R_INNER = 246.0       # inner radius of the innermost seat row
+R_OUTER = 566.0       # outer radius of the outermost seat row
+N_ROWS = 10           # concentric seat rows
+SEAT_PITCH = 33.0     # target centre-to-centre spacing between seats
+SEAT_R = 12.4         # seat-dot radius
 
-SUBINK = "#6E6E73"  # secondary text
-HAIR = "#D2D2D7"  # hairlines / soft rules
+SUBINK = "#6E6E73"    # secondary text
+HAIR = "#D2D2D7"      # hairlines / soft rules
 
 FONT = "Roboto, system-ui, sans-serif"
 
@@ -97,24 +97,19 @@ FONT = "Roboto, system-ui, sans-serif"
 # The base-hue name is resolved to a concrete hex at the requested accessibility
 # level by :func:`_parties`, so the chamber can re-hue without duplicating data.
 _PARTY_ROWS: List[Tuple[str, str, int, str]] = [
-    ("Green League", "GRN", 34, "Green"),
-    ("Social Democrats", "SD", 136, "Red"),
-    ("Liberal Union", "LIB", 41, "Yellow"),
-    ("Christian Centre", "CC", 52, "Blue"),
-    ("National Right", "NR", 26, "Purple"),
+    ("Green League",     "GRN", 34, "Green"),
+    ("Social Democrats", "SD",  136, "Red"),
+    ("Liberal Union",    "LIB", 41, "Yellow"),
+    ("Christian Centre", "CC",  52, "Blue"),
+    ("National Right",   "NR",  26, "Purple"),
 ]
 _PARTY_FALLBACK: Dict[str, str] = {
-    "Green": "#34C759",
-    "Red": "#FF3B30",
-    "Yellow": "#FFCC00",
-    "Blue": "#007AFF",
-    "Purple": "#AF52DE",
+    "Green": "#34C759", "Red": "#FF3B30", "Yellow": "#FFCC00",
+    "Blue": "#007AFF", "Purple": "#AF52DE",
 }
 
 
-def _parties(
-    accessibility: str = "universal", theme: str = "corporate"
-) -> List[Tuple[str, str, int, str]]:
+def _parties(accessibility: str = "universal", theme: str = "corporate") -> List[Tuple[str, str, int, str]]:
     """Return the party rows with hues resolved at an accessibility level.
 
     Parameters
@@ -155,7 +150,7 @@ PALETTE = load_palette()
 PARTIES: List[Tuple[str, str, int, str]] = _parties()
 
 TOTAL_SEATS = sum(p[2] for p in PARTIES)
-MAJORITY = TOTAL_SEATS // 2 + 1  # seats needed to govern alone
+MAJORITY = TOTAL_SEATS // 2 + 1          # seats needed to govern alone
 
 
 # ------------------------------------------------------------------
@@ -167,62 +162,16 @@ MAJORITY = TOTAL_SEATS // 2 + 1  # seats needed to govern alone
 # SVG is byte-stable across renders) and adjacent seats differ in both the
 # given name and the surname.
 _FIRST_NAMES: List[str] = [
-    "Emma",
-    "Louis",
-    "Chloé",
-    "Hugo",
-    "Léa",
-    "Nathan",
-    "Camille",
-    "Adam",
-    "Manon",
-    "Lucas",
-    "Sofia",
-    "Gabriel",
-    "Alice",
-    "Raphaël",
-    "Jade",
-    "Arthur",
-    "Léna",
-    "Paul",
-    "Anna",
-    "Jules",
-    "Inès",
-    "Théo",
-    "Zoé",
-    "Noah",
+    "Emma", "Louis", "Chloé", "Hugo", "Léa", "Nathan", "Camille", "Adam",
+    "Manon", "Lucas", "Sofia", "Gabriel", "Alice", "Raphaël", "Jade", "Arthur",
+    "Léna", "Paul", "Anna", "Jules", "Inès", "Théo", "Zoé", "Noah",
 ]
 _SURNAMES: List[str] = [
-    "Martin",
-    "Bernard",
-    "Dubois",
-    "Thomas",
-    "Robert",
-    "Richard",
-    "Petit",
-    "Durand",
-    "Leroy",
-    "Moreau",
-    "Simon",
-    "Laurent",
-    "Lefebvre",
-    "Michel",
-    "Garcia",
-    "David",
-    "Bertrand",
-    "Roux",
-    "Vincent",
-    "Fournier",
-    "Morel",
-    "Girard",
-    "André",
-    "Mercier",
-    "Blanc",
-    "Guérin",
-    "Boyer",
-    "Garnier",
-    "Chevalier",
-    "François",
+    "Martin", "Bernard", "Dubois", "Thomas", "Robert", "Richard", "Petit",
+    "Durand", "Leroy", "Moreau", "Simon", "Laurent", "Lefebvre", "Michel",
+    "Garcia", "David", "Bertrand", "Roux", "Vincent", "Fournier", "Morel",
+    "Girard", "André", "Mercier", "Blanc", "Guérin", "Boyer", "Garnier",
+    "Chevalier", "François",
 ]
 
 
@@ -488,15 +437,9 @@ def _seat_disk(
         f'aria-label="{escape(tip)}"/>'
     )
     bubble = tooltip_bubble(
-        x,
-        y - SEAT_R - 12,
-        tip_lines,
-        anchor="middle",
-        canvas_w=canvas_w,
-        canvas_h=canvas_h,
-        ink=INK,
-        secondary=SUBINK,
-        border=HAIR,
+        x, y - SEAT_R - 12, tip_lines, anchor="middle",
+        canvas_w=canvas_w, canvas_h=canvas_h,
+        ink=INK, secondary=SUBINK, border=HAIR,
         elem_id=f"tip-{seat_index}",
     )
     return circle, bubble
@@ -551,9 +494,12 @@ def build_svg(
     lead_name, _lead_lab, lead_seats, lead_hue = max(parties, key=lambda p: p[2])
     short = majority - lead_seats  # how far the largest bloc falls short
 
-    title_txt = title or (f"Hung parliament: {lead_name} lead but fall {short} short of a majority")
+    title_txt = title or (
+        f"Hung parliament: {lead_name} lead but fall {short} short of a majority"
+    )
     subtitle_txt = (
-        f"General election result — {total_seats} seats, {majority} needed to govern alone"
+        f"General election result — {total_seats} seats, "
+        f"{majority} needed to govern alone"
     )
     desc_txt = (
         f"Hemicycle chart of a {total_seats}-seat national assembly after a "
@@ -564,11 +510,7 @@ def build_svg(
         f"no party can govern alone and a coalition is required."
     )
 
-    parts.append(
-        svg_open(
-            WIDTH, HEIGHT, "parl-title", "parl-desc", font_family=chrome_stack_for_theme(theme)
-        )
-    )
+    parts.append(svg_open(WIDTH, HEIGHT, "parl-title", "parl-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="parl-title">{escape(title_txt)}</title>')
     parts.append(f'<desc id="parl-desc">{escape(desc_txt)}</desc>')
 
@@ -599,7 +541,8 @@ def build_svg(
     # forced; the inline-filled wedge pills and legend disks keep their hues
     # (forced-colors leaves inline SVG presentation attributes alone).
     seat_series = {
-        f".p-{idx}-{lab.lower()}": hue for idx, (_name, lab, _seats, hue) in enumerate(parties)
+        f".p-{idx}-{lab.lower()}": hue
+        for idx, (_name, lab, _seats, hue) in enumerate(parties)
     }
     css.append(os_adaptive_style(seat_series, role="fill", forced=True))
     # Additive OS dark mode: dark paper + light ink (default ink_map); the party
@@ -617,7 +560,8 @@ def build_svg(
         f'fill="{INK}">{escape(title_txt)}</text>'
     )
     parts.append(
-        f'<text x="52" y="106" font-size="19" fill="{SUBINK}">{escape(subtitle_txt)}</text>'
+        f'<text x="52" y="106" font-size="19" fill="{SUBINK}">'
+        f'{escape(subtitle_txt)}</text>'
     )
 
     # --- majority marker: a slim radial line at the 50 %+1 boundary ---
@@ -640,7 +584,8 @@ def build_svg(
     lbl = f"Majority · {majority}"
     lx, ly = _polar(r_line_out + 12.0, boundary_deg)
     parts.append(
-        f'<rect x="{lx - 66:.1f}" y="{ly - 40:.1f}" width="132" height="30" rx="15" fill="{INK}"/>'
+        f'<rect x="{lx - 66:.1f}" y="{ly - 40:.1f}" width="132" height="30" '
+        f'rx="15" fill="{INK}"/>'
     )
     parts.append(
         f'<text x="{lx:.1f}" y="{ly - 20:.1f}" text-anchor="middle" '
@@ -715,9 +660,9 @@ def build_svg(
     # it — the natural clear space every hemicycle leaves at its centre — is
     # reserved for the readout. Text is centred in that pocket so no seat cell
     # ever crowds or overlaps it; no masking disc is needed.
-    inner_top_y = CY - R_INNER  # y of the innermost seat at the apex
-    pocket_top = inner_top_y + 34.0  # start of the reserved text zone
-    pocket_bot = CY - 78.0  # keep clear of the low flank seats
+    inner_top_y = CY - R_INNER          # y of the innermost seat at the apex
+    pocket_top = inner_top_y + 34.0     # start of the reserved text zone
+    pocket_bot = CY - 78.0              # keep clear of the low flank seats
     hub_cy = (pocket_top + pocket_bot) / 2.0
     parts.append(
         f'<text x="{CX:.1f}" y="{hub_cy - 46:.1f}" text-anchor="middle" '
@@ -752,7 +697,9 @@ def build_svg(
     parts.append(f'<g transform="translate(0,{legend_y})">')
     for (name, _lab, seats, hue), w in zip(parties, widths, strict=True):
         cx_disk = cursor + disk_r
-        parts.append(f'<circle cx="{cx_disk:.1f}" cy="0" r="{disk_r}" fill="{hue}"/>')
+        parts.append(
+            f'<circle cx="{cx_disk:.1f}" cy="0" r="{disk_r}" fill="{hue}"/>'
+        )
         tx = cx_disk + disk_r + 12.0
         parts.append(
             f'<text x="{tx:.1f}" y="6" font-size="18" font-weight="600" '
@@ -777,10 +724,10 @@ def build_svg(
     )
     parts.append(
         f'<text x="52" y="{HEIGHT - 34}" font-size="15" fill="{SUBINK}">'
-        f"One dot = one seat · dashed line marks the {majority}-seat majority · "
-        f"{escape(lead_name)} need {short} more seats or a coalition partner · "
-        f"hover a seat for its member; the party block lifts with it"
-        f"</text>"
+        f'One dot = one seat · dashed line marks the {majority}-seat majority · '
+        f'{escape(lead_name)} need {short} more seats or a coalition partner · '
+        f'hover a seat for its member; the party block lifts with it'
+        f'</text>'
     )
 
     # Fullscreen control per interactivity mode, just before the close.
@@ -836,34 +783,17 @@ def make_parliament(
     if not data:
         # No data supplied: match main()/the shipped CLI exactly (build_svg
         # resolves _parties(accessibility) itself).
-        svg = build_svg(
-            None,
-            readout_label=readout_label,
-            mode=mode,
-            accessibility=accessibility,
-            theme=theme,
-            title=title or None,
-        )
+        svg = build_svg(None, readout_label=readout_label, mode=mode, accessibility=accessibility, theme=theme, title=title or None)
     else:
         palette = load_palette(accessibility, theme=theme)
         resolved = [
             (
-                str(r["party"]),
-                str(r["label"]),
-                int(r["seats"]),
-                palette.get(
-                    str(r.get("hue", "")), _PARTY_FALLBACK.get(str(r.get("hue", "")), "#8E8E93")
-                ),
+                str(r["party"]), str(r["label"]), int(r["seats"]),
+                palette.get(str(r.get("hue", "")), _PARTY_FALLBACK.get(str(r.get("hue", "")), "#8E8E93")),
             )
             for r in data
         ]
-        svg = build_svg(
-            resolved,
-            readout_label=readout_label,
-            mode=mode,
-            accessibility=accessibility,
-            theme=theme,
-        )
+        svg = build_svg(resolved, readout_label=readout_label, mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "parliament")
     return write_svg(dest, svg, theme=theme)
 

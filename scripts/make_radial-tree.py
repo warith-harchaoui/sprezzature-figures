@@ -64,15 +64,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from xml.sax.saxutils import escape
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _style import (
-    BG,
-    FONT_MONO,
-    INK,
-    forced_color_patterns,
-    load_palette,
-    os_adaptive_style,
-    os_dark_style,
-)  # noqa: E402
+from _style import BG, FONT_MONO, INK, forced_color_patterns, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _svg import svg_open  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
@@ -91,9 +83,9 @@ CENTER_X = WIDTH / 2.0
 # labels never collides with the title / subtitle.
 CENTER_Y = 660.0
 
-SUBINK = "#6E6E73"  # secondary text
-HAIRLINE = "#E5E5EA"  # neutral hairline
-LEADER = "#C7C7CC"  # slightly darker hairline for label leaders
+SUBINK = "#6E6E73"       # secondary text
+HAIRLINE = "#E5E5EA"     # neutral hairline
+LEADER = "#C7C7CC"       # slightly darker hairline for label leaders
 
 # Radius (in pixels) of each generation ring, indexed by depth. Ring 1
 # is pushed well clear of the root pill so the two never collide; the
@@ -119,6 +111,7 @@ Node = Tuple[str, str, Optional[str]]
 
 NODES: List[Node] = [
     ("root", "Data Platform API", None),
+
     # ---- Pillar: Ingestion (the heavy branch) ----
     ("ingest", "Ingestion", "root"),
     ("connectors", "Connectors", "ingest"),
@@ -127,14 +120,17 @@ NODES: List[Node] = [
     ("streams", "Event streams", "connectors"),
     ("schema", "Schema registry", "ingest"),
     ("validate", "Validation rules", "schema"),
+
     # ---- Pillar: Transform ----
     ("transform", "Transform", "root"),
     ("sql", "SQL models", "transform"),
     ("python", "Python jobs", "transform"),
+
     # ---- Pillar: Serve ----
     ("serve", "Serve", "root"),
     ("query", "Query engine", "serve"),
     ("cache", "Result cache", "serve"),
+
     # ---- Pillar: Govern ----
     ("govern", "Govern", "root"),
     ("lineage", "Lineage graph", "govern"),
@@ -148,7 +144,8 @@ NODES: List[Node] = [
 #: the same shape) into the ``(id, label, parent)`` tuples the layout and
 #: rendering helpers below expect. Declaration order fixes sibling order.
 DEMO_DATA: List[Dict[str, Any]] = [
-    {"id": node_id, "label": label, "parent": parent} for node_id, label, parent in NODES
+    {"id": node_id, "label": label, "parent": parent}
+    for node_id, label, parent in NODES
 ]
 
 
@@ -173,7 +170,6 @@ def _rows_to_nodes(rows: List[Dict[str, Any]]) -> List[Node]:
         (str(r["id"]), str(r["label"]), (str(r["parent"]) if r.get("parent") else None))
         for r in rows
     ]
-
 
 # Each top-level pillar owns a hue; the subtree inherits it.
 def _pillar_color(accessibility: str = "universal", theme: str = "corporate") -> Dict[str, str]:
@@ -345,7 +341,9 @@ def _compute_geometry(
 # ------------------------------------------------------------------
 # SVG geometry helpers
 # ------------------------------------------------------------------
-def _radial_link_path(a_ang: float, a_rad: float, b_ang: float, b_rad: float) -> str:
+def _radial_link_path(
+    a_ang: float, a_rad: float, b_ang: float, b_rad: float
+) -> str:
     """Return a curved parent→child link path (a "radial diagonal").
 
     The link is a cubic Bézier whose two control points sit at the *mid
@@ -359,7 +357,6 @@ def _radial_link_path(a_ang: float, a_rad: float, b_ang: float, b_rad: float) ->
     b_ang, b_rad : float
         Child angle and radius.
     """
-
     def polar(ang: float, rad: float) -> Tuple[float, float]:
         return (CENTER_X + rad * math.sin(ang), CENTER_Y - rad * math.cos(ang))
 
@@ -458,7 +455,8 @@ def build_svg(
     # --- accessible header text ---
     title_txt = title or "The Data Platform API, from the core outward"
     subtitle_txt = (
-        "Four product pillars branch from one core; Ingestion carries the widest surface."
+        "Four product pillars branch from one core; Ingestion carries the widest "
+        "surface."
     )
     desc_txt = (
         "Radial tree of a data-platform public API laid out from the centre "
@@ -470,9 +468,7 @@ def build_svg(
         "arc between rings."
     )
 
-    parts.append(
-        svg_open(WIDTH, HEIGHT, "rt-title", "rt-desc", font_family=chrome_stack_for_theme(theme))
-    )
+    parts.append(svg_open(WIDTH, HEIGHT, "rt-title", "rt-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="rt-title">{escape(title_txt)}</title>')
     parts.append(f'<desc id="rt-desc">{escape(desc_txt)}</desc>')
 
@@ -511,13 +507,9 @@ def build_svg(
         "#tree:hover #base .node{opacity:.28}"
         ".lin:hover,.lin:focus-within{opacity:1}"
         ".hit:focus{outline:none}"
-        + "\n"
-        + contrast_block
-        + "\n"
-        + fcp_style
-        + "\n"
-        + os_dark_style(extra='[stroke="#E5E5EA"]{stroke:#2C2C2E;}')
-        + "\n"
+        + "\n" + contrast_block + "\n"
+        + fcp_style + "\n"
+        + os_dark_style(extra='[stroke="#E5E5EA"]{stroke:#2C2C2E;}') + "\n"
         "</style>"
     )
     parts.append(f"<defs>{fcp_defs}</defs>")
@@ -601,7 +593,7 @@ def build_svg(
     parts.append(
         f'<text x="{margin_left}" y="{HEIGHT - 22}" font-size="15" '
         f'fill="{SUBINK}">Hover or focus any node to trace its branch back '
-        f"to the centre</text>"
+        f'to the centre</text>'
     )
 
     parts.append(fullscreen_control(WIDTH, HEIGHT, mode))
@@ -698,11 +690,11 @@ def _emit_one_node(
             f'<g class="node">'
             f'<rect class="hit"{tab} x="{x - w / 2:.1f}" y="{y - h / 2:.1f}" '
             f'width="{w:.1f}" height="{h:.1f}" rx="{h / 2:.1f}" fill="{color}">'
-            f"<title>{escape(tip)}</title></rect>"
+            f'<title>{escape(tip)}</title></rect>'
             f'<text x="{x:.1f}" y="{y:.1f}" text-anchor="middle" '
             f'dominant-baseline="central" font-size="{fs}" font-weight="700" '
             f'fill="#FFFFFF">{escape(label)}</text>'
-            f"</g>"
+            f'</g>'
         )
         return
 
@@ -715,11 +707,11 @@ def _emit_one_node(
             f'<g class="node">'
             f'<rect class="hit{nd_class}"{tab} x="{x - w / 2:.1f}" y="{y - h / 2:.1f}" '
             f'width="{w:.1f}" height="{h:.1f}" rx="{h / 2:.1f}" fill="{color}">'
-            f"<title>{escape(tip)}</title></rect>"
+            f'<title>{escape(tip)}</title></rect>'
             f'<text x="{x:.1f}" y="{y:.1f}" text-anchor="middle" '
             f'dominant-baseline="central" font-size="{fs}" font-weight="700" '
             f'fill="#FFFFFF">{escape(label)}</text>'
-            f"</g>"
+            f'</g>'
         )
         return
 
@@ -742,7 +734,7 @@ def _emit_one_node(
         f'<text x="{x + dx:.1f}" y="{y:.1f}" text-anchor="{anchor}" '
         f'dominant-baseline="central" font-size="15.5" '
         f'fill="{INK}">{escape(label)}</text>'
-        f"</g>"
+        f'</g>'
     )
 
 
@@ -778,7 +770,9 @@ def _emit_legend(
     parent = _parent_of(nodes)
 
     def subtree_size(pillar_id: str) -> int:
-        return sum(1 for n, _, _ in nodes if _pillar_of(n, parent) == pillar_id)
+        return sum(
+            1 for n, _, _ in nodes if _pillar_of(n, parent) == pillar_id
+        )
 
     order = ["ingest", "transform", "serve", "govern"]
     names = {
@@ -803,7 +797,7 @@ def _emit_legend(
         )
         parts.append(
             f'<text x="{lx + 26:.1f}" y="{ry:.1f}" font-size="16" fill="{INK}">'
-            f"{escape(names[pid])}</text>"
+            f'{escape(names[pid])}</text>'
         )
         parts.append(
             f'<text x="{lx + 150:.1f}" y="{ry:.1f}" font-family="{mono_family}" '
@@ -851,14 +845,7 @@ def make_radial_tree(
     _ = title
     rows = data if data else DEMO_DATA
     nodes = _rows_to_nodes(rows)
-    svg = build_svg(
-        nodes,
-        legend_title=legend_title,
-        mode=mode,
-        accessibility=accessibility,
-        theme=theme,
-        title=title or None,
-    )
+    svg = build_svg(nodes, legend_title=legend_title, mode=mode, accessibility=accessibility, theme=theme, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "radial-tree")
     return write_svg(dest, svg, theme=theme)
 

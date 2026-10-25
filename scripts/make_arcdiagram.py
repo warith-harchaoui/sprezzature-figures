@@ -65,13 +65,13 @@ HEIGHT = 760
 
 MARGIN_L = 92
 MARGIN_R = 92
-BASELINE_Y = 512  # y of the horizontal node line
-NODE_R = 11  # node dot radius
-LABEL_DY = 30  # node label baseline below the line
-LABEL_ROT = 30  # label rotation (deg) below the baseline
+BASELINE_Y = 512          # y of the horizontal node line
+NODE_R = 11               # node dot radius
+LABEL_DY = 30             # node label baseline below the line
+LABEL_ROT = 30            # label rotation (deg) below the baseline
 
-SUBINK = "#6E6E73"  # secondary text
-HAIR = "#D2D2D7"  # the baseline rule
+SUBINK = "#6E6E73"        # secondary text
+HAIR = "#D2D2D7"          # the baseline rule
 
 
 # ------------------------------------------------------------------
@@ -130,7 +130,9 @@ LINKS: List[Tuple[str, str, int]] = [
 # is hand-tuned to this exact roster, so make_arcdiagram() accepts ``data``
 # for dispatcher parity but does not thread custom rows into the render --
 # see its docstring below.
-DEMO_DATA: List[Dict[str, Any]] = [{"source": a, "target": b, "weight": w} for a, b, w in LINKS]
+DEMO_DATA: List[Dict[str, Any]] = [
+    {"source": a, "target": b, "weight": w} for a, b, w in LINKS
+]
 
 
 # Brand hue per group — the arc's origin group colours it. Built from the
@@ -200,7 +202,7 @@ def _arc_path(x0: float, x1: float) -> Tuple[str, float]:
         (how far above the baseline the arc rises).
     """
     lo, hi = sorted((x0, x1))
-    rx = (hi - lo) / 2.0  # horizontal radius
+    rx = (hi - lo) / 2.0                 # horizontal radius
     # Vertical radius. Short neighbour hops would otherwise stay tiny and
     # leave the upper half of the canvas empty, so the arc height is a
     # square-root-shaped lift of the span: a generous floor lifts even the
@@ -216,9 +218,7 @@ def _arc_path(x0: float, x1: float) -> Tuple[str, float]:
 # SVG emission
 # ------------------------------------------------------------------
 def build_svg(
-    mode: str = "self-contained",
-    accessibility: str = "universal",
-    theme: str = "corporate",
+    mode: str = "self-contained", accessibility: str = "universal", theme: str = "corporate",
     title: Optional[str] = None,
 ) -> str:
     """Assemble the full arc-diagram SVG document as a string.
@@ -258,7 +258,8 @@ def build_svg(
 
     title_txt = title or "One researcher holds two research groups together"
     subtitle_txt = (
-        "Co-authorship across a lab this year — nodes ordered by group; illustrative data"
+        "Co-authorship across a lab this year — nodes ordered by group; "
+        "illustrative data"
     )
     desc_txt = (
         "Arc diagram of co-authorship in a research lab. Eleven "
@@ -272,9 +273,7 @@ def build_svg(
         "bridge linking the two communities."
     )
 
-    parts.append(
-        svg_open(WIDTH, HEIGHT, "arc-title", "arc-desc", font_family=chrome_stack_for_theme(theme))
-    )
+    parts.append(svg_open(WIDTH, HEIGHT, "arc-title", "arc-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="arc-title">{escape(title_txt)}</title>')
     parts.append(f'<desc id="arc-desc">{escape(desc_txt)}</desc>')
 
@@ -293,12 +292,10 @@ def build_svg(
     # carried by node ORDER, the group brackets and the node labels, not colour:
     # arcs are re-stroked to CanvasText (never filled — the paths are open, a
     # fill would flood the chord region) and nodes take CanvasText fills.
-    arc_series = {
-        f".arc-{g.lower()}": GROUP_COLOR[g] for g in (GROUP_VISION, GROUP_LANGUAGE, GROUP_BRIDGE)
-    }
-    node_series = {
-        f".node-{g.lower()}": GROUP_COLOR[g] for g in (GROUP_VISION, GROUP_LANGUAGE, GROUP_BRIDGE)
-    }
+    arc_series = {f".arc-{g.lower()}": GROUP_COLOR[g] for g in
+                  (GROUP_VISION, GROUP_LANGUAGE, GROUP_BRIDGE)}
+    node_series = {f".node-{g.lower()}": GROUP_COLOR[g] for g in
+                   (GROUP_VISION, GROUP_LANGUAGE, GROUP_BRIDGE)}
     adaptive_arcs = os_adaptive_style(
         arc_series,
         role="stroke",
@@ -307,7 +304,10 @@ def build_svg(
     # Forced-colors: re-stroke every arc and re-fill every node to the system
     # ink. Done as one explicit block so the arcs get stroke (not fill).
     forced_block = (
-        "@media (forced-colors: active){\n  .arc{stroke:CanvasText;}\n  .node{fill:CanvasText;}\n}"
+        "@media (forced-colors: active){\n  "
+        ".arc{stroke:CanvasText;}\n  "
+        ".node{fill:CanvasText;}\n"
+        "}"
     )
     adaptive_nodes = os_adaptive_style(node_series, role="fill")
     parts.append(
@@ -340,7 +340,8 @@ def build_svg(
         f'fill="{INK}">{escape(title_txt)}</text>'
     )
     parts.append(
-        f'<text x="{MARGIN_L}" y="94" font-size="18" fill="{SUBINK}">{escape(subtitle_txt)}</text>'
+        f'<text x="{MARGIN_L}" y="94" font-size="18" fill="{SUBINK}">'
+        f'{escape(subtitle_txt)}</text>'
     )
 
     # --- the baseline rule ---
@@ -372,7 +373,7 @@ def build_svg(
         else:
             color = GROUP_COLOR[grp_a]
             is_bridge = False
-        stroke_w = 2.6 + w * 1.7  # weight -> thickness
+        stroke_w = 2.6 + w * 1.7          # weight -> thickness
         opacity = 0.9 if is_bridge else 0.5
         tip = f"{a} & {b}: {w} joint paper{'s' if w != 1 else ''}"
         # The arc's group class (its colouring group) gives each @media rule a
@@ -383,20 +384,15 @@ def build_svg(
             f'aria-label="{escape(tip)}" d="{d}" '
             f'stroke="{color}" stroke-width="{stroke_w:.2f}" '
             f'stroke-opacity="{opacity}">'
-            f"<title>{escape(tip)}</title></path>"
+            f'<title>{escape(tip)}</title></path>'
         )
         arc_peak_x = (pos[a] + pos[b]) / 2.0
         arc_peak_y = BASELINE_Y - ry
         arc_tips.append(
             tooltip_bubble(
-                arc_peak_x,
-                arc_peak_y - 10,
+                arc_peak_x, arc_peak_y - 10,
                 [f"{a} & {b}", f"{w} joint paper{'s' if w != 1 else ''}"],
-                canvas_w=WIDTH,
-                canvas_h=HEIGHT,
-                ink=INK,
-                secondary=SUBINK,
-                border=HAIR,
+                canvas_w=WIDTH, canvas_h=HEIGHT, ink=INK, secondary=SUBINK, border=HAIR,
                 elem_id=f"arc-tip-{_idx}",
             )
         )
@@ -421,18 +417,13 @@ def build_svg(
             f'<circle id="node-hit-{ni}" class="node node-{grp.lower()} hit" tabindex="0" role="img" '
             f'aria-label="{escape(tip)}" cx="{x:.2f}" cy="{BASELINE_Y}" '
             f'r="{r}" fill="{color}" stroke="{BG}" stroke-width="3">'
-            f"<title>{escape(tip)}</title></circle>"
+            f'<title>{escape(tip)}</title></circle>'
         )
         node_tips.append(
             tooltip_bubble(
-                x,
-                BASELINE_Y - r - 8,
+                x, BASELINE_Y - r - 8,
                 [name, role, f"{deg} co-author{'s' if deg != 1 else ''}"],
-                canvas_w=WIDTH,
-                canvas_h=HEIGHT,
-                ink=INK,
-                secondary=SUBINK,
-                border=HAIR,
+                canvas_w=WIDTH, canvas_h=HEIGHT, ink=INK, secondary=SUBINK, border=HAIR,
                 elem_id=f"node-tip-{ni}",
             )
         )
@@ -447,7 +438,7 @@ def build_svg(
             f'<text x="{x:.2f}" y="{ly:.2f}" font-size="17" '
             f'font-weight="{weight}" fill="{fill}" text-anchor="end" '
             f'transform="rotate(-{LABEL_ROT} {x:.2f} {ly:.2f})">'
-            f"{escape(name)}</text>"
+            f'{escape(name)}</text>'
         )
     parts.extend(node_tips)
     parts.append("</g>")
@@ -465,7 +456,7 @@ def build_svg(
         parts.append(
             f'<text x="{mid:.1f}" y="{y - 12:.1f}" text-anchor="middle" '
             f'font-size="18" font-weight="700" fill="{color}">'
-            f"{escape(label)}</text>"
+            f'{escape(label)}</text>'
         )
 
     _bracket(pos["Ito"] - 6, pos["Novak"] + 6, "Vision group", GROUP_COLOR[GROUP_VISION])
@@ -478,7 +469,7 @@ def build_svg(
     # the bridge node. A short dashed vertical leader ties it to Nadia's dot
     # without crossing any label.
     nx = pos["Nadia"]
-    label_reach = BASELINE_Y + LABEL_DY + 34  # deepest ink of the rotated names
+    label_reach = BASELINE_Y + LABEL_DY + 34   # deepest ink of the rotated names
     cy = label_reach + 30
     # The bridge node's own name runs down-left and ends at nx, so a leader
     # dropped a few px to the RIGHT of nx clears it and lands centred enough.
@@ -497,15 +488,15 @@ def build_svg(
     parts.append(
         f'<text x="{nx:.1f}" y="{cy + 24:.1f}" text-anchor="middle" '
         f'font-size="15" fill="{SUBINK}">her 2 arcs are the sole '
-        f"cross-group links</text>"
+        f'cross-group links</text>'
     )
 
     # --- footnote: encoding legend + hover affordance ---
     parts.append(
         f'<text x="{MARGIN_L}" y="{HEIGHT - 26}" font-size="14" fill="{SUBINK}">'
-        f"Each arc = a co-authored paper · arc thickness ∝ joint papers · "
-        f"node order tells the story · hover or focus an arc to isolate one "
-        f"collaboration</text>"
+        f'Each arc = a co-authored paper · arc thickness ∝ joint papers · '
+        f'node order tells the story · hover or focus an arc to isolate one '
+        f'collaboration</text>'
     )
 
     parts.append(fullscreen_control(WIDTH, HEIGHT, mode))
@@ -520,7 +511,9 @@ def main() -> None:
     (``self-contained`` / ``external`` / ``static``); see
     :func:`_interactive.fullscreen_control`.
     """
-    render_cli(__file__, "arcdiagram", build_svg, description="Render the arc-diagram SVG.")
+    render_cli(
+        __file__, "arcdiagram", build_svg, description="Render the arc-diagram SVG."
+    )
 
 
 def make_arcdiagram(

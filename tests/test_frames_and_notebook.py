@@ -62,7 +62,8 @@ def test_a_gap_is_spelled_none_not_nan() -> None:
     assert rows is not None
     assert rows[1]["value"] is None
     assert not any(
-        isinstance(cell, float) and math.isnan(cell) for row in rows for cell in row.values()
+        isinstance(cell, float) and math.isnan(cell)
+        for row in rows for cell in row.values()
     )
 
 
@@ -111,7 +112,9 @@ def test_describe_input_is_fit_for_an_error_message() -> None:
 
 def test_a_frame_renders_without_the_caller_converting_it(tmp_path: Path) -> None:
     """The whole point, end to end: a frame in, a figure out."""
-    frame = pandas.DataFrame({"region": ["Nord", "Sud", "Est"], "value": [42.0, 31.5, 27.0]})
+    frame = pandas.DataFrame(
+        {"region": ["Nord", "Sud", "Est"], "value": [42.0, 31.5, 27.0]}
+    )
     out = make_figure("bar", frame, out=tmp_path / "bar.svg")
     assert out.exists()
     svg = out.read_text(encoding="utf-8")
@@ -126,7 +129,9 @@ def test_a_gap_in_a_required_column_is_refused_with_its_row(tmp_path: Path) -> N
     generator with a message about ``float()`` that says nothing about
     the caller's data.
     """
-    frame = pandas.DataFrame({"region": ["a", "b", "c"], "value": [1.0, float("nan"), 3.0]})
+    frame = pandas.DataFrame(
+        {"region": ["a", "b", "c"], "value": [1.0, float("nan"), 3.0]}
+    )
     with pytest.raises(ValueError) as caught:
         make_figure("bar", frame, out=tmp_path / "bar.svg")
     message = str(caught.value)

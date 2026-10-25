@@ -145,28 +145,24 @@ def build_svg(
         return plot_y + plot_h - (v / peak * plot_h)
 
     parts: List[str] = []
-    parts.append(
-        svg_open(width, height, "kde-title", "kde-desc", font_family=chrome_stack_for_theme(theme))
-    )
+    parts.append(svg_open(width, height, "kde-title", "kde-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="kde-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="kde-desc">Kernel density estimate of {len(samples)} observations, '
-        f"bandwidth {bandwidth:.2f}, ranging {s_min:.1f} to {s_max:.1f}.</desc>"
+        f'bandwidth {bandwidth:.2f}, ranging {s_min:.1f} to {s_max:.1f}.</desc>'
     )
     parts.append(
         f'<defs><linearGradient id="kdeGrad" x1="0" y1="1" x2="0" y2="0">'
         f'<stop offset="0" stop-color="{COLOR_BOTTOM}"/>'
         f'<stop offset="1" stop-color="{COLOR_TOP}"/>'
-        f"</linearGradient></defs>"
+        f'</linearGradient></defs>'
     )
     parts.append(f'<rect width="{width}" height="{height}" fill="{BG}"/>')
     parts.append(
         f'<text x="40" y="46" font-size="22" font-weight="700" fill="{INK}" '
         f'letter-spacing="-0.3">{xml_escape(title)}</text>'
     )
-    parts.append(
-        f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>'
-    )
+    parts.append(f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>')
 
     # ---- gridlines ----
     for val in y_tick_vals:
@@ -266,17 +262,8 @@ def make_kde1d(
     >>> p.exists()
     True
     """
-    svg = build_svg(
-        data,
-        title=title,
-        subtitle=subtitle,
-        y_axis_title=y_axis_title,
-        width=width,
-        height=height,
-        mode=mode,
-        accessibility=accessibility,
-        theme=theme,
-    )
+    svg = build_svg(data, title=title, subtitle=subtitle, y_axis_title=y_axis_title, width=width, height=height,
+                     mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "kde1d")
     return write_svg(dest, svg, theme=theme)
 

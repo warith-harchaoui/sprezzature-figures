@@ -54,14 +54,21 @@ DEMO_DATA: List[Dict[str, Any]] = [
     {"category": "Deployment", "cause": "No staging soak", "weight": 14, "evidenced": 1},
     {"category": "Deployment", "cause": "Config drift", "weight": 9, "evidenced": 1},
     {"category": "Deployment", "cause": "Friday releases", "weight": 3, "evidenced": 0},
-    {"category": "Dependencies", "cause": "Gateway timeouts", "weight": 11, "evidenced": 1},
-    {"category": "Dependencies", "cause": "Unpinned versions", "weight": 6, "evidenced": 1},
+    {"category": "Dependencies", "cause": "Gateway timeouts", "weight": 11,
+     "evidenced": 1},
+    {"category": "Dependencies", "cause": "Unpinned versions", "weight": 6,
+     "evidenced": 1},
     {"category": "Monitoring", "cause": "Alert only on 5xx", "weight": 8, "evidenced": 1},
-    {"category": "Monitoring", "cause": "No synthetic checkout", "weight": 7, "evidenced": 0},
-    {"category": "Monitoring", "cause": "Unread dashboards", "weight": 2, "evidenced": 0},
-    {"category": "Capacity", "cause": "Pool too small", "weight": 5, "evidenced": 1},
-    {"category": "Capacity", "cause": "Cold caches", "weight": 4, "evidenced": 0},
-    {"category": "People", "cause": "One person owns it", "weight": 6, "evidenced": 0},
+    {"category": "Monitoring", "cause": "No synthetic checkout", "weight": 7,
+     "evidenced": 0},
+    {"category": "Monitoring", "cause": "Unread dashboards", "weight": 2,
+     "evidenced": 0},
+    {"category": "Capacity", "cause": "Pool too small", "weight": 5,
+     "evidenced": 1},
+    {"category": "Capacity", "cause": "Cold caches", "weight": 4,
+     "evidenced": 0},
+    {"category": "People", "cause": "One person owns it", "weight": 6,
+     "evidenced": 0},
     {"category": "People", "cause": "Runbook out of date", "weight": 3, "evidenced": 1},
 ]
 
@@ -130,13 +137,11 @@ def build_svg(
 
     grouped: Dict[str, List[Tuple[str, float, bool]]] = {}
     for row in rows:
-        grouped.setdefault(str(row[category]), []).append(
-            (
-                str(row[cause]),
-                float(row.get(weight, 1) or 1),
-                bool(row.get(evidenced, 0)),
-            )
-        )
+        grouped.setdefault(str(row[category]), []).append((
+            str(row[cause]),
+            float(row.get(weight, 1) or 1),
+            bool(row.get(evidenced, 0)),
+        ))
     for causes in grouped.values():
         causes.sort(key=lambda item: -item[1])
     totals = {name: sum(w for _, w, _ in causes) for name, causes in grouped.items()}
@@ -150,14 +155,9 @@ def build_svg(
     palette = load_palette(accessibility, theme=theme)
     spine_ink = INK
     wheel = [
-        palette.get(key, fallback)
-        for key, fallback in (
-            ("Blue", "#007AFF"),
-            ("Orange", "#FF9500"),
-            ("Green", "#28CD41"),
-            ("Purple", "#5856D6"),
-            ("Teal", "#30B0C7"),
-            ("Red", "#FF3B30"),
+        palette.get(key, fallback) for key, fallback in (
+            ("Blue", "#007AFF"), ("Orange", "#FF9500"), ("Green", "#28CD41"),
+            ("Purple", "#5856D6"), ("Teal", "#30B0C7"), ("Red", "#FF3B30"),
         )
     ]
 
@@ -178,8 +178,7 @@ def build_svg(
             lanes[name] = (plot_x + step * (index + 0.85), side)
 
     method_lines = (
-        [method_note]
-        if method_note is not None
+        [method_note] if method_note is not None
         else [
             f"{counted} causes in {len(names)} groups, weighted by {weight_label}; "
             f"groups ordered by their totals",
@@ -198,26 +197,23 @@ def build_svg(
         )
         unbacked = counted - backed
         if unbacked:
-            said_parts.append(f"{unbacked} of {counted} causes have nothing measured behind them.")
+            said_parts.append(
+                f"{unbacked} of {counted} causes have nothing measured behind them."
+            )
     said_lines: List[str] = []
     for sentence in said_parts:
         said_lines.extend(wrap_no_orphan(sentence, 106))
 
     parts: List[str] = []
     parts.append(
-        svg_open(
-            width,
-            height,
-            "fishbone-title",
-            "fishbone-desc",
-            font_family=chrome_stack_for_theme(theme),
-        )
+        svg_open(width, height, "fishbone-title", "fishbone-desc",
+                 font_family=chrome_stack_for_theme(theme))
     )
     parts.append(f'<title id="fishbone-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="fishbone-desc">A cause-and-effect diagram for {xml_escape(effect)}: '
-        f"{counted} causes in {len(names)} groups branching from a spine. "
-        f"{xml_escape(said_method)}. {xml_escape(' '.join(said_parts))}</desc>"
+        f'{counted} causes in {len(names)} groups branching from a spine. '
+        f'{xml_escape(said_method)}. {xml_escape(" ".join(said_parts))}</desc>'
     )
     parts.append(
         "<style>"
@@ -282,7 +278,7 @@ def build_svg(
         parts.append(
             f'<text x="{tip_x:.1f}" y="{tip_y + (-8 if side < 0 else 16):.1f}" '
             f'font-size="13" font-weight="700" fill="{colour}" text-anchor="middle">'
-            f"{xml_escape(name)} {fmt_number(share)}%</text>"
+            f'{xml_escape(name)} {fmt_number(share)}%</text>'
         )
         causes = grouped[name]
         for order, (text, amount, has_evidence) in enumerate(causes):
@@ -313,39 +309,29 @@ def build_svg(
                     f'y="{branch_y + 4 + (line_index - (len(wrapped) - 1) / 2) * 12:.1f}" '
                     f'font-size="11" fill="{INK}" '
                     f'opacity="{1.0 if has_evidence else 0.65}">{xml_escape(line)}'
-                    + (
-                        f' <tspan fill="{SECONDARY}" font-family="{mono_family}" '
-                        f'font-size="10">{fmt_number(amount)}</tspan>'
-                        if last
-                        else ""
-                    )
-                    + "</text>"
+                    + (f' <tspan fill="{SECONDARY}" font-family="{mono_family}" '
+                       f'font-size="10">{fmt_number(amount)}</tspan>' if last else "")
+                    + '</text>'
                 )
         parts.append(
             f'<rect id="bone-{index}" class="bone hit" tabindex="0" role="img" '
             f'aria-label="{xml_escape(name)}: {len(causes)} causes totalling '
-            f"{fmt_number(totals[name])} {xml_escape(weight_label)}, "
+            f'{fmt_number(totals[name])} {xml_escape(weight_label)}, '
             f'{fmt_number(share)}% of the whole" '
             f'x="{min(root_x, tip_x) - 10:.1f}" y="{min(spine_y, tip_y) - 10:.1f}" '
             f'width="{abs(tip_x - root_x) + 20:.1f}" '
             f'height="{abs(tip_y - spine_y) + 20:.1f}" fill="transparent">'
-            f"<title>{xml_escape(name)}: {fmt_number(share)}%</title></rect>"
+            f'<title>{xml_escape(name)}: {fmt_number(share)}%</title></rect>'
         )
         tips.append(
             tooltip_bubble(
-                (root_x + tip_x) / 2.0,
-                (spine_y + tip_y) / 2.0,
-                [
-                    name,
-                    f"{fmt_number(totals[name])} {weight_label} · {fmt_number(share)}%",
-                    f"{sum(1 for _, _, ok in causes if ok)} of {len(causes)} {evidence_label}",
-                ],
-                canvas_w=width,
-                canvas_h=height,
-                ink=INK,
-                secondary=SECONDARY,
-                border=GRIDLINE,
-                elem_id=f"bonetip-{index}",
+                (root_x + tip_x) / 2.0, (spine_y + tip_y) / 2.0,
+                [name,
+                 f"{fmt_number(totals[name])} {weight_label} · {fmt_number(share)}%",
+                 f"{sum(1 for _, _, ok in causes if ok)} of {len(causes)} "
+                 f"{evidence_label}"],
+                canvas_w=width, canvas_h=height, ink=INK, secondary=SECONDARY,
+                border=GRIDLINE, elem_id=f"bonetip-{index}",
             )
         )
 
@@ -421,24 +407,12 @@ def make_fishbone(
     True
     """
     svg = build_svg(
-        data,
-        title=title,
-        subtitle=subtitle,
-        width=width,
-        height=height,
-        category=category,
-        cause=cause,
-        weight=weight,
-        evidenced=evidenced,
-        effect=effect,
-        weight_label=weight_label,
-        evidence_label=evidence_label,
-        hunch_label=hunch_label,
-        method_note=method_note,
-        finding=finding,
-        mode=mode,
-        accessibility=accessibility,
-        theme=theme,
+        data, title=title, subtitle=subtitle, width=width, height=height,
+        category=category, cause=cause, weight=weight, evidenced=evidenced,
+        effect=effect, weight_label=weight_label,
+        evidence_label=evidence_label, hunch_label=hunch_label,
+        method_note=method_note, finding=finding, mode=mode,
+        accessibility=accessibility, theme=theme,
     )
     dest = Path(out) if out else svg_example_path(__file__, "fishbone")
     return write_svg(dest, svg, theme=theme)
@@ -446,12 +420,8 @@ def make_fishbone(
 
 def main() -> None:
     """CLI entry point: build the SVG and write it to disk."""
-    render_cli(
-        __file__,
-        "fishbone",
-        build_svg,
-        description="Draw causes grouped toward one effect, weighted and evidenced.",
-    )
+    render_cli(__file__, "fishbone", build_svg,
+               description="Draw causes grouped toward one effect, weighted and evidenced.")
 
 
 if __name__ == "__main__":

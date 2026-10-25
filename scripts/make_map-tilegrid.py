@@ -86,51 +86,18 @@ _EMPTY: str = "#F4F4F7"
 #: out so neighbours are in roughly the right direction from one another;
 #: no distance on this grid means anything.
 LAYOUT: Dict[str, Tuple[int, int]] = {
-    "CAN": (0, 0),
-    "ISL": (3, 0),
-    "NOR": (4, 0),
-    "SWE": (5, 0),
-    "RUS": (8, 0),
-    "USA": (0, 1),
-    "IRL": (2, 1),
-    "GBR": (3, 1),
-    "NLD": (4, 1),
-    "POL": (5, 1),
-    "UKR": (6, 1),
-    "KAZ": (7, 1),
-    "JPN": (10, 1),
-    "MEX": (0, 2),
-    "ESP": (2, 2),
-    "FRA": (3, 2),
-    "DEU": (4, 2),
-    "TUR": (6, 2),
-    "PAK": (7, 2),
-    "CHN": (8, 2),
-    "KOR": (9, 2),
-    "COL": (1, 3),
-    "PRT": (2, 3),
-    "MAR": (3, 3),
-    "ITA": (4, 3),
-    "GRC": (5, 3),
+    "CAN": (0, 0), "ISL": (3, 0), "NOR": (4, 0), "SWE": (5, 0), "RUS": (8, 0),
+    "USA": (0, 1), "IRL": (2, 1), "GBR": (3, 1), "NLD": (4, 1), "POL": (5, 1),
+    "UKR": (6, 1), "KAZ": (7, 1), "JPN": (10, 1),
+    "MEX": (0, 2), "ESP": (2, 2), "FRA": (3, 2), "DEU": (4, 2), "TUR": (6, 2),
+    "PAK": (7, 2), "CHN": (8, 2), "KOR": (9, 2),
+    "COL": (1, 3), "PRT": (2, 3), "MAR": (3, 3), "ITA": (4, 3), "GRC": (5, 3),
     "IRN": (7, 3),
-    "PER": (1, 4),
-    "BRA": (2, 4),
-    "DZA": (4, 4),
-    "EGY": (5, 4),
-    "SAU": (6, 4),
-    "IND": (7, 4),
-    "THA": (8, 4),
-    "VNM": (9, 4),
-    "PHL": (10, 4),
-    "ARG": (1, 5),
-    "NGA": (3, 5),
-    "ETH": (5, 5),
-    "IDN": (9, 5),
-    "CHL": (1, 6),
-    "COD": (4, 6),
-    "KEN": (5, 6),
-    "ZAF": (4, 7),
-    "AUS": (9, 7),
+    "PER": (1, 4), "BRA": (2, 4), "DZA": (4, 4), "EGY": (5, 4), "SAU": (6, 4),
+    "IND": (7, 4), "THA": (8, 4), "VNM": (9, 4), "PHL": (10, 4),
+    "ARG": (1, 5), "NGA": (3, 5), "ETH": (5, 5), "IDN": (9, 5),
+    "CHL": (1, 6), "COD": (4, 6), "KEN": (5, 6),
+    "ZAF": (4, 7), "AUS": (9, 7),
     "NZL": (10, 8),
 }
 
@@ -138,52 +105,19 @@ LAYOUT: Dict[str, Tuple[int, int]] = {
 #: code is a handle, not a name, and a screen reader saying "D Z A" has told
 #: the listener nothing.
 NAMES: Dict[str, str] = {
-    "CAN": "Canada",
-    "ISL": "Iceland",
-    "NOR": "Norway",
-    "SWE": "Sweden",
-    "RUS": "Russia",
-    "USA": "United States",
-    "IRL": "Ireland",
-    "GBR": "United Kingdom",
-    "NLD": "Netherlands",
-    "POL": "Poland",
-    "UKR": "Ukraine",
-    "KAZ": "Kazakhstan",
-    "JPN": "Japan",
-    "MEX": "Mexico",
-    "ESP": "Spain",
-    "FRA": "France",
-    "DEU": "Germany",
-    "TUR": "Türkiye",
-    "PAK": "Pakistan",
-    "CHN": "China",
-    "KOR": "South Korea",
-    "COL": "Colombia",
-    "PRT": "Portugal",
-    "MAR": "Morocco",
-    "ITA": "Italy",
-    "GRC": "Greece",
-    "IRN": "Iran",
-    "PER": "Peru",
-    "BRA": "Brazil",
-    "DZA": "Algeria",
-    "EGY": "Egypt",
-    "SAU": "Saudi Arabia",
-    "IND": "India",
-    "THA": "Thailand",
-    "VNM": "Viet Nam",
-    "PHL": "Philippines",
-    "ARG": "Argentina",
-    "NGA": "Nigeria",
-    "ETH": "Ethiopia",
-    "IDN": "Indonesia",
-    "CHL": "Chile",
-    "COD": "DR Congo",
-    "KEN": "Kenya",
-    "ZAF": "South Africa",
-    "AUS": "Australia",
-    "NZL": "New Zealand",
+    "CAN": "Canada", "ISL": "Iceland", "NOR": "Norway", "SWE": "Sweden",
+    "RUS": "Russia", "USA": "United States", "IRL": "Ireland",
+    "GBR": "United Kingdom", "NLD": "Netherlands", "POL": "Poland",
+    "UKR": "Ukraine", "KAZ": "Kazakhstan", "JPN": "Japan", "MEX": "Mexico",
+    "ESP": "Spain", "FRA": "France", "DEU": "Germany", "TUR": "Türkiye",
+    "PAK": "Pakistan", "CHN": "China", "KOR": "South Korea", "COL": "Colombia",
+    "PRT": "Portugal", "MAR": "Morocco", "ITA": "Italy", "GRC": "Greece",
+    "IRN": "Iran", "PER": "Peru", "BRA": "Brazil", "DZA": "Algeria",
+    "EGY": "Egypt", "SAU": "Saudi Arabia", "IND": "India", "THA": "Thailand",
+    "VNM": "Viet Nam", "PHL": "Philippines", "ARG": "Argentina",
+    "NGA": "Nigeria", "ETH": "Ethiopia", "IDN": "Indonesia", "CHL": "Chile",
+    "COD": "DR Congo", "KEN": "Kenya", "ZAF": "South Africa",
+    "AUS": "Australia", "NZL": "New Zealand",
 }
 
 #: Class breaks, as percentages. Fixed bands rather than quintiles: quintiles
@@ -204,52 +138,18 @@ BANDS: Tuple[Tuple[float, str], ...] = (
 DEMO_DATA: List[Dict[str, Any]] = [
     {"code": c, "percent": v}
     for c, v in (
-        ("ISL", 100.0),
-        ("ETH", 100.0),
-        ("NOR", 98.0),
-        ("SWE", 98.0),
-        ("COD", 98.0),
-        ("FRA", 92.0),
-        ("KEN", 90.0),
-        ("BRA", 89.0),
-        ("CAN", 82.0),
-        ("NZL", 82.0),
-        ("COL", 75.0),
-        ("ESP", 75.0),
-        ("PRT", 72.0),
-        ("UKR", 65.0),
-        ("CHL", 62.0),
-        ("GBR", 60.0),
-        ("PER", 60.0),
-        ("DEU", 56.0),
-        ("GRC", 50.0),
-        ("VNM", 48.0),
-        ("NLD", 45.0),
-        ("PAK", 45.0),
-        ("ITA", 44.0),
-        ("TUR", 42.0),
-        ("USA", 41.0),
-        ("IRL", 40.0),
-        ("RUS", 40.0),
-        ("AUS", 39.0),
-        ("KOR", 39.0),
-        ("CHN", 36.0),
-        ("ARG", 35.0),
-        ("JPN", 32.0),
-        ("POL", 27.0),
-        ("MEX", 24.0),
-        ("IND", 23.0),
-        ("NGA", 22.0),
-        ("PHL", 22.0),
-        ("IDN", 20.0),
-        ("MAR", 20.0),
-        ("THA", 15.0),
-        ("ZAF", 15.0),
-        ("EGY", 12.0),
-        ("KAZ", 12.0),
-        ("IRN", 7.0),
-        ("DZA", 1.0),
-        ("SAU", 1.0),
+        ("ISL", 100.0), ("ETH", 100.0), ("NOR", 98.0), ("SWE", 98.0),
+        ("COD", 98.0), ("FRA", 92.0), ("KEN", 90.0), ("BRA", 89.0),
+        ("CAN", 82.0), ("NZL", 82.0), ("COL", 75.0), ("ESP", 75.0),
+        ("PRT", 72.0), ("UKR", 65.0), ("CHL", 62.0), ("GBR", 60.0),
+        ("PER", 60.0), ("DEU", 56.0), ("GRC", 50.0), ("VNM", 48.0),
+        ("NLD", 45.0), ("PAK", 45.0), ("ITA", 44.0), ("TUR", 42.0),
+        ("USA", 41.0), ("IRL", 40.0), ("RUS", 40.0), ("AUS", 39.0),
+        ("KOR", 39.0), ("CHN", 36.0), ("ARG", 35.0), ("JPN", 32.0),
+        ("POL", 27.0), ("MEX", 24.0), ("IND", 23.0), ("NGA", 22.0),
+        ("PHL", 22.0), ("IDN", 20.0), ("MAR", 20.0), ("THA", 15.0),
+        ("ZAF", 15.0), ("EGY", 12.0), ("KAZ", 12.0), ("IRN", 7.0),
+        ("DZA", 1.0), ("SAU", 1.0),
     )
 ]
 
@@ -336,7 +236,9 @@ def build_svg(
         "equal tile, so a small country counts as much as a large one"
     )
 
-    parts: List[str] = [svg_open(_WIDTH, _HEIGHT, "tile-title", "tile-desc", font_family=fonts)]
+    parts: List[str] = [
+        svg_open(_WIDTH, _HEIGHT, "tile-title", "tile-desc", font_family=fonts)
+    ]
     parts.append(
         f'<title id="tile-title">{xml_escape(head)}</title>'
         f'<desc id="tile-desc">{xml_escape(sub)}. Forty-six countries as equal '
@@ -388,7 +290,7 @@ def build_svg(
         parts.append(
             f'<rect id="hit-{idx}" class="hit" tabindex="0" x="{x:.1f}" y="{y:.1f}" '
             f'width="{_TILE:.1f}" height="{_TILE:.1f}" rx="7" fill="{fill}">'
-            f"<title>{xml_escape(label)}</title></rect>"
+            f'<title>{xml_escape(label)}</title></rect>'
         )
         parts.append(
             f'<text x="{x + _TILE / 2:.1f}" y="{y + _TILE / 2 - 5:.1f}" '
@@ -400,19 +302,15 @@ def build_svg(
             f'text-anchor="middle" dominant-baseline="central" '
             f'font-family="{mono}" font-size="14" fill="{ink}" opacity="0.88" '
             f'style="pointer-events:none">'
-            f"{'—' if percent is None else f'{percent:.0f}%'}</text>"
+            f'{"—" if percent is None else f"{percent:.0f}%"}</text>'
         )
         tips.append(
             tooltip_bubble(
-                x + _TILE / 2,
-                y - 8.0,
-                [name, "No data" if percent is None else f"{percent:.0f}% from low-carbon sources"],
-                anchor="middle",
-                canvas_w=_WIDTH,
-                canvas_h=_HEIGHT,
-                ink=_INK,
-                secondary=_SUBTLE,
-                border="#E5E5EA",
+                x + _TILE / 2, y - 8.0,
+                [name, "No data" if percent is None
+                 else f"{percent:.0f}% from low-carbon sources"],
+                anchor="middle", canvas_w=_WIDTH, canvas_h=_HEIGHT,
+                ink=_INK, secondary=_SUBTLE, border="#E5E5EA",
                 elem_id=f"tip-{idx}",
             )
         )
@@ -441,7 +339,7 @@ def build_svg(
     parts.append(
         f'<text x="{_GRID_X:.1f}" y="{ly + 52:.1f}" font-size="12.5" '
         f'fill="{_SUBTLE}">Tiles are placed in roughly geographic order; no '
-        f"distance on this grid means anything. 2023 order of magnitude, Ember.</text>"
+        f'distance on this grid means anything. 2023 order of magnitude, Ember.</text>'
     )
 
     parts.append(fullscreen_control(_WIDTH, _HEIGHT, mode))
@@ -475,14 +373,18 @@ def make_map_tilegrid(
     mode, accessibility, theme : str
         Forwarded to :func:`build_svg`.
     """
-    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme, title=title or None)
+    svg = build_svg(
+        data, mode=mode, accessibility=accessibility, theme=theme, title=title or None
+    )
     dest = Path(out) if out else svg_example_path(__file__, "map-tilegrid")
     return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:
     """Write the map-tilegrid SVG to the skill's ``svg-examples`` folder."""
-    render_cli(__file__, "map-tilegrid", build_svg, description="Render the map-tilegrid SVG.")
+    render_cli(
+        __file__, "map-tilegrid", build_svg, description="Render the map-tilegrid SVG."
+    )
 
 
 if __name__ == "__main__":

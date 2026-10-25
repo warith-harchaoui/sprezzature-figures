@@ -113,7 +113,6 @@ Author
 ------
 `Warith HARCHAOUI, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
 """
-
 from __future__ import annotations
 
 import argparse
@@ -138,8 +137,8 @@ from best_engine_ai_helper.llm import chat as _llm_chat
 # ---------------------------------------------------------------------------
 # Paths — resolved at import time so the script works from any cwd
 # ---------------------------------------------------------------------------
-_SCRIPT_DIR: Path = Path(__file__).resolve().parent  # sprezzature-figures/scripts/
-_FIGURES_ROOT: Path = _SCRIPT_DIR.parent  # sprezzature-figures/ (this package's own root)
+_SCRIPT_DIR: Path = Path(__file__).resolve().parent      # sprezzature-figures/scripts/
+_FIGURES_ROOT: Path = _SCRIPT_DIR.parent                 # sprezzature-figures/ (this package's own root)
 _RENDER_DIAGRAM: Path = _SCRIPT_DIR / "render_diagram.py"
 
 # Gitignored output directory (covered by .private/ in the top-level .gitignore).
@@ -178,13 +177,13 @@ _DIAGRAM_KINDS: frozenset[str] = frozenset({_KIND_TIKZ, _KIND_MERMAID, _KIND_SVG
 
 # Suffix → kind.
 _SUFFIX_KIND: dict[str, str] = {
-    ".tex": _KIND_TIKZ,
-    ".tikz": _KIND_TIKZ,
-    ".mmd": _KIND_MERMAID,
-    ".mermaid": _KIND_MERMAID,
-    ".svg": _KIND_SVG,
-    ".html": _KIND_HTML,
-    ".htm": _KIND_HTML,
+    ".tex":      _KIND_TIKZ,
+    ".tikz":     _KIND_TIKZ,
+    ".mmd":      _KIND_MERMAID,
+    ".mermaid":  _KIND_MERMAID,
+    ".svg":      _KIND_SVG,
+    ".html":     _KIND_HTML,
+    ".htm":      _KIND_HTML,
 }
 
 # ---------------------------------------------------------------------------
@@ -546,13 +545,10 @@ def _render_diagram(src: Path, out: Path, bg: str, dark: bool) -> None:
             "sprezzature-figures/scripts/."
         )
     cmd = [
-        sys.executable,
-        str(_RENDER_DIAGRAM),
+        sys.executable, str(_RENDER_DIAGRAM),
         str(src),
-        "--background",
-        bg,
-        "--out",
-        str(out),
+        "--background", bg,
+        "--out", str(out),
     ]
     if dark:
         cmd.append("--dark")
@@ -644,11 +640,8 @@ def _vlm_critique(png_path: Path, kind: str) -> str:
         When the backend is unreachable or the model is not pulled.
     """
     prompt = _build_critique_prompt(kind)
-    print(
-        f"ralph_eyeball_loop: calling {_VISION_MODEL} for visual critique "
-        "(first call loads the model, ~30 s cold) …",
-        file=sys.stderr,
-    )
+    print(f"ralph_eyeball_loop: calling {_VISION_MODEL} for visual critique "
+          "(first call loads the model, ~30 s cold) …", file=sys.stderr)
     try:
         return str(_llm_chat(prompt, images=[png_path.read_bytes()], model=_VISION_MODEL)).strip()
     except Exception as exc:
@@ -797,9 +790,7 @@ def _write_assessment(
 
     if auto_critique is not None:
         body = _ITERATION_LOCAL_TMPL.format(
-            n=n,
-            ts=ts,
-            rel_png=rel_png,
+            n=n, ts=ts, rel_png=rel_png,
             vision_model=_VISION_MODEL,
             critique=auto_critique,
         )
@@ -853,22 +844,17 @@ def _build_parser() -> argparse.ArgumentParser:
         ),
     )
     p.add_argument(
-        "--width",
-        type=int,
-        default=1440,
+        "--width", type=int, default=1440,
         help="Viewport width for HTML renders in CSS pixels (default: 1440). "
-        "Values below ~500 are clamped up (Chrome's headless minimum); "
-        "a true 375 px phone view needs a browser's device-mode.",
+             "Values below ~500 are clamped up (Chrome's headless minimum); "
+             "a true 375 px phone view needs a browser's device-mode.",
     )
     p.add_argument(
-        "--height",
-        type=int,
-        default=900,
+        "--height", type=int, default=900,
         help="Viewport height for HTML renders in CSS pixels (default: 900).",
     )
     p.add_argument(
-        "--bg",
-        default="white",
+        "--bg", default="white",
         help=(
             "Background for diagram renders: "
             "white | transparent | dark | #RRGGBB (default: white). "
@@ -876,8 +862,7 @@ def _build_parser() -> argparse.ArgumentParser:
         ),
     )
     p.add_argument(
-        "--dark",
-        action="store_true",
+        "--dark", action="store_true",
         help="Use the dark-mode house canvas for diagram renders.",
     )
     p.add_argument(

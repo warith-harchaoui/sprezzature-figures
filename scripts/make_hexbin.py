@@ -52,18 +52,13 @@ def _nice_step(span: float, target_ticks: int = 5) -> float:
     raw_step = span / target_ticks
     exponent = math.floor(math.log10(raw_step))
     fraction = raw_step / (10.0**exponent)
-    nice_fraction = (
-        1.0 if fraction < 1.5 else 2.0 if fraction < 3 else 5.0 if fraction < 7 else 10.0
-    )
+    nice_fraction = 1.0 if fraction < 1.5 else 2.0 if fraction < 3 else 5.0 if fraction < 7 else 10.0
     return nice_fraction * (10.0**exponent)
 
 
 _RAMP: Tuple[Tuple[float, str], ...] = (
-    (0.00, "#EAF3FF"),
-    (0.25, "#9CC7FF"),
-    (0.55, "#3E9BFF"),
-    (0.80, "#007AFF"),
-    (1.00, "#0A4DA0"),
+    (0.00, "#EAF3FF"), (0.25, "#9CC7FF"), (0.55, "#3E9BFF"),
+    (0.80, "#007AFF"), (1.00, "#0A4DA0"),
 )
 
 
@@ -222,14 +217,12 @@ def build_svg(
     max_count = max(counts.values()) if counts else 1
 
     parts: List[str] = []
-    parts.append(
-        svg_open(width, height, "hex-title", "hex-desc", font_family=chrome_stack_for_theme(theme))
-    )
+    parts.append(svg_open(width, height, "hex-title", "hex-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="hex-title">{xml_escape(title)}</title>')
     n_cells = len(counts)
     parts.append(
         f'<desc id="hex-desc">Hexbin of {len(points)} points into {n_cells} cells, densest cell '
-        f"{max_count}. Hover or focus a cell for its exact count.</desc>"
+        f'{max_count}. Hover or focus a cell for its exact count.</desc>'
     )
     parts.append(
         "<style>"
@@ -246,9 +239,7 @@ def build_svg(
         f'<text x="40" y="46" font-size="22" font-weight="700" fill="{INK}" '
         f'letter-spacing="-0.3">{xml_escape(title)}</text>'
     )
-    parts.append(
-        f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>'
-    )
+    parts.append(f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>')
 
     # ---- y-axis gridlines + tick labels (round "nice" steps, not a naive
     # 5-way split; drawn first so hex cells sit on top) ----
@@ -298,24 +289,19 @@ def build_svg(
         parts.append(
             f'<path id="hex-{i}" class="hex hit" tabindex="0" d="{d}" fill="{fill}" '
             f'stroke="{fill}" stroke-width="0.75">'
-            f"<title>{xml_escape(tip)}</title></path>"
+            f'<title>{xml_escape(tip)}</title></path>'
         )
         tip_bubbles.append(
             tooltip_bubble(
-                cx,
-                cy - hex_size_px - 6,
+                cx, cy - hex_size_px - 6,
                 [f"{count} point{'s' if count != 1 else ''}", f"{t * 100:.0f}% of densest cell"],
-                anchor="middle",
-                canvas_w=width,
-                canvas_h=height,
-                ink=INK,
-                secondary=SECONDARY,
-                border=GRIDLINE,
+                anchor="middle", canvas_w=width, canvas_h=height,
+                ink=INK, secondary=SECONDARY, border=GRIDLINE,
                 elem_id=f"tip-{i}",
             )
         )
     parts.extend(tip_bubbles)
-    parts.append("</g>")
+    parts.append('</g>')
 
     # ---- axes ----
     axis_y = plot_y + plot_h
@@ -358,9 +344,7 @@ def build_svg(
     n_swatches = 8
     for i in range(n_swatches):
         t = i / (n_swatches - 1)
-        parts.append(
-            f'<rect x="{swatch_x + i * 16:.1f}" y="{ly - 11:.1f}" width="14" height="12" fill="{_ramp_hex(t, theme)}"/>'
-        )
+        parts.append(f'<rect x="{swatch_x + i * 16:.1f}" y="{ly - 11:.1f}" width="14" height="12" fill="{_ramp_hex(t, theme)}"/>')
     parts.append(
         f'<text x="{swatch_x + n_swatches * 16 + 6:.1f}" y="{ly:.1f}" font-size="11" '
         f'fill="{SECONDARY}">{max_count} (Count)</text>'
@@ -412,16 +396,8 @@ def make_hexbin(
     >>> p.exists()
     True
     """
-    svg = build_svg(
-        data,
-        title=title,
-        subtitle=subtitle,
-        width=width,
-        height=height,
-        mode=mode,
-        accessibility=accessibility,
-        theme=theme,
-    )
+    svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
+                     mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "hexbin")
     return write_svg(dest, svg, theme=theme)
 

@@ -78,9 +78,7 @@ def _category_colors(accessibility: str = "universal", theme: str = "corporate")
     # the South/East bars here -- collapse to the same shade once
     # desaturated. Blue/Brown/Green/Yellow spread luminance ~106/68/160/200,
     # so every bar stays distinguishable in grayscale.
-    return cycle_hues(
-        CATEGORIES, accessibility, hues=["Blue", "Brown", "Green", "Yellow"], theme=theme
-    )
+    return cycle_hues(CATEGORIES, accessibility, hues=['Blue', 'Brown', 'Green', 'Yellow'], theme=theme)
 
 
 def build_svg(
@@ -179,23 +177,18 @@ def build_svg(
         return plot_y + plot_h - (v / y_domain * plot_h)
 
     parts: List[str] = []
-    parts.append(
-        svg_open(
-            width, canvas_h, "bar-title", "bar-desc", font_family=chrome_stack_for_theme(theme)
-        )
-    )
+    parts.append(svg_open(width, canvas_h, "bar-title", "bar-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="bar-title">{xml_escape(title)}</title>')
     top = ordered[0] if ordered else None
     peak_desc = (
         strings["peak_template"].format(
             region=top["region"], value=float(top["value"]), pct=float(top["value"]) / total * 100
         )
-        if top
-        else ""
+        if top else ""
     )
     parts.append(
         f'<desc id="bar-desc">{strings["desc_template"].format(n=n, max_val=max_val)}'
-        f"{peak_desc}</desc>"
+        f'{peak_desc}</desc>'
     )
 
     parts.append(
@@ -220,9 +213,7 @@ def build_svg(
         f'<text x="40" y="56" font-size="26" font-weight="600" fill="{INK}" '
         f'letter-spacing="-0.3">{xml_escape(title)}</text>'
     )
-    parts.append(
-        f'<text x="40" y="84" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>'
-    )
+    parts.append(f'<text x="40" y="84" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>')
 
     for tick in y_ticks:
         ty = y_for(tick)
@@ -242,7 +233,7 @@ def build_svg(
     parts.append(
         f'<text x="{axis_value_x:.1f}" y="{axis_value_y:.1f}" font-size="14" fill="{INK}" '
         f'text-anchor="middle" transform="rotate(-90 {axis_value_x:.1f} {axis_value_y:.1f})">'
-        f"{xml_escape(y_label)}</text>"
+        f'{xml_escape(y_label)}</text>'
     )
 
     bar_tips: List[str] = []
@@ -260,19 +251,14 @@ def build_svg(
         path = bar_path(x, y, bar_w, h, r, side="top")
         parts.append(
             f'<path id="bar-hit-{i}" class="bar hit" tabindex="0" d="{path}" fill="{colors.get(region, "#007AFF")}">'
-            f"<title>{xml_escape(tip)}</title></path>"
+            f'<title>{xml_escape(tip)}</title></path>'
         )
         rank = i + 1
         bar_tips.append(
             tooltip_bubble(
-                x + bar_w / 2.0,
-                y - 6,
+                x + bar_w / 2.0, y - 6,
                 [region, f"{value:.0f}", f"{share:.1f}% of total · rank {rank}/{n}"],
-                canvas_w=width,
-                canvas_h=height,
-                ink=INK,
-                secondary=SECONDARY,
-                border=GRIDLINE,
+                canvas_w=width, canvas_h=height, ink=INK, secondary=SECONDARY, border=GRIDLINE,
                 elem_id=f"bar-tip-{i}",
             )
         )
@@ -296,7 +282,7 @@ def build_svg(
             parts.append(
                 f'<text x="{tx:.1f}" y="{axis_y + 18:.1f}" font-size="13" fill="{INK}" '
                 f'text-anchor="end" transform="rotate(-35 {tx:.1f} {axis_y + 18:.1f})">'
-                f"{etiquette}</text>"
+                f'{etiquette}</text>'
             )
         else:
             parts.append(
@@ -364,19 +350,9 @@ def make_bar(
     >>> p.exists()
     True
     """
-    svg = build_svg(
-        data,
-        title=title,
-        subtitle=subtitle,
-        width=width,
-        height=height,
-        mode=mode,
-        accessibility=accessibility,
-        language=language,
-        x_label=x_label,
-        y_label=y_label,
-        theme=theme,
-    )
+    svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
+                     mode=mode, accessibility=accessibility, language=language,
+                     x_label=x_label, y_label=y_label, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "bar")
     return write_svg(dest, svg, theme=theme)
 

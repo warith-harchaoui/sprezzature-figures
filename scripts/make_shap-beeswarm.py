@@ -90,54 +90,24 @@ def _explanations(seed: int = 17) -> List[Dict[str, Any]]:
         age = rng.uniform(19.0, 78.0)
         # The non-monotone one: a U, not a slope.
         settled = 1.0 - abs(tenure - 36.0) / 36.0
-        rows.append(
-            {
-                "row": index,
-                "feature": "credit_utilisation",
-                "shap": round(1.9 * (utilisation - 0.4) + rng.gauss(0, 0.09), 4),
-                "observed": round(utilisation, 3),
-            }
-        )
-        rows.append(
-            {
-                "row": index,
-                "feature": "tenure_months",
-                "shap": round(0.95 * (0.5 - settled) + rng.gauss(0, 0.07), 4),
-                "observed": round(tenure, 1),
-            }
-        )
-        rows.append(
-            {
-                "row": index,
-                "feature": "monthly_charge",
-                "shap": round(0.012 * (charge - 62.0) + rng.gauss(0, 0.07), 4),
-                "observed": round(charge, 2),
-            }
-        )
-        rows.append(
-            {
-                "row": index,
-                "feature": "support_tickets",
-                "shap": round(0.16 * tickets - 0.13 + rng.gauss(0, 0.05), 4),
-                "observed": tickets,
-            }
-        )
-        rows.append(
-            {
-                "row": index,
-                "feature": "has_fibre",
-                "shap": round((0.22 if fibre else -0.16) + rng.gauss(0, 0.04), 4),
-                "observed": 1 if fibre else 0,
-            }
-        )
-        rows.append(
-            {
-                "row": index,
-                "feature": "age",
-                "shap": round(-0.009 * (age - 48.0) + rng.gauss(0, 0.05), 4),
-                "observed": round(age, 1),
-            }
-        )
+        rows.append({"row": index, "feature": "credit_utilisation",
+                     "shap": round(1.9 * (utilisation - 0.4) + rng.gauss(0, 0.09), 4),
+                     "observed": round(utilisation, 3)})
+        rows.append({"row": index, "feature": "tenure_months",
+                     "shap": round(0.95 * (0.5 - settled) + rng.gauss(0, 0.07), 4),
+                     "observed": round(tenure, 1)})
+        rows.append({"row": index, "feature": "monthly_charge",
+                     "shap": round(0.012 * (charge - 62.0) + rng.gauss(0, 0.07), 4),
+                     "observed": round(charge, 2)})
+        rows.append({"row": index, "feature": "support_tickets",
+                     "shap": round(0.16 * tickets - 0.13 + rng.gauss(0, 0.05), 4),
+                     "observed": tickets})
+        rows.append({"row": index, "feature": "has_fibre",
+                     "shap": round((0.22 if fibre else -0.16) + rng.gauss(0, 0.04), 4),
+                     "observed": 1 if fibre else 0})
+        rows.append({"row": index, "feature": "age",
+                     "shap": round(-0.009 * (age - 48.0) + rng.gauss(0, 0.05), 4),
+                     "observed": round(age, 1)})
     return rows
 
 
@@ -256,13 +226,16 @@ def build_svg(
 
     grouped: Dict[str, List[Tuple[float, float]]] = {}
     for row in rows:
-        grouped.setdefault(str(row[feature]), []).append((float(row[value]), float(row[observed])))
+        grouped.setdefault(str(row[feature]), []).append(
+            (float(row[value]), float(row[observed]))
+        )
     summary = sorted(
         (
             (
                 name,
                 sum(abs(shap) for shap, _ in pairs) / len(pairs),
-                _rank_correlation([shap for shap, _ in pairs], [seen for _, seen in pairs]),
+                _rank_correlation([shap for shap, _ in pairs],
+                                  [seen for _, seen in pairs]),
                 pairs,
             )
             for name, pairs in grouped.items()
@@ -293,14 +266,10 @@ def build_svg(
     def px(amount: float) -> float:
         return plot_x + (amount - axis_low) / (axis_high - axis_low) * plot_w
 
-    said_order = (
-        order_note
-        if order_note is not None
-        else (
-            f"rows ordered by mean absolute contribution, a summary over all "
-            f"{len(summary[0][3])} observations and not a claim about any one of them · "
-            f"colour runs from each feature's own lowest value to its own highest"
-        )
+    said_order = order_note if order_note is not None else (
+        f"rows ordered by mean absolute contribution, a summary over all "
+        f"{len(summary[0][3])} observations and not a claim about any one of them · "
+        f"colour runs from each feature's own lowest value to its own highest"
     )
     said_parts: List[str] = []
     if finding is not None:
@@ -312,7 +281,8 @@ def build_svg(
             f"{fmt_number(monotone_at)} between value and contribution: {', '.join(mixed)}."
         )
         said_parts.append(
-            "There, reading the colour along the axis gets it backwards for part of the data."
+            "There, reading the colour along the axis gets it backwards for part of "
+            "the data."
         )
     else:
         said_parts.append(
@@ -325,16 +295,15 @@ def build_svg(
 
     parts: List[str] = []
     parts.append(
-        svg_open(
-            width, height, "shapb-title", "shapb-desc", font_family=chrome_stack_for_theme(theme)
-        )
+        svg_open(width, height, "shapb-title", "shapb-desc",
+                 font_family=chrome_stack_for_theme(theme))
     )
     parts.append(f'<title id="shapb-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="shapb-desc">A beeswarm of {len(summary)} features over '
-        f"{len(summary[0][3])} observations, each dot one observation placed at its "
-        f"contribution and coloured by the value the feature took. "
-        f"{xml_escape(said_order)}. {xml_escape(' '.join(said_parts))}</desc>"
+        f'{len(summary[0][3])} observations, each dot one observation placed at its '
+        f'contribution and coloured by the value the feature took. '
+        f'{xml_escape(said_order)}. {xml_escape(" ".join(said_parts))}</desc>'
     )
     parts.append(
         "<style>"
@@ -375,7 +344,7 @@ def build_svg(
         parts.append(
             f'<text x="{px(tick):.1f}" y="{plot_y + plot_h + 18:.1f}" font-size="11" '
             f'fill="{SECONDARY}" text-anchor="middle" font-family="{mono_family}">'
-            f"{fmt_number(tick)}</text>"
+            f'{fmt_number(tick)}</text>'
         )
     parts.append(
         f'<line x1="{px(0.0):.1f}" y1="{plot_y:.1f}" x2="{px(0.0):.1f}" '
@@ -384,7 +353,7 @@ def build_svg(
     parts.append(
         f'<text x="{plot_x + plot_w / 2:.1f}" y="{plot_y + plot_h + 44:.1f}" '
         f'font-size="12" fill="{SECONDARY}" text-anchor="middle">'
-        f"{xml_escape(x_label)}</text>"
+        f'{xml_escape(x_label)}</text>'
     )
 
     tips: List[str] = []
@@ -395,9 +364,7 @@ def build_svg(
         span = (high - low) or 1.0
         ordered = sorted(pairs, key=lambda pair: pair[0])
         positions = _swarm_positions(
-            [(px(shap), 0.0) for shap, _ in ordered],
-            middle,
-            radius,
+            [(px(shap), 0.0) for shap, _ in ordered], middle, radius,
             max_offset=row_h * 0.42,
         )
         for (shap, value_seen), y in zip(ordered, positions, strict=True):
@@ -410,46 +377,39 @@ def build_svg(
         parts.append(
             f'<text x="{plot_x - 12:.1f}" y="{middle + 4:.1f}" font-size="12" '
             f'fill="{INK}" text-anchor="end" font-family="{mono_family}">'
-            f"{xml_escape(caption)}</text>"
+            f'{xml_escape(caption)}</text>'
         )
         # The two ends of this row's own colour scale, in the feature's
         # own units: "high" and "low" alone cannot be read.
         parts.append(
             f'<text x="{plot_x + plot_w + 12:.1f}" y="{middle - 2:.1f}" font-size="10" '
             f'fill="{SECONDARY}" font-family="{mono_family}">'
-            f"{fmt_number(low)} → {fmt_number(high)}</text>"
+            f'{fmt_number(low)} → {fmt_number(high)}</text>'
         )
         if abs(rho) < monotone_at:
             parts.append(
                 f'<text x="{plot_x + plot_w + 12:.1f}" y="{middle + 11:.1f}" '
                 f'font-size="10" fill="{marker}" font-weight="700">'
-                f"{xml_escape(mixed_label)}</text>"
+                f'{xml_escape(mixed_label)}</text>'
             )
         parts.append(
             f'<rect id="swarm-{index}" class="swarm hit" tabindex="0" role="img" '
             f'aria-label="{xml_escape(name)}: mean absolute contribution '
-            f"{fmt_measured(strength, precision)} {xml_escape(units)} over {len(pairs)} "
-            f"observations, values {fmt_number(low)} to {fmt_number(high)}, rank "
+            f'{fmt_measured(strength, precision)} {xml_escape(units)} over {len(pairs)} '
+            f'observations, values {fmt_number(low)} to {fmt_number(high)}, rank '
             f'correlation {fmt_number(rho)}" x="{plot_x:.1f}" '
             f'y="{middle - row_h / 2:.1f}" width="{plot_w:.1f}" height="{row_h:.1f}" '
             f'fill="transparent"><title>{xml_escape(name)}: '
-            f"{fmt_measured(strength, precision)}</title></rect>"
+            f'{fmt_measured(strength, precision)}</title></rect>'
         )
         tips.append(
             tooltip_bubble(
-                plot_x + plot_w * 0.5,
-                middle,
-                [
-                    name,
-                    f"mean |contribution| {fmt_measured(strength, precision)} {units}",
-                    f"rank correlation {fmt_number(rho)}",
-                ],
-                canvas_w=width,
-                canvas_h=height,
-                ink=INK,
-                secondary=SECONDARY,
-                border=GRIDLINE,
-                elem_id=f"swarmtip-{index}",
+                plot_x + plot_w * 0.5, middle,
+                [name,
+                 f"mean |contribution| {fmt_measured(strength, precision)} {units}",
+                 f"rank correlation {fmt_number(rho)}"],
+                canvas_w=width, canvas_h=height, ink=INK, secondary=SECONDARY,
+                border=GRIDLINE, elem_id=f"swarmtip-{index}",
             )
         )
 
@@ -529,24 +489,11 @@ def make_shap_beeswarm(
     True
     """
     svg = build_svg(
-        data,
-        title=title,
-        subtitle=subtitle,
-        width=width,
-        height=height,
-        feature=feature,
-        value=value,
-        observed=observed,
-        top=top,
-        monotone_at=monotone_at,
-        units=units,
-        x_label=x_label,
-        mixed_label=mixed_label,
-        order_note=order_note,
-        finding=finding,
-        mode=mode,
-        accessibility=accessibility,
-        theme=theme,
+        data, title=title, subtitle=subtitle, width=width, height=height,
+        feature=feature, value=value, observed=observed, top=top,
+        monotone_at=monotone_at, units=units, x_label=x_label,
+        mixed_label=mixed_label, order_note=order_note, finding=finding,
+        mode=mode, accessibility=accessibility, theme=theme,
     )
     dest = Path(out) if out else svg_example_path(__file__, "shap-beeswarm")
     return write_svg(dest, svg, theme=theme)
@@ -554,12 +501,8 @@ def make_shap_beeswarm(
 
 def main() -> None:
     """CLI entry point: build the SVG and write it to disk."""
-    render_cli(
-        __file__,
-        "shap-beeswarm",
-        build_svg,
-        description="Draw every row's explanation, one feature per swarm.",
-    )
+    render_cli(__file__, "shap-beeswarm", build_svg,
+               description="Draw every row's explanation, one feature per swarm.")
 
 
 if __name__ == "__main__":

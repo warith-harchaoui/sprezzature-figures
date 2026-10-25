@@ -65,13 +65,18 @@ from typing import Any, Dict, List, Optional, Tuple
 import numpy as np
 
 # Repo-relative default output — the one SVG artifact this figure ships.
-_DEFAULT_OUT = Path(__file__).resolve().parent.parent / "assets" / "svg-examples" / "scatter3d.svg"
+_DEFAULT_OUT = (
+    Path(__file__).resolve().parent.parent
+    / "assets"
+    / "svg-examples"
+    / "scatter3d.svg"
+)
 
 # House-style tokens (mirrors the house-style constants, kept literal so this
 # generator needs no import of the dataviz tier at build time).
-_INK = "#1D1D1F"  # primary text
+_INK = "#1D1D1F"        # primary text
 _SECONDARY = "#6E6E73"  # subtitle / secondary text
-_BG = "#FFFFFF"  # white ground
+_BG = "#FFFFFF"         # white ground
 _MONO = "Roboto Mono, ui-monospace, monospace"
 
 # Three qualitative hues from the Apple-system palette — one per cultivar.
@@ -82,9 +87,9 @@ _MONO = "Roboto Mono, ui-monospace, monospace"
 # (see :func:`_class_colors`), so ``--accessibility`` remaps these hues rather
 # than being a no-op.
 _BASE_CLASS_COLORS: Dict[str, str] = {
-    "Barolo": "#007AFF",  # blue
+    "Barolo": "#007AFF",      # blue
     "Grignolino": "#FF9500",  # orange
-    "Barbera": "#AF52DE",  # purple
+    "Barbera": "#AF52DE",     # purple
 }
 
 
@@ -132,7 +137,6 @@ def _class_slug(name: str) -> str:
     """
     return "".join(c if c.isalnum() else "-" for c in name).strip("-").lower()
 
-
 # The still is rendered at exactly the angle the interactive view starts
 # from, so the <img> frame and the browser's first frame coincide.
 _DEFAULT_ELEV = 20.0
@@ -170,9 +174,9 @@ def _sample_clusters(
     rng = np.random.default_rng(seed)
     # Cluster centres in normalised model space and their per-axis spreads.
     specs = {
-        "Barolo": {"mu": (-0.55, 0.50, 0.55), "sd": (0.20, 0.16, 0.15)},
+        "Barolo":     {"mu": (-0.55, 0.50, 0.55), "sd": (0.20, 0.16, 0.15)},
         "Grignolino": {"mu": (0.10, -0.55, -0.10), "sd": (0.22, 0.18, 0.22)},
-        "Barbera": {"mu": (0.60, 0.35, -0.55), "sd": (0.17, 0.20, 0.16)},
+        "Barbera":    {"mu": (0.60, 0.35, -0.55), "sd": (0.17, 0.20, 0.16)},
     }
     xs: List[float] = []
     ys: List[float] = []
@@ -198,12 +202,8 @@ def _demo_rows() -> List[Dict[str, Any]]:
     """Flatten :func:`_sample_clusters` into row records."""
     xs, ys, zs, labels = _sample_clusters()
     return [
-        {
-            "cultivar": name,
-            "colour_intensity": round(float(x), 4),
-            "flavanoid": round(float(y), 4),
-            "proline": round(float(z), 4),
-        }
+        {"cultivar": name, "colour_intensity": round(float(x), 4),
+         "flavanoid": round(float(y), 4), "proline": round(float(z), 4)}
         for x, y, z, name in zip(xs, ys, zs, labels, strict=True)
     ]
 
@@ -264,19 +264,9 @@ def _project(
     frame coincide.
     """
     return project3d(
-        xs,
-        ys,
-        zs,
-        elev_deg=elev_deg,
-        azim_deg=azim_deg,
-        plot_w=plot_w,
-        plot_h=plot_h,
-        cx=cx,
-        cy=cy,
-        zoom=zoom,
-        fit="box",
+        xs, ys, zs, elev_deg=elev_deg, azim_deg=azim_deg, plot_w=plot_w,
+        plot_h=plot_h, cx=cx, cy=cy, zoom=zoom, fit="box",
     )
-
 
 def _lerp_hex(a: str, b: str, t: float) -> str:
     """Linearly interpolate two ``#RRGGBB`` colours in sRGB space.
@@ -343,18 +333,16 @@ def _point_records(
     records: List[Dict[str, object]] = []
     for i, name in enumerate(labels):
         # Shift the normalised model coords into readable positive readings.
-        records.append(
-            {
-                "x": round(float(xs[i]), 4),
-                "y": round(float(ys[i]), 4),
-                "z": round(float(zs[i]), 4),
-                "label": name,
-                "color": class_colors[name],
-                "vcolour": round(float(xs[i]) + 1.0, 2),
-                "vflav": round(float(ys[i]) + 1.0, 2),
-                "vprol": round(float(zs[i]) + 1.0, 2),
-            }
-        )
+        records.append({
+            "x": round(float(xs[i]), 4),
+            "y": round(float(ys[i]), 4),
+            "z": round(float(zs[i]), 4),
+            "label": name,
+            "color": class_colors[name],
+            "vcolour": round(float(xs[i]) + 1.0, 2),
+            "vflav": round(float(ys[i]) + 1.0, 2),
+            "vprol": round(float(zs[i]) + 1.0, 2),
+        })
     return records
 
 
@@ -395,15 +383,9 @@ def _cloud_svg(
     ys = np.array([r["y"] for r in records], dtype=float)
     zs = np.array([r["z"] for r in records], dtype=float)
     px, py, depth = _project(
-        xs,
-        ys,
-        zs,
-        elev_deg=elev_deg,
-        azim_deg=azim_deg,
-        plot_w=plot_w,
-        plot_h=plot_h,
-        cx=cx,
-        cy=cy,
+        xs, ys, zs,
+        elev_deg=elev_deg, azim_deg=azim_deg,
+        plot_w=plot_w, plot_h=plot_h, cx=cx, cy=cy,
     )
 
     d_lo, d_hi = float(depth.min()), float(depth.max())
@@ -465,22 +447,16 @@ def _axis_frame_svg(
     """
     corner = (-1.0, 1.0, -1.0)
     arms = {
-        "colour": (0.9, 1.0, -1.0),  # +x
+        "colour": (0.9, 1.0, -1.0),       # +x
         "flavanoid": (-1.0, -0.9, -1.0),  # -y (toward viewer)
-        "proline": (-1.0, 1.0, 0.9),  # +z (up)
+        "proline": (-1.0, 1.0, 0.9),      # +z (up)
     }
     names = list(arms.keys())
     pts = np.array([corner] + [arms[n] for n in names], dtype=float)
     px, py, _ = _project(
-        pts[:, 0],
-        pts[:, 1],
-        pts[:, 2],
-        elev_deg=elev_deg,
-        azim_deg=azim_deg,
-        plot_w=plot_w,
-        plot_h=plot_h,
-        cx=cx,
-        cy=cy,
+        pts[:, 0], pts[:, 1], pts[:, 2],
+        elev_deg=elev_deg, azim_deg=azim_deg,
+        plot_w=plot_w, plot_h=plot_h, cx=cx, cy=cy,
     )
     grey = "#C7C7CC"
 
@@ -605,7 +581,7 @@ def _script_svg(
         "azim0": azim_deg,
         "cx": cx,
         "cy": cy,
-        "cx0": cx,  # pristine centre for reset (cx/cy drift with zoom-about)
+        "cx0": cx,   # pristine centre for reset (cx/cy drift with zoom-about)
         "cy0": cy,
         "plotW": plot_w,
         "plotH": plot_h,
@@ -1114,33 +1090,20 @@ def build_svg(
     records = _point_records(xs, ys, zs, labels, class_colors)
 
     axes = _axis_frame_svg(
-        elev_deg=elev,
-        azim_deg=azim,
-        plot_w=plot_w,
-        plot_h=plot_h,
-        cx=cx,
-        cy=cy,
+        elev_deg=elev, azim_deg=azim,
+        plot_w=plot_w, plot_h=plot_h, cx=cx, cy=cy,
         mono_family=mono_family,
     )
     cloud = _cloud_svg(
         records,
-        elev_deg=elev,
-        azim_deg=azim,
-        plot_w=plot_w,
-        plot_h=plot_h,
-        cx=cx,
-        cy=cy,
+        elev_deg=elev, azim_deg=azim,
+        plot_w=plot_w, plot_h=plot_h, cx=cx, cy=cy,
     )
     script = _script_svg(
         records,
-        elev_deg=elev,
-        azim_deg=azim,
-        plot_w=plot_w,
-        plot_h=plot_h,
-        cx=cx,
-        cy=cy,
-        vb_w=width,
-        vb_h=height,
+        elev_deg=elev, azim_deg=azim,
+        plot_w=plot_w, plot_h=plot_h, cx=cx, cy=cy,
+        vb_w=width, vb_h=height,
         class_colors=class_colors,
         theme=theme,
     )
@@ -1196,7 +1159,10 @@ def build_svg(
     # Dark mode: invert paper + text inks. The JS-built hover tooltip is a dark
     # chrome element (dark rect, light text) that must STAY dark, so re-assert it
     # after the generic ink flips (a class rule outranks the [fill=...] selector).
-    dark_extra = ".tooltip rect{fill:#1D1D1F;}.tooltip text{fill:#F5F5F7;}"
+    dark_extra = (
+        ".tooltip rect{fill:#1D1D1F;}"
+        ".tooltip text{fill:#F5F5F7;}"
+    )
     parts.append(
         "<style>"
         + os_adaptive_style(os_series, role="fill")
@@ -1207,9 +1173,13 @@ def build_svg(
     parts.append(f"<defs>{fcp_defs}</defs>")
 
     parts.append(
-        f'<text x="56" y="60" font-size="30" font-weight="700" fill="{_INK}">{title}</text>'
+        f'<text x="56" y="60" font-size="30" font-weight="700" '
+        f'fill="{_INK}">{title}</text>'
     )
-    parts.append(f'<text x="56" y="92" font-size="18" fill="{_SECONDARY}">{subtitle}</text>')
+    parts.append(
+        f'<text x="56" y="92" font-size="18" '
+        f'fill="{_SECONDARY}">{subtitle}</text>'
+    )
 
     # ---- the axis gizmo (behind the cloud) -------------------------------- #
     parts.append(axes)
@@ -1292,9 +1262,7 @@ def make_scatter3d(
     """
     _ = title
     xs, ys, zs, labels = _rows_to_clusters(data if data else DEMO_DATA)
-    svg = build_svg(
-        xs, ys, zs, labels, mode=mode, accessibility=accessibility, theme=theme, title=title or None
-    )
+    svg = build_svg(xs, ys, zs, labels, mode=mode, accessibility=accessibility, theme=theme, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "scatter3d")
     return write_svg(dest, svg, theme=theme)
 
@@ -1314,7 +1282,9 @@ def _build_parser() -> argparse.ArgumentParser:
         default=_DEFAULT_OUT,
         help="Destination SVG path (default: the shipped example).",
     )
-    parser.add_argument("--seed", type=int, default=7, help="Random seed for the sample clusters.")
+    parser.add_argument(
+        "--seed", type=int, default=7, help="Random seed for the sample clusters."
+    )
     parser.add_argument(
         "--mode",
         choices=("self-contained", "external", "static"),
@@ -1324,12 +1294,8 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--accessibility",
         choices=(
-            "universal",
-            "high-contrast",
-            "monochrome",
-            "deuteranopia",
-            "protanopia",
-            "tritanopia",
+            "universal", "high-contrast", "monochrome",
+            "deuteranopia", "protanopia", "tritanopia",
         ),
         default="universal",
         help="palette accessibility level (default: universal, the CVD-safe standard)",
@@ -1347,9 +1313,7 @@ def main(argv: List[str] | None = None) -> int:
     """CLI entry point: build the SVG and write it to disk."""
     args = _build_parser().parse_args(argv)
     xs, ys, zs, labels = _sample_clusters(seed=args.seed)
-    svg = build_svg(
-        xs, ys, zs, labels, mode=args.mode, accessibility=args.accessibility, theme=args.theme
-    )
+    svg = build_svg(xs, ys, zs, labels, mode=args.mode, accessibility=args.accessibility, theme=args.theme)
     write_svg(args.out, svg, theme=args.theme)
     return 0
 

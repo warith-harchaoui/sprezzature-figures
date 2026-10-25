@@ -74,9 +74,7 @@ def _make_demo_data() -> List[Dict[str, Any]]:
             is_weekend = dow >= 5
             base = 2 if is_weekend else 6
             spike = 5 if rng.random() < 0.12 else 0
-            rows.append(
-                {"week": week, "day": day, "count": max(0, round(rng.gauss(base, 2.2) + spike))}
-            )
+            rows.append({"week": week, "day": day, "count": max(0, round(rng.gauss(base, 2.2) + spike))})
     return rows
 
 
@@ -126,9 +124,7 @@ def build_svg(
     _ = accessibility
     rows = data if data else DEMO_DATA
     weeks = sorted({int(r["week"]) for r in rows})
-    lookup: Dict[Tuple[int, str], float] = {
-        (int(r["week"]), r["day"]): float(r["count"]) for r in rows
-    }
+    lookup: Dict[Tuple[int, str], float] = {(int(r["week"]), r["day"]): float(r["count"]) for r in rows}
     max_val = max(lookup.values()) if lookup else 1.0
 
     plot_x, plot_y = 76.0, 96.0
@@ -141,22 +137,20 @@ def build_svg(
     gap = min(cell_w, cell_h) * 0.14
 
     parts: List[str] = []
-    parts.append(
-        svg_open(width, height, "cal-title", "cal-desc", font_family=chrome_stack_for_theme(theme))
-    )
+    parts.append(svg_open(width, height, "cal-title", "cal-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="cal-title">{xml_escape(title)}</title>')
     total = sum(lookup.values())
     parts.append(
         f'<desc id="cal-desc">Calendar heatmap over {n_weeks} weeks, {total:,.0f} events total, '
-        f"busiest day {max_val:.0f}. Hover or focus a cell for its exact count.</desc>"
+        f'busiest day {max_val:.0f}. Hover or focus a cell for its exact count.</desc>'
     )
     parts.append(
         "<style>"
         ".cell{transition:stroke-width .1s ease;}"
         ".cell:hover,.cell:focus{stroke:#1D1D1F;stroke-width:1.5;outline:none;}"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        + foreground_tip_css(len(weeks) * len(DAYS))
-        + "@media (prefers-reduced-motion: reduce){.cell{transition:none;}"
+        + foreground_tip_css(len(weeks) * len(DAYS)) +
+        "@media (prefers-reduced-motion: reduce){.cell{transition:none;}"
         ".tip{transition:none}}"
         "</style>"
     )
@@ -165,9 +159,7 @@ def build_svg(
         f'<text x="40" y="42" font-size="20" font-weight="700" fill="{INK}" '
         f'letter-spacing="-0.3">{xml_escape(title)}</text>'
     )
-    parts.append(
-        f'<text x="40" y="64" font-size="13" fill="{SECONDARY}">{xml_escape(subtitle)}</text>'
-    )
+    parts.append(f'<text x="40" y="64" font-size="13" fill="{SECONDARY}">{xml_escape(subtitle)}</text>')
 
     # ---- day-of-week row labels (Mon/Wed/Fri only, GitHub convention) ----
     for di, day in enumerate(DAYS):
@@ -220,20 +212,15 @@ def build_svg(
             parts.append(
                 f'<rect id="hit-{idx}" class="cell hit" tabindex="0" x="{x:.1f}" y="{y:.1f}" width="{w:.1f}" height="{h:.1f}" '
                 f'fill="{_ramp_hex(t, theme)}" stroke="{BG}" stroke-width="1">'
-                f"<title>{xml_escape(tip)}</title></rect>"
+                f'<title>{xml_escape(tip)}</title></rect>'
             )
             share = count / total * 100.0 if total else 0.0
             tip_cards.append(
                 tooltip_bubble(
-                    x + w / 2,
-                    y - 6,
+                    x + w / 2, y - 6,
                     [f"Week {week + 1}, {day}", f"{count:.0f} events", f"{share:.1f}% of total"],
-                    anchor="middle",
-                    canvas_w=width,
-                    canvas_h=height,
-                    ink=INK,
-                    secondary=SECONDARY,
-                    border=GRIDLINE,
+                    anchor="middle", canvas_w=width, canvas_h=height,
+                    ink=INK, secondary=SECONDARY, border=GRIDLINE,
                     elem_id=f"tip-{idx}",
                 )
             )
@@ -242,18 +229,12 @@ def build_svg(
 
     # ---- legend: Less -> More ramp swatches ----
     ly = height - 28.0
-    parts.append(
-        f'<text x="{plot_x:.1f}" y="{ly:.1f}" font-size="11" fill="{SECONDARY}">{xml_escape(scale_low_label)}</text>'
-    )
+    parts.append(f'<text x="{plot_x:.1f}" y="{ly:.1f}" font-size="11" fill="{SECONDARY}">{xml_escape(scale_low_label)}</text>')
     swatch_x = plot_x + 34.0
     for i in range(5):
         t = i / 4.0
-        parts.append(
-            f'<rect x="{swatch_x + i * 16:.1f}" y="{ly - 11:.1f}" width="12" height="12" fill="{_ramp_hex(t, theme)}"/>'
-        )
-    parts.append(
-        f'<text x="{swatch_x + 5 * 16 + 8:.1f}" y="{ly:.1f}" font-size="11" fill="{SECONDARY}">{xml_escape(scale_high_label)}</text>'
-    )
+        parts.append(f'<rect x="{swatch_x + i * 16:.1f}" y="{ly - 11:.1f}" width="12" height="12" fill="{_ramp_hex(t, theme)}"/>')
+    parts.append(f'<text x="{swatch_x + 5 * 16 + 8:.1f}" y="{ly:.1f}" font-size="11" fill="{SECONDARY}">{xml_escape(scale_high_label)}</text>')
 
     parts.append(fullscreen_control(width, height, mode))
     parts.append("</svg>")
@@ -305,31 +286,15 @@ def make_calendar_heatmap(
     >>> p.exists()
     True
     """
-    svg = build_svg(
-        data,
-        title=title,
-        subtitle=subtitle,
-        width=width,
-        height=height,
-        mode=mode,
-        accessibility=accessibility,
-        theme=theme,
-        week_prefix=week_prefix,
-        scale_low_label=scale_low_label,
-        scale_high_label=scale_high_label,
-    )
+    svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
+                     mode=mode, accessibility=accessibility, theme=theme, week_prefix=week_prefix, scale_low_label=scale_low_label, scale_high_label=scale_high_label)
     dest = Path(out) if out else svg_example_path(__file__, "calendar-heatmap")
     return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:
     """CLI entry point: build the SVG and write it to disk."""
-    render_cli(
-        __file__,
-        "calendar-heatmap",
-        build_svg,
-        description="Generate a GitHub-style calendar heatmap.",
-    )
+    render_cli(__file__, "calendar-heatmap", build_svg, description="Generate a GitHub-style calendar heatmap.")
 
 
 if __name__ == "__main__":

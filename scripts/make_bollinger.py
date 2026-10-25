@@ -54,12 +54,8 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _svg import (  # noqa: E402
-    catmull_rom_beziers,
-    fmt_compact,
-    foreground_tip_css,
-    tooltip_bubble,
-    wrap_no_orphan,
-    xml_escape,
+    catmull_rom_beziers, fmt_compact, foreground_tip_css, tooltip_bubble,
+    wrap_no_orphan, xml_escape,
 )
 from _render import svg_example_path, write_svg  # noqa: E402
 from _style import leveled_colors, os_adaptive_style, os_dark_style  # noqa: E402
@@ -67,13 +63,18 @@ from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_the
 from _interactive import fullscreen_control  # noqa: E402
 
 # Repo-relative default output — the one SVG artifact this figure ships.
-_DEFAULT_OUT = Path(__file__).resolve().parent.parent / "assets" / "svg-examples" / "bollinger.svg"
+_DEFAULT_OUT = (
+    Path(__file__).resolve().parent.parent
+    / "assets"
+    / "svg-examples"
+    / "bollinger.svg"
+)
 
 # House-style tokens (mirrors the house-style constants, kept literal so this
 # generator needs no import of the dataviz tier at build time).
-_INK = "#1D1D1F"  # primary text
+_INK = "#1D1D1F"        # primary text
 _SECONDARY = "#6E6E73"  # subtitle / secondary text
-_BG = "#FFFFFF"  # white ground
+_BG = "#FFFFFF"         # white ground
 _FONT = "Roboto, system-ui, sans-serif"
 _MONO = "Roboto Mono, ui-monospace, monospace"
 
@@ -83,9 +84,9 @@ _MONO = "Roboto Mono, ui-monospace, monospace"
 #   * the +/-2 sigma envelope is a soft Teal wash — cool, secondary, never
 #     competing with the price line that rides on top of it.
 _PRICE_LINE = "#1D1D1F"  # ink — the daily close, the star of the chart
-_MA_LINE = "#AF52DE"  # Apple Purple — the 20-day moving average, distinct from the band
-_BAND_FILL = "#007AFF"  # Apple Blue — the volatility envelope wash (soft, low opacity)
-_BAND_EDGE = "#5AC8FA"  # Apple Teal for the band edges
+_MA_LINE = "#AF52DE"     # Apple Purple — the 20-day moving average, distinct from the band
+_BAND_FILL = "#007AFF"   # Apple Blue — the volatility envelope wash (soft, low opacity)
+_BAND_EDGE = "#5AC8FA"   # Apple Teal for the band edges
 # Event accents: a squeeze is a caution amber (volatility coiling), a breakout
 # is a confident green (the directional move traders wait for).
 _SQUEEZE_HUE = "#FF9500"  # Apple Orange — the low-volatility pinch
@@ -124,7 +125,7 @@ def _sample_prices(seed: int = 11) -> Dict[str, np.ndarray]:
     vol = (
         1.9
         - 1.55 * np.exp(-0.5 * ((t - 178.0) / 26.0) ** 2)  # the late-summer squeeze
-        + 0.9 * np.exp(-0.5 * ((t - 220.0) / 24.0) ** 2)  # breakout expansion
+        + 0.9 * np.exp(-0.5 * ((t - 220.0) / 24.0) ** 2)   # breakout expansion
     )
     vol = np.clip(vol, 0.30, None)
 
@@ -294,27 +295,12 @@ _CHROME: Dict[str, Dict[str, Any]] = {
         "legende_bas": "une année de Bourse &#183; cours de clôture quotidien en dollars",
         "squeeze": "Le resserrement",
         "squeeze_caption": "amplitude des bandes au plus bas de l'année",
-        "bande_haute": "Bande haute",
-        "bande_basse": "Bande basse",
-        "cloture": "Clôture",
-        "moyenne": "moyenne {window} j",
-        "bande_sigma": "bande ±{sigma}σ",
-        "legende_prix": "Clôture quotidienne",
+        "bande_haute": "Bande haute", "bande_basse": "Bande basse",
+        "cloture": "Clôture", "moyenne": "moyenne {window} j",
+        "bande_sigma": "bande ±{sigma}σ", "legende_prix": "Clôture quotidienne",
         "legende_moyenne": "moyenne mobile {window} jours",
-        "mois": [
-            "janv.",
-            "févr.",
-            "mars",
-            "avr.",
-            "mai",
-            "juin",
-            "juil.",
-            "août",
-            "sept.",
-            "oct.",
-            "nov.",
-            "déc.",
-        ],
+        "mois": ["janv.", "févr.", "mars", "avr.", "mai", "juin",
+                 "juil.", "août", "sept.", "oct.", "nov.", "déc."],
     },
     "en": {
         "titre": "A late-summer squeeze coiled the range, then price broke out to the upside",
@@ -322,27 +308,12 @@ _CHROME: Dict[str, Dict[str, Any]] = {
         "legende_bas": "one trading year &#183; daily closing price in US dollars",
         "squeeze": "The squeeze",
         "squeeze_caption": "band width at its yearly low",
-        "bande_haute": "Upper band",
-        "bande_basse": "Lower band",
-        "cloture": "Close",
-        "moyenne": "{window}-day avg",
-        "bande_sigma": "±{sigma}σ band",
-        "legende_prix": "Daily close",
+        "bande_haute": "Upper band", "bande_basse": "Lower band",
+        "cloture": "Close", "moyenne": "{window}-day avg",
+        "bande_sigma": "±{sigma}σ band", "legende_prix": "Daily close",
         "legende_moyenne": "{window}-day moving average",
-        "mois": [
-            "Jan",
-            "Feb",
-            "Mar",
-            "Apr",
-            "May",
-            "Jun",
-            "Jul",
-            "Aug",
-            "Sep",
-            "Oct",
-            "Nov",
-            "Dec",
-        ],
+        "mois": ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                 "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
     },
 }
 
@@ -656,7 +627,7 @@ def build_svg(
             f'<text class="bo-breakout-txt" x="{_fmt(b_lbl_x)}" '
             f'y="{_fmt(b_lbl_y - 10)}" '
             f'font-size="17" font-weight="700" fill="{_BREAKOUT_HUE_C}">'
-            f"The breakout</text>"
+            f'The breakout</text>'
         )
         ann.append(
             f'<text x="{_fmt(b_lbl_x)}" y="{_fmt(b_lbl_y + 9)}" '
@@ -666,20 +637,8 @@ def build_svg(
     # ---- month axis ------------------------------------------------------- #
     # Twelve evenly spaced month ticks across the trading year.
     axis_y = m_top + plot_h
-    month_labels = chrome["mois"] or [
-        "Jan",
-        "Feb",
-        "Mar",
-        "Apr",
-        "May",
-        "Jun",
-        "Jul",
-        "Aug",
-        "Sep",
-        "Oct",
-        "Nov",
-        "Dec",
-    ]
+    month_labels = chrome["mois"] or ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
     axis_bits: List[str] = [
         f'<line x1="{_fmt(m_left)}" y1="{_fmt(axis_y)}" '
         f'x2="{_fmt(m_left + plot_w)}" y2="{_fmt(axis_y)}" '
@@ -706,42 +665,14 @@ def build_svg(
     # than ``gap`` px below its predecessor, so the whole stack stays legible
     # and none collide even when the close ends hard against the upper band.
     rows: List[Dict[str, Any]] = [
-        {
-            "name": chrome["bande_haute"],
-            "y": upper_pts[-1][1],
-            "ax": upper_pts[-1][0],
-            "colour": _BAND_EDGE_C,
-            "val": float(upper[-1]),
-            "bold": False,
-            "cls": "bo-edge",
-        },
-        {
-            "name": chrome["cloture"],
-            "y": price_pts[-1][1],
-            "ax": price_pts[-1][0],
-            "colour": _PRICE_LINE_C,
-            "val": float(close[-1]),
-            "bold": True,
-            "cls": "",
-        },
-        {
-            "name": chrome["moyenne"].format(window=window),
-            "y": middle_pts[-1][1],
-            "ax": middle_pts[-1][0],
-            "colour": _MA_LINE_C,
-            "val": float(middle[-1]),
-            "bold": False,
-            "cls": "bo-ma",
-        },
-        {
-            "name": chrome["bande_basse"],
-            "y": lower_pts[-1][1],
-            "ax": lower_pts[-1][0],
-            "colour": _BAND_EDGE_C,
-            "val": float(lower[-1]),
-            "bold": False,
-            "cls": "bo-edge",
-        },
+        {"name": chrome["bande_haute"], "y": upper_pts[-1][1], "ax": upper_pts[-1][0],
+         "colour": _BAND_EDGE_C, "val": float(upper[-1]), "bold": False, "cls": "bo-edge"},
+        {"name": chrome["cloture"], "y": price_pts[-1][1], "ax": price_pts[-1][0],
+         "colour": _PRICE_LINE_C, "val": float(close[-1]), "bold": True, "cls": ""},
+        {"name": chrome["moyenne"].format(window=window), "y": middle_pts[-1][1], "ax": middle_pts[-1][0],
+         "colour": _MA_LINE_C, "val": float(middle[-1]), "bold": False, "cls": "bo-ma"},
+        {"name": chrome["bande_basse"], "y": lower_pts[-1][1], "ax": lower_pts[-1][0],
+         "colour": _BAND_EDGE_C, "val": float(lower[-1]), "bold": False, "cls": "bo-edge"},
     ]
     rows.sort(key=lambda r: r["y"])
     gap = 46.0
@@ -750,16 +681,8 @@ def build_svg(
         r["ly"] = max(r["y"], ly_prev + gap)
         ly_prev = r["ly"]
 
-    def _end_label(
-        anchor_x: float,
-        anchor_y: float,
-        ly: float,
-        colour: str,
-        name: str,
-        value: float,
-        bold: bool,
-        cls: str,
-    ) -> None:
+    def _end_label(anchor_x: float, anchor_y: float, ly: float, colour: str,
+                   name: str, value: float, bold: bool, cls: str) -> None:
         """Emit a leader line + name + mono value in the right gutter."""
         # A class on the leader + name (when the row is a colour-coded role) so
         # the @media contrast rules deepen it in step with its curve.
@@ -781,7 +704,8 @@ def build_svg(
         )
 
     for r in rows:
-        _end_label(r["ax"], r["y"], r["ly"], r["colour"], r["name"], r["val"], r["bold"], r["cls"])
+        _end_label(r["ax"], r["y"], r["ly"], r["colour"], r["name"], r["val"],
+                   r["bold"], r["cls"])
 
     # ---- legend ----------------------------------------------------------- #
     legend: List[str] = []
@@ -852,18 +776,10 @@ def build_svg(
         )
         bubbles.append(
             tooltip_bubble(
-                gx,
-                y_of(float(close[d])) - 12,
-                [
-                    f"Day {d - start + 1}",
-                    f"close ${close[d]:.2f}",
-                    f"band ${lower[d]:.2f}–${upper[d]:.2f}",
-                    f"{pct:.0f}% up the band",
-                ],
-                canvas_w=width,
-                canvas_h=height,
-                ink=_INK,
-                secondary=_SECONDARY,
+                gx, y_of(float(close[d])) - 12,
+                [f"Day {d - start + 1}", f"close ${close[d]:.2f}",
+                 f"band ${lower[d]:.2f}–${upper[d]:.2f}", f"{pct:.0f}% up the band"],
+                canvas_w=width, canvas_h=height, ink=_INK, secondary=_SECONDARY,
                 border="#EFEFF2",
                 elem_id=f"col-tip-{col_idx}",
             )
@@ -895,9 +811,7 @@ def build_svg(
     dark = os_dark_style(extra='[stroke="#EFEFF2"]{stroke:#2A2A2C;}')
     tip_css = (
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        + foreground_tip_css(
-            len(range(start, n, stride)), mark_prefix="col-hit", tip_prefix="col-tip"
-        )
+        + foreground_tip_css(len(range(start, n, stride)), mark_prefix="col-hit", tip_prefix="col-tip")
         + "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
     )
     parts.append("<style>" + adaptive + dark + tip_css + "</style>")
@@ -934,8 +848,12 @@ def _build_parser() -> argparse.ArgumentParser:
         default=_DEFAULT_OUT,
         help="Destination SVG path (default: the shipped example).",
     )
-    parser.add_argument("--seed", type=int, default=11, help="Random seed for the sample data.")
-    parser.add_argument("--window", type=int, default=20, help="Rolling window in trading days.")
+    parser.add_argument(
+        "--seed", type=int, default=11, help="Random seed for the sample data."
+    )
+    parser.add_argument(
+        "--window", type=int, default=20, help="Rolling window in trading days."
+    )
     parser.add_argument(
         "--sigma", type=float, default=2.0, help="Band half-width in standard deviations."
     )
@@ -1042,19 +960,7 @@ def make_bollinger(
     _ = title
     rows = data if data else DEMO_DATA
     price_data = _rows_to_close(rows)
-    svg = build_svg(
-        price_data,
-        window=window,
-        n_sigma=n_sigma,
-        mode=mode,
-        accessibility=accessibility,
-        theme=theme,
-        squeeze_label=squeeze_label,
-        squeeze_caption=squeeze_caption,
-        price_legend_label=price_legend_label,
-        language=language,
-        title=title or None,
-    )
+    svg = build_svg(price_data, window=window, n_sigma=n_sigma, mode=mode, accessibility=accessibility, theme=theme, squeeze_label=squeeze_label, squeeze_caption=squeeze_caption, price_legend_label=price_legend_label, language=language, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "bollinger")
     return write_svg(dest, svg, theme=theme)
 

@@ -88,16 +88,15 @@ def _curves(seed: int = 29) -> List[Dict[str, Any]]:
         # Tenure itself is right-skewed: most customers are recent.
         observed = min(72.0, rng.expovariate(1.0 / 22.0))
         for point in _GRID:
-            rows.append(
-                {
-                    "line": line,
-                    "tenure": point,
-                    "prediction": round(
-                        level + slope * point + curvature * point * point + rng.gauss(0.0, 0.012), 4
-                    ),
-                    "sampled": round(observed, 1),
-                }
-            )
+            rows.append({
+                "line": line,
+                "tenure": point,
+                "prediction": round(
+                    level + slope * point + curvature * point * point
+                    + rng.gauss(0.0, 0.012), 4
+                ),
+                "sampled": round(observed, 1),
+            })
     return rows
 
 
@@ -189,11 +188,12 @@ def build_svg(
             observed[key] = float(row[sampled])
     grid = sorted({point for curve in curves.values() for point in curve})
     if len(grid) < 2:
-        raise ValueError(f"a sweep needs at least two values of {x!r}; this data has {len(grid)}")
+        raise ValueError(
+            f"a sweep needs at least two values of {x!r}; this data has {len(grid)}"
+        )
     complete = {
         key: [curve[point] for point in grid]
-        for key, curve in curves.items()
-        if len(curve) == len(grid)
+        for key, curve in curves.items() if len(curve) == len(grid)
     }
     if not complete:
         raise ValueError("no curve covers every point of the sweep")
@@ -203,13 +203,17 @@ def build_svg(
     else:
         shaped = dict(complete)
     average = [
-        sum(values[index] for values in shaped.values()) / len(shaped) for index in range(len(grid))
+        sum(values[index] for values in shaped.values()) / len(shaped)
+        for index in range(len(grid))
     ]
 
     # The number the individual lines exist to produce: how many of them
     # end up on the other side of where they started from the average.
     overall = average[-1] - average[0]
-    against = [key for key, values in shaped.items() if (values[-1] - values[0]) * overall < 0.0]
+    against = [
+        key for key, values in shaped.items()
+        if (values[-1] - values[0]) * overall < 0.0
+    ]
     share = len(against) / len(shaped) if shaped else 0.0
 
     sparse_from = grid[-1]
@@ -241,8 +245,7 @@ def build_svg(
         return plot_y + plot_h - (amount - axis_low) / (axis_high - axis_low) * plot_h
 
     method_lines = (
-        [method_note]
-        if method_note is not None
+        [method_note] if method_note is not None
         else [
             f"{len(shaped)} rows swept across {len(grid)} values of {x}"
             + (", each shifted to start at zero" if centre_lines else ", uncentred"),
@@ -265,15 +268,16 @@ def build_svg(
 
     parts: List[str] = []
     parts.append(
-        svg_open(width, height, "pdp-title", "pdp-desc", font_family=chrome_stack_for_theme(theme))
+        svg_open(width, height, "pdp-title", "pdp-desc",
+                 font_family=chrome_stack_for_theme(theme))
     )
     parts.append(f'<title id="pdp-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="pdp-desc">A partial-dependence plot with individual conditional '
-        f"expectation curves: {len(shaped)} rows swept across {xml_escape(x)} from "
-        f"{fmt_number(grid[0])} to {fmt_number(grid[-1])}, with their average drawn on "
-        f"top. {xml_escape(said_method)}. {xml_escape(' '.join(said_parts))} "
-        f"{xml_escape(caveat)}.</desc>"
+        f'expectation curves: {len(shaped)} rows swept across {xml_escape(x)} from '
+        f'{fmt_number(grid[0])} to {fmt_number(grid[-1])}, with their average drawn on '
+        f'top. {xml_escape(said_method)}. {xml_escape(" ".join(said_parts))} '
+        f'{xml_escape(caveat)}.</desc>'
     )
     parts.append(
         "<style>"
@@ -310,7 +314,7 @@ def build_svg(
         )
     parts.append(
         f'<text x="40" y="{height - 24:.1f}" font-size="11" fill="{SECONDARY}">'
-        f"{xml_escape(caveat)}</text>"
+        f'{xml_escape(caveat)}</text>'
     )
 
     for tick in ticks:
@@ -321,7 +325,7 @@ def build_svg(
         parts.append(
             f'<text x="{plot_x - 10:.1f}" y="{py(tick) + 4:.1f}" font-size="11" '
             f'fill="{SECONDARY}" text-anchor="end" font-family="{mono_family}">'
-            f"{fmt_number(tick)}</text>"
+            f'{fmt_number(tick)}</text>'
         )
 
     # The sweep past the bulk of the data is faded: beyond here the model
@@ -341,7 +345,8 @@ def build_svg(
             for index, point in enumerate(grid)
         )
         parts.append(
-            f'<path d="{path}" fill="none" stroke="{strand}" stroke-width="1" opacity="0.26"/>'
+            f'<path d="{path}" fill="none" stroke="{strand}" stroke-width="1" '
+            f'opacity="0.26"/>'
         )
     if sparse_from < grid[-1]:
         parts.append(
@@ -366,7 +371,7 @@ def build_svg(
     parts.append(
         f'<text x="{plot_x + plot_w + 10:.1f}" y="{py(average[-1]) + 4:.1f}" '
         f'font-size="12" font-weight="700" fill="{mean_ink}">'
-        f"{xml_escape(average_label)}</text>"
+        f'{xml_escape(average_label)}</text>'
     )
 
     for value_seen in observed.values():
@@ -378,7 +383,7 @@ def build_svg(
     parts.append(
         f'<text x="{plot_x - 10:.1f}" y="{rug_y + 8:.1f}" font-size="10" '
         f'fill="{SECONDARY}" text-anchor="end" font-family="{mono_family}">'
-        f"{xml_escape(x)}</text>"
+        f'{xml_escape(x)}</text>'
     )
 
     tips: List[str] = []
@@ -386,36 +391,29 @@ def build_svg(
         parts.append(
             f'<text x="{px(point):.1f}" y="{rug_y + 26:.1f}" font-size="11" '
             f'fill="{SECONDARY}" text-anchor="middle" font-family="{mono_family}">'
-            f"{fmt_number(point)}</text>"
+            f'{fmt_number(point)}</text>'
         )
         spread = sorted(values[index] for values in shaped.values())
         parts.append(
             f'<rect id="node-{index}" class="node hit" tabindex="0" role="img" '
             f'aria-label="at {xml_escape(x)} {fmt_number(point)}: average '
-            f"{fmt_measured(average[index], precision)}, rows from "
-            f"{fmt_measured(spread[0], precision)} to "
+            f'{fmt_measured(average[index], precision)}, rows from '
+            f'{fmt_measured(spread[0], precision)} to '
             f'{fmt_measured(spread[-1], precision)}" '
             f'x="{px(point) - plot_w / (2 * len(grid)):.1f}" y="{plot_y:.1f}" '
             f'width="{plot_w / len(grid):.1f}" height="{plot_h:.1f}" fill="transparent">'
-            f"<title>{xml_escape(x)} {fmt_number(point)}: "
-            f"{fmt_measured(average[index], precision)}</title></rect>"
+            f'<title>{xml_escape(x)} {fmt_number(point)}: '
+            f'{fmt_measured(average[index], precision)}</title></rect>'
         )
         tips.append(
             tooltip_bubble(
-                px(point),
-                py(average[index]),
-                [
-                    f"{x} {fmt_number(point)}",
-                    f"average {fmt_measured(average[index], precision)}",
-                    f"rows {fmt_measured(spread[0], precision)} to "
-                    f"{fmt_measured(spread[-1], precision)}",
-                ],
-                canvas_w=width,
-                canvas_h=height,
-                ink=INK,
-                secondary=SECONDARY,
-                border=GRIDLINE,
-                elem_id=f"nodetip-{index}",
+                px(point), py(average[index]),
+                [f"{x} {fmt_number(point)}",
+                 f"average {fmt_measured(average[index], precision)}",
+                 f"rows {fmt_measured(spread[0], precision)} to "
+                 f"{fmt_measured(spread[-1], precision)}"],
+                canvas_w=width, canvas_h=height, ink=INK, secondary=SECONDARY,
+                border=GRIDLINE, elem_id=f"nodetip-{index}",
             )
         )
     parts.append(
@@ -424,7 +422,7 @@ def build_svg(
     )
     parts.append(
         f'<text x="40" y="{plot_y - 12:.1f}" font-size="12" fill="{SECONDARY}">'
-        f"{xml_escape(y_label)}</text>"
+        f'{xml_escape(y_label)}</text>'
     )
 
     parts.extend(tips)
@@ -508,27 +506,12 @@ def make_pdp_ice(
     True
     """
     svg = build_svg(
-        data,
-        title=title,
-        subtitle=subtitle,
-        width=width,
-        height=height,
-        line=line,
-        x=x,
-        y=y,
-        sampled=sampled,
-        centre_lines=centre_lines,
-        sparse_at=sparse_at,
-        max_lines=max_lines,
-        x_label=x_label,
-        y_label=y_label,
-        average_label=average_label,
-        caveat=caveat,
-        method_note=method_note,
-        finding=finding,
-        mode=mode,
-        accessibility=accessibility,
-        theme=theme,
+        data, title=title, subtitle=subtitle, width=width, height=height,
+        line=line, x=x, y=y, sampled=sampled, centre_lines=centre_lines,
+        sparse_at=sparse_at, max_lines=max_lines, x_label=x_label,
+        y_label=y_label, average_label=average_label, caveat=caveat,
+        method_note=method_note, finding=finding, mode=mode,
+        accessibility=accessibility, theme=theme,
     )
     dest = Path(out) if out else svg_example_path(__file__, "pdp-ice")
     return write_svg(dest, svg, theme=theme)
@@ -536,12 +519,8 @@ def make_pdp_ice(
 
 def main() -> None:
     """CLI entry point: build the SVG and write it to disk."""
-    render_cli(
-        __file__,
-        "pdp-ice",
-        build_svg,
-        description="Draw the average effect of a feature, and the rows that disagree.",
-    )
+    render_cli(__file__, "pdp-ice", build_svg,
+               description="Draw the average effect of a feature, and the rows that disagree.")
 
 
 if __name__ == "__main__":

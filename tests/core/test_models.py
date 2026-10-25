@@ -110,12 +110,7 @@ def test_set_style_option_literal_tracks_style_fields() -> None:
         # operation with no column reference at all -> clean
         (SetTitle(operation_id="op1", title="New title"), None),
         # a filter transform reaching for a missing column -> flagged
-        (
-            AddFilter(
-                operation_id="op1", transform=FilterByRange(column="ghost", minimum=0, maximum=10)
-            ),
-            "ghost",
-        ),
+        (AddFilter(operation_id="op1", transform=FilterByRange(column="ghost", minimum=0, maximum=10)), "ghost"),
     ],
 )
 def test_validate_operation(op, expected_substr) -> None:

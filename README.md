@@ -75,8 +75,8 @@ from sprezzature_figures import make_figure
 data = [
     {"region": "North", "value": 42},
     {"region": "South", "value": 28},
-    {"region": "East", "value": 19},
-    {"region": "West", "value": 11},
+    {"region": "East",  "value": 19},
+    {"region": "West",  "value": 11},
 ]
 path = make_figure("bar", data, out="revenue.png", title="Revenue by region")
 print(path)  # PosixPath('revenue.png')
@@ -93,7 +93,7 @@ and a caller with none of them installed pays nothing.
 import pandas as pd
 from sprezzature_figures import make_figure
 
-df = pd.read_csv("revenue.csv")  # region, value
+df = pd.read_csv("revenue.csv")          # region, value
 make_figure("bar", df, out="revenue.svg", title="Revenue by region")
 ```
 
@@ -229,9 +229,9 @@ sprezzature-figures redraw theirs.png --kind bar --title "Exports carry the quar
 from sprezzature_figures import redraw
 
 result = redraw("theirs.png", out="ours.svg", data=rows)
-result.kind  # 'bar'
-result.data_origin  # 'your-data'
-result.changes  # what it does differently, costliest first
+result.kind          # 'bar'
+result.data_origin   # 'your-data'
+result.changes       # what it does differently, costliest first
 ```
 
 A picture of a chart carries two things, and carries them with very different

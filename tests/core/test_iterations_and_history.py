@@ -88,10 +88,7 @@ def test_history_navigation_workflow() -> None:
     r2 = _record(project_dir, title="v2", parent=r1.iteration_id)
 
     # list_iterations is oldest-first; current is the latest record.
-    assert [r.iteration_id for r in list_iterations(project_dir)] == [
-        r1.iteration_id,
-        r2.iteration_id,
-    ]
+    assert [r.iteration_id for r in list_iterations(project_dir)] == [r1.iteration_id, r2.iteration_id]
     assert current_record(project_dir).plan_after.title == "v2"
 
     # undo walks to the parent; a second undo past the root returns None.
@@ -119,9 +116,7 @@ def test_revert_then_new_record_creates_a_branch() -> None:
     r3 = _record(project_dir, title="v3-branch", parent=r1.iteration_id)
 
     # r1 now has two children: r2 and r3, a branch point.
-    children_of_r1 = [
-        r for r in list_iterations(project_dir) if r.parent_iteration_id == r1.iteration_id
-    ]
+    children_of_r1 = [r for r in list_iterations(project_dir) if r.parent_iteration_id == r1.iteration_id]
     assert {r.iteration_id for r in children_of_r1} == {r2.iteration_id, r3.iteration_id}
 
     # _record() advances current to the newly created iteration (r3), not r2,

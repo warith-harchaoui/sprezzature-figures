@@ -39,11 +39,8 @@ from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 DENDRO_COLOR = "#8E8E93"
 
 _RAMP: Tuple[Tuple[float, str], ...] = (
-    (0.00, "#EAF3FF"),
-    (0.25, "#9CC7FF"),
-    (0.55, "#3E9BFF"),
-    (0.80, "#007AFF"),
-    (1.00, "#0A4DA0"),
+    (0.00, "#EAF3FF"), (0.25, "#9CC7FF"), (0.55, "#3E9BFF"),
+    (0.80, "#007AFF"), (1.00, "#0A4DA0"),
 )
 
 
@@ -112,9 +109,7 @@ def _cluster(labels: List[str], vectors: Dict[str, List[float]]) -> List[Dict[st
         for i in range(len(active)):
             for j in range(i + 1, len(active)):
                 a, b = active[i], active[j]
-                pair_dists = [
-                    _euclidean(vectors[x], vectors[y]) for x in members[a] for y in members[b]
-                ]
+                pair_dists = [_euclidean(vectors[x], vectors[y]) for x in members[a] for y in members[b]]
                 d = sum(pair_dists) / len(pair_dists)
                 if best is None or d < best[0]:
                     best = (d, a, b)
@@ -143,8 +138,7 @@ def _leaf_order(merges: List[Dict[str, Any]], labels: List[str]) -> List[str]:
 
 
 def _dendrogram_positions(
-    merges: List[Dict[str, Any]],
-    order: List[str],
+    merges: List[Dict[str, Any]], order: List[str],
 ) -> Tuple[Dict[str, float], Dict[str, float], float]:
     """Assign each leaf and merge a position along the leaf axis (index-based,
     0-centered on its slot) and a height. Returns ``(position, height, max_height)``.
@@ -231,21 +225,19 @@ def build_svg(
     cell_h = grid_h / len(row_order)
 
     parts: List[str] = []
-    parts.append(
-        svg_open(width, height, "cm-title", "cm-desc", font_family=chrome_stack_for_theme(theme))
-    )
+    parts.append(svg_open(width, height, "cm-title", "cm-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="cm-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="cm-desc">Clustermap of {len(row_order)} rows and {len(col_order)} columns, '
-        f"values {v_min:.1f} to {v_max:.1f}. Hover or focus a cell for its exact value.</desc>"
+        f'values {v_min:.1f} to {v_max:.1f}. Hover or focus a cell for its exact value.</desc>'
     )
     parts.append(
         "<style>"
         ".cell{transition:stroke-width .1s ease;}"
         ".cell:hover,.cell:focus{stroke:#1D1D1F;stroke-width:1.5;outline:none;}"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        + foreground_tip_css(len(row_order) * len(col_order))
-        + "@media (prefers-reduced-motion: reduce){.cell{transition:none;}"
+        + foreground_tip_css(len(row_order) * len(col_order)) +
+        "@media (prefers-reduced-motion: reduce){.cell{transition:none;}"
         ".tip{transition:none}}"
         "</style>"
     )
@@ -254,9 +246,7 @@ def build_svg(
         f'<text x="20" y="34" font-size="19" font-weight="700" fill="{INK}" '
         f'letter-spacing="-0.3">{xml_escape(title)}</text>'
     )
-    parts.append(
-        f'<text x="20" y="54" font-size="12" fill="{SECONDARY}">{xml_escape(subtitle)}</text>'
-    )
+    parts.append(f'<text x="20" y="54" font-size="12" fill="{SECONDARY}">{xml_escape(subtitle)}</text>')
 
     # ---- column dendrogram (above the grid) ----
     col_dendro_h = grid_y - dendro_top - 4.0 - col_label_gutter
@@ -317,15 +307,10 @@ def build_svg(
             )
             tip_cards.append(
                 tooltip_bubble(
-                    x + cell_w / 2,
-                    y - 6,
+                    x + cell_w / 2, y - 6,
                     [f"{r} x {c}", f"value {value:.2f}", f"normalized {t:.2f}"],
-                    anchor="middle",
-                    canvas_w=width,
-                    canvas_h=height,
-                    ink=INK,
-                    secondary=SECONDARY,
-                    border=GRIDLINE,
+                    anchor="middle", canvas_w=width, canvas_h=height,
+                    ink=INK, secondary=SECONDARY, border=GRIDLINE,
                     elem_id=f"tip-{idx}",
                 )
             )
@@ -349,16 +334,12 @@ def build_svg(
     # ---- legend ----
     ly = height - 14.0
     lx0 = grid_x
-    parts.append(
-        f'<text x="{lx0:.1f}" y="{ly:.1f}" font-size="10" fill="{SECONDARY}">{v_min:.1f}</text>'
-    )
+    parts.append(f'<text x="{lx0:.1f}" y="{ly:.1f}" font-size="10" fill="{SECONDARY}">{v_min:.1f}</text>')
     swatch_x = lx0 + 26.0
     n_swatches = 8
     for i in range(n_swatches):
         t = i / (n_swatches - 1)
-        parts.append(
-            f'<rect x="{swatch_x + i * 14:.1f}" y="{ly - 10:.1f}" width="12" height="11" fill="{_ramp_hex(t, theme)}"/>'
-        )
+        parts.append(f'<rect x="{swatch_x + i * 14:.1f}" y="{ly - 10:.1f}" width="12" height="11" fill="{_ramp_hex(t, theme)}"/>')
     parts.append(
         f'<text x="{swatch_x + n_swatches * 14 + 6:.1f}" y="{ly:.1f}" font-size="10" '
         f'fill="{SECONDARY}">{v_max:.1f}</text>'
@@ -410,25 +391,15 @@ def make_clustermap(
     >>> p.exists()
     True
     """
-    svg = build_svg(
-        data,
-        title=title,
-        subtitle=subtitle,
-        width=width,
-        height=height,
-        mode=mode,
-        accessibility=accessibility,
-        theme=theme,
-    )
+    svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
+                     mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "clustermap")
     return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:
     """CLI entry point: build the SVG and write it to disk."""
-    render_cli(
-        __file__, "clustermap", build_svg, description="Generate a clustered heatmap (clustermap)."
-    )
+    render_cli(__file__, "clustermap", build_svg, description="Generate a clustered heatmap (clustermap).")
 
 
 if __name__ == "__main__":

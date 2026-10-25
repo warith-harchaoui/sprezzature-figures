@@ -84,9 +84,7 @@ def _make_demo_data() -> List[Dict[str, Any]]:
 DEMO_DATA: List[Dict[str, Any]] = _make_demo_data()
 
 
-def _km_estimate(
-    rows: List[Dict[str, Any]],
-) -> Tuple[List[Tuple[float, float, float, float]], List[float]]:
+def _km_estimate(rows: List[Dict[str, Any]]) -> Tuple[List[Tuple[float, float, float, float]], List[float]]:
     """Kaplan-Meier product-limit estimator with a Greenwood-formula 95% band.
 
     Returns ``(curve, censor_times)`` where ``curve`` is a list of
@@ -190,13 +188,11 @@ def build_svg(
         return plot_y + plot_h - v * plot_h
 
     parts: List[str] = []
-    parts.append(
-        svg_open(width, height, "km-title", "km-desc", font_family=chrome_stack_for_theme(theme))
-    )
+    parts.append(svg_open(width, height, "km-title", "km-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="km-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="km-desc">Kaplan-Meier survival curves for {len(arms)} arms over '
-        f"{t_max:.0f} time units, with 95% confidence bands.</desc>"
+        f'{t_max:.0f} time units, with 95% confidence bands.</desc>'
     )
     parts.append(
         "<style>"
@@ -210,20 +206,14 @@ def build_svg(
         f'<text x="40" y="46" font-size="24" font-weight="700" fill="{INK}" '
         f'letter-spacing="-0.3">{xml_escape(title)}</text>'
     )
-    parts.append(
-        f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>'
-    )
+    parts.append(f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>')
 
     # ---- legend ----
     lx, ly = 40.0, 100.0
     cursor = lx
     for a in arms:
-        parts.append(
-            f'<rect x="{cursor:.1f}" y="{ly - 12:.1f}" width="14" height="14" rx="3" fill="{colors.get(a, "#8E8E93")}"/>'
-        )
-        parts.append(
-            f'<text x="{cursor + 20:.1f}" y="{ly:.1f}" font-size="12" fill="{INK}">{xml_escape(a)}</text>'
-        )
+        parts.append(f'<rect x="{cursor:.1f}" y="{ly - 12:.1f}" width="14" height="14" rx="3" fill="{colors.get(a, "#8E8E93")}"/>')
+        parts.append(f'<text x="{cursor + 20:.1f}" y="{ly:.1f}" font-size="12" fill="{INK}">{xml_escape(a)}</text>')
         cursor += 20 + 7.0 * len(a) + 22
 
     # ---- gridlines ----
@@ -286,19 +276,11 @@ def build_svg(
         )
         bubbles.append(
             tooltip_bubble(
-                x_for(t_max),
-                y_for(final_s) - 16,
-                [
-                    a,
-                    f"{final_s * 100:.0f}% surviving at {t_max:.0f} units",
-                    f"{n_events} events · {n_censored} censored",
-                ],
-                anchor="end",
-                canvas_w=width,
-                canvas_h=height,
-                ink=INK,
-                secondary=SECONDARY,
-                border=GRIDLINE,
+                x_for(t_max), y_for(final_s) - 16,
+                [a, f"{final_s * 100:.0f}% surviving at {t_max:.0f} units",
+                 f"{n_events} events · {n_censored} censored"],
+                anchor="end", canvas_w=width, canvas_h=height,
+                ink=INK, secondary=SECONDARY, border=GRIDLINE,
                 elem_id=f"tip-{ai}",
             )
         )
@@ -389,27 +371,16 @@ def make_survival_km(
     >>> p.exists()
     True
     """
-    svg = build_svg(
-        data,
-        title=title,
-        subtitle=subtitle,
-        y_axis_title=y_axis_title,
-        x_axis_title=x_axis_title,
-        width=width,
-        height=height,
-        mode=mode,
-        accessibility=accessibility,
-        theme=theme,
-    )
+    svg = build_svg(data, title=title, subtitle=subtitle, y_axis_title=y_axis_title,
+                     x_axis_title=x_axis_title, width=width, height=height,
+                     mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "survival-km")
     return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:
     """CLI entry point: build the SVG and write it to disk."""
-    render_cli(
-        __file__, "survival-km", build_svg, description="Generate a Kaplan-Meier survival curve."
-    )
+    render_cli(__file__, "survival-km", build_svg, description="Generate a Kaplan-Meier survival curve.")
 
 
 if __name__ == "__main__":
