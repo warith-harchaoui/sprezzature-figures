@@ -32,13 +32,11 @@ dependencies = [
     "numpy>=1.24",
     "scipy>=1.11",
     "pydantic>=2.7",
+    # The command line, and the only parser since 2026-10-25.
+    "click>=8.1",
 ]
 
 [project.optional-dependencies]
-# Click twin of the always-installed argparse `make-figure` CLI
-cli = [
-    "click>=8.1",
-]
 # Sprezzature Studio: NiceGUI app, data ingest, LLM-driven chat editing,
 # and the Ralph visual-critique loop. `from sprezzature_figures import
 # make_figure` must keep working without this extra installed.
@@ -117,7 +115,7 @@ dev = [
 
 [project.scripts]
 sprezzature-figures = "sprezzature_figures.cli:main"
-make-figure = "sprezzature_figures.make_figure:main"
+make-figure = "sprezzature_figures.cli:main"
 sprezzature-studio = "sprezzature_figures.studio.cli:main"
 sprezzature-figures-mcp = "sprezzature_figures.mcp:main"
 
