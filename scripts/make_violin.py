@@ -69,7 +69,9 @@ def _silverman_bandwidth(samples: List[float]) -> float:
 def _gaussian_kde(samples: List[float], x_eval: List[float], bandwidth: float) -> List[float]:
     n = len(samples)
     norm = 1.0 / (n * bandwidth * math.sqrt(2.0 * math.pi))
-    return [norm * sum(math.exp(-0.5 * ((x - s) / bandwidth) ** 2) for s in samples) for x in x_eval]
+    return [
+        norm * sum(math.exp(-0.5 * ((x - s) / bandwidth) ** 2) for s in samples) for x in x_eval
+    ]
 
 
 def _group_colors(
@@ -144,11 +146,13 @@ def build_svg(
         return plot_y + plot_h - (v - y_min) / ((y_max - y_min) or 1.0) * plot_h
 
     parts: List[str] = []
-    parts.append(svg_open(width, height, "vio-title", "vio-desc", font_family=chrome_stack_for_theme(theme)))
+    parts.append(
+        svg_open(width, height, "vio-title", "vio-desc", font_family=chrome_stack_for_theme(theme))
+    )
     parts.append(f'<title id="vio-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="vio-desc">Violin plot of {n} groups, values ranging {y_min:.0f} to '
-        f'{y_max:.0f}. Hover or focus a violin for its exact median and spread.</desc>'
+        f"{y_max:.0f}. Hover or focus a violin for its exact median and spread.</desc>"
     )
     parts.append(
         "<style>"
@@ -162,7 +166,9 @@ def build_svg(
         f'<text x="40" y="46" font-size="22" font-weight="700" fill="{INK}" '
         f'letter-spacing="-0.3">{xml_escape(title)}</text>'
     )
-    parts.append(f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>')
+    parts.append(
+        f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>'
+    )
 
     # ---- gridlines ----
     for val in y_gridline_vals:
@@ -200,8 +206,14 @@ def build_svg(
 
         cx = plot_x + gi * bin_w + bin_w / 2
         color = colors.get(g, "#8E8E93")
-        right_pts = [(cx + (d / peak) * violin_half_w, y_for(y)) for y, d in zip(y_eval, density, strict=True)]
-        left_pts = [(cx - (d / peak) * violin_half_w, y_for(y)) for y, d in zip(y_eval, density, strict=True)]
+        right_pts = [
+            (cx + (d / peak) * violin_half_w, y_for(y))
+            for y, d in zip(y_eval, density, strict=True)
+        ]
+        left_pts = [
+            (cx - (d / peak) * violin_half_w, y_for(y))
+            for y, d in zip(y_eval, density, strict=True)
+        ]
         path_d = "M " + " L ".join(f"{x:.1f},{y:.1f}" for x, y in right_pts)
         path_d += " L " + " L ".join(f"{x:.1f},{y:.1f}" for x, y in reversed(left_pts)) + " Z"
 
@@ -215,10 +227,15 @@ def build_svg(
         )
         bubbles.append(
             tooltip_bubble(
-                cx, y_for(s_max) - 16,
+                cx,
+                y_for(s_max) - 16,
                 [f"Group {g}", f"median {median:.1f}", f"std {std:.1f}, n={len(samples)}"],
-                anchor="middle", canvas_w=width, canvas_h=height,
-                ink=INK, secondary=SECONDARY, border=GRIDLINE,
+                anchor="middle",
+                canvas_w=width,
+                canvas_h=height,
+                ink=INK,
+                secondary=SECONDARY,
+                border=GRIDLINE,
                 elem_id=f"tip-{gi}",
             )
         )
@@ -293,9 +310,18 @@ def make_violin(
     >>> p.exists()
     True
     """
-    svg = build_svg(data, title=title, subtitle=subtitle, y_axis_title=y_axis_title,
-                     x_axis_title=x_axis_title, width=width, height=height,
-                     mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(
+        data,
+        title=title,
+        subtitle=subtitle,
+        y_axis_title=y_axis_title,
+        x_axis_title=x_axis_title,
+        width=width,
+        height=height,
+        mode=mode,
+        accessibility=accessibility,
+        theme=theme,
+    )
     dest = Path(out) if out else svg_example_path(__file__, "violin")
     return write_svg(dest, svg, theme=theme)
 

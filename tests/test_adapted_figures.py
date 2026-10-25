@@ -42,7 +42,10 @@ def test_waffle_apportions_squares_to_sum_to_100_for_arbitrary_weights() -> None
     spec = importlib.util.spec_from_file_location("_t_waffle", _SCRIPTS_DIR / "make_waffle.py")
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)  # type: ignore[union-attr]
-    colored = mod._with_colors([{"label": "A", "value": 1}, {"label": "B", "value": 2}, {"label": "C", "value": 7}], "universal")
+    colored = mod._with_colors(
+        [{"label": "A", "value": 1}, {"label": "B", "value": 2}, {"label": "C", "value": 7}],
+        "universal",
+    )
     assert sum(d["squares"] for d in colored) == 100
 
 

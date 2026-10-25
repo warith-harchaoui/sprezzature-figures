@@ -51,7 +51,15 @@ from typing import Any, Dict, List, Tuple
 from xml.sax.saxutils import escape
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _style import BG, GRIDLINE, INK, forced_color_patterns, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
+from _style import (
+    BG,
+    GRIDLINE,
+    INK,
+    forced_color_patterns,
+    load_palette,
+    os_adaptive_style,
+    os_dark_style,
+)  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _svg import foreground_tip_css, svg_open, tooltip_bubble  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
@@ -65,14 +73,14 @@ HEIGHT = 820
 _MODULE_HEIGHT = HEIGHT  # baseline canvas height before per-graph density scaling
 MARGIN_LEFT = 44
 MARGIN_RIGHT = 44
-MARGIN_TOP = 168         # room for title + subtitle + stage headers
+MARGIN_TOP = 168  # room for title + subtitle + stage headers
 MARGIN_BOTTOM = 56
 
-SUBINK = "#6E6E73"       # secondary text
+SUBINK = "#6E6E73"  # secondary text
 
-NODE_WIDTH = 24          # px width of each node bar
-NODE_PAD = 40            # vertical gap between stacked nodes in a layer
-LABEL_GAP = 14           # gap between a node bar and its text label
+NODE_WIDTH = 24  # px width of each node bar
+NODE_PAD = 40  # vertical gap between stacked nodes in a layer
+LABEL_GAP = 14  # gap between a node bar and its text label
 
 _DEFAULT_STAGE_NAMES = ("Channel", "Engagement", "Intent", "Outcome")
 _NEUTRAL_RIBBON = "#AEAEB2"
@@ -113,7 +121,9 @@ def _slug(label: str) -> str:
     return "".join(ch.lower() if ch.isalnum() else "-" for ch in label).strip("-") or "n"
 
 
-def _nodes_and_links(data: List[Dict[str, Any]]) -> Tuple[List[Tuple[str, str, int]], List[Tuple[str, str, float]]]:
+def _nodes_and_links(
+    data: List[Dict[str, Any]],
+) -> Tuple[List[Tuple[str, str, int]], List[Tuple[str, str, float]]]:
     """Derive (id, label, layer) nodes and (source, target, value) links from
     flow records, auto-layering nodes by longest path from a root (a node
     with no inbound flow) so callers never declare layers by hand.
@@ -143,7 +153,9 @@ def _nodes_and_links(data: List[Dict[str, Any]]) -> Tuple[List[Tuple[str, str, i
     return nodes, links
 
 
-def _root_dominance(nodes: List[Tuple[str, str, int]], links: List[Tuple[str, str, float]]) -> Dict[str, str | None]:
+def _root_dominance(
+    nodes: List[Tuple[str, str, int]], links: List[Tuple[str, str, float]]
+) -> Dict[str, str | None]:
     """Map every node id to the layer-0 ("root") node that contributes the
     most cumulative volume to it, walking inbound links back to the roots.
     Root nodes map to themselves; a node with no traceable root (should not
@@ -308,10 +320,7 @@ def _ribbon_path(x0: float, y0: float, x1: float, y1: float, thick: float) -> st
     horizontal midpoint for the classic Sankey S-curve.
     """
     xc = (x0 + x1) / 2.0
-    top = (
-        f"M{x0:.1f},{y0:.1f} "
-        f"C{xc:.1f},{y0:.1f} {xc:.1f},{y1:.1f} {x1:.1f},{y1:.1f}"
-    )
+    top = f"M{x0:.1f},{y0:.1f} C{xc:.1f},{y0:.1f} {xc:.1f},{y1:.1f} {x1:.1f},{y1:.1f}"
     bottom = (
         f"L{x1:.1f},{y1 + thick:.1f} "
         f"C{xc:.1f},{y1 + thick:.1f} {xc:.1f},{y0 + thick:.1f} {x0:.1f},{y0 + thick:.1f} Z"
@@ -403,9 +412,11 @@ def build_svg(
     label_of = {nid: lbl for nid, lbl, _ in nodes}
 
     if stage_names is None:
-        stage_names = list(_DEFAULT_STAGE_NAMES) if n_layers == len(_DEFAULT_STAGE_NAMES) else [
-            f"Stage {i + 1}" for i in range(n_layers)
-        ]
+        stage_names = (
+            list(_DEFAULT_STAGE_NAMES)
+            if n_layers == len(_DEFAULT_STAGE_NAMES)
+            else [f"Stage {i + 1}" for i in range(n_layers)]
+        )
 
     if desc is None:
         top_root = max(roots, key=lambda r: _node_volume(r, links)) if roots else None
@@ -419,7 +430,11 @@ def build_svg(
     parts: List[str] = []
 
     # --- header: accessible role + title + description ---
-    parts.append(svg_open(WIDTH, HEIGHT, "sankey-title", "sankey-desc", font_family=chrome_stack_for_theme(theme)))
+    parts.append(
+        svg_open(
+            WIDTH, HEIGHT, "sankey-title", "sankey-desc", font_family=chrome_stack_for_theme(theme)
+        )
+    )
     parts.append(f'<title id="sankey-title">{escape(title)}</title>')
     parts.append(f'<desc id="sankey-desc">{escape(desc)}</desc>')
 
@@ -456,8 +471,7 @@ def build_svg(
         f'fill="{INK}">{escape(title)}</text>'
     )
     parts.append(
-        f'<text x="{MARGIN_LEFT}" y="92" font-size="20" fill="{SUBINK}">'
-        f'{escape(subtitle)}</text>'
+        f'<text x="{MARGIN_LEFT}" y="92" font-size="20" fill="{SUBINK}">{escape(subtitle)}</text>'
     )
 
     # --- stage headers across the top of the plot ---
@@ -516,10 +530,15 @@ def build_svg(
         mid_y = (y0 + y1) / 2.0 + thick / 2.0
         link_tips.append(
             tooltip_bubble(
-                mid_x, mid_y - 14,
+                mid_x,
+                mid_y - 14,
                 [f"{label_of[s]} → {label_of[t]}", f"{vol_txt} {volume_unit}"],
-                anchor="middle", canvas_w=WIDTH, canvas_h=HEIGHT,
-                ink=INK, secondary=SUBINK, border=GRIDLINE,
+                anchor="middle",
+                canvas_w=WIDTH,
+                canvas_h=HEIGHT,
+                ink=INK,
+                secondary=SUBINK,
+                border=GRIDLINE,
                 elem_id=f"tip-link-{li}",
             )
         )
@@ -554,10 +573,15 @@ def build_svg(
         )
         node_tips.append(
             tooltip_bubble(
-                g["x"] + NODE_WIDTH / 2.0, g["y"] - 14,
+                g["x"] + NODE_WIDTH / 2.0,
+                g["y"] - 14,
                 [label, f"{vol_txt} {volume_unit}"],
-                anchor="middle", canvas_w=WIDTH, canvas_h=HEIGHT,
-                ink=INK, secondary=SUBINK, border=GRIDLINE,
+                anchor="middle",
+                canvas_w=WIDTH,
+                canvas_h=HEIGHT,
+                ink=INK,
+                secondary=SUBINK,
+                border=GRIDLINE,
                 elem_id=f"tip-node-{ni}",
             )
         )
@@ -574,11 +598,10 @@ def build_svg(
             f'font-weight="600" fill="{INK}">{escape(label)}</tspan>'
             f'<tspan x="{lx:.1f}" dy="1.25em" font-family="{mono_family}" '
             f'font-weight="400" fill="{SUBINK}" font-size="15">'
-            f'{escape(vol_txt)}</tspan></text>'
+            f"{escape(vol_txt)}</tspan></text>"
         )
     parts.extend(node_tips)
     parts.append("</g>")
-
 
     parts.append(fullscreen_control(WIDTH, HEIGHT, mode))
     parts.append("</svg>")

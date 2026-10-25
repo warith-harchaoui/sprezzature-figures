@@ -74,8 +74,8 @@ PB = 524.0
 PLOT_W = PR - PL
 PLOT_H = PB - PT
 
-SUBINK = "#6E6E73"    # secondary text
-HAIR = "#E5E5EA"      # gridlines
+SUBINK = "#6E6E73"  # secondary text
+HAIR = "#E5E5EA"  # gridlines
 
 
 # ------------------------------------------------------------------
@@ -137,9 +137,7 @@ def _strings(language: str) -> dict[str, str]:
 # decreasing curve): normalise both axes, flip y into an increasing frame,
 # subtract the diagonal, and take the peak of the difference curve.
 # ------------------------------------------------------------------
-def kneedle_elbow(
-    xs: list[float], ys: list[float]
-) -> tuple[int, list[float]]:
+def kneedle_elbow(xs: list[float], ys: list[float]) -> tuple[int, list[float]]:
     """Locate the elbow of a convex, decreasing curve by the Kneedle method.
 
     Parameters
@@ -306,7 +304,9 @@ def build_svg(
         )
 
     p: list[str] = []
-    p.append(svg_open(WIDTH, HEIGHT, "elb-title", "elb-desc", font_family=chrome_stack_for_theme(theme)))
+    p.append(
+        svg_open(WIDTH, HEIGHT, "elb-title", "elb-desc", font_family=chrome_stack_for_theme(theme))
+    )
     # Composed from the curve by default -- "the elbow is at k = 4" is a
     # fact about this curve, not a sentence to carry between curves -- and
     # replaced whole when a caller has one.
@@ -320,12 +320,12 @@ def build_svg(
     # --- gradients + additive dark mode ---
     fill_hue = curve_hue if is_clear else muted
     p.append(
-        '<defs>'
+        "<defs>"
         f'<linearGradient id="elb-fill" x1="0" y1="0" x2="0" y2="1">'
         f'<stop offset="0" stop-color="{fill_hue}" stop-opacity="0.22"/>'
         f'<stop offset="1" stop-color="{fill_hue}" stop-opacity="0.02"/>'
-        f'</linearGradient>'
-        '</defs>'
+        f"</linearGradient>"
+        "</defs>"
     )
     dark = os_dark_style(extra='[stroke="#E5E5EA"]{stroke:#2C2C2E;}')
     tip_css = (
@@ -344,8 +344,7 @@ def build_svg(
         f'fill="{INK}">{escape(title_txt)}</text>'
     )
     p.append(
-        f'<text x="{PL:.0f}" y="106" font-size="18" fill="{SUBINK}">'
-        f'{escape(subtitle_txt)}</text>'
+        f'<text x="{PL:.0f}" y="106" font-size="18" fill="{SUBINK}">{escape(subtitle_txt)}</text>'
     )
 
     # --- horizontal gridlines + y tick labels ---
@@ -358,17 +357,17 @@ def build_svg(
         p.append(
             f'<text x="{PL - 14:.1f}" y="{gy + 5:.1f}" text-anchor="end" '
             f'font-family="{mono_family}" font-size="14" fill="{SUBINK}">'
-            f'{tv:,.0f}</text>'
+            f"{tv:,.0f}</text>"
         )
 
     # --- curve points in pixel space ---
     pts: list[tuple[float, float]] = [(sx(k), sy(v)) for k, v in zip(ks, inertia, strict=True)]
 
     # --- filled area under the curve (smooth top, down to the baseline) ---
-    area = [f'M{fmt_compact(pts[0][0])},{fmt_compact(PB)}']
-    area.append(f'L{fmt_compact(pts[0][0])},{fmt_compact(pts[0][1])}')
+    area = [f"M{fmt_compact(pts[0][0])},{fmt_compact(PB)}"]
+    area.append(f"L{fmt_compact(pts[0][0])},{fmt_compact(pts[0][1])}")
     area.append(catmull_rom_beziers(pts, fmt_compact))
-    area.append(f'L{fmt_compact(pts[-1][0])},{fmt_compact(PB)}Z')
+    area.append(f"L{fmt_compact(pts[-1][0])},{fmt_compact(PB)}Z")
     p.append(f'<path d="{"".join(area)}" fill="url(#elb-fill)"/>')
 
     if is_clear:
@@ -396,9 +395,9 @@ def build_svg(
         )
 
     # --- the curve stroke (dashed + muted in the abstention state) ---
-    line = [f'M{fmt_compact(pts[0][0])},{fmt_compact(pts[0][1])}']
+    line = [f"M{fmt_compact(pts[0][0])},{fmt_compact(pts[0][1])}"]
     line.append(catmull_rom_beziers(pts, fmt_compact))
-    dash = '' if is_clear else ' stroke-dasharray="6 5"'
+    dash = "" if is_clear else ' stroke-dasharray="6 5"'
     p.append(
         f'<path d="{"".join(line)}" fill="none" stroke="{curve_hue if is_clear else muted}" '
         f'stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"{dash}/>'
@@ -416,11 +415,21 @@ def build_svg(
             f'stroke="{BG}" stroke-width="1.6" tabindex="0" role="img" '
             f'aria-label="{escape(tip)}"><title>{escape(tip)}</title></circle>'
         )
-        delta_line = f"delta {fmt_compact(v - prev_v)} from previous k" if prev_v is not None else "first point"
+        delta_line = (
+            f"delta {fmt_compact(v - prev_v)} from previous k"
+            if prev_v is not None
+            else "first point"
+        )
         dot_tips.append(
             tooltip_bubble(
-                cx, cy - 14, [f"k = {fmt_compact(k)}", fmt_compact(v), delta_line],
-                canvas_w=WIDTH, canvas_h=HEIGHT, ink=INK, secondary=SUBINK, border=GRIDLINE,
+                cx,
+                cy - 14,
+                [f"k = {fmt_compact(k)}", fmt_compact(v), delta_line],
+                canvas_w=WIDTH,
+                canvas_h=HEIGHT,
+                ink=INK,
+                secondary=SUBINK,
+                border=GRIDLINE,
                 elem_id=f"tip-{i}",
             )
         )
@@ -443,7 +452,7 @@ def build_svg(
         p.append(f'<circle cx="{ex:.1f}" cy="{ey:.1f}" r="3" fill="{accent}"/>')
 
         # --- elbow callout pill with a short leader ---
-        call_txt = f'{strings["elbow_pill"]} · k = {fmt_compact(elbow_k)}'
+        call_txt = f"{strings['elbow_pill']} · k = {fmt_compact(elbow_k)}"
         pill_w = 150.0
         px = ex + 78.0
         py = ey - 78.0
@@ -482,7 +491,7 @@ def build_svg(
     p.append(
         f'<text x="30" y="{(PT + PB) / 2:.1f}" text-anchor="middle" font-size="17" '
         f'fill="{INK}" transform="rotate(-90 30 {(PT + PB) / 2:.1f})">'
-        f'{escape(y_label)}</text>'
+        f"{escape(y_label)}</text>"
     )
 
     # --- inset: the Kneedle difference curve (the "how"), clear case only ---
@@ -491,8 +500,15 @@ def build_svg(
     # this form says so where the value is used.
     if diff is not None and elbow_i is not None:
         _emit_inset(
-            p, diff, elbow_i, curve_hue, accent, strings, mono_family,
-            detection_rate=detection_rate, null_p_value=null_p_value,
+            p,
+            diff,
+            elbow_i,
+            curve_hue,
+            accent,
+            strings,
+            mono_family,
+            detection_rate=detection_rate,
+            null_p_value=null_p_value,
         )
 
     # Fullscreen control per interactivity mode, just before the close.
@@ -593,7 +609,7 @@ def _emit_inset(
     null_p_value : float, optional
         P-value of the elbow under a no-knee null model.
     """
-    ix, iy, iw, ih = 566.0, 196.0, 372.0, 176.0   # card box
+    ix, iy, iw, ih = 566.0, 196.0, 372.0, 176.0  # card box
     pad = 20.0
     has_evidence = detection_rate is not None or null_p_value is not None
     # Grow the card downward when evidence lines are present so the mini
@@ -615,8 +631,8 @@ def _emit_inset(
     # Mini plot frame inside the card.
     mx0 = ix + pad
     mx1 = ix + iw - pad
-    my0 = iy + 66.0                 # top of the mini plot
-    my1 = iy + ih - 30.0            # baseline (evidence lines sit below this)
+    my0 = iy + 66.0  # top of the mini plot
+    my1 = iy + ih - 30.0  # baseline (evidence lines sit below this)
     dmax = max(diff) or 1.0
 
     def msx(i: int) -> float:
@@ -628,12 +644,12 @@ def _emit_inset(
     mpts = [(msx(i), msy(v)) for i, v in enumerate(diff)]
 
     # Faint fill + smooth stroke for the difference curve.
-    a = [f'M{fmt_compact(mpts[0][0])},{fmt_compact(my1)}']
-    a.append(f'L{fmt_compact(mpts[0][0])},{fmt_compact(mpts[0][1])}')
+    a = [f"M{fmt_compact(mpts[0][0])},{fmt_compact(my1)}"]
+    a.append(f"L{fmt_compact(mpts[0][0])},{fmt_compact(mpts[0][1])}")
     a.append(catmull_rom_beziers(mpts, fmt_compact))
-    a.append(f'L{fmt_compact(mpts[-1][0])},{fmt_compact(my1)}Z')
+    a.append(f"L{fmt_compact(mpts[-1][0])},{fmt_compact(my1)}Z")
     p.append(f'<path d="{"".join(a)}" fill="{curve}" fill-opacity="0.12"/>')
-    ln = [f'M{fmt_compact(mpts[0][0])},{fmt_compact(mpts[0][1])}']
+    ln = [f"M{fmt_compact(mpts[0][0])},{fmt_compact(mpts[0][1])}"]
     ln.append(catmull_rom_beziers(mpts, fmt_compact))
     p.append(
         f'<path d="{"".join(ln)}" fill="none" stroke="{curve}" '
@@ -664,9 +680,9 @@ def _emit_inset(
         ey0 = my1 + 22.0
         parts: list[str] = []
         if detection_rate is not None:
-            parts.append(f'{strings["detection_rate"]}: {detection_rate:.0%}')
+            parts.append(f"{strings['detection_rate']}: {detection_rate:.0%}")
         if null_p_value is not None:
-            parts.append(f'{strings["null_p"]}: {null_p_value:.3g}')
+            parts.append(f"{strings['null_p']}: {null_p_value:.3g}")
         p.append(
             f'<text x="{mx0:.1f}" y="{ey0:.1f}" font-family="{mono_family}" '
             f'font-size="12" fill="{SUBINK}">{escape("  ·  ".join(parts))}</text>'

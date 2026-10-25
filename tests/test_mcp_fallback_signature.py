@@ -36,9 +36,7 @@ def _main_definitions() -> list[ast.FunctionDef]:
     """Every ``def main`` in mcp.py, whichever branch it sits in."""
     tree = ast.parse(MCP_SOURCE.read_text(encoding="utf-8"))
     return [
-        node
-        for node in ast.walk(tree)
-        if isinstance(node, ast.FunctionDef) and node.name == "main"
+        node for node in ast.walk(tree) if isinstance(node, ast.FunctionDef) and node.name == "main"
     ]
 
 

@@ -74,7 +74,9 @@ def test_a_bilingual_generator_renders_in_the_language_it_is_given(
     out = tmp_path / f"{script.stem}.svg"
     done = subprocess.run(
         [sys.executable, str(script), "--language", "fr", "--out", str(out)],
-        capture_output=True, text=True, timeout=180,
+        capture_output=True,
+        text=True,
+        timeout=180,
     )
     assert done.returncode == 0, (
         f"{script.name} takes a `language` in its library signature and its "

@@ -139,10 +139,7 @@ def _wedge(cx: float, cy: float, r: float, start: float, end: float) -> str:
     x1 = cx + r * math.sin(end)
     y1 = cy - r * math.cos(end)
     large = 1 if (end - start) > math.pi else 0
-    return (
-        f"M{cx:.1f},{cy:.1f}L{x0:.1f},{y0:.1f}"
-        f"A{r:.1f},{r:.1f} 0 {large} 1 {x1:.1f},{y1:.1f}Z"
-    )
+    return f"M{cx:.1f},{cy:.1f}L{x0:.1f},{y0:.1f}A{r:.1f},{r:.1f} 0 {large} 1 {x1:.1f},{y1:.1f}Z"
 
 
 def _nudge_into_map(cx: float, cy: float, half_w: float) -> Tuple[float, float]:
@@ -211,9 +208,7 @@ def build_svg(
         "only the angles differ"
     )
 
-    parts: List[str] = [
-        svg_open(_WIDTH, _HEIGHT, "pie-title", "pie-desc", font_family=fonts)
-    ]
+    parts: List[str] = [svg_open(_WIDTH, _HEIGHT, "pie-title", "pie-desc", font_family=fonts)]
     parts.append(
         f'<title id="pie-title">{xml_escape(head)}</title>'
         f'<desc id="pie-desc">{xml_escape(sub)}. Eight world regions on an '
@@ -222,9 +217,7 @@ def build_svg(
     )
     parts.append(
         "<style>"
-        + os_adaptive_style(
-            {key: col for (_, key), col in zip(SERIES, colors, strict=True)}
-        )
+        + os_adaptive_style({key: col for (_, key), col in zip(SERIES, colors, strict=True)})
         + os_dark_style()
         + ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
         + "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
@@ -284,13 +277,19 @@ def build_svg(
 
         tips.append(
             tooltip_bubble(
-                cx, cy - _PIE_R - 10.0,
-                [name] + [
+                cx,
+                cy - _PIE_R - 10.0,
+                [name]
+                + [
                     f"{label}: {share * 100:.0f}%"
                     for (label, _), share in zip(SERIES, shares, strict=True)
                 ],
-                anchor="middle", canvas_w=_WIDTH, canvas_h=_HEIGHT,
-                ink=_INK, secondary=_SUBTLE, border=_LAND_EDGE,
+                anchor="middle",
+                canvas_w=_WIDTH,
+                canvas_h=_HEIGHT,
+                ink=_INK,
+                secondary=_SUBTLE,
+                border=_LAND_EDGE,
                 elem_id=f"tip-{idx}",
             )
         )
@@ -307,8 +306,7 @@ def build_svg(
     for i, ((label, _), col) in enumerate(zip(SERIES, colors, strict=True)):
         row_y = ly + 24.0 + i * 25.0
         parts.append(
-            f'<rect x="{lx:.1f}" y="{row_y - 12:.1f}" width="14" height="14" '
-            f'fill="{col}" rx="2"/>'
+            f'<rect x="{lx:.1f}" y="{row_y - 12:.1f}" width="14" height="14" fill="{col}" rx="2"/>'
         )
         parts.append(
             f'<text x="{lx + 22:.1f}" y="{row_y:.1f}" font-size="14" '
@@ -337,12 +335,12 @@ def build_svg(
     parts.append(
         f'<text x="{_WIDTH - 24:.1f}" y="{_HEIGHT - 38:.1f}" font-size="12.5" '
         f'fill="{_SUBTLE}" text-anchor="end">Equal Earth (equal-area) projection · '
-        f'one pie per region, placed at a representative point</text>'
+        f"one pie per region, placed at a representative point</text>"
     )
     parts.append(
         f'<text x="{_WIDTH - 24:.1f}" y="{_HEIGHT - 18:.1f}" font-size="12.5" '
         f'fill="{_SUBTLE}" text-anchor="end">2023 order of magnitude, UN World '
-        f'Population Prospects · hover a region for its three shares</text>'
+        f"Population Prospects · hover a region for its three shares</text>"
     )
 
     parts.append(fullscreen_control(_WIDTH, _HEIGHT, mode))
@@ -376,9 +374,7 @@ def make_map_pie(
     mode, accessibility, theme : str
         Forwarded to :func:`build_svg`.
     """
-    svg = build_svg(
-        data, mode=mode, accessibility=accessibility, theme=theme, title=title or None
-    )
+    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "map-pie")
     return write_svg(dest, svg, theme=theme)
 

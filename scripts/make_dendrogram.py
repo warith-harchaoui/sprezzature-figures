@@ -65,16 +65,16 @@ from _interactive import fullscreen_control  # noqa: E402
 # ------------------------------------------------------------------
 WIDTH = 1480
 HEIGHT = 900
-MARGIN_LEFT = 118        # room for the merge-height axis + its title
-MARGIN_RIGHT = 268       # room for the cluster legend on the right
-MARGIN_TOP = 168         # room for title + subtitle
-MARGIN_BOTTOM = 210      # room for the leaf labels + baseline breathing space
+MARGIN_LEFT = 118  # room for the merge-height axis + its title
+MARGIN_RIGHT = 268  # room for the cluster legend on the right
+MARGIN_TOP = 168  # room for title + subtitle
+MARGIN_BOTTOM = 210  # room for the leaf labels + baseline breathing space
 
-SUBINK = "#6E6E73"       # secondary text
+SUBINK = "#6E6E73"  # secondary text
 # The tree "spine" above the cut is neutral, but a full-ink black cages the
 # figure and fights the coloured clusters; a soft grey lets the colour lead.
-SPINE = "#A6A6AE"        # neutral merge links above the cut
-GRIDLINE = "#ECECF0"     # hairline neutral
+SPINE = "#A6A6AE"  # neutral merge links above the cut
+GRIDLINE = "#ECECF0"  # hairline neutral
 
 
 # ------------------------------------------------------------------
@@ -107,18 +107,18 @@ LEAVES: List[str] = [
 # 1 = uncorrelated). This is a valid ultrametric merge tree.
 MERGES: List[Tuple[str, str, float]] = [
     # --- fresh / health shelf ---
-    ("Fresh produce", "Yoghurt & dairy", 0.18),          # m0
-    ("m0", "Breakfast cereal", 0.31),                    # m1
+    ("Fresh produce", "Yoghurt & dairy", 0.18),  # m0
+    ("m0", "Breakfast cereal", 0.31),  # m1
     # --- household staples shelf ---
-    ("Cleaning supplies", "Paper goods", 0.15),          # m2
-    ("m2", "Pet food", 0.34),                            # m3
+    ("Cleaning supplies", "Paper goods", 0.15),  # m2
+    ("m2", "Pet food", 0.34),  # m3
     # --- treat / indulgence shelf ---
-    ("Chocolate & sweets", "Soft drinks", 0.21),         # m4
-    ("m4", "Crisps & snacks", 0.29),                     # m5
+    ("Chocolate & sweets", "Soft drinks", 0.21),  # m4
+    ("m4", "Crisps & snacks", 0.29),  # m5
     # --- inter-shelf merges (well above the cut) ---
-    ("m1", "m3", 0.58),                                  # m6  fresh + staples
-    ("m6", "m5", 0.74),                                  # m7  + treats
-    ("m7", "Frozen ready-meals", 0.92),                  # m8  odd one out, root
+    ("m1", "m3", 0.58),  # m6  fresh + staples
+    ("m6", "m5", 0.74),  # m7  + treats
+    ("m7", "Frozen ready-meals", 0.92),  # m8  odd one out, root
 ]
 
 # Cut the tree at this height to obtain the flat clustering that colours
@@ -132,6 +132,7 @@ CUT_HEIGHT = 0.46
 DEMO_DATA: List[Dict[str, Any]] = [
     {"left": left, "right": right, "height": height} for left, right, height in MERGES
 ]
+
 
 # Flat-cluster hues, assigned left-to-right by the leftmost leaf of each
 # cluster below the cut.
@@ -152,10 +153,10 @@ def _cluster_colors(accessibility: str = "universal", theme: str = "corporate") 
     """
     palette = load_palette(accessibility, theme=theme)
     return [
-        palette.get("Green", "#34C759"),    # fresh / health
-        palette.get("Blue", "#007AFF"),     # household staples
-        palette.get("Purple", "#AF52DE"),   # treats / indulgence
-        palette.get("Orange", "#FF9500"),   # singleton (frozen ready-meals)
+        palette.get("Green", "#34C759"),  # fresh / health
+        palette.get("Blue", "#007AFF"),  # household staples
+        palette.get("Purple", "#AF52DE"),  # treats / indulgence
+        palette.get("Orange", "#FF9500"),  # singleton (frozen ready-meals)
     ]
 
 
@@ -311,7 +312,9 @@ def _fmt(v: float) -> str:
 
 
 def build_svg(
-    mode: str = "self-contained", accessibility: str = "universal", theme: str = "corporate",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+    theme: str = "corporate",
     legend_title: str = "CLUSTERS",
     title: Optional[str] = None,
 ) -> str:
@@ -355,9 +358,7 @@ def build_svg(
 
     # --- header: accessible role + title + description ---
     title_txt = title or "Three natural shelves emerge from how households shop"
-    subtitle_txt = (
-        "Private-label lines clustered by co-purchase similarity"
-    )
+    subtitle_txt = "Private-label lines clustered by co-purchase similarity"
     desc_txt = (
         "Rectangular dendrogram from average-linkage hierarchical clustering of "
         "ten grocery product lines. The vertical axis is the merge dissimilarity "
@@ -367,7 +368,11 @@ def build_svg(
         "root. Each cluster is set apart by its branch grouping, not by colour "
         "alone, so it reads in greyscale and for colour-blind viewers."
     )
-    parts.append(svg_open(WIDTH, HEIGHT, "dendro-title", "dendro-desc", font_family=chrome_stack_for_theme(theme)))
+    parts.append(
+        svg_open(
+            WIDTH, HEIGHT, "dendro-title", "dendro-desc", font_family=chrome_stack_for_theme(theme)
+        )
+    )
     parts.append(f'<title id="dendro-title">{escape(title_txt)}</title>')
     parts.append(f'<desc id="dendro-desc">{escape(desc_txt)}</desc>')
 
@@ -381,9 +386,7 @@ def build_svg(
     # leaf labels, legend names and the dashed cut rule, so no colour-only
     # fallback is needed, and a four-hue tree cannot survive the ~4-colour
     # system palette.
-    clu_hc = leveled_colors(
-        {f"c{i}": c for i, c in enumerate(cluster_colors)}, "high-contrast"
-    )
+    clu_hc = leveled_colors({f"c{i}": c for i, c in enumerate(cluster_colors)}, "high-contrast")
     contrast_rows = "".join(
         f"path.dg-c{i}{{stroke:{clu_hc[f'c{i}']};}}"
         f"circle.dg-c{i},rect.dg-c{i}{{fill:{clu_hc[f'c{i}']};}}"
@@ -426,8 +429,7 @@ def build_svg(
         f'fill="{INK}">{escape(title_txt)}</text>'
     )
     parts.append(
-        f'<text x="{title_x}" y="88" font-size="19" fill="{SUBINK}">'
-        f'{escape(subtitle_txt)}</text>'
+        f'<text x="{title_x}" y="88" font-size="19" fill="{SUBINK}">{escape(subtitle_txt)}</text>'
     )
 
     # --- merge-height axis (left edge) with gridlines + ticks ---
@@ -451,7 +453,7 @@ def build_svg(
         parts.append(
             f'<text x="{axis_x - 10:.1f}" y="{gy + 5:.1f}" text-anchor="end" '
             f'font-family="{mono_family}" font-size="15" fill="{SUBINK}">'
-            f'{tv:.1f}</text>'
+            f"{tv:.1f}</text>"
         )
     # Axis title, rotated up the left edge.
     axis_title_y = (MARGIN_TOP + baseline) / 2.0
@@ -460,7 +462,7 @@ def build_svg(
         f'<text x="{axis_title_x}" y="{axis_title_y:.1f}" font-size="18" font-weight="600" '
         f'fill="{SUBINK}" text-anchor="middle" '
         f'transform="rotate(-90 {axis_title_x} {axis_title_y:.1f})">'
-        f'Merge dissimilarity</text>'
+        f"Merge dissimilarity</text>"
     )
     parts.append("</g>")
 
@@ -480,7 +482,7 @@ def build_svg(
     parts.append(
         f'<text x="{cut_label_x:.1f}" y="{y_cut - 12:.1f}" text-anchor="middle" '
         f'font-size="16" font-style="italic" fill="{SUBINK}">'
-        f'cut @ {CUT_HEIGHT:.2f} → 3 clusters</text>'
+        f"cut @ {CUT_HEIGHT:.2f} → 3 clusters</text>"
     )
 
     # ------------------------------------------------------------------
@@ -547,10 +549,18 @@ def build_svg(
         )
         tip_bucket.append(
             tooltip_bubble(
-                gr["x"], my + 8,
-                [f"dissimilarity {height:.2f}", f"joins {n_leaves} lines",
-                 CLUSTER_NAMES[cl] if cl is not None else "above cut (unclustered)"],
-                canvas_w=WIDTH, canvas_h=HEIGHT, ink=INK, secondary=SUBINK, border=GRIDLINE,
+                gr["x"],
+                my + 8,
+                [
+                    f"dissimilarity {height:.2f}",
+                    f"joins {n_leaves} lines",
+                    CLUSTER_NAMES[cl] if cl is not None else "above cut (unclustered)",
+                ],
+                canvas_w=WIDTH,
+                canvas_h=HEIGHT,
+                ink=INK,
+                secondary=SUBINK,
+                border=GRIDLINE,
                 elem_id=f"btip-{i}",
             )
         )
@@ -570,8 +580,7 @@ def build_svg(
         # tabindex on the group makes the cluster keyboard-focusable so
         # :focus-within lights it up without any script.
         parts.append(
-            f'<g class="cluster" tabindex="0" role="img" '
-            f'aria-label="{escape(cname)} cluster">'
+            f'<g class="cluster" tabindex="0" role="img" aria-label="{escape(cname)} cluster">'
         )
         parts.extend(snippets)
         parts.extend(cluster_tips[cl])
@@ -591,7 +600,7 @@ def build_svg(
             f'<circle class="dg-c{cl}" cx="{_fmt(g["x"])}" cy="{_fmt(baseline)}" '
             f'r="6" '
             f'fill="{dot}" stroke="{BG}" stroke-width="2"><title>'
-            f'{escape(label)} — {escape(CLUSTER_NAMES[cl])}</title></circle>'
+            f"{escape(label)} — {escape(CLUSTER_NAMES[cl])}</title></circle>"
         )
         # Rotated label below the baseline. -32° keeps the words legible
         # while the extra bottom margin gives even the longest line room.
@@ -600,13 +609,19 @@ def build_svg(
             f'<text id="leaf-{leaf_i}" class="leaf-hit hit" tabindex="0" x="{_fmt(g["x"])}" y="{_fmt(ly)}" '
             f'font-size="18" fill="{INK}" text-anchor="end" '
             f'transform="rotate(-32 {_fmt(g["x"])} {_fmt(ly)})">'
-            f'{escape(label)}<title>{escape(label)} — {escape(CLUSTER_NAMES[cl])}'
-            f'</title></text>'
+            f"{escape(label)}<title>{escape(label)} — {escape(CLUSTER_NAMES[cl])}"
+            f"</title></text>"
         )
         leaf_tips.append(
             tooltip_bubble(
-                g["x"], ly + 10, [str(label), str(CLUSTER_NAMES[cl])],
-                canvas_w=WIDTH, canvas_h=HEIGHT, ink=INK, secondary=SUBINK, border=GRIDLINE,
+                g["x"],
+                ly + 10,
+                [str(label), str(CLUSTER_NAMES[cl])],
+                canvas_w=WIDTH,
+                canvas_h=HEIGHT,
+                ink=INK,
+                secondary=SUBINK,
+                border=GRIDLINE,
                 elem_id=f"ltip-{leaf_i}",
             )
         )
@@ -648,7 +663,7 @@ def build_svg(
         parts.append(
             f'<text x="{legend_x + 28:.1f}" y="{ry + 20:.1f}" '
             f'font-family="{mono_family}" font-size="13.5" fill="{SUBINK}">'
-            f'{size} line{"s" if size != 1 else ""}</text>'
+            f"{size} line{'s' if size != 1 else ''}</text>"
         )
         ry += 62
     parts.append("</g>")
@@ -657,7 +672,7 @@ def build_svg(
     parts.append(
         f'<text x="{title_x}" y="{HEIGHT - 16}" font-size="15" '
         f'fill="{SUBINK}">Average linkage · hover or focus a cluster to '
-        f'isolate its branches · taller merge = less alike</text>'
+        f"isolate its branches · taller merge = less alike</text>"
     )
 
     parts.append(fullscreen_control(WIDTH, HEIGHT, mode))
@@ -708,7 +723,13 @@ def make_dendrogram(
         Absolute path to the written SVG file.
     """
     _ = data, title  # accepted for dispatcher parity; see docstring
-    svg = build_svg(mode=mode, accessibility=accessibility, theme=theme, legend_title=legend_title, title=title or None)
+    svg = build_svg(
+        mode=mode,
+        accessibility=accessibility,
+        theme=theme,
+        legend_title=legend_title,
+        title=title or None,
+    )
     dest = Path(out) if out else svg_example_path(__file__, "dendrogram")
     return write_svg(dest, svg, theme=theme)
 

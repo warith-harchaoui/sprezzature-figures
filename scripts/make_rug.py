@@ -47,8 +47,8 @@ from typing import Any, Dict, List, Optional, Tuple
 # House-style tokens (kept local so the module is import-light; they
 # mirror the house-style color/typography constants).
 # ------------------------------------------------------------------
-BLUE = "#007AFF"       # density fill / stroke (Apple system blue)
-GRID = "#E5E5EA"       # hairline gridlines
+BLUE = "#007AFF"  # density fill / stroke (Apple system blue)
+GRID = "#E5E5EA"  # hairline gridlines
 
 # Canvas geometry. Poster-scale (~1.8x the old 640x380) so the figure
 # reads big and generous rather than cramped.
@@ -58,9 +58,9 @@ PAD_T, PAD_B = 150, 128
 PLOT_L = PAD_L
 PLOT_R = W - PAD_R
 PLOT_T = PAD_T
-PLOT_B = H - PAD_B                 # baseline of the density area
-RUG_TOP = PLOT_B + 24              # where the rug band starts
-RUG_LEN = 36                       # tick height
+PLOT_B = H - PAD_B  # baseline of the density area
+RUG_TOP = PLOT_B + 24  # where the rug band starts
+RUG_LEN = 36  # tick height
 
 
 def sample_response_times(seed: int = 7) -> List[float]:
@@ -97,9 +97,7 @@ def sample_response_times(seed: int = 7) -> List[float]:
 #: contract's ``list[dict[str, Any]]`` shape. :func:`_values_from_rows`
 #: reshapes it (or any caller-supplied row list of the same shape) into
 #: the flat value list :func:`build_svg` renders.
-DEMO_DATA: List[Dict[str, Any]] = [
-    {"response_ms": round(v, 1)} for v in sample_response_times()
-]
+DEMO_DATA: List[Dict[str, Any]] = [{"response_ms": round(v, 1)} for v in sample_response_times()]
 
 
 def _values_from_rows(data: Optional[List[Dict[str, Any]]]) -> List[float]:
@@ -199,7 +197,7 @@ def build_svg(
     mono_family = mono_stack_for_theme(theme)
 
     samples = _values_from_rows(data)
-    lo, hi = 40.0, 560.0           # display window (ms)
+    lo, hi = 40.0, 560.0  # display window (ms)
 
     # Kernel-density silhouette across the window.
     grid = [lo + (hi - lo) * i / 200.0 for i in range(201)]
@@ -216,14 +214,12 @@ def build_svg(
 
     parts: List[str] = []
     parts.append(svg_open(W, H, "rug-title", "rug-desc", font_family=chrome_stack_for_theme(theme)))
-    parts.append(
-        '<title id="rug-title">Rug plot of checkout API response times</title>'
-    )
+    parts.append('<title id="rug-title">Rug plot of checkout API response times</title>')
     parts.append(
         '<desc id="rug-desc">A kernel-density curve over a rug of raw '
-        'observations. A dense band of fast requests near 120 ms sits '
-        'beside a thin, unmistakable tail of slow requests past 300 ms '
-        'that a single average would hide.</desc>'
+        "observations. A dense band of fast requests near 120 ms sits "
+        "beside a thin, unmistakable tail of slow requests past 300 ms "
+        "that a single average would hide.</desc>"
     )
     parts.append(f'<rect width="{W}" height="{H}" fill="{BG}"/>')
 
@@ -236,14 +232,12 @@ def build_svg(
     # and the browser leaves SVG fills alone there, which reads fine).
     # Dark mode: invert paper + inks, dim the light gridlines (#E5E5EA) and
     # re-light the ink axis / baseline stroke (#1D1D1F) so it reads on dark.
-    dark_extra = (
-        '[stroke="#E5E5EA"]{stroke:#2C2C2E;}'
-        '[stroke="#1D1D1F"]{stroke:#F2F2F7;}'
-    )
+    dark_extra = '[stroke="#E5E5EA"]{stroke:#2C2C2E;}[stroke="#1D1D1F"]{stroke:#F2F2F7;}'
     parts.append(
         "<style>\n"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}\n"
-        + foreground_tip_css(len(samples)) + "\n"
+        + foreground_tip_css(len(samples))
+        + "\n"
         "@media (prefers-reduced-motion: reduce){.tip{transition:none}}\n"
         + os_adaptive_style({".rug-blue": blue}, role="both")
         + os_dark_style(extra=dark_extra)
@@ -253,15 +247,15 @@ def build_svg(
     # ---- Title + subtitle (takeaway) -----------------------------
     # The headline the figure writes about its own data, used only when
     # the caller supplies none.
-    title = title or 'The slow tail hides behind a fast average'
+    title = title or "The slow tail hides behind a fast average"
     parts.append(
         f'<text x="{PAD_L}" y="60" font-size="30" font-weight="700" '
         f'fill="{INK}">{xml_escape(title)}</text>'
     )
     parts.append(
         f'<text x="{PAD_L}" y="94" font-size="20" fill="{SECONDARY}">'
-        f'Checkout API response times &#8212; every tick is one real '
-        f'request</text>'
+        f"Checkout API response times &#8212; every tick is one real "
+        f"request</text>"
     )
 
     # ---- X gridlines + axis ticks --------------------------------
@@ -319,10 +313,15 @@ def build_svg(
         )
         tips.append(
             tooltip_bubble(
-                px, RUG_TOP - 14,
+                px,
+                RUG_TOP - 14,
                 [tip, f"{pct:.0f}th percentile", f"rank {i + 1} of {n_samples}"],
-                anchor="middle", canvas_w=W, canvas_h=H,
-                ink=INK, secondary=SECONDARY, border=GRID,
+                anchor="middle",
+                canvas_w=W,
+                canvas_h=H,
+                ink=INK,
+                secondary=SECONDARY,
+                border=GRID,
                 elem_id=f"tip-{i}",
             )
         )
@@ -340,7 +339,7 @@ def build_svg(
     parts.append(
         f'<text x="{(PLOT_L + PLOT_R) / 2:.1f}" y="{label_y + 34}" '
         f'font-size="19" fill="{INK}" text-anchor="middle">'
-        f'Response time (ms)</text>'
+        f"Response time (ms)</text>"
     )
 
     # ---- Density y-axis label (left, rotated) --------------------
@@ -350,7 +349,7 @@ def build_svg(
         f'<text x="{dy_x}" y="{dy_y:.1f}" '
         f'font-size="18" fill="{SECONDARY}" text-anchor="middle" '
         f'transform="rotate(-90 {dy_x} {dy_y:.1f})">'
-        f'Density</text>'
+        f"Density</text>"
     )
 
     # ---- Annotation calling out the tail -------------------------
@@ -365,11 +364,11 @@ def build_svg(
         parts.append(
             f'<text x="{tx:.1f}" y="{PLOT_T + 4:.1f}" font-size="18" '
             f'font-weight="600" fill="{SECONDARY}" text-anchor="middle">'
-            f'slow tail</text>'
+            f"slow tail</text>"
         )
 
     parts.append(fullscreen_control(W, H, mode))
-    parts.append('</svg>')
+    parts.append("</svg>")
     return "\n".join(parts)
 
 

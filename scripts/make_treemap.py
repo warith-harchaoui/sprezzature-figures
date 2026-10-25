@@ -74,6 +74,7 @@ def _strings(language: str) -> Dict[str, str]:
     """Chrome-text dict for `language`, falling back to English."""
     return _STRINGS.get(language, _STRINGS["en"])
 
+
 # ---------------------------------------------------------------------------
 # Demo data: annual cloud spending by service, IT department FY-2024 (k EUR).
 # Two-level hierarchy: parent = domain, name = service, value = spend.
@@ -100,7 +101,9 @@ DEMO_DATA: List[Dict[str, Any]] = [
 ]
 
 
-def _layout_row(sizes: List[float], x: float, y: float, dx: float, dy: float) -> List[Dict[str, float]]:
+def _layout_row(
+    sizes: List[float], x: float, y: float, dx: float, dy: float
+) -> List[Dict[str, float]]:
     covered = sum(sizes)
     width = covered / dy if dy else 0.0
     rects, cy = [], y
@@ -111,7 +114,9 @@ def _layout_row(sizes: List[float], x: float, y: float, dx: float, dy: float) ->
     return rects
 
 
-def _layout_col(sizes: List[float], x: float, y: float, dx: float, dy: float) -> List[Dict[str, float]]:
+def _layout_col(
+    sizes: List[float], x: float, y: float, dx: float, dy: float
+) -> List[Dict[str, float]]:
     covered = sum(sizes)
     height = covered / dx if dx else 0.0
     rects, cx = [], x
@@ -142,7 +147,9 @@ def _worst_ratio(sizes: List[float], x: float, y: float, dx: float, dy: float) -
     return max(max(r["dx"] / r["dy"], r["dy"] / r["dx"]) for r in rects if r["dx"] and r["dy"])
 
 
-def _squarify(sizes: List[float], x: float, y: float, dx: float, dy: float) -> List[Dict[str, float]]:
+def _squarify(
+    sizes: List[float], x: float, y: float, dx: float, dy: float
+) -> List[Dict[str, float]]:
     """Squarified treemap layout (Bruls, Huizing & van Wijk, 2000).
 
     Parameters
@@ -163,7 +170,9 @@ def _squarify(sizes: List[float], x: float, y: float, dx: float, dy: float) -> L
     if len(sizes) == 1:
         return _layout(sizes, x, y, dx, dy)
     i = 1
-    while i < len(sizes) and _worst_ratio(sizes[:i], x, y, dx, dy) >= _worst_ratio(sizes[: i + 1], x, y, dx, dy):
+    while i < len(sizes) and _worst_ratio(sizes[:i], x, y, dx, dy) >= _worst_ratio(
+        sizes[: i + 1], x, y, dx, dy
+    ):
         i += 1
     current, remaining = sizes[:i], sizes[i:]
     lx, ly, ldx, ldy = _leftover(current, x, y, dx, dy)
@@ -266,9 +275,7 @@ def build_svg(
     # Keep the fixed house hues where they match (stable colours for the
     # demo data) and assign the qualitative sequence to anything else.
     palette_cycle = iter(qualitative_sequence(max(len(categories), 1), theme=theme))
-    category_colors = {
-        cat: CATEGORY_COLORS.get(cat) or next(palette_cycle) for cat in categories
-    }
+    category_colors = {cat: CATEGORY_COLORS.get(cat) or next(palette_cycle) for cat in categories}
 
     legend_y = 94.0
     plot_x, plot_y = 20.0, 128.0
@@ -282,7 +289,9 @@ def build_svg(
     cat_rects = _squarify(cat_sizes, plot_x, plot_y, plot_w, plot_h)
 
     parts: List[str] = []
-    parts.append(svg_open(width, height, "tm-title", "tm-desc", font_family=chrome_stack_for_theme(theme)))
+    parts.append(
+        svg_open(width, height, "tm-title", "tm-desc", font_family=chrome_stack_for_theme(theme))
+    )
     parts.append(f'<title id="tm-title">{xml_escape(title)}</title>')
     desc = strings["desc_template"].format(n_parents=len(categories), n_children=len(rows))
     parts.append(f'<desc id="tm-desc">{xml_escape(desc)}</desc>')
@@ -303,14 +312,20 @@ def build_svg(
         f'<text x="20" y="46" font-size="24" font-weight="700" fill="{INK}" '
         f'letter-spacing="-0.3">{xml_escape(title)}</text>'
     )
-    parts.append(f'<text x="20" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>')
+    parts.append(
+        f'<text x="20" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>'
+    )
 
     # ---- legend ----
     cursor = 20.0
     for cat in categories:
         color = category_colors[cat]
-        parts.append(f'<rect x="{cursor:.1f}" y="{legend_y - 11:.1f}" width="12" height="12" rx="2" fill="{color}"/>')
-        parts.append(f'<text x="{cursor + 18:.1f}" y="{legend_y:.1f}" font-size="12" fill="{INK}">{xml_escape(cat)}</text>')
+        parts.append(
+            f'<rect x="{cursor:.1f}" y="{legend_y - 11:.1f}" width="12" height="12" rx="2" fill="{color}"/>'
+        )
+        parts.append(
+            f'<text x="{cursor + 18:.1f}" y="{legend_y:.1f}" font-size="12" fill="{INK}">{xml_escape(cat)}</text>'
+        )
         cursor += 24 + 7.0 * len(cat) + 22
 
     # ---- rectangles ----
@@ -347,10 +362,15 @@ def build_svg(
             )
             bubbles.append(
                 tooltip_bubble(
-                    r["x"] + max(0.0, r["dx"]) / 2.0, r["y"] - 4,
+                    r["x"] + max(0.0, r["dx"]) / 2.0,
+                    r["y"] - 4,
                     [row["name"], f"{val_txt}{unit_suffix}", f"{share:.1f}% of {cat}"],
-                    anchor="middle", canvas_w=width, canvas_h=height,
-                    ink=INK, secondary=SECONDARY, border=GRIDLINE,
+                    anchor="middle",
+                    canvas_w=width,
+                    canvas_h=height,
+                    ink=INK,
+                    secondary=SECONDARY,
+                    border=GRIDLINE,
                     elem_id=f"tip-{leaf_i}",
                 )
             )
@@ -395,7 +415,7 @@ def build_svg(
                     parts.append(
                         f'<text x="{cxm:.1f}" y="{top + n * line_h + 9:.1f}" font-size="10" '
                         f'fill="{label_ink}" fill-opacity="0.85" text-anchor="middle">'
-                        f'{xml_escape(val_txt)}{xml_escape(unit_suffix)}</text>'
+                        f"{xml_escape(val_txt)}{xml_escape(unit_suffix)}</text>"
                     )
 
     parts.extend(bubbles)
@@ -451,9 +471,18 @@ def make_treemap(
     >>> p.exists()
     True
     """
-    svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
-                     mode=mode, accessibility=accessibility, language=language,
-                     value_unit=value_unit, theme=theme)
+    svg = build_svg(
+        data,
+        title=title,
+        subtitle=subtitle,
+        width=width,
+        height=height,
+        mode=mode,
+        accessibility=accessibility,
+        language=language,
+        value_unit=value_unit,
+        theme=theme,
+    )
     dest = Path(out) if out else svg_example_path(__file__, "treemap")
     return write_svg(dest, svg, theme=theme)
 

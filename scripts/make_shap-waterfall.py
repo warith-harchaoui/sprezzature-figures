@@ -165,15 +165,16 @@ def build_svg(
     drawn = ranked if top <= 0 else ranked[:top]
     lumped = [] if top <= 0 else ranked[top:]
     steps: List[Tuple[str, float, str]] = [
-        (str(row[feature]), float(row[value]), str(row.get(observed, "")))
-        for row in drawn
+        (str(row[feature]), float(row[value]), str(row.get(observed, ""))) for row in drawn
     ]
     if lumped:
-        steps.append((
-            f"{rest_label} ({len(lumped)})",
-            sum(float(row[value]) for row in lumped),
-            "",
-        ))
+        steps.append(
+            (
+                f"{rest_label} ({len(lumped)})",
+                sum(float(row[value]) for row in lumped),
+                "",
+            )
+        )
 
     total = base_value + sum(amount for _, amount, _ in steps)
     positions: List[Tuple[float, float]] = []
@@ -196,22 +197,26 @@ def build_svg(
     plot_w = width - plot_x - 128.0
     plot_h = height - plot_y - 96.0
     row_h = plot_h / max(len(steps), 1)
-    precision = min(
-        (abs(amount) for _, amount, _ in steps if amount), default=0.0
-    )
+    precision = min((abs(amount) for _, amount, _ in steps if amount), default=0.0)
 
     def px(amount: float) -> float:
         return plot_x + (amount - axis_low) / (axis_high - axis_low) * plot_w
 
     unit_lines = (
-        [unit_note] if unit_note is not None
+        [unit_note]
+        if unit_note is not None
         else [
             f"contributions in {units}, from {base_label} "
             f"{fmt_measured(base_value, precision)} to {fmt_measured(total, precision)}"
-        ] + ([
-            f"{fmt_number(_logistic(base_value) * 100.0)}% to "
-            f"{fmt_number(_logistic(total) * 100.0)}% once passed through the logistic"
-        ] if link == "logit" else [])
+        ]
+        + (
+            [
+                f"{fmt_number(_logistic(base_value) * 100.0)}% to "
+                f"{fmt_number(_logistic(total) * 100.0)}% once passed through the logistic"
+            ]
+            if link == "logit"
+            else []
+        )
     )
     said_units = " · ".join(unit_lines)
     said_parts: List[str] = []
@@ -236,15 +241,16 @@ def build_svg(
 
     parts: List[str] = []
     parts.append(
-        svg_open(width, height, "shapw-title", "shapw-desc",
-                 font_family=chrome_stack_for_theme(theme))
+        svg_open(
+            width, height, "shapw-title", "shapw-desc", font_family=chrome_stack_for_theme(theme)
+        )
     )
     parts.append(f'<title id="shapw-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="shapw-desc">A waterfall of {len(steps)} steps explaining one '
-        f'prediction, from {xml_escape(base_label)} {fmt_measured(base_value, precision)} '
-        f'to {fmt_measured(total, precision)}. {xml_escape(said_units)}. '
-        f'{xml_escape(" ".join(said_parts))} {xml_escape(caveat)}.</desc>'
+        f"prediction, from {xml_escape(base_label)} {fmt_measured(base_value, precision)} "
+        f"to {fmt_measured(total, precision)}. {xml_escape(said_units)}. "
+        f"{xml_escape(' '.join(said_parts))} {xml_escape(caveat)}.</desc>"
     )
     parts.append(
         "<style>"
@@ -283,7 +289,7 @@ def build_svg(
         )
     parts.append(
         f'<text x="40" y="{height - 26:.1f}" font-size="11" fill="{SECONDARY}">'
-        f'{xml_escape(caveat)}</text>'
+        f"{xml_escape(caveat)}</text>"
     )
 
     for tick in ticks:
@@ -294,7 +300,7 @@ def build_svg(
         parts.append(
             f'<text x="{px(tick):.1f}" y="{plot_y + plot_h + 18:.1f}" font-size="11" '
             f'fill="{SECONDARY}" text-anchor="middle" font-family="{mono_family}">'
-            f'{fmt_number(tick)}</text>'
+            f"{fmt_number(tick)}</text>"
         )
 
     for amount, label, dash in (
@@ -308,7 +314,7 @@ def build_svg(
         parts.append(
             f'<text x="{px(amount):.1f}" y="{plot_y - 32:.1f}" font-size="11" '
             f'fill="{INK}" text-anchor="middle">{xml_escape(label)} '
-            f'{fmt_measured(amount, precision)}</text>'
+            f"{fmt_measured(amount, precision)}</text>"
         )
 
     tips: List[str] = []
@@ -332,31 +338,38 @@ def build_svg(
         parts.append(
             f'<text x="{plot_x - 12:.1f}" y="{middle + 4:.1f}" font-size="12" '
             f'fill="{INK}" text-anchor="end" font-family="{mono_family}">'
-            f'{xml_escape(caption)}</text>'
+            f"{xml_escape(caption)}</text>"
         )
         parts.append(
             f'<text x="{right + 8 if amount >= 0 else left - 8:.1f}" y="{middle + 4:.1f}" '
             f'font-size="11" fill="{SECONDARY}" font-family="{mono_family}" '
             f'text-anchor="{"start" if amount >= 0 else "end"}">'
-            f'{"+" if amount > 0 else ""}{fmt_measured(amount, precision)}</text>'
+            f"{'+' if amount > 0 else ''}{fmt_measured(amount, precision)}</text>"
         )
         parts.append(
             f'<rect id="step-{index}" class="step hit" tabindex="0" role="img" '
             f'aria-label="{xml_escape(caption)}: {"+" if amount > 0 else ""}'
-            f'{fmt_measured(amount, precision)} {xml_escape(units)}, taking the output to '
+            f"{fmt_measured(amount, precision)} {xml_escape(units)}, taking the output to "
             f'{fmt_measured(finish, precision)}" x="{plot_x:.1f}" '
             f'y="{middle - row_h / 2:.1f}" width="{plot_w:.1f}" height="{row_h:.1f}" '
             f'fill="transparent"><title>{xml_escape(caption)}: '
-            f'{"+" if amount > 0 else ""}{fmt_measured(amount, precision)}</title></rect>'
+            f"{'+' if amount > 0 else ''}{fmt_measured(amount, precision)}</title></rect>"
         )
         tips.append(
             tooltip_bubble(
-                (left + right) / 2, middle,
-                [caption,
-                 f'{"+" if amount > 0 else ""}{fmt_measured(amount, precision)} {units}',
-                 f"output now {fmt_measured(finish, precision)}"],
-                canvas_w=width, canvas_h=height, ink=INK, secondary=SECONDARY,
-                border=GRIDLINE, elem_id=f"steptip-{index}",
+                (left + right) / 2,
+                middle,
+                [
+                    caption,
+                    f"{'+' if amount > 0 else ''}{fmt_measured(amount, precision)} {units}",
+                    f"output now {fmt_measured(finish, precision)}",
+                ],
+                canvas_w=width,
+                canvas_h=height,
+                ink=INK,
+                secondary=SECONDARY,
+                border=GRIDLINE,
+                elem_id=f"steptip-{index}",
             )
         )
 
@@ -438,12 +451,27 @@ def make_shap_waterfall(
     True
     """
     svg = build_svg(
-        data, title=title, subtitle=subtitle, width=width, height=height,
-        feature=feature, value=value, observed=observed, base_value=base_value,
-        top=top, units=units, link=link, base_label=base_label,
-        prediction_label=prediction_label, rest_label=rest_label, caveat=caveat,
-        unit_note=unit_note, finding=finding, mode=mode,
-        accessibility=accessibility, theme=theme,
+        data,
+        title=title,
+        subtitle=subtitle,
+        width=width,
+        height=height,
+        feature=feature,
+        value=value,
+        observed=observed,
+        base_value=base_value,
+        top=top,
+        units=units,
+        link=link,
+        base_label=base_label,
+        prediction_label=prediction_label,
+        rest_label=rest_label,
+        caveat=caveat,
+        unit_note=unit_note,
+        finding=finding,
+        mode=mode,
+        accessibility=accessibility,
+        theme=theme,
     )
     dest = Path(out) if out else svg_example_path(__file__, "shap-waterfall")
     return write_svg(dest, svg, theme=theme)
@@ -451,8 +479,12 @@ def make_shap_waterfall(
 
 def main() -> None:
     """CLI entry point: build the SVG and write it to disk."""
-    render_cli(__file__, "shap-waterfall", build_svg,
-               description="Take one prediction apart, feature by feature.")
+    render_cli(
+        __file__,
+        "shap-waterfall",
+        build_svg,
+        description="Take one prediction apart, feature by feature.",
+    )
 
 
 if __name__ == "__main__":

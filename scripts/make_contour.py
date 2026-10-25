@@ -123,10 +123,18 @@ def _marching_squares(
             top = (i + interpolate(tl, tr), float(j + 1))
             left = (float(i), j + interpolate(bl, tl))
             joins = {
-                1: [(left, bottom)], 2: [(bottom, right)], 3: [(left, right)],
-                4: [(right, top)], 6: [(bottom, top)], 7: [(left, top)],
-                8: [(top, left)], 9: [(top, bottom)], 11: [(top, right)],
-                12: [(right, left)], 13: [(right, bottom)], 14: [(bottom, left)],
+                1: [(left, bottom)],
+                2: [(bottom, right)],
+                3: [(left, right)],
+                4: [(right, top)],
+                6: [(bottom, top)],
+                7: [(left, top)],
+                8: [(top, left)],
+                9: [(top, bottom)],
+                11: [(top, right)],
+                12: [(right, left)],
+                13: [(right, bottom)],
+                14: [(bottom, left)],
             }
             if case in (5, 10):
                 # Saddle: the four corners alternate, so two lines cross this
@@ -212,8 +220,7 @@ def build_svg(
     flat = [value for line in grid for value in line]
     z_lo, z_hi = min(flat), max(flat)
     cuts = [
-        cut for cut in _geometric_levels(max(z_lo, z_hi / 1e3) or 1.0, z_hi, levels)
-        if cut <= z_hi
+        cut for cut in _geometric_levels(max(z_lo, z_hi / 1e3) or 1.0, z_hi, levels) if cut <= z_hi
     ]
 
     plot_x, plot_y = 70.0, 140.0
@@ -239,16 +246,21 @@ def build_svg(
 
     parts: List[str] = []
     parts.append(
-        svg_open(width, height, "contour-title", "contour-desc",
-                 font_family=chrome_stack_for_theme(theme))
+        svg_open(
+            width,
+            height,
+            "contour-title",
+            "contour-desc",
+            font_family=chrome_stack_for_theme(theme),
+        )
     )
     parts.append(f'<title id="contour-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="contour-desc">A contour plot of {xml_escape(value_label)} over a '
-        f'{nx} by {ny} grid, from {fmt_number(z_lo)} to {fmt_number(z_hi)}. '
-        f'{len(cuts)} iso-levels are drawn and labelled: '
-        f'{", ".join(fmt_number(c) for c in cuts)}. The fill is the same value in bands, '
-        f'dark where it is low and bright where it is high.</desc>'
+        f"{nx} by {ny} grid, from {fmt_number(z_lo)} to {fmt_number(z_hi)}. "
+        f"{len(cuts)} iso-levels are drawn and labelled: "
+        f"{', '.join(fmt_number(c) for c in cuts)}. The fill is the same value in bands, "
+        f"dark where it is low and bright where it is high.</desc>"
     )
     parts.append(f'<rect width="{width}" height="{height}" fill="{BG}"/>')
     parts.append(
@@ -257,11 +269,15 @@ def build_svg(
     )
     parts.append(
         f'<text x="{plot_x:.1f}" y="72" font-size="14" fill="{SECONDARY}">'
-        f'{xml_escape(subtitle)}</text>'
+        f"{xml_escape(subtitle)}</text>"
     )
-    said = summary if summary is not None else (
-        f"{nx} × {ny} grid · {len(cuts)} levels on a geometric sequence · "
-        f"{fmt_number(z_lo)} to {fmt_number(z_hi)}"
+    said = (
+        summary
+        if summary is not None
+        else (
+            f"{nx} × {ny} grid · {len(cuts)} levels on a geometric sequence · "
+            f"{fmt_number(z_lo)} to {fmt_number(z_hi)}"
+        )
     )
     parts.append(
         f'<text x="{plot_x:.1f}" y="98" font-size="12" fill="{SECONDARY}" '
@@ -300,8 +316,11 @@ def build_svg(
             # leave an anti-aliasing seam, and 135 of them read as hairline
             # stripes across a fill the reader is meant to see as continuous.
             raster_row_rects(
-                row_colours, plot_x, plot_y + plot_h - (jj + 1) * fine_h,
-                fine_w, fine_h + 0.5,
+                row_colours,
+                plot_x,
+                plot_y + plot_h - (jj + 1) * fine_h,
+                fine_w,
+                fine_h + 0.5,
             )
         )
 
@@ -318,8 +337,7 @@ def build_svg(
         # one fixed line colour is unreadable over half of any fill.
         ink = "#FFFFFF" if index < len(cuts) * 0.62 else INK
         parts.append(
-            f'<path d="{path}" fill="none" stroke="{ink}" stroke-width="1.1" '
-            f'opacity="0.78"/>'
+            f'<path d="{path}" fill="none" stroke="{ink}" stroke-width="1.1" opacity="0.78"/>'
         )
         # Where to put the number. Nearest-the-centre put every level's
         # label in the same place, so five of them piled up on one shoulder
@@ -358,7 +376,7 @@ def build_svg(
         parts.append(
             f'<text x="{px:.1f}" y="{plot_y + plot_h + 20:.1f}" font-size="11" '
             f'fill="{SECONDARY}" text-anchor="middle" font-family="{mono_family}">'
-            f'{fmt_number(xs[i])}</text>'
+            f"{fmt_number(xs[i])}</text>"
         )
     for j in range(0, ny, max(1, (ny - 1) // 5)):
         _, py = to_px(0, j)
@@ -372,7 +390,7 @@ def build_svg(
     )
     parts.append(
         f'<text x="{plot_x:.1f}" y="{plot_y - 12:.1f}" font-size="12" fill="{SECONDARY}">'
-        f'{xml_escape(y_label)}</text>'
+        f"{xml_escape(y_label)}</text>"
     )
 
     # ---- the band legend, each band labelled with the level that opens it ----
@@ -380,7 +398,7 @@ def build_svg(
     band_h = min(26.0, plot_h / (len(cuts) + 1))
     parts.append(
         f'<text x="{legend_x:.1f}" y="{plot_y - 12:.1f}" font-size="11" fill="{SECONDARY}">'
-        f'{xml_escape(value_label)}</text>'
+        f"{xml_escape(value_label)}</text>"
     )
     for index in range(len(cuts), -1, -1):
         top = plot_y + (len(cuts) - index) * band_h
@@ -392,7 +410,7 @@ def build_svg(
             parts.append(
                 f'<text x="{legend_x + 24:.1f}" y="{top + band_h + 4:.1f}" font-size="10" '
                 f'fill="{SECONDARY}" font-family="{mono_family}">'
-                f'{fmt_number(cuts[index - 1])}</text>'
+                f"{fmt_number(cuts[index - 1])}</text>"
             )
     parts.append(fullscreen_control(width, height, mode))
     parts.append("</svg>")
@@ -457,10 +475,22 @@ def make_contour(
     True
     """
     svg = build_svg(
-        data, title=title, subtitle=subtitle, width=width, height=height,
-        x=x, y=y, z=z, levels=levels, x_label=x_label, y_label=y_label,
-        value_label=value_label, summary=summary, mode=mode,
-        accessibility=accessibility, theme=theme,
+        data,
+        title=title,
+        subtitle=subtitle,
+        width=width,
+        height=height,
+        x=x,
+        y=y,
+        z=z,
+        levels=levels,
+        x_label=x_label,
+        y_label=y_label,
+        value_label=value_label,
+        summary=summary,
+        mode=mode,
+        accessibility=accessibility,
+        theme=theme,
     )
     dest = Path(out) if out else svg_example_path(__file__, "contour")
     return write_svg(dest, svg, theme=theme)

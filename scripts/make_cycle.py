@@ -81,11 +81,11 @@ _R_OUT: float = 300.0
 _R_IN: float = 188.0
 
 #: House-style inks.
-_INK: str = "#1D1D1F"      # primary text
-_SUBTLE: str = "#6E6E73"   # secondary text
-_GRID: str = "#E5E5EA"     # hub ring + guides
-_BG: str = "#FFFFFF"       # background
-_FOCUS: str = "#0A4DA0"    # focus-ring blue
+_INK: str = "#1D1D1F"  # primary text
+_SUBTLE: str = "#6E6E73"  # secondary text
+_GRID: str = "#E5E5EA"  # hub ring + guides
+_BG: str = "#FFFFFF"  # background
+_FOCUS: str = "#0A4DA0"  # focus-ring blue
 
 #: The bearing of the first phase's start: 0 = top (12 o'clock). The year
 #: begins at the top and sweeps clockwise, like a clock and like a calendar.
@@ -126,30 +126,65 @@ def _phases(accessibility: str = "universal") -> List[Dict[str, Any]]:
     # Season-evocative hues from the curated palette. Amber autumn, cool
     # winter, green spring, gold summer, earth-brown fallow.
     base = {
-        "semis": "#FF9500",       # Orange  — autumn sowing
-        "tallage": "#5AC8FA",     # Teal    — the long cold winter
-        "montaison": "#34C759",   # Green   — spring flush of growth
-        "epiaison": "#00C7BE",    # Mint    — heading & flowering
-        "remplissage": "#FFCC00", # Yellow  — grain ripening to gold
-        "moisson": "#FF3B30",     # Red     — the harvest fortnight
-        "interculture": "#A2845E",# Brown   — bare soil / cover crop
+        "semis": "#FF9500",  # Orange  — autumn sowing
+        "tallage": "#5AC8FA",  # Teal    — the long cold winter
+        "montaison": "#34C759",  # Green   — spring flush of growth
+        "epiaison": "#00C7BE",  # Mint    — heading & flowering
+        "remplissage": "#FFCC00",  # Yellow  — grain ripening to gold
+        "moisson": "#FF3B30",  # Red     — the harvest fortnight
+        "interculture": "#A2845E",  # Brown   — bare soil / cover crop
     }
     colors = leveled_colors(base, accessibility)
     return [
-        {"key": "semis", "label": "Sowing", "sub": "October", "months": 1.0,
-         "color": colors["semis"]},
-        {"key": "tallage", "label": "Tillering", "sub": "Nov–Feb", "months": 4.0,
-         "color": colors["tallage"]},
-        {"key": "montaison", "label": "Stem extension", "sub": "Mar–Apr", "months": 2.0,
-         "color": colors["montaison"]},
-        {"key": "epiaison", "label": "Heading & flowering", "sub": "May", "months": 1.0,
-         "color": colors["epiaison"]},
-        {"key": "remplissage", "label": "Grain filling", "sub": "June", "months": 1.0,
-         "color": colors["remplissage"]},
-        {"key": "moisson", "label": "Harvest", "sub": "July", "months": 1.0,
-         "color": colors["moisson"]},
-        {"key": "interculture", "label": "Bare soil & cover crop", "sub": "Aug–Sep",
-         "months": 2.0, "color": colors["interculture"]},
+        {
+            "key": "semis",
+            "label": "Sowing",
+            "sub": "October",
+            "months": 1.0,
+            "color": colors["semis"],
+        },
+        {
+            "key": "tallage",
+            "label": "Tillering",
+            "sub": "Nov–Feb",
+            "months": 4.0,
+            "color": colors["tallage"],
+        },
+        {
+            "key": "montaison",
+            "label": "Stem extension",
+            "sub": "Mar–Apr",
+            "months": 2.0,
+            "color": colors["montaison"],
+        },
+        {
+            "key": "epiaison",
+            "label": "Heading & flowering",
+            "sub": "May",
+            "months": 1.0,
+            "color": colors["epiaison"],
+        },
+        {
+            "key": "remplissage",
+            "label": "Grain filling",
+            "sub": "June",
+            "months": 1.0,
+            "color": colors["remplissage"],
+        },
+        {
+            "key": "moisson",
+            "label": "Harvest",
+            "sub": "July",
+            "months": 1.0,
+            "color": colors["moisson"],
+        },
+        {
+            "key": "interculture",
+            "label": "Bare soil & cover crop",
+            "sub": "Aug–Sep",
+            "months": 2.0,
+            "color": colors["interculture"],
+        },
     ]
 
 
@@ -177,9 +212,7 @@ def _polar(cx: float, cy: float, r: float, angle_deg: float) -> Tuple[float, flo
     return point_on_circle(cx, cy, r, theta)
 
 
-def _annular_sector(
-    cx: float, cy: float, r0: float, r1: float, a0: float, a1: float
-) -> str:
+def _annular_sector(cx: float, cy: float, r0: float, r1: float, a0: float, a1: float) -> str:
     """Build an SVG path for a filled annular sector (one phase's arc band).
 
     Parameters
@@ -253,8 +286,11 @@ DEMO_DATA: List[Dict[str, Any]] = [
 
 
 def build_svg(
-    mode: str = "self-contained", accessibility: str = "universal", theme: str = "corporate",
-    hub_label: str = "ONE FIELD", hub_title: str = "Winter wheat",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+    theme: str = "corporate",
+    hub_label: str = "ONE FIELD",
+    hub_title: str = "Winter wheat",
     title: Optional[str] = None,
 ) -> str:
     """Assemble the full cycle-wheel SVG document as a string.
@@ -303,10 +339,14 @@ def build_svg(
     parts: List[str] = []
 
     # ---- header + accessibility ----
-    parts.append(svg_open(_WIDTH, _HEIGHT, "cycle-title", "cycle-desc", font_family=chrome_stack_for_theme(theme)))
+    parts.append(
+        svg_open(
+            _WIDTH, _HEIGHT, "cycle-title", "cycle-desc", font_family=chrome_stack_for_theme(theme)
+        )
+    )
     parts.append(
         '<title id="cycle-title">The winter-wheat year: one field spends most '
-        'of its turn in the slow winter tillering stage</title>'
+        "of its turn in the slow winter tillering stage</title>"
     )
     peak = phases[peak_idx]
     desc = (
@@ -314,9 +354,7 @@ def build_svg(
         "one per growth stage, sweeps clockwise from the top; each arc's length "
         "is that stage's share of the twelve-month year, and a curved arrow "
         "inside the ring shows the loop's direction. The stages, in order, are "
-        + ", ".join(
-            f"{_xml(str(p['label']))} ({_xml(str(p['sub']))})" for p in phases
-        )
+        + ", ".join(f"{_xml(str(p['label']))} ({_xml(str(p['sub']))})" for p in phases)
         + f". The longest is {_xml(str(peak['label']))}, {float(peak['months']):.0f} "
         "months over winter; the reproductive stages of late spring are the "
         "thinnest, fastest arcs."
@@ -336,20 +374,22 @@ def build_svg(
             f"svg:has(.phase-{k}:hover) .phase-{k}, "
             f"svg:has(.phase-{k}:focus) .phase-{k} {{ opacity: 1; }}"
         )
-    style_rows.extend([
-        ".arc { cursor: pointer; }",
-        ".arc:focus { outline: none; }",
-        f".arc:focus {{ stroke: {_FOCUS}; stroke-width: 3; }}",
-        f".label-hit:focus {{ outline: 3px solid {_FOCUS}; outline-offset: 2px; }}",
-        ".tip { opacity: 0; pointer-events: none; transition: opacity .12s ease; }",
-        foreground_tip_css(len(phases)),
-        "@media (prefers-reduced-motion: reduce) { .tip { transition: none; } }",
-        # Marching-ants flow on the directional arrow, ON only when the reader
-        # has not asked for reduced motion. A raster export freezes frame 0.
-        "@media (prefers-reduced-motion: no-preference) {"
-        " .flow { animation: cycle-flow 2.4s linear infinite; } }",
-        "@keyframes cycle-flow { to { stroke-dashoffset: -28; } }",
-    ])
+    style_rows.extend(
+        [
+            ".arc { cursor: pointer; }",
+            ".arc:focus { outline: none; }",
+            f".arc:focus {{ stroke: {_FOCUS}; stroke-width: 3; }}",
+            f".label-hit:focus {{ outline: 3px solid {_FOCUS}; outline-offset: 2px; }}",
+            ".tip { opacity: 0; pointer-events: none; transition: opacity .12s ease; }",
+            foreground_tip_css(len(phases)),
+            "@media (prefers-reduced-motion: reduce) { .tip { transition: none; } }",
+            # Marching-ants flow on the directional arrow, ON only when the reader
+            # has not asked for reduced motion. A raster export freezes frame 0.
+            "@media (prefers-reduced-motion: no-preference) {"
+            " .flow { animation: cycle-flow 2.4s linear infinite; } }",
+            "@keyframes cycle-flow { to { stroke-dashoffset: -28; } }",
+        ]
+    )
     # OS-adaptive overrides (additive; every rule lives in an @media block, so
     # the default render is byte-for-byte unchanged). Under prefers-contrast the
     # arc fills deepen together to their high-contrast spacing (role="fill" only,
@@ -376,19 +416,19 @@ def build_svg(
     # ---- title + subtitle ----
     # The headline the figure writes about its own data, used only when
     # the caller supplies none.
-    title = title or 'A field is never idle: the winter-wheat year'
+    title = title or "A field is never idle: the winter-wheat year"
     parts.append(
         f'<text x="56" y="66" font-size="33" font-weight="700" '
         f'fill="{_INK}">{xml_escape(title)}</text>'
     )
     parts.append(
         f'<text x="56" y="100" font-size="18" fill="{_SUBTLE}">'
-        f'Share of the crop year each growth stage occupies &#183; sown in '
-        f'October, harvested the next July</text>'
+        f"Share of the crop year each growth stage occupies &#183; sown in "
+        f"October, harvested the next July</text>"
     )
 
     # ---- phase arcs (the ring) ----
-    parts.append('<g>')
+    parts.append("<g>")
     for i, p in enumerate(phases):
         k = str(p["key"])
         color = str(p["color"])
@@ -400,8 +440,8 @@ def build_svg(
         months = float(p["months"])
         month_word = "month" if months == 1 else "months"
         tip = (
-            f'{_xml(str(p["label"]))} &#183; {_xml(str(p["sub"]))} &#183; '
-            f'{months:.0f} {month_word} ({share:.0f}% of the year)'
+            f"{_xml(str(p['label']))} &#183; {_xml(str(p['sub']))} &#183; "
+            f"{months:.0f} {month_word} ({share:.0f}% of the year)"
         )
         parts.append(
             f'<g class="phase phase-{k}">'
@@ -432,14 +472,23 @@ def build_svg(
         # "~" rule this generator now uses does not have that problem.
         parts.append(
             tooltip_bubble(
-                mx, my + 22,
-                [str(p["label"]), f"{months:.0f} {month_word} ({share:.0f}% of the year)", str(p["sub"])],
-                canvas_w=_WIDTH, canvas_h=_HEIGHT, ink=_INK, secondary=_SUBTLE, border=_GRID,
+                mx,
+                my + 22,
+                [
+                    str(p["label"]),
+                    f"{months:.0f} {month_word} ({share:.0f}% of the year)",
+                    str(p["sub"]),
+                ],
+                canvas_w=_WIDTH,
+                canvas_h=_HEIGHT,
+                ink=_INK,
+                secondary=_SUBTLE,
+                border=_GRID,
                 elem_id=f"tip-{i}",
             )
         )
-        parts.append('</g>')
-    parts.append('</g>')
+        parts.append("</g>")
+    parts.append("</g>")
 
     # ---- rim labels: phase name + month span, radially outside each arc ----
     for i, p in enumerate(phases):
@@ -472,12 +521,12 @@ def build_svg(
             f'<text x="{lx:.1f}" y="{ly - 8:.1f}" font-size="18.5" '
             f'font-weight="{name_weight}" fill="{name_fill}" '
             f'text-anchor="{anchor}" dominant-baseline="middle">'
-            f'{_xml(str(p["label"]))}</text>'
+            f"{_xml(str(p['label']))}</text>"
             f'<text x="{lx:.1f}" y="{ly + 13:.1f}" font-size="14.5" '
             f'font-family="Roboto Mono, monospace" fill="{_SUBTLE}" '
             f'text-anchor="{anchor}" dominant-baseline="middle">'
-            f'{_xml(str(p["sub"]))}</text>'
-            f'</g></g>'
+            f"{_xml(str(p['sub']))}</text>"
+            f"</g></g>"
         )
         _ = ha  # side computed for anchor; retained for future dx nudging
 
@@ -575,7 +624,7 @@ def build_svg(
         )
 
     parts.append(fullscreen_control(_WIDTH, _HEIGHT, mode))
-    parts.append('</svg>')
+    parts.append("</svg>")
     return "\n".join(parts)
 
 
@@ -624,7 +673,14 @@ def make_cycle(
         Absolute path to the written SVG file.
     """
     _ = data, title  # accepted for dispatcher parity; see docstring
-    svg = build_svg(mode=mode, accessibility=accessibility, theme=theme, hub_label=hub_label, hub_title=hub_title, title=title or None)
+    svg = build_svg(
+        mode=mode,
+        accessibility=accessibility,
+        theme=theme,
+        hub_label=hub_label,
+        hub_title=hub_title,
+        title=title or None,
+    )
     dest = Path(out) if out else svg_example_path(__file__, "cycle")
     return write_svg(dest, svg, theme=theme)
 

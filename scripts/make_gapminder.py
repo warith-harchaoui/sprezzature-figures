@@ -41,10 +41,13 @@ LABELS_EN = {
     "subtitle": "Each bubble is a country with size for population and color for region",
     "x_axis": "GDP per capita ($, log scale) &#8594;",
     "y_axis": "Life expectancy (years) &#8594;",
-    "legend_region": "REGION", "legend_population": "POPULATION",
+    "legend_region": "REGION",
+    "legend_population": "POPULATION",
     "data_link": "Tribute to Hans ROSLING Data",
     "title_a11y": "Tribute to Hans ROSLING — Health and Wealth of Nations",
-    "pop_1b": "1 billion", "pop_250m": "250 million", "pop_50m": "50 million",
+    "pop_1b": "1 billion",
+    "pop_250m": "250 million",
+    "pop_50m": "50 million",
     "desc": (
         "An animated bubble chart in homage to Hans ROSLING, built from real data for all countries, "
         "one frame per year from 1950 to 2025. Each bubble is a country: horizontal is GDP per capita "
@@ -55,7 +58,8 @@ LABELS_EN = {
         "dissolve, then their successor states appear; divided nations (East/West Germany, North/South "
         "Vietnam and Yemen) show as two bubbles until they merge into one. Recent years are "
         "part-projected: life expectancy and population for 2024-2025 are UN medium-variant projections "
-        "and income for 2025 is a short trend extrapolation."),
+        "and income for 2025 is a short trend extrapolation."
+    ),
 }
 
 HERE = Path(__file__).resolve().parent
@@ -81,8 +85,11 @@ TOP_LABELS = 10
 # bubbles carry their country label — but no reader now loses the grouping to
 # a colour-vision deficiency.
 REGION_COLOR = {
-    "Asia": "#0072B2", "Africa": "#E69F00", "Americas": "#009E73",
-    "Europe": "#CC79A7", "Oceania": "#D55E00",
+    "Asia": "#0072B2",
+    "Africa": "#E69F00",
+    "Americas": "#009E73",
+    "Europe": "#CC79A7",
+    "Oceania": "#D55E00",
 }
 
 # Period-accurate names: a country's label reads the name in use that year, so
@@ -95,11 +102,17 @@ NAME_HISTORY = {
     "Sri Lanka": [(1950, 1971, "Ceylon"), (1972, 2025, "Sri Lanka")],
     "Tanzania": [(1950, 1963, "Tanganyika"), (1964, 2025, "Tanzania")],
     "Zimbabwe": [(1950, 1979, "Rhodesia"), (1980, 2025, "Zimbabwe")],
-    "Bangladesh": [(1950, 1954, "East Bengal"), (1955, 1970, "East Pakistan"),
-                   (1971, 2025, "Bangladesh")],
+    "Bangladesh": [
+        (1950, 1954, "East Bengal"),
+        (1955, 1970, "East Pakistan"),
+        (1971, 2025, "Bangladesh"),
+    ],
     "Democratic Republic of Congo": [
-        (1950, 1959, "Belgian Congo"), (1960, 1970, "Congo-Kinshasa"),
-        (1971, 1996, "Zaire"), (1997, 2025, "DR Congo")],
+        (1950, 1959, "Belgian Congo"),
+        (1960, 1970, "Congo-Kinshasa"),
+        (1971, 1996, "Zaire"),
+        (1997, 2025, "DR Congo"),
+    ],
 }
 
 # ------------------------------------------------------------------
@@ -113,49 +126,110 @@ NAME_HISTORY = {
 # without the real dataset on disk. Values are illustrative order-of-
 # magnitude figures, not a transcription of the real series.
 # ------------------------------------------------------------------
-DEMO_DATA: list[dict[str, Any]] = [
-    {"country": "United States", "continent": "Americas", "year": year, "gdpPercap": gdp, "lifeExp": life, "pop": pop}
-    for year, gdp, life, pop in [
-        (1950, 14000, 68.0, 152_000_000), (1980, 28000, 74.0, 227_000_000),
-        (2000, 42000, 77.0, 281_000_000), (2025, 70000, 79.0, 335_000_000),
+DEMO_DATA: list[dict[str, Any]] = (
+    [
+        {
+            "country": "United States",
+            "continent": "Americas",
+            "year": year,
+            "gdpPercap": gdp,
+            "lifeExp": life,
+            "pop": pop,
+        }
+        for year, gdp, life, pop in [
+            (1950, 14000, 68.0, 152_000_000),
+            (1980, 28000, 74.0, 227_000_000),
+            (2000, 42000, 77.0, 281_000_000),
+            (2025, 70000, 79.0, 335_000_000),
+        ]
     ]
-] + [
-    {"country": "China", "continent": "Asia", "year": year, "gdpPercap": gdp, "lifeExp": life, "pop": pop}
-    for year, gdp, life, pop in [
-        (1950, 600, 43.0, 550_000_000), (1980, 1000, 65.0, 985_000_000),
-        (2000, 3000, 71.0, 1_267_000_000), (2025, 14000, 78.0, 1_410_000_000),
+    + [
+        {
+            "country": "China",
+            "continent": "Asia",
+            "year": year,
+            "gdpPercap": gdp,
+            "lifeExp": life,
+            "pop": pop,
+        }
+        for year, gdp, life, pop in [
+            (1950, 600, 43.0, 550_000_000),
+            (1980, 1000, 65.0, 985_000_000),
+            (2000, 3000, 71.0, 1_267_000_000),
+            (2025, 14000, 78.0, 1_410_000_000),
+        ]
     ]
-] + [
-    {"country": "Nigeria", "continent": "Africa", "year": year, "gdpPercap": gdp, "lifeExp": life, "pop": pop}
-    for year, gdp, life, pop in [
-        (1950, 900, 36.0, 38_000_000), (1980, 1800, 46.0, 73_000_000),
-        (2000, 1200, 46.0, 123_000_000), (2025, 2300, 55.0, 220_000_000),
+    + [
+        {
+            "country": "Nigeria",
+            "continent": "Africa",
+            "year": year,
+            "gdpPercap": gdp,
+            "lifeExp": life,
+            "pop": pop,
+        }
+        for year, gdp, life, pop in [
+            (1950, 900, 36.0, 38_000_000),
+            (1980, 1800, 46.0, 73_000_000),
+            (2000, 1200, 46.0, 123_000_000),
+            (2025, 2300, 55.0, 220_000_000),
+        ]
     ]
-] + [
-    {"country": "Germany", "continent": "Europe", "year": year, "gdpPercap": gdp, "lifeExp": life, "pop": pop}
-    for year, gdp, life, pop in [
-        (1950, 4000, 67.0, 68_000_000), (1980, 20000, 73.0, 78_000_000),
-        (2000, 32000, 78.0, 82_000_000), (2025, 55000, 81.0, 84_000_000),
+    + [
+        {
+            "country": "Germany",
+            "continent": "Europe",
+            "year": year,
+            "gdpPercap": gdp,
+            "lifeExp": life,
+            "pop": pop,
+        }
+        for year, gdp, life, pop in [
+            (1950, 4000, 67.0, 68_000_000),
+            (1980, 20000, 73.0, 78_000_000),
+            (2000, 32000, 78.0, 82_000_000),
+            (2025, 55000, 81.0, 84_000_000),
+        ]
     ]
-] + [
-    {"country": "Brazil", "continent": "Americas", "year": year, "gdpPercap": gdp, "lifeExp": life, "pop": pop}
-    for year, gdp, life, pop in [
-        (1950, 1500, 46.0, 54_000_000), (1980, 5000, 63.0, 121_000_000),
-        (2000, 7500, 70.0, 174_000_000), (2025, 12000, 76.0, 216_000_000),
+    + [
+        {
+            "country": "Brazil",
+            "continent": "Americas",
+            "year": year,
+            "gdpPercap": gdp,
+            "lifeExp": life,
+            "pop": pop,
+        }
+        for year, gdp, life, pop in [
+            (1950, 1500, 46.0, 54_000_000),
+            (1980, 5000, 63.0, 121_000_000),
+            (2000, 7500, 70.0, 174_000_000),
+            (2025, 12000, 76.0, 216_000_000),
+        ]
     ]
-] + [
-    {"country": "India", "continent": "Asia", "year": year, "gdpPercap": gdp, "lifeExp": life, "pop": pop}
-    for year, gdp, life, pop in [
-        (1950, 650, 36.0, 376_000_000), (1980, 900, 54.0, 699_000_000),
-        (2000, 1700, 62.0, 1_059_000_000), (2025, 8000, 70.0, 1_428_000_000),
+    + [
+        {
+            "country": "India",
+            "continent": "Asia",
+            "year": year,
+            "gdpPercap": gdp,
+            "lifeExp": life,
+            "pop": pop,
+        }
+        for year, gdp, life, pop in [
+            (1950, 650, 36.0, 376_000_000),
+            (1980, 900, 54.0, 699_000_000),
+            (2000, 1700, 62.0, 1_059_000_000),
+            (2025, 8000, 70.0, 1_428_000_000),
+        ]
     ]
-]
+)
 
 W, H = 1020, 520
-X0, X1 = 100, 710       # plot x range (income, log; 3 decades $100-$100k); wide right margin = legend
-Y0, Y1 = 448, 60        # plot y range (life expectancy; y is inverted)
+X0, X1 = 100, 710  # plot x range (income, log; 3 decades $100-$100k); wide right margin = legend
+Y0, Y1 = 448, 60  # plot y range (life expectancy; y is inverted)
 R_MIN, R_MAX = 2.6, 46.0
-SEC_PER_YEAR = 1        # pacing: one year of the sweep lasts one second
+SEC_PER_YEAR = 1  # pacing: one year of the sweep lasts one second
 
 
 # Player engine embedded in the SVG. It takes over the SMIL timeline (pause +
@@ -236,9 +310,15 @@ def load(rows: "list[dict[str, Any]] | None" = None) -> tuple[list[int], dict[st
     for r in rows:
         if picked and r["country"] not in picked:
             continue
-        c = by.setdefault(r["country"], {"continent": r["continent"], "gdp": {}, "life": {}, "pop": {}})
+        c = by.setdefault(
+            r["country"], {"continent": r["continent"], "gdp": {}, "life": {}, "pop": {}}
+        )
         y = int(r["year"])
-        c["gdp"][y], c["life"][y], c["pop"][y] = float(r["gdpPercap"]), float(r["lifeExp"]), float(r["pop"])
+        c["gdp"][y], c["life"][y], c["pop"][y] = (
+            float(r["gdpPercap"]),
+            float(r["lifeExp"]),
+            float(r["pop"]),
+        )
     out: dict[str, dict] = {}
     for name, c in by.items():
         present = sorted(c["gdp"])
@@ -247,9 +327,14 @@ def load(rows: "list[dict[str, Any]] | None" = None) -> tuple[list[int], dict[st
         def edge(s: dict[int, float], lo: int = lo, hi: int = hi) -> list[float]:
             return [s[y] if y in s else s[lo] if y < lo else s[hi] for y in years]
 
-        out[name] = {"continent": c["continent"], "gdp": edge(c["gdp"]),
-                     "life": edge(c["life"]), "pop": edge(c["pop"]),
-                     "appear": lo, "disappear": hi}
+        out[name] = {
+            "continent": c["continent"],
+            "gdp": edge(c["gdp"]),
+            "life": edge(c["life"]),
+            "pop": edge(c["pop"]),
+            "appear": lo,
+            "disappear": hi,
+        }
     return years, out
 
 
@@ -315,27 +400,27 @@ def main(
     out_path = Path(out) if out else (OUT if not fr else OUT.with_suffix(".fr.svg"))
     lab = LABELS_FR if fr else LABELS_EN
 
-    def tc(name: str) -> str:                       # translate a country label
+    def tc(name: str) -> str:  # translate a country label
         return COUNTRIES_FR.get(name, name) if fr else name
 
-    def tr(region: str) -> str:                     # translate a region label
+    def tr(region: str) -> str:  # translate a region label
         return REGIONS_FR.get(region, region) if fr else region
 
-    def th(disp: str) -> str:                        # translate a historical-name label
+    def th(disp: str) -> str:  # translate a historical-name label
         return HISTORY_FR.get(disp, disp) if fr else disp
 
     years, data = load(rows)
     n = len(years)
     dur_s = (int(years[-1]) - int(years[0])) * SEC_PER_YEAR
-    dur = f"{dur_s}s"                                              # 1 year = 1 s
+    dur = f"{dur_s}s"  # 1 year = 1 s
     keytimes = ";".join(f"{i / (n - 1):.4f}" for i in range(n))
 
     pop_max = max(p for d in data.values() for p in d["pop"])
     glo, ghi = 300, 200000  # fixed income domain: $300 ... $200k
-    llo, lhi = 8, 92        # fixed life-expectancy domain so the 10..90 ticks all show
+    llo, lhi = 8, 92  # fixed life-expectancy domain so the 10..90 ticks all show
 
     def sx(g: float) -> float:
-        g = min(max(g, glo), ghi)   # clamp the few outliers to the axis ends
+        g = min(max(g, glo), ghi)  # clamp the few outliers to the axis ends
         t = (math.log10(g) - math.log10(glo)) / (math.log10(ghi) - math.log10(glo))
         return X0 + t * (X1 - X0)
 
@@ -362,8 +447,8 @@ def main(
         # one: a screen-reader user hearing a different title from the one
         # on screen is being told about a different figure.
         f'<title id="gm-t">'
-        f'{_xml(title) if title is not None else lab["title_a11y"]}'
-        f', {years[0]} to {years[-1]}</title>',
+        f"{_xml(title) if title is not None else lab['title_a11y']}"
+        f", {years[0]} to {years[-1]}</title>",
         f'<desc id="gm-d">{lab["desc"]}</desc>',
         f'<rect width="{W}" height="{H}" fill="#FFFFFF"/>',
         # Hover any bubble (when the SVG is live, e.g. embedded via <object>) to
@@ -378,11 +463,11 @@ def main(
         # so the ~4-colour system palette cannot preserve the five-way encoding.
         # Each region instead becomes a distinct Canvas/CanvasText pattern (see
         # ``fc_style`` / ``fc_defs``), keyed on the shared ``.rg-<region>`` class.
-        '<style>.gm-name{opacity:0;pointer-events:none;transition:opacity .12s ease}'
-        '.gm-b:hover .gm-name,.gm-b:focus-within .gm-name{opacity:1}'
-        '.gm-b:hover circle{stroke-width:2.4}'
-        '.gm-b.gm-follow .gm-name{opacity:1}'
-        '.gm-b.gm-follow circle{stroke:#1D1D1F;stroke-width:3}'
+        "<style>.gm-name{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        ".gm-b:hover .gm-name,.gm-b:focus-within .gm-name{opacity:1}"
+        ".gm-b:hover circle{stroke-width:2.4}"
+        ".gm-b.gm-follow .gm-name{opacity:1}"
+        ".gm-b.gm-follow circle{stroke:#1D1D1F;stroke-width:3}"
         + os_adaptive_style(
             {f".rg-{r.lower()}": REGION_COLOR[r] for r in REGION_COLOR},
             role="both",
@@ -391,9 +476,9 @@ def main(
         # Additive dark mode: flip paper + the two ink tiers, and lift the
         # follow-ring stroke (dark ink) to the light ink so it stays visible.
         + os_dark_style(extra=".gm-b.gm-follow circle{stroke:#F2F2F7;}")
-        + '</style>',
+        + "</style>",
         # Forced-colors pattern tiles (inert unless forced-colors is active).
-        '<defs>' + fc_defs + '</defs>',
+        "<defs>" + fc_defs + "</defs>",
     ]
 
     # Big faint year counter — every year in the series (+1, not decades). Each year
@@ -408,47 +493,65 @@ def main(
             f'<text x="{(X0 + X1) / 2:.0f}" y="{(Y0 + Y1) / 2 + 48:.0f}" text-anchor="middle" '
             f'font-size="150" font-weight="700" fill="#1D1D1F" opacity="0">{y0 + k}'
             f'<animate attributeName="opacity" values="{vals}" keyTimes="{ykt}" '
-            f'dur="{dur}" repeatCount="indefinite"/></text>')
+            f'dur="{dur}" repeatCount="indefinite"/></text>'
+        )
 
     # Axes + gridlines.
     svg.append(f'<line x1="{X0}" y1="{Y0}" x2="{X1}" y2="{Y0}" stroke="#1D1D1F" stroke-width="1"/>')
     svg.append(f'<line x1="{X0}" y1="{Y0}" x2="{X0}" y2="{Y1}" stroke="#1D1D1F" stroke-width="1"/>')
-    for gdp in (300, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000, 200000):   # $300 .. $200k
+    for gdp in (300, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000, 200000):  # $300 .. $200k
         if not (glo <= gdp <= ghi):
             continue
         x = sx(gdp)
-        svg.append(f'<line x1="{x:.1f}" y1="{Y1}" x2="{x:.1f}" y2="{Y0}" stroke="#EFEFF4" stroke-width="1"/>')
-        svg.append(f'<text x="{x:.1f}" y="{Y0 + 18:.0f}" text-anchor="middle" font-size="12" fill="#6E6E73">{money(gdp)}</text>')
-    for le in range(10, 100, 10):        # 10, 20, ... 90
+        svg.append(
+            f'<line x1="{x:.1f}" y1="{Y1}" x2="{x:.1f}" y2="{Y0}" stroke="#EFEFF4" stroke-width="1"/>'
+        )
+        svg.append(
+            f'<text x="{x:.1f}" y="{Y0 + 18:.0f}" text-anchor="middle" font-size="12" fill="#6E6E73">{money(gdp)}</text>'
+        )
+    for le in range(10, 100, 10):  # 10, 20, ... 90
         if not (llo <= le <= lhi):
             continue
         y = sy(le)
-        svg.append(f'<line x1="{X0}" y1="{y:.1f}" x2="{X1}" y2="{y:.1f}" stroke="#EFEFF4" stroke-width="1"/>')
-        svg.append(f'<text x="{X0 - 8:.0f}" y="{y + 4:.1f}" text-anchor="end" font-size="12" fill="#6E6E73">{le}</text>')
-    svg.append(f'<text x="{(X0 + X1) / 2:.0f}" y="{Y0 + 48:.0f}" text-anchor="middle" font-size="13" fill="#1D1D1F">{lab["x_axis"]}</text>')
-    svg.append(f'<text x="20" y="{(Y0 + Y1) / 2:.0f}" font-size="13" fill="#1D1D1F" transform="rotate(-90 20 {(Y0 + Y1) / 2:.0f})" text-anchor="middle">{lab["y_axis"]}</text>')
+        svg.append(
+            f'<line x1="{X0}" y1="{y:.1f}" x2="{X1}" y2="{y:.1f}" stroke="#EFEFF4" stroke-width="1"/>'
+        )
+        svg.append(
+            f'<text x="{X0 - 8:.0f}" y="{y + 4:.1f}" text-anchor="end" font-size="12" fill="#6E6E73">{le}</text>'
+        )
+    svg.append(
+        f'<text x="{(X0 + X1) / 2:.0f}" y="{Y0 + 48:.0f}" text-anchor="middle" font-size="13" fill="#1D1D1F">{lab["x_axis"]}</text>'
+    )
+    svg.append(
+        f'<text x="20" y="{(Y0 + Y1) / 2:.0f}" font-size="13" fill="#1D1D1F" transform="rotate(-90 20 {(Y0 + Y1) / 2:.0f})" text-anchor="middle">{lab["y_axis"]}</text>'
+    )
 
     # Title (linked to Rosling's video) + subtitle + a link to the data we provide.
     # The default headline links to Rosling's talk, because the default
     # figure *is* the tribute. A caller's own title is their sentence, not
     # a link to somebody else's video, so the override drops the anchor.
     if title is None:
-        svg.append('<text x="20" y="24" font-size="15" font-weight="700" fill="#1D1D1F">'
-                   '<a href="https://www.youtube.com/watch?v=hVimVzgtD6w" target="_blank">'
-                   f'<tspan fill="#007AFF" text-decoration="underline">{lab["title_link"]}</tspan></a>'
-                   f'{lab["title_rest"]}</text>')
+        svg.append(
+            '<text x="20" y="24" font-size="15" font-weight="700" fill="#1D1D1F">'
+            '<a href="https://www.youtube.com/watch?v=hVimVzgtD6w" target="_blank">'
+            f'<tspan fill="#007AFF" text-decoration="underline">{lab["title_link"]}</tspan></a>'
+            f"{lab['title_rest']}</text>"
+        )
     else:
-        svg.append('<text x="20" y="24" font-size="15" font-weight="700" '
-                   f'fill="#1D1D1F">{_xml(title)}</text>')
+        svg.append(
+            '<text x="20" y="24" font-size="15" font-weight="700" '
+            f'fill="#1D1D1F">{_xml(title)}</text>'
+        )
     svg.append(
         '<text x="20" y="40" font-size="11" fill="#6E6E73">'
-        f'{_xml(subtitle if subtitle is not None else lab["subtitle"])}</text>'
+        f"{_xml(subtitle if subtitle is not None else lab['subtitle'])}</text>"
     )
     csv_name = "tribute-hans-rosling-1950-2025" + (".fr.csv" if fr else ".csv")
     svg.append(
         f'<a href="../../data/{csv_name}" target="_blank">'
         f'<text x="20" y="{H - 8}" text-anchor="start" font-size="10" fill="#007AFF" '
-        f'text-decoration="underline">{lab["data_link"]}</text></a>')
+        f'text-decoration="underline">{lab["data_link"]}</text></a>'
+    )
 
     order = sorted(data.items(), key=lambda kv: -max(kv[1]["pop"]))
     y0i, y1i = years[0], years[-1]
@@ -475,7 +578,9 @@ def main(
     # fades out or in via a discrete opacity window at exactly the right year.
     for name, d in order:
         col = region_color.get(d["continent"], "#8E8E93")
-        pts = ";".join(f"{sx(g):.1f},{sy(le):.1f}" for g, le in zip(d["gdp"], d["life"], strict=True))
+        pts = ";".join(
+            f"{sx(g):.1f},{sy(le):.1f}" for g, le in zip(d["gdp"], d["life"], strict=True)
+        )
         rs = ";".join(f"{sr(p):.1f}" for p in d["pop"])
         lys = ";".join(f"{-(sr(p) + 3):.1f}" for p in d["pop"])
         bx, by, br = sx(d["gdp"][0]), sy(d["life"][0]), sr(d["pop"][0])
@@ -487,20 +592,21 @@ def main(
             f'keyTimes="{keytimes}" dur="{dur}" repeatCount="indefinite"/>'
             f'<circle class="rg-{str(d["continent"]).lower()}" r="{br:.1f}" '
             f'fill="{col}" fill-opacity="0.55" stroke="{col}" stroke-width="1.1">'
-            f'<title>{tc(name)} ({tr(d["continent"])})</title>'
+            f"<title>{tc(name)} ({tr(d['continent'])})</title>"
             f'<animate attributeName="r" values="{rs}" keyTimes="{keytimes}" dur="{dur}" repeatCount="indefinite"/>'
-            f'</circle>'
+            f"</circle>"
             f'<text class="gm-name" y="{-(br + 3):.1f}" text-anchor="middle" font-size="10" '
             f'font-weight="600" fill="#1D1D1F" stroke="#FFFFFF" stroke-width="2.4" paint-order="stroke">{tc(name)}'
             f'<animate attributeName="y" values="{lys}" keyTimes="{keytimes}" dur="{dur}" repeatCount="indefinite"/>'
-            f'</text>',
+            f"</text>",
         ]
         wop = exists_op(d)
         if wop is not None:
             parts.append(
                 f'<animate attributeName="opacity" values="{wop}" keyTimes="{keytimes}" '
-                f'calcMode="discrete" dur="{dur}" repeatCount="indefinite"/>')
-        parts.append('</g>')
+                f'calcMode="discrete" dur="{dur}" repeatCount="indefinite"/>'
+            )
+        parts.append("</g>")
         svg.append("".join(parts))
 
     # Following name labels for the current biggest bubbles. Each entity is emitted
@@ -514,56 +620,81 @@ def main(
             f'<animate attributeName="x" values="{lxs}" keyTimes="{keytimes}" dur="{dur}" repeatCount="indefinite"/>'
             f'<animate attributeName="y" values="{lys}" keyTimes="{keytimes}" dur="{dur}" repeatCount="indefinite"/>'
             f'<animate attributeName="opacity" values="{opacity}" keyTimes="{keytimes}" '
-            f'calcMode="discrete" dur="{dur}" repeatCount="indefinite"/></text>')
+            f'calcMode="discrete" dur="{dur}" repeatCount="indefinite"/></text>'
+        )
 
     for name, d in order:
         lxs = ";".join(f"{sx(g):.1f}" for g in d["gdp"])
-        lys = ";".join(f"{sy(le) - sr(p) - 3:.1f}" for le, p in zip(d["life"], d["pop"], strict=True))
+        lys = ";".join(
+            f"{sy(le) - sr(p) - 3:.1f}" for le, p in zip(d["life"], d["pop"], strict=True)
+        )
         lx0, ly0 = sx(d["gdp"][0]), sy(d["life"][0]) - sr(d["pop"][0]) - 3
         for start, end, disp in NAME_HISTORY.get(name, [(y0i, y1i, name)]):
-            op = ";".join("1" if (label_on[name][i] and start <= years[i] <= end) else "0" for i in range(n))
+            op = ";".join(
+                "1" if (label_on[name][i] and start <= years[i] <= end) else "0" for i in range(n)
+            )
             if "1" in op:
                 shown = th(disp) if name in NAME_HISTORY else tc(disp)
                 svg.append(label(shown, lx0, ly0, lxs, lys, op))
 
     # Region legend, out in the right margin (clear of the plot).
     present = [r for r in region_color if any(d["continent"] == r for d in data.values())]
-    lx, ly = X1 + 78, Y1 + 6        # pushed well right, clear of the rich bubbles
-    svg.append(f'<text x="{lx - 6}" y="{ly - 12}" font-size="10" font-weight="700" fill="#6E6E73" letter-spacing="0.5">{lab["legend_region"]}</text>')
+    lx, ly = X1 + 78, Y1 + 6  # pushed well right, clear of the rich bubbles
+    svg.append(
+        f'<text x="{lx - 6}" y="{ly - 12}" font-size="10" font-weight="700" fill="#6E6E73" letter-spacing="0.5">{lab["legend_region"]}</text>'
+    )
     for i, region in enumerate(present):
         yy = ly + i * 18
         col = region_color[region]
-        svg.append(f'<circle class="rg-{region.lower()}" cx="{lx}" cy="{yy}" r="6" fill="{col}" fill-opacity="0.6" stroke="{col}"/>')
-        svg.append(f'<text x="{lx + 14}" y="{yy + 4}" font-size="12" fill="#1D1D1F">{tr(region)}</text>')
+        svg.append(
+            f'<circle class="rg-{region.lower()}" cx="{lx}" cy="{yy}" r="6" fill="{col}" fill-opacity="0.6" stroke="{col}"/>'
+        )
+        svg.append(
+            f'<text x="{lx + 14}" y="{yy + 4}" font-size="12" fill="#1D1D1F">{tr(region)}</text>'
+        )
 
     # Population-size legend: nested grey disks on a common baseline (same area
     # scale as the bubbles), with a leader line + value for each reference size.
-    refs = [(1_000_000_000, lab["pop_1b"]), (250_000_000, lab["pop_250m"]), (50_000_000, lab["pop_50m"])]
+    refs = [
+        (1_000_000_000, lab["pop_1b"]),
+        (250_000_000, lab["pop_250m"]),
+        (50_000_000, lab["pop_50m"]),
+    ]
     refs = [(p, txt) for p, txt in refs if p <= pop_max]
     scx = lx + 4
     rmax = sr(refs[0][0])
     base = ly + len(present) * 18 + 30 + 2 * rmax
-    svg.append(f'<text x="{lx - 6}" y="{base - 2 * rmax - 14:.0f}" font-size="10" font-weight="700" fill="#6E6E73" letter-spacing="0.5">{lab["legend_population"]}</text>')
+    svg.append(
+        f'<text x="{lx - 6}" y="{base - 2 * rmax - 14:.0f}" font-size="10" font-weight="700" fill="#6E6E73" letter-spacing="0.5">{lab["legend_population"]}</text>'
+    )
     for p, txt in refs:
         r = sr(p)
         cy = base - r
-        svg.append(f'<circle cx="{scx:.1f}" cy="{cy:.1f}" r="{r:.1f}" fill="none" stroke="#AEAEB2" stroke-width="1"/>')
+        svg.append(
+            f'<circle cx="{scx:.1f}" cy="{cy:.1f}" r="{r:.1f}" fill="none" stroke="#AEAEB2" stroke-width="1"/>'
+        )
         top = cy - r
-        svg.append(f'<line x1="{scx:.1f}" y1="{top:.1f}" x2="{scx + rmax + 10:.1f}" y2="{top:.1f}" stroke="#C7C7CC" stroke-width="0.7"/>')
-        svg.append(f'<text x="{scx + rmax + 13:.1f}" y="{top + 3.5:.1f}" font-size="10" fill="#6E6E73">{txt}</text>')
+        svg.append(
+            f'<line x1="{scx:.1f}" y1="{top:.1f}" x2="{scx + rmax + 10:.1f}" y2="{top:.1f}" stroke="#C7C7CC" stroke-width="0.7"/>'
+        )
+        svg.append(
+            f'<text x="{scx + rmax + 13:.1f}" y="{top + 3.5:.1f}" font-size="10" fill="#6E6E73">{txt}</text>'
+        )
 
     # Player + fullscreen pan/zoom, embedded so it works over http and file://.
-    consts = (f'var X0={X0},X1={X1},Y0={Y0},Y1={Y1},GLO={glo},GHI={ghi},'
-              f'LLO={llo},LHI={lhi},RMIN={R_MIN},RMAX={R_MAX},POPMAX={pop_max:.0f},'
-              f'Y0i={years[0]},Y1i={years[-1]},DUR={dur_s};')
-    svg.append('<script type="text/javascript"><![CDATA[' + consts + PLAYER_JS + ']]></script>')
+    consts = (
+        f"var X0={X0},X1={X1},Y0={Y0},Y1={Y1},GLO={glo},GHI={ghi},"
+        f"LLO={llo},LHI={lhi},RMIN={R_MIN},RMAX={R_MAX},POPMAX={pop_max:.0f},"
+        f"Y0i={years[0]},Y1i={years[-1]},DUR={dur_s};"
+    )
+    svg.append('<script type="text/javascript"><![CDATA[' + consts + PLAYER_JS + "]]></script>")
 
     # Page-embedded via <object>; default mode 'external' emits no button
     # (the page provides fullscreen). Pass mode='self-contained' for standalone.
     _fc = fullscreen_control(W, H, mode)
     if _fc:
         svg.append(_fc)
-    svg.append('</svg>')
+    svg.append("</svg>")
     print(f"{len(data)} entities, {n} snapshots ({lang})")
     return write_svg(out_path, "\n".join(svg) + "\n", theme=theme)
 
@@ -615,8 +746,14 @@ def make_gapminder(
     """
     rows = data if data else DEMO_DATA
     return main(
-        lang, mode=mode, accessibility=accessibility, rows=rows, out=out,
-        title=title, subtitle=subtitle, theme=theme,
+        lang,
+        mode=mode,
+        accessibility=accessibility,
+        rows=rows,
+        out=out,
+        title=title,
+        subtitle=subtitle,
+        theme=theme,
     )
 
 
@@ -629,9 +766,16 @@ def write_fr_csv() -> None:
         w = csv.writer(fh)
         w.writerow(["pays", "annee", "region", "revenuParPersonne", "esperanceDeVie", "population"])
         for r in rows:
-            w.writerow([COUNTRIES_FR.get(r["country"], r["country"]), r["year"],
-                        REGIONS_FR.get(r["continent"], r["continent"]),
-                        r["gdpPercap"], r["lifeExp"], r["pop"]])
+            w.writerow(
+                [
+                    COUNTRIES_FR.get(r["country"], r["country"]),
+                    r["year"],
+                    REGIONS_FR.get(r["continent"], r["continent"]),
+                    r["gdpPercap"],
+                    r["lifeExp"],
+                    r["pop"],
+                ]
+            )
     print(f"wrote {dst}")
 
 
@@ -639,14 +783,25 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(description=__doc__.strip().splitlines()[0])
-    parser.add_argument("--en-only", action="store_true",
-                        help="build only the English SVG (skip the French pair + CSV)")
     parser.add_argument(
-        "--accessibility", default="universal",
-        choices=["universal", "high-contrast", "monochrome",
-                 "deuteranopia", "protanopia", "tritanopia"],
+        "--en-only",
+        action="store_true",
+        help="build only the English SVG (skip the French pair + CSV)",
+    )
+    parser.add_argument(
+        "--accessibility",
+        default="universal",
+        choices=[
+            "universal",
+            "high-contrast",
+            "monochrome",
+            "deuteranopia",
+            "protanopia",
+            "tritanopia",
+        ],
         help="colour-vision level for the region palette (default: universal, "
-             "the identity that keeps the shipped SVG byte-identical)")
+        "the identity that keeps the shipped SVG byte-identical)",
+    )
     parser.add_argument(
         "--theme",
         choices=("corporate", "academic"),
@@ -657,9 +812,7 @@ if __name__ == "__main__":
 
     # Prefer the real vendored dataset when present; otherwise fall back to
     # the small synthetic DEMO_DATA so the script still runs end to end.
-    _rows = (
-        list(csv.DictReader(CSV.open(encoding="utf-8"))) if CSV.exists() else None
-    )
+    _rows = list(csv.DictReader(CSV.open(encoding="utf-8"))) if CSV.exists() else None
     if _rows is None:
         print(f"note: {CSV} not found; rendering from the synthetic DEMO_DATA")
 

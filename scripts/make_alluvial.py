@@ -241,12 +241,10 @@ def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
     title: str = "Where new sign-ups end up after 90 days",
     subtitle: str = (
-        "Referral drives the most retention; free-trial users churn far more "
-        "than paying ones"
+        "Referral drives the most retention; free-trial users churn far more than paying ones"
     ),
     note: str = (
-        "Illustrative cohort of 1,000 sign-ups · ribbon width = number of "
-        "users on that path"
+        "Illustrative cohort of 1,000 sign-ups · ribbon width = number of users on that path"
     ),
     mode: str = "self-contained",
     accessibility: str = "universal",
@@ -303,22 +301,21 @@ def build_svg(
     # of this function works with.
     rows = data if data else DEMO_DATA
     flows: List[Dict[str, Any]] = [
-        {"path": (r["channel"], r["plan"], r["outcome"]), "count": int(r["count"])}
-        for r in rows
+        {"path": (r["channel"], r["plan"], r["outcome"]), "count": int(r["count"])} for r in rows
     ]
 
     # -- canvas ------------------------------------------------------------- #
     # Poster-scale so the ribbons read from across a room and every label
     # has room to breathe. Roughly 1.9x the old 760x480 footprint.
     width, height = 1440, 900
-    pad_top = 176         # room for title + subtitle + axis captions
-    pad_bottom = 128      # room for the outcome legend + last label's subtitle
+    pad_top = 176  # room for title + subtitle + axis captions
+    pad_bottom = 128  # room for the outcome legend + last label's subtitle
     # Outer padding holds the flanking labels: the first axis labels its
     # blocks on the LEFT, the last axis on the RIGHT, so both margins are wide.
     pad_left, pad_right = 208, 190
-    margin = 46           # gutter for title / caption / legend text
-    block_w = 26          # width of each category block (the "stations")
-    label_gap = 15        # px between a block and its text label
+    margin = 46  # gutter for title / caption / legend text
+    block_w = 26  # width of each category block (the "stations")
+    label_gap = 15  # px between a block and its text label
 
     total_records = sum(f["count"] for f in flows)
 
@@ -376,12 +373,10 @@ def build_svg(
     # high-contrast outcome hues, and each ribbon's fill-opacity is raised so the
     # deepened strand reads solidly against the white hairlines.
     outcome_series = {
-        f".ribbon-{cat}": palette.get(OUTCOME_COLOR[cat], secondary)
-        for cat in OUTCOME_COLOR
+        f".ribbon-{cat}": palette.get(OUTCOME_COLOR[cat], secondary) for cat in OUTCOME_COLOR
     }
     block_series = {
-        f".oblock-{cat}": palette.get(OUTCOME_COLOR[cat], secondary)
-        for cat in OUTCOME_COLOR
+        f".oblock-{cat}": palette.get(OUTCOME_COLOR[cat], secondary) for cat in OUTCOME_COLOR
     }
     block_hc = leveled_colors(block_series, "high-contrast")
     adaptive = os_adaptive_style(
@@ -512,10 +507,7 @@ def build_svg(
             color = palette.get(OUTCOME_COLOR[outcome], secondary)
             d = _ribbon_path(x0, x1, a_top, a_top + h, b_top, b_top + h)
             pct = 100.0 * count / total_records
-            tip = (
-                f"{a_cat} → {b_cat} → {outcome}: "
-                f"{count} users ({pct:.0f}% of cohort)"
-            )
+            tip = f"{a_cat} → {b_cat} → {outcome}: {count} users ({pct:.0f}% of cohort)"
             # A thin WHITE hairline separates adjacent same-colour strands so
             # stacked green (or gray) ribbons never merge into an opaque blob —
             # each path keeps a crisp edge against its neighbour.
@@ -529,9 +521,13 @@ def build_svg(
             )
             ribbon_tips.append(
                 tooltip_bubble(
-                    mx, min(a_top, b_top) - 4,
+                    mx,
+                    min(a_top, b_top) - 4,
                     [f"{a_cat} → {b_cat} → {outcome}", f"{count} users", f"{pct:.0f}% of cohort"],
-                    canvas_w=width, canvas_h=height, ink=ink, secondary=secondary,
+                    canvas_w=width,
+                    canvas_h=height,
+                    ink=ink,
+                    secondary=secondary,
                     border="#E5E5EA",
                     elem_id=f"ribbon-tip-{ribbon_idx}",
                 )
@@ -564,9 +560,13 @@ def build_svg(
             )
             block_tips.append(
                 tooltip_bubble(
-                    x + block_w / 2.0, b["y0"] - 4,
+                    x + block_w / 2.0,
+                    b["y0"] - 4,
                     [str(cat), f"{int(b['count'])} users", f"{pct:.0f}% of axis total"],
-                    canvas_w=width, canvas_h=height, ink=ink, secondary=secondary,
+                    canvas_w=width,
+                    canvas_h=height,
+                    ink=ink,
+                    secondary=secondary,
                     border="#E5E5EA",
                     elem_id=f"block-tip-{block_idx}",
                 )
@@ -628,7 +628,12 @@ def build_svg(
 # --------------------------------------------------------------------------- #
 def main() -> None:
     """CLI entry point — build the SVG and write it to disk."""
-    render_cli(__file__, "alluvial", build_svg, description="Render a house-styled alluvial / parallel-sets diagram as SVG.")
+    render_cli(
+        __file__,
+        "alluvial",
+        build_svg,
+        description="Render a house-styled alluvial / parallel-sets diagram as SVG.",
+    )
 
 
 def make_alluvial(
@@ -637,12 +642,10 @@ def make_alluvial(
     out: Optional[Path | str] = None,
     title: str = "Where new sign-ups end up after 90 days",
     subtitle: str = (
-        "Referral drives the most retention; free-trial users churn far more "
-        "than paying ones"
+        "Referral drives the most retention; free-trial users churn far more than paying ones"
     ),
     note: str = (
-        "Illustrative cohort of 1,000 sign-ups · ribbon width = number of "
-        "users on that path"
+        "Illustrative cohort of 1,000 sign-ups · ribbon width = number of users on that path"
     ),
     mode: str = "self-contained",
     accessibility: str = "universal",
@@ -678,8 +681,13 @@ def make_alluvial(
     True
     """
     svg = build_svg(
-        data, title=title, subtitle=subtitle, note=note,
-        mode=mode, accessibility=accessibility, theme=theme,
+        data,
+        title=title,
+        subtitle=subtitle,
+        note=note,
+        mode=mode,
+        accessibility=accessibility,
+        theme=theme,
     )
     dest = Path(out) if out else svg_example_path(__file__, "alluvial")
     return write_svg(dest, svg, theme=theme)

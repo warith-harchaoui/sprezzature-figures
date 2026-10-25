@@ -69,20 +69,20 @@ WIDTH = 2720
 HEIGHT = 1180
 MARGIN_LEFT = 64
 MARGIN_RIGHT = 64
-MARGIN_TOP = 210         # room for title + subtitle + row band label
-MARGIN_BOTTOM = 104      # room for the footnote + total headcount strip
+MARGIN_TOP = 210  # room for title + subtitle + row band label
+MARGIN_BOTTOM = 104  # room for the footnote + total headcount strip
 
-SUBINK = "#6E6E73"       # secondary text
-HAIRLINE = "#E5E5EA"     # neutral hairline
-CARD_BG = "#FFFFFF"      # team-card fill
+SUBINK = "#6E6E73"  # secondary text
+HAIRLINE = "#E5E5EA"  # neutral hairline
+CARD_BG = "#FFFFFF"  # team-card fill
 
 FONT = "Roboto, system-ui, sans-serif"
 
 # Box geometry. Cards are tall enough to carry a large role line plus a
 # comfortable headcount caption so every label reads at a glance.
-BOX_H = 92               # card height
-LEAF_PITCH = 22          # horizontal gap between adjacent team cards
-CONNECTOR = "#C7C7CC"    # neutral connector (unused branch colour fallback)
+BOX_H = 92  # card height
+LEAF_PITCH = 22  # horizontal gap between adjacent team cards
+CONNECTOR = "#C7C7CC"  # neutral connector (unused branch colour fallback)
 
 
 # ------------------------------------------------------------------
@@ -103,25 +103,21 @@ Node = Tuple[str, str, int, Optional[str]]
 
 NODES: List[Node] = [
     ("ceo", "Chief Executive", 3, None),
-
     # ---- Product & Engineering (the heavy division) ----
     ("vp_eng", "VP Product & Eng.", 5, "ceo"),
     ("t_platform", "Platform", 28, "vp_eng"),
     ("t_apps", "Applications", 34, "vp_eng"),
     ("t_design", "Design & Research", 18, "vp_eng"),
     ("t_data", "Data & ML", 22, "vp_eng"),
-
     # ---- Revenue ----
     ("vp_rev", "VP Revenue", 4, "ceo"),
     ("t_sales", "Sales", 26, "vp_rev"),
     ("t_success", "Customer Success", 19, "vp_rev"),
     ("t_mktg", "Marketing", 12, "vp_rev"),
-
     # ---- Operations ----
     ("vp_ops", "VP Operations", 4, "ceo"),
     ("t_finance", "Finance", 9, "vp_ops"),
     ("t_it", "IT & Security", 11, "vp_ops"),
-
     # ---- People ----
     ("vp_ppl", "VP People", 3, "ceo"),
     ("t_talent", "Talent", 8, "vp_ppl"),
@@ -136,7 +132,10 @@ _DIVISION_BASE: Dict[str, str] = {
     "vp_ppl": "Green",
 }
 _DIVISION_FALLBACK: Dict[str, str] = {
-    "vp_eng": "#007AFF", "vp_rev": "#FF9500", "vp_ops": "#AF52DE", "vp_ppl": "#34C759",
+    "vp_eng": "#007AFF",
+    "vp_rev": "#FF9500",
+    "vp_ops": "#AF52DE",
+    "vp_ppl": "#34C759",
 }
 
 
@@ -148,7 +147,8 @@ _DIV_HUE_ORDER = ["Blue", "Orange", "Purple", "Green", "Teal", "Pink", "Yellow",
 
 
 def _division_colors(
-    accessibility: str = "universal", division_ids: Optional[List[str]] = None,
+    accessibility: str = "universal",
+    division_ids: Optional[List[str]] = None,
     theme: str = "corporate",
 ) -> Dict[str, str]:
     """Return the per-division hue map at a given accessibility level.
@@ -176,10 +176,7 @@ def _division_colors(
             did: palette.get(_DIV_HUE_ORDER[i % len(_DIV_HUE_ORDER)], "#8E8E93")
             for i, did in enumerate(division_ids)
         }
-    return {
-        key: palette.get(base, _DIVISION_FALLBACK[key])
-        for key, base in _DIVISION_BASE.items()
-    }
+    return {key: palette.get(base, _DIVISION_FALLBACK[key]) for key, base in _DIVISION_BASE.items()}
 
 
 PALETTE = load_palette()
@@ -232,7 +229,9 @@ def _depth_of(node_id: str, parent: Dict[str, Optional[str]]) -> int:
     return depth
 
 
-def _division_of(node_id: str, parent: Dict[str, Optional[str]], root_id: str = "ceo") -> Optional[str]:
+def _division_of(
+    node_id: str, parent: Dict[str, Optional[str]], root_id: str = "ceo"
+) -> Optional[str]:
     """Return the id of the direct-child-of-root a node belongs to.
 
     The root itself returns ``None``; every other node walks up until it
@@ -279,9 +278,7 @@ def _text_width(label: str, font_size: float) -> float:
     return len(label) * font_size * 0.56
 
 
-def _caption_of(
-    node_id: str, depth: int, own_hc: Dict[str, int], sub_hc: Dict[str, int]
-) -> str:
+def _caption_of(node_id: str, depth: int, own_hc: Dict[str, int], sub_hc: Dict[str, int]) -> str:
     """Return the headcount caption printed on the second line of a card."""
     if node_id == "ceo":
         return f"{sub_hc[node_id]} people total"
@@ -360,10 +357,7 @@ def _compute_geometry(
     sub_hc = _subtree_headcount(nodes)
 
     depth = {n: _depth_of(n, parent) for n, _r, _h, _p in nodes}
-    width = {
-        n: _box_width(n, role_of, depth[n], own_hc, sub_hc)
-        for n, _r, _h, _p in nodes
-    }
+    width = {n: _box_width(n, role_of, depth[n], own_hc, sub_hc) for n, _r, _h, _p in nodes}
 
     # --- horizontal packing of the leaf row (the teams) ---
     # Walk leaves left-to-right, advancing a running x cursor by each
@@ -586,13 +580,13 @@ def _emit_box(
             # 16: the house corner cap `audit_figure` enforces. A box 92 tall
             # is a card, not a capsule, so the cap applies to it.
             f'width="{_fmt(w)}" height="{BOX_H}" rx="16" fill="{color}">'
-            f'<title>{escape(tip)}</title></rect>'
+            f"<title>{escape(tip)}</title></rect>"
             f'<text x="{_fmt(cx)}" y="{_fmt(y_top + 40)}" text-anchor="middle" '
             f'font-size="25" font-weight="700" fill="#FFFFFF">{escape(role)}</text>'
             f'<text x="{_fmt(cx)}" y="{_fmt(y_top + 70)}" text-anchor="middle" '
             f'font-family="{FONT_MONO}" font-size="17" fill="#FFFFFF" '
             f'fill-opacity="0.92">{escape(caption)}</text>'
-            f'</g>'
+            f"</g>"
         )
     else:
         # White team card with a coloured left rule.
@@ -603,17 +597,17 @@ def _emit_box(
             f'height="{BOX_H}" rx="16" fill="{CARD_BG}" stroke="{HAIRLINE}" '
             f'stroke-width="1.5"><title>{escape(tip)}</title></rect>'
             f'<path d="M{_fmt(x_left + rule_w)},{_fmt(y_top)} '
-            f'L{_fmt(x_left)},{_fmt(y_top)} '
-            f'Q{_fmt(x_left)},{_fmt(y_top)} {_fmt(x_left)},{_fmt(y_top + 16)} '
-            f'L{_fmt(x_left)},{_fmt(y_top + BOX_H - 16)} '
-            f'Q{_fmt(x_left)},{_fmt(y_top + BOX_H)} {_fmt(x_left + 16)},{_fmt(y_top + BOX_H)} '
+            f"L{_fmt(x_left)},{_fmt(y_top)} "
+            f"Q{_fmt(x_left)},{_fmt(y_top)} {_fmt(x_left)},{_fmt(y_top + 16)} "
+            f"L{_fmt(x_left)},{_fmt(y_top + BOX_H - 16)} "
+            f"Q{_fmt(x_left)},{_fmt(y_top + BOX_H)} {_fmt(x_left + 16)},{_fmt(y_top + BOX_H)} "
             f'L{_fmt(x_left + rule_w)},{_fmt(y_top + BOX_H)} Z" class="{div_cls.strip()}" fill="{color}"/>'
             f'<text x="{_fmt(x_left + rule_w + 20)}" y="{_fmt(y_top + 40)}" '
             f'font-size="23" font-weight="600" fill="{INK}">{escape(role)}</text>'
             f'<text x="{_fmt(x_left + rule_w + 20)}" y="{_fmt(y_top + 68)}" '
             f'font-family="{FONT_MONO}" font-size="17" fill="{SUBINK}">'
-            f'{escape(caption)}</text>'
-            f'</g>'
+            f"{escape(caption)}</text>"
+            f"</g>"
         )
 
 
@@ -667,7 +661,10 @@ def build_svg(
     division_ids = kids.get(root_id, [])
 
     geometry = _compute_geometry(
-        accessibility, nodes, root_id, division_ids=None if is_default else division_ids,
+        accessibility,
+        nodes,
+        root_id,
+        division_ids=None if is_default else division_ids,
         theme=theme,
     )
 
@@ -697,20 +694,24 @@ def build_svg(
         largest_pct = round(100 * sub_hc[largest_div] / total) if largest_div and total else 0
         largest_name = (
             DIVISION_NAME.get(largest_div, role_of.get(largest_div, largest_div))
-            if largest_div else ""
+            if largest_div
+            else ""
         )
         title_txt = (
             f"{largest_name} carries the largest share of the company"
-            if largest_div else "Organization chart"
+            if largest_div
+            else "Organization chart"
         )
-        subtitle_txt = (
-            f"{largest_name} is {largest_pct}% of headcount" if largest_div else ""
-        )
+        subtitle_txt = f"{largest_name} is {largest_pct}% of headcount" if largest_div else ""
         desc_txt = (
             f"Top-down organization chart of {total} people. "
             f"Each division card is tinted its own colour and prints its total "
             f"headcount; team cards below print their own size."
-            + (f" {largest_name}, at {largest_pct}% of the company, is the largest division." if largest_div else "")
+            + (
+                f" {largest_name}, at {largest_pct}% of the company, is the largest division."
+                if largest_div
+                else ""
+            )
         )
     # Composed from the rows by default -- the largest division is a fact
     # about this org, not a sentence to carry between orgs -- and replaced
@@ -719,7 +720,9 @@ def build_svg(
         title_txt = title
     if subtitle is not None:
         subtitle_txt = subtitle
-    parts.append(svg_open(WIDTH, HEIGHT, "org-title", "org-desc", font_family=chrome_stack_for_theme(theme)))
+    parts.append(
+        svg_open(WIDTH, HEIGHT, "org-title", "org-desc", font_family=chrome_stack_for_theme(theme))
+    )
     parts.append(f'<title id="org-title">{escape(title_txt)}</title>')
     parts.append(f'<desc id="org-desc">{escape(desc_txt)}</desc>')
 
@@ -734,7 +737,9 @@ def build_svg(
     # labels, and headcounts, not by colour. The helper forces `fill` for the
     # classed selectors; the wires need their stroke forced too, hence the
     # extra ``.wire{stroke:CanvasText}`` rule.
-    division_color = _division_colors(accessibility, None if is_default else division_ids, theme=theme)
+    division_color = _division_colors(
+        accessibility, None if is_default else division_ids, theme=theme
+    )
     os_media = os_adaptive_style(
         {f".div-{did}": division_color[did] for did in division_ids},
         role="both",
@@ -759,12 +764,7 @@ def build_svg(
         #     the CEO rect (class exactly "hit") is pinned back to a dark pill.
         # (2) the team-card hairline border darkens to read on the dark surface.
         # Division hues (VP cards, left rules, wires) are data, left alone.
-        + os_dark_style(
-            extra=(
-                '[class="hit"]{fill:#2C2C30;}'
-                '[stroke="#E5E5EA"]{stroke:#3E3E44;}'
-            )
-        )
+        + os_dark_style(extra=('[class="hit"]{fill:#2C2C30;}[stroke="#E5E5EA"]{stroke:#3E3E44;}'))
         + "</style>"
     )
 
@@ -792,7 +792,7 @@ def build_svg(
         parts.append(
             f'<text x="{MARGIN_LEFT}" y="{_fmt(gy - 22)}" font-size="16" '
             f'font-weight="700" letter-spacing="1.6" fill="{SUBINK}">'
-            f'{escape(name.upper())}</text>'
+            f"{escape(name.upper())}</text>"
         )
 
     # ------------------------------------------------------------------
@@ -811,9 +811,7 @@ def build_svg(
     # One group per division.
     for vp in division_ids:
         dname = DIVISION_NAME.get(vp, role_of.get(vp, vp))
-        parts.append(
-            f'<g class="division" role="group" aria-label="{escape(dname)} division">'
-        )
+        parts.append(f'<g class="division" role="group" aria-label="{escape(dname)} division">')
         # VP → team connectors first (so cards sit on top).
         _emit_connectors(parts, geometry, vp, interactive=True, nodes=nodes, root_id=root_id)
         # VP card, then its team cards.
@@ -828,7 +826,7 @@ def build_svg(
     parts.append(
         f'<text x="{MARGIN_LEFT}" y="{HEIGHT - 34}" font-size="19" '
         f'fill="{SUBINK}">Each box shows role and headcount · division cards '
-        f'total their teams · hover or focus a division to isolate it</text>'
+        f"total their teams · hover or focus a division to isolate it</text>"
     )
 
     # Fullscreen control per interactivity mode, just before the close.
@@ -906,12 +904,15 @@ def make_org_chart(
     """
     rows = data if data else DEMO_DATA
     nodes: List[Node] = [
-        (str(r["id"]), str(r["role"]), int(r["headcount"]), r.get("parent"))
-        for r in rows
+        (str(r["id"]), str(r["role"]), int(r["headcount"]), r.get("parent")) for r in rows
     ]
     svg = build_svg(
-        nodes, title=title, subtitle=subtitle,
-        mode=mode, accessibility=accessibility, theme=theme,
+        nodes,
+        title=title,
+        subtitle=subtitle,
+        mode=mode,
+        accessibility=accessibility,
+        theme=theme,
     )
     dest = Path(out) if out else svg_example_path(__file__, "org-chart")
     return write_svg(dest, svg, theme=theme)

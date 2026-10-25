@@ -72,11 +72,11 @@ _ORIGIN_X: float = 56.0
 _ORIGIN_Y: float = 152.0
 
 #: House-style inks.
-_INK: str = "#1D1D1F"       # primary text
-_SUBTLE: str = "#6E6E73"    # secondary text
-_EMPTY: str = "#E5E5EA"     # unfilled / "remainder" tiles
-_BG: str = "#FFFFFF"        # background
-_FOCUS: str = "#0A4DA0"     # focus-ring blue
+_INK: str = "#1D1D1F"  # primary text
+_SUBTLE: str = "#6E6E73"  # secondary text
+_EMPTY: str = "#E5E5EA"  # unfilled / "remainder" tiles
+_BG: str = "#FFFFFF"  # background
+_FOCUS: str = "#0A4DA0"  # focus-ring blue
 
 
 #: A household-energy budget: of every 100 kilowatt-hours a typical
@@ -196,7 +196,9 @@ def build_svg(
 
     # ---- header ----
     parts: List[str] = []
-    parts.append(svg_open(_WIDTH, _HEIGHT, "wf-title", "wf-desc", font_family=chrome_stack_for_theme(theme)))
+    parts.append(
+        svg_open(_WIDTH, _HEIGHT, "wf-title", "wf-desc", font_family=chrome_stack_for_theme(theme))
+    )
     parts.append(f'<title id="wf-title">{_xml(title)}</title>')
     leader = data[0]
     desc = (
@@ -221,27 +223,29 @@ def build_svg(
             f".cat-{s}:hover .cat-{s}, .cat-{s}:focus .cat-{s}, "
             f".cat-{s}:hover, .cat-{s}:focus {{ opacity: 1; }}"
         )
-    style_rows.extend([
-        ".legend-row { cursor: pointer; }",
-        f".legend-row:focus {{ outline: 3px solid {_FOCUS}; outline-offset: 2px; }}",
-        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}",
-        # Each category's bubble is collected and appended once at the very
-        # end of the document, well after the grid AND the legend, rather
-        # than staying next to its own badge circle: SVG has no z-index, and
-        # a badge's bubble sits right above the first tile of its own
-        # category's run, which is exactly where a neighbouring category's
-        # tiles can start. Moving it out of the badge's own <g class="cat">
-        # means a shared class/adjacency can no longer pick the right
-        # bubble, so this keys off :has() on the shared svg root instead
-        # (already relied on two lines up for the whole-category dim
-        # effect, so it costs nothing new in renderer support).
-        "".join(
-            f"svg:has(#badge-{_slug(str(d['label']))}:hover) #tip-{_slug(str(d['label']))},"
-            f"svg:has(#badge-{_slug(str(d['label']))}:focus) #tip-{_slug(str(d['label']))}{{opacity:1}}"
-            for d in data
-        ),
-        "@media (prefers-reduced-motion: reduce) { .tile { transition: none; } .tip{transition:none} }",
-    ])
+    style_rows.extend(
+        [
+            ".legend-row { cursor: pointer; }",
+            f".legend-row:focus {{ outline: 3px solid {_FOCUS}; outline-offset: 2px; }}",
+            ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}",
+            # Each category's bubble is collected and appended once at the very
+            # end of the document, well after the grid AND the legend, rather
+            # than staying next to its own badge circle: SVG has no z-index, and
+            # a badge's bubble sits right above the first tile of its own
+            # category's run, which is exactly where a neighbouring category's
+            # tiles can start. Moving it out of the badge's own <g class="cat">
+            # means a shared class/adjacency can no longer pick the right
+            # bubble, so this keys off :has() on the shared svg root instead
+            # (already relied on two lines up for the whole-category dim
+            # effect, so it costs nothing new in renderer support).
+            "".join(
+                f"svg:has(#badge-{_slug(str(d['label']))}:hover) #tip-{_slug(str(d['label']))},"
+                f"svg:has(#badge-{_slug(str(d['label']))}:focus) #tip-{_slug(str(d['label']))}{{opacity:1}}"
+                for d in data
+            ),
+            "@media (prefers-reduced-motion: reduce) { .tile { transition: none; } .tip{transition:none} }",
+        ]
+    )
     # OS-adaptive overrides (additive; the default render stays byte-identical
     # because every rule below lives inside a media query). Under
     # prefers-contrast the six end-use hues deepen to their high-contrast
@@ -295,14 +299,14 @@ def build_svg(
     # robustness if the dataset ever under-fills the grid).
     empty_idx = [i for i, owner in enumerate(cell_owner) if owner == ""]
     if empty_idx:
-        parts.append('<g>')
+        parts.append("<g>")
         for i in empty_idx:
             x, y = _cell_xy(i)
             parts.append(
                 f'<rect class="tile" x="{x:.1f}" y="{y:.1f}" '
                 f'width="{_TILE}" height="{_TILE}" rx="5" fill="{_EMPTY}"/>'
             )
-        parts.append('</g>')
+        parts.append("</g>")
 
     # A per-category number (1..6) is the colour-free key: it is stamped on
     # the first tile of each run and repeated on the legend swatch, so the
@@ -314,11 +318,8 @@ def build_svg(
         s = _slug(str(d["label"]))
         color = color_of[s]
         badge = number_of[s]
-        cat_tip = f'{_xml(str(d["label"]))}: {d["squares"]} % ({d["squares"]} squares)'
-        parts.append(
-            f'<g class="cat cat-{s}" tabindex="0" role="listitem" '
-            f'aria-label="{cat_tip}">'
-        )
+        cat_tip = f"{_xml(str(d['label']))}: {d['squares']} % ({d['squares']} squares)"
+        parts.append(f'<g class="cat cat-{s}" tabindex="0" role="listitem" aria-label="{cat_tip}">')
         first_cell = True
         for i, owner in enumerate(cell_owner):
             if owner != s:
@@ -340,10 +341,15 @@ def build_svg(
                 )
                 bubbles.append(
                     tooltip_bubble(
-                        cx, cy - 22,
+                        cx,
+                        cy - 22,
                         [str(d["label"]), f"{d['squares']} %", f"{d['squares']} of 100 squares"],
-                        anchor="middle", canvas_w=_WIDTH, canvas_h=_HEIGHT,
-                        ink=_INK, secondary=_SUBTLE, border=_EMPTY,
+                        anchor="middle",
+                        canvas_w=_WIDTH,
+                        canvas_h=_HEIGHT,
+                        ink=_INK,
+                        secondary=_SUBTLE,
+                        border=_EMPTY,
                         elem_id=f"tip-{s}",
                     )
                 )
@@ -353,7 +359,7 @@ def build_svg(
                     f'font-size="19" font-weight="700" fill="{_INK}">{badge}</text>'
                 )
                 first_cell = False
-        parts.append('</g>')
+        parts.append("</g>")
 
     # ---- legend (right of the grid) ----
     legend_x = _ORIGIN_X + _COLS * (_TILE + _GAP) + 44.0
@@ -368,11 +374,10 @@ def build_svg(
         parts.append(
             f'<g class="cat cat-{s} legend-row" tabindex="0" role="listitem" '
             f'transform="translate(0,{cy:.1f})">'
-            f'<title>{_xml(str(d["label"]))}: {d["squares"]} %</title>'
+            f"<title>{_xml(str(d['label']))}: {d['squares']} %</title>"
         )
         parts.append(
-            f'<rect class="cat-{s}" x="0" y="0" width="{sw}" height="{sw}" '
-            f'rx="7" fill="{color}"/>'
+            f'<rect class="cat-{s}" x="0" y="0" width="{sw}" height="{sw}" rx="7" fill="{color}"/>'
         )
         # The same number that badges this category's first tile — the
         # colour-free key that ties legend to grid under CVD / greyscale.
@@ -388,18 +393,18 @@ def build_svg(
         parts.append(
             f'<text x="{sw + 18:.0f}" y="12" font-size="20" font-weight="600" '
             f'fill="{_INK}" dominant-baseline="middle">'
-            f'{number_of[s]}. {_xml(str(d["label"]))}</text>'
+            f"{number_of[s]}. {_xml(str(d['label']))}</text>"
         )
         parts.append(
             f'<text x="{sw + 18:.0f}" y="38" font-size="16" font-weight="600" '
             f'fill="{_SUBTLE}" dominant-baseline="middle">{d["squares"]} %</text>'
         )
-        parts.append('</g>')
-    parts.append('</g>')
+        parts.append("</g>")
+    parts.append("</g>")
 
     parts.extend(bubbles)
     parts.append(fullscreen_control(_WIDTH, _HEIGHT, mode))
-    parts.append('</svg>')
+    parts.append("</svg>")
     return "\n".join(parts)
 
 
@@ -444,7 +449,9 @@ def make_waffle(
     >>> p.exists()
     True
     """
-    svg = build_svg(data, title=title, subtitle=subtitle, mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(
+        data, title=title, subtitle=subtitle, mode=mode, accessibility=accessibility, theme=theme
+    )
     dest = Path(out) if out else svg_example_path(__file__, "waffle")
     return write_svg(dest, svg, theme=theme)
 

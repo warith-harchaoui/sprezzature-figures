@@ -34,8 +34,16 @@ from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_the
 COLOR_LINE = "#007AFF"
 
 DEMO_DATA: List[Dict[str, Any]] = [
-    {"t": 0, "y": 2}, {"t": 1, "y": 2}, {"t": 2, "y": 5}, {"t": 3, "y": 5}, {"t": 4, "y": 4},
-    {"t": 5, "y": 7}, {"t": 6, "y": 7}, {"t": 7, "y": 6}, {"t": 8, "y": 9}, {"t": 9, "y": 9},
+    {"t": 0, "y": 2},
+    {"t": 1, "y": 2},
+    {"t": 2, "y": 5},
+    {"t": 3, "y": 5},
+    {"t": 4, "y": 4},
+    {"t": 5, "y": 7},
+    {"t": 6, "y": 7},
+    {"t": 7, "y": 6},
+    {"t": 8, "y": 9},
+    {"t": 9, "y": 9},
 ]
 
 
@@ -101,11 +109,15 @@ def build_svg(
         return plot_y + plot_h - (v - y_min) / ((y_max - y_min) or 1.0) * plot_h
 
     parts: List[str] = []
-    parts.append(svg_open(width, height, "step-title", "step-desc", font_family=chrome_stack_for_theme(theme)))
+    parts.append(
+        svg_open(
+            width, height, "step-title", "step-desc", font_family=chrome_stack_for_theme(theme)
+        )
+    )
     parts.append(f'<title id="step-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="step-desc">Step chart of {len(rows)} points, ranging {y_min:.0f} to '
-        f'{y_max:.0f}. Hover or focus a point for its exact value.</desc>'
+        f"{y_max:.0f}. Hover or focus a point for its exact value.</desc>"
     )
     parts.append(
         "<style>"
@@ -122,7 +134,9 @@ def build_svg(
         f'<text x="40" y="46" font-size="22" font-weight="700" fill="{INK}" '
         f'letter-spacing="-0.3">{xml_escape(title)}</text>'
     )
-    parts.append(f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>')
+    parts.append(
+        f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>'
+    )
 
     # ---- gridlines ----
     for val in y_gridline_vals:
@@ -162,13 +176,22 @@ def build_svg(
             f'<circle id="hit-{i}" class="pt hit" tabindex="0" cx="{cx:.1f}" cy="{cy:.1f}" r="4" fill="{COLOR_LINE}" '
             f'stroke="{BG}" stroke-width="1.5" role="img" aria-label="{xml_escape(tip)}"/>'
         )
-        delta_line = "start of series" if prev_y is None else f"{'+' if y - prev_y >= 0 else ''}{y - prev_y:.0f} from previous step"
+        delta_line = (
+            "start of series"
+            if prev_y is None
+            else f"{'+' if y - prev_y >= 0 else ''}{y - prev_y:.0f} from previous step"
+        )
         bubbles.append(
             tooltip_bubble(
-                cx, cy - 16,
+                cx,
+                cy - 16,
                 [f"t = {t:.0f}", f"value {y:.0f}", delta_line],
-                anchor="middle", canvas_w=width, canvas_h=height,
-                ink=INK, secondary=SECONDARY, border=GRIDLINE,
+                anchor="middle",
+                canvas_w=width,
+                canvas_h=height,
+                ink=INK,
+                secondary=SECONDARY,
+                border=GRIDLINE,
                 elem_id=f"tip-{i}",
             )
         )
@@ -241,16 +264,27 @@ def make_step(
     >>> p.exists()
     True
     """
-    svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
-                     mode=mode, accessibility=accessibility, theme=theme,
-                     y_axis_title=y_axis_title, x_axis_title=x_axis_title)
+    svg = build_svg(
+        data,
+        title=title,
+        subtitle=subtitle,
+        width=width,
+        height=height,
+        mode=mode,
+        accessibility=accessibility,
+        theme=theme,
+        y_axis_title=y_axis_title,
+        x_axis_title=x_axis_title,
+    )
     dest = Path(out) if out else svg_example_path(__file__, "step")
     return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:
     """CLI entry point: build the SVG and write it to disk."""
-    render_cli(__file__, "step", build_svg, description="Generate a step (piecewise-constant) line chart.")
+    render_cli(
+        __file__, "step", build_svg, description="Generate a step (piecewise-constant) line chart."
+    )
 
 
 if __name__ == "__main__":

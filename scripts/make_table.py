@@ -53,22 +53,26 @@ from _textfit import fit_font_size, text_width  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 DEMO_DATA: List[Dict[str, Any]] = [
-    {"region": "Île-de-France", "teams": 1_284, "revenue": 4_118_900.0,
-     "churn": 0.0142, "nps": 41},
-    {"region": "Auvergne-Rhône-Alpes", "teams": 612, "revenue": 1_903_400.0,
-     "churn": 0.0188, "nps": 37},
-    {"region": "Nouvelle-Aquitaine", "teams": 398, "revenue": 1_142_700.0,
-     "churn": 0.0231, "nps": 29},
-    {"region": "Occitanie", "teams": 377, "revenue": 1_097_050.0,
-     "churn": 0.0205, "nps": 33},
-    {"region": "Hauts-de-France", "teams": 281, "revenue": 742_380.0,
-     "churn": 0.0297, "nps": 22},
-    {"region": "Grand Est", "teams": 254, "revenue": 740_500.0,
-     "churn": 0.0151, "nps": 38},
-    {"region": "Bretagne", "teams": 196, "revenue": 553_900.0,
-     "churn": 0.0176, "nps": 44},
-    {"region": "Normandie", "teams": 148, "revenue": 402_600.0,
-     "churn": 0.0312, "nps": 19},
+    {"region": "Île-de-France", "teams": 1_284, "revenue": 4_118_900.0, "churn": 0.0142, "nps": 41},
+    {
+        "region": "Auvergne-Rhône-Alpes",
+        "teams": 612,
+        "revenue": 1_903_400.0,
+        "churn": 0.0188,
+        "nps": 37,
+    },
+    {
+        "region": "Nouvelle-Aquitaine",
+        "teams": 398,
+        "revenue": 1_142_700.0,
+        "churn": 0.0231,
+        "nps": 29,
+    },
+    {"region": "Occitanie", "teams": 377, "revenue": 1_097_050.0, "churn": 0.0205, "nps": 33},
+    {"region": "Hauts-de-France", "teams": 281, "revenue": 742_380.0, "churn": 0.0297, "nps": 22},
+    {"region": "Grand Est", "teams": 254, "revenue": 740_500.0, "churn": 0.0151, "nps": 38},
+    {"region": "Bretagne", "teams": 196, "revenue": 553_900.0, "churn": 0.0176, "nps": 44},
+    {"region": "Normandie", "teams": 148, "revenue": 402_600.0, "churn": 0.0312, "nps": 19},
 ]
 
 
@@ -169,17 +173,14 @@ def build_svg(
         raise ValueError(f"bar_column names {bar_column!r}, which is not a drawn column")
 
     numeric = {
-        name: all(_is_number(row.get(name)) for row in rows if name in row)
-        for name in names
+        name: all(_is_number(row.get(name)) for row in rows if name in row) for name in names
     }
     if bar_column and not numeric.get(bar_column):
         raise ValueError(f"bar_column {bar_column!r} is not numeric, so it has no bar")
 
     if sort_by:
         rows.sort(
-            key=lambda row: (
-                float(row[sort_by]) if numeric[sort_by] else str(row.get(sort_by, ""))
-            ),
+            key=lambda row: float(row[sort_by]) if numeric[sort_by] else str(row.get(sort_by, "")),
             reverse=descending,
         )
 
@@ -224,7 +225,8 @@ def build_svg(
         raise ValueError(f"sum_columns names columns that are not drawn: {unknown_sums}")
     totals = {
         name: sum(float(row[name]) for row in rows if name in row)
-        for name in names if summable(name)
+        for name in names
+        if summable(name)
     }
 
     mono_family = mono_stack_for_theme(theme)
@@ -241,9 +243,9 @@ def build_svg(
     # Columns are as wide as their widest cell needs, text columns first.
     def widest(name: str) -> float:
         cells = [
-            cell(name, float(row[name])) if numeric[name]
-            else str(row.get(name, ""))
-            for row in rows if name in row
+            cell(name, float(row[name])) if numeric[name] else str(row.get(name, ""))
+            for row in rows
+            if name in row
         ]
         return max(
             [text_width(name, 12.0, bold=True)]
@@ -261,10 +263,12 @@ def build_svg(
         rights[name] = cursor
 
     sort_lines = (
-        [sort_note] if sort_note is not None
+        [sort_note]
+        if sort_note is not None
         else [
             f"sorted by {sort_by}, {'highest' if descending else 'lowest'} first"
-            if sort_by else "in the order the rows arrived",
+            if sort_by
+            else "in the order the rows arrived",
             "each numeric column at one precision, read off its own spread"
             + (f" · {bar_column} carries its bar in the cell" if bar_column else ""),
         ]
@@ -275,12 +279,9 @@ def build_svg(
         said_parts.append(finding)
     elif totals:
         named = ", ".join(
-            f"{name} {cell(name, amount)}"
-            for name, amount in list(totals.items())[:3]
+            f"{name} {cell(name, amount)}" for name, amount in list(totals.items())[:3]
         )
-        said_parts.append(
-            f"{len(rows)} rows. Totals where a total means something: {named}."
-        )
+        said_parts.append(f"{len(rows)} rows. Totals where a total means something: {named}.")
         skipped = [name for name in names if numeric[name] and name not in totals]
         if skipped:
             said_parts.append(
@@ -296,14 +297,15 @@ def build_svg(
 
     parts: List[str] = []
     parts.append(
-        svg_open(width, height, "table-title", "table-desc",
-                 font_family=chrome_stack_for_theme(theme))
+        svg_open(
+            width, height, "table-title", "table-desc", font_family=chrome_stack_for_theme(theme)
+        )
     )
     parts.append(f'<title id="table-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="table-desc">A table of {len(rows)} rows and {len(names)} columns: '
-        f'{xml_escape(", ".join(names))}. {xml_escape(said_sort)}. '
-        f'{xml_escape(" ".join(said_parts))}</desc>'
+        f"{xml_escape(', '.join(names))}. {xml_escape(said_sort)}. "
+        f"{xml_escape(' '.join(said_parts))}</desc>"
     )
     parts.append(
         "<style>"
@@ -345,9 +347,8 @@ def build_svg(
         parts.append(
             f'<text x="{at:.1f}" y="{plot_y + 16:.1f}" font-size="12" font-weight="700" '
             f'fill="{INK}" text-anchor="{anchor}">{xml_escape(name)}'
-            + (' ↓' if name == sort_by and descending
-               else (' ↑' if name == sort_by else ""))
-            + '</text>'
+            + (" ↓" if name == sort_by and descending else (" ↑" if name == sort_by else ""))
+            + "</text>"
         )
     parts.append(
         f'<line x1="{plot_x:.1f}" y1="{plot_y + header_h - 6:.1f}" '
@@ -356,8 +357,7 @@ def build_svg(
     )
 
     bar_reach = (
-        max(abs(float(row[bar_column])) for row in rows if bar_column in row)
-        if bar_column else 1.0
+        max(abs(float(row[bar_column])) for row in rows if bar_column in row) if bar_column else 1.0
     ) or 1.0
     tips: List[str] = []
     for index, row in enumerate(rows):
@@ -387,7 +387,7 @@ def build_svg(
                 parts.append(
                     f'<text x="{rights[name] - 13:.1f}" y="{middle:.1f}" font-size="12" '
                     f'fill="{INK}" text-anchor="end" font-family="{mono_family}">'
-                    f'{shown}</text>'
+                    f"{shown}</text>"
                 )
             else:
                 parts.append(
@@ -395,33 +395,38 @@ def build_svg(
                     f'fill="{INK}">{xml_escape(str(raw))}</text>'
                 )
         said_row = " · ".join(
-            f"{name} "
-            + (cell(name, float(row[name])) if numeric[name]
-               else str(row.get(name, "")))
-            for name in names if name in row
+            f"{name} " + (cell(name, float(row[name])) if numeric[name] else str(row.get(name, "")))
+            for name in names
+            if name in row
         )
         parts.append(
             f'<rect id="line-{index}" class="line hit" tabindex="0" role="img" '
             f'aria-label="{xml_escape(said_row)}" x="{plot_x:.1f}" y="{top:.1f}" '
             f'width="{plot_w:.1f}" height="{line_h:.1f}" fill="transparent">'
-            f'<title>{xml_escape(str(row.get(names[0], "")))}</title></rect>'
+            f"<title>{xml_escape(str(row.get(names[0], '')))}</title></rect>"
         )
         # Built from whole fields rather than by wrapping the joined row.
         # A wrapped line breaks mid-field, which reads badly and hands a
         # translator half a column name.
         fields = [
-            f"{name} "
-            + (cell(name, float(row[name])) if numeric[name] else str(row.get(name, "")))
-            for name in names[1:] if name in row
+            f"{name} " + (cell(name, float(row[name])) if numeric[name] else str(row.get(name, "")))
+            for name in names[1:]
+            if name in row
         ]
         bubble = [str(row.get(names[0], ""))] + [
-            " · ".join(fields[at:at + 2]) for at in range(0, len(fields), 2)
+            " · ".join(fields[at : at + 2]) for at in range(0, len(fields), 2)
         ]
         tips.append(
             tooltip_bubble(
-                plot_x + plot_w * 0.5, middle, bubble[:3],
-                canvas_w=width, canvas_h=height, ink=INK, secondary=SECONDARY,
-                border=GRIDLINE, elem_id=f"linetip-{index}",
+                plot_x + plot_w * 0.5,
+                middle,
+                bubble[:3],
+                canvas_w=width,
+                canvas_h=height,
+                ink=INK,
+                secondary=SECONDARY,
+                border=GRIDLINE,
+                elem_id=f"linetip-{index}",
             )
         )
 
@@ -443,13 +448,13 @@ def build_svg(
                     f'<text x="{rights[name] - 13:.1f}" y="{middle:.1f}" font-size="12" '
                     f'font-weight="700" fill="{INK}" text-anchor="end" '
                     f'font-family="{mono_family}">'
-                    f'{cell(name, totals[name])}</text>'
+                    f"{cell(name, totals[name])}</text>"
                 )
             elif numeric[name]:
                 parts.append(
                     f'<text x="{rights[name] - 13:.1f}" y="{middle:.1f}" font-size="11" '
                     f'fill="{SECONDARY}" text-anchor="end" font-family="{mono_family}">'
-                    f'—</text>'
+                    f"—</text>"
                 )
 
     parts.extend(tips)
@@ -525,12 +530,23 @@ def make_table(
     True
     """
     svg = build_svg(
-        data, title=title, subtitle=subtitle, width=width, height=height,
-        columns=columns, sort_by=sort_by, descending=descending,
-        bar_column=bar_column, total_row=total_row,
-        sum_columns=sum_columns, total_label=total_label,
-        sort_note=sort_note, finding=finding, mode=mode,
-        accessibility=accessibility, theme=theme,
+        data,
+        title=title,
+        subtitle=subtitle,
+        width=width,
+        height=height,
+        columns=columns,
+        sort_by=sort_by,
+        descending=descending,
+        bar_column=bar_column,
+        total_row=total_row,
+        sum_columns=sum_columns,
+        total_label=total_label,
+        sort_note=sort_note,
+        finding=finding,
+        mode=mode,
+        accessibility=accessibility,
+        theme=theme,
     )
     dest = Path(out) if out else svg_example_path(__file__, "table")
     return write_svg(dest, svg, theme=theme)
@@ -538,8 +554,12 @@ def make_table(
 
 def main() -> None:
     """CLI entry point: build the SVG and write it to disk."""
-    render_cli(__file__, "table", build_svg,
-               description="Draw a table whose columns can actually be compared.")
+    render_cli(
+        __file__,
+        "table",
+        build_svg,
+        description="Draw a table whose columns can actually be compared.",
+    )
 
 
 if __name__ == "__main__":

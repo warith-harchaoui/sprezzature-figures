@@ -62,8 +62,11 @@ def _load_demo_data(kind: str) -> list:
     # Try the verbatim name first, then the normalised fallback.
     normalised = kind.replace("-", "_")
     candidate = next(
-        (scripts_dir / f"make_{stem}.py" for stem in (kind, normalised)
-         if (scripts_dir / f"make_{stem}.py").exists()),
+        (
+            scripts_dir / f"make_{stem}.py"
+            for stem in (kind, normalised)
+            if (scripts_dir / f"make_{stem}.py").exists()
+        ),
         None,
     )
     if candidate is None:
@@ -194,7 +197,9 @@ def test_repaired_hero_kind_dispatches_and_renders(kind: str, tmp_path: Path) ->
 
 
 @pytest.mark.slow
-def test_renders_on_fallback_palette_when_colors_absent(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_renders_on_fallback_palette_when_colors_absent(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     """Figures must render on the bundled fallback palette, not only the full
     sprezzature-colors CSV. CI has no sprezzature-colors, so the fallback (whose
     colour names differ — Teal/Mint, no Turquoise/Pink) is what actually runs;
@@ -264,7 +269,9 @@ def test_make_figure_hyphenated_kind_dispatches_correctly(tmp_path: Path) -> Non
     assert out.exists()
 
 
-def test_make_figure_warns_on_non_stable_status(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+def test_make_figure_warns_on_non_stable_status(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
     """The status != 'stable' UserWarning contract, exercised without relying
     on any real kind currently being non-stable (all 126 are 'stable' as of
     the legacy-generator promotion -- there is no naturally-broken fixture

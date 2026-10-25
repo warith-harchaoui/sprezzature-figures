@@ -42,13 +42,16 @@ from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 # ``list[dict[str, Any]]`` shape (``name`` + ``seconds``).
 # ------------------------------------------------------------------
 DEMO_DATA: List[Dict[str, Any]] = [
-    {"name": "Alice NGUYEN", "seconds": 984},   # 16:24 · 41 %
-    {"name": "Marc DUBOIS", "seconds": 648},     # 10:48 · 27 %
-    {"name": "Sofia ROSSI", "seconds": 432},     # 07:12 · 18 %
-    {"name": "Karim HADDAD", "seconds": 336},    # 05:36 · 14 %
+    {"name": "Alice NGUYEN", "seconds": 984},  # 16:24 · 41 %
+    {"name": "Marc DUBOIS", "seconds": 648},  # 10:48 · 27 %
+    {"name": "Sofia ROSSI", "seconds": 432},  # 07:12 · 18 %
+    {"name": "Karim HADDAD", "seconds": 336},  # 05:36 · 14 %
 ]
 
-def _slice_colors(accessibility: str = "universal", n: int = 4, theme: str = "corporate") -> List[str]:
+
+def _slice_colors(
+    accessibility: str = "universal", n: int = 4, theme: str = "corporate"
+) -> List[str]:
     """Return ``n`` donut-slice hues at a given accessibility level.
 
     The first four match the house Blue/Orange/Green/Purple set (so the
@@ -185,8 +188,7 @@ def build_svg(
     # greyscale. The description names the speakers in order so a screen
     # reader conveys the same ranking a sighted reader sees.
     ranked = ", ".join(
-        f"{s['name']} {_mmss(int(s['seconds']))} "
-        f"({round(100 * int(s['seconds']) / total)} %)"
+        f"{s['name']} {_mmss(int(s['seconds']))} ({round(100 * int(s['seconds']) / total)} %)"
         for s in speakers
     )
     a11y_title = "Who spoke, and for how long"
@@ -265,10 +267,19 @@ def build_svg(
         mid_pt_x, mid_pt_y = _pt(CX, CY, (R_OUT + R_IN) / 2.0, (a0 + a1) / 2.0)
         bubbles.append(
             tooltip_bubble(
-                mid_pt_x, mid_pt_y - 14,
-                [spk["name"], f"{_mmss(secs)} · {round(100 * secs / total)}%", f"#{rank} of {len(speakers)} speakers"],
-                anchor="middle", canvas_w=W, canvas_h=H,
-                ink=INK, secondary=SECONDARY, border=LEADER,
+                mid_pt_x,
+                mid_pt_y - 14,
+                [
+                    spk["name"],
+                    f"{_mmss(secs)} · {round(100 * secs / total)}%",
+                    f"#{rank} of {len(speakers)} speakers",
+                ],
+                anchor="middle",
+                canvas_w=W,
+                canvas_h=H,
+                ink=INK,
+                secondary=SECONDARY,
+                border=LEADER,
                 elem_id=f"tip-{i}",
             )
         )
@@ -352,7 +363,9 @@ def make_speaking_time(
 
 def main() -> None:
     """Render the speaking-time donut to SVG (and a companion PNG)."""
-    parser = argparse.ArgumentParser(description="Render the speaking-time SVG (and a PNG companion).")
+    parser = argparse.ArgumentParser(
+        description="Render the speaking-time SVG (and a PNG companion)."
+    )
     parser.add_argument(
         "--mode",
         choices=("self-contained", "external", "static"),
@@ -361,7 +374,14 @@ def main() -> None:
     )
     parser.add_argument(
         "--accessibility",
-        choices=("universal", "high-contrast", "monochrome", "deuteranopia", "protanopia", "tritanopia"),
+        choices=(
+            "universal",
+            "high-contrast",
+            "monochrome",
+            "deuteranopia",
+            "protanopia",
+            "tritanopia",
+        ),
         default="universal",
         help="palette accessibility level (default: universal, the CVD-safe standard)",
     )

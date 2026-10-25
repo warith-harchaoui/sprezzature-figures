@@ -136,10 +136,7 @@ def load_records(path: str | Path) -> list[dict[str, Any]]:
         # Separate name: the pandas reader returns None when pandas is absent,
         # and `records` is not optional anywhere else in this function.
         parsed = _load_csv_pandas(path)
-        records = (
-            parsed if parsed is not None
-            else _load_csv_stdlib(path, _sniff_delimiter(path))
-        )
+        records = parsed if parsed is not None else _load_csv_stdlib(path, _sniff_delimiter(path))
     else:
         raise ValueError(
             f"unsupported data format {suffix!r} for {path.name}; use .csv, .tsv, .json, or .jsonl"

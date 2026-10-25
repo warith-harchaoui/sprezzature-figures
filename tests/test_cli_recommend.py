@@ -34,7 +34,9 @@ def _write_csv(tmp_path: Path) -> Path:
 
 def test_recommend_lists_ranked_kinds(tmp_path: Path) -> None:
     """`recommend --data file` prints ranked kinds with scores and role bindings."""
-    result = CliRunner().invoke(main, ["recommend", "--data", str(_write_csv(tmp_path)), "--limit", "3"])
+    result = CliRunner().invoke(
+        main, ["recommend", "--data", str(_write_csv(tmp_path)), "--limit", "3"]
+    )
     assert result.exit_code == 0, result.output
     assert "best first" in result.output
     assert "score=" in result.output

@@ -71,9 +71,9 @@ METHODS: List[str] = ["Wallet", "Card", "Buy-now-pay-later", "Bank transfer"]
 
 #: Within-column composition: {device -> {method -> fraction (sums to 1)}}.
 COMPOSITION: Dict[str, Dict[str, float]] = {
-    "Mobile":  {"Wallet": 0.48, "Card": 0.32, "Buy-now-pay-later": 0.15, "Bank transfer": 0.05},
+    "Mobile": {"Wallet": 0.48, "Card": 0.32, "Buy-now-pay-later": 0.15, "Bank transfer": 0.05},
     "Desktop": {"Wallet": 0.22, "Card": 0.55, "Buy-now-pay-later": 0.14, "Bank transfer": 0.09},
-    "Tablet":  {"Wallet": 0.30, "Card": 0.47, "Buy-now-pay-later": 0.15, "Bank transfer": 0.08},
+    "Tablet": {"Wallet": 0.30, "Card": 0.47, "Buy-now-pay-later": 0.15, "Bank transfer": 0.08},
 }
 
 TITLE = "On phones, wallets have overtaken cards"
@@ -106,10 +106,10 @@ def method_colors(accessibility: str = "universal", theme: str = "corporate") ->
     """
     pal = load_palette(accessibility, theme=theme)
     return {
-        "Wallet":            pal.get("Blue", "#007AFF"),
-        "Card":              pal.get("Teal", "#5AC8FA"),
+        "Wallet": pal.get("Blue", "#007AFF"),
+        "Card": pal.get("Teal", "#5AC8FA"),
         "Buy-now-pay-later": pal.get("Orange", "#FF9500"),
-        "Bank transfer":     pal.get("Gray", "#8E8E93"),
+        "Bank transfer": pal.get("Gray", "#8E8E93"),
     }
 
 
@@ -203,17 +203,19 @@ def build_tiles(
         for method in METHODS:
             frac = comp.get(method, 0.0)
             seg_h = plot_h * frac
-            tiles.append({
-                "x": cursor_x,
-                "y": cursor_y,
-                "w": col_w,
-                "h": seg_h,
-                "device": dev["name"],
-                "method": method,
-                "color": colors[method],
-                "pct": frac * 100.0,
-                "share": dev["share"] * 100.0,
-            })
+            tiles.append(
+                {
+                    "x": cursor_x,
+                    "y": cursor_y,
+                    "w": col_w,
+                    "h": seg_h,
+                    "device": dev["name"],
+                    "method": method,
+                    "color": colors[method],
+                    "pct": frac * 100.0,
+                    "share": dev["share"] * 100.0,
+                }
+            )
             cursor_y += seg_h
         cursor_x += col_w + gap
     return tiles
@@ -287,17 +289,26 @@ def render_svg(
     devices = devices if devices else DEVICES
     composition = composition if composition else COMPOSITION
     tiles = build_tiles(
-        plot_x, plot_y, plot_w, plot_h, gap, accessibility,
-        devices=devices, composition=composition, theme=theme,
+        plot_x,
+        plot_y,
+        plot_w,
+        plot_h,
+        gap,
+        accessibility,
+        devices=devices,
+        composition=composition,
+        theme=theme,
     )
 
     parts: List[str] = []
-    parts.append(svg_open(width, height, "mosaic-t", "mosaic-d", font_family=chrome_stack_for_theme(theme)))
+    parts.append(
+        svg_open(width, height, "mosaic-t", "mosaic-d", font_family=chrome_stack_for_theme(theme))
+    )
     parts.append(f'<title id="mosaic-t">{escape(TITLE)}</title>')
     parts.append(
         '<desc id="mosaic-d">Marimekko mosaic: column widths are each device\'s share of all '
-        'online checkouts (Mobile widest at 54 percent), and each column stacks payment methods '
-        'by their within-device share. On Mobile, Wallet is the tallest segment, overtaking Card.</desc>'
+        "online checkouts (Mobile widest at 54 percent), and each column stacks payment methods "
+        "by their within-device share. On Mobile, Wallet is the tallest segment, overtaking Card.</desc>"
     )
 
     # Style block: hover lift + focus ring, guarded by reduced-motion. The
@@ -342,12 +353,7 @@ def render_svg(
         # Additive OS dark mode: dark paper + light ink (default ink_map); the
         # payment-method tile hues are data, left alone. The focus ring and the
         # hairline column rules flip to light so they read on the dark surface.
-        + os_dark_style(
-            extra=(
-                '[stroke="#E5E5EA"]{stroke:#3A3A3E;}'
-                ".tile:focus{stroke:#F2F2F7;}"
-            )
-        )
+        + os_dark_style(extra=('[stroke="#E5E5EA"]{stroke:#3A3A3E;}.tile:focus{stroke:#F2F2F7;}'))
         + "</style>"
     )
     # Forced-colors pattern tiles (referenced only inside the media query above).
@@ -357,8 +363,12 @@ def render_svg(
     parts.append(f'<rect width="{width}" height="{height}" fill="#FFFFFF"/>')
 
     # Title + subtitle.
-    parts.append(f'<text x="{fmt_compact(plot_x, decimals=2)}" y="66" font-size="34" font-weight="700" fill="{ink}">{escape(title or TITLE)}</text>')
-    parts.append(f'<text x="{fmt_compact(plot_x, decimals=2)}" y="102" font-size="20" fill="{muted}">{escape(SUBTITLE)}</text>')
+    parts.append(
+        f'<text x="{fmt_compact(plot_x, decimals=2)}" y="66" font-size="34" font-weight="700" fill="{ink}">{escape(title or TITLE)}</text>'
+    )
+    parts.append(
+        f'<text x="{fmt_compact(plot_x, decimals=2)}" y="102" font-size="20" fill="{muted}">{escape(SUBTITLE)}</text>'
+    )
 
     # Left axis label (vertical) — within-device composition axis.
     axis_cx = plot_x - 62.0
@@ -401,14 +411,19 @@ def render_svg(
         )
         tile_tips.append(
             tooltip_bubble(
-                t["x"] + t["w"] / 2.0, t["y"] - 12.0,
+                t["x"] + t["w"] / 2.0,
+                t["y"] - 12.0,
                 [
                     f"{t['device']} · {t['method']}",
                     f"{t['pct']:.0f}% of {t['device']} orders",
                     f"{t['device']} = {t['share']:.0f}% of all orders",
                 ],
-                anchor="middle", canvas_w=width, canvas_h=height,
-                ink=ink, secondary=muted, border=hairline,
+                anchor="middle",
+                canvas_w=width,
+                canvas_h=height,
+                ink=ink,
+                secondary=muted,
+                border=hairline,
                 elem_id=f"tile-tip-{tile_i}",
             )
         )
@@ -478,7 +493,12 @@ def render_svg(
 #: (device, method) cell of the mosaic: the column's own share of the whole
 #: plus that cell's within-column fraction.
 DEMO_DATA: List[Dict[str, Any]] = [
-    {"device": dev["name"], "share": dev["share"], "method": method, "fraction": COMPOSITION[dev["name"]][method]}
+    {
+        "device": dev["name"],
+        "share": dev["share"],
+        "method": method,
+        "fraction": COMPOSITION[dev["name"]][method],
+    }
     for dev in DEVICES
     for method in METHODS
 ]
@@ -545,7 +565,8 @@ def make_mosaic(
         mode=mode,
         accessibility=accessibility,
         theme=theme,
-     title=title or None)
+        title=title or None,
+    )
     dest = Path(out) if out else svg_example_path(__file__, "mosaic")
     return write_svg(dest, svg, theme=theme)
 
@@ -555,7 +576,9 @@ def make_mosaic(
 # --------------------------------------------------------------------------- #
 def main() -> None:
     """Write the mosaic SVG to disk."""
-    render_cli(__file__, "mosaic", render_svg, description="Render the mosaic / Marimekko example SVG.")
+    render_cli(
+        __file__, "mosaic", render_svg, description="Render the mosaic / Marimekko example SVG."
+    )
 
 
 if __name__ == "__main__":

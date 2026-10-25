@@ -66,14 +66,14 @@ def _samples(seed: int = 23) -> List[Dict[str, Any]]:
         for index in range(count):
             u1 = max(rng.random(), 1e-12)
             u2 = rng.random()
-            draw = centre + spread * math.sqrt(-2.0 * math.log(u1)) * math.cos(
-                2.0 * math.pi * u2
+            draw = centre + spread * math.sqrt(-2.0 * math.log(u1)) * math.cos(2.0 * math.pi * u2)
+            rows.append(
+                {
+                    "cluster": name,
+                    "sample": f"{name[:2].lower()}-{index:03d}",
+                    "silhouette": round(max(min(draw, 1.0), -1.0), 4),
+                }
             )
-            rows.append({
-                "cluster": name,
-                "sample": f"{name[:2].lower()}-{index:03d}",
-                "silhouette": round(max(min(draw, 1.0), -1.0), 4),
-            })
     return rows
 
 
@@ -135,8 +135,12 @@ def build_svg(
     hues = [
         palette.get(name, fallback)
         for name, fallback in (
-            ("Blue", "#007AFF"), ("Orange", "#FF9500"), ("Purple", "#AF52DE"),
-            ("Green", "#28CD41"), ("Teal", "#79DBDC"), ("Yellow", "#FFCC00"),
+            ("Blue", "#007AFF"),
+            ("Orange", "#FF9500"),
+            ("Purple", "#AF52DE"),
+            ("Green", "#28CD41"),
+            ("Teal", "#79DBDC"),
+            ("Yellow", "#FFCC00"),
         )
     ]
     misfit_colour = palette.get("Red", "#FF3B30")
@@ -156,9 +160,7 @@ def build_svg(
 
     total = sum(len(b) for b in grouped.values())
     overall = sum(v for blades in grouped.values() for v, _ in blades) / max(total, 1)
-    misfits = {
-        name: sum(1 for v, _ in blades if v < 0) for name, blades in grouped.items()
-    }
+    misfits = {name: sum(1 for v, _ in blades if v < 0) for name, blades in grouped.items()}
     all_misfits = sum(misfits.values())
 
     plot_x, plot_y = 214.0, 150.0
@@ -191,15 +193,14 @@ def build_svg(
 
     parts: List[str] = []
     parts.append(
-        svg_open(width, height, "sil-title", "sil-desc",
-                 font_family=chrome_stack_for_theme(theme))
+        svg_open(width, height, "sil-title", "sil-desc", font_family=chrome_stack_for_theme(theme))
     )
     parts.append(f'<title id="sil-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="sil-desc">A silhouette plot of {total} samples in {len(order)} '
-        f'clusters: {xml_escape(", ".join(order))}. Each sample is one horizontal blade, '
-        f'sorted descending inside its cluster. The overall mean coefficient is '
-        f'{fmt_number(overall)}. {xml_escape(said)}.</desc>'
+        f"clusters: {xml_escape(', '.join(order))}. Each sample is one horizontal blade, "
+        f"sorted descending inside its cluster. The overall mean coefficient is "
+        f"{fmt_number(overall)}. {xml_escape(said)}.</desc>"
     )
     parts.append(
         "<style>"
@@ -217,7 +218,7 @@ def build_svg(
     )
     parts.append(
         f'<text x="{plot_x - 154:.1f}" y="72" font-size="14" fill="{SECONDARY}">'
-        f'{xml_escape(subtitle)}</text>'
+        f"{xml_escape(subtitle)}</text>"
     )
     parts.append(
         f'<text x="{plot_x - 154:.1f}" y="98" font-size="12" fill="{SECONDARY}" '
@@ -233,7 +234,7 @@ def build_svg(
         parts.append(
             f'<text x="{gx:.1f}" y="{plot_y + plot_h + 22:.1f}" font-size="11" '
             f'fill="{SECONDARY}" text-anchor="middle" font-family="{mono_family}">'
-            f'{fmt_number(tick)}</text>'
+            f"{fmt_number(tick)}</text>"
         )
     parts.append(
         f'<text x="{plot_x + plot_w / 2:.1f}" y="{height - 24:.1f}" font-size="12" '
@@ -269,11 +270,10 @@ def build_svg(
             # reading off the blades anyway. Positive and negative are two
             # polygons so the wrong-side samples keep their own colour.
             for low, high, fill in (
-                (0.0, 1.0, colour), (-1.0, 0.0, misfit_colour),
+                (0.0, 1.0, colour),
+                (-1.0, 0.0, misfit_colour),
             ):
-                picked = [
-                    (index, v) for index, (v, _) in enumerate(blades) if low <= v <= high
-                ]
+                picked = [(index, v) for index, (v, _) in enumerate(blades) if low <= v <= high]
                 if not picked:
                     continue
                 top = cursor + picked[0][0] * blade_h
@@ -291,7 +291,7 @@ def build_svg(
         parts.append(
             f'<text x="{plot_x - 12:.1f}" y="{(band_top + band_bottom) / 2 - 2:.1f}" '
             f'font-size="12" font-weight="700" fill="{INK}" text-anchor="end">'
-            f'{xml_escape(name)}</text>'
+            f"{xml_escape(name)}</text>"
         )
         # Two lines rather than one: "n 38 · mean 0.09 · 10 below zero" ran
         # off the left edge of the canvas on the first two renders.
@@ -311,19 +311,24 @@ def build_svg(
             f'{fmt_number(cluster_mean)}, {misfits[name]} below zero" '
             f'x="{plot_x:.1f}" y="{band_top:.1f}" width="{plot_w:.1f}" '
             f'height="{max(band_bottom - band_top, 2):.1f}" fill="transparent">'
-            f'<title>{xml_escape(name)}: {fmt_number(cluster_mean)} over '
-            f'{len(blades)} samples</title></rect>'
+            f"<title>{xml_escape(name)}: {fmt_number(cluster_mean)} over "
+            f"{len(blades)} samples</title></rect>"
         )
         tips.append(
             tooltip_bubble(
-                plot_x + plot_w * 0.62, (band_top + band_bottom) / 2,
+                plot_x + plot_w * 0.62,
+                (band_top + band_bottom) / 2,
                 [
                     name,
                     f"{len(blades)} samples · mean {fmt_number(cluster_mean)}",
                     f"{misfits[name]} below zero",
                 ],
-                canvas_w=width, canvas_h=height, ink=INK, secondary=SECONDARY,
-                border=GRIDLINE, elem_id=f"cltip-{index}",
+                canvas_w=width,
+                canvas_h=height,
+                ink=INK,
+                secondary=SECONDARY,
+                border=GRIDLINE,
+                elem_id=f"cltip-{index}",
             )
         )
         cursor += gap_between_clusters
@@ -346,7 +351,7 @@ def build_svg(
     parts.append(
         f'<text x="{px(overall) + 2:.1f}" y="{plot_y - 13:.1f}" font-size="11" '
         f'font-weight="700" fill="{INK}" font-family="{mono_family}">'
-        f'{xml_escape(mean_text)}</text>'
+        f"{xml_escape(mean_text)}</text>"
     )
 
     parts.extend(tips)
@@ -410,10 +415,20 @@ def make_silhouette(
     True
     """
     svg = build_svg(
-        data, title=title, subtitle=subtitle, width=width, height=height,
-        cluster=cluster, value=value, sample=sample, x_label=x_label,
-        mean_label=mean_label, misfit_label=misfit_label, mode=mode,
-        accessibility=accessibility, theme=theme,
+        data,
+        title=title,
+        subtitle=subtitle,
+        width=width,
+        height=height,
+        cluster=cluster,
+        value=value,
+        sample=sample,
+        x_label=x_label,
+        mean_label=mean_label,
+        misfit_label=misfit_label,
+        mode=mode,
+        accessibility=accessibility,
+        theme=theme,
     )
     dest = Path(out) if out else svg_example_path(__file__, "silhouette")
     return write_svg(dest, svg, theme=theme)

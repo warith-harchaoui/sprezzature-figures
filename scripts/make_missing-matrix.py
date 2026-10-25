@@ -79,16 +79,20 @@ def _records(seed: int = 11) -> List[Dict[str, Any]]:
     rows: List[Dict[str, Any]] = []
     for index in range(_RECORDS):
         skipped_physical = rng.random() < 0.14
-        rows.append({
-            "patient": f"P{index + 1:05d}",
-            "age": None if rng.random() < 0.02 else rng.randint(18, 89),
-            "weight": None if skipped_physical else round(rng.uniform(48.0, 112.0), 1),
-            "height": None if skipped_physical or rng.random() < 0.01
-            else round(rng.uniform(1.50, 1.96), 2),
-            "referrer": None if rng.random() < 0.11 else rng.choice(["GP", "A&E", "self"]),
-            "consent_date": None if index < _LATE_FIELD_FROM
-            else f"2025-{rng.randint(1, 12):02d}-{rng.randint(1, 28):02d}",
-        })
+        rows.append(
+            {
+                "patient": f"P{index + 1:05d}",
+                "age": None if rng.random() < 0.02 else rng.randint(18, 89),
+                "weight": None if skipped_physical else round(rng.uniform(48.0, 112.0), 1),
+                "height": None
+                if skipped_physical or rng.random() < 0.01
+                else round(rng.uniform(1.50, 1.96), 2),
+                "referrer": None if rng.random() < 0.11 else rng.choice(["GP", "A&E", "self"]),
+                "consent_date": None
+                if index < _LATE_FIELD_FROM
+                else f"2025-{rng.randint(1, 12):02d}-{rng.randint(1, 28):02d}",
+            }
+        )
     return rows
 
 
@@ -121,7 +125,7 @@ def _pair_overlap(
     best: Optional[Tuple[str, str]] = None
     best_score = 0.0
     for first_index, first in enumerate(columns):
-        for second in columns[first_index + 1:]:
+        for second in columns[first_index + 1 :]:
             left, right = absent[first], absent[second]
             both = sum(1 for a, b in zip(left, right, strict=True) if a and b)
             either = sum(1 for a, b in zip(left, right, strict=True) if a or b)
@@ -200,8 +204,7 @@ def build_svg(
 
     n = len(rows)
     absent = {
-        field: [_is_missing(row.get(field), blanks_count) for row in rows]
-        for field in fields
+        field: [_is_missing(row.get(field), blanks_count) for row in rows] for field in fields
     }
     counts = {field: sum(flags) for field, flags in absent.items()}
     band_count = max(1, min(bands, n))
@@ -227,10 +230,14 @@ def build_svg(
         return sum(window) / len(window) if window else 0.0
 
     pair, overlap = _pair_overlap(fields, absent)
-    said_pair = pair_note if pair_note is not None else (
-        f"{pair[0]} and {pair[1]} share {fmt_number(overlap * 100.0)}% of their absences"
-        if pair and overlap > 0.0
-        else "no two columns go missing together"
+    said_pair = (
+        pair_note
+        if pair_note is not None
+        else (
+            f"{pair[0]} and {pair[1]} share {fmt_number(overlap * 100.0)}% of their absences"
+            if pair and overlap > 0.0
+            else "no two columns go missing together"
+        )
     )
     worst = max(counts, key=lambda field: counts[field]) if counts else ""
     said_parts: List[str] = []
@@ -239,8 +246,7 @@ def build_svg(
     else:
         empty = [field for field in fields if counts[field] == 0]
         said_parts.append(
-            f"{worst} is the emptiest at {fmt_number(counts[worst] / n * 100.0)}% of "
-            f"{n} records."
+            f"{worst} is the emptiest at {fmt_number(counts[worst] / n * 100.0)}% of {n} records."
         )
         if empty:
             said_parts.append(
@@ -254,16 +260,17 @@ def build_svg(
 
     parts: List[str] = []
     parts.append(
-        svg_open(width, height, "miss-title", "miss-desc",
-                 font_family=chrome_stack_for_theme(theme))
+        svg_open(
+            width, height, "miss-title", "miss-desc", font_family=chrome_stack_for_theme(theme)
+        )
     )
     parts.append(f'<title id="miss-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="miss-desc">A missingness matrix of {n} records across '
-        f'{len(fields)} columns: {xml_escape(", ".join(fields))}. Records run top to '
-        f'bottom in order, binned into {band_count} bands, each shaded by the share of '
-        f'its records missing that column. {xml_escape(said_pair)}. '
-        f'{xml_escape(" ".join(said_parts))}</desc>'
+        f"{len(fields)} columns: {xml_escape(', '.join(fields))}. Records run top to "
+        f"bottom in order, binned into {band_count} bands, each shaded by the share of "
+        f"its records missing that column. {xml_escape(said_pair)}. "
+        f"{xml_escape(' '.join(said_parts))}</desc>"
     )
     parts.append(
         "<style>"
@@ -305,7 +312,7 @@ def build_svg(
         parts.append(
             f'<text x="{left + column_w / 2:.1f}" y="{plot_y - 11:.1f}" font-size="11" '
             f'fill="{SECONDARY}" text-anchor="middle" font-family="{mono_family}">'
-            f'{fmt_number(counts[field] / n * 100.0)}%</text>'
+            f"{fmt_number(counts[field] / n * 100.0)}%</text>"
         )
         for band in range(band_count):
             fraction = share(field, band)
@@ -324,16 +331,23 @@ def build_svg(
                 f'{fmt_number(fraction * 100.0)}% missing" '
                 f'x="{left + 1:.1f}" y="{top:.1f}" width="{column_w - 2:.1f}" '
                 f'height="{band_h + 0.5:.1f}" fill="transparent">'
-                f'<title>{xml_escape(field)} {start}-{stop}: '
-                f'{fmt_number(fraction * 100.0)}%</title></rect>'
+                f"<title>{xml_escape(field)} {start}-{stop}: "
+                f"{fmt_number(fraction * 100.0)}%</title></rect>"
             )
             tips.append(
                 tooltip_bubble(
-                    left + column_w / 2, top + band_h / 2,
-                    [f"{field} · {start}-{stop}",
-                     f"{fmt_number(fraction * 100.0)}% {missing_label}"],
-                    canvas_w=width, canvas_h=height, ink=INK, secondary=SECONDARY,
-                    border=GRIDLINE, elem_id=f"celltip-{element}",
+                    left + column_w / 2,
+                    top + band_h / 2,
+                    [
+                        f"{field} · {start}-{stop}",
+                        f"{fmt_number(fraction * 100.0)}% {missing_label}",
+                    ],
+                    canvas_w=width,
+                    canvas_h=height,
+                    ink=INK,
+                    secondary=SECONDARY,
+                    border=GRIDLINE,
+                    elem_id=f"celltip-{element}",
                 )
             )
 
@@ -357,7 +371,7 @@ def build_svg(
     key_y = plot_y + plot_h + 34.0
     parts.append(
         f'<text x="{key_x:.1f}" y="{key_y + 4:.1f}" font-size="11" fill="{SECONDARY}">'
-        f'{xml_escape(complete_label)}</text>'
+        f"{xml_escape(complete_label)}</text>"
     )
     for step in range(10):
         fraction = step / 9.0
@@ -373,7 +387,7 @@ def build_svg(
     parts.append(
         f'<text x="{key_x + 300:.1f}" y="{key_y + 4:.1f}" font-size="11" '
         f'fill="{SECONDARY}" font-family="{mono_family}">'
-        f'one band = {fmt_number(band_size)} records</text>'
+        f"one band = {fmt_number(band_size)} records</text>"
     )
 
     parts.extend(tips)
@@ -446,11 +460,22 @@ def make_missing_matrix(
     True
     """
     svg = build_svg(
-        data, title=title, subtitle=subtitle, width=width, height=height,
-        columns=columns, bands=bands, blanks_count=blanks_count,
-        order_label=order_label, complete_label=complete_label,
-        missing_label=missing_label, pair_note=pair_note, finding=finding,
-        mode=mode, accessibility=accessibility, theme=theme,
+        data,
+        title=title,
+        subtitle=subtitle,
+        width=width,
+        height=height,
+        columns=columns,
+        bands=bands,
+        blanks_count=blanks_count,
+        order_label=order_label,
+        complete_label=complete_label,
+        missing_label=missing_label,
+        pair_note=pair_note,
+        finding=finding,
+        mode=mode,
+        accessibility=accessibility,
+        theme=theme,
     )
     dest = Path(out) if out else svg_example_path(__file__, "missing-matrix")
     return write_svg(dest, svg, theme=theme)
@@ -458,8 +483,12 @@ def make_missing_matrix(
 
 def main() -> None:
     """CLI entry point: build the SVG and write it to disk."""
-    render_cli(__file__, "missing-matrix", build_svg,
-               description="Draw where a table's values are absent, and whether they fall together.")
+    render_cli(
+        __file__,
+        "missing-matrix",
+        build_svg,
+        description="Draw where a table's values are absent, and whether they fall together.",
+    )
 
 
 if __name__ == "__main__":

@@ -45,7 +45,9 @@ def test_load_delimited_coerces_numbers(tmp_path: Path, name: str, text: str) ->
     ]
 
 
-def test_load_csv_stdlib_fallback_when_pandas_absent(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_load_csv_stdlib_fallback_when_pandas_absent(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     """With pandas masked, the stdlib reader still coerces types and reads NA
     tokens / booleans."""
     monkeypatch.setitem(__import__("sys").modules, "pandas", None)
@@ -159,7 +161,16 @@ def test_make_figure_cli_renders_from_data_file(tmp_path: Path) -> None:
     data = _write(tmp_path, "d.csv", "parent,name,value\nA,A1,10\nB,B1,20\n")
     out = tmp_path / "x.svg"
     proc = subprocess.run(
-        [sys.executable, "-m", "sprezzature_figures.make_figure", "treemap", "--data", str(data), "--out", str(out)],
+        [
+            sys.executable,
+            "-m",
+            "sprezzature_figures.make_figure",
+            "treemap",
+            "--data",
+            str(data),
+            "--out",
+            str(out),
+        ],
         capture_output=True,
         text=True,
     )
@@ -178,9 +189,18 @@ def test_make_figure_cli_map_binds_mismatched_columns(tmp_path: Path) -> None:
     out = tmp_path / "x.png"
     proc = subprocess.run(
         [
-            sys.executable, "-m", "sprezzature_figures.make_figure", "bar",
-            "--data", str(data), "--map", "region=Region", "--map", "value=GDP",
-            "--out", str(out),
+            sys.executable,
+            "-m",
+            "sprezzature_figures.make_figure",
+            "bar",
+            "--data",
+            str(data),
+            "--map",
+            "region=Region",
+            "--map",
+            "value=GDP",
+            "--out",
+            str(out),
         ],
         capture_output=True,
         text=True,

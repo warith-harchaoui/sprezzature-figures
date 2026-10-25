@@ -62,11 +62,11 @@ _PLOT_X1: float = 1104.0
 _PLOT_Y1: float = 792.0
 
 #: House-style inks.
-_INK: str = "#1D1D1F"      # primary text
-_SUBTLE: str = "#6E6E73"   # secondary text
-_GRID: str = "#E5E5EA"     # axis frame + ticks
-_BG: str = "#FFFFFF"       # background
-_FOCUS: str = "#0A4DA0"    # focus-ring blue
+_INK: str = "#1D1D1F"  # primary text
+_SUBTLE: str = "#6E6E73"  # secondary text
+_GRID: str = "#E5E5EA"  # axis frame + ticks
+_BG: str = "#FFFFFF"  # background
+_FOCUS: str = "#0A4DA0"  # focus-ring blue
 
 #: The field lives in a domain of "kilometres" for communicative axes.
 _DOMAIN_X: Tuple[float, float] = (0.0, 640.0)
@@ -75,12 +75,12 @@ _DOMAIN_Y: Tuple[float, float] = (0.0, 400.0)
 #: Storm (low-pressure) centre in domain coordinates, and its strength.
 _STORM_X: float = 415.0
 _STORM_Y: float = 225.0
-_STORM_SWIRL: float = 72.0     # rotational strength (km/h scale)
-_STORM_CORE: float = 96.0      # core radius (km); flow solid-body inside
-_STORM_INFLOW: float = 20.0    # inward pull so streamlines spiral in
+_STORM_SWIRL: float = 72.0  # rotational strength (km/h scale)
+_STORM_CORE: float = 96.0  # core radius (km); flow solid-body inside
+_STORM_INFLOW: float = 20.0  # inward pull so streamlines spiral in
 
 #: Steady background westerly (blows toward +x, i.e. eastward).
-_BASE_WIND: float = 20.0       # km/h
+_BASE_WIND: float = 20.0  # km/h
 
 #: The field's two components at their shipped defaults, kept aside so a
 #: caller-less render (or `data=None`) can always be restored exactly.
@@ -356,9 +356,7 @@ def _seed_points() -> List[Tuple[float, float]]:
     for ring_r in (_STORM_CORE * 0.45, _STORM_CORE * 0.9, _STORM_CORE * 1.5):
         for k in range(10):
             ang = 2.0 * math.pi * k / 10.0 + ring_r * 0.01
-            seeds.append(
-                (_STORM_X + ring_r * math.cos(ang), _STORM_Y + ring_r * math.sin(ang))
-            )
+            seeds.append((_STORM_X + ring_r * math.cos(ang), _STORM_Y + ring_r * math.sin(ang)))
     # Regular lattice over the whole domain.
     nx, ny = 16, 11
     for j in range(ny):
@@ -385,8 +383,8 @@ def _streamlines() -> List[List[Tuple[float, float]]]:
     grid_ny = int(math.ceil((_DOMAIN_Y[1] - _DOMAIN_Y[0]) / cell)) + 1
     occupied = [[False] * grid_nx for _ in range(grid_ny)]
 
-    step = 3.2          # RK4 arc-length step (domain units)
-    max_pts = 900       # per half-line cap
+    step = 3.2  # RK4 arc-length step (domain units)
+    max_pts = 900  # per half-line cap
     lines: List[List[Tuple[float, float]]] = []
     for seed in _seed_points():
         line = _integrate(seed, step, max_pts, occupied, grid_nx, grid_ny, cell)
@@ -429,7 +427,9 @@ def _rgb_to_hex(rgb: Tuple[float, float, float]) -> str:
     return f"#{r:02X}{g:02X}{b:02X}"
 
 
-def _speed_ramp(accessibility: str = "universal", theme: str = "corporate") -> Callable[[float], str]:
+def _speed_ramp(
+    accessibility: str = "universal", theme: str = "corporate"
+) -> Callable[[float], str]:
     """Return a sequential house-blue ramp function ``speed -> hex``.
 
     Light sky-blue for a light breeze, deep navy for gale-force, so the
@@ -509,9 +509,7 @@ def _smooth_path(pts: List[Tuple[float, float]]) -> str:
         c1y = p1[1] + (p2[1] - p0[1]) / 6.0
         c2x = p2[0] - (p3[0] - p1[0]) / 6.0
         c2y = p2[1] - (p3[1] - p1[1]) / 6.0
-        d.append(
-            f"C {c1x:.1f} {c1y:.1f} {c2x:.1f} {c2y:.1f} {p2[0]:.1f} {p2[1]:.1f}"
-        )
+        d.append(f"C {c1x:.1f} {c1y:.1f} {c2x:.1f} {c2y:.1f} {p2[0]:.1f} {p2[1]:.1f}")
     return " ".join(d)
 
 
@@ -695,7 +693,7 @@ def _legend(
     parts.append(
         f'<text x="{lx:.1f}" y="{ly + bar_h + 18:.1f}" font-size="13" '
         f'font-family="Roboto Mono, monospace" fill="{_SUBTLE}">'
-        f'{v_min:.0f}</text>'
+        f"{v_min:.0f}</text>"
     )
     parts.append(
         f'<text x="{lx + bar_w:.1f}" y="{ly + bar_h + 18:.1f}" font-size="13" '
@@ -774,10 +772,12 @@ def build_svg(
     parts: List[str] = []
 
     # ---- header ----
-    parts.append(svg_open(_WIDTH, _HEIGHT, "sp-title", "sp-desc", font_family=chrome_stack_for_theme(theme)))
+    parts.append(
+        svg_open(_WIDTH, _HEIGHT, "sp-title", "sp-desc", font_family=chrome_stack_for_theme(theme))
+    )
     parts.append(
         '<title id="sp-title">Surface wind field over the coast: a westerly '
-        'airflow wraps into an offshore low</title>'
+        "airflow wraps into an offshore low</title>"
     )
     desc = (
         "Streamplot of a synthetic surface-wind field. Curved lines are "
@@ -839,15 +839,15 @@ def build_svg(
     # ---- title + subtitle ----
     # The headline the figure writes about its own data, used only when
     # the caller supplies none.
-    title = title or 'The storm pulls the whole airflow into its spin'
+    title = title or "The storm pulls the whole airflow into its spin"
     parts.append(
         f'<text x="{_PLOT_X0:.0f}" y="66" font-size="32" font-weight="700" '
         f'fill="{_INK}">{xml_escape(title)}</text>'
     )
     parts.append(
         f'<text x="{_PLOT_X0:.0f}" y="100" font-size="18" fill="{_SUBTLE}">'
-        f'Surface winds over the coast · streamlines follow the flow, '
-        f'darker means faster</text>'
+        f"Surface winds over the coast · streamlines follow the flow, "
+        f"darker means faster</text>"
     )
 
     # ---- axis frame + ticks ----
@@ -897,10 +897,15 @@ def build_svg(
         )
         tips.append(
             tooltip_bubble(
-                mpx, mpy - 10,
+                mpx,
+                mpy - 10,
                 [f"{v_here:.0f} km/h", f"({mid[0]:.0f}, {mid[1]:.0f}) km"],
-                anchor="middle", canvas_w=_WIDTH, canvas_h=_HEIGHT,
-                ink=_INK, secondary=_SUBTLE, border=_GRID,
+                anchor="middle",
+                canvas_w=_WIDTH,
+                canvas_h=_HEIGHT,
+                ink=_INK,
+                secondary=_SUBTLE,
+                border=_GRID,
                 elem_id=f"tip-{i}",
             )
         )
@@ -921,7 +926,7 @@ def build_svg(
             parts.append(_arrow(ax, ay, dx, dy, color, asize))
 
     parts.extend(tips)
-    parts.append('</g>')  # end clip group
+    parts.append("</g>")  # end clip group
 
     # ---- storm marker: a ring + call-out cell at the low's centre ----
     # Apple Red is the meteorological convention for a low-pressure "L", and
@@ -967,7 +972,7 @@ def build_svg(
 
     # Fullscreen control per interactivity mode, just before the close.
     parts.append(fullscreen_control(_WIDTH, _HEIGHT, mode))
-    parts.append('</svg>')
+    parts.append("</svg>")
     return "\n".join(parts)
 
 
@@ -1010,8 +1015,16 @@ def make_streamplot(
     Path
         Absolute path to the written SVG file.
     """
-    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme,
-                     x_axis_title=x_axis_title, y_axis_title=y_axis_title, legend_title=legend_title, title=title or None)
+    svg = build_svg(
+        data,
+        mode=mode,
+        accessibility=accessibility,
+        theme=theme,
+        x_axis_title=x_axis_title,
+        y_axis_title=y_axis_title,
+        legend_title=legend_title,
+        title=title or None,
+    )
     dest = Path(out) if out else svg_example_path(__file__, "streamplot")
     return write_svg(dest, svg, theme=theme)
 

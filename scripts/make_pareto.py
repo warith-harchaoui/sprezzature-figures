@@ -144,6 +144,7 @@ def _strings(language: str) -> Dict[str, str]:
     """Chrome-text dict for `language`, falling back to English."""
     return _STRINGS.get(language, _STRINGS["en"])
 
+
 # ------------------------------------------------------------------
 # Communicative real-sounding data — one week of support tickets, tagged
 # by the single reason each was opened. Counts, not "Category A/B/C".
@@ -209,14 +210,16 @@ def make_data(tickets: List[Dict[str, Any]] | None = None) -> Dict[str, Any]:
         vital = was_below
         if vital:
             n_vital += 1
-        rows.append({
-            "reason": str(r["reason"]),
-            "count": count,
-            "share": round(share, 2),
-            "cum": round(cum, 2),
-            "rank": i + 1,
-            "vital": vital,
-        })
+        rows.append(
+            {
+                "reason": str(r["reason"]),
+                "count": count,
+                "share": round(share, 2),
+                "cum": round(cum, 2),
+                "rank": i + 1,
+                "vital": vital,
+            }
+        )
         # The first row that lifts the cumulative share to/over 80 %.
         if not crossing and cum >= _PARETO_THRESHOLD:
             crossing = {
@@ -295,11 +298,11 @@ def build_svg(
     # cumulative curve (and its markers, so the crossing dot belongs to the
     # curve). Everything else is one neutral: a single muted grey for the
     # trivial-many bars, and the house secondary ink for reference + labels.
-    vital_c = palette.get("Blue", "#007AFF")   # the vital few — the hero bars
-    trivial_c = "#C7CAD1"                       # the trivial many — one muted grey
+    vital_c = palette.get("Blue", "#007AFF")  # the vital few — the hero bars
+    trivial_c = "#C7CAD1"  # the trivial many — one muted grey
     line_c = palette.get("Orange", "#FF9500")  # cumulative curve + its markers
-    ref_c = "#6E6E73"                           # 80 % reference — house secondary ink
-    ink = "#1D1D1F"                             # primary ink for headings + call-out
+    ref_c = "#6E6E73"  # 80 % reference — house secondary ink
+    ink = "#1D1D1F"  # primary ink for headings + call-out
     secondary = "#6E6E73"
     band = "#F5F5F7"
     # Les grilles sont blanches parce qu'elles sont tracees SUR la bande
@@ -349,10 +352,11 @@ def build_svg(
     def _pas_lisible(brut: float) -> float:
         """Pas d'axe « rond » immediatement au-dessus de ``brut``."""
         import math as _math
+
         if brut <= 0:
             return 1.0
         exposant = _math.floor(_math.log10(brut))
-        base = 10.0 ** exposant
+        base = 10.0**exposant
         for facteur in (1.0, 2.0, 2.5, 5.0, 10.0):
             if facteur * base >= brut:
                 return facteur * base
@@ -360,7 +364,12 @@ def build_svg(
 
     pas_gauche = _pas_lisible(valeur_max / 5.0)
     import math as _math
-    valeur_axe_max = _pas_lisible(valeur_max) if valeur_max < pas_gauche else pas_gauche * _math.ceil(valeur_max / pas_gauche)
+
+    valeur_axe_max = (
+        _pas_lisible(valeur_max)
+        if valeur_max < pas_gauche
+        else pas_gauche * _math.ceil(valeur_max / pas_gauche)
+    )
     graduations_gauche = [pas_gauche * k for k in range(int(valeur_axe_max / pas_gauche) + 1)]
 
     def sy_valeur(v: float) -> float:
@@ -383,15 +392,20 @@ def build_svg(
     parts: List[str] = []
 
     # --- SVG root + accessible description ------------------------
-    parts.append(svg_open(width, height, "pa-title", "pa-desc", font_family=chrome_stack_for_theme(theme)))
+    parts.append(
+        svg_open(width, height, "pa-title", "pa-desc", font_family=chrome_stack_for_theme(theme))
+    )
     parts.append(f'<title id="pa-title">{strings["accessible_title"]}</title>')
     cross_cum = round(crossing["cum"]) if crossing else 0
     cross_count = int(crossing["cum_count"]) if crossing else 0
     parts.append(
         '<desc id="pa-desc">'
         + strings["desc"].format(
-            total=total, n_vital=n_vital, n_trivial=n - n_vital,
-            cross_cum=cross_cum, cross_count=cross_count,
+            total=total,
+            n_vital=n_vital,
+            n_trivial=n - n_vital,
+            cross_cum=cross_cum,
+            cross_count=cross_count,
         )
         + "</desc>"
     )
@@ -423,12 +437,7 @@ def build_svg(
         # vital-few bar hue and the cumulative line are data, left alone. The
         # light plot band darkens to a panel, and the white gridlines drawn over
         # it dim to a faint dark-grey so they stay subtle, not glaring, on dark.
-        + os_dark_style(
-            extra=(
-                '[fill="#F5F5F7"]{fill:#17171A;}'
-                ".pa-grid{stroke:#2C2C30;}"
-            )
-        )
+        + os_dark_style(extra=('[fill="#F5F5F7"]{fill:#17171A;}.pa-grid{stroke:#2C2C30;}'))
         + "</style>"
     )
 
@@ -497,12 +506,12 @@ def build_svg(
         )
     parts.append(
         f'<text x="{m_left}" y="{y_second}" font-size="24" fill="{secondary}">'
-        f'{xml_escape(second_line)}</text>'
+        f"{xml_escape(second_line)}</text>"
     )
     caption = strings["caption"].format(total=total, n=n)
     parts.append(
         f'<text x="{m_left}" y="{y_caption}" font-size="20" fill="{secondary}">'
-        f'{xml_escape(caption)}</text>'
+        f"{xml_escape(caption)}</text>"
     )
 
     # --- gridlines (very light, on the shared percentage grid) ---
@@ -523,7 +532,7 @@ def build_svg(
     parts.append(
         f'<text x="{plot_x + plot_w - 6:.1f}" y="{ref_y - 10:.1f}" '
         f'font-size="20" fill="{ref_c}" text-anchor="end">'
-        f'{xml_escape(strings["ref_line_label"])}</text>'
+        f"{xml_escape(strings['ref_line_label'])}</text>"
     )
 
     # --- sorted bars (vital few Blue, trivial many grey) ---------
@@ -546,7 +555,10 @@ def build_svg(
         rect_cls = ' class="pa-vital"' if is_vital else ""
         x0 = cx - bar_w / 2.0
         tip = strings["bar_tooltip"].format(
-            reason=r["reason"], count=int(r["count"]), share=share, cum=float(r["cum"]),
+            reason=r["reason"],
+            count=int(r["count"]),
+            share=share,
+            cum=float(r["cum"]),
         )
         parts.append(
             f'<g id="bar-{i}" class="bar hit" tabindex="0" role="img" '
@@ -562,10 +574,19 @@ def build_svg(
         parts.append("</g>")
         bar_tips.append(
             tooltip_bubble(
-                cx, top - 14.0,
-                [str(r["reason"]), f"{int(r['count']):,} tickets", f"{share:.1f}% of total · cumulative {float(r['cum']):.1f}%"],
-                anchor="middle", canvas_w=width, canvas_h=height,
-                ink=ink, secondary=secondary, border=GRIDLINE,
+                cx,
+                top - 14.0,
+                [
+                    str(r["reason"]),
+                    f"{int(r['count']):,} tickets",
+                    f"{share:.1f}% of total · cumulative {float(r['cum']):.1f}%",
+                ],
+                anchor="middle",
+                canvas_w=width,
+                canvas_h=height,
+                ink=ink,
+                secondary=secondary,
+                border=GRIDLINE,
                 elem_id=f"bar-tip-{i}",
             )
         )
@@ -614,8 +635,7 @@ def build_svg(
         rr = 10.0 if is_cross else 6.5
         tip = strings["point_tooltip"].format(reason=r["reason"], cum=cum)
         parts.append(
-            f'<g id="pt-{i}" class="pt hit" tabindex="0" role="img" '
-            f'aria-label="{xml_escape(tip)}">'
+            f'<g id="pt-{i}" class="pt hit" tabindex="0" role="img" aria-label="{xml_escape(tip)}">'
         )
         parts.append(
             f'<circle class="halo" cx="{cx:.1f}" cy="{cy:.1f}" r="18" '
@@ -628,10 +648,15 @@ def build_svg(
         parts.append("</g>")
         pt_tips.append(
             tooltip_bubble(
-                cx, cy - 26.0,
+                cx,
+                cy - 26.0,
                 [str(r["reason"]), f"cumulative {cum:.1f}% of total"],
-                anchor="middle", canvas_w=width, canvas_h=height,
-                ink=ink, secondary=secondary, border=GRIDLINE,
+                anchor="middle",
+                canvas_w=width,
+                canvas_h=height,
+                ink=ink,
+                secondary=secondary,
+                border=GRIDLINE,
                 elem_id=f"pt-tip-{i}",
             )
         )
@@ -723,7 +748,7 @@ def build_svg(
         f'<text x="{lt_x:.1f}" y="{lt_y:.1f}" font-size="21" fill="{ink}" '
         f'text-anchor="middle" '
         f'transform="rotate(-90 {lt_x:.1f} {lt_y:.1f})">'
-        f'{xml_escape(axis_left_title or strings["axis_left_title"])}</text>'
+        f"{xml_escape(axis_left_title or strings['axis_left_title'])}</text>"
     )
     # Right axis title (cumulative curve).
     rt_x = width - 34
@@ -732,7 +757,7 @@ def build_svg(
         f'<text x="{rt_x:.1f}" y="{rt_y:.1f}" font-size="21" fill="{line_c}" '
         f'text-anchor="middle" '
         f'transform="rotate(90 {rt_x:.1f} {rt_y:.1f})">'
-        f'{xml_escape(strings["axis_right_title"])}</text>'
+        f"{xml_escape(strings['axis_right_title'])}</text>"
     )
 
     # --- x-axis reason labels (angled so long names never collide) ---
@@ -745,7 +770,7 @@ def build_svg(
             f'<text x="{cx:.1f}" y="{ly:.1f}" font-size="19" fill="{ink}" '
             f'text-anchor="end" '
             f'transform="rotate(-32 {cx:.1f} {ly:.1f})">'
-            f'{xml_escape(reason)}</text>'
+            f"{xml_escape(reason)}</text>"
         )
 
     parts.append(fullscreen_control(width, height, mode))
@@ -798,8 +823,12 @@ def make_pareto(
     """
     rows = data if data else DEMO_DATA
     svg = build_svg(
-        rows, mode=mode, accessibility=accessibility, language=language,
-        theme=theme, title=title,
+        rows,
+        mode=mode,
+        accessibility=accessibility,
+        language=language,
+        theme=theme,
+        title=title,
         axis_left_title=axis_left_title,
         transparent=transparent,
     )
@@ -810,9 +839,11 @@ def make_pareto(
 def main() -> None:
     """Write the Pareto SVG to the canonical assets path (or --out)."""
     render_cli(
-        __file__, "pareto", build_svg,
+        __file__,
+        "pareto",
+        build_svg,
         description="Render the house-style Pareto chart (sorted bars + "
-                    "cumulative % line + 80% line) to SVG.",
+        "cumulative % line + 80% line) to SVG.",
     )
 
 

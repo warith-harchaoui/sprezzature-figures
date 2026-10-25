@@ -84,13 +84,15 @@ def _sessions(seed: int = 13) -> List[Dict[str, Any]]:
         reach = 14.0 if wild else rng.uniform(0.9, 2.6)
         high = max(opening, closing) + abs(rng.gauss(0.0, 0.7)) + reach / 2.0
         low = min(opening, closing) - abs(rng.gauss(0.0, 0.7)) - reach / 2.0
-        rows.append({
-            "day": when.isoformat(),
-            "open": round(opening, 2),
-            "high": round(high, 2),
-            "low": round(max(1.0, low), 2),
-            "close": round(closing, 2),
-        })
+        rows.append(
+            {
+                "day": when.isoformat(),
+                "open": round(opening, 2),
+                "high": round(high, 2),
+                "low": round(max(1.0, low), 2),
+                "close": round(closing, 2),
+            }
+        )
         price = closing
         when += timedelta(days=1)
     return rows
@@ -105,10 +107,7 @@ def _median(values: List[float]) -> float:
         return 0.0
     ordered = sorted(values)
     middle = len(ordered) // 2
-    return (
-        ordered[middle] if len(ordered) % 2
-        else (ordered[middle - 1] + ordered[middle]) / 2.0
-    )
+    return ordered[middle] if len(ordered) % 2 else (ordered[middle - 1] + ordered[middle]) / 2.0
 
 
 def _day_number(label: str) -> Optional[int]:
@@ -132,8 +131,18 @@ def _day_number(label: str) -> Optional[int]:
 #: the month before the day is what makes those twelve rules apply here too,
 #: instead of asking for thirteen more.
 _MONTHS: tuple[str, ...] = (
-    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
 )
 
 
@@ -222,9 +231,7 @@ def build_svg(
         low = float(row[low_key])
         closing = float(row[close_key])
         if high < low:
-            raise ValueError(
-                f"session {row[x]!r} has a high of {high} below its low of {low}"
-            )
+            raise ValueError(f"session {row[x]!r} has a high of {high} below its low of {low}")
         sessions.append((str(row[x]), opening, high, low, closing))
 
     ranges = [high - low for _, _, high, low, _ in sessions]
@@ -266,11 +273,13 @@ def build_svg(
         return plot_y + plot_h - (price - axis_low) / (axis_high - axis_low) * plot_h
 
     axis_lines = (
-        [axis_note] if axis_note is not None
+        [axis_note]
+        if axis_note is not None
         else [
             f"one bar per session, not per day: {len(gaps)} gap"
             f"{'' if len(gaps) == 1 else 's'} of {skipped} days closed up"
-            if gaps else "one bar per session; the labels run consecutively",
+            if gaps
+            else "one bar per session; the labels run consecutively",
             "open ticks left, close ticks right",
         ]
     )
@@ -293,15 +302,16 @@ def build_svg(
 
     parts: List[str] = []
     parts.append(
-        svg_open(width, height, "ohlc-title", "ohlc-desc",
-                 font_family=chrome_stack_for_theme(theme))
+        svg_open(
+            width, height, "ohlc-title", "ohlc-desc", font_family=chrome_stack_for_theme(theme)
+        )
     )
     parts.append(f'<title id="ohlc-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="ohlc-desc">An open-high-low-close chart of {len(sessions)} sessions '
-        f'from {xml_escape(sessions[0][0])} to {xml_escape(sessions[-1][0])}, each a '
-        f'vertical bar from low to high with the open ticked left and the close ticked '
-        f'right. {xml_escape(said_axis)}. {xml_escape(" ".join(said_parts))}</desc>'
+        f"from {xml_escape(sessions[0][0])} to {xml_escape(sessions[-1][0])}, each a "
+        f"vertical bar from low to high with the open ticked left and the close ticked "
+        f"right. {xml_escape(said_axis)}. {xml_escape(' '.join(said_parts))}</desc>"
     )
     parts.append(
         "<style>"
@@ -345,7 +355,7 @@ def build_svg(
         parts.append(
             f'<text x="{plot_x - 10:.1f}" y="{py(tick) + 4:.1f}" font-size="11" '
             f'fill="{SECONDARY}" text-anchor="end" font-family="{mono_family}">'
-            f'{fmt_number(tick)}</text>'
+            f"{fmt_number(tick)}</text>"
         )
 
     tips: List[str] = []
@@ -376,22 +386,28 @@ def build_svg(
         parts.append(
             f'<rect id="bar-{index}" class="bar hit" tabindex="0" role="img" '
             f'aria-label="{xml_escape(label)}: opened {fmt_measured(opening, precision)}, '
-            f'high {fmt_measured(high, precision)}, low {fmt_measured(low, precision)}, '
+            f"high {fmt_measured(high, precision)}, low {fmt_measured(low, precision)}, "
             f'closed {fmt_measured(closing, precision)}, {direction}" '
             f'x="{centre - step / 2:.1f}" y="{plot_y:.1f}" width="{step:.1f}" '
             f'height="{plot_h:.1f}" fill="transparent">'
-            f'<title>{xml_escape(label)}: {fmt_measured(closing, precision)}</title></rect>'
+            f"<title>{xml_escape(label)}: {fmt_measured(closing, precision)}</title></rect>"
         )
         tips.append(
             tooltip_bubble(
-                centre, py((high + low) / 2.0),
-                [label,
-                 f"open {fmt_measured(opening, precision)} · close "
-                 f"{fmt_measured(closing, precision)}",
-                 f"low {fmt_measured(low, precision)} · high "
-                 f"{fmt_measured(high, precision)}"],
-                canvas_w=width, canvas_h=height, ink=INK, secondary=SECONDARY,
-                border=GRIDLINE, elem_id=f"bartip-{index}",
+                centre,
+                py((high + low) / 2.0),
+                [
+                    label,
+                    f"open {fmt_measured(opening, precision)} · close "
+                    f"{fmt_measured(closing, precision)}",
+                    f"low {fmt_measured(low, precision)} · high {fmt_measured(high, precision)}",
+                ],
+                canvas_w=width,
+                canvas_h=height,
+                ink=INK,
+                secondary=SECONDARY,
+                border=GRIDLINE,
+                elem_id=f"bartip-{index}",
             )
         )
 
@@ -400,16 +416,16 @@ def build_svg(
         parts.append(
             f'<text x="{px(index):.1f}" y="{plot_y + plot_h + 20:.1f}" font-size="11" '
             f'fill="{SECONDARY}" text-anchor="middle" font-family="{mono_family}">'
-            f'{xml_escape(_axis_label(sessions[index][0]))}</text>'
+            f"{xml_escape(_axis_label(sessions[index][0]))}</text>"
         )
     parts.append(
         f'<text x="{plot_x + plot_w / 2:.1f}" y="{plot_y + plot_h + 46:.1f}" '
         f'font-size="12" fill="{SECONDARY}" text-anchor="middle">'
-        f'{xml_escape(x_label)}</text>'
+        f"{xml_escape(x_label)}</text>"
     )
     parts.append(
         f'<text x="40" y="{plot_y - 12:.1f}" font-size="12" fill="{SECONDARY}">'
-        f'{xml_escape(y_label)}</text>'
+        f"{xml_escape(y_label)}</text>"
     )
 
     parts.extend(tips)
@@ -480,11 +496,24 @@ def make_ohlc(
     True
     """
     svg = build_svg(
-        data, title=title, subtitle=subtitle, width=width, height=height,
-        x=x, open_key=open_key, high_key=high_key, low_key=low_key,
-        close_key=close_key, tick_width=tick_width, x_label=x_label,
-        y_label=y_label, axis_note=axis_note, finding=finding, mode=mode,
-        accessibility=accessibility, theme=theme,
+        data,
+        title=title,
+        subtitle=subtitle,
+        width=width,
+        height=height,
+        x=x,
+        open_key=open_key,
+        high_key=high_key,
+        low_key=low_key,
+        close_key=close_key,
+        tick_width=tick_width,
+        x_label=x_label,
+        y_label=y_label,
+        axis_note=axis_note,
+        finding=finding,
+        mode=mode,
+        accessibility=accessibility,
+        theme=theme,
     )
     dest = Path(out) if out else svg_example_path(__file__, "ohlc")
     return write_svg(dest, svg, theme=theme)
@@ -492,8 +521,9 @@ def make_ohlc(
 
 def main() -> None:
     """CLI entry point: build the SVG and write it to disk."""
-    render_cli(__file__, "ohlc", build_svg,
-               description="Draw open-high-low-close bars, one per session.")
+    render_cli(
+        __file__, "ohlc", build_svg, description="Draw open-high-low-close bars, one per session."
+    )
 
 
 if __name__ == "__main__":

@@ -221,7 +221,7 @@ def _inside_map(box: Tuple[float, ...]) -> bool:
 
 
 def _place_labels(
-    bubbles: List[Tuple[str, str, float, float, float]]
+    bubbles: List[Tuple[str, str, float, float, float]],
 ) -> Dict[str, Tuple[str, Tuple[float, float, float, float]]]:
     """Choose a pose per bubble so that nothing lands on anything.
 
@@ -261,7 +261,9 @@ def _place_labels(
     return chosen
 
 
-def _label_origin(cx: float, cy: float, r: float, pose: str, box: Tuple[float, ...]) -> Tuple[float, float]:
+def _label_origin(
+    cx: float, cy: float, r: float, pose: str, box: Tuple[float, ...]
+) -> Tuple[float, float]:
     """Baseline of the name line for a pose, consistent with its box."""
     if pose in ("right", "left"):
         side = cx + r + 5.0 if pose == "right" else cx - r - 5.0
@@ -312,13 +314,10 @@ def build_svg(
 
     head = title or "Two countries out-emit the twelve next-largest combined"
     sub = subtitle or (
-        "Annual fossil CO₂ emissions, gigatonnes · circle area is proportional "
-        "to the total"
+        "Annual fossil CO₂ emissions, gigatonnes · circle area is proportional to the total"
     )
 
-    parts: List[str] = [
-        svg_open(_WIDTH, _HEIGHT, "bubble-title", "bubble-desc", font_family=fonts)
-    ]
+    parts: List[str] = [svg_open(_WIDTH, _HEIGHT, "bubble-title", "bubble-desc", font_family=fonts)]
     parts.append(
         f'<title id="bubble-title">{xml_escape(head)}</title>'
         f'<desc id="bubble-desc">{xml_escape(sub)}. Fourteen countries on an '
@@ -360,9 +359,7 @@ def build_svg(
     bubbles: List[Tuple[str, str, float, float, float]] = []
     for row in rows:
         cx, cy = project(float(row["lon"]), float(row["lat"]))
-        bubbles.append(
-            (str(row["name"]), _fmt(float(row["gt"])), cx, cy, radius(float(row["gt"])))
-        )
+        bubbles.append((str(row["name"]), _fmt(float(row["gt"])), cx, cy, radius(float(row["gt"]))))
 
     tips: List[str] = []
     for idx, (row, (name, value, cx, cy, r)) in enumerate(zip(rows, bubbles, strict=True)):
@@ -370,16 +367,24 @@ def build_svg(
             f'<circle id="hit-{idx}" class="hit" tabindex="0" cx="{cx:.1f}" cy="{cy:.1f}" '
             f'r="{r:.1f}" fill="{blue}" fill-opacity="0.55" stroke="{blue}" '
             f'stroke-width="1.5"><title>{xml_escape(name)} — {value} '
-            f'gigatonnes of CO₂ a year</title></circle>'
+            f"gigatonnes of CO₂ a year</title></circle>"
         )
         tips.append(
             tooltip_bubble(
-                cx, cy - r - 10.0,
-                [name, f"{value} Gt CO₂ a year",
-                 f"{float(row['gt']) / sum(float(x['gt']) for x in rows) * 100:.0f}% "
-                 "of the countries shown"],
-                anchor="middle", canvas_w=_WIDTH, canvas_h=_HEIGHT,
-                ink=_INK, secondary=_SUBTLE, border=_LAND_EDGE,
+                cx,
+                cy - r - 10.0,
+                [
+                    name,
+                    f"{value} Gt CO₂ a year",
+                    f"{float(row['gt']) / sum(float(x['gt']) for x in rows) * 100:.0f}% "
+                    "of the countries shown",
+                ],
+                anchor="middle",
+                canvas_w=_WIDTH,
+                canvas_h=_HEIGHT,
+                ink=_INK,
+                secondary=_SUBTLE,
+                border=_LAND_EDGE,
                 elem_id=f"tip-{idx}",
             )
         )
@@ -411,7 +416,7 @@ def build_svg(
     parts.append(
         f'<text x="{_MAP_X + 8:.1f}" y="{legend_base - 2 * _MAX_R - 14:.1f}" '
         f'font-size="13" font-weight="700" fill="{_INK}">'
-        f'CIRCLE AREA = ANNUAL EMISSIONS</text>'
+        f"CIRCLE AREA = ANNUAL EMISSIONS</text>"
     )
     # `reference`, not `value`: the loop above binds `value` to a *formatted*
     # string, and reusing the name here for a number made the two meanings
@@ -437,12 +442,12 @@ def build_svg(
     parts.append(
         f'<text x="{_WIDTH - 24:.1f}" y="{_HEIGHT - 38:.1f}" font-size="12.5" '
         f'fill="{_SUBTLE}" text-anchor="end">Equal Earth (equal-area) projection · '
-        f'one circle per country, placed at a representative interior point</text>'
+        f"one circle per country, placed at a representative interior point</text>"
     )
     parts.append(
         f'<text x="{_WIDTH - 24:.1f}" y="{_HEIGHT - 18:.1f}" font-size="12.5" '
         f'fill="{_SUBTLE}" text-anchor="end">Fossil CO₂ only · 2023 order of '
-        f'magnitude, Global Carbon Budget / EDGAR</text>'
+        f"magnitude, Global Carbon Budget / EDGAR</text>"
     )
 
     parts.append(fullscreen_control(_WIDTH, _HEIGHT, mode))
@@ -476,9 +481,7 @@ def make_map_bubble(
     mode, accessibility, theme : str
         Forwarded to :func:`build_svg`.
     """
-    svg = build_svg(
-        data, mode=mode, accessibility=accessibility, theme=theme, title=title or None
-    )
+    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "map-bubble")
     return write_svg(dest, svg, theme=theme)
 

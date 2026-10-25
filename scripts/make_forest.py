@@ -226,17 +226,14 @@ def build_svg(
     # Box areas: normalise weights so the heaviest study fills a target
     # box; area ∝ weight, so the side ∝ sqrt(weight).
     weights = [
-        study_weight(int(s["n"]), math.log(float(s["hi"])) - math.log(float(s["lo"])))
-        for s in rows
+        study_weight(int(s["n"]), math.log(float(s["hi"])) - math.log(float(s["lo"]))) for s in rows
     ]
     w_max = max(weights)
     box_max = 15.0  # half-side of the largest box, in px
     # Floor the smallest box so a low-weight study still reads as a
     # square, not a stray dot; area stays ∝ weight above the floor.
     box_min = 6.0
-    half_sides = [
-        max(box_min, box_max * math.sqrt(w / w_max)) for w in weights
-    ]
+    half_sides = [max(box_min, box_max * math.sqrt(w / w_max)) for w in weights]
 
     parts: List[str] = []
 
@@ -264,19 +261,21 @@ def build_svg(
         pooled_het = str(POOLED["het"])
 
     # --- SVG root + accessible description ------------------------
-    parts.append(svg_open(width, height, "fp-title", "fp-desc", font_family=chrome_stack_for_theme(theme)))
+    parts.append(
+        svg_open(width, height, "fp-title", "fp-desc", font_family=chrome_stack_for_theme(theme))
+    )
     parts.append(
         '<title id="fp-title">Forest plot: home blood-pressure telemonitoring '
-        'raises the odds of reaching target</title>'
+        "raises the odds of reaching target</title>"
     )
     parts.append(
         f'<desc id="fp-desc">Meta-analysis forest plot of {n} randomised trials. '
-        f'Each row shows a trial’s odds ratio for reaching the blood-pressure '
-        f'target as a box (area ∝ study weight) with a 95% confidence-interval '
-        f'whisker, on a logarithmic axis with a null rule at 1.0. The pooled '
-        f'random-effects diamond is centred at {or_p:.2f} '
-        f'(95% CI {lo_p:.2f} to {hi_p:.2f}), clearly to the right of the null, so '
-        f'the programme increases the odds of reaching target overall.</desc>'
+        f"Each row shows a trial’s odds ratio for reaching the blood-pressure "
+        f"target as a box (area ∝ study weight) with a 95% confidence-interval "
+        f"whisker, on a logarithmic axis with a null rule at 1.0. The pooled "
+        f"random-effects diamond is centred at {or_p:.2f} "
+        f"(95% CI {lo_p:.2f} to {hi_p:.2f}), clearly to the right of the null, so "
+        f"the programme increases the odds of reaching target overall.</desc>"
     )
 
     # prefers-reduced-motion guard + hover/focus highlight.
@@ -328,8 +327,8 @@ def build_svg(
     )
     parts.append(
         f'<text x="{m_left}" y="58" font-size="12.5" fill="{secondary}">'
-        f'Pooled odds ratio {or_p:.2f} (95% CI {lo_p:.2f}–{hi_p:.2f}) across '
-        f'{n} randomised trials · {pooled_het}</text>'
+        f"Pooled odds ratio {or_p:.2f} (95% CI {lo_p:.2f}–{hi_p:.2f}) across "
+        f"{n} randomised trials · {pooled_het}</text>"
     )
 
     # --- column headers ------------------------------------------
@@ -376,9 +375,9 @@ def build_svg(
         crosses = float(s["lo"]) <= 1.0 <= float(s["hi"])
         sig_note = "crosses the null" if crosses else "significant"
         tip = (
-            f'{s["label"]}: OR {float(s["or_"]):.2f} '
-            f'(95% CI {float(s["lo"]):.2f}–{float(s["hi"]):.2f}), '
-            f'weight {pct}% — {sig_note}'
+            f"{s['label']}: OR {float(s['or_']):.2f} "
+            f"(95% CI {float(s['lo']):.2f}–{float(s['hi']):.2f}), "
+            f"weight {pct}% — {sig_note}"
         )
 
         # Rows draw fully settled, at rest -- a load-time CSS opacity
@@ -391,9 +390,7 @@ def build_svg(
         # (every trial row and the pooled diamond) came out blank in every
         # raster export. Static-at-rest avoids that failure mode entirely;
         # :hover / :focus highlighting (below) still carries the interactivity.
-        parts.append(
-            f'<g id="row-{i}" class="row hit" tabindex="0" role="img" aria-label="{tip}">'
-        )
+        parts.append(f'<g id="row-{i}" class="row hit" tabindex="0" role="img" aria-label="{tip}">')
         parts.append(f"<title>{tip}</title>")
         # Full-width hover band for a comfortable target.
         parts.append(
@@ -404,15 +401,13 @@ def build_svg(
 
         # Study label (left column).
         parts.append(
-            f'<text x="{m_left}" y="{cy + 4:.1f}" font-size="13" fill="{ink}">'
-            f'{s["label"]}</text>'
+            f'<text x="{m_left}" y="{cy + 4:.1f}" font-size="13" fill="{ink}">{s["label"]}</text>'
         )
 
         # Whisker (CI) at full width — drawn in its finished state so the
         # static figure is complete (no animate-from-zero that blanks the plot).
         parts.append(
-            f'<line class="whisker" x1="{x_lo:.1f}" y1="{cy:.1f}" '
-            f'x2="{x_hi:.1f}" y2="{cy:.1f}"/>'
+            f'<line class="whisker" x1="{x_lo:.1f}" y1="{cy:.1f}" x2="{x_hi:.1f}" y2="{cy:.1f}"/>'
         )
         # End caps.
         for xend in (x_lo, x_hi):
@@ -439,10 +434,7 @@ def build_svg(
         )
 
         # Numeric estimate (right column), Roboto Mono for alignment.
-        est = (
-            f'{float(s["or_"]):.2f} '
-            f'({float(s["lo"]):.2f}–{float(s["hi"]):.2f})'
-        )
+        est = f"{float(s['or_']):.2f} ({float(s['lo']):.2f}–{float(s['hi']):.2f})"
         parts.append(
             f'<text x="{est_x}" y="{cy + 4:.1f}" font-size="12" '
             f'font-family="Roboto Mono, monospace" fill="{ink}">{est}</text>'
@@ -450,11 +442,19 @@ def build_svg(
         parts.append("</g>")
         row_tips.append(
             tooltip_bubble(
-                cx, cy - half - 12,
-                [str(s["label"]), f'OR {float(s["or_"]):.2f} (95% CI {float(s["lo"]):.2f}-{float(s["hi"]):.2f})',
-                 f'weight {pct}% - {sig_note}'],
-                anchor="middle", canvas_w=width, canvas_h=height,
-                ink=ink, secondary=secondary, border=GRIDLINE,
+                cx,
+                cy - half - 12,
+                [
+                    str(s["label"]),
+                    f"OR {float(s['or_']):.2f} (95% CI {float(s['lo']):.2f}-{float(s['hi']):.2f})",
+                    f"weight {pct}% - {sig_note}",
+                ],
+                anchor="middle",
+                canvas_w=width,
+                canvas_h=height,
+                ink=ink,
+                secondary=secondary,
+                border=GRIDLINE,
                 elem_id=f"rowtip-{i}",
             )
         )
@@ -466,13 +466,9 @@ def build_svg(
     dhi = sx(hi_p)
     dh = 9.0  # half-height of the diamond
     diamond_pts = (
-        f"{dlo:.1f},{dy:.1f} {dcx:.1f},{dy - dh:.1f} "
-        f"{dhi:.1f},{dy:.1f} {dcx:.1f},{dy + dh:.1f}"
+        f"{dlo:.1f},{dy:.1f} {dcx:.1f},{dy - dh:.1f} {dhi:.1f},{dy:.1f} {dcx:.1f},{dy + dh:.1f}"
     )
-    pooled_tip = (
-        f'Pooled random-effects OR {or_p:.2f} '
-        f'(95% CI {lo_p:.2f}–{hi_p:.2f}), {pooled_het}'
-    )
+    pooled_tip = f"Pooled random-effects OR {or_p:.2f} (95% CI {lo_p:.2f}–{hi_p:.2f}), {pooled_het}"
     pooled_i = len(rows)
     parts.append(
         f'<g id="row-{pooled_i}" class="row hit" tabindex="0" role="img" aria-label="{pooled_tip}">'
@@ -498,15 +494,20 @@ def build_svg(
     parts.append(
         f'<text x="{est_x}" y="{dy + 4:.1f}" font-size="12" font-weight="700" '
         f'font-family="Roboto Mono, monospace" fill="{ink}">'
-        f'{or_p:.2f} ({lo_p:.2f}–{hi_p:.2f})</text>'
+        f"{or_p:.2f} ({lo_p:.2f}–{hi_p:.2f})</text>"
     )
     parts.append("</g>")
     row_tips.append(
         tooltip_bubble(
-            dcx, dy - dh - 12,
-            [pooled_label, f'OR {or_p:.2f} (95% CI {lo_p:.2f}-{hi_p:.2f})', pooled_het],
-            anchor="middle", canvas_w=width, canvas_h=height,
-            ink=ink, secondary=secondary, border=GRIDLINE,
+            dcx,
+            dy - dh - 12,
+            [pooled_label, f"OR {or_p:.2f} (95% CI {lo_p:.2f}-{hi_p:.2f})", pooled_het],
+            anchor="middle",
+            canvas_w=width,
+            canvas_h=height,
+            ink=ink,
+            secondary=secondary,
+            border=GRIDLINE,
             elem_id=f"rowtip-{pooled_i}",
         )
     )
@@ -533,7 +534,7 @@ def build_svg(
     parts.append(
         f'<text x="{(sx(x_min) + sx(x_max)) / 2:.1f}" y="{axis_y + 38:.1f}" '
         f'font-size="12" fill="{ink}" text-anchor="middle">'
-        f'Odds ratio for reaching BP target (log scale, higher is better)</text>'
+        f"Odds ratio for reaching BP target (log scale, higher is better)</text>"
     )
 
     # --- "favours" annotations flanking the null -----------------
@@ -598,7 +599,8 @@ def make_forest(
         theme=theme,
         row_label_header=row_label_header,
         estimate_header=estimate_header,
-     title=title or None)
+        title=title or None,
+    )
     dest = Path(out) if out else svg_example_path(__file__, "forest")
     return write_svg(dest, svg, theme=theme)
 

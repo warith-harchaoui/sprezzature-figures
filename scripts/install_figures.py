@@ -63,12 +63,20 @@ def build_parser() -> argparse.ArgumentParser:
             "back to the interpreter's pip."
         ),
     )
-    parser.add_argument("--tier", default="dataviz",
-                        help='Combination of tiers separated by "+" '
-                             '(dataviz, explain, causal, or "all").')
-    parser.add_argument("--manager", choices=("auto", "uv", "poetry", "pixi", "conda", "pip"),
-                        default="auto", help="Env manager to use (default: auto-detect).")
-    parser.add_argument("--dry-run", action="store_true", help="Print the install command without running it.")
+    parser.add_argument(
+        "--tier",
+        default="dataviz",
+        help='Combination of tiers separated by "+" (dataviz, explain, causal, or "all").',
+    )
+    parser.add_argument(
+        "--manager",
+        choices=("auto", "uv", "poetry", "pixi", "conda", "pip"),
+        default="auto",
+        help="Env manager to use (default: auto-detect).",
+    )
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Print the install command without running it."
+    )
     return parser
 
 

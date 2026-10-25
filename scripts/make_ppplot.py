@@ -193,7 +193,7 @@ def _loess(
         # Tricube weights on the scaled distance; points past the bandwidth
         # get zero weight.
         u = np.abs(xs - g) / h
-        w = np.where(u < 1.0, (1.0 - u ** 3) ** 3, 0.0)
+        w = np.where(u < 1.0, (1.0 - u**3) ** 3, 0.0)
         if w.sum() < 1e-9:
             # No neighbour in range: fall back to the nearest sample.
             out[i] = ys[int(np.argmin(np.abs(xs - g)))]
@@ -214,8 +214,7 @@ def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
     title: str = "Session times aren\u2019t Normal",
     subtitle: str = (
-        "Empirical vs fitted-Normal CDF \u2014 the arc off the 45\u00b0 line "
-        "flags the skew"
+        "Empirical vs fitted-Normal CDF \u2014 the arc off the 45\u00b0 line flags the skew"
     ),
     above_annotation: str = "Normal under-states P",
     below_annotation: str = "Normal over-states P",
@@ -269,9 +268,9 @@ def build_svg(
     # diagonal (empirical >= theoretical) means the Normal under-states the
     # probability — blue; a point BELOW means it over-states — orange. Both
     # clusters are also labelled directly, so the split survives greyscale.
-    above = palette.get("Blue", "#007AFF")     # Normal under-states P
-    below = palette.get("Orange", "#FF9500")   # Normal over-states P
-    trend = palette.get("Red", "#FF3B30")      # the LOESS structure arc
+    above = palette.get("Blue", "#007AFF")  # Normal under-states P
+    below = palette.get("Orange", "#FF9500")  # Normal over-states P
+    trend = palette.get("Red", "#FF3B30")  # the LOESS structure arc
     ink = "#1D1D1F"
     secondary = "#6E6E73"
     grid_col = "#ECECEC"
@@ -302,7 +301,9 @@ def build_svg(
     parts: List[str] = []
 
     # --- SVG root + accessible description ------------------------
-    parts.append(svg_open(width, height, "pp-title", "pp-desc", font_family=chrome_stack_for_theme(theme)))
+    parts.append(
+        svg_open(width, height, "pp-title", "pp-desc", font_family=chrome_stack_for_theme(theme))
+    )
     parts.append(
         # The accessible name is the headline a sighted reader sees: when
         # the two disagree, a screen-reader user is told about a different
@@ -311,18 +312,18 @@ def build_svg(
     )
     parts.append(
         '<desc id="pp-desc">Probability-probability (P-P) plot checking '
-        'whether a fitted Normal distribution describes right-skewed customer '
-        'session durations. The horizontal axis is the theoretical cumulative '
-        'probability under the fitted Normal; the vertical axis is the '
-        'empirical cumulative probability of the observed data; both run from '
-        '0 to 1. A dashed 45-degree reference line marks perfect agreement, '
-        'ringed by a faint grey tolerance band. Instead of hugging the line '
-        'the points bow into a smooth arc (traced by a red trend curve): in '
-        'the lower-left they sit above the diagonal, where the Normal '
-        'under-states the probability (blue); in the upper-right they sit '
-        'below it, where the Normal over-states the probability (orange). '
-        'That S-shaped departure is the classic sign that a symmetric Normal '
-        'is the wrong shape for skewed data.</desc>'
+        "whether a fitted Normal distribution describes right-skewed customer "
+        "session durations. The horizontal axis is the theoretical cumulative "
+        "probability under the fitted Normal; the vertical axis is the "
+        "empirical cumulative probability of the observed data; both run from "
+        "0 to 1. A dashed 45-degree reference line marks perfect agreement, "
+        "ringed by a faint grey tolerance band. Instead of hugging the line "
+        "the points bow into a smooth arc (traced by a red trend curve): in "
+        "the lower-left they sit above the diagonal, where the Normal "
+        "under-states the probability (blue); in the upper-right they sit "
+        "below it, where the Normal over-states the probability (orange). "
+        "That S-shaped departure is the classic sign that a symmetric Normal "
+        "is the wrong shape for skewed data.</desc>"
     )
 
     # Static figure; hover / focus enlargement only, no motion to guard.
@@ -347,8 +348,11 @@ def build_svg(
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
         + foreground_tip_css(len(data), mark_prefix="pt", tip_prefix="pt-tip")
         + "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
-        + "\n" + contrast_block + "\n"
-        + os_dark_style() + "\n"
+        + "\n"
+        + contrast_block
+        + "\n"
+        + os_dark_style()
+        + "\n"
         "</style>"
     )
 
@@ -362,7 +366,7 @@ def build_svg(
     )
     parts.append(
         f'<text x="{m_left}" y="148" font-size="25" fill="{secondary}">'
-        f'{xml_escape(subtitle)}</text>'
+        f"{xml_escape(subtitle)}</text>"
     )
 
     # --- gridlines (very light) ----------------------------------
@@ -388,10 +392,7 @@ def build_svg(
     lower = [(sx(float(x)), sy(max(0.0, float(x) - band))) for x in xs_band]
     ribbon_pts = upper + lower[::-1]
     d_band = "M " + " L ".join(f"{x:.1f} {y:.1f}" for x, y in ribbon_pts) + " Z"
-    parts.append(
-        f'<path d="{d_band}" fill="{band_col}" fill-opacity="0.10" '
-        f'stroke="none"/>'
-    )
+    parts.append(f'<path d="{d_band}" fill="{band_col}" fill-opacity="0.10" stroke="none"/>')
 
     # --- 45-degree reference line --------------------------------
     parts.append(
@@ -407,7 +408,7 @@ def build_svg(
         f'<text x="{mid_x:.1f}" y="{mid_y:.1f}" font-size="20" '
         f'fill="{secondary}" text-anchor="middle" '
         f'transform="rotate(-45 {mid_x:.1f} {mid_y:.1f})" dy="24">'
-        f'Perfect fit (45°)</text>'
+        f"Perfect fit (45°)</text>"
     )
 
     # --- axes (L-shaped, ink) ------------------------------------
@@ -447,7 +448,7 @@ def build_svg(
     parts.append(
         f'<text x="{plot_x + plot_w / 2:.1f}" y="{ax_bottom + 84:.1f}" '
         f'font-size="24" fill="{ink}" text-anchor="middle">'
-        f'Theoretical probability (fitted Normal CDF)</text>'
+        f"Theoretical probability (fitted Normal CDF)</text>"
     )
     ytitle_x = 58
     ytitle_y = plot_y + plot_h / 2
@@ -455,7 +456,7 @@ def build_svg(
         f'<text x="{ytitle_x:.1f}" y="{ytitle_y:.1f}" font-size="24" '
         f'fill="{ink}" text-anchor="middle" '
         f'transform="rotate(-90 {ytitle_x:.1f} {ytitle_y:.1f})">'
-        f'Empirical probability (observed CDF)</text>'
+        f"Empirical probability (observed CDF)</text>"
     )
 
     # --- LOESS trend arc (drawn under the points) -----------------
@@ -492,9 +493,9 @@ def build_svg(
         deviation = emp - theo
         dev_word = "above" if deviation >= 0 else "below"
         tip = (
-            f'Session {d["minutes"]:.1f} min: theoretical P {theo:.2f}, '
-            f'empirical P {emp:.2f} — {abs(deviation):.2f} {dev_word} '
-            f'the diagonal'
+            f"Session {d['minutes']:.1f} min: theoretical P {theo:.2f}, "
+            f"empirical P {emp:.2f} — {abs(deviation):.2f} {dev_word} "
+            f"the diagonal"
         )
         parts.append(
             f'<g id="pt-{pt_i}" class="pt hit" tabindex="0" role="img" '
@@ -512,14 +513,19 @@ def build_svg(
         parts.append("</g>")
         pt_tips.append(
             tooltip_bubble(
-                cx, cy - 26,
+                cx,
+                cy - 26,
                 [
                     f"Session {d['minutes']:.1f} min",
                     f"theoretical P {theo:.2f}, empirical P {emp:.2f}",
                     f"{abs(deviation):.2f} {dev_word} the diagonal",
                 ],
-                anchor="middle", canvas_w=width, canvas_h=height,
-                ink=ink, secondary=secondary, border=grid_col,
+                anchor="middle",
+                canvas_w=width,
+                canvas_h=height,
+                ink=ink,
+                secondary=secondary,
+                border=grid_col,
                 elem_id=f"pt-tip-{pt_i}",
             )
         )
@@ -533,7 +539,7 @@ def build_svg(
     parts.append(
         f'<text class="pp-above" x="{sx(0.075):.1f}" y="{sy(0.90):.1f}" font-size="26" '
         f'font-weight="700" fill="{above}" text-anchor="start">'
-        f'Above the line</text>'
+        f"Above the line</text>"
     )
     parts.append(
         f'<text class="pp-above" x="{sx(0.075):.1f}" y="{sy(0.90) + 32:.1f}" font-size="22" '
@@ -542,7 +548,7 @@ def build_svg(
     parts.append(
         f'<text class="pp-below" x="{sx(0.925):.1f}" y="{sy(0.16):.1f}" font-size="26" '
         f'font-weight="700" fill="{below}" text-anchor="end">'
-        f'Below the line</text>'
+        f"Below the line</text>"
     )
     parts.append(
         f'<text class="pp-below" x="{sx(0.925):.1f}" y="{sy(0.16) + 32:.1f}" font-size="22" '
@@ -560,8 +566,7 @@ def make_ppplot(
     out: Optional[Path | str] = None,
     title: str = "Session times aren\u2019t Normal",
     subtitle: str = (
-        "Empirical vs fitted-Normal CDF \u2014 the arc off the 45\u00b0 line "
-        "flags the skew"
+        "Empirical vs fitted-Normal CDF \u2014 the arc off the 45\u00b0 line flags the skew"
     ),
     above_annotation: str = "Normal under-states P",
     below_annotation: str = "Normal over-states P",
@@ -611,7 +616,9 @@ def make_ppplot(
 def main() -> None:
     """Write the P-P-plot SVG to the canonical assets path (or --out)."""
     render_cli(
-        __file__, "ppplot", build_svg,
+        __file__,
+        "ppplot",
+        build_svg,
         description="Render the P-P plot SVG (empirical vs theoretical CDF, "
         "45-degree reference line, above/below split).",
     )

@@ -61,8 +61,8 @@ from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_the
 # ------------------------------------------------------------------
 WIDTH = 1360
 HEIGHT = 1080
-SUBINK = "#6E6E73"         # secondary text
-HAIRLINE = "#FFFFFF"       # cell borders: white hairlines read as tile gaps
+SUBINK = "#6E6E73"  # secondary text
+HAIRLINE = "#FFFFFF"  # cell borders: white hairlines read as tile gaps
 
 # The map lives inside this rectangle (below the title / legend band and
 # above the footer hint). The Voronoi tessellation is clipped to it.
@@ -436,6 +436,7 @@ def _relative_luminance(hex_color: str) -> float:
     float
         Relative luminance; ``0`` is black, ``1`` is white.
     """
+
     def _lin(c: int) -> float:
         s = c / 255.0
         return s / 12.92 if s <= 0.03928 else ((s + 0.055) / 1.055) ** 2.4
@@ -540,8 +541,7 @@ def build_svg(
     mono_family = mono_stack_for_theme(theme)
     rows = list(data) if data else DEMO_DATA
     city: List[Tuple[float, float, str, str]] = [
-        (float(r["x"]), float(r["y"]), str(r["chain"]), str(r.get("name") or ""))
-        for r in rows
+        (float(r["x"]), float(r["y"]), str(r["chain"]), str(r.get("name") or "")) for r in rows
     ]
     chain_order: List[str] = []
     for _x, _y, chain, _name in city:
@@ -562,10 +562,7 @@ def build_svg(
     share = {c: 100.0 * area_by_chain[c] / total_area for c in chain_order}
 
     title_txt = title or "Greenleaf owns the map, not just the most shops"
-    subtitle_txt = (
-        "Nearest-pharmacy catchment areas across the city, coloured by "
-        "chain"
-    )
+    subtitle_txt = "Nearest-pharmacy catchment areas across the city, coloured by chain"
     lead_share = share["Greenleaf"]
     desc_txt = (
         "Voronoi catchment map of thirty city pharmacies. Each cell is the "
@@ -581,7 +578,9 @@ def build_svg(
     )
 
     parts: List[str] = []
-    parts.append(svg_open(WIDTH, HEIGHT, "vor-title", "vor-desc", font_family=chrome_stack_for_theme(theme)))
+    parts.append(
+        svg_open(WIDTH, HEIGHT, "vor-title", "vor-desc", font_family=chrome_stack_for_theme(theme))
+    )
     parts.append(f'<title id="vor-title">{xml_escape(title_txt)}</title>')
     parts.append(f'<desc id="vor-desc">{xml_escape(desc_txt)}</desc>')
 
@@ -638,25 +637,17 @@ def build_svg(
     cell_series = {
         f".cell.{chain_slug[chain]} polygon": chain_color[chain] for chain in chain_order
     }
-    leg_series = {
-        f".leg-{chain_slug[chain]}": chain_color[chain] for chain in chain_order
-    }
+    leg_series = {f".leg-{chain_slug[chain]}": chain_color[chain] for chain in chain_order}
     # One pattern per chain, shared by its cells and its legend swatch via a
     # combined selector, so the legend key matches the territory it decodes.
     fcp_defs, fcp_style = forced_color_patterns(
-        [
-            f".cell.{chain_slug[chain]} polygon,.leg-{chain_slug[chain]}"
-            for chain in chain_order
-        ],
+        [f".cell.{chain_slug[chain]} polygon,.leg-{chain_slug[chain]}" for chain in chain_order],
         prefix="voronoi-fcp",
     )
     # The cells paint at a soft fill-opacity (CELL_FILL_ALPHA) so seed dots and
     # labels read on top; under forced colours the pattern must be fully opaque
     # or it washes out, so lift the cell fill-opacity inside the same query.
-    fcp_style += (
-        "\n@media (forced-colors: active){\n"
-        "  .cell polygon{fill-opacity:1;}\n}"
-    )
+    fcp_style += "\n@media (forced-colors: active){\n  .cell polygon{fill-opacity:1;}\n}"
     contrast_css = (
         os_adaptive_style(cell_series, role="fill")
         + "\n"
@@ -688,8 +679,7 @@ def build_svg(
         f'fill="{INK}">{xml_escape(title_txt)}</text>'
     )
     parts.append(
-        f'<text x="56" y="114" font-size="21" fill="{SUBINK}">'
-        f'{xml_escape(subtitle_txt)}</text>'
+        f'<text x="56" y="114" font-size="21" fill="{SUBINK}">{xml_escape(subtitle_txt)}</text>'
     )
 
     # --- chain legend with area share (its own row below the subtitle) ---
@@ -714,7 +704,7 @@ def build_svg(
         parts.append(
             f'<text x="{cursor + 26:.1f}" y="{ly + 21:.1f}" text-anchor="start" '
             f'font-size="14" fill="{SUBINK}" font-family="{mono_family}">'
-            f'{xml_escape(meta)}</text>'
+            f"{xml_escape(meta)}</text>"
         )
         cursor += 26 + max(10.6 * len(label), 9.0 * len(meta)) + 46
 
@@ -735,11 +725,7 @@ def build_svg(
             continue
         color = chain_color[chain]
         slug = chain_slug[chain]
-        cell_area_pct = (
-            _polygon_area(cell)
-            / ((MAP_X1 - MAP_X0) * (MAP_Y1 - MAP_Y0))
-            * 100.0
-        )
+        cell_area_pct = _polygon_area(cell) / ((MAP_X1 - MAP_X0) * (MAP_Y1 - MAP_Y0)) * 100.0
         who = name if name else f"{chain} pharmacy"
         tip = f"{who} — nearest shop for {cell_area_pct:.1f}% of the city · {chain}"
         cell_cx, cell_cy = _polygon_centroid(cell)
@@ -753,14 +739,18 @@ def build_svg(
             f'<polygon class="hit" points="{_poly_points(cell)}" '
             f'fill="{color}" '
             f'stroke="{HAIRLINE}" stroke-width="2" stroke-linejoin="round"/>'
-            '</g>'
+            "</g>"
         )
         bubbles.append(
             tooltip_bubble(
-                cell_cx, cell_cy - 12,
+                cell_cx,
+                cell_cy - 12,
                 [who, chain, f"nearest shop for {cell_area_pct:.1f}% of the city"],
-                anchor="middle", canvas_w=WIDTH, canvas_h=HEIGHT,
-                ink=INK, secondary=SUBINK,
+                anchor="middle",
+                canvas_w=WIDTH,
+                canvas_h=HEIGHT,
+                ink=INK,
+                secondary=SUBINK,
                 elem_id=f"tip-{cell_i}",
             )
         )
@@ -769,7 +759,7 @@ def build_svg(
 
     # --- seed dots layer (white ring is a pure fill halo, not a dark stroke) ---
     parts.append('<g id="seeds" clip-path="url(#mapclip)">')
-    for (gx, gy, chain, _name) in city:
+    for gx, gy, chain, _name in city:
         color = chain_color[chain]
         slug = chain_slug[chain]
         px, py = _to_canvas(gx, gy)
@@ -779,7 +769,7 @@ def build_svg(
             f'<g class="seed {slug}">'
             f'<circle cx="{px:.1f}" cy="{py:.1f}" r="8.5" fill="#FFFFFF"/>'
             f'<circle cx="{px:.1f}" cy="{py:.1f}" r="5.5" fill="{color}"/>'
-            f'</g>'
+            f"</g>"
         )
     parts.append("</g>")  # /seeds
 
@@ -843,7 +833,7 @@ def build_svg(
             parts.append(
                 f'<text x="{cx:.1f}" y="{baseline:.1f}" text-anchor="middle" '
                 f'font-size="{fs:.1f}" font-weight="{weight}" fill="{text_fill}">'
-                f'{xml_escape(line)}</text>'
+                f"{xml_escape(line)}</text>"
             )
         parts.append("</g>")
     parts.append("</g>")  # /labels
@@ -854,8 +844,8 @@ def build_svg(
     hint_y = HEIGHT - 42
     parts.append(
         f'<text x="56" y="{hint_y:.1f}" font-size="16" fill="{SUBINK}">'
-        f'Each cell = the area closer to that pharmacy than to any other · '
-        f'hover or focus a cell to lift its chain’s whole territory</text>'
+        f"Each cell = the area closer to that pharmacy than to any other · "
+        f"hover or focus a cell to lift its chain’s whole territory</text>"
     )
 
     parts.append(fullscreen_control(WIDTH, HEIGHT, mode))

@@ -74,8 +74,8 @@ _HI_RGB = (10, 77, 160)
 
 #: Bumps of the demo landscape: (centre x, centre y, amplitude, width).
 _BUMPS: Tuple[Tuple[float, float, float, float], ...] = (
-    (1.55, -0.35, 1.00, 0.95),    # global optimum
-    (-1.30, 0.95, 0.72, 0.85),    # the local peak the walk settles on
+    (1.55, -0.35, 1.00, 0.95),  # global optimum
+    (-1.30, 0.95, 0.72, 0.85),  # the local peak the walk settles on
     (-0.15, -1.70, 0.46, 0.80),
     (0.35, 1.75, 0.38, 0.70),
     (-2.05, -1.35, 0.30, 0.65),
@@ -93,8 +93,7 @@ _END_HOLD = 6
 def _surface_z(x: float, y: float) -> float:
     """Height of the demo landscape at ``(x, y)``: a sum of Gaussian bumps."""
     return sum(
-        a * math.exp(-((x - bx) ** 2 + (y - by) ** 2) / (2.0 * s * s))
-        for bx, by, a, s in _BUMPS
+        a * math.exp(-((x - bx) ** 2 + (y - by) ** 2) / (2.0 * s * s)) for bx, by, a, s in _BUMPS
     )
 
 
@@ -290,16 +289,16 @@ def build_svg(
     shortfall = (best[2] - reached) / (best[2] or 1.0) * 100.0
     parts.append(
         f'<desc id="mp-desc">A {n} by {n} sampled objective surface shown as a shaded '
-        f'3-D relief, with a {len(path)}-step gradient-ascent walk drawn on it. The walk '
-        f'settles at objective {reached:.2f}; the global optimum is {best[2]:.2f}, so it '
-        f'stops {shortfall:.0f} percent short. The sparkline below the panel shows the '
-        f'same walk as objective against step.</desc>'
+        f"3-D relief, with a {len(path)}-step gradient-ascent walk drawn on it. The walk "
+        f"settles at objective {reached:.2f}; the global optimum is {best[2]:.2f}, so it "
+        f"stops {shortfall:.0f} percent short. The sparkline below the panel shows the "
+        f"same walk as objective against step.</desc>"
     )
 
     style_rows = [
         ".q{stroke:#FFFFFF;stroke-width:0.4;stroke-linejoin:round}",
         ".wp{cursor:pointer}",
-        f'.wp:focus{{outline:3px solid {path_hue};outline-offset:2px}}',
+        f".wp:focus{{outline:3px solid {path_hue};outline-offset:2px}}",
         os_dark_style(screen_blend=False, extra=".q{stroke:#0B0B0C;}"),
     ]
     parts.append("<style>\n" + "\n".join(style_rows) + "\n</style>")
@@ -343,7 +342,9 @@ def build_svg(
             r, g, b = _shade((mean_z - z_lo) / z_span, theme)
             r, g, b = (round(v * shade) for v in (r, g, b))
             pts = " ".join(f"{s[0]:.1f},{s[1]:.1f}" for s in screen)
-            quads.append((depth, f'<polygon class="q" points="{pts}" fill="#{r:02X}{g:02X}{b:02X}"/>'))
+            quads.append(
+                (depth, f'<polygon class="q" points="{pts}" fill="#{r:02X}{g:02X}{b:02X}"/>')
+            )
     # Farthest first, so nearer quads paint over them.
     quads.sort(key=lambda q: -q[0])
     parts.extend(frag for _, frag in quads)
@@ -352,7 +353,9 @@ def build_svg(
     screen_path = [to_screen(*p) for p in path]
     d = "M " + " L ".join(f"{s[0]:.1f} {s[1]:.1f}" for s in screen_path)
     seg_len = [
-        math.hypot(screen_path[i + 1][0] - screen_path[i][0], screen_path[i + 1][1] - screen_path[i][1])
+        math.hypot(
+            screen_path[i + 1][0] - screen_path[i][0], screen_path[i + 1][1] - screen_path[i][1]
+        )
         for i in range(len(screen_path) - 1)
     ]
     total_len = sum(seg_len) or 1.0
@@ -369,11 +372,11 @@ def build_svg(
     bx, by, _ = to_screen(*best)
     parts.append(
         f'<g role="img" aria-label="Global optimum, objective {best[2]:.2f}">'
-        f'<title>Global optimum · objective {best[2]:.2f}</title>'
+        f"<title>Global optimum · objective {best[2]:.2f}</title>"
         f'<circle cx="{bx:.1f}" cy="{by:.1f}" r="10" fill="none" stroke="{BG}" stroke-width="4"/>'
         f'<circle cx="{bx:.1f}" cy="{by:.1f}" r="10" fill="none" stroke="{best_hue}" stroke-width="2.4"/>'
         f'<circle cx="{bx:.1f}" cy="{by:.1f}" r="2.6" fill="{best_hue}"/>'
-        f'</g>'
+        f"</g>"
     )
     parts.append(
         f'<text x="{bx + 16:.1f}" y="{by + 4:.1f}" font-size="12.5" font-weight="600" '
@@ -389,16 +392,16 @@ def build_svg(
         parts.append(
             f'<g class="wp" tabindex="0" role="img" '
             f'aria-label="Walk {label}, objective {value:.2f}">'
-            f'<title>{label} · objective {value:.2f}</title>'
+            f"<title>{label} · objective {value:.2f}</title>"
             f'<circle cx="{sx:.1f}" cy="{sy:.1f}" r="6.5" fill="{path_hue}" '
             f'stroke="{BG}" stroke-width="2.5"/>'
-            f'</g>'
+            f"</g>"
         )
     parts.append(
         f'<text x="{screen_path[-1][0] + 14:.1f}" y="{screen_path[-1][1] + 20:.1f}" '
         f'font-size="12.5" font-weight="600" paint-order="stroke" stroke="{BG}" '
         f'stroke-width="3.5" stroke-linejoin="round" fill="{INK}">settles at {reached:.2f} '
-        f'({shortfall:.0f}% short)</text>'
+        f"({shortfall:.0f}% short)</text>"
     )
 
     # ---- animated traversal ----
@@ -419,7 +422,7 @@ def build_svg(
         f'stroke-dashoffset="{total_len:.1f}">'
         f'<animate attributeName="stroke-dashoffset" '
         f'values="{";".join(f"{v:.1f}" for v in offsets)}" dur="{dur}" repeatCount="indefinite"/>'
-        f'</path>'
+        f"</path>"
     )
     mx = [screen_path[i][0] for i in frames]
     my = [screen_path[i][1] for i in frames]
@@ -428,7 +431,7 @@ def build_svg(
         f'stroke="{BG}" stroke-width="2.5">'
         f'<animate attributeName="cx" values="{";".join(f"{v:.1f}" for v in mx)}" dur="{dur}" repeatCount="indefinite"/>'
         f'<animate attributeName="cy" values="{";".join(f"{v:.1f}" for v in my)}" dur="{dur}" repeatCount="indefinite"/>'
-        f'</circle>'
+        f"</circle>"
     )
 
     # ---- objective sparkline ----
@@ -481,15 +484,15 @@ def build_svg(
         f'stroke="{BG}" stroke-width="2">'
         f'<animate attributeName="cx" values="{";".join(f"{v:.1f}" for v in cx_s)}" dur="{dur}" repeatCount="indefinite"/>'
         f'<animate attributeName="cy" values="{";".join(f"{v:.1f}" for v in cy_s)}" dur="{dur}" repeatCount="indefinite"/>'
-        f'</circle>'
+        f"</circle>"
     )
 
     parts.append(
-        '<script><![CDATA['
-        '(function(){var s=document.documentElement;try{'
+        "<script><![CDATA["
+        "(function(){var s=document.documentElement;try{"
         'if(matchMedia("(prefers-reduced-motion: reduce)").matches){'
-        's.pauseAnimations();s.setCurrentTime(0);}}catch(e){}})();'
-        ']]></script>'
+        "s.pauseAnimations();s.setCurrentTime(0);}}catch(e){}})();"
+        "]]></script>"
     )
     parts.append(fullscreen_control(width, height, mode))
     parts.append("</svg>")

@@ -81,8 +81,12 @@ def _make_demo_data() -> List[Dict[str, Any]]:
             if is_weekend:
                 base = 30 if 11 <= hour <= 23 else 5
             else:
-                base = 60 if (9 <= hour <= 11 or 18 <= hour <= 21) else (20 if 8 <= hour <= 22 else 3)
-            rows.append({"day": day, "hour": hour, "activity": max(0, round(base + rng.uniform(-8, 8)))})
+                base = (
+                    60 if (9 <= hour <= 11 or 18 <= hour <= 21) else (20 if 8 <= hour <= 22 else 3)
+                )
+            rows.append(
+                {"day": day, "hour": hour, "activity": max(0, round(base + rng.uniform(-8, 8)))}
+            )
     return rows
 
 
@@ -225,7 +229,7 @@ def build_svg(
         )
     parts.append(
         f'<desc id="hm-desc">A {n_r} by {n_c} grid heatmap. Cell colour runs a '
-        f'pale-to-navy blue ramp from {vmin:.0f} to {vmax:.0f}.{peak_desc}</desc>'
+        f"pale-to-navy blue ramp from {vmin:.0f} to {vmax:.0f}.{peak_desc}</desc>"
     )
 
     # ---- style: pure-CSS crosshair hover + dark mode, reduced-motion safe -
@@ -248,7 +252,9 @@ def build_svg(
         f'<text x="40" y="56" font-size="26" font-weight="600" fill="{INK}" '
         f'letter-spacing="-0.3">{xml_escape(title)}</text>'
     )
-    parts.append(f'<text x="40" y="84" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>')
+    parts.append(
+        f'<text x="40" y="84" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>'
+    )
 
     # ---- cells (never rounded — the grid is the message) ------------------
     # This is a dense n_r x n_c grid, exactly the layout most at risk of the
@@ -282,19 +288,28 @@ def build_svg(
                 fill = _ramp_hex(t)
                 share = (v / total * 100.0) if total else 0.0
                 tip = f"{day}, {span_lbl}: activity {v:.0f} ({share:.1f}% of week total)"
-                bubble_lines = [str(day), span_lbl, f"activity {v:.0f} ({share:.1f}% of week total)"]
+                bubble_lines = [
+                    str(day),
+                    span_lbl,
+                    f"activity {v:.0f} ({share:.1f}% of week total)",
+                ]
             cell_k = i * n_c + j
             parts.append(
                 f'<rect id="cell-{cell_k}" class="cell hit day-{i} hour-{j}" tabindex="0" x="{x:.2f}" y="{y:.2f}" '
                 f'width="{cell_w:.2f}" height="{cell_h:.2f}" fill="{fill}">'
-                f'<title>{xml_escape(tip)}</title></rect>'
+                f"<title>{xml_escape(tip)}</title></rect>"
             )
             tip_bubbles.append(
                 tooltip_bubble(
-                    x + cell_w / 2, y - 4,
+                    x + cell_w / 2,
+                    y - 4,
                     bubble_lines,
-                    anchor="middle", canvas_w=width, canvas_h=height,
-                    ink=INK, secondary=SECONDARY, border=GRIDLINE,
+                    anchor="middle",
+                    canvas_w=width,
+                    canvas_h=height,
+                    ink=INK,
+                    secondary=SECONDARY,
+                    border=GRIDLINE,
                     elem_id=f"tip-{cell_k}",
                 )
             )
@@ -406,10 +421,21 @@ def make_heatmap(
     True
     """
     svg = build_svg(
-        data, title=title, subtitle=subtitle, width=width, height=height,
-        mode=mode, accessibility=accessibility, x_label=x_label, y_label=y_label,
-        legend_label=legend_label, show_cell_labels=show_cell_labels, square=square,
-        theme=theme, vmin=vmin, vmax=vmax,
+        data,
+        title=title,
+        subtitle=subtitle,
+        width=width,
+        height=height,
+        mode=mode,
+        accessibility=accessibility,
+        x_label=x_label,
+        y_label=y_label,
+        legend_label=legend_label,
+        show_cell_labels=show_cell_labels,
+        square=square,
+        theme=theme,
+        vmin=vmin,
+        vmax=vmax,
     )
     dest = Path(out) if out else svg_example_path(__file__, "heatmap")
     return write_svg(dest, svg, theme=theme)
@@ -417,7 +443,12 @@ def make_heatmap(
 
 def main() -> None:
     """CLI entry point: build the SVG and write it to disk."""
-    render_cli(__file__, "heatmap", build_svg, description="Generate a row x column heatmap (hand-authored SVG).")
+    render_cli(
+        __file__,
+        "heatmap",
+        build_svg,
+        description="Generate a row x column heatmap (hand-authored SVG).",
+    )
 
 
 if __name__ == "__main__":

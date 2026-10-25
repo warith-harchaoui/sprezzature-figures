@@ -107,8 +107,10 @@ def _rendus(nom_jeu: str, lignes: list[dict[str, object]], *, limite: int = 6):
         liaison = assign_columns(definition, profil) or {}
         if not liaison:
             continue
-        liees = [{**ligne, **{role: ligne[colonne] for role, colonne in liaison.items()}}
-                 for ligne in lignes]
+        liees = [
+            {**ligne, **{role: ligne[colonne] for role, colonne in liaison.items()}}
+            for ligne in lignes
+        ]
         yield definition.kind, liees
 
 
@@ -147,11 +149,17 @@ def test_le_mode_sombre_ne_laisse_aucune_surface_claire(nom_jeu: str, langue: st
         for kind, liees in _rendus(nom_jeu, lignes):
             sortie = Path(dossier) / f"{kind}.svg"
             make_figure(
-                kind, liees, out=str(sortie), title="Ventes par segment",
-                language=langue, dark=True,
+                kind,
+                liees,
+                out=str(sortie),
+                title="Ventes par segment",
+                language=langue,
+                dark=True,
             )
             defauts = check_render(sortie.read_text(encoding="utf-8"), dark=True)
-            assert not defauts, f"{nom_jeu} / {kind} (sombre) : " + " | ".join(str(d) for d in defauts)
+            assert not defauts, f"{nom_jeu} / {kind} (sombre) : " + " | ".join(
+                str(d) for d in defauts
+            )
 
 
 def test_la_matrice_couvre_un_eventail_de_types_et_pas_trois_fois_le_meme() -> None:

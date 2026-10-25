@@ -55,9 +55,7 @@ def load_land_rings() -> List[Ring]:
     list of Ring
         One list of ``(lon, lat)`` tuples, in degrees, per land ring.
     """
-    geo_path = (
-        Path(__file__).resolve().parent.parent / "assets" / "geo" / "countries-110m.json"
-    )
+    geo_path = Path(__file__).resolve().parent.parent / "assets" / "geo" / "countries-110m.json"
     topo = json.loads(geo_path.read_text(encoding="utf-8"))
     scale = topo["transform"]["scale"]
     translate = topo["transform"]["translate"]
@@ -94,9 +92,7 @@ def load_land_rings() -> List[Ring]:
     return rings
 
 
-def equal_earth(
-    lon: float, lat: float, *, central_meridian: float = 0.0
-) -> Tuple[float, float]:
+def equal_earth(lon: float, lat: float, *, central_meridian: float = 0.0) -> Tuple[float, float]:
     """Project ``(lon, lat)`` in degrees to Equal Earth planar ``(x, y)``.
 
     Parameters
@@ -124,7 +120,10 @@ def equal_earth(
     t2 = theta * theta
     t6 = t2 * t2 * t2
     x = (
-        2.0 * math.sqrt(3.0) * lam * math.cos(theta)
+        2.0
+        * math.sqrt(3.0)
+        * lam
+        * math.cos(theta)
         / (3.0 * (_A1 + 3.0 * _A2 * t2 + t6 * (7.0 * _A3 + 9.0 * _A4 * t2)))
     )
     y = theta * (_A1 + _A2 * t2 + t6 * (_A3 + _A4 * t2))

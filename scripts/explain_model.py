@@ -107,6 +107,7 @@ def load_model(path: str) -> Any:
     p = Path(path)
     if p.suffix.lower() == ".joblib":
         import joblib
+
         return joblib.load(p)
     with p.open("rb") as fh:
         return pickle.load(fh)
@@ -130,15 +131,19 @@ def load_data(path: str) -> Any:
     ext = p.suffix.lower()
     if ext == ".csv":
         import pandas as pd
+
         return pd.read_csv(p)
     if ext == ".json":
         import pandas as pd
+
         return pd.read_json(p)
     if ext in {".parquet", ".pq"}:
         import pandas as pd
+
         return pd.read_parquet(p)
     if ext == ".npy":
         import numpy as np
+
         return np.load(p)
     raise SystemExit(f"Unsupported data extension: {ext}")
 
@@ -169,7 +174,10 @@ def pick_engine(model: Any, data: Any) -> str:
 
     if "torch" in lower and hasattr(data, "ndim") and getattr(data, "ndim", 0) == 3:
         return "timeshap"
-    if any(key in lower for key in ("xgboost", "lightgbm", "catboost", "sklearn.ensemble", "sklearn.tree")):
+    if any(
+        key in lower
+        for key in ("xgboost", "lightgbm", "catboost", "sklearn.ensemble", "sklearn.tree")
+    ):
         return "shap"
     if any(key in lower for key in ("sklearn.linear_model", "linear")):
         return "shap"
@@ -195,27 +203,37 @@ def pick_engine(model: Any, data: Any) -> str:
 def _top_features_by_mean_abs_shap(shap_values: Any, top_n: int) -> List[int]:
     """Indices of the `top_n` features by mean |SHAP value|, descending."""
     import numpy as np
+
     mean_abs = np.abs(shap_values.values).mean(axis=0)
     return [int(i) for i in np.argsort(-mean_abs)[:top_n]]
 
 
 def _write_shap_bar_svg(
-    shap_values: Any, feat_names: List[str], top_idx: List[int], out: Path,
+    shap_values: Any,
+    feat_names: List[str],
+    top_idx: List[int],
+    out: Path,
 ) -> Path:
     """Mean |SHAP value| per feature, reusing the house bar-chart generator."""
     import numpy as np
+
     mean_abs = np.abs(shap_values.values).mean(axis=0)
     rows = [{"region": feat_names[i], "value": float(mean_abs[i])} for i in top_idx]
     return make_bar.make_bar(
-        rows, out=out,
+        rows,
+        out=out,
         title="Mean |SHAP value| by feature",
         subtitle=f"Top {len(rows)} features ranked by mean absolute impact on the prediction",
-        x_label="Feature", y_label="Mean |SHAP value|",
+        x_label="Feature",
+        y_label="Mean |SHAP value|",
     )
 
 
 def _write_shap_beeswarm_svg(
-    shap_values: Any, feat_names: List[str], top_idx: List[int], out: Path,
+    shap_values: Any,
+    feat_names: List[str],
+    top_idx: List[int],
+    out: Path,
 ) -> Path:
     """Per-feature SHAP-value swarm, coloured by each point's raw feature value.
 
@@ -261,15 +279,18 @@ def _write_shap_beeswarm_svg(
     chrome_family = chrome_stack_for_theme("corporate")
     mono_family = mono_stack_for_theme("corporate")
     parts: List[str] = []
-    parts.append(svg_open(width, height, "shap-bee-title", "shap-bee-desc", font_family=chrome_family))
+    parts.append(
+        svg_open(width, height, "shap-bee-title", "shap-bee-desc", font_family=chrome_family)
+    )
     parts.append('<title id="shap-bee-title">SHAP value distribution by feature</title>')
     sample_note = (
         f", a random sample of {max_points_per_row} of {n_points} rows shown so the swarm shape stays legible"
-        if subsampled else ""
+        if subsampled
+        else ""
     )
     parts.append(
         f'<desc id="shap-bee-desc">Beeswarm of SHAP values for the top {n_features} features, '
-        f'one row per feature ranked by importance, coloured by each point’s raw feature value{sample_note}.</desc>'
+        f"one row per feature ranked by importance, coloured by each point’s raw feature value{sample_note}.</desc>"
     )
     plotted_points = min(n_points, max_points_per_row)
     total_dots = n_features * plotted_points
@@ -297,7 +318,8 @@ def _write_shap_beeswarm_svg(
     # per row, so a point's colour/position is comparable across bands.
     row_idx = (
         np.random.default_rng(42).choice(n_points, size=max_points_per_row, replace=False)
-        if subsampled else np.arange(n_points)
+        if subsampled
+        else np.arange(n_points)
     )
 
     tips: List[str] = []
@@ -322,12 +344,18 @@ def _write_shap_beeswarm_svg(
             parts.append(
                 f'<circle id="shapdot-hit-{tip_i}" class="dot hit" tabindex="0" cx="{x:.1f}" cy="{y:.1f}" '
                 f'r="{radius:.1f}" fill="{color}" stroke="{BG}" stroke-width="0.6">'
-                f'<title>{xml_escape(tip)}</title></circle>'
+                f"<title>{xml_escape(tip)}</title></circle>"
             )
             tips.append(
                 tooltip_bubble(
-                    x, y - radius - 6, [tip],
-                    canvas_w=width, canvas_h=height, ink=INK, secondary=SECONDARY, border=GRIDLINE,
+                    x,
+                    y - radius - 6,
+                    [tip],
+                    canvas_w=width,
+                    canvas_h=height,
+                    ink=INK,
+                    secondary=SECONDARY,
+                    border=GRIDLINE,
                     elem_id=f"shapdot-tip-{tip_i}",
                 )
             )
@@ -357,7 +385,9 @@ def _write_shap_beeswarm_svg(
             f'<rect x="{leg_x + t0 * leg_w:.1f}" y="{leg_y:.1f}" width="{leg_w / 20.0 + 0.5:.1f}" '
             f'height="8" fill="{color_ramp((t0 + t1) / 2, ramp_stops)}"/>'
         )
-    parts.append(f'<text x="{leg_x:.1f}" y="{leg_y - 6:.1f}" font-size="10.5" fill="{SECONDARY}">Feature value: low</text>')
+    parts.append(
+        f'<text x="{leg_x:.1f}" y="{leg_y - 6:.1f}" font-size="10.5" fill="{SECONDARY}">Feature value: low</text>'
+    )
     parts.append(
         f'<text x="{leg_x + leg_w:.1f}" y="{leg_y - 6:.1f}" font-size="10.5" fill="{SECONDARY}" '
         'text-anchor="end">high</text>'
@@ -369,12 +399,19 @@ def _write_shap_beeswarm_svg(
 
 
 def _write_shap_dependence_svg(
-    shap_values: Any, feat_names: List[str], feat_idx: int, out: Path,
+    shap_values: Any,
+    feat_names: List[str],
+    feat_idx: int,
+    out: Path,
 ) -> Path:
     """Feature value vs. its own SHAP value, one dot per explained row."""
     import numpy as np
 
-    xs = shap_values.data[:, feat_idx] if hasattr(shap_values, "data") else shap_values.values[:, feat_idx]
+    xs = (
+        shap_values.data[:, feat_idx]
+        if hasattr(shap_values, "data")
+        else shap_values.values[:, feat_idx]
+    )
     ys = shap_values.values[:, feat_idx]
     feat_name = str(feat_names[feat_idx])
 
@@ -403,11 +440,13 @@ def _write_shap_dependence_svg(
     title = f"SHAP dependence: {feat_name}"
 
     parts: List[str] = []
-    parts.append(svg_open(width, height, "shap-dep-title", "shap-dep-desc", font_family=chrome_family))
+    parts.append(
+        svg_open(width, height, "shap-dep-title", "shap-dep-desc", font_family=chrome_family)
+    )
     parts.append(f'<title id="shap-dep-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="shap-dep-desc">SHAP value versus raw value of {xml_escape(feat_name)}, '
-        'one point per explained row.</desc>'
+        "one point per explained row.</desc>"
     )
     parts.append(
         "<style>"
@@ -421,7 +460,9 @@ def _write_shap_dependence_svg(
         + "</style>"
     )
     parts.append(f'<rect width="{width}" height="{height}" fill="{BG}"/>')
-    parts.append(f'<text x="{plot_x:.1f}" y="34" font-size="18" font-weight="700" fill="{INK}">{xml_escape(title)}</text>')
+    parts.append(
+        f'<text x="{plot_x:.1f}" y="34" font-size="18" font-weight="700" fill="{INK}">{xml_escape(title)}</text>'
+    )
 
     if y0 < 0 < y1:
         zy = py(0.0)
@@ -468,8 +509,15 @@ def _write_shap_dependence_svg(
         )
         tips.append(
             tooltip_bubble(
-                x, y - 12, [tip], canvas_w=width, canvas_h=height,
-                ink=INK, secondary=SECONDARY, border=GRIDLINE, elem_id=f"dep-tip-{i}",
+                x,
+                y - 12,
+                [tip],
+                canvas_w=width,
+                canvas_h=height,
+                ink=INK,
+                secondary=SECONDARY,
+                border=GRIDLINE,
+                elem_id=f"dep-tip-{i}",
             )
         )
     parts.extend(tips)
@@ -479,7 +527,9 @@ def _write_shap_dependence_svg(
     return write_svg(out, "\n".join(parts), theme="corporate")
 
 
-def _write_shap_waterfall_svg(shap_values: Any, row_idx: int, feat_names: List[str], out: Path) -> Path:
+def _write_shap_waterfall_svg(
+    shap_values: Any, row_idx: int, feat_names: List[str], out: Path
+) -> Path:
     """Per-row SHAP contribution breakdown, reusing the house waterfall generator."""
     row = shap_values[row_idx]
     base_values = row.base_values
@@ -491,12 +541,19 @@ def _write_shap_waterfall_svg(shap_values: Any, row_idx: int, feat_names: List[s
     running = base
     for i in order:
         val = float(contributions[i])
-        rows.append({"label": str(feat_names[i]), "value": val, "kind": "positive" if val >= 0 else "negative"})
+        rows.append(
+            {
+                "label": str(feat_names[i]),
+                "value": val,
+                "kind": "positive" if val >= 0 else "negative",
+            }
+        )
         running += val
     rows.append({"label": "Prediction", "value": running, "kind": "total"})
 
     return make_waterfall.make_waterfall(
-        rows, out=out,
+        rows,
+        out=out,
         title=f"SHAP contribution breakdown, row {row_idx}",
         subtitle="From the base value to this row's prediction",
     )
@@ -513,10 +570,12 @@ def _write_static_explanation_report(out: Path, title: str, sections: List[Any])
     figures = []
     for heading, svg_path in sections:
         svg_text = svg_path.read_text(encoding="utf-8")
-        figures.append(f"<section><h2>{xml_escape(heading)}</h2><figure>{svg_text}</figure></section>")
+        figures.append(
+            f"<section><h2>{xml_escape(heading)}</h2><figure>{svg_text}</figure></section>"
+        )
     body = "\n".join(figures)
     html = (
-        "<!doctype html><html><head><meta charset=\"utf-8\">"
+        '<!doctype html><html><head><meta charset="utf-8">'
         f"<title>{xml_escape(title)}</title>"
         "<style>body{font-family:Roboto,system-ui,sans-serif;max-width:900px;"
         "margin:2rem auto;padding:0 1rem;background:#FFFFFF;color:#1D1D1F;} "
@@ -560,12 +619,22 @@ def run_shap(model: Any, data: Any, ctx: Dict[str, Any]) -> Dict[str, Any]:
 
     n_background = min(ctx.get("n_background", 100), len(data))
     n_explain = min(ctx.get("n_explain", 500), len(data))
-    background = data.sample(n_background, random_state=42) if hasattr(data, "sample") else data[:n_background]
-    explain_rows = data.sample(n_explain, random_state=7) if hasattr(data, "sample") else data[:n_explain]
+    background = (
+        data.sample(n_background, random_state=42)
+        if hasattr(data, "sample")
+        else data[:n_background]
+    )
+    explain_rows = (
+        data.sample(n_explain, random_state=7) if hasattr(data, "sample") else data[:n_explain]
+    )
 
     explainer = shap.Explainer(model, background)
     shap_values = explainer(explain_rows)
-    feat_names = list(explain_rows.columns) if hasattr(explain_rows, "columns") else [f"f{i}" for i in range(explain_rows.shape[1])]
+    feat_names = (
+        list(explain_rows.columns)
+        if hasattr(explain_rows, "columns")
+        else [f"f{i}" for i in range(explain_rows.shape[1])]
+    )
 
     bar_top_idx = _top_features_by_mean_abs_shap(shap_values, ctx.get("top_n", 20))
     _write_shap_bar_svg(shap_values, feat_names, bar_top_idx, out / "summary_bar.svg")
@@ -576,7 +645,9 @@ def run_shap(model: Any, data: Any, ctx: Dict[str, Any]) -> Dict[str, Any]:
     dep_top_idx = _top_features_by_mean_abs_shap(shap_values, ctx.get("top_n", 5))
     for i in dep_top_idx:
         try:
-            _write_shap_dependence_svg(shap_values, feat_names, i, out / f"dependence_{feat_names[i]}.svg")
+            _write_shap_dependence_svg(
+                shap_values, feat_names, i, out / f"dependence_{feat_names[i]}.svg"
+            )
         except Exception as exc:  # noqa: BLE001 — plot best-effort
             print(f"[warn] dependence plot for {feat_names[i]} failed: {exc}", file=sys.stderr)
 
@@ -584,25 +655,31 @@ def run_shap(model: Any, data: Any, ctx: Dict[str, Any]) -> Dict[str, Any]:
     row_idx = ctx.get("waterfall_row")
     if row_idx is None:
         try:
-            preds = model.predict(explain_rows) if hasattr(model, "predict") else np.abs(shap_values.values).sum(axis=1)
+            preds = (
+                model.predict(explain_rows)
+                if hasattr(model, "predict")
+                else np.abs(shap_values.values).sum(axis=1)
+            )
             row_idx = int(np.argmax(np.abs(preds)))
         except Exception:  # noqa: BLE001
             row_idx = 0
     try:
-        _write_shap_waterfall_svg(shap_values, row_idx, feat_names, out / f"waterfall_row_{row_idx}.svg")
+        _write_shap_waterfall_svg(
+            shap_values, row_idx, feat_names, out / f"waterfall_row_{row_idx}.svg"
+        )
     except Exception as exc:  # noqa: BLE001
         print(f"[warn] waterfall failed: {exc}", file=sys.stderr)
 
     # Persist shap values
     try:
         import pandas as pd
+
         vals_df = pd.DataFrame(shap_values.values, columns=feat_names)
         vals_df.to_parquet(out / "shap_values.parquet")
     except Exception as exc:  # noqa: BLE001 — parquet needs pyarrow; optional artifact
         # Unlike the plots, surface a note so the missing artifact isn't silent
         # (matches the sibling plot handlers' [warn] convention).
-        print(f"[warn] could not write shap_values.parquet ({exc}); skipping.",
-              file=sys.stderr)
+        print(f"[warn] could not write shap_values.parquet ({exc}); skipping.", file=sys.stderr)
 
     return {
         "engine": "shap",
@@ -641,34 +718,56 @@ def run_shapash(model: Any, data: Any, ctx: Dict[str, Any]) -> Dict[str, Any]:
 
     n_background = min(ctx.get("n_background", 100), len(data))
     n_explain = min(ctx.get("n_explain", 500), len(data))
-    background = data.sample(n_background, random_state=42) if hasattr(data, "sample") else data[:n_background]
-    explain_rows = data.sample(n_explain, random_state=7) if hasattr(data, "sample") else data[:n_explain]
+    background = (
+        data.sample(n_background, random_state=42)
+        if hasattr(data, "sample")
+        else data[:n_background]
+    )
+    explain_rows = (
+        data.sample(n_explain, random_state=7) if hasattr(data, "sample") else data[:n_explain]
+    )
 
     explainer = shap.Explainer(model, background)
     shap_values = explainer(explain_rows)
-    feat_names = list(explain_rows.columns) if hasattr(explain_rows, "columns") else [f"f{i}" for i in range(explain_rows.shape[1])]
+    feat_names = (
+        list(explain_rows.columns)
+        if hasattr(explain_rows, "columns")
+        else [f"f{i}" for i in range(explain_rows.shape[1])]
+    )
 
-    contributions = pd.DataFrame(shap_values.values, columns=feat_names, index=getattr(explain_rows, "index", None))
+    contributions = pd.DataFrame(
+        shap_values.values, columns=feat_names, index=getattr(explain_rows, "index", None)
+    )
     xpl = SmartExplainer(model=model)
     y_pred = None
     if hasattr(model, "predict"):
         try:
             # Shapash's own check_y() requires a one-column Series/DataFrame,
             # not the bare ndarray most sklearn-style .predict() methods return.
-            y_pred = pd.Series(model.predict(explain_rows), index=getattr(explain_rows, "index", None), name="pred")
+            y_pred = pd.Series(
+                model.predict(explain_rows), index=getattr(explain_rows, "index", None), name="pred"
+            )
         except Exception:  # noqa: BLE001 — predictions are an optional overlay; compile below still works with y_pred=None
             pass
     xpl.compile(x=explain_rows, y_pred=y_pred, contributions=contributions)
 
     top_idx = _top_features_by_mean_abs_shap(shap_values, ctx.get("top_n", 20))
     bar_path = _write_shap_bar_svg(shap_values, feat_names, top_idx, out / "summary_bar.svg")
-    beeswarm_path = _write_shap_beeswarm_svg(shap_values, feat_names, top_idx, out / "summary_beeswarm.svg")
+    beeswarm_path = _write_shap_beeswarm_svg(
+        shap_values, feat_names, top_idx, out / "summary_beeswarm.svg"
+    )
     try:
-        preds = model.predict(explain_rows) if hasattr(model, "predict") else np.abs(shap_values.values).sum(axis=1)
+        preds = (
+            model.predict(explain_rows)
+            if hasattr(model, "predict")
+            else np.abs(shap_values.values).sum(axis=1)
+        )
         row_idx = int(np.argmax(np.abs(preds)))
     except Exception:  # noqa: BLE001
         row_idx = 0
-    waterfall_path = _write_shap_waterfall_svg(shap_values, row_idx, feat_names, out / f"waterfall_row_{row_idx}.svg")
+    waterfall_path = _write_shap_waterfall_svg(
+        shap_values, row_idx, feat_names, out / f"waterfall_row_{row_idx}.svg"
+    )
 
     report_path = _write_static_explanation_report(
         out / "report.html",
@@ -746,7 +845,15 @@ def run_timeshap(model: Any, data: Any, ctx: Dict[str, Any]) -> Dict[str, Any]:
             pass
 
     (out / "timeshap_report.json").write_text(
-        json.dumps({"pruning": pruning_dict, "event": event_dict, "feature": feature_dict, "cell": cell_dict}, indent=2),
+        json.dumps(
+            {
+                "pruning": pruning_dict,
+                "event": event_dict,
+                "feature": feature_dict,
+                "cell": cell_dict,
+            },
+            indent=2,
+        ),
         encoding="utf-8",
     )
 
@@ -793,14 +900,18 @@ def _write_timeshap_frame_svg(frame: Any, name: str, out: Path) -> Optional[Path
         label_col = next((c for c in frame.columns if c != value_col), None)
     if label_col is None:
         return None
-    rows = [{"region": str(r[label_col]), "value": float(r[value_col])} for _, r in frame.iterrows()]
+    rows = [
+        {"region": str(r[label_col]), "value": float(r[value_col])} for _, r in frame.iterrows()
+    ]
     if not rows:
         return None
     return make_bar.make_bar(
-        rows, out=out,
+        rows,
+        out=out,
         title=f"TimeSHAP {name} attribution",
         subtitle=f"Shapley value per {str(label_col).lower()}",
-        x_label=str(label_col), y_label="Shapley value",
+        x_label=str(label_col),
+        y_label="Shapley value",
     )
 
 
@@ -816,7 +927,11 @@ def run_lime(model: Any, data: Any, ctx: Dict[str, Any]) -> Dict[str, Any]:
     out.mkdir(parents=True, exist_ok=True)
 
     values = data.values if hasattr(data, "values") else np.asarray(data)
-    feat_names = list(data.columns) if hasattr(data, "columns") else [f"f{i}" for i in range(values.shape[1])]
+    feat_names = (
+        list(data.columns)
+        if hasattr(data, "columns")
+        else [f"f{i}" for i in range(values.shape[1])]
+    )
 
     explainer = LimeTabularExplainer(
         training_data=values,
@@ -829,10 +944,16 @@ def run_lime(model: Any, data: Any, ctx: Dict[str, Any]) -> Dict[str, Any]:
     predict_fn = model.predict_proba if hasattr(model, "predict_proba") else model.predict
 
     for i in range(n_explain):
-        exp = explainer.explain_instance(values[i], predict_fn, num_features=min(15, values.shape[1]))
+        exp = explainer.explain_instance(
+            values[i], predict_fn, num_features=min(15, values.shape[1])
+        )
         exp.save_to_file(str(out / f"lime_row_{i}.html"))
 
-    return {"engine": "lime", "n_explained": n_explain, "files": [p.name for p in sorted(out.glob("*"))]}
+    return {
+        "engine": "lime",
+        "n_explained": n_explain,
+        "files": [p.name for p in sorted(out.glob("*"))],
+    }
 
 
 # ------------------------------------------------------------------
@@ -847,23 +968,50 @@ def build_parser() -> argparse.ArgumentParser:
             "LIME. Auto-picks by model + data shape unless --engine is set."
         ),
     )
-    parser.add_argument("--model", required=True,
-                        help="Path to a pickled / joblib model. Loading unpickles it, "
-                             "which runs arbitrary code — only pass a model you trust.")
+    parser.add_argument(
+        "--model",
+        required=True,
+        help="Path to a pickled / joblib model. Loading unpickles it, "
+        "which runs arbitrary code — only pass a model you trust.",
+    )
     parser.add_argument("--data", required=True, help="Path to CSV / JSON / Parquet / NPY.")
-    parser.add_argument("--engine", choices=("auto", "shap", "shapash", "timeshap", "lime"),
-                        default="auto", help="Explainability engine (default: auto).")
-    parser.add_argument("--report", choices=("none", "shapash"), default="none",
-                        help='Add a Shapash HTML report on top of the chosen engine.')
+    parser.add_argument(
+        "--engine",
+        choices=("auto", "shap", "shapash", "timeshap", "lime"),
+        default="auto",
+        help="Explainability engine (default: auto).",
+    )
+    parser.add_argument(
+        "--report",
+        choices=("none", "shapash"),
+        default="none",
+        help="Add a Shapash HTML report on top of the chosen engine.",
+    )
     parser.add_argument("--out", default="./explain", help="Output directory.")
-    parser.add_argument("--n-background", type=int, default=100, help="SHAP background sample size.")
-    parser.add_argument("--n-explain", type=int, default=500, help="Rows to explain (SHAP) / LIME instances.")
-    parser.add_argument("--top-n", type=int, default=20, help="Top-N features for summary + dependence plots.")
-    parser.add_argument("--waterfall-row", type=int, default=None, help="Row index for the SHAP waterfall.")
-    parser.add_argument("--sequence-cols", default="", help="Comma-separated column names for TimeSHAP.")
-    parser.add_argument("--tolerance", type=float, default=0.025, help="TimeSHAP pruning tolerance.")
-    parser.add_argument("--link", choices=("identity", "logit"), default="identity",
-                        help="SHAP link function (use logit for binary classification).")
+    parser.add_argument(
+        "--n-background", type=int, default=100, help="SHAP background sample size."
+    )
+    parser.add_argument(
+        "--n-explain", type=int, default=500, help="Rows to explain (SHAP) / LIME instances."
+    )
+    parser.add_argument(
+        "--top-n", type=int, default=20, help="Top-N features for summary + dependence plots."
+    )
+    parser.add_argument(
+        "--waterfall-row", type=int, default=None, help="Row index for the SHAP waterfall."
+    )
+    parser.add_argument(
+        "--sequence-cols", default="", help="Comma-separated column names for TimeSHAP."
+    )
+    parser.add_argument(
+        "--tolerance", type=float, default=0.025, help="TimeSHAP pruning tolerance."
+    )
+    parser.add_argument(
+        "--link",
+        choices=("identity", "logit"),
+        default="identity",
+        help="SHAP link function (use logit for binary classification).",
+    )
     parser.add_argument("--dark", action="store_true", help="Dark-mode plots.")
     return parser
 
@@ -905,7 +1053,9 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     summary_path = Path(args.out) / "summary.json"
     summary_path.parent.mkdir(parents=True, exist_ok=True)
-    summary_path.write_text(json.dumps(summary, indent=2, ensure_ascii=False, default=str), encoding="utf-8")
+    summary_path.write_text(
+        json.dumps(summary, indent=2, ensure_ascii=False, default=str), encoding="utf-8"
+    )
     print(f"wrote {summary_path}", file=sys.stderr)
     return 0
 

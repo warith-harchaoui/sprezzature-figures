@@ -244,8 +244,7 @@ def normalise(rows: List[Dict[str, Any]]) -> None:
     for r in rows:
         raw = r["raw"]
         r["norm"] = [
-            (float(raw[j]) - lo[j]) / (hi[j] - lo[j]) if hi[j] > lo[j] else 0.0
-            for j in range(d)
+            (float(raw[j]) - lo[j]) / (hi[j] - lo[j]) if hi[j] > lo[j] else 0.0 for j in range(d)
         ]
 
 
@@ -351,10 +350,15 @@ def _disc_and_anchors(anchors: List[Tuple[float, float]]) -> str:
         )
         tips.append(
             tooltip_bubble(
-                ax, ay - 20,
+                ax,
+                ay - 20,
                 [name, "Anchor: pulls rich kernels toward it"],
-                anchor="middle", canvas_w=WIDTH, canvas_h=HEIGHT,
-                ink=INK, secondary=SUBTLE, border=GRID,
+                anchor="middle",
+                canvas_w=WIDTH,
+                canvas_h=HEIGHT,
+                ink=INK,
+                secondary=SUBTLE,
+                border=GRID,
                 elem_id=f"tip-anchor-{i}",
             )
         )
@@ -429,10 +433,15 @@ def _points(
             )
             cls_tips.append(
                 tooltip_bubble(
-                    x, y - 16,
+                    x,
+                    y - 16,
                     [name, f"Dominant: {dom_feat}", f"{dom_feat}: {dom_val:.2f}"],
-                    anchor="middle", canvas_w=WIDTH, canvas_h=HEIGHT,
-                    ink=INK, secondary=SUBTLE, border=GRID,
+                    anchor="middle",
+                    canvas_w=WIDTH,
+                    canvas_h=HEIGHT,
+                    ink=INK,
+                    secondary=SUBTLE,
+                    border=GRID,
                     elem_id=f"tip-pt-{ci}-{pi}",
                 )
             )
@@ -498,7 +507,9 @@ def _legend(colours: Dict[str, str] | None = None) -> str:
         parts.append(
             f'    <circle class="rv-{name.lower()}" cx="{x + 8:.1f}" cy="-6" r="8" fill="{col}"/>'
         )
-        parts.append(f'    <text x="{x + 26:.1f}" y="0" font-size="18" fill="{SUBTLE}">{name}</text>')
+        parts.append(
+            f'    <text x="{x + 26:.1f}" y="0" font-size="18" fill="{SUBTLE}">{name}</text>'
+        )
         x += 26 + 11.5 * len(name) + 34
     parts.append("  </g>")
     return "\n".join(parts)
@@ -572,7 +583,9 @@ def build_svg(
     # (see _disc_and_anchors/_points for why the ids are scoped this way).
     tip_css = foreground_tip_css(n_feat, mark_prefix="anchor", tip_prefix="tip-anchor") + "".join(
         foreground_tip_css(
-            len([r for r in rows if r["cls"] == ci]), mark_prefix=f"pt-{ci}", tip_prefix=f"tip-pt-{ci}"
+            len([r for r in rows if r["cls"] == ci]),
+            mark_prefix=f"pt-{ci}",
+            tip_prefix=f"tip-pt-{ci}",
         )
         for ci in range(len(CLASSES))
     )
@@ -635,9 +648,7 @@ def build_svg(
         f'  <text x="60" y="58" font-size="30" font-weight="700" fill="{INK}">'
         f"Seven measurements separate the wheat varieties</text>"
     )
-    subtitle_text = (
-        f'  <text x="60" y="92" font-size="19" fill="{SUBTLE}">{subtitle}</text>'
-    )
+    subtitle_text = f'  <text x="60" y="92" font-size="19" fill="{SUBTLE}">{subtitle}</text>'
     # "Roboto Mono, monospace" (not the canonical _style.FONT_MONO stack) is
     # this figure's pre-existing literal -- kept verbatim for the corporate
     # default so byte identity holds; only academic swaps it for real.

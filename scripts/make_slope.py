@@ -41,11 +41,16 @@ PERIODS = ["2023", "2024"]
 #: because a reader cannot tell whether a Greek letter crossing another
 #: matters, and the whole point of the chart is that this crossing does.
 DEMO_DATA: List[Dict[str, Any]] = [
-    {"item": "Live chat", "period": "2023", "v": 35}, {"item": "Live chat", "period": "2024", "v": 61},
-    {"item": "Phone", "period": "2023", "v": 60}, {"item": "Phone", "period": "2024", "v": 48},
-    {"item": "Email", "period": "2023", "v": 42}, {"item": "Email", "period": "2024", "v": 55},
-    {"item": "Help centre", "period": "2023", "v": 51}, {"item": "Help centre", "period": "2024", "v": 52},
-    {"item": "Community forum", "period": "2023", "v": 28}, {"item": "Community forum", "period": "2024", "v": 40},
+    {"item": "Live chat", "period": "2023", "v": 35},
+    {"item": "Live chat", "period": "2024", "v": 61},
+    {"item": "Phone", "period": "2023", "v": 60},
+    {"item": "Phone", "period": "2024", "v": 48},
+    {"item": "Email", "period": "2023", "v": 42},
+    {"item": "Email", "period": "2024", "v": 55},
+    {"item": "Help centre", "period": "2023", "v": 51},
+    {"item": "Help centre", "period": "2024", "v": 52},
+    {"item": "Community forum", "period": "2023", "v": 28},
+    {"item": "Community forum", "period": "2024", "v": 40},
 ]
 
 
@@ -53,10 +58,17 @@ def _item_colors(
     items: List[str], accessibility: str = "universal", theme: str = "corporate"
 ) -> Dict[str, str]:
     palette = load_palette(accessibility, theme=theme)
-    hues = [palette.get(h, d) for h, d in (
-        ("Blue", "#007AFF"), ("Orange", "#FF9500"), ("Green", "#34C759"),
-        ("Purple", "#AF52DE"), ("Red", "#FF3B30"), ("Teal", "#79DBDC"),
-    )]
+    hues = [
+        palette.get(h, d)
+        for h, d in (
+            ("Blue", "#007AFF"),
+            ("Orange", "#FF9500"),
+            ("Green", "#34C759"),
+            ("Purple", "#AF52DE"),
+            ("Red", "#FF3B30"),
+            ("Teal", "#79DBDC"),
+        )
+    ]
     return {item: hues[i % len(hues)] for i, item in enumerate(items)}
 
 
@@ -104,7 +116,9 @@ def build_svg(
     for r in rows:
         if r["period"] not in seen_periods:
             seen_periods.append(r["period"])
-    periods = [p for p in PERIODS if p in seen_periods] + [p for p in seen_periods if p not in PERIODS]
+    periods = [p for p in PERIODS if p in seen_periods] + [
+        p for p in seen_periods if p not in PERIODS
+    ]
     colors = _item_colors(items, accessibility, theme=theme)
     lookup: Dict[tuple, float] = {(r["item"], r["period"]): float(r["v"]) for r in rows}
     all_vals = list(lookup.values())
@@ -118,9 +132,13 @@ def build_svg(
     # fits when it is drawn. Capped at a third of the canvas each, because a
     # slope chart with no room left between its axes has stopped being one.
     label_px = 12.0
+
     def _gutter(period: str) -> float:
         largest = max(
-            (text_width(f"{item} ({lookup.get((item, period), 0.0):.0f})", label_px) for item in items),
+            (
+                text_width(f"{item} ({lookup.get((item, period), 0.0):.0f})", label_px)
+                for item in items
+            ),
             default=0.0,
         )
         return min(max(90.0, largest + 24.0), width / 3.0)
@@ -138,11 +156,15 @@ def build_svg(
         return plot_y + plot_h - (v - (v_min - pad)) / ((v_max + pad) - (v_min - pad)) * plot_h
 
     parts: List[str] = []
-    parts.append(svg_open(width, height, "slope-title", "slope-desc", font_family=chrome_stack_for_theme(theme)))
+    parts.append(
+        svg_open(
+            width, height, "slope-title", "slope-desc", font_family=chrome_stack_for_theme(theme)
+        )
+    )
     parts.append(f'<title id="slope-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="slope-desc">Slope chart of {len(items)} items across {n_periods} periods. '
-        f'Hover or focus a line for its exact change.</desc>'
+        f"Hover or focus a line for its exact change.</desc>"
     )
     parts.append(
         "<style>"
@@ -159,12 +181,16 @@ def build_svg(
         f'<text x="30" y="46" font-size="21" font-weight="700" fill="{INK}" '
         f'letter-spacing="-0.3">{xml_escape(title)}</text>'
     )
-    parts.append(f'<text x="30" y="70" font-size="13" fill="{SECONDARY}">{xml_escape(subtitle)}</text>')
+    parts.append(
+        f'<text x="30" y="70" font-size="13" fill="{SECONDARY}">{xml_escape(subtitle)}</text>'
+    )
 
     # ---- vertical axes ----
     for pi, period in enumerate(periods):
         px = x_for(pi)
-        parts.append(f'<line x1="{px:.1f}" y1="{plot_y:.1f}" x2="{px:.1f}" y2="{plot_y + plot_h:.1f}" stroke="#E5E5EA" stroke-width="1"/>')
+        parts.append(
+            f'<line x1="{px:.1f}" y1="{plot_y:.1f}" x2="{px:.1f}" y2="{plot_y + plot_h:.1f}" stroke="#E5E5EA" stroke-width="1"/>'
+        )
         parts.append(
             f'<text x="{px:.1f}" y="{plot_y - 16:.1f}" font-size="13" font-weight="700" fill="{INK}" '
             f'text-anchor="middle">{xml_escape(period)}</text>'
@@ -190,16 +216,23 @@ def build_svg(
         )
         parts.append(f'<path d="{path_d}" fill="none" stroke="{color}" stroke-width="2.2"/>')
         for x, y in pts:
-            parts.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="4" fill="{color}" stroke="{BG}" stroke-width="1.5"/>')
+            parts.append(
+                f'<circle cx="{x:.1f}" cy="{y:.1f}" r="4" fill="{color}" stroke="{BG}" stroke-width="1.5"/>'
+            )
         parts.append("</g>")
         mid_x = (pts[0][0] + pts[-1][0]) / 2.0
         mid_y = (pts[0][1] + pts[-1][1]) / 2.0
         bubbles.append(
             tooltip_bubble(
-                mid_x, mid_y - 16,
+                mid_x,
+                mid_y - 16,
                 [item, f"{v0:.0f} to {v1:.0f}", f"{sign}{change:.0f} change"],
-                anchor="middle", canvas_w=width, canvas_h=height,
-                ink=INK, secondary=SECONDARY, border=GRIDLINE,
+                anchor="middle",
+                canvas_w=width,
+                canvas_h=height,
+                ink=INK,
+                secondary=SECONDARY,
+                border=GRIDLINE,
                 elem_id=f"tip-{si}",
             )
         )
@@ -263,8 +296,16 @@ def make_slope(
     >>> p.exists()
     True
     """
-    svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
-                     mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(
+        data,
+        title=title,
+        subtitle=subtitle,
+        width=width,
+        height=height,
+        mode=mode,
+        accessibility=accessibility,
+        theme=theme,
+    )
     dest = Path(out) if out else svg_example_path(__file__, "slope")
     return write_svg(dest, svg, theme=theme)
 

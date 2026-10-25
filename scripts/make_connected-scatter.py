@@ -73,14 +73,14 @@ from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 #: shape that makes "decoupling" visible. ``label`` flags the waypoints
 #: worth naming; ``side`` steers each visible label clear of the path.
 DEMO_DATA: List[Dict[str, Any]] = [
-    {"year": 1990, "gdp": 28.0, "co2": 10.0, "label": True,  "side": "left"},
+    {"year": 1990, "gdp": 28.0, "co2": 10.0, "label": True, "side": "left"},
     {"year": 1995, "gdp": 30.2, "co2": 10.4, "label": False, "side": "left"},
-    {"year": 2000, "gdp": 34.6, "co2": 10.5, "label": True,  "side": "top"},
+    {"year": 2000, "gdp": 34.6, "co2": 10.5, "label": True, "side": "top"},
     {"year": 2005, "gdp": 38.4, "co2": 10.0, "label": False, "side": "right"},
-    {"year": 2010, "gdp": 39.0, "co2": 8.4,  "label": True,  "side": "right"},
-    {"year": 2015, "gdp": 42.1, "co2": 6.5,  "label": False, "side": "right"},
-    {"year": 2019, "gdp": 45.3, "co2": 5.4,  "label": True,  "side": "right"},
-    {"year": 2022, "gdp": 46.6, "co2": 4.7,  "label": True,  "side": "right"},
+    {"year": 2010, "gdp": 39.0, "co2": 8.4, "label": True, "side": "right"},
+    {"year": 2015, "gdp": 42.1, "co2": 6.5, "label": False, "side": "right"},
+    {"year": 2019, "gdp": 45.3, "co2": 5.4, "label": True, "side": "right"},
+    {"year": 2022, "gdp": 46.6, "co2": 4.7, "label": True, "side": "right"},
 ]
 
 
@@ -150,10 +150,7 @@ def segments_to_path(segs: List[BezierSeg]) -> str:
     p0 = segs[0][0]
     d = [f"M {p0[0]:.2f} {p0[1]:.2f}"]
     for _, c1, c2, p1 in segs:
-        d.append(
-            f"C {c1[0]:.2f} {c1[1]:.2f} {c2[0]:.2f} {c2[1]:.2f} "
-            f"{p1[0]:.2f} {p1[1]:.2f}"
-        )
+        d.append(f"C {c1[0]:.2f} {c1[1]:.2f} {c2[0]:.2f} {c2[1]:.2f} {p1[0]:.2f} {p1[1]:.2f}")
     return " ".join(d)
 
 
@@ -340,7 +337,7 @@ def arrowhead(
     # length behind, splayed to ~0.62·size half-width for a clean chevron.
     tx = x + half * ca
     ty = y + half * sa
-    hw = 0.62 * size            # half-width of the base
+    hw = 0.62 * size  # half-width of the base
     # Perpendicular unit vector (rotate the tangent by 90 degrees).
     px_, py_ = -sa, ca
     b1x = x - half * ca + hw * px_
@@ -455,21 +452,23 @@ def build_svg(
     parts: List[str] = []
 
     # --- SVG root + accessible description ------------------------
-    parts.append(svg_open(width, height, "cs-title", "cs-desc", font_family=chrome_stack_for_theme(theme)))
+    parts.append(
+        svg_open(width, height, "cs-title", "cs-desc", font_family=chrome_stack_for_theme(theme))
+    )
     # The accessible name is the headline a sighted reader sees: when the
     # two disagree, a screen-reader user is told about a different figure.
     parts.append(f'<title id="cs-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="cs-desc">Connected scatter tracing carbon-dioxide '
-        f'emissions per person (vertical, tonnes) against economic output '
-        f'per person (horizontal, thousands of US dollars) for the United '
-        f'Kingdom, one point every five years from {rows[0]["year"]} to '
-        f'{rows[-1]["year"]}. The path first moves right as income rises, '
-        f'then turns sharply left and downward: output per person climbed '
-        f'about {gdp_rise}% while emissions per person fell about '
-        f'{co2_drop}%, from {co2_first:.1f} to {co2_last:.1f} tonnes. The '
-        f'left-turning hook shows growth and carbon decoupling. '
-        f'</desc>'
+        f"emissions per person (vertical, tonnes) against economic output "
+        f"per person (horizontal, thousands of US dollars) for the United "
+        f"Kingdom, one point every five years from {rows[0]['year']} to "
+        f"{rows[-1]['year']}. The path first moves right as income rises, "
+        f"then turns sharply left and downward: output per person climbed "
+        f"about {gdp_rise}% while emissions per person fell about "
+        f"{co2_drop}%, from {co2_first:.1f} to {co2_last:.1f} tonnes. The "
+        f"left-turning hook shows growth and carbon decoupling. "
+        f"</desc>"
     )
 
     # Static figure: hover / focus enlargement only, no motion to guard.
@@ -493,8 +492,8 @@ def build_svg(
         ".wp:hover .halo,.wp:focus .halo{opacity:1}"
         ".wp:focus{outline:none}"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        + foreground_tip_css(len(rows)) +
-        "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
+        + foreground_tip_css(len(rows))
+        + "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
         + contrast
         # Additive dark mode. A marker's end-label is white (fill="#FFFFFF") and
         # sits on its data-hue dot, so we do not invert #FFFFFF globally; the
@@ -511,35 +510,34 @@ def build_svg(
     parts.append(f'<rect class="paper" width="{width}" height="{height}" fill="#FFFFFF"/>')
 
     # --- title + subtitle (the takeaway) -------------------------
-    said = subtitle if subtitle is not None else (
-        f'United Kingdom, {rows[0]["year"]}\u2013{rows[-1]["year"]}: output '
-        f'per person up ~{gdp_rise}% while carbon per person fell ~{co2_drop}% '
+    said = (
+        subtitle
+        if subtitle is not None
+        else (
+            f"United Kingdom, {rows[0]['year']}\u2013{rows[-1]['year']}: output "
+            f"per person up ~{gdp_rise}% while carbon per person fell ~{co2_drop}% "
+        )
     )
     parts.append(
         f'<text x="{m_left}" y="92" font-size="42" font-weight="700" '
         f'fill="{ink}">{xml_escape(title)}</text>'
     )
     parts.append(
-        f'<text x="{m_left}" y="140" font-size="24" fill="{secondary}">'
-        f'{xml_escape(said)}</text>'
+        f'<text x="{m_left}" y="140" font-size="24" fill="{secondary}">{xml_escape(said)}</text>'
     )
 
     # --- legend: what the two emphasised markers mean ------------
     leg_y = 182
     lr = 11.0
     parts.append(
-        f'<circle cx="{m_left + lr:.1f}" cy="{leg_y:.1f}" r="{lr:.1f}" '
-        f'fill="{start_col}"/>'
+        f'<circle cx="{m_left + lr:.1f}" cy="{leg_y:.1f}" r="{lr:.1f}" fill="{start_col}"/>'
     )
     parts.append(
         f'<text x="{m_left + 2 * lr + 12:.1f}" y="{leg_y + 7:.1f}" '
         f'font-size="22" fill="{ink}">{xml_escape(start_label)} {rows[0]["year"]}</text>'
     )
     leg_x2 = m_left + 210
-    parts.append(
-        f'<circle cx="{leg_x2 + lr:.1f}" cy="{leg_y:.1f}" r="{lr:.1f}" '
-        f'fill="{end_col}"/>'
-    )
+    parts.append(f'<circle cx="{leg_x2 + lr:.1f}" cy="{leg_y:.1f}" r="{lr:.1f}" fill="{end_col}"/>')
     parts.append(
         f'<text x="{leg_x2 + 2 * lr + 12:.1f}" y="{leg_y + 7:.1f}" '
         f'font-size="22" fill="{ink}">{xml_escape(end_label)} {rows[-1]["year"]}</text>'
@@ -603,8 +601,8 @@ def build_svg(
     parts.append(
         f'<text x="{plot_x + plot_w / 2:.1f}" y="{ax_bottom + 74:.1f}" '
         f'font-size="23" fill="{ink}" text-anchor="middle">'
-        f'Economic output per person (thousands of US dollars) '
-        f'→ richer</text>'
+        f"Economic output per person (thousands of US dollars) "
+        f"→ richer</text>"
     )
     ytitle_x = 46
     ytitle_y = plot_y + plot_h / 2
@@ -612,7 +610,7 @@ def build_svg(
         f'<text x="{ytitle_x:.1f}" y="{ytitle_y:.1f}" font-size="23" '
         f'fill="{ink}" text-anchor="middle" '
         f'transform="rotate(-90 {ytitle_x:.1f} {ytitle_y:.1f})">'
-        f'Carbon per person (tonnes) ↑ dirtier</text>'
+        f"Carbon per person (tonnes) ↑ dirtier</text>"
     )
 
     # --- the connecting path -------------------------------------
@@ -633,7 +631,7 @@ def build_svg(
         f'<stop offset="0" stop-color="{warm}"/>'
         f'<stop offset="0.55" stop-color="{palette.get("Mint", "#00C7BE")}"/>'
         f'<stop offset="1" stop-color="{cool}"/>'
-        '</linearGradient></defs>'
+        "</linearGradient></defs>"
     )
     parts.append(
         f'<path d="{d}" fill="none" stroke="url(#csgrad)" stroke-width="6" '
@@ -652,7 +650,7 @@ def build_svg(
     total_len = samples[-1][2]
     n_arrows = 6
     head_size = 17.0
-    margin = 0.085          # skip this fraction of the length at each end
+    margin = 0.085  # skip this fraction of the length at each end
     # Arc-length position of every waypoint (a segment boundary), used to
     # repel arrowheads away from the dots so glyphs never overlap a marker.
     seg_lengths: List[float] = []
@@ -670,7 +668,7 @@ def build_svg(
     # Rescale approximate segment lengths onto the true sampled total.
     scale = total_len / waypoint_s[-1] if waypoint_s[-1] else 1.0
     waypoint_s = [s * scale for s in waypoint_s]
-    clear = 26.0            # keep this many px of arc length clear of any dot
+    clear = 26.0  # keep this many px of arc length clear of any dot
     for k in range(n_arrows):
         # Evenly spaced fractions within [margin, 1 - margin].
         frac = margin + (1.0 - 2.0 * margin) * (k + 0.5) / n_arrows
@@ -701,10 +699,7 @@ def build_svg(
         gdp = float(r["gdp"])
         co2 = float(r["co2"])
 
-        tip = (
-            f'{year}: {gdp:.1f}k US dollars per person, '
-            f'{co2:.1f} tonnes CO2 per person'
-        )
+        tip = f"{year}: {gdp:.1f}k US dollars per person, {co2:.1f} tonnes CO2 per person"
 
         parts.append(
             f'<g id="hit-{i}" class="wp hit" tabindex="0" role="img" aria-label="{xml_escape(tip)}">'
@@ -738,10 +733,15 @@ def build_svg(
         parts.append("</g>")
         tip_cards.append(
             tooltip_bubble(
-                cx, cy - r_dot - 12,
+                cx,
+                cy - r_dot - 12,
                 [str(year), f"{gdp:.1f}k $ per person", f"{co2:.1f} t CO2 per person"],
-                anchor="middle", canvas_w=width, canvas_h=height,
-                ink=ink, secondary=secondary, border=GRIDLINE,
+                anchor="middle",
+                canvas_w=width,
+                canvas_h=height,
+                ink=ink,
+                secondary=secondary,
+                border=GRIDLINE,
                 elem_id=f"tip-{i}",
             )
         )
@@ -802,13 +802,13 @@ def build_svg(
             parts.append(
                 f'<text x="{text_x:.1f}" y="{cy + 7:.1f}" font-size="22" '
                 f'font-weight="700" fill="#FFFFFF" text-anchor="middle">'
-                f'{txt}</text>'
+                f"{txt}</text>"
             )
         else:
             parts.append(
                 f'<text x="{tx:.1f}" y="{ty:.1f}" font-size="21" '
                 f'font-weight="600" fill="{ink}" text-anchor="{anchor}">'
-                f'{year}</text>'
+                f"{year}</text>"
             )
 
     # --- an in-plot annotation on the decoupling turn ------------
@@ -843,7 +843,9 @@ def build_svg(
 def main() -> None:
     """Write the connected-scatter SVG to the canonical assets path (or --out)."""
     render_cli(
-        __file__, "connected-scatter", build_svg,
+        __file__,
+        "connected-scatter",
+        build_svg,
         description="Render the connected-scatter SVG.",
     )
 
@@ -896,8 +898,14 @@ def make_connected_scatter(
     True
     """
     svg = build_svg(
-        data, title=title, subtitle=subtitle, start_label=start_label,
-        end_label=end_label, mode=mode, accessibility=accessibility, theme=theme,
+        data,
+        title=title,
+        subtitle=subtitle,
+        start_label=start_label,
+        end_label=end_label,
+        mode=mode,
+        accessibility=accessibility,
+        theme=theme,
     )
     dest = Path(out) if out else svg_example_path(__file__, "connected-scatter")
     return write_svg(dest, svg, theme=theme)

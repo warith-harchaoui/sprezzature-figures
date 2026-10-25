@@ -64,7 +64,7 @@ _FS_SCRIPT = (
     # A page module owns this figure (dashboard): let it drive; do nothing here.
     "if(svg.closest&&svg.closest('[data-fs-target]'))return;"
     "var fe=null;try{fe=window.frameElement}catch(err){}"
-    "if(fe&&fe.hasAttribute('data-lb-obj'))return;"      # already full-size in the lightbox
+    "if(fe&&fe.hasAttribute('data-lb-obj'))return;"  # already full-size in the lightbox
     "if(fe&&window.parent!==window){"
     "svg.addEventListener('click',function(){"
     "window.parent.postMessage({szFig:1,type:'open-fullscreen'},'*');"
@@ -136,7 +136,7 @@ def fullscreen_control(
     if mode != "self-contained":
         return ""
     _ = width, height, inset  # kept for call-site compatibility; see docstring.
-    return f'<script><![CDATA[{_FS_SCRIPT}]]></script>'
+    return f"<script><![CDATA[{_FS_SCRIPT}]]></script>"
 
 
 def hover_isolate_css(class_name: str, count: int, *, dim: float = 0.35) -> str:

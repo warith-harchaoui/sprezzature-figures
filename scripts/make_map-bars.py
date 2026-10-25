@@ -137,9 +137,7 @@ def _overlaps(a: Tuple[float, ...], b: Tuple[float, ...]) -> bool:
     return a[0] < b[2] and b[0] < a[2] and a[1] < b[3] and b[1] < a[3]
 
 
-def _nudge_into_map(
-    x0: float, y0: float, x1: float, y1: float
-) -> Tuple[float, float]:
+def _nudge_into_map(x0: float, y0: float, x1: float, y1: float) -> Tuple[float, float]:
     """Shift a glyph box back inside the map viewport, returning the offset.
 
     A region's representative point can sit close enough to an edge that its
@@ -212,9 +210,7 @@ def build_svg(
         "groups share one scale"
     )
 
-    parts: List[str] = [
-        svg_open(_WIDTH, _HEIGHT, "bars-title", "bars-desc", font_family=fonts)
-    ]
+    parts: List[str] = [svg_open(_WIDTH, _HEIGHT, "bars-title", "bars-desc", font_family=fonts)]
     parts.append(
         f'<title id="bars-title">{xml_escape(head)}</title>'
         f'<desc id="bars-desc">{xml_escape(sub)}. Eight world regions on an '
@@ -301,13 +297,19 @@ def build_svg(
 
         tips.append(
             tooltip_bubble(
-                px, py - tallest - 12.0,
-                [name] + [
+                px,
+                py - tallest - 12.0,
+                [name]
+                + [
                     f"{label}: {value:.2f} MWh a person"
                     for (label, _), value in zip(SERIES, values, strict=True)
                 ],
-                anchor="middle", canvas_w=_WIDTH, canvas_h=_HEIGHT,
-                ink=_INK, secondary=_SUBTLE, border=_LAND_EDGE,
+                anchor="middle",
+                canvas_w=_WIDTH,
+                canvas_h=_HEIGHT,
+                ink=_INK,
+                secondary=_SUBTLE,
+                border=_LAND_EDGE,
                 elem_id=f"tip-{idx}",
             )
         )
@@ -347,8 +349,7 @@ def build_svg(
     for i, ((label, _), col) in enumerate(zip(SERIES, colors, strict=True)):
         row_y = ly + 22.0 + i * 24.0
         parts.append(
-            f'<rect x="{lx:.1f}" y="{row_y - 11:.1f}" width="13" height="13" '
-            f'fill="{col}" rx="2"/>'
+            f'<rect x="{lx:.1f}" y="{row_y - 11:.1f}" width="13" height="13" fill="{col}" rx="2"/>'
         )
         parts.append(
             f'<text x="{lx + 21:.1f}" y="{row_y:.1f}" font-size="14" '
@@ -359,12 +360,12 @@ def build_svg(
     parts.append(
         f'<text x="{_WIDTH - 24:.1f}" y="{_HEIGHT - 38:.1f}" font-size="12.5" '
         f'fill="{_SUBTLE}" text-anchor="end">Equal Earth (equal-area) projection · '
-        f'one group per region, placed at a representative point</text>'
+        f"one group per region, placed at a representative point</text>"
     )
     parts.append(
         f'<text x="{_WIDTH - 24:.1f}" y="{_HEIGHT - 18:.1f}" font-size="12.5" '
         f'fill="{_SUBTLE}" text-anchor="end">2023 order of magnitude, Ember / IEA · '
-        f'hover a group for its three figures</text>'
+        f"hover a group for its three figures</text>"
     )
 
     parts.append(fullscreen_control(_WIDTH, _HEIGHT, mode))
@@ -398,9 +399,7 @@ def make_map_bars(
     mode, accessibility, theme : str
         Forwarded to :func:`build_svg`.
     """
-    svg = build_svg(
-        data, mode=mode, accessibility=accessibility, theme=theme, title=title or None
-    )
+    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme, title=title or None)
     dest = Path(out) if out else svg_example_path(__file__, "map-bars")
     return write_svg(dest, svg, theme=theme)
 

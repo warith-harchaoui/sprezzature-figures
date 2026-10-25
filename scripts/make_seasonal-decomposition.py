@@ -65,8 +65,18 @@ _CLOSURE_MONTH = 40
 # A terrace café: quiet in winter, full in summer. The profile is the
 # shape of the year, in euros of weekly average revenue.
 _SEASONAL_PROFILE = {
-    1: -21.0, 2: -19.0, 3: -11.0, 4: -2.0, 5: 9.0, 6: 19.0,
-    7: 24.0, 8: 22.0, 9: 11.0, 10: -1.0, 11: -13.0, 12: -18.0,
+    1: -21.0,
+    2: -19.0,
+    3: -11.0,
+    4: -2.0,
+    5: 9.0,
+    6: 19.0,
+    7: 24.0,
+    8: 22.0,
+    9: 11.0,
+    10: -1.0,
+    11: -13.0,
+    12: -18.0,
 }
 
 
@@ -90,10 +100,12 @@ def _series(seed: int = 7) -> List[Dict[str, Any]]:
         seasonal = _SEASONAL_PROFILE[month_of_year]
         noise = (rng.random() - 0.5) * 9.0
         shock = -46.0 if index + 1 == _CLOSURE_MONTH else 0.0
-        rows.append({
-            "month": f"{2020 + year}-{month_of_year:02d}",
-            "revenue": round(trend + seasonal + noise + shock, 2),
-        })
+        rows.append(
+            {
+                "month": f"{2020 + year}-{month_of_year:02d}",
+                "revenue": round(trend + seasonal + noise + shock, 2),
+            }
+        )
     return rows
 
 
@@ -115,11 +127,11 @@ def _centred_average(values: Sequence[float], period: int) -> List[Optional[floa
         if index - half < 0 or index + half >= n:
             continue
         if period % 2 == 0:
-            window = values[index - half:index + half + 1]
+            window = values[index - half : index + half + 1]
             weights = [0.5] + [1.0] * (period - 1) + [0.5]
             trend[index] = sum(v * w for v, w in zip(window, weights, strict=True)) / period
         else:
-            window = values[index - half:index + half + 1]
+            window = values[index - half : index + half + 1]
             trend[index] = sum(window) / period
     return trend
 
@@ -194,8 +206,7 @@ def _decompose(
     means = _seasonal_means(detrended, period, centre)
     seasonal = [means[index % period] for index in range(len(work))]
     remainder: List[Optional[float]] = [
-        None if t is None else w - t - s
-        for w, t, s in zip(work, trend, seasonal, strict=True)
+        None if t is None else w - t - s for w, t, s in zip(work, trend, seasonal, strict=True)
     ]
 
     if model == "multiplicative":
@@ -275,6 +286,7 @@ def build_svg(
     str
         The SVG document.
     """
+
     def position(row: Dict[str, Any]) -> Tuple[int, float, str]:
         """Sort key that works for a month number and for "2026-01" alike."""
         raw = row[x]
@@ -318,6 +330,7 @@ def build_svg(
 
     spread = math.sqrt(_variance(inner_rest))
     threshold = outlier_sigma * spread
+
     def departure(index: int) -> float:
         """How far the remainder at `index` sits from where it should be.
 
@@ -328,9 +341,7 @@ def build_svg(
         value = remainder[index]
         return 0.0 if value is None else abs(value - neutral)
 
-    outliers = [
-        index for index in covered if spread > 0.0 and departure(index) > threshold
-    ]
+    outliers = [index for index in covered if spread > 0.0 and departure(index) > threshold]
 
     plot_x = 96.0
     right_margin = 40.0
@@ -367,9 +378,13 @@ def build_svg(
         low, high = scale
         return top + panel_h - (value - low) / (high - low) * panel_h
 
-    said_strength = strength_label if strength_label is not None else (
-        f"{model} model, period {period} · seasonal strength {fmt_number(season_strength)} "
-        f"· trend strength {fmt_number(trend_strength)}, both on 0 to 1"
+    said_strength = (
+        strength_label
+        if strength_label is not None
+        else (
+            f"{model} model, period {period} · seasonal strength {fmt_number(season_strength)} "
+            f"· trend strength {fmt_number(trend_strength)}, both on 0 to 1"
+        )
     )
     uncovered = n - len(covered)
     # Built as whole sentences and wrapped only if one is too long, rather
@@ -406,15 +421,16 @@ def build_svg(
 
     parts: List[str] = []
     parts.append(
-        svg_open(width, height, "decomp-title", "decomp-desc",
-                 font_family=chrome_stack_for_theme(theme))
+        svg_open(
+            width, height, "decomp-title", "decomp-desc", font_family=chrome_stack_for_theme(theme)
+        )
     )
     parts.append(f'<title id="decomp-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="decomp-desc">A series of {n} observations split into four stacked '
-        f'panels: {xml_escape(observed_label)}, {xml_escape(trend_label)}, '
-        f'{xml_escape(seasonal_label)} and {xml_escape(remainder_label)}. '
-        f'{xml_escape(said_strength)}. {xml_escape(said)}</desc>'
+        f"panels: {xml_escape(observed_label)}, {xml_escape(trend_label)}, "
+        f"{xml_escape(seasonal_label)} and {xml_escape(remainder_label)}. "
+        f"{xml_escape(said_strength)}. {xml_escape(said)}</desc>"
     )
     parts.append(
         "<style>"
@@ -458,7 +474,7 @@ def build_svg(
         parts.append(
             f'<text x="{plot_x + plot_w:.1f}" y="{top - 12:.1f}" font-size="11" '
             f'fill="{SECONDARY}" text-anchor="end" font-family="{mono_family}">'
-            f'{fmt_number(low)} to {fmt_number(high)}</text>'
+            f"{fmt_number(low)} to {fmt_number(high)}</text>"
         )
         parts.append(
             f'<rect x="{plot_x:.1f}" y="{top:.1f}" width="{plot_w:.1f}" '
@@ -513,19 +529,24 @@ def build_svg(
             parts.append(
                 f'<rect id="pt-{element}" class="pt hit" tabindex="0" role="img" '
                 f'aria-label="{xml_escape(label)} at {xml_escape(labels[index])}: '
-                f'{fmt_number(value)}'
+                f"{fmt_number(value)}"
                 f'{", further than the threshold" if flagged else ""}" '
                 f'x="{px(index) - 5:.1f}" y="{top:.1f}" width="10" '
                 f'height="{panel_h:.1f}" fill="transparent">'
-                f'<title>{xml_escape(labels[index])}: {fmt_number(value)}</title></rect>'
+                f"<title>{xml_escape(labels[index])}: {fmt_number(value)}</title></rect>"
             )
             tips.append(
                 tooltip_bubble(
-                    px(index), py(value, top, scale),
+                    px(index),
+                    py(value, top, scale),
                     [f"{label} · {labels[index]}", fmt_number(value)]
                     + (["further than the threshold"] if flagged else []),
-                    canvas_w=width, canvas_h=height, ink=INK, secondary=SECONDARY,
-                    border=GRIDLINE, elem_id=f"pttip-{element}",
+                    canvas_w=width,
+                    canvas_h=height,
+                    ink=INK,
+                    secondary=SECONDARY,
+                    border=GRIDLINE,
+                    elem_id=f"pttip-{element}",
                 )
             )
 
@@ -535,12 +556,12 @@ def build_svg(
                 parts.append(
                     f'<text x="{px(index):.1f}" y="{top + panel_h + 20:.1f}" font-size="11" '
                     f'fill="{SECONDARY}" text-anchor="middle" font-family="{mono_family}">'
-                    f'{xml_escape(labels[index])}</text>'
+                    f"{xml_escape(labels[index])}</text>"
                 )
             parts.append(
                 f'<text x="{plot_x + plot_w / 2:.1f}" y="{top + panel_h + 46:.1f}" '
                 f'font-size="12" fill="{SECONDARY}" text-anchor="middle">'
-                f'{xml_escape(x_label)}</text>'
+                f"{xml_escape(x_label)}</text>"
             )
 
     parts.extend(tips)
@@ -621,13 +642,27 @@ def make_seasonal_decomposition(
     True
     """
     svg = build_svg(
-        data, title=title, subtitle=subtitle, width=width, height=height,
-        x=x, y=y, period=period, model=model, observed_label=observed_label,
-        trend_label=trend_label, seasonal_label=seasonal_label,
-        remainder_label=remainder_label, x_label=x_label,
-        shared_scale=shared_scale, outlier_sigma=outlier_sigma,
-        strength_label=strength_label, finding=finding, mode=mode,
-        accessibility=accessibility, theme=theme,
+        data,
+        title=title,
+        subtitle=subtitle,
+        width=width,
+        height=height,
+        x=x,
+        y=y,
+        period=period,
+        model=model,
+        observed_label=observed_label,
+        trend_label=trend_label,
+        seasonal_label=seasonal_label,
+        remainder_label=remainder_label,
+        x_label=x_label,
+        shared_scale=shared_scale,
+        outlier_sigma=outlier_sigma,
+        strength_label=strength_label,
+        finding=finding,
+        mode=mode,
+        accessibility=accessibility,
+        theme=theme,
     )
     dest = Path(out) if out else svg_example_path(__file__, "seasonal-decomposition")
     return write_svg(dest, svg, theme=theme)
@@ -635,8 +670,12 @@ def make_seasonal_decomposition(
 
 def main() -> None:
     """CLI entry point: build the SVG and write it to disk."""
-    render_cli(__file__, "seasonal-decomposition", build_svg,
-               description="Split a time series into trend, season and remainder.")
+    render_cli(
+        __file__,
+        "seasonal-decomposition",
+        build_svg,
+        description="Split a time series into trend, season and remainder.",
+    )
 
 
 if __name__ == "__main__":

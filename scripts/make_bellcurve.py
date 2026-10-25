@@ -142,15 +142,15 @@ def build_svg(
         return plot_y + plot_h - (v / peak_y * plot_h)
 
     parts: List[str] = []
-    parts.append(svg_open(width, height, "bc-title", "bc-desc", font_family=chrome_stack_for_theme(theme)))
+    parts.append(
+        svg_open(width, height, "bc-title", "bc-desc", font_family=chrome_stack_for_theme(theme))
+    )
     parts.append(f'<title id="bc-title">{xml_escape(title)}</title>')
     # Description accessible dérivée des données quand l'appelant n'a pas de
     # sous-titre à donner : un sous-titre vide (le cas dès qu'on rend des
     # données autres que celles de la démonstration) laissait la figure
     # muette pour un lecteur d'écran.
-    resume = subtitle or (
-        f"Normal distribution, mean {mean:.1f}, standard deviation {std:.1f}."
-    )
+    resume = subtitle or (f"Normal distribution, mean {mean:.1f}, standard deviation {std:.1f}.")
     parts.append(f'<desc id="bc-desc">{xml_escape(resume)}</desc>')
     # House hover-tooltip pattern (previously absent from this generator --
     # every mark had a bare native <title> but no .hit/.tip reveal, no
@@ -175,7 +175,9 @@ def build_svg(
         f'<text x="40" y="46" font-size="24" font-weight="700" fill="{INK}" '
         f'letter-spacing="-0.3">{xml_escape(title)}</text>'
     )
-    parts.append(f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>')
+    parts.append(
+        f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>'
+    )
 
     # ---- y-axis gridlines ----
     for val in y_tick_vals:
@@ -203,7 +205,9 @@ def build_svg(
     # eighths of mean+-4std, which produced labels like 36/45/54/63/72/81/
     # 91/100/109. Clipped to [x_min, x_max] so no tick lands outside the
     # plotted domain (x_for is not defined past that range).
-    x_tick_vals = [t for t in nice_ticks_range(x_min, x_max, n=8) if x_min - 1e-9 <= t <= x_max + 1e-9]
+    x_tick_vals = [
+        t for t in nice_ticks_range(x_min, x_max, n=8) if x_min - 1e-9 <= t <= x_max + 1e-9
+    ]
     for val in x_tick_vals:
         tx = x_for(val)
         parts.append(
@@ -227,9 +231,17 @@ def build_svg(
     peak_x, peak_y_px = x_for(mean), y_for(peak_density)
     bell_tips: List[str] = [
         tooltip_bubble(
-            peak_x, peak_y_px - 14,
-            [f"Normal(μ={mean:.1f}, σ={std:.1f})", f"peak density {peak_density:.4f} at x={mean:.1f}"],
-            canvas_w=width, canvas_h=height, ink=INK, secondary=SECONDARY, border=GRIDLINE,
+            peak_x,
+            peak_y_px - 14,
+            [
+                f"Normal(μ={mean:.1f}, σ={std:.1f})",
+                f"peak density {peak_density:.4f} at x={mean:.1f}",
+            ],
+            canvas_w=width,
+            canvas_h=height,
+            ink=INK,
+            secondary=SECONDARY,
+            border=GRIDLINE,
             elem_id="curve-tip-0",
         )
     ]
@@ -239,7 +251,12 @@ def build_svg(
     # sigma on either side (the standard 68-95-99.7 rule); surfaced in the
     # sigma tooltips since the on-canvas label only shows the raw value.
     annotations = [
-        (mean, f"μ = {mean:.1f}", COLOR_MEAN, ["μ (mean)", f"{mean:.1f}", "center of the distribution"]),
+        (
+            mean,
+            f"μ = {mean:.1f}",
+            COLOR_MEAN,
+            ["μ (mean)", f"{mean:.1f}", "center of the distribution"],
+        ),
         (
             mean - std,
             f"−1σ ({mean - std:.1f})",
@@ -269,9 +286,14 @@ def build_svg(
         )
         bell_tips.append(
             tooltip_bubble(
-                ax, plot_y - 26,
+                ax,
+                plot_y - 26,
                 tip_lines,
-                canvas_w=width, canvas_h=height, ink=INK, secondary=SECONDARY, border=GRIDLINE,
+                canvas_w=width,
+                canvas_h=height,
+                ink=INK,
+                secondary=SECONDARY,
+                border=GRIDLINE,
                 elem_id=f"ann-tip-{ann_idx}",
             )
         )
@@ -343,15 +365,32 @@ def make_bellcurve(
     rec = rows[0] if rows else {}
     resolved_mean = mean if mean is not None else float(rec.get("mean", 72.4))
     resolved_std = std if std is not None else float(rec.get("std", 9.1))
-    svg = build_svg(resolved_mean, resolved_std, title=title, subtitle=subtitle, width=width, height=height,
-                     mode=mode, accessibility=accessibility, theme=theme, y_axis_title=y_axis_title, x_axis_title=x_axis_title, language=language)
+    svg = build_svg(
+        resolved_mean,
+        resolved_std,
+        title=title,
+        subtitle=subtitle,
+        width=width,
+        height=height,
+        mode=mode,
+        accessibility=accessibility,
+        theme=theme,
+        y_axis_title=y_axis_title,
+        x_axis_title=x_axis_title,
+        language=language,
+    )
     dest = Path(out) if out else svg_example_path(__file__, "bellcurve")
     return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:
     """CLI entry point: build the SVG and write it to disk."""
-    render_cli(__file__, "bellcurve", build_svg, description="Generate a bell curve (normal distribution) figure.")
+    render_cli(
+        __file__,
+        "bellcurve",
+        build_svg,
+        description="Generate a bell curve (normal distribution) figure.",
+    )
 
 
 if __name__ == "__main__":

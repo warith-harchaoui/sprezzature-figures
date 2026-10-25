@@ -138,9 +138,7 @@ def _is_collider(before: str, node: str, after: str, arrows: Sequence[Tuple[str,
     return (before, node) in arrows and (after, node) in arrows
 
 
-def _blocked(
-    path: List[str], adjust: Set[str], arrows: Sequence[Tuple[str, str]]
-) -> bool:
+def _blocked(path: List[str], adjust: Set[str], arrows: Sequence[Tuple[str, str]]) -> bool:
     """Whether conditioning on `adjust` blocks `path`.
 
     The two halves of d-separation, in the order they bite: a chain or a
@@ -150,9 +148,7 @@ def _blocked(
     for index in range(1, len(path) - 1):
         before, node, after = path[index - 1], path[index], path[index + 1]
         if _is_collider(before, node, after, arrows):
-            opened = node in adjust or bool(
-                _descendants(node, arrows) & adjust
-            )
+            opened = node in adjust or bool(_descendants(node, arrows) & adjust)
             if not opened:
                 return True
         elif node in adjust:
@@ -269,11 +265,9 @@ def build_svg(
             role[node] = "other"
 
     proposed = (
-        set(adjust_for) if adjust_for is not None
-        else {
-            tail for tail, head in arrows
-            if head == treatment and measured.get(tail, True)
-        }
+        set(adjust_for)
+        if adjust_for is not None
+        else {tail for tail, head in arrows if head == treatment and measured.get(tail, True)}
     )
     unknown = sorted(proposed - set(nodes))
     if unknown:
@@ -305,8 +299,7 @@ def build_svg(
     for _ in range(len(nodes)):
         for tail, head in arrows:
             depth[head] = max(depth[head], depth[tail] + 1)
-    band = {"confounder": 0, "other": 0, "treatment": 1, "mediator": 1,
-            "outcome": 1, "collider": 2}
+    band = {"confounder": 0, "other": 0, "treatment": 1, "mediator": 1, "outcome": 1, "collider": 2}
     layers: Dict[int, List[str]] = {}
     for node in sorted(nodes, key=lambda n: (depth[n], band[role[n]], n)):
         layers.setdefault(depth[node], []).append(node)
@@ -326,7 +319,8 @@ def build_svg(
             )
 
     set_lines = (
-        [set_note] if set_note is not None
+        [set_note]
+        if set_note is not None
         else [
             f"proposed adjustment set: {', '.join(sorted(proposed)) or 'nothing'}",
             f"{len(backdoor)} backdoor path"
@@ -338,10 +332,7 @@ def build_svg(
     # the backdoor report, because a set containing a collider can block
     # every backdoor path and still be wrong: it opens a path that was
     # closed, and the backdoor count says nothing about that.
-    harmful = sorted(
-        node for node in proposed
-        if role.get(node) in ("mediator", "collider")
-    )
+    harmful = sorted(node for node in proposed if role.get(node) in ("mediator", "collider"))
     said_parts: List[str] = []
     if finding is not None:
         said_parts.append(finding)
@@ -364,17 +355,12 @@ def build_svg(
             f"is identified under these assumptions."
         )
     blocked_names = sorted(
-        {node for node in nodes if role[node] in ("mediator", "collider")}
-        - set(harmful)
+        {node for node in nodes if role[node] in ("mediator", "collider")} - set(harmful)
     )
     if blocked_names and finding is None:
-        named = (
-            " or ".join(blocked_names) if len(blocked_names) == 2
-            else ", ".join(blocked_names)
-        )
+        named = " or ".join(blocked_names) if len(blocked_names) == 2 else ", ".join(blocked_names)
         said_parts.append(
-            f"Do not add {named}: conditioning there blocks the effect or opens a "
-            f"closed path."
+            f"Do not add {named}: conditioning there blocks the effect or opens a closed path."
         )
     said_lines: List[str] = []
     for sentence in said_parts:
@@ -382,14 +368,13 @@ def build_svg(
 
     parts: List[str] = []
     parts.append(
-        svg_open(width, height, "dag-title", "dag-desc",
-                 font_family=chrome_stack_for_theme(theme))
+        svg_open(width, height, "dag-title", "dag-desc", font_family=chrome_stack_for_theme(theme))
     )
     parts.append(f'<title id="dag-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="dag-desc">A causal diagram of {len(nodes)} nodes and {len(arrows)} '
-        f'arrows, with {xml_escape(treatment)} as the treatment and {xml_escape(outcome)} '
-        f'as the outcome. {xml_escape(said_set)}. {xml_escape(" ".join(said_parts))}</desc>'
+        f"arrows, with {xml_escape(treatment)} as the treatment and {xml_escape(outcome)} "
+        f"as the outcome. {xml_escape(said_set)}. {xml_escape(' '.join(said_parts))}</desc>"
     )
     parts.append(
         "<style>"
@@ -450,9 +435,11 @@ def build_svg(
         seen = measured.get(node, True)
         parts.append(
             f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{radius:.1f}" '
-            + (f'fill="{colour}"/>' if seen
-               else f'fill="{BG}" stroke="{colour}" stroke-width="2.4" '
-                    f'stroke-dasharray="4 3"/>')
+            + (
+                f'fill="{colour}"/>'
+                if seen
+                else f'fill="{BG}" stroke="{colour}" stroke-width="2.4" stroke-dasharray="4 3"/>'
+            )
         )
         if node in proposed:
             parts.append(
@@ -463,7 +450,7 @@ def build_svg(
             parts.append(
                 f'<text x="{x:.1f}" y="{y + radius + 16 + line_index * 13:.1f}" '
                 f'font-size="11" fill="{INK}" text-anchor="middle">'
-                f'{xml_escape(text)}</text>'
+                f"{xml_escape(text)}</text>"
             )
         part = label_for[role[node]] or "node"
         state = "" if seen else f", {unobserved_label}"
@@ -474,14 +461,21 @@ def build_svg(
             f'x="{x - radius - 6:.1f}" y="{y - radius - 6:.1f}" '
             f'width="{2 * radius + 12:.1f}" height="{2 * radius + 12:.1f}" '
             f'fill="transparent"><title>{xml_escape(node)}: '
-            f'{xml_escape(part)}</title></rect>'
+            f"{xml_escape(part)}</title></rect>"
         )
         tips.append(
             tooltip_bubble(
-                x, y, [node, part] + ([unobserved_label] if not seen else [])
+                x,
+                y,
+                [node, part]
+                + ([unobserved_label] if not seen else [])
                 + (["in the adjustment set"] if node in proposed else []),
-                canvas_w=width, canvas_h=height, ink=INK, secondary=SECONDARY,
-                border=GRIDLINE, elem_id=f"nodetip-{index}",
+                canvas_w=width,
+                canvas_h=height,
+                ink=INK,
+                secondary=SECONDARY,
+                border=GRIDLINE,
+                elem_id=f"nodetip-{index}",
             )
         )
 
@@ -490,8 +484,7 @@ def build_svg(
     for part_name in ("treatment", "outcome", "confounder", "mediator", "collider"):
         caption = label_for[part_name]
         parts.append(
-            f'<circle cx="{key_x + 6:.1f}" cy="{key_y - 4:.1f}" r="6" '
-            f'fill="{ink_for[part_name]}"/>'
+            f'<circle cx="{key_x + 6:.1f}" cy="{key_y - 4:.1f}" r="6" fill="{ink_for[part_name]}"/>'
         )
         parts.append(
             f'<text x="{key_x + 18:.1f}" y="{key_y:.1f}" font-size="11" '
@@ -504,7 +497,7 @@ def build_svg(
     )
     parts.append(
         f'<text x="{key_x + 18:.1f}" y="{key_y:.1f}" font-size="11" fill="{SECONDARY}">'
-        f'{xml_escape(unobserved_label)}</text>'
+        f"{xml_escape(unobserved_label)}</text>"
     )
 
     parts.extend(tips)
@@ -582,13 +575,28 @@ def make_causal_dag(
     True
     """
     svg = build_svg(
-        data, title=title, subtitle=subtitle, width=width, height=height,
-        source=source, target=target, observed=observed, treatment=treatment,
-        outcome=outcome, adjust_for=adjust_for, treatment_label=treatment_label,
-        outcome_label=outcome_label, confounder_label=confounder_label,
-        mediator_label=mediator_label, collider_label=collider_label,
-        unobserved_label=unobserved_label, set_note=set_note, finding=finding,
-        mode=mode, accessibility=accessibility, theme=theme,
+        data,
+        title=title,
+        subtitle=subtitle,
+        width=width,
+        height=height,
+        source=source,
+        target=target,
+        observed=observed,
+        treatment=treatment,
+        outcome=outcome,
+        adjust_for=adjust_for,
+        treatment_label=treatment_label,
+        outcome_label=outcome_label,
+        confounder_label=confounder_label,
+        mediator_label=mediator_label,
+        collider_label=collider_label,
+        unobserved_label=unobserved_label,
+        set_note=set_note,
+        finding=finding,
+        mode=mode,
+        accessibility=accessibility,
+        theme=theme,
     )
     dest = Path(out) if out else svg_example_path(__file__, "causal-dag")
     return write_svg(dest, svg, theme=theme)
@@ -596,8 +604,12 @@ def make_causal_dag(
 
 def main() -> None:
     """CLI entry point: build the SVG and write it to disk."""
-    render_cli(__file__, "causal-dag", build_svg,
-               description="Draw a causal diagram and test what it says to adjust for.")
+    render_cli(
+        __file__,
+        "causal-dag",
+        build_svg,
+        description="Draw a causal diagram and test what it says to adjust for.",
+    )
 
 
 if __name__ == "__main__":

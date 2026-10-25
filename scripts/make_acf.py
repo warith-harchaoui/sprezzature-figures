@@ -94,10 +94,12 @@ def _series(seed: int = 31) -> List[Dict[str, Any]]:
         level = 0.72 * level + (rng.random() - 0.5) * 9.0
         month_of_year = index % 12 + 1
         seasonal = december if month_of_year == 12 else other_months
-        rows.append({
-            "month": index + 1,
-            "demand": round(220.0 + seasonal + level, 2),
-        })
+        rows.append(
+            {
+                "month": index + 1,
+                "demand": round(220.0 + seasonal + level, 2),
+            }
+        )
     return rows
 
 
@@ -118,9 +120,7 @@ def _autocorrelations(values: List[float], max_lag: int) -> List[float]:
     denominator = sum(d * d for d in deviations) or 1.0
     out: List[float] = []
     for lag in range(max_lag + 1):
-        numerator = sum(
-            deviations[t] * deviations[t - lag] for t in range(lag, n)
-        )
+        numerator = sum(deviations[t] * deviations[t - lag] for t in range(lag, n))
         out.append(numerator / denominator)
     return out
 
@@ -231,6 +231,7 @@ def build_svg(
     str
         A complete, standalone SVG document.
     """
+
     def position(row: Dict[str, Any]) -> Tuple[int, float, str]:
         """Sort key that works for a month number and for "2026-01" alike.
 
@@ -285,8 +286,10 @@ def build_svg(
     def py(value: float, top: float) -> float:
         return top + panel_h / 2.0 - value / (limit or 1.0) * (panel_h / 2.0)
 
-    said_band = band_label if band_label is not None else (
-        f"band ±{fmt_number(band)} = ±1.96/√{n}, the 95% white-noise null"
+    said_band = (
+        band_label
+        if band_label is not None
+        else (f"band ±{fmt_number(band)} = ±1.96/√{n}, the 95% white-noise null")
     )
     if finding is not None:
         said = finding
@@ -302,15 +305,14 @@ def build_svg(
 
     parts: List[str] = []
     parts.append(
-        svg_open(width, height, "acf-title", "acf-desc",
-                 font_family=chrome_stack_for_theme(theme))
+        svg_open(width, height, "acf-title", "acf-desc", font_family=chrome_stack_for_theme(theme))
     )
     parts.append(f'<title id="acf-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="acf-desc">Two correlograms of a series of {n} observations, for lags '
-        f'{lags[0]} to {lag_cap}: {xml_escape(acf_label)} above, {xml_escape(pacf_label)} '
-        f'below. Each stem is one lag; the shaded band is the 95% white-noise null at plus or '
-        f'minus {fmt_number(band)}. {xml_escape(said)}</desc>'
+        f"{lags[0]} to {lag_cap}: {xml_escape(acf_label)} above, {xml_escape(pacf_label)} "
+        f"below. Each stem is one lag; the shaded band is the 95% white-noise null at plus or "
+        f"minus {fmt_number(band)}. {xml_escape(said)}</desc>"
     )
     parts.append(
         "<style>"
@@ -328,13 +330,13 @@ def build_svg(
     )
     parts.append(
         f'<text x="{plot_x - 60:.1f}" y="72" font-size="14" fill="{SECONDARY}">'
-        f'{xml_escape(subtitle)}</text>'
+        f"{xml_escape(subtitle)}</text>"
     )
     parts.append(
         f'<text x="{plot_x - 60:.1f}" y="98" font-size="12" fill="{SECONDARY}" '
         f'font-family="{mono_family}">{xml_escape(said_band)}'
         + ("" if include_zero else " · lag 0 omitted, it is 1 by definition")
-        + '</text>'
+        + "</text>"
     )
     # Wrapped, not clipped: the finding names every crossing it found and
     # the seasonal reading on top, which on a seasonal series runs past the
@@ -363,7 +365,7 @@ def build_svg(
             parts.append(
                 f'<text x="{plot_x - 10:.1f}" y="{py(value_at, top) + 4:.1f}" font-size="10" '
                 f'fill="{SECONDARY}" text-anchor="end" font-family="{mono_family}">'
-                f'{fmt_number(value_at)}</text>'
+                f"{fmt_number(value_at)}</text>"
             )
         for lag in lags:
             value = coefficients[lag]
@@ -387,14 +389,19 @@ def build_svg(
             )
             tips.append(
                 tooltip_bubble(
-                    px(lag), py(value, top),
+                    px(lag),
+                    py(value, top),
                     [
                         f"{label} · lag {lag}",
                         fmt_number(value),
                         "outside the band" if crosses else "inside the band",
                     ],
-                    canvas_w=width, canvas_h=height, ink=INK, secondary=SECONDARY,
-                    border=GRIDLINE, elem_id=f"lagtip-{element}",
+                    canvas_w=width,
+                    canvas_h=height,
+                    ink=INK,
+                    secondary=SECONDARY,
+                    border=GRIDLINE,
+                    elem_id=f"lagtip-{element}",
                 )
             )
         if panel_index == len(panels) - 1:
@@ -403,12 +410,12 @@ def build_svg(
                 parts.append(
                     f'<text x="{px(lag):.1f}" y="{top + panel_h + 20:.1f}" font-size="11" '
                     f'fill="{SECONDARY}" text-anchor="middle" font-family="{mono_family}">'
-                    f'{lag}</text>'
+                    f"{lag}</text>"
                 )
             parts.append(
                 f'<text x="{plot_x + plot_w / 2:.1f}" y="{top + panel_h + 46:.1f}" '
                 f'font-size="12" fill="{SECONDARY}" text-anchor="middle">'
-                f'{xml_escape(x_label)}</text>'
+                f"{xml_escape(x_label)}</text>"
             )
 
     parts.extend(tips)
@@ -483,11 +490,24 @@ def make_acf(
     True
     """
     svg = build_svg(
-        data, title=title, subtitle=subtitle, width=width, height=height,
-        x=x, y=y, max_lag=max_lag, period_hint=period_hint,
-        include_zero=include_zero, acf_label=acf_label, pacf_label=pacf_label,
-        x_label=x_label, band_label=band_label, finding=finding, mode=mode,
-        accessibility=accessibility, theme=theme,
+        data,
+        title=title,
+        subtitle=subtitle,
+        width=width,
+        height=height,
+        x=x,
+        y=y,
+        max_lag=max_lag,
+        period_hint=period_hint,
+        include_zero=include_zero,
+        acf_label=acf_label,
+        pacf_label=pacf_label,
+        x_label=x_label,
+        band_label=band_label,
+        finding=finding,
+        mode=mode,
+        accessibility=accessibility,
+        theme=theme,
     )
     dest = Path(out) if out else svg_example_path(__file__, "acf")
     return write_svg(dest, svg, theme=theme)
@@ -495,8 +515,12 @@ def make_acf(
 
 def main() -> None:
     """CLI entry point: build the SVG and write it to disk."""
-    render_cli(__file__, "acf", build_svg,
-               description="Generate an autocorrelation correlogram (ACF and PACF).")
+    render_cli(
+        __file__,
+        "acf",
+        build_svg,
+        description="Generate an autocorrelation correlogram (ACF and PACF).",
+    )
 
 
 if __name__ == "__main__":
