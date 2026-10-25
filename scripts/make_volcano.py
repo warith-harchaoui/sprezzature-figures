@@ -53,9 +53,13 @@ def _make_demo_data() -> List[Dict[str, Any]]:
         rows.append({"lfc": round(lfc, 2), "neglogp": round(neglogp, 2)})
     # A cluster of genuinely significant up/down genes so the volcano shape is visible.
     for _ in range(22):
-        rows.append({"lfc": round(rng.uniform(1.2, 3.2), 2), "neglogp": round(rng.uniform(1.5, 5.0), 2)})
+        rows.append(
+            {"lfc": round(rng.uniform(1.2, 3.2), 2), "neglogp": round(rng.uniform(1.5, 5.0), 2)}
+        )
     for _ in range(18):
-        rows.append({"lfc": round(rng.uniform(-3.2, -1.2), 2), "neglogp": round(rng.uniform(1.5, 5.0), 2)})
+        rows.append(
+            {"lfc": round(rng.uniform(-3.2, -1.2), 2), "neglogp": round(rng.uniform(1.5, 5.0), 2)}
+        )
     return rows
 
 
@@ -144,11 +148,15 @@ def build_svg(
     n_down = sum(1 for lfc, p in zip(lfcs, ps, strict=True) if _classify(lfc, p) == "Down")
 
     parts: List[str] = []
-    parts.append(svg_open(width, height, "volc-title", "volc-desc", font_family=chrome_stack_for_theme(theme)))
+    parts.append(
+        svg_open(
+            width, height, "volc-title", "volc-desc", font_family=chrome_stack_for_theme(theme)
+        )
+    )
     parts.append(f'<title id="volc-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="volc-desc">Volcano plot of {len(rows)} tests: {n_up} up, {n_down} down, '
-        f'rest not significant. Hover or focus a point for its exact values.</desc>'
+        f"rest not significant. Hover or focus a point for its exact values.</desc>"
     )
     parts.append(
         "<style>"
@@ -162,14 +170,20 @@ def build_svg(
         f'<text x="40" y="46" font-size="22" font-weight="700" fill="{INK}" '
         f'letter-spacing="-0.3">{xml_escape(title)}</text>'
     )
-    parts.append(f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>')
+    parts.append(
+        f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>'
+    )
 
     # ---- legend ----
     lx, ly = 40.0, 100.0
     cursor = lx
     for label in ("Down", "n.s.", "Up"):
-        parts.append(f'<circle cx="{cursor + 5:.1f}" cy="{ly - 4:.1f}" r="5" fill="{colors[label]}"/>')
-        parts.append(f'<text x="{cursor + 16:.1f}" y="{ly:.1f}" font-size="12" fill="{INK}">{xml_escape(label)}</text>')
+        parts.append(
+            f'<circle cx="{cursor + 5:.1f}" cy="{ly - 4:.1f}" r="5" fill="{colors[label]}"/>'
+        )
+        parts.append(
+            f'<text x="{cursor + 16:.1f}" y="{ly:.1f}" font-size="12" fill="{INK}">{xml_escape(label)}</text>'
+        )
         cursor += 16 + 7.0 * len(label) + 20
 
     # ---- gridlines ----
@@ -218,10 +232,15 @@ def build_svg(
         )
         bubbles.append(
             tooltip_bubble(
-                cx, cy - 14,
+                cx,
+                cy - 14,
                 [sig, f"log2FC {lfc:.2f}", f"-log10p {p:.2f}"],
-                anchor="middle", canvas_w=width, canvas_h=height,
-                ink=INK, secondary=SECONDARY, border=GRIDLINE,
+                anchor="middle",
+                canvas_w=width,
+                canvas_h=height,
+                ink=INK,
+                secondary=SECONDARY,
+                border=GRIDLINE,
                 elem_id=f"tip-{point_i}",
             )
         )
@@ -290,8 +309,16 @@ def make_volcano(
     >>> p.exists()
     True
     """
-    svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
-                     mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(
+        data,
+        title=title,
+        subtitle=subtitle,
+        width=width,
+        height=height,
+        mode=mode,
+        accessibility=accessibility,
+        theme=theme,
+    )
     dest = Path(out) if out else svg_example_path(__file__, "volcano")
     return write_svg(dest, svg, theme=theme)
 

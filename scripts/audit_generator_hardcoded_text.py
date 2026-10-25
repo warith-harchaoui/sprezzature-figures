@@ -63,6 +63,7 @@ Author
 ------
 `Warith HARCHAOUI, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
 """
+
 from __future__ import annotations
 
 import argparse
@@ -94,7 +95,9 @@ _ALPHA_RUN_RE = re.compile(r"[A-Za-zÀ-ÿ]{2,}")
 _SAFE_RESIDUES = {"%", "€", "$", "°", "-", "—", "·", ":", ",", ".", ""}
 
 
-def make_finding(rule: str, severity: str, message: str, path: str = "", line: int = 1) -> Dict[str, Any]:
+def make_finding(
+    rule: str, severity: str, message: str, path: str = "", line: int = 1
+) -> Dict[str, Any]:
     return {"path": path, "line": line, "rule": rule, "severity": severity, "message": message}
 
 
@@ -152,22 +155,30 @@ def audit_source(path: Path) -> List[Dict[str, Any]]:
             if residue.lower().replace(" ", "_") in param_names:
                 continue
             if _looks_like_chrome(residue):
-                findings.append(make_finding(
-                    "unparameterized-chrome-text", "warning",
-                    f'hardcoded axis/legend/unit text {residue!r} in a <text> element — '
-                    f"no function parameter overrides it; a caller plotting different data "
-                    f"inherits this literally. Add a keyword parameter (see make_columnrange.py "
-                    f"y_axis_title/legend_title/unit for the pattern).",
-                    str(path), lineno,
-                ))
+                findings.append(
+                    make_finding(
+                        "unparameterized-chrome-text",
+                        "warning",
+                        f"hardcoded axis/legend/unit text {residue!r} in a <text> element — "
+                        f"no function parameter overrides it; a caller plotting different data "
+                        f"inherits this literally. Add a keyword parameter (see make_columnrange.py "
+                        f"y_axis_title/legend_title/unit for the pattern).",
+                        str(path),
+                        lineno,
+                    )
+                )
             else:
-                findings.append(make_finding(
-                    "unparameterized-narrative-text", "info",
-                    f'hardcoded annotation text {residue!r} in a <text> element — '
-                    f"likely tied to this generator's own demo dataset; consider a caller-"
-                    f"overridable parameter if this generator is meant to plot arbitrary data.",
-                    str(path), lineno,
-                ))
+                findings.append(
+                    make_finding(
+                        "unparameterized-narrative-text",
+                        "info",
+                        f"hardcoded annotation text {residue!r} in a <text> element — "
+                        f"likely tied to this generator's own demo dataset; consider a caller-"
+                        f"overridable parameter if this generator is meant to plot arbitrary data.",
+                        str(path),
+                        lineno,
+                    )
+                )
     return findings
 
 
@@ -178,13 +189,18 @@ def format_human(findings: List[Dict[str, Any]]) -> str:
     counts = {"error": 0, "warning": 0, "info": 0}
     for f in findings:
         counts[f["severity"]] += 1
-        lines.append(f"  {f['path']}:{f['line']}:1  {f['severity']:<8} {f['rule']:<28} {f['message']}")
-    lines.append(f"{counts['error']} error(s), {counts['warning']} warning(s), {counts['info']} info")
+        lines.append(
+            f"  {f['path']}:{f['line']}:1  {f['severity']:<8} {f['rule']:<28} {f['message']}"
+        )
+    lines.append(
+        f"{counts['error']} error(s), {counts['warning']} warning(s), {counts['info']} info"
+    )
     return "\n".join(lines)
 
 
 def format_json(findings: List[Dict[str, Any]]) -> str:
     import json
+
     counts = {"errors": 0, "warnings": 0, "info": 0}
     for f in findings:
         key = f["severity"] + ("s" if f["severity"] != "info" else "")
@@ -212,9 +228,15 @@ def build_parser() -> argparse.ArgumentParser:
             "parameter to override it."
         ),
     )
-    parser.add_argument("paths", nargs="+", help="make_<kind>.py files, or a directory to scan (scripts/).")
-    parser.add_argument("--json", action="store_true", help="Emit JSON instead of the human-readable summary.")
-    parser.add_argument("--strict", action="store_true", help="Non-zero exit on any warning (chrome-text findings).")
+    parser.add_argument(
+        "paths", nargs="+", help="make_<kind>.py files, or a directory to scan (scripts/)."
+    )
+    parser.add_argument(
+        "--json", action="store_true", help="Emit JSON instead of the human-readable summary."
+    )
+    parser.add_argument(
+        "--strict", action="store_true", help="Non-zero exit on any warning (chrome-text findings)."
+    )
     parser.add_argument("--ignore", default="", help="Comma-separated rule IDs to skip.")
     return parser
 

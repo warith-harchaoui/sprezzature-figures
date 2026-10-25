@@ -15,9 +15,43 @@ Warith HARCHAOUI <warithmetics@deraison.ai>
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 import pytest
+
+_MANIFEST_ROOT = Path(__file__).resolve().parent.parent
+
+
+def _console_scripts() -> dict[str, str]:
+    """
+    ``[project.scripts]``, read with a regex rather than ``tomllib``.
+
+    ``tomllib`` is standard library only from 3.11 and this package supports
+    3.10, where the import alone fails -- in CI, while passing on every
+    developer machine. sprezzature-cli-gui's own test says exactly this in a
+    comment, and it was written there because it had already happened once.
+    """
+    text = (_MANIFEST_ROOT / "pyproject.toml").read_text(encoding="utf-8")
+    block = re.search(r"^\[project\.scripts\]\s*$(.*?)(?=^\[|\Z)", text, re.M | re.S)
+    if block is None:
+        return {}
+    return dict(re.findall(r'^([\w.-]+)\s*=\s*"([^"]+)"', block.group(1), re.M))
+
+
+def _base_dependencies() -> str:
+    """The ``dependencies = [...]`` block as text, comments stripped."""
+    text = (_MANIFEST_ROOT / "pyproject.toml").read_text(encoding="utf-8")
+    block = re.search(r"^dependencies\s*=\s*\[(.*?)\]", text, re.M | re.S)
+    return re.sub(r"#[^\n]*", "", block.group(1)) if block else ""
+
+
+def _extras() -> set[str]:
+    """The extras this package declares."""
+    text = (_MANIFEST_ROOT / "pyproject.toml").read_text(encoding="utf-8")
+    block = re.search(r"^\[project\.optional-dependencies\]\s*$(.*?)(?=^\[|\Z)", text, re.M | re.S)
+    return set(re.findall(r"^([\w.-]+)\s*=\s*\[", block.group(1), re.M)) if block else set()
+
 
 click = pytest.importorskip("click")
 from click.testing import CliRunner  # noqa: E402
@@ -178,23 +212,12 @@ def test_both_console_names_resolve_to_the_click_command() -> None:
     helpers that live beside it, and pulling the parser out of 662 interleaved
     lines is its own change, not a side effect of this one.
     """
-    from pathlib import Path
-
-    import tomllib
-
-    root = Path(__file__).resolve().parent.parent
-    scripts = tomllib.loads((root / "pyproject.toml").read_text())["project"]["scripts"]
+    scripts = _console_scripts()
     assert scripts["sprezzature-figures"] == scripts["make-figure"]
     assert scripts["make-figure"] == "sprezzature_figures.cli:main"
 
 
 def test_click_is_a_base_dependency_not_an_extra() -> None:
     """With argparse gone from the console scripts, click cannot be optional."""
-    from pathlib import Path
-
-    import tomllib
-
-    root = Path(__file__).resolve().parent.parent
-    project = tomllib.loads((root / "pyproject.toml").read_text())["project"]
-    assert any(dep.startswith("click") for dep in project["dependencies"])
-    assert "cli" not in project.get("optional-dependencies", {})
+    assert "click" in _base_dependencies()
+    assert "cli" not in _extras()

@@ -23,9 +23,11 @@ from playwright.sync_api import sync_playwright
 HERE = Path(__file__).resolve().parent
 SVG_DIR = HERE.parent / "assets" / "svg-examples"
 OUT_DIR = HERE.parent.parent / "web" / "img" / "figures"
-FRAME_SECONDS = 69.0   # 1950 + 69 = 2019, a nicely spread-out cloud (dur is 75 s)
-JOBS = [("gapminder-animated.svg", "gapminder-animated.png"),
-        ("gapminder-animated.fr.svg", "gapminder-animated.fr.png")]
+FRAME_SECONDS = 69.0  # 1950 + 69 = 2019, a nicely spread-out cloud (dur is 75 s)
+JOBS = [
+    ("gapminder-animated.svg", "gapminder-animated.png"),
+    ("gapminder-animated.fr.svg", "gapminder-animated.fr.png"),
+]
 
 
 def main() -> None:
@@ -36,8 +38,10 @@ def main() -> None:
             page = browser.new_page(viewport={"width": 1020, "height": 520}, device_scale_factor=2)
             page.goto((SVG_DIR / svg).as_uri())
             page.wait_for_timeout(300)
-            page.evaluate("(t) => { const s = document.documentElement; s.pauseAnimations(); s.setCurrentTime(t); }",
-                          FRAME_SECONDS)
+            page.evaluate(
+                "(t) => { const s = document.documentElement; s.pauseAnimations(); s.setCurrentTime(t); }",
+                FRAME_SECONDS,
+            )
             page.wait_for_timeout(150)
             page.screenshot(path=str(OUT_DIR / png))
             print(f"wrote {OUT_DIR / png}")

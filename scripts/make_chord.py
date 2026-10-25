@@ -51,7 +51,15 @@ from typing import Any, Dict, List, Optional, Tuple
 from xml.sax.saxutils import escape
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _style import BG, GRIDLINE, INK, forced_color_patterns, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
+from _style import (
+    BG,
+    GRIDLINE,
+    INK,
+    forced_color_patterns,
+    load_palette,
+    os_adaptive_style,
+    os_dark_style,
+)  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 from _svg import foreground_tip_css, point_on_circle, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
@@ -63,14 +71,14 @@ from _interactive import fullscreen_control, hover_isolate_css  # noqa: E402
 WIDTH = 1080
 HEIGHT = 1140
 CX = WIDTH / 2.0
-CY = HEIGHT / 2.0 + 34      # nudge down to leave room for the title block
-R_OUTER = 372              # outer radius of the group-arc ring
-ARC_THICK = 30             # radial thickness of a group arc
+CY = HEIGHT / 2.0 + 34  # nudge down to leave room for the title block
+R_OUTER = 372  # outer radius of the group-arc ring
+ARC_THICK = 30  # radial thickness of a group arc
 R_INNER = R_OUTER - ARC_THICK
-GAP_DEG = 3.4              # angular gap (deg) between adjacent group arcs
-LABEL_PAD = 22             # radial gap between arc and its text label
+GAP_DEG = 3.4  # angular gap (deg) between adjacent group arcs
+LABEL_PAD = 22  # radial gap between arc and its text label
 
-SUBINK = "#6E6E73"         # secondary text
+SUBINK = "#6E6E73"  # secondary text
 
 
 # ------------------------------------------------------------------
@@ -87,11 +95,11 @@ TEAMS: List[str] = ["Platform", "Payments", "Growth", "Mobile", "Data"]
 # Values are pull requests reviewed during the sprint.
 MATRIX: List[List[int]] = [
     #            Plat  Pay  Grow  Mob  Data   <- reviewer
-    [0,   14,  11,   9,   7],   # Platform authored, reviewed by ...
-    [22,   0,   4,   3,   6],   # Payments
-    [19,   3,   0,   5,   2],   # Growth
-    [17,   4,   6,   0,   3],   # Mobile
-    [15,   8,   2,   1,   0],   # Data
+    [0, 14, 11, 9, 7],  # Platform authored, reviewed by ...
+    [22, 0, 4, 3, 6],  # Payments
+    [19, 3, 0, 5, 2],  # Growth
+    [17, 4, 6, 0, 3],  # Mobile
+    [15, 8, 2, 1, 0],  # Data
 ]
 
 # The make_<kind> contract's row-record view of MATRIX: one row per
@@ -106,6 +114,7 @@ DEMO_DATA: List[Dict[str, Any]] = [
     for j in range(len(TEAMS))
     if i != j and MATRIX[i][j] > 0
 ]
+
 
 # Brand hue per team — origin color travels with the ribbon.
 def _team_color(accessibility: str = "universal", theme: str = "corporate") -> Dict[str, str]:
@@ -242,6 +251,7 @@ def _ribbon_path(a0: float, a1: float, b0: float, b1: float, r: float) -> str:
     p_a1 = _polar(r, a1)
     p_b0 = _polar(r, b0)
     p_b1 = _polar(r, b1)
+
     # Pull the Bézier control point toward the centre so the ribbon bows
     # inward. A pull proportional to the angular distance keeps near
     # neighbours gently curved and far exchanges deeply bowed.
@@ -265,7 +275,9 @@ def _ribbon_path(a0: float, a1: float, b0: float, b1: float, r: float) -> str:
 # ------------------------------------------------------------------
 # Chord layout maths
 # ------------------------------------------------------------------
-def _compute_layout(team_color: Optional[Dict[str, str]] = None) -> Tuple[Dict[int, dict], List[dict]]:
+def _compute_layout(
+    team_color: Optional[Dict[str, str]] = None,
+) -> Tuple[Dict[int, dict], List[dict]]:
     """Place group arcs and every ribbon around the ring.
 
     The angular budget (360 deg minus the inter-group gaps) is split
@@ -295,10 +307,7 @@ def _compute_layout(team_color: Optional[Dict[str, str]] = None) -> Tuple[Dict[i
     # Total flow per team = everything it authored + everything it
     # reviewed (row sum + column sum), so the arc reflects total
     # involvement in the review network.
-    totals = [
-        sum(MATRIX[i]) + sum(MATRIX[k][i] for k in range(n))
-        for i in range(n)
-    ]
+    totals = [sum(MATRIX[i]) + sum(MATRIX[k][i] for k in range(n)) for i in range(n)]
     grand = sum(totals)
     usable = 360.0 - GAP_DEG * n  # angle left after the gaps
 
@@ -372,18 +381,20 @@ def _compute_layout(team_color: Optional[Dict[str, str]] = None) -> Tuple[Dict[i
             b_slice = slice_of.get((dst, src))
             if a_slice is None or b_slice is None:
                 continue
-            ribbons.append({
-                "src": src,
-                "dst": dst,
-                "a0": a_slice[0],
-                "a1": a_slice[1],
-                "b0": b_slice[0],
-                "b1": b_slice[1],
-                "v_src": v_src,
-                "v_dst": v_dst,
-                "combined": combined,
-                "color": groups[src]["color"],
-            })
+            ribbons.append(
+                {
+                    "src": src,
+                    "dst": dst,
+                    "a0": a_slice[0],
+                    "a1": a_slice[1],
+                    "b0": b_slice[0],
+                    "b1": b_slice[1],
+                    "v_src": v_src,
+                    "v_dst": v_dst,
+                    "combined": combined,
+                    "color": groups[src]["color"],
+                }
+            )
     return groups, ribbons
 
 
@@ -391,8 +402,11 @@ def _compute_layout(team_color: Optional[Dict[str, str]] = None) -> Tuple[Dict[i
 # SVG emission
 # ------------------------------------------------------------------
 def build_svg(
-    mode: str = "self-contained", accessibility: str = "universal", theme: str = "corporate",
-    hub_label: str = "Platform reviewed", hub_sublabel: str = "given vs received",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+    theme: str = "corporate",
+    hub_label: str = "Platform reviewed",
+    hub_sublabel: str = "given vs received",
     title: Optional[str] = None,
 ) -> str:
     """Assemble the full chord-diagram SVG document as a string.
@@ -431,9 +445,7 @@ def build_svg(
     parts: List[str] = []
 
     title_txt = title or "Platform reviews everyone's code and is rarely reviewed back"
-    subtitle_txt = (
-        "Cross-team pull-request reviews over one sprint"
-    )
+    subtitle_txt = "Cross-team pull-request reviews over one sprint"
     desc_txt = (
         "Chord diagram of code reviews exchanged between five engineering "
         "teams during one sprint. Each team owns an arc sized by its total "
@@ -443,7 +455,11 @@ def build_svg(
         "reviews nearly everyone's code but few teams review Platform's."
     )
 
-    parts.append(svg_open(WIDTH, HEIGHT, "chord-title", "chord-desc", font_family=chrome_stack_for_theme(theme)))
+    parts.append(
+        svg_open(
+            WIDTH, HEIGHT, "chord-title", "chord-desc", font_family=chrome_stack_for_theme(theme)
+        )
+    )
     parts.append(f'<title id="chord-title">{escape(title_txt)}</title>')
     parts.append(f'<desc id="chord-desc">{escape(desc_txt)}</desc>')
 
@@ -472,8 +488,8 @@ def build_svg(
         ".chord:focus,.arc:focus{outline:none}"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
         + foreground_tip_css(len(ribbons), mark_prefix="ribbon", tip_prefix="ribbon-tip")
-        + foreground_tip_css(n, mark_prefix="arc", tip_prefix="arc-tip") +
-        "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
+        + foreground_tip_css(n, mark_prefix="arc", tip_prefix="arc-tip")
+        + "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
         + adaptive
         + fcp_style
         # Paper + ink flip; the semi-transparent white hub disk inverts to a soft
@@ -493,8 +509,7 @@ def build_svg(
         f'fill="{INK}">{escape(title_txt)}</text>'
     )
     parts.append(
-        f'<text x="46" y="96" font-size="18" fill="{SUBINK}">'
-        f'{escape(subtitle_txt)}</text>'
+        f'<text x="46" y="96" font-size="18" fill="{SUBINK}">{escape(subtitle_txt)}</text>'
     )
 
     # --- ribbons (drawn first, under the arcs) ---
@@ -522,7 +537,7 @@ def build_svg(
             f'aria-label="{escape(tip)}" d="{d}" fill="{rb["color"]}" '
             f'fill-opacity="0.5" stroke="{rb["color"]}" stroke-opacity="0.35" '
             f'stroke-width="0.6">'
-            f'<title>{escape(tip)}</title></path>'
+            f"<title>{escape(tip)}</title></path>"
         )
         a_mid = (rb["a0"] + rb["a1"]) / 2.0
         b_mid = (rb["b0"] + rb["b1"]) / 2.0
@@ -532,14 +547,19 @@ def build_svg(
         ry = CY + ((pa_mid[1] + pb_mid[1]) / 2.0 - CY) * 0.45
         ribbon_tip_cards.append(
             tooltip_bubble(
-                rx, ry,
+                rx,
+                ry,
                 [
                     f"{src_name} ↔ {dst_name}",
                     f"{rb['combined']} reviews total",
                     f"{src_name} → {dst_name}: {rb['v_src']}, {dst_name} → {src_name}: {rb['v_dst']}",
                 ],
-                anchor="middle", canvas_w=WIDTH, canvas_h=HEIGHT,
-                ink=INK, secondary=SUBINK, border=GRIDLINE,
+                anchor="middle",
+                canvas_w=WIDTH,
+                canvas_h=HEIGHT,
+                ink=INK,
+                secondary=SUBINK,
+                border=GRIDLINE,
                 elem_id=f"ribbon-tip-{chord_idx}",
             )
         )
@@ -562,15 +582,20 @@ def build_svg(
         parts.append(
             f'<path id="arc-{i}" class="arc team-{i} hit" tabindex="0" role="img" '
             f'aria-label="{escape(arc_tip)}" d="{d}" fill="{g["color"]}">'
-            f'<title>{escape(arc_tip)}</title></path>'
+            f"<title>{escape(arc_tip)}</title></path>"
         )
         arc_mid_pt = _polar(R_OUTER + 8, g["mid"])
         arc_tip_cards.append(
             tooltip_bubble(
-                arc_mid_pt[0], arc_mid_pt[1] - 8,
+                arc_mid_pt[0],
+                arc_mid_pt[1] - 8,
                 [g["name"], f"{g['total']} reviews in and out"],
-                anchor="middle", canvas_w=WIDTH, canvas_h=HEIGHT,
-                ink=INK, secondary=SUBINK, border=GRIDLINE,
+                anchor="middle",
+                canvas_w=WIDTH,
+                canvas_h=HEIGHT,
+                ink=INK,
+                secondary=SUBINK,
+                border=GRIDLINE,
                 elem_id=f"arc-tip-{i}",
             )
         )
@@ -586,7 +611,7 @@ def build_svg(
             f'<text x="{lx:.2f}" y="{ly:.2f}" font-size="20" '
             f'font-weight="600" fill="{INK}" text-anchor="{anchor}" '
             f'dominant-baseline="middle">'
-            f'{escape(g["name"])}</text>'
+            f"{escape(g['name'])}</text>"
         )
     parts.extend(arc_tip_cards)
     parts.append("</g>")
@@ -594,14 +619,11 @@ def build_svg(
     # --- centre annotation: the takeaway number, quietly ---
     # Platform's inbound vs outbound imbalance, spelled out at the hub.
     plat = TEAMS.index("Platform")
-    inbound = sum(MATRIX[k][plat] for k in range(n))   # PRs Platform reviewed
-    outbound = sum(MATRIX[plat])                        # PRs of Platform reviewed
+    inbound = sum(MATRIX[k][plat] for k in range(n))  # PRs Platform reviewed
+    outbound = sum(MATRIX[plat])  # PRs of Platform reviewed
     # Soft white backing disk so the hub label stays legible over the
     # ribbon crossings without any dark halo or hard outline.
-    parts.append(
-        f'<circle cx="{CX:.1f}" cy="{CY:.1f}" r="96" fill="{BG}" '
-        f'fill-opacity="0.82"/>'
-    )
+    parts.append(f'<circle cx="{CX:.1f}" cy="{CY:.1f}" r="96" fill="{BG}" fill-opacity="0.82"/>')
     parts.append(
         f'<text x="{CX:.1f}" y="{CY - 24:.1f}" text-anchor="middle" '
         f'font-size="18" fill="{SUBINK}">{xml_escape(hub_label)}</text>'
@@ -620,7 +642,7 @@ def build_svg(
     parts.append(
         f'<text x="46" y="{HEIGHT - 34}" font-size="15" '
         f'fill="{SUBINK}">Arc size ∝ a team\'s total reviews · ribbon width '
-        f'∝ reviews exchanged · hover or focus a chord to trace it</text>'
+        f"∝ reviews exchanged · hover or focus a chord to trace it</text>"
     )
 
     parts.append(fullscreen_control(WIDTH, HEIGHT, mode))
@@ -676,7 +698,14 @@ def make_chord(
     True
     """
     _ = data, title
-    svg = build_svg(mode=mode, accessibility=accessibility, theme=theme, hub_label=hub_label, hub_sublabel=hub_sublabel, title=title or None)
+    svg = build_svg(
+        mode=mode,
+        accessibility=accessibility,
+        theme=theme,
+        hub_label=hub_label,
+        hub_sublabel=hub_sublabel,
+        title=title or None,
+    )
     dest = Path(out) if out else svg_example_path(__file__, "chord")
     return write_svg(dest, svg, theme=theme)
 

@@ -34,7 +34,9 @@ from sprezzature_figures.studio.ralph.apply import apply_operation, apply_operat
 
 
 def _plan() -> FigurePlan:
-    return FigurePlan(figure_kind="bar", title="Old", bindings={"x": ColumnBinding(columns=["region"])})
+    return FigurePlan(
+        figure_kind="bar", title="Old", bindings={"x": ColumnBinding(columns=["region"])}
+    )
 
 
 def test_scalar_field_operations_update_their_target() -> None:
@@ -60,7 +62,8 @@ def test_bind_and_unbind_column() -> None:
 
 def test_add_filter_generates_id_then_remove_by_id() -> None:
     plan = apply_operation(
-        _plan(), AddFilter(operation_id="op1", transform=FilterByValue(column="region", values=["North"]))
+        _plan(),
+        AddFilter(operation_id="op1", transform=FilterByValue(column="region", values=["North"])),
     )
     assert len(plan.transformations) == 1
     tid = plan.transformations[0].transform_id

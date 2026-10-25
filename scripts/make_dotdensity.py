@@ -77,11 +77,11 @@ _MAP_W: float = 830.0
 _MAP_H: float = 810.0
 
 #: House-style inks.
-_INK: str = "#1D1D1F"       # primary text
-_SUBTLE: str = "#6E6E73"    # secondary text
-_BG: str = "#FFFFFF"        # background
-_SEA: str = "#F2F2F7"       # land backdrop / graticule fill
-_BORDER: str = "#D1D1D6"    # department hairlines
+_INK: str = "#1D1D1F"  # primary text
+_SUBTLE: str = "#6E6E73"  # secondary text
+_BG: str = "#FFFFFF"  # background
+_SEA: str = "#F2F2F7"  # land backdrop / graticule fill
+_BORDER: str = "#D1D1D6"  # department hairlines
 
 #: One dot represents this many residents.
 _PER_DOT: int = 25_000
@@ -138,30 +138,108 @@ def _dataset() -> Tuple[Dict[str, int], Dict[str, str], List[Tuple[str, str]]]:
     # Department -> macro-region grouping (metropolitan France, 96 depts).
     groups: Dict[str, List[str]] = {
         "Île-de-France & North": [
-            "75", "77", "78", "91", "92", "93", "94", "95",  # Île-de-France
-            "59", "62", "60", "80", "02",                    # Hauts-de-France
-            "51", "08", "10", "52", "54", "55", "57", "88",  # Grand Est (north)
-            "67", "68",
+            "75",
+            "77",
+            "78",
+            "91",
+            "92",
+            "93",
+            "94",
+            "95",  # Île-de-France
+            "59",
+            "62",
+            "60",
+            "80",
+            "02",  # Hauts-de-France
+            "51",
+            "08",
+            "10",
+            "52",
+            "54",
+            "55",
+            "57",
+            "88",  # Grand Est (north)
+            "67",
+            "68",
         ],
         "Atlantic West": [
-            "44", "49", "53", "72", "85",                    # Pays de la Loire
-            "35", "22", "29", "56",                          # Brittany
-            "14", "27", "50", "61", "76",                    # Normandy
-            "17", "16", "79", "86", "87", "23", "19", "24",  # Nouvelle-Aquitaine (west)
-            "33", "40", "47", "64",
+            "44",
+            "49",
+            "53",
+            "72",
+            "85",  # Pays de la Loire
+            "35",
+            "22",
+            "29",
+            "56",  # Brittany
+            "14",
+            "27",
+            "50",
+            "61",
+            "76",  # Normandy
+            "17",
+            "16",
+            "79",
+            "86",
+            "87",
+            "23",
+            "19",
+            "24",  # Nouvelle-Aquitaine (west)
+            "33",
+            "40",
+            "47",
+            "64",
         ],
         "Mediterranean South": [
-            "13", "83", "84", "04", "05", "06",              # PACA
-            "30", "34", "11", "66", "48",                    # Occitanie (east/coast)
-            "09", "31", "32", "65", "81", "82", "12", "46",  # Occitanie (west)
+            "13",
+            "83",
+            "84",
+            "04",
+            "05",
+            "06",  # PACA
+            "30",
+            "34",
+            "11",
+            "66",
+            "48",  # Occitanie (east/coast)
+            "09",
+            "31",
+            "32",
+            "65",
+            "81",
+            "82",
+            "12",
+            "46",  # Occitanie (west)
         ],
         "Rhône–Alps East": [
-            "69", "01", "07", "26", "38", "42", "43", "63",  # Auvergne-Rhône-Alpes
-            "03", "15", "73", "74",
-            "21", "25", "39", "58", "70", "71", "89", "90",  # Bourgogne-Franche-Comté
+            "69",
+            "01",
+            "07",
+            "26",
+            "38",
+            "42",
+            "43",
+            "63",  # Auvergne-Rhône-Alpes
+            "03",
+            "15",
+            "73",
+            "74",
+            "21",
+            "25",
+            "39",
+            "58",
+            "70",
+            "71",
+            "89",
+            "90",  # Bourgogne-Franche-Comté
         ],
         "Central rural belt": [
-            "18", "28", "36", "37", "41", "45",              # Centre-Val de Loire
+            "18",
+            "28",
+            "36",
+            "37",
+            "41",
+            "45",  # Centre-Val de Loire
         ],
         "Corsica": ["2A", "2B"],
     }
@@ -175,38 +253,108 @@ def _dataset() -> Tuple[Dict[str, int], Dict[str, str], List[Tuple[str, str]]]:
     # carry the mass; the rural belt is deliberately thin.
     pop: Dict[str, int] = {
         # Île-de-France (packed).
-        "75": 2_140_000, "92": 1_640_000, "93": 1_670_000, "94": 1_410_000,
-        "78": 1_450_000, "91": 1_320_000, "95": 1_270_000, "77": 1_450_000,
+        "75": 2_140_000,
+        "92": 1_640_000,
+        "93": 1_670_000,
+        "94": 1_410_000,
+        "78": 1_450_000,
+        "91": 1_320_000,
+        "95": 1_270_000,
+        "77": 1_450_000,
         # Hauts-de-France + Grand Est north.
-        "59": 2_610_000, "62": 1_470_000, "60": 830_000, "80": 570_000,
-        "02": 530_000, "51": 570_000, "08": 270_000, "10": 310_000,
-        "52": 170_000, "54": 730_000, "55": 180_000, "57": 1_050_000,
-        "88": 360_000, "67": 1_140_000, "68": 770_000,
+        "59": 2_610_000,
+        "62": 1_470_000,
+        "60": 830_000,
+        "80": 570_000,
+        "02": 530_000,
+        "51": 570_000,
+        "08": 270_000,
+        "10": 310_000,
+        "52": 170_000,
+        "54": 730_000,
+        "55": 180_000,
+        "57": 1_050_000,
+        "88": 360_000,
+        "67": 1_140_000,
+        "68": 770_000,
         # Atlantic West.
-        "44": 1_430_000, "49": 820_000, "53": 310_000, "72": 570_000,
-        "85": 690_000, "35": 1_090_000, "22": 600_000, "29": 910_000,
-        "56": 760_000, "14": 700_000, "27": 600_000, "50": 490_000,
-        "61": 280_000, "76": 1_250_000, "17": 650_000, "16": 350_000,
-        "79": 380_000, "86": 440_000, "87": 370_000, "23": 116_000,
-        "19": 240_000, "24": 410_000, "33": 1_640_000, "40": 410_000,
-        "47": 330_000, "64": 680_000,
+        "44": 1_430_000,
+        "49": 820_000,
+        "53": 310_000,
+        "72": 570_000,
+        "85": 690_000,
+        "35": 1_090_000,
+        "22": 600_000,
+        "29": 910_000,
+        "56": 760_000,
+        "14": 700_000,
+        "27": 600_000,
+        "50": 490_000,
+        "61": 280_000,
+        "76": 1_250_000,
+        "17": 650_000,
+        "16": 350_000,
+        "79": 380_000,
+        "86": 440_000,
+        "87": 370_000,
+        "23": 116_000,
+        "19": 240_000,
+        "24": 410_000,
+        "33": 1_640_000,
+        "40": 410_000,
+        "47": 330_000,
+        "64": 680_000,
         # Mediterranean South.
-        "13": 2_040_000, "83": 1_080_000, "84": 560_000, "04": 165_000,
-        "05": 140_000, "06": 1_090_000, "30": 750_000, "34": 1_180_000,
-        "11": 375_000, "66": 480_000, "48": 76_000, "09": 155_000,
-        "31": 1_400_000, "32": 190_000, "65": 230_000, "81": 390_000,
-        "82": 260_000, "12": 280_000, "46": 175_000,
+        "13": 2_040_000,
+        "83": 1_080_000,
+        "84": 560_000,
+        "04": 165_000,
+        "05": 140_000,
+        "06": 1_090_000,
+        "30": 750_000,
+        "34": 1_180_000,
+        "11": 375_000,
+        "66": 480_000,
+        "48": 76_000,
+        "09": 155_000,
+        "31": 1_400_000,
+        "32": 190_000,
+        "65": 230_000,
+        "81": 390_000,
+        "82": 260_000,
+        "12": 280_000,
+        "46": 175_000,
         # Rhône–Alps East.
-        "69": 1_880_000, "01": 660_000, "07": 330_000, "26": 520_000,
-        "38": 1_270_000, "42": 765_000, "43": 227_000, "63": 660_000,
-        "03": 335_000, "15": 145_000, "73": 440_000, "74": 830_000,
-        "21": 535_000, "25": 545_000, "39": 260_000, "58": 200_000,
-        "70": 235_000, "71": 550_000, "89": 335_000, "90": 140_000,
+        "69": 1_880_000,
+        "01": 660_000,
+        "07": 330_000,
+        "26": 520_000,
+        "38": 1_270_000,
+        "42": 765_000,
+        "43": 227_000,
+        "63": 660_000,
+        "03": 335_000,
+        "15": 145_000,
+        "73": 440_000,
+        "74": 830_000,
+        "21": 535_000,
+        "25": 545_000,
+        "39": 260_000,
+        "58": 200_000,
+        "70": 235_000,
+        "71": 550_000,
+        "89": 335_000,
+        "90": 140_000,
         # Central rural belt (thin).
-        "18": 300_000, "28": 435_000, "36": 220_000, "37": 610_000,
-        "41": 330_000, "45": 685_000,
+        "18": 300_000,
+        "28": 435_000,
+        "36": 220_000,
+        "37": 610_000,
+        "41": 330_000,
+        "45": 685_000,
         # Corsica.
-        "2A": 160_000, "2B": 180_000,
+        "2A": 160_000,
+        "2B": 180_000,
     }
 
     return pop, region_of, legend
@@ -298,9 +446,7 @@ def _project(lon: float, lat: float, lat0: float) -> Tuple[float, float]:
     return x, y
 
 
-def _fit(
-    depts: List[Dict[str, Any]], lat0: float
-) -> Tuple[float, float, float, float, float]:
+def _fit(depts: List[Dict[str, Any]], lat0: float) -> Tuple[float, float, float, float, float]:
     """Compute the projection-to-viewport affine fit for all departments.
 
     Returns
@@ -376,9 +522,7 @@ def _point_in_ring(x: float, y: float, ring: Ring) -> bool:
     for i in range(n):
         xi, yi = ring[i]
         xj, yj = ring[j]
-        if ((yi > y) != (yj > y)) and (
-            x < (xj - xi) * (y - yi) / (yj - yi + 1e-15) + xi
-        ):
+        if ((yi > y) != (yj > y)) and (x < (xj - xi) * (y - yi) / (yj - yi + 1e-15) + xi):
             inside = not inside
         j = i
     return inside
@@ -471,7 +615,9 @@ def _ring_path(ring: Ring, lat0: float, fit: Tuple[float, float, float, float, f
 # Build
 # ------------------------------------------------------------------
 def build_svg(
-    mode: str = "self-contained", accessibility: str = "universal", theme: str = "corporate",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+    theme: str = "corporate",
     legend_title: str = "Macro-region",
     title: Optional[str] = None,
 ) -> str:
@@ -525,10 +671,11 @@ def build_svg(
 
     # ---- header ----
     parts: List[str] = []
-    parts.append(svg_open(_WIDTH, _HEIGHT, "dd-title", "dd-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(
-        '<title id="dd-title">Where the French actually live — one dot per '
-        '25,000 residents</title>'
+        svg_open(_WIDTH, _HEIGHT, "dd-title", "dd-desc", font_family=chrome_stack_for_theme(theme))
+    )
+    parts.append(
+        '<title id="dd-title">Where the French actually live — one dot per 25,000 residents</title>'
     )
     total = sum(pop.values())
     desc = (
@@ -561,16 +708,17 @@ def build_svg(
         style_rows.append(
             f"svg:hover .rg-{s}:hover, svg:focus-within .rg-{s}:focus {{ opacity: 1; }}"
         )
-    style_rows.extend([
-        ".legend-row { cursor: pointer; }",
-        ".legend-row:focus { outline: 3px solid #0A4DA0; outline-offset: 2px; }",
-        "@media (prefers-reduced-motion: reduce) { "
-        ".dept, .dots { transition: none; } }",
-        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}",
-        foreground_tip_css(len(legend), mark_prefix="region", tip_prefix="regiontip"),
-        foreground_tip_css(len(legend), mark_prefix="legend-row", tip_prefix="legendtip"),
-        "@media (prefers-reduced-motion:reduce){.tip{transition:none}}",
-    ])
+    style_rows.extend(
+        [
+            ".legend-row { cursor: pointer; }",
+            ".legend-row:focus { outline: 3px solid #0A4DA0; outline-offset: 2px; }",
+            "@media (prefers-reduced-motion: reduce) { .dept, .dots { transition: none; } }",
+            ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}",
+            foreground_tip_css(len(legend), mark_prefix="region", tip_prefix="regiontip"),
+            foreground_tip_css(len(legend), mark_prefix="legend-row", tip_prefix="legendtip"),
+            "@media (prefers-reduced-motion:reduce){.tip{transition:none}}",
+        ]
+    )
     # OS-adaptive overrides (additive; the default render stays byte-identical
     # because every rule below lives inside an @media query — a descendant
     # class rule only outranks the inline circle fill once the query matches).
@@ -579,9 +727,7 @@ def build_svg(
     # forced=True is safe: geographic position already separates every region
     # (Corsica, Paris, the coasts) and each carries an always-visible legend
     # label, so identity survives with no colour.
-    region_series = {
-        f".rg-{_slug(name)} circle": region_color[name] for name, _ in legend
-    }
+    region_series = {f".rg-{_slug(name)} circle": region_color[name] for name, _ in legend}
     style_rows.append(os_adaptive_style(region_series, role="fill", forced=True))
     # Additive dark mode: flip paper + the two ink tiers (data hues untouched).
     style_rows.append(os_dark_style())
@@ -593,15 +739,15 @@ def build_svg(
     # ---- title + subtitle ----
     # The headline the figure writes about its own data, used only when
     # the caller supplies none.
-    title = title or 'Where the French actually live'
+    title = title or "Where the French actually live"
     parts.append(
         f'<text x="{_MAP_X}" y="66" font-size="34" font-weight="700" '
         f'fill="{_INK}">{xml_escape(title)}</text>'
     )
     parts.append(
         f'<text x="{_MAP_X}" y="102" font-size="20" fill="{_SUBTLE}">'
-        f'One dot = 25,000 residents · people ring the coasts and pack the '
-        f'Paris basin, leaving the rural diagonal bare</text>'
+        f"One dot = 25,000 residents · people ring the coasts and pack the "
+        f"Paris basin, leaving the rural diagonal bare</text>"
     )
 
     # ---- land backdrop: department polygons (hairline borders) ----
@@ -622,7 +768,7 @@ def build_svg(
                 f'fill-opacity="0.06" stroke="{_BORDER}" '
                 f'stroke-width="0.7"/>'
             )
-    parts.append('</g>')
+    parts.append("</g>")
 
     # ---- dot layers, one <g> per region for hover isolation ----
     # Precompute projected rings once per department.
@@ -636,9 +782,7 @@ def build_svg(
 
     # Collect region → list of screen-space dots (scatter in projected space,
     # then map to screen — cheaper and keeps density honest).
-    region_dots: Dict[str, List[Tuple[float, float]]] = {
-        name: [] for name, _ in legend
-    }
+    region_dots: Dict[str, List[Tuple[float, float]]] = {name: [] for name, _ in legend}
     region_people: Dict[str, int] = {name: 0 for name, _ in legend}
     for d in depts:
         code = str(d["code"])
@@ -661,8 +805,8 @@ def build_svg(
         dots = region_dots[name]
         parts.append(
             f'<g id="region-{region_i}" class="dots rg rg-{s} hit" tabindex="0" role="listitem">'
-            f'<title>{_xml(name)}: about {people / 1_000_000:.1f} million '
-            f'residents ({len(dots)} dots)</title>'
+            f"<title>{_xml(name)}: about {people / 1_000_000:.1f} million "
+            f"residents ({len(dots)} dots)</title>"
         )
         # One compact <circle> per dot. fill-opacity lets overlapping dots
         # darken where density is highest — reinforcing the density read.
@@ -671,14 +815,24 @@ def build_svg(
                 f'<circle cx="{sx:.1f}" cy="{sy:.1f}" r="{_DOT_R}" '
                 f'fill="{color}" fill-opacity="0.55"/>'
             )
-        parts.append('</g>')
+        parts.append("</g>")
         if dots:
             cx = sum(p[0] for p in dots) / len(dots)
             cy = sum(p[1] for p in dots) / len(dots)
             region_tips.append(
                 tooltip_bubble(
-                    cx, cy, [name, f"{people / 1_000_000:.1f} million residents", f"{len(dots)} dots on the map"],
-                    canvas_w=_WIDTH, canvas_h=_HEIGHT, ink=_INK, secondary=_SUBTLE, border=_BORDER,
+                    cx,
+                    cy,
+                    [
+                        name,
+                        f"{people / 1_000_000:.1f} million residents",
+                        f"{len(dots)} dots on the map",
+                    ],
+                    canvas_w=_WIDTH,
+                    canvas_h=_HEIGHT,
+                    ink=_INK,
+                    secondary=_SUBTLE,
+                    border=_BORDER,
                     elem_id=f"regiontip-{region_i}",
                 )
             )
@@ -704,13 +858,10 @@ def build_svg(
         parts.append(
             f'<g id="legend-row-{k}" class="rg rg-{s} legend-row hit" tabindex="0" role="listitem" '
             f'transform="translate(0,{cy:.1f})">'
-            f'<title>{_xml(name)}: about {people / 1_000_000:.1f} million '
-            f'residents</title>'
+            f"<title>{_xml(name)}: about {people / 1_000_000:.1f} million "
+            f"residents</title>"
         )
-        parts.append(
-            f'<circle cx="11" cy="8" r="10" fill="{color}" '
-            f'fill-opacity="0.92"/>'
-        )
+        parts.append(f'<circle cx="11" cy="8" r="10" fill="{color}" fill-opacity="0.92"/>')
         parts.append(
             f'<text x="34" y="5" font-size="18" font-weight="600" '
             f'fill="{_INK}" dominant-baseline="middle">{_xml(name)}</text>'
@@ -718,32 +869,38 @@ def build_svg(
         parts.append(
             f'<text x="34" y="28" font-size="15" fill="{_SUBTLE}" '
             f'dominant-baseline="middle">'
-            f'{people / 1_000_000:.1f} M residents</text>'
+            f"{people / 1_000_000:.1f} M residents</text>"
         )
-        parts.append('</g>')
+        parts.append("</g>")
         legend_tips.append(
             tooltip_bubble(
-                40, cy + 40, anchor="start",
+                40,
+                cy + 40,
+                anchor="start",
                 lines=[name, f"{people / 1_000_000:.1f} million residents"],
-                canvas_w=_WIDTH, canvas_h=_HEIGHT, ink=_INK, secondary=_SUBTLE, border=_BORDER,
+                canvas_w=_WIDTH,
+                canvas_h=_HEIGHT,
+                ink=_INK,
+                secondary=_SUBTLE,
+                border=_BORDER,
                 elem_id=f"legendtip-{k}",
             )
         )
     # Every legend bubble drawn only after every legend row, still inside
     # this same translated group (its coordinates are relative to it).
     parts.extend(legend_tips)
-    parts.append('</g>')
+    parts.append("</g>")
 
     # ---- footnote / method note ----
     parts.append(
         f'<text x="{_MAP_X}" y="{_HEIGHT - 20}" font-size="14" '
         f'fill="{_SUBTLE}">Dots randomly placed within each department, '
-        f'not at real addresses · '
-        f'equal-area projection</text>'
+        f"not at real addresses · "
+        f"equal-area projection</text>"
     )
 
     parts.append(fullscreen_control(_WIDTH, _HEIGHT, mode))
-    parts.append('</svg>')
+    parts.append("</svg>")
     return "\n".join(parts)
 
 
@@ -767,7 +924,13 @@ def make_dotdensity(
     (was hardcoded ``"Macro-region"``). ``theme`` is forwarded to
     :func:`build_svg`.
     """
-    svg = build_svg(mode=mode, accessibility=accessibility, theme=theme, legend_title=legend_title, title=title or None)
+    svg = build_svg(
+        mode=mode,
+        accessibility=accessibility,
+        theme=theme,
+        legend_title=legend_title,
+        title=title or None,
+    )
     dest = Path(out) if out else svg_example_path(__file__, "dotdensity")
     return write_svg(dest, svg, theme=theme)
 
@@ -779,9 +942,7 @@ def main() -> None:
     (``self-contained`` / ``external`` / ``static``); see
     :func:`_interactive.fullscreen_control`.
     """
-    render_cli(
-        __file__, "dotdensity", build_svg, description="Render the dot-density-map SVG."
-    )
+    render_cli(__file__, "dotdensity", build_svg, description="Render the dot-density-map SVG.")
 
 
 if __name__ == "__main__":

@@ -174,9 +174,19 @@ def make_data(n: int = 4000, base_rate: float = 0.18, seed: int = 11) -> Dict[st
 
     records: List[Dict[str, Any]] = []
     for gx, gi in zip(grid, idx, strict=True):
-        records.append({"pop": round(float(gx), 4), "gain": round(float(model_gain[gi]), 4), "series": "Model"})
-        records.append({"pop": round(float(gx), 4), "gain": round(float(perfect_gain[gi]), 4), "series": "Perfect model"})
-        records.append({"pop": round(float(gx), 4), "gain": round(float(gx), 4), "series": "Random baseline"})
+        records.append(
+            {"pop": round(float(gx), 4), "gain": round(float(model_gain[gi]), 4), "series": "Model"}
+        )
+        records.append(
+            {
+                "pop": round(float(gx), 4),
+                "gain": round(float(perfect_gain[gi]), 4),
+                "series": "Perfect model",
+            }
+        )
+        records.append(
+            {"pop": round(float(gx), 4), "gain": round(float(gx), 4), "series": "Random baseline"}
+        )
 
     # The annotated operating point: the model's gain at the top fraction
     # the campaign can afford to contact.
@@ -196,8 +206,7 @@ def build_svg(
     curve: "List[Dict[str, Any]] | None" = None,
     title: "str | None" = None,
     subtitle: str = (
-        "Cumulative-gain curve: churners reached vs share of the "
-        "model-ranked base contacted"
+        "Cumulative-gain curve: churners reached vs share of the model-ranked base contacted"
     ),
     model_label: str = "Model",
     perfect_model_label: str = "Perfect model",
@@ -250,8 +259,12 @@ def build_svg(
     """
     if curve:
         model_all = [(float(r["pop"]), float(r["gain"])) for r in curve if r["series"] == "Model"]
-        perfect_all = [(float(r["pop"]), float(r["gain"])) for r in curve if r["series"] == "Perfect model"]
-        prevalence = next((p for p, g in perfect_all if g >= 0.999), (perfect_all[-1][0] if perfect_all else 0.2))
+        perfect_all = [
+            (float(r["pop"]), float(r["gain"])) for r in curve if r["series"] == "Perfect model"
+        ]
+        prevalence = next(
+            (p for p, g in perfect_all if g >= 0.999), (perfect_all[-1][0] if perfect_all else 0.2)
+        )
         if model_all:
             op_pop, op_gain = min(model_all, key=lambda pg: abs(pg[0] - _OPERATING_FRACTION))
         else:
@@ -268,9 +281,9 @@ def build_svg(
         prevalence = float(computed["prevalence"])
 
     palette: Dict[str, str] = load_palette(accessibility, theme=theme)
-    model_c = palette.get("Blue", "#007AFF")     # the hero: what we shipped
+    model_c = palette.get("Blue", "#007AFF")  # the hero: what we shipped
     perfect_c = palette.get("Green", "#34C759")  # the ceiling
-    baseline_c = "#8E8E93"                        # random: neutral grey
+    baseline_c = "#8E8E93"  # random: neutral grey
     marker_c = palette.get("Orange", "#FF9500")  # the operating point
     ink = "#1D1D1F"
     secondary = "#6E6E73"
@@ -312,11 +325,14 @@ def build_svg(
     # Composed from the operating point by default -- "the riskiest 20%
     # reaches 68%" is a fact about this model, not a sentence to carry
     # between models -- and replaced whole when a caller has one.
-    said_title = title if title is not None else (
-        f"Calling the riskiest {round(op['pop'] * 100)}% reaches "
-        f"{op_pct}% of churners"
+    said_title = (
+        title
+        if title is not None
+        else (f"Calling the riskiest {round(op['pop'] * 100)}% reaches {op_pct}% of churners")
     )
-    parts.append(svg_open(width, height, "lg-title", "lg-desc", font_family=chrome_stack_for_theme(theme)))
+    parts.append(
+        svg_open(width, height, "lg-title", "lg-desc", font_family=chrome_stack_for_theme(theme))
+    )
     parts.append(
         # The accessible name is the headline a sighted reader sees: when
         # the two disagree, a screen-reader user is told about a different
@@ -325,18 +341,18 @@ def build_svg(
     )
     parts.append(
         f'<desc id="lg-desc">Cumulative-gain chart for a churn-prevention '
-        f'campaign. The horizontal axis is the share of '
-        f'customers contacted, working down a list ranked by the model’s '
-        f'predicted churn risk; the vertical axis is the share of all '
-        f'churners reached. Three curves: a dashed grey diagonal is the '
-        f'random baseline (contacting X % reaches X % of churners); a thin '
-        f'green line is the perfect model, the ceiling, rising steeply then '
-        f'flattening once every churner is captured; and a thick blue line '
-        f'is the actual model, sitting between the two. The shaded blue band '
-        f'between the model and the diagonal is the value the model adds. '
-        f'A marker shows the operating point: contacting the riskiest '
-        f'{round(op["pop"] * 100)} % reaches {op_pct} % of churners, '
-        f'{op["lift"]}× better than random.</desc>'
+        f"campaign. The horizontal axis is the share of "
+        f"customers contacted, working down a list ranked by the model’s "
+        f"predicted churn risk; the vertical axis is the share of all "
+        f"churners reached. Three curves: a dashed grey diagonal is the "
+        f"random baseline (contacting X % reaches X % of churners); a thin "
+        f"green line is the perfect model, the ceiling, rising steeply then "
+        f"flattening once every churner is captured; and a thick blue line "
+        f"is the actual model, sitting between the two. The shaded blue band "
+        f"between the model and the diagonal is the value the model adds. "
+        f"A marker shows the operating point: contacting the riskiest "
+        f"{round(op['pop'] * 100)} % reaches {op_pct} % of churners, "
+        f"{op['lift']}× better than random.</desc>"
     )
 
     # Static figure: hover / focus emphasis only, no motion to guard.
@@ -363,12 +379,7 @@ def build_svg(
         # light plot band is darkened to a panel that reads on the dark surface;
         # the white gridlines drawn over it dim to a faint dark-grey so they stay
         # subtle instead of glaring white on dark.
-        + os_dark_style(
-            extra=(
-                '[fill="#F5F5F7"]{fill:#17171A;}'
-                ".lg-grid{stroke:#2C2C30;}"
-            )
-        )
+        + os_dark_style(extra=('[fill="#F5F5F7"]{fill:#17171A;}.lg-grid{stroke:#2C2C30;}'))
         + "</style>"
     )
 
@@ -386,7 +397,7 @@ def build_svg(
     )
     parts.append(
         f'<text x="{m_left}" y="124" font-size="24" fill="{secondary}">'
-        f'{xml_escape(subtitle)}</text>'
+        f"{xml_escape(subtitle)}</text>"
     )
 
     # --- gridlines (very light, on the shared 0..1 grid) ---------
@@ -406,12 +417,8 @@ def build_svg(
     # diagonal. The fill is the model hue at low opacity, so the benefit reads
     # at a glance and even in greyscale (a filled region, not just a colour).
     up = " L ".join(f"{sx(px):.1f} {sy(py):.1f}" for px, py in model_pts)
-    back = " L ".join(
-        f"{sx(px):.1f} {sy(px):.1f}" for px, _ in reversed(model_pts)
-    )
-    parts.append(
-        f'<path d="M {up} L {back} Z" fill="{model_c}" fill-opacity="0.13"/>'
-    )
+    back = " L ".join(f"{sx(px):.1f} {sy(px):.1f}" for px, _ in reversed(model_pts))
+    parts.append(f'<path d="M {up} L {back} Z" fill="{model_c}" fill-opacity="0.13"/>')
 
     # --- random baseline (dashed grey diagonal) ------------------
     parts.append(
@@ -454,7 +461,7 @@ def build_svg(
         f'<text x="{rb_x + 6:.1f}" y="{rb_y + 30:.1f}" font-size="21" '
         f'font-weight="600" fill="{baseline_c}" '
         f'transform="rotate(-40 {rb_x + 6:.1f} {rb_y + 30:.1f})">'
-        f'{xml_escape(random_baseline_label)}</text>'
+        f"{xml_escape(random_baseline_label)}</text>"
     )
     # Model: label at the curve's right end, where it plateaus near 100 %.
     mlx, mly = model_pts[-1]
@@ -478,8 +485,8 @@ def build_svg(
         f'opacity="0.85"/>'
     )
     tip = (
-        f'Top {round(opx * 100)}% contacted → {op_pct}% of churners reached '
-        f'({op["lift"]}× better than random)'
+        f"Top {round(opx * 100)}% contacted → {op_pct}% of churners reached "
+        f"({op['lift']}× better than random)"
     )
     parts.append(
         f'<g id="hit-0" class="pt hit" tabindex="0" role="img" aria-label="{xml_escape(tip)}">'
@@ -528,7 +535,7 @@ def build_svg(
         f'<text x="{mx + 20:.1f}" y="{my - 14:.1f}" font-size="22" '
         f'font-weight="700" fill="{marker_c}" stroke="{halo}" stroke-width="4" '
         f'paint-order="stroke">Top {round(opx * 100)}% → '
-        f'{op_pct}% of churners</text>'
+        f"{op_pct}% of churners</text>"
     )
     parts.append(
         f'<text x="{mx + 20:.1f}" y="{my + 12:.1f}" font-size="20" '
@@ -573,7 +580,7 @@ def build_svg(
     parts.append(
         f'<text x="{plot_x + plot_w / 2:.1f}" y="{ax_bottom + 72:.1f}" '
         f'font-size="22" fill="{ink}" text-anchor="middle">'
-        f'Share of customers contacted (ranked by model)</text>'
+        f"Share of customers contacted (ranked by model)</text>"
     )
     yt_x = 52
     yt_y = plot_y + plot_h / 2
@@ -581,7 +588,7 @@ def build_svg(
         f'<text x="{yt_x:.1f}" y="{yt_y:.1f}" font-size="22" fill="{ink}" '
         f'text-anchor="middle" '
         f'transform="rotate(-90 {yt_x:.1f} {yt_y:.1f})">'
-        f'Share of churners reached</text>'
+        f"Share of churners reached</text>"
     )
 
     parts.append(fullscreen_control(width, height, mode))
@@ -601,8 +608,7 @@ def make_liftgain(
     out: "Path | str | None" = None,
     title: "str | None" = None,
     subtitle: str = (
-        "Cumulative-gain curve: churners reached vs share of the "
-        "model-ranked base contacted"
+        "Cumulative-gain curve: churners reached vs share of the model-ranked base contacted"
     ),
     model_label: str = "Model",
     perfect_model_label: str = "Perfect model",
@@ -654,9 +660,11 @@ def make_liftgain(
 def main() -> None:
     """Write the cumulative-gain SVG to the canonical assets path (or --out)."""
     render_cli(
-        __file__, "liftgain", build_svg,
+        __file__,
+        "liftgain",
+        build_svg,
         description="Render the house-style cumulative-gain (lift/gain) chart "
-                    "(model curve + perfect model + random baseline) to SVG.",
+        "(model curve + perfect model + random baseline) to SVG.",
     )
 
 

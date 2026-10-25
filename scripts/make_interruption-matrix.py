@@ -61,10 +61,10 @@ FONT = "Roboto, system-ui, sans-serif"
 # width are computed per figure (they depend on the speaker count and the
 # subtitle length), so only the fixed metrics live here.
 CELL = 78
-GUTTER = 156   # room for the right-aligned row names + colour chip
-TOP = 236      # room for title, subtitle and the rotated column names
+GUTTER = 156  # room for the right-aligned row names + colour chip
+TOP = 236  # room for title, subtitle and the rotated column names
 MARGIN = 48
-PAD_B = 86     # bottom band for the Σ row + the one-line "bilan"
+PAD_B = 86  # bottom band for the Σ row + the one-line "bilan"
 SUBTITLE = "Column interrupts · row gets interrupted · cell counts the interruptions"
 TITLE = "Who talks over whom"
 
@@ -110,7 +110,9 @@ def _person_colors(order: List[str], accessibility: str = "universal") -> Dict[s
     return leveled_colors(base, accessibility)
 
 
-def _aggregate(data: List[Dict[str, Any]]) -> Tuple[List[str], Dict[str, Dict[str, int]], Dict[str, int], Dict[str, int]]:
+def _aggregate(
+    data: List[Dict[str, Any]],
+) -> Tuple[List[str], Dict[str, Dict[str, int]], Dict[str, int], Dict[str, int]]:
     """Fold the directed pairs into an ordered matrix and its margins.
 
     Returns ``(order, m, made, got)`` where ``m[interrupted][interrupter]`` is
@@ -176,7 +178,7 @@ def _hover_script() -> str:
     number, so nothing is lost.
     """
     return (
-        '<script><![CDATA['
+        "<script><![CDATA["
         "(function(){"
         "var svg=document.currentScript.parentNode;"
         "var nodes=svg.querySelectorAll('[data-r],[data-c]');"
@@ -193,7 +195,7 @@ def _hover_script() -> str:
         "el.addEventListener('pointerenter',function(){enter(el);});"
         "el.addEventListener('pointerleave',leave);});"
         "})();"
-        ']]></script>'
+        "]]></script>"
     )
 
 
@@ -327,7 +329,7 @@ def build_svg(
             f'<g class="head" data-c="{c}" transform="translate({xc:.1f},{top - 14}) rotate(-38)">'
             f'<circle cx="-8" cy="-4" r="4" fill="{col}"/>'
             f'<text x="4" y="0" text-anchor="start" font-size="14" font-weight="600" fill="{col}">'
-            f'{xml_escape(b)}</text></g>'
+            f"{xml_escape(b)}</text></g>"
         )
     p.append(
         f'<text x="{cx(n) + CELL / 2:.1f}" y="{top - 16}" text-anchor="middle" font-size="14" '
@@ -372,7 +374,11 @@ def build_svg(
             fill = ZERO if v == 0 else color_of[b]
             klass = "cell hit" if v == 0 else f"cell hit spk-{idx[b]}"
             cell_k = r * n + c
-            tip = f"{xml_escape(b)} coupe {xml_escape(a)} × {v}" if v else f"{xml_escape(b)} ne coupe jamais {xml_escape(a)}"
+            tip = (
+                f"{xml_escape(b)} coupe {xml_escape(a)} × {v}"
+                if v
+                else f"{xml_escape(b)} ne coupe jamais {xml_escape(a)}"
+            )
             g = [
                 f'<g id="cell-{cell_k}" class="{klass}" tabindex="0" data-r="{r}" data-c="{c}"><title>{tip}</title>',
                 f'<rect class="box" x="{x + 3}" y="{y + 3}" width="{CELL - 6}" height="{CELL - 6}" rx="12" '
@@ -473,9 +479,14 @@ def make_interruption_matrix(
     :func:`build_svg`.
     """
     svg = build_svg(
-        data=data, title=title, subtitle=subtitle,
-        row_total_label=row_total_label, col_total_label=col_total_label,
-        mode=mode, accessibility=accessibility, theme=theme,
+        data=data,
+        title=title,
+        subtitle=subtitle,
+        row_total_label=row_total_label,
+        col_total_label=col_total_label,
+        mode=mode,
+        accessibility=accessibility,
+        theme=theme,
     )
     dest = Path(out) if out else svg_example_path(__file__, "interruption-matrix")
     return write_svg(dest, svg, theme=theme)
@@ -483,7 +494,12 @@ def make_interruption_matrix(
 
 def main() -> None:
     """Render the interruption matrix to SVG from the command line."""
-    render_cli(__file__, "interruption-matrix", build_svg, description="Render the 'Qui coupe qui ?' interruption matrix.")
+    render_cli(
+        __file__,
+        "interruption-matrix",
+        build_svg,
+        description="Render the 'Qui coupe qui ?' interruption matrix.",
+    )
 
 
 if __name__ == "__main__":

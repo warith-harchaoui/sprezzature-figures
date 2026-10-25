@@ -47,10 +47,16 @@ def _make_demo_data() -> List[Dict[str, Any]]:
         close_p = max(1.0, open_p + drift)
         high_p = max(open_p, close_p) + abs(rng.gauss(0, 1.2))
         low_p = min(open_p, close_p) - abs(rng.gauss(0, 1.2))
-        rows.append({
-            "day": day, "open": round(open_p, 2), "close": round(close_p, 2),
-            "high": round(high_p, 2), "low": round(low_p, 2), "up": close_p >= open_p,
-        })
+        rows.append(
+            {
+                "day": day,
+                "open": round(open_p, 2),
+                "close": round(close_p, 2),
+                "high": round(high_p, 2),
+                "low": round(low_p, 2),
+                "up": close_p >= open_p,
+            }
+        )
         price = close_p
     return rows
 
@@ -135,20 +141,24 @@ def build_svg(
             return plot_y + plot_h - (v - (v_min - pad)) / ((v_max + pad) - (v_min - pad)) * plot_h
 
     parts: List[str] = []
-    parts.append(svg_open(width, height, "candle-title", "candle-desc", font_family=chrome_stack_for_theme(theme)))
+    parts.append(
+        svg_open(
+            width, height, "candle-title", "candle-desc", font_family=chrome_stack_for_theme(theme)
+        )
+    )
     parts.append(f'<title id="candle-title">{xml_escape(title)}</title>')
     n_up = sum(1 for r in rows if r["up"])
     parts.append(
         f'<desc id="candle-desc">Candlestick chart of {n} periods, {n_up} up and '
-        f'{n - n_up} down. Hover or focus a candle for its exact OHLC values.</desc>'
+        f"{n - n_up} down. Hover or focus a candle for its exact OHLC values.</desc>"
     )
     parts.append(
         "<style>"
         ".candle{transition:opacity .15s ease;}"
         ".candle:hover,.candle:focus{opacity:.72;outline:none;}"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        + foreground_tip_css(n) +
-        "@media (prefers-reduced-motion: reduce){.candle{transition:none;}"
+        + foreground_tip_css(n)
+        + "@media (prefers-reduced-motion: reduce){.candle{transition:none;}"
         ".tip{transition:none}}"
         "</style>"
     )
@@ -157,7 +167,9 @@ def build_svg(
         f'<text x="40" y="46" font-size="24" font-weight="700" fill="{INK}" '
         f'letter-spacing="-0.3">{xml_escape(title)}</text>'
     )
-    parts.append(f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>')
+    parts.append(
+        f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>'
+    )
 
     # ---- y-axis gridlines ----
     if log_y:
@@ -170,7 +182,9 @@ def build_svg(
         # outside the plot rectangle.
         y_lo_pad, y_hi_pad = v_min - pad, v_max + pad
         y_gridline_vals = [
-            t for t in nice_ticks_range(y_lo_pad, y_hi_pad, n=6) if y_lo_pad - 1e-9 <= t <= y_hi_pad + 1e-9
+            t
+            for t in nice_ticks_range(y_lo_pad, y_hi_pad, n=6)
+            if y_lo_pad - 1e-9 <= t <= y_hi_pad + 1e-9
         ]
     for val in y_gridline_vals:
         ty = y_for(val)
@@ -208,7 +222,7 @@ def build_svg(
             f"low {r['low']:.2f}, close {r['close']:.2f}"
         )
         parts.append(f'<g id="hit-{i}" class="candle hit" tabindex="0">')
-        parts.append(f'<title>{xml_escape(tip)}</title>')
+        parts.append(f"<title>{xml_escape(tip)}</title>")
         parts.append(
             f'<line x1="{cx:.1f}" y1="{y_high:.1f}" x2="{cx:.1f}" y2="{y_low:.1f}" '
             f'stroke="{color}" stroke-width="1.5"/>'
@@ -232,14 +246,19 @@ def build_svg(
         parts.append("</g>")
         tip_cards.append(
             tooltip_bubble(
-                cx, y_high - 12,
+                cx,
+                y_high - 12,
                 [
                     f"Day {r['day']}",
                     f"open {r['open']:.2f} — close {r['close']:.2f}",
                     f"high {r['high']:.2f} — low {r['low']:.2f}",
                 ],
-                anchor="middle", canvas_w=width, canvas_h=height,
-                ink=INK, secondary=SECONDARY, border=GRIDLINE,
+                anchor="middle",
+                canvas_w=width,
+                canvas_h=height,
+                ink=INK,
+                secondary=SECONDARY,
+                border=GRIDLINE,
                 elem_id=f"tip-{i}",
             )
         )
@@ -319,16 +338,28 @@ def make_candlestick(
     >>> p.exists()
     True
     """
-    svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
-                     mode=mode, accessibility=accessibility, x_label=x_label,
-                     y_label=y_label, log_y=log_y, theme=theme)
+    svg = build_svg(
+        data,
+        title=title,
+        subtitle=subtitle,
+        width=width,
+        height=height,
+        mode=mode,
+        accessibility=accessibility,
+        x_label=x_label,
+        y_label=y_label,
+        log_y=log_y,
+        theme=theme,
+    )
     dest = Path(out) if out else svg_example_path(__file__, "candlestick")
     return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:
     """CLI entry point: build the SVG and write it to disk."""
-    render_cli(__file__, "candlestick", build_svg, description="Generate an OHLC candlestick chart.")
+    render_cli(
+        __file__, "candlestick", build_svg, description="Generate an OHLC candlestick chart."
+    )
 
 
 if __name__ == "__main__":

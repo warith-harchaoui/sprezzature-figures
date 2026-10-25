@@ -214,7 +214,9 @@ def build_svg(
     )
 
     parts: List[str] = []
-    parts.append(svg_open(WIDTH, HEIGHT, "bub-title", "bub-desc", font_family=chrome_stack_for_theme(theme)))
+    parts.append(
+        svg_open(WIDTH, HEIGHT, "bub-title", "bub-desc", font_family=chrome_stack_for_theme(theme))
+    )
     parts.append(f'<title id="bub-title">{escape(title_txt)}</title>')
     parts.append(f'<desc id="bub-desc">{escape(desc_txt)}</desc>')
 
@@ -225,8 +227,7 @@ def build_svg(
         ".bubble:hover circle,.bubble:focus circle{stroke-width:2.4;}",
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}",
         foreground_tip_css(len(places)),
-        "@media (prefers-reduced-motion: reduce){.bubble{transition:none;}"
-        ".tip{transition:none}}",
+        "@media (prefers-reduced-motion: reduce){.bubble{transition:none;}.tip{transition:none}}",
     ]
     region_series = {f'circle[data-region="{reg}"]': col for reg, col in region_color.items()}
     css.append(os_adaptive_style(region_series, role="fill", forced=True))
@@ -238,7 +239,9 @@ def build_svg(
         f'<text x="40" y="46" font-size="24" font-weight="700" fill="{INK}" '
         f'letter-spacing="-0.3">{escape(title_txt)}</text>'
     )
-    parts.append(f'<text x="40" y="70" font-size="14" fill="{SUBINK}">{escape(subtitle_txt)}</text>')
+    parts.append(
+        f'<text x="40" y="70" font-size="14" fill="{SUBINK}">{escape(subtitle_txt)}</text>'
+    )
 
     # ---- y-axis gridlines + labels ----
     # Nice round tick values (see _scale.nice_ticks_range) instead of raw
@@ -258,7 +261,7 @@ def build_svg(
     parts.append(
         f'<text x="20" y="{plot_y + plot_h / 2:.1f}" font-size="13" fill="{INK}" '
         f'text-anchor="middle" transform="rotate(-90 20 {plot_y + plot_h / 2:.1f})">'
-        f'{escape(y_label)}</text>'
+        f"{escape(y_label)}</text>"
     )
 
     # ---- x-axis ticks + labels ----
@@ -314,22 +317,27 @@ def build_svg(
         )
         parts.append(
             f'<g id="hit-{i}" class="bubble hit" tabindex="0" role="img" aria-label="{escape(tip)}">'
-            f'<title>{escape(tip)}</title>'
+            f"<title>{escape(tip)}</title>"
             f'<circle data-region="{region}" cx="{cx:.1f}" cy="{cy:.1f}" r="{r:.1f}" '
             f'fill="{color}" fill-opacity="0.72" stroke="{color}" stroke-width="1.2"/>'
-            f'</g>'
+            f"</g>"
         )
         tip_cards.append(
             tooltip_bubble(
-                cx, cy - r - 12,
+                cx,
+                cy - r - 12,
                 [
                     f"{name} ({region})",
                     f"life expectancy {_fmt1(life)} yrs",
                     f"GDP per capita ${gdp:.0f}k",
                     f"population {_fmt1(pop)}M",
                 ],
-                anchor="middle", canvas_w=WIDTH, canvas_h=HEIGHT,
-                ink=INK, secondary=SUBINK, border=GRIDLINE,
+                anchor="middle",
+                canvas_w=WIDTH,
+                canvas_h=HEIGHT,
+                ink=INK,
+                secondary=SUBINK,
+                border=GRIDLINE,
                 elem_id=f"tip-{i}",
             )
         )
@@ -430,8 +438,18 @@ def make_bubble(
     True
     """
     _ = title
-    svg = build_svg(data, mode=mode, accessibility=accessibility,
-                     x_label=x_label, y_label=y_label, log_x=log_x, theme=theme, region_legend_title=region_legend_title, size_legend_title=size_legend_title, title=title or None)
+    svg = build_svg(
+        data,
+        mode=mode,
+        accessibility=accessibility,
+        x_label=x_label,
+        y_label=y_label,
+        log_x=log_x,
+        theme=theme,
+        region_legend_title=region_legend_title,
+        size_legend_title=size_legend_title,
+        title=title or None,
+    )
     dest = Path(out) if out else svg_example_path(__file__, "bubble")
     return write_svg(dest, svg, theme=theme)
 

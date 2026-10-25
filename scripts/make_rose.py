@@ -75,17 +75,27 @@ _CY: float = 500.0
 _R_MAX: float = 335.0
 
 #: House-style inks.
-_INK: str = "#1D1D1F"      # primary text
-_SUBTLE: str = "#6E6E73"   # secondary text
-_GRID: str = "#E5E5EA"     # rings + spokes
-_BG: str = "#FFFFFF"       # background
-_FOCUS: str = "#0A4DA0"    # focus-ring blue
+_INK: str = "#1D1D1F"  # primary text
+_SUBTLE: str = "#6E6E73"  # secondary text
+_GRID: str = "#E5E5EA"  # rings + spokes
+_BG: str = "#FFFFFF"  # background
+_FOCUS: str = "#0A4DA0"  # focus-ring blue
 
 #: The twelve months of Nightingale's first Crimean year, April 1854
 #: through March 1855, in the order they sweep clockwise from the top.
 _MONTHS: List[str] = [
-    "Apr", "May", "Jun", "Jul", "Aug", "Sep",
-    "Oct", "Nov", "Dec", "Jan", "Feb", "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+    "Jan",
+    "Feb",
+    "Mar",
 ]
 
 #: Month index (into ``_MONTHS``) where the sanitary commission's work
@@ -166,18 +176,18 @@ def _dataset() -> List[List[float]]:
     """
     # disease, wounds, other  — annual rate per 1,000, per month.
     grid = [
-        [5.0, 0.0, 5.0],       # Apr 1854
-        [9.5, 0.0, 6.4],       # May
-        [17.5, 0.0, 8.2],      # Jun
-        [23.0, 0.0, 11.0],     # Jul
-        [30.0, 0.7, 12.0],     # Aug
-        [30.7, 3.6, 8.5],      # Sep
-        [63.0, 3.0, 6.0],      # Oct
-        [95.0, 6.0, 8.0],      # Nov
-        [120.0, 8.5, 8.0],     # Dec
-        [144.0, 9.0, 11.0],    # Jan 1855  (the deadliest month)
-        [96.0, 6.0, 9.5],      # Feb
-        [54.0, 3.5, 7.0],      # Mar
+        [5.0, 0.0, 5.0],  # Apr 1854
+        [9.5, 0.0, 6.4],  # May
+        [17.5, 0.0, 8.2],  # Jun
+        [23.0, 0.0, 11.0],  # Jul
+        [30.0, 0.7, 12.0],  # Aug
+        [30.7, 3.6, 8.5],  # Sep
+        [63.0, 3.0, 6.0],  # Oct
+        [95.0, 6.0, 8.0],  # Nov
+        [120.0, 8.5, 8.0],  # Dec
+        [144.0, 9.0, 11.0],  # Jan 1855  (the deadliest month)
+        [96.0, 6.0, 9.5],  # Feb
+        [54.0, 3.5, 7.0],  # Mar
     ]
     return grid
 
@@ -257,9 +267,7 @@ def _polar(cx: float, cy: float, r: float, angle_deg: float) -> Tuple[float, flo
     return point_on_circle(cx, cy, r, theta)
 
 
-def _annular_sector(
-    cx: float, cy: float, r0: float, r1: float, a0: float, a1: float
-) -> str:
+def _annular_sector(cx: float, cy: float, r0: float, r1: float, a0: float, a1: float) -> str:
     """Build an SVG path for a filled annular sector (a stacked wedge).
 
     Parameters
@@ -335,8 +343,8 @@ def build_svg(
     causes = _causes(accessibility, theme=theme)
     grid = _grid_from_rows(data if data else DEMO_DATA, causes)
     n_month = len(_MONTHS)
-    sector_deg = 360.0 / n_month     # 30° per month
-    pad_deg = 1.6                    # hairline gap so petals read as spokes
+    sector_deg = 360.0 / n_month  # 30° per month
+    pad_deg = 1.6  # hairline gap so petals read as spokes
 
     totals = [sum(row) for row in grid]
     r_data_max = max(totals)
@@ -345,18 +353,22 @@ def build_svg(
     # area), so the scale is linear in the rate. Round the axis up to a
     # friendly tick and leave headroom so the tallest petal never kisses
     # the outer label ring.
-    ring_step = 50.0                                    # rate per ring
+    ring_step = 50.0  # rate per ring
     axis_max = math.ceil((r_data_max * 1.02) / ring_step) * ring_step
-    scale = _R_MAX / axis_max                            # px per unit rate
+    scale = _R_MAX / axis_max  # px per unit rate
 
     parts: List[str] = []
 
     # ---- header + accessibility ----
     peak_idx = totals.index(max(totals))
-    parts.append(svg_open(_WIDTH, _HEIGHT, "rose-title", "rose-desc", font_family=chrome_stack_for_theme(theme)))
+    parts.append(
+        svg_open(
+            _WIDTH, _HEIGHT, "rose-title", "rose-desc", font_family=chrome_stack_for_theme(theme)
+        )
+    )
     parts.append(
         '<title id="rose-title">Nightingale rose: preventable disease, not '
-        'battle, killed most soldiers in the Crimean War</title>'
+        "battle, killed most soldiers in the Crimean War</title>"
     )
     desc = (
         "Coxcomb (polar-area) chart of army mortality in the Crimean War, "
@@ -382,20 +394,22 @@ def build_svg(
             f"svg:has(.cause-{k}:hover) .cause-{k}, "
             f"svg:has(.cause-{k}:focus) .cause-{k} {{ opacity: 1; }}"
         )
-    style_rows.extend([
-        ".legend-row { cursor: pointer; }",
-        f".legend-row:focus {{ outline: 3px solid {_FOCUS}; outline-offset: 3px; }}",
-        ".wedge:focus { outline: none; }",
-        f".wedge:focus {{ stroke: {_FOCUS}; stroke-width: 2.4; }}",
-        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}",
-        "".join(
-            foreground_tip_css(
-                len(_MONTHS), mark_prefix=f"wedge-{c_idx}", tip_prefix=f"tip-wedge-{c_idx}"
-            )
-            for c_idx in range(len(causes))
-        ),
-        "@media (prefers-reduced-motion: reduce) { .wedge { transition: none; } .tip{transition:none} }",
-    ])
+    style_rows.extend(
+        [
+            ".legend-row { cursor: pointer; }",
+            f".legend-row:focus {{ outline: 3px solid {_FOCUS}; outline-offset: 3px; }}",
+            ".wedge:focus { outline: none; }",
+            f".wedge:focus {{ stroke: {_FOCUS}; stroke-width: 2.4; }}",
+            ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}",
+            "".join(
+                foreground_tip_css(
+                    len(_MONTHS), mark_prefix=f"wedge-{c_idx}", tip_prefix=f"tip-wedge-{c_idx}"
+                )
+                for c_idx in range(len(causes))
+            ),
+            "@media (prefers-reduced-motion: reduce) { .wedge { transition: none; } .tip{transition:none} }",
+        ]
+    )
     # OS-adaptive overrides (additive; every rule lives inside an @media block,
     # so the default render is byte-for-byte unchanged). The three causes reuse
     # their existing ``.cause-<key>`` classes as hooks: under prefers-contrast
@@ -425,21 +439,21 @@ def build_svg(
     # ---- title + subtitle ----
     # The headline the figure writes about its own data, used only when
     # the caller supplies none.
-    title = title or 'Most of the dead never saw a battlefield'
+    title = title or "Most of the dead never saw a battlefield"
     parts.append(
         f'<text x="56" y="66" font-size="33" font-weight="700" '
         f'fill="{_INK}">{xml_escape(title)}</text>'
     )
     parts.append(
         f'<text x="56" y="100" font-size="18" fill="{_SUBTLE}">'
-        f'Florence Nightingale&#8217;s coxcomb &#183; British Army mortality '
-        f'in the East &#183; annual deaths per 1,000 men, by cause &#183; '
-        f'Apr 1854&#8211;Mar 1855</text>'
+        f"Florence Nightingale&#8217;s coxcomb &#183; British Army mortality "
+        f"in the East &#183; annual deaths per 1,000 men, by cause &#183; "
+        f"Apr 1854&#8211;Mar 1855</text>"
     )
 
     # ---- polar grid: concentric rings + radial tick labels ----
     n_rings = int(round(axis_max / ring_step))
-    parts.append('<g>')
+    parts.append("<g>")
     for ring_i in range(1, n_rings + 1):
         r = ring_i * ring_step * scale
         parts.append(
@@ -462,10 +476,10 @@ def build_svg(
             f'font-family="Roboto Mono, monospace" fill="{_SUBTLE}" '
             f'text-anchor="middle">{label}</text>'
         )
-    parts.append('</g>')
+    parts.append("</g>")
 
     # ---- month spokes + labels around the rim ----
-    parts.append('<g>')
+    parts.append("<g>")
     for i in range(n_month):
         bearing = i * sector_deg
         x_out, y_out = _polar(_CX, _CY, _R_MAX, bearing)
@@ -496,7 +510,7 @@ def build_svg(
             f'font-weight="{weight}" fill="{fill}" text-anchor="{anchor}" '
             f'dominant-baseline="middle">{month}{year}</text>'
         )
-    parts.append('</g>')
+    parts.append("</g>")
 
     # ---- petals: one stacked wedge per month, grouped by cause ----
     # Emitting cause-by-cause lets one CSS rule highlight a cause across
@@ -524,10 +538,7 @@ def build_svg(
             end = (m_idx + 1) * sector_deg - pad_deg / 2.0
             path = _annular_sector(_CX, _CY, r0, r1, start, end)
             year = " 1855" if month in ("Jan", "Feb", "Mar") else " 1854"
-            tip = (
-                f'{_xml(month)}{year} &#183; {_xml(str(cause["label"]))}: '
-                f'{v:.0f} per 1,000'
-            )
+            tip = f"{_xml(month)}{year} &#183; {_xml(str(cause['label']))}: {v:.0f} per 1,000"
             share = 100.0 * v / totals[m_idx] if totals[m_idx] else 0.0
             parts.append(
                 f'<path id="wedge-{c_idx}-{m_idx}" class="wedge hit cause-{k}" tabindex="0" role="listitem" '
@@ -540,21 +551,27 @@ def build_svg(
             wx, wy = _polar(_CX, _CY, wedge_mid_r, wedge_mid_a)
             cause_tips.append(
                 tooltip_bubble(
-                    wx, wy - 14,
-                    [f"{month}{year}", str(cause["label"]),
-                     f"{v:.0f} per 1,000 ({share:.0f}% of month)"],
-                    anchor="middle", canvas_w=_WIDTH, canvas_h=_HEIGHT,
-                    ink=_INK, secondary=_SUBTLE, border=_GRID,
+                    wx,
+                    wy - 14,
+                    [
+                        f"{month}{year}",
+                        str(cause["label"]),
+                        f"{v:.0f} per 1,000 ({share:.0f}% of month)",
+                    ],
+                    anchor="middle",
+                    canvas_w=_WIDTH,
+                    canvas_h=_HEIGHT,
+                    ink=_INK,
+                    secondary=_SUBTLE,
+                    border=_GRID,
                     elem_id=f"tip-wedge-{c_idx}-{m_idx}",
                 )
             )
         parts.extend(cause_tips)
-        parts.append('</g>')
+        parts.append("</g>")
 
     # ---- centre dot so the origin reads as a hub, not a gap ----
-    parts.append(
-        f'<circle cx="{_CX}" cy="{_CY}" r="3.4" fill="{_INK}"/>'
-    )
+    parts.append(f'<circle cx="{_CX}" cy="{_CY}" r="3.4" fill="{_INK}"/>')
 
     # ---- reading annotation on the peak petal ----
     # A short leader from the deadliest wedge out to an ink note, so the
@@ -572,9 +589,7 @@ def build_svg(
         f'y2="{ny - 30:.1f}" stroke="{_INK}" stroke-width="1.4" '
         f'stroke-opacity="0.5"/>'
     )
-    parts.append(
-        f'<circle cx="{px:.1f}" cy="{py:.1f}" r="4" fill="{_INK}"/>'
-    )
+    parts.append(f'<circle cx="{px:.1f}" cy="{py:.1f}" r="4" fill="{_INK}"/>')
     parts.append(
         f'<text x="{nx:.1f}" y="{ny:.1f}" font-size="18" font-weight="700" '
         f'fill="{_INK}">January 1855 was the deadliest month</text>'
@@ -582,7 +597,7 @@ def build_svg(
     parts.append(
         f'<text x="{nx:.1f}" y="{ny + 23:.1f}" font-size="15" '
         f'fill="{_SUBTLE}">{peak_disease:.0f} of every 1,000 men were lost to '
-        f'disease alone, against {grid[peak_idx][1]:.0f} to wounds</text>'
+        f"disease alone, against {grid[peak_idx][1]:.0f} to wounds</text>"
     )
 
     # ---- legend (causes, right of the rose) ----
@@ -605,25 +620,24 @@ def build_svg(
         parts.append(
             f'<g class="cause cause-{k} legend-row" tabindex="0" '
             f'role="listitem" transform="translate(0,{cy:.1f})">'
-            f'<title>{_xml(str(cause["label"]))}: {pct:.0f}% of the '
+            f"<title>{_xml(str(cause['label']))}: {pct:.0f}% of the "
             f"year&#8217;s deaths</title>"
         )
         parts.append(
-            f'<rect class="cause-{k}" x="0" y="0" width="30" height="30" '
-            f'rx="8" fill="{color}"/>'
+            f'<rect class="cause-{k}" x="0" y="0" width="30" height="30" rx="8" fill="{color}"/>'
         )
         parts.append(
             f'<text x="44" y="14" font-size="19" font-weight="600" '
             f'fill="{_INK}" dominant-baseline="middle">'
-            f'{_xml(str(cause["label"]))}</text>'
+            f"{_xml(str(cause['label']))}</text>"
         )
         parts.append(
             f'<text x="44" y="36" font-size="15" '
             f'font-family="Roboto Mono, monospace" fill="{_SUBTLE}" '
             f'dominant-baseline="middle">{pct:.0f}% of all deaths</text>'
         )
-        parts.append('</g>')
-    parts.append('</g>')
+        parts.append("</g>")
+    parts.append("</g>")
 
     # ---- how-to-read note under the legend ----
     note_y = legend_y + len(causes) * row_h + 8.0
@@ -645,7 +659,7 @@ def build_svg(
         )
 
     parts.append(fullscreen_control(_WIDTH, _HEIGHT, mode))
-    parts.append('</svg>')
+    parts.append("</svg>")
     return "\n".join(parts)
 
 
@@ -687,7 +701,14 @@ def make_rose(
         Absolute path to the written SVG file.
     """
     _ = title
-    svg = build_svg(data, legend_title=legend_title, mode=mode, accessibility=accessibility, theme=theme, title=title or None)
+    svg = build_svg(
+        data,
+        legend_title=legend_title,
+        mode=mode,
+        accessibility=accessibility,
+        theme=theme,
+        title=title or None,
+    )
     dest = Path(out) if out else svg_example_path(__file__, "rose")
     return write_svg(dest, svg, theme=theme)
 

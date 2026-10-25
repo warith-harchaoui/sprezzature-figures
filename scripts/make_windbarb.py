@@ -80,25 +80,25 @@ _MAP_W: float = 1052.0
 _MAP_H: float = 748.0
 
 #: House-style inks.
-_INK: str = "#1D1D1F"        # primary text
-_SUBTLE: str = "#6E6E73"     # secondary text
-_BG: str = "#FFFFFF"         # background
-_OCEAN: str = "#F2F7FB"      # faint ocean fill
-_LAND: str = "#ECECEF"       # faint land silhouette
+_INK: str = "#1D1D1F"  # primary text
+_SUBTLE: str = "#6E6E73"  # secondary text
+_BG: str = "#FFFFFF"  # background
+_OCEAN: str = "#F2F7FB"  # faint ocean fill
+_LAND: str = "#ECECEF"  # faint land silhouette
 _LAND_EDGE: str = "#DADAE0"  # land hairline
-_GRAT: str = "#E9EEF3"       # graticule grid
-_COAST: str = "#C7CDD6"      # coastline stroke
+_GRAT: str = "#E9EEF3"  # graticule grid
+_COAST: str = "#C7CDD6"  # coastline stroke
 
 #: Barb staff length, in pixels. Long enough to carry a full tally of
 #: pennants + barbs without crowding neighbours.
 _STAFF: float = 46.0
 
 #: Tick geometry along the staff (upwind end).
-_BARB_LEN: float = 20.0      # full-barb tick length
-_HALF_LEN: float = 11.0      # half-barb tick length
-_TICK_GAP: float = 6.6       # spacing between successive ticks
-_PENNANT_LEN: float = 22.0   # pennant (triangle) reach along staff
-_BARB_ANGLE: float = 118.0   # tick angle relative to the staff, degrees
+_BARB_LEN: float = 20.0  # full-barb tick length
+_HALF_LEN: float = 11.0  # half-barb tick length
+_TICK_GAP: float = 6.6  # spacing between successive ticks
+_PENNANT_LEN: float = 22.0  # pennant (triangle) reach along staff
+_BARB_ANGLE: float = 118.0  # tick angle relative to the staff, degrees
 
 
 # ------------------------------------------------------------------
@@ -115,34 +115,34 @@ _BARB_ANGLE: float = 118.0   # tick angle relative to the staff, degrees
 # ``(name, lon, lat, dir_from_deg, speed_kt, label_side)``
 _STATIONS: List[Tuple[Any, ...]] = [
     # --- Cold, gusty NW gale BEHIND the front (upper-left / inland) ---
-    ("Buffalo",       -78.87, 42.89, 300, 45, "L"),
-    ("Rochester",     -77.61, 43.16, 305, 40, "L"),
-    ("Syracuse",      -76.15, 43.05, 310, 35, "L"),
-    ("Albany",        -73.76, 42.65, 315, 40, "L"),
-    ("Scranton",      -75.66, 41.41, 310, 30, "L"),
-    ("Pittsburgh",    -79.98, 40.44, 300, 35, "L"),
-    ("Binghamton",    -75.91, 42.10, 310, 30, "L"),
-    ("Harrisburg",    -76.88, 40.27, 305, 25, "L"),
-    ("Montreal",      -73.57, 45.50, 320, 50, "L"),
-    ("Burlington",    -73.21, 44.48, 320, 45, "L"),
+    ("Buffalo", -78.87, 42.89, 300, 45, "L"),
+    ("Rochester", -77.61, 43.16, 305, 40, "L"),
+    ("Syracuse", -76.15, 43.05, 310, 35, "L"),
+    ("Albany", -73.76, 42.65, 315, 40, "L"),
+    ("Scranton", -75.66, 41.41, 310, 30, "L"),
+    ("Pittsburgh", -79.98, 40.44, 300, 35, "L"),
+    ("Binghamton", -75.91, 42.10, 310, 30, "L"),
+    ("Harrisburg", -76.88, 40.27, 305, 25, "L"),
+    ("Montreal", -73.57, 45.50, 320, 50, "L"),
+    ("Burlington", -73.21, 44.48, 320, 45, "L"),
     # --- Right AT / just behind the front: the wind-shift line ---
-    ("Hartford",      -72.69, 41.76, 255, 25, "R"),
-    ("New York",      -74.01, 40.71, 285, 25, "L"),
-    ("Philadelphia",  -75.16, 39.95, 295, 20, "L"),
+    ("Hartford", -72.69, 41.76, 255, 25, "R"),
+    ("New York", -74.01, 40.71, 285, 25, "L"),
+    ("Philadelphia", -75.16, 39.95, 295, 20, "L"),
     # --- Warm sector, at the coast, ahead of the front ---
-    ("Boston",        -71.06, 42.36, 215, 30, "R"),
-    ("Worcester",     -71.80, 42.26, 210, 20, "R"),
+    ("Boston", -71.06, 42.36, 215, 30, "R"),
+    ("Worcester", -71.80, 42.26, 210, 20, "R"),
     # --- Warm, humid SW flow AHEAD of the front (offshore / SE) ---
-    ("Portland ME",   -70.26, 43.66, 205, 25, "R"),
-    ("Nantucket",     -70.10, 41.28, 210, 30, "R"),
+    ("Portland ME", -70.26, 43.66, 205, 25, "R"),
+    ("Nantucket", -70.10, 41.28, 210, 30, "R"),
     ("Atlantic City", -74.42, 39.36, 215, 25, "R"),
-    ("Norfolk",       -76.29, 36.85, 220, 20, "R"),
-    ("Cape May",      -74.91, 38.94, 215, 20, "R"),
-    ("Buoy 44008",    -69.25, 40.50, 205, 35, "R"),   # offshore mooring
-    ("Buoy 44025",    -73.16, 40.25, 210, 30, "R"),
-    ("Buoy 44017",    -72.05, 40.69, 205, 30, "R"),
-    ("Buoy 44066",    -72.64, 39.62, 205, 40, "R"),
-    ("Buoy 44014",    -74.84, 36.61, 220, 25, "R"),
+    ("Norfolk", -76.29, 36.85, 220, 20, "R"),
+    ("Cape May", -74.91, 38.94, 215, 20, "R"),
+    ("Buoy 44008", -69.25, 40.50, 205, 35, "R"),  # offshore mooring
+    ("Buoy 44025", -73.16, 40.25, 210, 30, "R"),
+    ("Buoy 44017", -72.05, 40.69, 205, 30, "R"),
+    ("Buoy 44066", -72.64, 39.62, 205, 40, "R"),
+    ("Buoy 44014", -74.84, 36.61, 220, 25, "R"),
 ]
 
 #: Row records: one per station, with ``name``, ``lon``, ``lat``,
@@ -157,16 +157,16 @@ DEMO_DATA: List[Dict[str, Any]] = [
 #: sits on ("L" / "R"). Kept sparse so the field does not choke on text;
 #: these anchor the story (behind / at / ahead of the front).
 _LABELLED: Dict[str, str] = {
-    "Montreal":     "L",   # up-left staff -> drop the name below-left, clear
-    "Buffalo":      "L",
-    "Albany":       "L",
-    "Pittsburgh":   "L",
-    "Boston":       "R",   # warm barb leans down-right -> name to the open E
-    "New York":     "L",   # straddles the front; the cold (W) side is open
+    "Montreal": "L",  # up-left staff -> drop the name below-left, clear
+    "Buffalo": "L",
+    "Albany": "L",
+    "Pittsburgh": "L",
+    "Boston": "R",  # warm barb leans down-right -> name to the open E
+    "New York": "L",  # straddles the front; the cold (W) side is open
     "Philadelphia": "L",
-    "Nantucket":    "R",   # at the ocean edge -> name out over the water
-    "Norfolk":      "R",
-    "Buoy 44066":   "R",
+    "Nantucket": "R",  # at the ocean edge -> name out over the water
+    "Norfolk": "R",
+    "Buoy 44066": "R",
 }
 
 #: The cold-front polyline as (lon, lat) control points, sweeping from
@@ -187,33 +187,33 @@ _FRONT: List[Tuple[float, float]] = [
 #: enough to ground the barbs on a recognisable coast without a heavy
 #: basemap dependency. Runs from Maine down to the Chesapeake.
 _COASTLINE: List[Tuple[float, float]] = [
-    (-70.0, 43.7),   # Casco Bay, ME
+    (-70.0, 43.7),  # Casco Bay, ME
     (-70.6, 43.1),
-    (-70.8, 42.9),   # NH coast
-    (-70.9, 42.5),   # Cape Ann
+    (-70.8, 42.9),  # NH coast
+    (-70.9, 42.5),  # Cape Ann
     (-70.7, 42.3),
-    (-71.0, 42.3),   # Boston
-    (-70.6, 41.9),   # outer Cape
-    (-70.0, 41.7),   # Cape Cod tip
+    (-71.0, 42.3),  # Boston
+    (-70.6, 41.9),  # outer Cape
+    (-70.0, 41.7),  # Cape Cod tip
     (-70.3, 41.6),
     (-70.9, 41.6),
-    (-71.4, 41.5),   # RI south shore
-    (-72.1, 41.3),   # CT / Long Island Sound
+    (-71.4, 41.5),  # RI south shore
+    (-72.1, 41.3),  # CT / Long Island Sound
     (-72.9, 41.3),
-    (-73.2, 41.0),   # eastern Long Island
+    (-73.2, 41.0),  # eastern Long Island
     (-72.0, 41.0),
-    (-73.0, 40.6),   # south shore LI
+    (-73.0, 40.6),  # south shore LI
     (-73.8, 40.6),
-    (-74.0, 40.5),   # NY Harbor
-    (-74.1, 40.1),   # NJ shore
-    (-74.4, 39.4),   # Atlantic City
-    (-74.9, 38.9),   # Cape May
-    (-75.3, 38.4),   # Delaware Bay mouth
+    (-74.0, 40.5),  # NY Harbor
+    (-74.1, 40.1),  # NJ shore
+    (-74.4, 39.4),  # Atlantic City
+    (-74.9, 38.9),  # Cape May
+    (-75.3, 38.4),  # Delaware Bay mouth
     (-75.1, 38.0),
-    (-75.5, 37.6),   # Delmarva
+    (-75.5, 37.6),  # Delmarva
     (-75.9, 37.0),
-    (-76.0, 36.9),   # Chesapeake mouth
-    (-76.3, 36.8),   # Norfolk
+    (-76.0, 36.9),  # Chesapeake mouth
+    (-76.3, 36.8),  # Norfolk
 ]
 
 #: Longitude / latitude window drawn (a little padding around the data).
@@ -250,7 +250,9 @@ def _fit() -> Tuple[float, float, float, float]:
     return scale, offset_x, offset_y, lon_scale
 
 
-def _to_screen(lon: float, lat: float, fit: Tuple[float, float, float, float]) -> Tuple[float, float]:
+def _to_screen(
+    lon: float, lat: float, fit: Tuple[float, float, float, float]
+) -> Tuple[float, float]:
     """Project one ``(lon, lat)`` to screen pixels (north up)."""
     scale, offset_x, offset_y, lon_scale = fit
     sx = offset_x + (lon - _LON_MIN) * lon_scale * scale
@@ -473,17 +475,19 @@ def build_svg(
         A complete, standalone SVG document.
     """
     palette = load_palette(accessibility, theme=theme)
-    cold = palette["Blue"]     # post-frontal NW gale (cold airmass)
-    warm = palette["Orange"]   # pre-frontal SW flow (warm airmass)
+    cold = palette["Blue"]  # post-frontal NW gale (cold airmass)
+    warm = palette["Orange"]  # pre-frontal SW flow (warm airmass)
     front_col = palette["Blue"]
 
     fit = _fit()
 
     parts: List[str] = []
-    parts.append(svg_open(_WIDTH, _HEIGHT, "wb-title", "wb-desc", font_family=chrome_stack_for_theme(theme)))
+    parts.append(
+        svg_open(_WIDTH, _HEIGHT, "wb-title", "wb-desc", font_family=chrome_stack_for_theme(theme))
+    )
     parts.append(
         '<title id="wb-title">A cold front sweeps the Northeast coast — '
-        'wind barbs pivot 180° and freshen to a gale behind it</title>'
+        "wind barbs pivot 180° and freshen to a gale behind it</title>"
     )
     desc = (
         "Synoptic surface wind-barb station plot over the US Northeast "
@@ -535,9 +539,7 @@ def build_svg(
     contrast_css = (
         os_adaptive_style({warm_barb: warm, cold_barb: cold}, role="both")
         + "\n"
-        + os_adaptive_style(
-            {"text.air-warm": warm, "text.air-cold": cold}, role="fill"
-        )
+        + os_adaptive_style({"text.air-warm": warm, "text.air-cold": cold}, role="fill")
     )
     # Additive OS dark-mode block. The chart's near-white base layers — ocean
     # panel (#F2F7FB), land silhouette (#ECECEF/#DADAE0), coastline (#C7CDD6) and
@@ -565,15 +567,15 @@ def build_svg(
     # ---- title + subtitle ----
     # The headline the figure writes about its own data, used only when
     # the caller supplies none.
-    title = title or 'A cold front swings the wind hard around the coast'
+    title = title or "A cold front swings the wind hard around the coast"
     parts.append(
         f'<text x="{_MAP_X + 4:.1f}" y="70" font-size="39" font-weight="700" '
         f'fill="{_INK}">{xml_escape(title)}</text>'
     )
     parts.append(
         f'<text x="{_MAP_X + 4:.1f}" y="110" font-size="21" fill="{_SUBTLE}">'
-        f'Surface analysis · warm southwesterly ahead of the front, a cold '
-        f'northwesterly gale filling in behind — barb ticks tally knots</text>'
+        f"Surface analysis · warm southwesterly ahead of the front, a cold "
+        f"northwesterly gale filling in behind — barb ticks tally knots</text>"
     )
 
     # ---- ocean panel + graticule ----
@@ -594,7 +596,7 @@ def build_svg(
         p0 = _to_screen(grat_lon, _LAT_MIN, fit)
         p1 = _to_screen(grat_lon, _LAT_MAX, fit)
         parts.append(f'<path d="M{p0[0]:.1f},{p0[1]:.1f} L{p1[0]:.1f},{p1[1]:.1f}"/>')
-    parts.append('</g>')
+    parts.append("</g>")
 
     # ---- land silhouette (coast filled to the west edge) ----
     # Build a closed land polygon: the coastline, then back along the map's
@@ -603,9 +605,7 @@ def build_svg(
     land_d = "M" + " L".join(f"{x:.1f},{y:.1f}" for x, y in coast_pts)
     wx = ox + 2.0
     land_d += f" L{wx:.1f},{coast_pts[-1][1]:.1f} L{wx:.1f},{coast_pts[0][1]:.1f} Z"
-    parts.append(
-        f'<path d="{land_d}" fill="{_LAND}" stroke="none" clip-path="inset(0)"/>'
-    )
+    parts.append(f'<path d="{land_d}" fill="{_LAND}" stroke="none" clip-path="inset(0)"/>')
     # Crisp coastline stroke on top.
     coast_d = "M" + " L".join(f"{x:.1f},{y:.1f}" for x, y in coast_pts)
     parts.append(
@@ -634,31 +634,33 @@ def build_svg(
         # here — position, staff direction and the airmass call-outs already
         # separate the two sectors).
         air_cls = "warm" if col == warm else "cold"
-        stn_tip = (
-            f'{_xml(name)}: {rounded} kt from {_dir_name(dir_from)} '
-            f'({int(dir_from)}°)'
-        )
+        stn_tip = f"{_xml(name)}: {rounded} kt from {_dir_name(dir_from)} ({int(dir_from)}°)"
         parts.append(
             f'<g class="stn air-{air_cls}" tabindex="0" role="listitem" '
             f'aria-label="{stn_tip}">'
             f'<circle id="stnhit-{stn_i}" class="hit" cx="{cx:.1f}" cy="{cy:.1f}" r="18" '
             f'fill="transparent"/>'
-            f'{_barb_glyph(cx, cy, dir_from, speed, col)}'
-            f'</g>'
+            f"{_barb_glyph(cx, cy, dir_from, speed, col)}"
+            f"</g>"
         )
         bubbles.append(
             tooltip_bubble(
-                cx, cy - 22,
+                cx,
+                cy - 22,
                 [name, f"{rounded} kt from {_dir_name(dir_from)}", f"{int(dir_from)}°"],
-                anchor="middle", canvas_w=_WIDTH, canvas_h=_HEIGHT,
-                ink=_INK, secondary=_SUBTLE, border="#E5E5EA",
+                anchor="middle",
+                canvas_w=_WIDTH,
+                canvas_h=_HEIGHT,
+                ink=_INK,
+                secondary=_SUBTLE,
+                border="#E5E5EA",
                 elem_id=f"stntip-{stn_i}",
             )
         )
         if name in _LABELLED:
             label_parts.append(_station_label(name, cx, cy, _LABELLED[name], rounded))
-    parts.append('</g>')
-    parts.append('<g>' + "".join(label_parts) + '</g>')
+    parts.append("</g>")
+    parts.append("<g>" + "".join(label_parts) + "</g>")
 
     # ---- airmass call-outs on the map ----
     parts.extend(_airmass_labels(fit, warm, cold))
@@ -670,13 +672,13 @@ def build_svg(
     parts.append(
         f'<text x="{_MAP_X + 4:.1f}" y="{_HEIGHT - 22}" font-size="14" '
         f'fill="{_SUBTLE}">Staff points from the wind · pennant = 50 kt, '
-        f'full barb = 10 kt, half barb = 5 kt'
-        f' · Surface analysis, US Northeast seaboard</text>'
+        f"full barb = 10 kt, half barb = 5 kt"
+        f" · Surface analysis, US Northeast seaboard</text>"
     )
 
     parts.extend(bubbles)
     parts.append(fullscreen_control(_WIDTH, _HEIGHT, mode))
-    parts.append('</svg>')
+    parts.append("</svg>")
     return "\n".join(parts)
 
 
@@ -689,9 +691,9 @@ def _dir_name(deg: float) -> str:
 #: Vertical clearance the label block keeps below the station dot, and the
 #: horizontal nudge away from the dot. Both are constant across stations so
 #: every call-out reads at the same distance from its barb.
-_LABEL_DY: float = 22.0      # dot-centre to name baseline
-_LABEL_DX: float = 12.0      # horizontal nudge away from the dot
-_LABEL_LINE: float = 17.0    # name baseline to speed baseline
+_LABEL_DY: float = 22.0  # dot-centre to name baseline
+_LABEL_DX: float = 12.0  # horizontal nudge away from the dot
+_LABEL_LINE: float = 17.0  # name baseline to speed baseline
 
 
 def _station_label(name: str, cx: float, cy: float, side: str, rounded: int) -> str:
@@ -799,9 +801,7 @@ def _smooth_path(pts: List[Tuple[float, float]]) -> str:
         c1y = p1[1] + (p2[1] - p0[1]) / 6.0
         c2x = p2[0] - (p3[0] - p1[0]) / 6.0
         c2y = p2[1] - (p3[1] - p1[1]) / 6.0
-        d.append(
-            f"C{c1x:.1f},{c1y:.1f} {c2x:.1f},{c2y:.1f} {p2[0]:.1f},{p2[1]:.1f}"
-        )
+        d.append(f"C{c1x:.1f},{c1y:.1f} {c2x:.1f},{c2y:.1f} {p2[0]:.1f},{p2[1]:.1f}")
     return " ".join(d)
 
 
@@ -817,7 +817,7 @@ def _airmass_labels(fit: Tuple[float, float, float, float], warm: str, cold: str
     )
     out.append(
         f'<text x="{cx:.1f}" y="{cy + 22:.1f}" font-size="14" fill="{_SUBTLE}">'
-        f'post-frontal, 45–50 kt</text>'
+        f"post-frontal, 45–50 kt</text>"
     )
     # Warm airmass (ahead / SE, over water).
     wx, wy = _to_screen(-69.9, 37.4, fit)
@@ -834,8 +834,11 @@ def _airmass_labels(fit: Tuple[float, float, float, float], warm: str, cold: str
 
 
 def _legend(
-    warm: str, cold: str, front_col: str,
-    airmass_label: str = "Airmass", cold_front_label: str = "Cold front",
+    warm: str,
+    cold: str,
+    front_col: str,
+    airmass_label: str = "Airmass",
+    cold_front_label: str = "Cold front",
 ) -> List[str]:
     """Return the legend panel decoding the barb symbols and airmasses.
 
@@ -859,17 +862,17 @@ def _legend(
     )
     out.append(
         f'<text x="{lx:.1f}" y="{top + 50:.1f}" font-size="14" fill="{_SUBTLE}">'
-        f'Staff points from the wind; ticks tally the speed.</text>'
+        f"Staff points from the wind; ticks tally the speed.</text>"
     )
 
     # Three worked examples, each a barb glyph + its decoded value.
     examples = [
-        (5,  "one half barb", "5 kt"),
+        (5, "one half barb", "5 kt"),
         (25, "two full + one half", "25 kt"),
         (65, "pennant + full + half", "65 kt"),
     ]
     ey = top + 96.0
-    gx = lx + 46.0   # glyph centre x
+    gx = lx + 46.0  # glyph centre x
     for speed, breakdown, val in examples:
         # Draw the barb blowing from the west (staff to the left) so the
         # tally reads left-to-right for a Western reader. The staff sits at
@@ -979,8 +982,15 @@ def make_windbarb(
     Path
         Absolute path to the written SVG file.
     """
-    svg = build_svg(data, airmass_label=airmass_label, cold_front_label=cold_front_label,
-                     mode=mode, accessibility=accessibility, theme=theme, title=title or None)
+    svg = build_svg(
+        data,
+        airmass_label=airmass_label,
+        cold_front_label=cold_front_label,
+        mode=mode,
+        accessibility=accessibility,
+        theme=theme,
+        title=title or None,
+    )
     dest = Path(out) if out else svg_example_path(__file__, "windbarb")
     return write_svg(dest, svg, theme=theme)
 

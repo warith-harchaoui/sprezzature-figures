@@ -195,10 +195,19 @@ class ChartReading(BaseModel):
         default="",
         description="One sentence: the subject of the chart, as a reader would state it.",
     )
-    title: str = Field(default="", description="The title printed on the image, verbatim; empty if none.")
-    subtitle: str = Field(default="", description="The subtitle or standfirst printed on the image, verbatim; empty if none.")
-    x_label: str = Field(default="", description="The horizontal axis title as printed; empty if none.")
-    y_label: str = Field(default="", description="The vertical axis title as printed; empty if none.")
+    title: str = Field(
+        default="", description="The title printed on the image, verbatim; empty if none."
+    )
+    subtitle: str = Field(
+        default="",
+        description="The subtitle or standfirst printed on the image, verbatim; empty if none.",
+    )
+    x_label: str = Field(
+        default="", description="The horizontal axis title as printed; empty if none."
+    )
+    y_label: str = Field(
+        default="", description="The vertical axis title as printed; empty if none."
+    )
     suggested_title: str = Field(
         default="",
         description=(

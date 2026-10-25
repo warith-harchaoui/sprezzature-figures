@@ -54,18 +54,13 @@ from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, cast
 import numpy as np
 
 # Repo-relative default output — the one SVG artifact this figure ships.
-_DEFAULT_OUT = (
-    Path(__file__).resolve().parent.parent
-    / "assets"
-    / "svg-examples"
-    / "horizon.svg"
-)
+_DEFAULT_OUT = Path(__file__).resolve().parent.parent / "assets" / "svg-examples" / "horizon.svg"
 
 # House-style tokens (mirrors the house-style constants, kept literal so this
 # generator needs no import of the dataviz tier at build time).
-_INK = "#1D1D1F"        # primary text
+_INK = "#1D1D1F"  # primary text
 _SECONDARY = "#6E6E73"  # subtitle / secondary text
-_BG = "#FFFFFF"         # white ground
+_BG = "#FFFFFF"  # white ground
 _FONT = "Roboto, system-ui, sans-serif"
 _MONO = "Roboto Mono, ui-monospace, monospace"
 
@@ -73,9 +68,9 @@ _MONO = "Roboto Mono, ui-monospace, monospace"
 # ride a Blue ramp (calm → deep), negative ones a Red ramp (mirror-folded).
 # Within a horizon chart each *band* re-uses the row's baseline; the eye reads
 # a taller stack of bands as a bigger value, reinforced by deeper saturation.
-_POS_HUE = "#007AFF"    # Apple Blue  — above the row's own mean
-_NEG_HUE = "#FF3B30"    # Apple Red   — below the row's own mean
-_N_BANDS = 3            # bands per direction (the horizon-chart sweet spot)
+_POS_HUE = "#007AFF"  # Apple Blue  — above the row's own mean
+_NEG_HUE = "#FF3B30"  # Apple Red   — below the row's own mean
+_N_BANDS = 3  # bands per direction (the horizon-chart sweet spot)
 
 
 # --------------------------------------------------------------------------- #
@@ -121,12 +116,12 @@ def _sample_fleet_cpu(seed: int = 11) -> Dict[str, np.ndarray]:
         return 16.0 * _bell(17.0, 4.5)
 
     recipes: List[Tuple[str, float, float, np.ndarray]] = [
-        ("db-01  batch",   30.0, 24.0, _nightly_batch()),
+        ("db-01  batch", 30.0, 24.0, _nightly_batch()),
         ("db-02  analytics", 34.0, 30.0, _afternoon_hot()),
-        ("db-03  primary",  30.0, 28.0, np.zeros(24)),
-        ("db-04  replica",  22.0, 24.0, np.zeros(24)),
+        ("db-03  primary", 30.0, 28.0, np.zeros(24)),
+        ("db-04  replica", 22.0, 24.0, np.zeros(24)),
         ("db-05  reporting", 18.0, 22.0, 12.0 * _bell(9.0, 1.4)),
-        ("db-06  standby",  12.0, 14.0, np.zeros(24)),
+        ("db-06  standby", 12.0, 14.0, np.zeros(24)),
     ]
 
     out: Dict[str, np.ndarray] = {}
@@ -199,7 +194,7 @@ def _band_ramp(
         ``n`` ``#RRGGBB`` strings, band-0 (nearest baseline) first.
     """
     dark = _lerp_hex(hue, "#000000", shade)  # deepest band
-    pale = _lerp_hex(hue, "#FFFFFF", tint)   # palest band
+    pale = _lerp_hex(hue, "#FFFFFF", tint)  # palest band
     shades: List[str] = []
     for i in range(n):
         t = i / max(1, n - 1)
@@ -379,7 +374,7 @@ def build_svg(
     all_abs = np.concatenate([np.abs(dev[lbl]) for lbl in labels])
     scale = float(np.percentile(all_abs, 96))
     scale = max(5.0, np.ceil(scale / 5.0) * 5.0)  # e.g. 20% full-scale
-    band_size = scale / _N_BANDS                  # value window per band
+    band_size = scale / _N_BANDS  # value window per band
 
     def x_of(x: float) -> float:
         """Map an hour index (0..23) to a pixel column."""
@@ -430,10 +425,10 @@ def build_svg(
     # (re-spacing or recolouring it would de-tune the encoding).
     contrast_block = (
         "@media (prefers-contrast: more){"
-        '[stroke="#EFEFF2"]{stroke:#9C9CA3;}'      # gridlines: firmer grey
-        '[stroke="#D8D8DD"]{stroke:#6E6E73;}'       # row baselines: firmer grey
-        '[stroke="#1D1D1F"]{stroke-width:2.4;}'     # x-axis: thicker frame
-        f'[fill="{_SECONDARY}"]{{fill:#3A3A3C;}}'    # secondary ink: darker
+        '[stroke="#EFEFF2"]{stroke:#9C9CA3;}'  # gridlines: firmer grey
+        '[stroke="#D8D8DD"]{stroke:#6E6E73;}'  # row baselines: firmer grey
+        '[stroke="#1D1D1F"]{stroke-width:2.4;}'  # x-axis: thicker frame
+        f'[fill="{_SECONDARY}"]{{fill:#3A3A3C;}}'  # secondary ink: darker
         "}"
     )
     # Additive dark mode: flip paper + the two ink tiers, and lift the dark
@@ -493,7 +488,7 @@ def build_svg(
         # lands above it; bands are drawn into band_h from this row_top down.
         row_top = slot_top + (slot_h - band_h)
         series = dev[label]
-        pos_vals = [max(v, 0.0) for v in series]   # above the row mean
+        pos_vals = [max(v, 0.0) for v in series]  # above the row mean
         neg_vals = [max(-v, 0.0) for v in series]  # below the row mean
 
         # Faint zero baseline for the row (reads as the node's own mean).
@@ -507,24 +502,34 @@ def build_svg(
         # Positive bands, pale → deep, all stacked on the same baseline.
         for b in range(_N_BANDS):
             d = _band_area_path(
-                cast(Sequence[float], hours), pos_vals, x_of=x_of, row_top=row_top, row_h=row_h,
-                band_lo=b * band_size, band_hi=(b + 1) * band_size, v_max=scale,
+                cast(Sequence[float], hours),
+                pos_vals,
+                x_of=x_of,
+                row_top=row_top,
+                row_h=row_h,
+                band_lo=b * band_size,
+                band_hi=(b + 1) * band_size,
+                v_max=scale,
             )
             if d:
                 reveal_group.append(
-                    f'<path d="{d}" fill="{pos_shades[b]}" '
-                    f'fill-opacity="0.95" stroke="none"/>'
+                    f'<path d="{d}" fill="{pos_shades[b]}" fill-opacity="0.95" stroke="none"/>'
                 )
         # Negative bands (folded up as a mirror in red).
         for b in range(_N_BANDS):
             d = _band_area_path(
-                cast(Sequence[float], hours), neg_vals, x_of=x_of, row_top=row_top, row_h=row_h,
-                band_lo=b * band_size, band_hi=(b + 1) * band_size, v_max=scale,
+                cast(Sequence[float], hours),
+                neg_vals,
+                x_of=x_of,
+                row_top=row_top,
+                row_h=row_h,
+                band_lo=b * band_size,
+                band_hi=(b + 1) * band_size,
+                v_max=scale,
             )
             if d:
                 reveal_group.append(
-                    f'<path d="{d}" fill="{neg_shades[b]}" '
-                    f'fill-opacity="0.95" stroke="none"/>'
+                    f'<path d="{d}" fill="{neg_shades[b]}" fill-opacity="0.95" stroke="none"/>'
                 )
 
         # Hover tooltip: peak swing above / below the mean, no JavaScript.
@@ -544,12 +549,19 @@ def build_svg(
         )
         tip_bubbles.append(
             tooltip_bubble(
-                x_of(float(peak_hour)), slot_top - 10,
-                [label.split("  ")[0],
-                 f"+{peak_up:.0f} / {peak_dn:.0f} pts vs {float(np.mean(data[label])):.0f}% mean",
-                 f"biggest swing at {peak_hour:02d}:00"],
-                anchor="middle", canvas_w=width, canvas_h=height,
-                ink=_INK, secondary=_SECONDARY, border="#D8D8DD",
+                x_of(float(peak_hour)),
+                slot_top - 10,
+                [
+                    label.split("  ")[0],
+                    f"+{peak_up:.0f} / {peak_dn:.0f} pts vs {float(np.mean(data[label])):.0f}% mean",
+                    f"biggest swing at {peak_hour:02d}:00",
+                ],
+                anchor="middle",
+                canvas_w=width,
+                canvas_h=height,
+                ink=_INK,
+                secondary=_SECONDARY,
+                border="#D8D8DD",
                 elem_id=f"tip-{i}",
             )
         )
@@ -737,7 +749,9 @@ def make_horizon(
     _ = title
     rows = data if data else DEMO_DATA
     series = _rows_to_series(rows)
-    svg = build_svg(series, mode=mode, accessibility=accessibility, theme=theme, title=title or None)
+    svg = build_svg(
+        series, mode=mode, accessibility=accessibility, theme=theme, title=title or None
+    )
     dest = Path(out) if out else svg_example_path(__file__, "horizon")
     return write_svg(dest, svg, theme=theme)
 
@@ -757,9 +771,7 @@ def _build_parser() -> argparse.ArgumentParser:
         default=_DEFAULT_OUT,
         help="Destination SVG path (default: the shipped example).",
     )
-    parser.add_argument(
-        "--seed", type=int, default=11, help="Random seed for the sample data."
-    )
+    parser.add_argument("--seed", type=int, default=11, help="Random seed for the sample data.")
     parser.add_argument(
         "--mode",
         choices=("self-contained", "external", "static"),
@@ -769,8 +781,12 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--accessibility",
         choices=(
-            "universal", "high-contrast", "monochrome",
-            "deuteranopia", "protanopia", "tritanopia",
+            "universal",
+            "high-contrast",
+            "monochrome",
+            "deuteranopia",
+            "protanopia",
+            "tritanopia",
         ),
         default="universal",
         help="palette accessibility level (default: universal, the CVD-safe standard).",

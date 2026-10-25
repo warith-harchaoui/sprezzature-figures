@@ -311,18 +311,18 @@ def build_svg(
     # Poster-scale so the ribbons read from across a room and every label has
     # room to breathe.
     width, height = 1560, 940
-    pad_top = 196          # room for title + subtitle + axis captions
-    pad_bottom = 132       # room for the outcome legend
+    pad_top = 196  # room for title + subtitle + axis captions
+    pad_bottom = 132  # room for the outcome legend
     pad_left, pad_right = 176, 176
-    margin = 52            # gutter for title / caption / legend text
-    bin_w = 30             # width of each category bin bar (the "stations")
-    label_gap = 16         # px between a bin and its text label
+    margin = 52  # gutter for title / caption / legend text
+    bin_w = 30  # width of each category bin bar (the "stations")
+    label_gap = 16  # px between a bin and its text label
 
     total = sum(f["count"] for f in flows)
 
     plot_top = pad_top
     plot_h = height - pad_top - pad_bottom
-    gap = 30               # vertical space between bins in a stack
+    gap = 30  # vertical space between bins in a stack
     max_bins = max(len(cats) for _, cats in AXES)
     usable_h = plot_h - gap * (max_bins - 1)
     scale = usable_h / total
@@ -382,9 +382,7 @@ def build_svg(
     # the pattern reads where strands stack. The patterns live in <defs> and are
     # referenced only inside the forced-colors media query, so the default render
     # is unchanged.
-    fcp_defs, fcp_style = forced_color_patterns(
-        [".rib-survived", ".rib-died"], prefix="ps-fcp"
-    )
+    fcp_defs, fcp_style = forced_color_patterns([".rib-survived", ".rib-died"], prefix="ps-fcp")
     parts.append(
         "<style>"
         ".ribbon{transition:opacity .18s ease;}"
@@ -497,13 +495,12 @@ def build_svg(
             left_off[a_cat] += h
             right_off[b_cat] += h
 
-            color = _DIED_RED if outcome == "Died" else palette.get(OUTCOME_COLOR[outcome], secondary)
+            color = (
+                _DIED_RED if outcome == "Died" else palette.get(OUTCOME_COLOR[outcome], secondary)
+            )
             d = _ribbon_path(x0, x1, a_top, a_top + h, b_top, b_top + h)
             pct = 100.0 * count / total
-            tip = (
-                f"{a_cat} → {b_cat} → {outcome}: "
-                f"{count} people ({pct:.0f}%)"
-            )
+            tip = f"{a_cat} → {b_cat} → {outcome}: {count} people ({pct:.0f}%)"
             # A thin white hairline separates adjacent same-colour strands so
             # stacked ribbons never merge into an opaque blob. A stable
             # per-outcome class (".rib-survived" / ".rib-died") lets the
@@ -518,10 +515,15 @@ def build_svg(
             )
             ribbon_tips.append(
                 tooltip_bubble(
-                    (x0 + x1) / 2.0, (a_top + b_top) / 2.0 + h / 2.0 - 14.0,
+                    (x0 + x1) / 2.0,
+                    (a_top + b_top) / 2.0 + h / 2.0 - 14.0,
                     [f"{a_cat} → {b_cat} → {outcome}", f"{count} people ({pct:.0f}%)"],
-                    anchor="middle", canvas_w=width, canvas_h=height,
-                    ink=ink, secondary=secondary, border=hairline,
+                    anchor="middle",
+                    canvas_w=width,
+                    canvas_h=height,
+                    ink=ink,
+                    secondary=secondary,
+                    border=hairline,
                     elem_id=f"ribbon-tip-{ribbon_i}",
                 )
             )
@@ -554,10 +556,15 @@ def build_svg(
             )
             bin_tips.append(
                 tooltip_bubble(
-                    x + bin_w / 2.0, b["y0"] - 14.0,
+                    x + bin_w / 2.0,
+                    b["y0"] - 14.0,
                     [cat, f"{int(b['count'])} people", f"{pct:.0f}% of total"],
-                    anchor="middle", canvas_w=width, canvas_h=height,
-                    ink=ink, secondary=secondary, border=hairline,
+                    anchor="middle",
+                    canvas_w=width,
+                    canvas_h=height,
+                    ink=ink,
+                    secondary=secondary,
+                    border=hairline,
                     elem_id=f"bin-tip-{bin_i}",
                 )
             )
@@ -629,8 +636,13 @@ def build_svg(
 #: flow's axis path (using each axis's own title as the key) plus its count,
 #: so the row list alone can rebuild :data:`FLOWS`.
 DEMO_DATA: List[Dict[str, Any]] = [
-    {AXES[0][0]: f["path"][0], AXES[1][0]: f["path"][1], AXES[2][0]: f["path"][2],
-     AXES[3][0]: f["path"][3], "count": f["count"]}
+    {
+        AXES[0][0]: f["path"][0],
+        AXES[1][0]: f["path"][1],
+        AXES[2][0]: f["path"][2],
+        AXES[3][0]: f["path"][3],
+        "count": f["count"],
+    }
     for f in FLOWS
 ]
 
@@ -638,10 +650,7 @@ DEMO_DATA: List[Dict[str, Any]] = [
 def _rows_to_flows(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """Reshape DEMO_DATA-style rows back into :data:`FLOWS`-shaped records."""
     axis_titles = [t for t, _ in AXES]
-    return [
-        {"path": tuple(r[t] for t in axis_titles), "count": int(r["count"])}
-        for r in rows
-    ]
+    return [{"path": tuple(r[t] for t in axis_titles), "count": int(r["count"])} for r in rows]
 
 
 def make_parallel_sets(
@@ -682,8 +691,12 @@ def make_parallel_sets(
     rows = data if data else DEMO_DATA
     flows = _rows_to_flows(rows)
     svg = build_svg(
-        flows, title=title, subtitle=subtitle,
-        mode=mode, accessibility=accessibility, theme=theme,
+        flows,
+        title=title,
+        subtitle=subtitle,
+        mode=mode,
+        accessibility=accessibility,
+        theme=theme,
     )
     dest = Path(out) if out else svg_example_path(__file__, "parallel-sets")
     return write_svg(dest, svg, theme=theme)
@@ -694,7 +707,12 @@ def make_parallel_sets(
 # --------------------------------------------------------------------------- #
 def main() -> None:
     """CLI entry point — build the SVG and write it to disk."""
-    render_cli(__file__, "parallel-sets", build_svg, description="Render a house-styled parallel-sets / parcats diagram as SVG.")
+    render_cli(
+        __file__,
+        "parallel-sets",
+        build_svg,
+        description="Render a house-styled parallel-sets / parcats diagram as SVG.",
+    )
 
 
 if __name__ == "__main__":

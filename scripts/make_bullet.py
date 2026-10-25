@@ -129,8 +129,17 @@ def _fmt(value: float) -> str:
 #: covers any realistic KPI-panel size; a count past this falls back to
 #: digits rather than raising.
 _NUMBER_WORDS: Dict[int, str] = {
-    0: "zero", 1: "one", 2: "two", 3: "three", 4: "four", 5: "five",
-    6: "six", 7: "seven", 8: "eight", 9: "nine", 10: "ten",
+    0: "zero",
+    1: "one",
+    2: "two",
+    3: "three",
+    4: "four",
+    5: "five",
+    6: "six",
+    7: "seven",
+    8: "eight",
+    9: "nine",
+    10: "ten",
 }
 
 
@@ -257,14 +266,14 @@ def build_svg(
     m_left = 60
     m_right = 60
     m_top = 168
-    label_w = 236        # KPI name gutter (left of every track)
-    value_w = 210        # value-label gutter (right of every track)
+    label_w = 236  # KPI name gutter (left of every track)
+    value_w = 210  # value-label gutter (right of every track)
     track_x = m_left + label_w
     track_w = width - m_left - m_right - label_w - value_w
 
-    row_h = 118          # vertical pitch between KPI rows
-    bar_h = 22           # measure-bar thickness
-    band_h = 62          # qualitative-band block height
+    row_h = 118  # vertical pitch between KPI rows
+    bar_h = 22  # measure-bar thickness
+    band_h = 62  # qualitative-band block height
     kpis: List[Dict[str, Any]] = data if data else DEMO_DATA
     n = len(kpis)
     height = m_top + n * row_h + 56
@@ -283,15 +292,13 @@ def build_svg(
 
     # --- document + accessibility --------------------------------
     parts.append(svg_open(width, height, "bl-title", "bl-desc", font_family=chrome_family))
-    parts.append(
-        '<title id="bl-title">Q3 growth scorecard as five bullet graphs</title>'
-    )
+    parts.append('<title id="bl-title">Q3 growth scorecard as five bullet graphs</title>')
     parts.append(
         f'<desc id="bl-desc">Five key performance indicators drawn as bullet '
-        f'graphs. Each row has three shaded qualitative bands (poor, '
-        f'satisfactory, good), a dark measure bar for the value reached, and an '
-        f'orange tick for the target. {n_beat} of {n} metrics met or beat their '
-        f'target this quarter; {xml_escape(_join_and(trailing))} fell short.</desc>'
+        f"graphs. Each row has three shaded qualitative bands (poor, "
+        f"satisfactory, good), a dark measure bar for the value reached, and an "
+        f"orange tick for the target. {n_beat} of {n} metrics met or beat their "
+        f"target this quarter; {xml_escape(_join_and(trailing))} fell short.</desc>"
     )
 
     # OS-adaptive overrides (additive; the default render is byte-for-byte
@@ -310,19 +317,19 @@ def build_svg(
     adaptive = os_adaptive_style(contrast_series, role="fill")
     # Focus ring for keyboard users; the panel is static, no motion guard.
     parts.append(
-        '<style>'
-        '.bar{cursor:pointer}'
-        '.bar:hover,.bar:focus{stroke:#1D1D1F;stroke-width:2}'
-        '.bar:focus{outline:none}'
-        '.tip{opacity:0;pointer-events:none;transition:opacity .12s ease}'
-        + foreground_tip_css(n) +
-        '@media (prefers-reduced-motion:reduce){.tip{transition:none}}'
+        "<style>"
+        ".bar{cursor:pointer}"
+        ".bar:hover,.bar:focus{stroke:#1D1D1F;stroke-width:2}"
+        ".bar:focus{outline:none}"
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
+        + foreground_tip_css(n)
+        + "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
         + adaptive
         # Paper + ink flip to a dark surface; the pale-blue band ramp, the deep
         # navy measure bar and the orange target tick are all bespoke hues that
         # keep their contrast against each other, so they are left untouched.
         + os_dark_style()
-        + '</style>'
+        + "</style>"
     )
 
     # --- background ----------------------------------------------
@@ -334,24 +341,22 @@ def build_svg(
     # reader actually sees (a Ralph Eyeball Loop pass caught the previous
     # hardcoded "Three of five ... Revenue, activation and churn beat plan"
     # naming churn as a winner when it was over target -- i.e. missing).
-    headline = title or f'{_spelled(n_beat).capitalize()} of {_spelled(n)} targets cleared in Q3'
+    headline = title or f"{_spelled(n_beat).capitalize()} of {_spelled(n)} targets cleared in Q3"
     if beating and trailing:
-        subtitle = (
-            f'{_join_and(beating)} beat plan; {_join_and(trailing)} still trail the goal'
-        )
+        subtitle = f"{_join_and(beating)} beat plan; {_join_and(trailing)} still trail the goal"
     elif beating:
-        subtitle = f'{_join_and(beating)} beat plan -- every target cleared'
+        subtitle = f"{_join_and(beating)} beat plan -- every target cleared"
     elif trailing:
-        subtitle = f'{_join_and(trailing)} trail the goal -- no target cleared'
+        subtitle = f"{_join_and(trailing)} trail the goal -- no target cleared"
     else:
-        subtitle = ''
+        subtitle = ""
     parts.append(
         f'<text x="{m_left}" y="66" font-size="34" font-weight="700" '
         f'fill="{ink}">{xml_escape(headline)}</text>'
     )
     parts.append(
         f'<text x="{m_left}" y="104" font-size="20" fill="{secondary}">'
-        f'{xml_escape(subtitle)}</text>'
+        f"{xml_escape(subtitle)}</text>"
     )
 
     # --- shared legend (its own line under the subtitle) ---------
@@ -363,12 +368,10 @@ def build_svg(
     leg_x = track_x + track_w - 236
     # measure-bar glyph
     parts.append(
-        f'<rect x="{leg_x}" y="{leg_y - 7}" width="30" height="13" rx="3" '
-        f'fill="{bar_ink}"/>'
+        f'<rect x="{leg_x}" y="{leg_y - 7}" width="30" height="13" rx="3" fill="{bar_ink}"/>'
     )
     parts.append(
-        f'<text x="{leg_x + 40}" y="{leg_y + 5}" font-size="17" '
-        f'fill="{ink}">measure</text>'
+        f'<text x="{leg_x + 40}" y="{leg_y + 5}" font-size="17" fill="{ink}">measure</text>'
     )
     # target-tick glyph
     tick_gx = leg_x + 158
@@ -378,8 +381,7 @@ def build_svg(
         f'fill="{tick_color}"/>'
     )
     parts.append(
-        f'<text x="{tick_gx + 16}" y="{leg_y + 5}" font-size="17" '
-        f'fill="{ink}">target</text>'
+        f'<text x="{tick_gx + 16}" y="{leg_y + 5}" font-size="17" fill="{ink}">target</text>'
     )
 
     # --- rows ----------------------------------------------------
@@ -430,7 +432,7 @@ def build_svg(
                 f'width="{max(0.0, x1 - x0):.2f}" height="{band_h}" '
                 f'fill="{fills[j]}"/>'
             )
-        parts.append('</g>')
+        parts.append("</g>")
 
         # --- measure bar (the value reached) -------------------------
         beats = _beats(k)
@@ -446,21 +448,26 @@ def build_svg(
             f'width="{max(0.0, bar_end - bar_x):.2f}" height="{bar_h}" rx="5" '
             f'fill="{bar_fill}" tabindex="0" role="img" '
             f'aria-label="{xml_escape(tip)}"><title>{xml_escape(tip)}</title>'
-            f'</rect>'
+            f"</rect>"
         )
         # Collected, not appended in place: every bar is drawn before any
         # bubble (see _svg.foreground_tip_css) so a later row's bar never
         # paints over an earlier row's open bubble.
         tip_cards.append(
             tooltip_bubble(
-                bar_x + max(0.0, bar_end - bar_x) / 2, bar_y - 12,
+                bar_x + max(0.0, bar_end - bar_x) / 2,
+                bar_y - 12,
                 [
                     name,
                     f"{_fmt(value)} {unit} — {pct}% {gap_word}",
                     f"target {_fmt(target)} {unit}",
                 ],
-                anchor="middle", canvas_w=width, canvas_h=height,
-                ink=ink, secondary=secondary, border=GRIDLINE,
+                anchor="middle",
+                canvas_w=width,
+                canvas_h=height,
+                ink=ink,
+                secondary=secondary,
+                border=GRIDLINE,
                 elem_id=f"tip-{i}",
             )
         )
@@ -507,7 +514,7 @@ def build_svg(
             f'<text class="{delta_cls}" x="{val_x:.1f}" y="{band_mid + 22:.1f}" '
             f'font-size="16" '
             f'font-weight="600" fill="{delta_color}">{arrow} {pct}% '
-            f'{delta_word}</text>'
+            f"{delta_word}</text>"
         )
     parts.extend(tip_cards)
 
@@ -593,7 +600,14 @@ def make_bullet(
     True
     """
     _ = title
-    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme, bands_label=bands_label, title=title or None)
+    svg = build_svg(
+        data,
+        mode=mode,
+        accessibility=accessibility,
+        theme=theme,
+        bands_label=bands_label,
+        title=title or None,
+    )
     dest = Path(out) if out else svg_example_path(__file__, "bullet")
     return write_svg(dest, svg, theme=theme)
 

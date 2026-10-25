@@ -318,7 +318,9 @@ def build_svg(
     parts: List[str] = []
 
     # --- document + accessibility --------------------------------
-    parts.append(svg_open(width, height, "tl-title", "tl-desc", font_family=chrome_stack_for_theme(theme)))
+    parts.append(
+        svg_open(width, height, "tl-title", "tl-desc", font_family=chrome_stack_for_theme(theme))
+    )
     n = len(milestones)
     parts.append(
         # The accessible name is the headline a sighted reader sees: when
@@ -328,10 +330,10 @@ def build_svg(
     )
     parts.append(
         f'<desc id="tl-desc">A horizontal timeline of {n} Mars-mission '
-        f'milestones from 1965 to a planned 2033, with alternating callouts '
-        f'above and below a central spine. Four coloured era bands group the '
-        f'missions: Flybys and Orbiters, First Landers, the Rover Age, and the '
-        f'planned Sample Return campaign.</desc>'
+        f"milestones from 1965 to a planned 2033, with alternating callouts "
+        f"above and below a central spine. Four coloured era bands group the "
+        f"missions: Flybys and Orbiters, First Landers, the Rover Age, and the "
+        f"planned Sample Return campaign.</desc>"
     )
 
     # Focus ring + hover lift for keyboard and pointer users. The sweep
@@ -348,8 +350,7 @@ def build_svg(
     # axis, so identity already survives with no colour, and the ~4-colour
     # system palette cannot preserve the band/pill/stem colour tie anyway.
     era_hex_for_style = {
-        _era_slug(str(era["name"])): palette.get(str(era["color"]), "#007AFF")
-        for era in ERAS
+        _era_slug(str(era["name"])): palette.get(str(era["color"]), "#007AFF") for era in ERAS
     }
     fill_series = {f".era-fill.era-{s}": h for s, h in era_hex_for_style.items()}
     stroke_series = {f".era-stroke.era-{s}": h for s, h in era_hex_for_style.items()}
@@ -366,22 +367,21 @@ def build_svg(
     dark_css = os_dark_style(
         ink_map={"#1D1D1F": "#F2F2F7", "#6E6E73": "#9C9CA3"},
         screen_blend=False,
-        extra='rect[fill="#FFFFFF"]{fill:#141416;} '
-        'circle[fill="#FFFFFF"]{fill:#141416;}',
+        extra='rect[fill="#FFFFFF"]{fill:#141416;} circle[fill="#FFFFFF"]{fill:#141416;}',
     )
     parts.append(
-        '<style>'
-        '.mstone{cursor:pointer}'
-        '.mstone .dot{transition:r .12s ease}'
-        '.mstone:hover .dot,.mstone:focus .dot{r:11}'
-        '.mstone:focus{outline:none}'
-        '.mstone:focus .card,.mstone:hover .card{stroke-width:2.4}'
-        '.tip{opacity:0;pointer-events:none;transition:opacity .12s ease}'
+        "<style>"
+        ".mstone{cursor:pointer}"
+        ".mstone .dot{transition:r .12s ease}"
+        ".mstone:hover .dot,.mstone:focus .dot{r:11}"
+        ".mstone:focus{outline:none}"
+        ".mstone:focus .card,.mstone:hover .card{stroke-width:2.4}"
+        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
         + foreground_tip_css(n)
-        + '@media (prefers-reduced-motion: reduce){.sweep{display:none}.tip{transition:none}}'
+        + "@media (prefers-reduced-motion: reduce){.sweep{display:none}.tip{transition:none}}"
         + contrast_css
         + dark_css
-        + '</style>'
+        + "</style>"
     )
 
     # --- background ----------------------------------------------
@@ -394,7 +394,7 @@ def build_svg(
     )
     parts.append(
         f'<text x="{m_left}" y="112" font-size="21" fill="{secondary}">'
-        f'{xml_escape(subtitle)}</text>'
+        f"{xml_escape(subtitle)}</text>"
     )
 
     # --- era bands (hugging the spine) ---------------------------
@@ -476,9 +476,7 @@ def build_svg(
     )
     # Start / end nibs so the spine reads as a bounded axis of time.
     for cap_x in (plot_x0, plot_x1):
-        parts.append(
-            f'<circle cx="{cap_x:.1f}" cy="{spine_y}" r="4" fill="{ink}"/>'
-        )
+        parts.append(f'<circle cx="{cap_x:.1f}" cy="{spine_y}" r="4" fill="{ink}"/>')
 
     # --- milestones: alternating above / below callouts ----------
     # Each callout is a fixed-width card. To keep same-side neighbours
@@ -491,7 +489,7 @@ def build_svg(
     card_w = 214
     card_pad = 15
     line_h = 20
-    card_gap = 14          # min horizontal gap between same-level cards
+    card_gap = 14  # min horizontal gap between same-level cards
     # A level's stem must clear a full card height + margin, so a card
     # pushed to level L never hangs down into the L-1 card that shares its
     # horizontal span. Max card here is three text lines.
@@ -589,11 +587,22 @@ def build_svg(
             cy0 = spine_y + stem_len
             card_edge_y = cy0
 
-        specs.append({
-            "year": year, "name": name, "blurb": blurb, "slug": slug,
-            "color": color, "planned": planned, "mx": mx, "lines": lines,
-            "card_h": card_h, "cx0": cx0, "cy0": cy0, "card_edge_y": card_edge_y,
-        })
+        specs.append(
+            {
+                "year": year,
+                "name": name,
+                "blurb": blurb,
+                "slug": slug,
+                "color": color,
+                "planned": planned,
+                "mx": mx,
+                "lines": lines,
+                "card_h": card_h,
+                "cx0": cx0,
+                "cy0": cy0,
+                "card_edge_y": card_edge_y,
+            }
+        )
 
     # --- pass 1: every connector stem, spine dot -> card edge ------------
     # Straight down the milestone's x to the near edge of its card, so the
@@ -630,8 +639,7 @@ def build_svg(
 
         # Soft halo + solid dot on the spine (pure fills, no dark ring).
         parts.append(
-            f'<circle cx="{mx:.1f}" cy="{spine_y}" r="12" '
-            f'fill="{_lighten(color, 0.55)}"/>'
+            f'<circle cx="{mx:.1f}" cy="{spine_y}" r="12" fill="{_lighten(color, 0.55)}"/>'
         )
         # Planned beats are hollow (white core), flown beats are solid.
         if planned:
@@ -691,10 +699,15 @@ def build_svg(
         parts.append("</g>")
         bubbles.append(
             tooltip_bubble(
-                mx, spine_y - 20,
+                mx,
+                spine_y - 20,
                 [name, f"{_fmt_year(year)}{' (planned)' if planned else ''}", blurb],
-                anchor="middle", canvas_w=width, canvas_h=height,
-                ink=ink, secondary=secondary, border=hairline,
+                anchor="middle",
+                canvas_w=width,
+                canvas_h=height,
+                ink=ink,
+                secondary=secondary,
+                border=hairline,
                 elem_id=f"tip-{si}",
             )
         )
@@ -718,8 +731,8 @@ def build_svg(
         f'calcMode="spline" keyTimes="0;1" keySplines="0.4 0 0.2 1"/>'
         f'<animate attributeName="opacity" values="0;0.9;0.9;0" '
         f'keyTimes="0;0.06;0.94;1" dur="7s" begin="1s" fill="freeze"/>'
-        f'</circle>'
-        f'</g>'
+        f"</circle>"
+        f"</g>"
     )
 
     # --- legend: flown vs planned glyphs (bottom-left) -----------
@@ -727,9 +740,7 @@ def build_svg(
     # correctly without hunting.
     leg_y = height - 34
     lx = m_left
-    parts.append(
-        f'<circle cx="{lx + 8}" cy="{leg_y - 5}" r="7" fill="{ink}"/>'
-    )
+    parts.append(f'<circle cx="{lx + 8}" cy="{leg_y - 5}" r="7" fill="{ink}"/>')
     parts.append(
         f'<text x="{lx + 24}" y="{leg_y}" font-size="16" '
         f'fill="{secondary}">{xml_escape(flown_legend_label)}</text>'
@@ -748,7 +759,7 @@ def build_svg(
     parts.append(
         f'<text x="{plot_x1:.1f}" y="{leg_y}" font-size="15" '
         f'text-anchor="end" fill="{hairline}">Public mission history &#183; '
-        f'future dates approximate</text>'
+        f"future dates approximate</text>"
     )
 
     parts.extend(bubbles)
@@ -795,9 +806,15 @@ def make_timeline(
     Path
         Absolute path to the written SVG file.
     """
-    svg = build_svg(data, title=title, subtitle=subtitle,
-                     flown_legend_label=flown_legend_label,
-                     mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(
+        data,
+        title=title,
+        subtitle=subtitle,
+        flown_legend_label=flown_legend_label,
+        mode=mode,
+        accessibility=accessibility,
+        theme=theme,
+    )
     dest = Path(out) if out else svg_example_path(__file__, "timeline")
     return write_svg(dest, svg, theme=theme)
 

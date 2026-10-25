@@ -96,7 +96,9 @@ def build_svg(
     for r in rows:
         if r["service"] not in seen_services:
             seen_services.append(r["service"])
-    services = [s for s in SERVICES if s in seen_services] + [s for s in seen_services if s not in SERVICES]
+    services = [s for s in SERVICES if s in seen_services] + [
+        s for s in seen_services if s not in SERVICES
+    ]
     colors = _service_colors(services, accessibility, theme=theme)
     months = sorted({float(r["month"]) for r in rows})
 
@@ -132,17 +134,21 @@ def build_svg(
         return plot_y + plot_h - (v / y_domain * plot_h)
 
     parts: List[str] = []
-    parts.append(svg_open(width, height, "sa-title", "sa-desc", font_family=chrome_stack_for_theme(theme)))
+    parts.append(
+        svg_open(width, height, "sa-title", "sa-desc", font_family=chrome_stack_for_theme(theme))
+    )
     parts.append(f'<title id="sa-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="sa-desc">Stacked area of {len(services)} services over {len(months)} '
-        f'months, ending at {running[-1]:.0f}. Hover or focus a band for its exact value.</desc>'
+        f"months, ending at {running[-1]:.0f}. Hover or focus a band for its exact value.</desc>"
     )
     parts.append(
         "<style>"
         ".band-group{transition:opacity .15s ease;}"
         "svg:hover .band-group,svg:focus-within .band-group{opacity:.45;}"
-        + "".join(f'svg:has(.b{i}:hover,.b{i}:focus) .b{i}{{opacity:1;}}' for i in range(len(services)))
+        + "".join(
+            f"svg:has(.b{i}:hover,.b{i}:focus) .b{i}{{opacity:1;}}" for i in range(len(services))
+        )
         + ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
         + foreground_tip_css(len(services))
         + "@media (prefers-reduced-motion: reduce){.band-group{transition:none;}"
@@ -154,14 +160,20 @@ def build_svg(
         f'<text x="40" y="46" font-size="24" font-weight="700" fill="{INK}" '
         f'letter-spacing="-0.3">{xml_escape(title)}</text>'
     )
-    parts.append(f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>')
+    parts.append(
+        f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>'
+    )
 
     # ---- legend ----
     lx, ly = 40.0, 100.0
     cursor = lx
     for s in services:
-        parts.append(f'<rect x="{cursor:.1f}" y="{ly - 12:.1f}" width="14" height="14" rx="3" fill="{colors[s]}"/>')
-        parts.append(f'<text x="{cursor + 20:.1f}" y="{ly:.1f}" font-size="12" fill="{INK}">{xml_escape(s)}</text>')
+        parts.append(
+            f'<rect x="{cursor:.1f}" y="{ly - 12:.1f}" width="14" height="14" rx="3" fill="{colors[s]}"/>'
+        )
+        parts.append(
+            f'<text x="{cursor + 20:.1f}" y="{ly:.1f}" font-size="12" fill="{INK}">{xml_escape(s)}</text>'
+        )
         cursor += 20 + 7.0 * len(s) + 22
 
     # ---- y-axis gridlines ----
@@ -208,10 +220,19 @@ def build_svg(
         mid_i = len(months) // 2
         bubbles.append(
             tooltip_bubble(
-                top_pts[mid_i][0], (top_pts[mid_i][1] + bot_pts[mid_i][1]) / 2.0 - 14,
-                [s, f"{top[mid_i] - prev[mid_i]:.1f}k$ that month", f"{latest_share:.0f}% of latest total"],
-                anchor="middle", canvas_w=width, canvas_h=height,
-                ink=INK, secondary=SECONDARY, border=GRIDLINE,
+                top_pts[mid_i][0],
+                (top_pts[mid_i][1] + bot_pts[mid_i][1]) / 2.0 - 14,
+                [
+                    s,
+                    f"{top[mid_i] - prev[mid_i]:.1f}k$ that month",
+                    f"{latest_share:.0f}% of latest total",
+                ],
+                anchor="middle",
+                canvas_w=width,
+                canvas_h=height,
+                ink=INK,
+                secondary=SECONDARY,
+                border=GRIDLINE,
                 elem_id=f"tip-{si}",
             )
         )
@@ -288,16 +309,30 @@ def make_stacked_area(
     >>> p.exists()
     True
     """
-    svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
-                     mode=mode, accessibility=accessibility, theme=theme,
-                     y_axis_title=y_axis_title, x_axis_title=x_axis_title)
+    svg = build_svg(
+        data,
+        title=title,
+        subtitle=subtitle,
+        width=width,
+        height=height,
+        mode=mode,
+        accessibility=accessibility,
+        theme=theme,
+        y_axis_title=y_axis_title,
+        x_axis_title=x_axis_title,
+    )
     dest = Path(out) if out else svg_example_path(__file__, "stacked-area")
     return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:
     """CLI entry point: build the SVG and write it to disk."""
-    render_cli(__file__, "stacked-area", build_svg, description="Generate a stacked area chart over a continuous axis.")
+    render_cli(
+        __file__,
+        "stacked-area",
+        build_svg,
+        description="Generate a stacked area chart over a continuous axis.",
+    )
 
 
 if __name__ == "__main__":

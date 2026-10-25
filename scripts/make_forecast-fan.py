@@ -75,20 +75,24 @@ def _series(seed: int = 19) -> List[Dict[str, Any]]:
     level = 1180.0
     for index in range(_HISTORY):
         level += 11.0 + (rng.random() - 0.5) * 46.0
-        rows.append({
-            "month": index + 1,
-            "subscriptions": round(level, 1),
-            "forecast": None,
-            "se": None,
-        })
+        rows.append(
+            {
+                "month": index + 1,
+                "subscriptions": round(level, 1),
+                "forecast": None,
+                "se": None,
+            }
+        )
     step = 11.0
     for horizon in range(1, _HORIZON + 1):
-        rows.append({
-            "month": _HISTORY + horizon,
-            "subscriptions": None,
-            "forecast": round(level + step * horizon, 1),
-            "se": round(24.0 * math.sqrt(horizon), 2),
-        })
+        rows.append(
+            {
+                "month": _HISTORY + horizon,
+                "subscriptions": None,
+                "forecast": round(level + step * horizon, 1),
+                "se": round(24.0 * math.sqrt(horizon), 2),
+            }
+        )
     return rows
 
 
@@ -105,34 +109,59 @@ def _normal_quantile(probability: float) -> float:
     several digits more than a chart can draw.
     """
     if not 0.0 < probability < 1.0:
-        raise ValueError(f"a quantile needs a probability strictly inside 0 and 1, got {probability}")
-    a = (-3.969683028665376e+01, 2.209460984245205e+02, -2.759285104469687e+02,
-         1.383577518672690e+02, -3.066479806614716e+01, 2.506628277459239e+00)
-    b = (-5.447609879822406e+01, 1.615858368580409e+02, -1.556989798598866e+02,
-         6.680131188771972e+01, -1.328068155288572e+01)
-    c = (-7.784894002430293e-03, -3.223964580411365e-01, -2.400758277161838e+00,
-         -2.549732539343734e+00, 4.374664141464968e+00, 2.938163982698783e+00)
-    d = (7.784695709041462e-03, 3.224671290700398e-01, 2.445134137142996e+00,
-         3.754408661907416e+00)
+        raise ValueError(
+            f"a quantile needs a probability strictly inside 0 and 1, got {probability}"
+        )
+    a = (
+        -3.969683028665376e01,
+        2.209460984245205e02,
+        -2.759285104469687e02,
+        1.383577518672690e02,
+        -3.066479806614716e01,
+        2.506628277459239e00,
+    )
+    b = (
+        -5.447609879822406e01,
+        1.615858368580409e02,
+        -1.556989798598866e02,
+        6.680131188771972e01,
+        -1.328068155288572e01,
+    )
+    c = (
+        -7.784894002430293e-03,
+        -3.223964580411365e-01,
+        -2.400758277161838e00,
+        -2.549732539343734e00,
+        4.374664141464968e00,
+        2.938163982698783e00,
+    )
+    d = (7.784695709041462e-03, 3.224671290700398e-01, 2.445134137142996e00, 3.754408661907416e00)
     low, high = 0.02425, 1.0 - 0.02425
     if probability < low:
         q = math.sqrt(-2.0 * math.log(probability))
-        return (((((c[0] * q + c[1]) * q + c[2]) * q + c[3]) * q + c[4]) * q + c[5]) / \
-               ((((d[0] * q + d[1]) * q + d[2]) * q + d[3]) * q + 1.0)
+        return (((((c[0] * q + c[1]) * q + c[2]) * q + c[3]) * q + c[4]) * q + c[5]) / (
+            (((d[0] * q + d[1]) * q + d[2]) * q + d[3]) * q + 1.0
+        )
     if probability > high:
         q = math.sqrt(-2.0 * math.log(1.0 - probability))
-        return -(((((c[0] * q + c[1]) * q + c[2]) * q + c[3]) * q + c[4]) * q + c[5]) / \
-                ((((d[0] * q + d[1]) * q + d[2]) * q + d[3]) * q + 1.0)
+        return -(((((c[0] * q + c[1]) * q + c[2]) * q + c[3]) * q + c[4]) * q + c[5]) / (
+            (((d[0] * q + d[1]) * q + d[2]) * q + d[3]) * q + 1.0
+        )
     q = probability - 0.5
     r = q * q
-    return (((((a[0] * r + a[1]) * r + a[2]) * r + a[3]) * r + a[4]) * r + a[5]) * q / \
-           (((((b[0] * r + b[1]) * r + b[2]) * r + b[3]) * r + b[4]) * r + 1.0)
+    return (
+        (((((a[0] * r + a[1]) * r + a[2]) * r + a[3]) * r + a[4]) * r + a[5])
+        * q
+        / (((((b[0] * r + b[1]) * r + b[2]) * r + b[3]) * r + b[4]) * r + 1.0)
+    )
 
 
 def _z_for(level: float) -> float:
     """The multiplier for a two-sided interval at `level` percent."""
     if not 0.0 < level < 100.0:
-        raise ValueError(f"an interval level is a percentage strictly inside 0 and 100, got {level}")
+        raise ValueError(
+            f"an interval level is a percentage strictly inside 0 and 100, got {level}"
+        )
     return _normal_quantile(0.5 + level / 200.0)
 
 
@@ -216,10 +245,7 @@ def build_svg(
 
     rows.sort(key=position)
     labels = [str(row[x]) for row in rows]
-    history = [
-        (index, float(row[y]))
-        for index, row in enumerate(rows) if row.get(y) is not None
-    ]
+    history = [(index, float(row[y])) for index, row in enumerate(rows) if row.get(y) is not None]
     future = [
         (index, float(row[forecast_key]), float(row[se_key]))
         for index, row in enumerate(rows)
@@ -234,8 +260,9 @@ def build_svg(
         )
 
     wanted = levels if levels else ["50", "80", "95"]
-    bands = sorted(((float(level), _z_for(float(level))) for level in wanted),
-                   key=lambda pair: pair[0])
+    bands = sorted(
+        ((float(level), _z_for(float(level))) for level in wanted), key=lambda pair: pair[0]
+    )
     widest = bands[-1]
 
     mono_family = mono_stack_for_theme(theme)
@@ -243,13 +270,9 @@ def build_svg(
     observed_ink = palette.get("Blue", "#007AFF")
     forecast_ink = palette.get("Orange", "#FF9500")
 
-    low = min(
-        [value for _, value in history]
-        + [point - widest[1] * se for _, point, se in future]
-    )
+    low = min([value for _, value in history] + [point - widest[1] * se for _, point, se in future])
     high = max(
-        [value for _, value in history]
-        + [point + widest[1] * se for _, point, se in future]
+        [value for _, value in history] + [point + widest[1] * se for _, point, se in future]
     )
     ticks = nice_ticks_range(low, high, 5)
     axis_low, axis_high = ticks[0], ticks[-1]
@@ -278,10 +301,14 @@ def build_svg(
     anchor_high = horizon_point + anchor_z * horizon_se
     share = (anchor_z * horizon_se) / horizon_point if horizon_point else 0.0
 
-    said_bands = band_note if band_note is not None else (
-        f"bands are {', '.join(fmt_number(level) for level, _ in bands)}% intervals: "
-        f"{fmt_number(100.0 - widest[0])} times in 100 the outcome falls outside the "
-        f"widest one"
+    said_bands = (
+        band_note
+        if band_note is not None
+        else (
+            f"bands are {', '.join(fmt_number(level) for level, _ in bands)}% intervals: "
+            f"{fmt_number(100.0 - widest[0])} times in 100 the outcome falls outside the "
+            f"widest one"
+        )
     )
     said_parts: List[str] = []
     if finding is not None:
@@ -298,16 +325,15 @@ def build_svg(
 
     parts: List[str] = []
     parts.append(
-        svg_open(width, height, "fan-title", "fan-desc",
-                 font_family=chrome_stack_for_theme(theme))
+        svg_open(width, height, "fan-title", "fan-desc", font_family=chrome_stack_for_theme(theme))
     )
     parts.append(f'<title id="fan-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="fan-desc">A fan chart: {len(history)} observed periods from '
-        f'{xml_escape(labels[history[0][0]])} to {xml_escape(labels[last_index])}, then '
-        f'{len(future)} forecast periods to {xml_escape(labels[horizon_index])}, each '
-        f'drawn inside nested intervals that widen with the horizon. '
-        f'{xml_escape(said_bands)}. {xml_escape(" ".join(said_parts))}</desc>'
+        f"{xml_escape(labels[history[0][0]])} to {xml_escape(labels[last_index])}, then "
+        f"{len(future)} forecast periods to {xml_escape(labels[horizon_index])}, each "
+        f"drawn inside nested intervals that widen with the horizon. "
+        f"{xml_escape(said_bands)}. {xml_escape(' '.join(said_parts))}</desc>"
     )
     parts.append(
         "<style>"
@@ -346,7 +372,7 @@ def build_svg(
         parts.append(
             f'<text x="{plot_x - 10:.1f}" y="{py(tick) + 4:.1f}" font-size="11" '
             f'fill="{SECONDARY}" text-anchor="end" font-family="{mono_family}">'
-            f'{fmt_number(tick)}</text>'
+            f"{fmt_number(tick)}</text>"
         )
 
     # Widest band first, so the narrower ones sit on top and read darker.
@@ -356,13 +382,10 @@ def build_svg(
             for step, (index, point, se) in enumerate(joined)
         )
         lower = " ".join(
-            f"L{px(index):.1f},{py(point - z * se):.1f}"
-            for index, point, se in reversed(joined)
+            f"L{px(index):.1f},{py(point - z * se):.1f}" for index, point, se in reversed(joined)
         )
         opacity = 0.10 + 0.09 * band_index
-        parts.append(
-            f'<path d="{upper} {lower} Z" fill="{forecast_ink}" opacity="{opacity:.2f}"/>'
-        )
+        parts.append(f'<path d="{upper} {lower} Z" fill="{forecast_ink}" opacity="{opacity:.2f}"/>')
         edge = py(horizon_point + z * horizon_se)
         parts.append(
             f'<text x="{px(horizon_index) + 8:.1f}" y="{edge + 4:.1f}" font-size="11" '
@@ -396,8 +419,7 @@ def build_svg(
         f'stroke-dasharray="6 4" stroke-linejoin="round"/>'
     )
     parts.append(
-        f'<circle cx="{px(last_index):.1f}" cy="{py(last_value):.1f}" r="4" '
-        f'fill="{observed_ink}"/>'
+        f'<circle cx="{px(last_index):.1f}" cy="{py(last_value):.1f}" r="4" fill="{observed_ink}"/>'
     )
 
     # Both labels are placed against their own series rather than in a
@@ -407,13 +429,13 @@ def build_svg(
     parts.append(
         f'<text x="{px(anchor_history[0]):.1f}" y="{py(anchor_history[1]) - 12:.1f}" '
         f'font-size="12" font-weight="700" fill="{observed_ink}">'
-        f'{xml_escape(history_label)}</text>'
+        f"{xml_escape(history_label)}</text>"
     )
     middle = joined[len(joined) // 2]
     parts.append(
         f'<text x="{px(middle[0]):.1f}" y="{py(middle[1] + widest[1] * middle[2]) - 10:.1f}" '
         f'font-size="12" font-weight="700" fill="{forecast_ink}" text-anchor="middle">'
-        f'{xml_escape(forecast_label)}</text>'
+        f"{xml_escape(forecast_label)}</text>"
     )
 
     step_x = max(1, n // 12)
@@ -421,7 +443,7 @@ def build_svg(
         parts.append(
             f'<text x="{px(index):.1f}" y="{plot_y + plot_h + 20:.1f}" font-size="11" '
             f'fill="{SECONDARY}" text-anchor="middle" font-family="{mono_family}">'
-            f'{xml_escape(labels[index])}</text>'
+            f"{xml_escape(labels[index])}</text>"
         )
     parts.append(
         f'<text x="{plot_x + plot_w / 2:.1f}" y="{plot_y + plot_h + 46:.1f}" '
@@ -456,13 +478,19 @@ def build_svg(
             f'aria-label="{xml_escape(" · ".join(caption))}" '
             f'x="{px(index) - 6:.1f}" y="{plot_y:.1f}" width="12" height="{plot_h:.1f}" '
             f'fill="transparent"><title>{xml_escape(labels[index])}: '
-            f'{fmt_number(value)}</title></rect>'
+            f"{fmt_number(value)}</title></rect>"
         )
         tips.append(
             tooltip_bubble(
-                px(index), py(value), caption,
-                canvas_w=width, canvas_h=height, ink=INK, secondary=SECONDARY,
-                border=GRIDLINE, elem_id=f"pttip-{element}",
+                px(index),
+                py(value),
+                caption,
+                canvas_w=width,
+                canvas_h=height,
+                ink=INK,
+                secondary=SECONDARY,
+                border=GRIDLINE,
+                elem_id=f"pttip-{element}",
             )
         )
 
@@ -543,12 +571,27 @@ def make_forecast_fan(
     True
     """
     svg = build_svg(
-        data, title=title, subtitle=subtitle, width=width, height=height,
-        x=x, y=y, forecast_key=forecast_key, se_key=se_key, levels=levels,
-        anchor_level=anchor_level, history_label=history_label,
-        forecast_label=forecast_label, boundary_label=boundary_label,
-        x_label=x_label, y_label=y_label, band_note=band_note, finding=finding,
-        mode=mode, accessibility=accessibility, theme=theme,
+        data,
+        title=title,
+        subtitle=subtitle,
+        width=width,
+        height=height,
+        x=x,
+        y=y,
+        forecast_key=forecast_key,
+        se_key=se_key,
+        levels=levels,
+        anchor_level=anchor_level,
+        history_label=history_label,
+        forecast_label=forecast_label,
+        boundary_label=boundary_label,
+        x_label=x_label,
+        y_label=y_label,
+        band_note=band_note,
+        finding=finding,
+        mode=mode,
+        accessibility=accessibility,
+        theme=theme,
     )
     dest = Path(out) if out else svg_example_path(__file__, "forecast-fan")
     return write_svg(dest, svg, theme=theme)
@@ -556,8 +599,12 @@ def make_forecast_fan(
 
 def main() -> None:
     """CLI entry point: build the SVG and write it to disk."""
-    render_cli(__file__, "forecast-fan", build_svg,
-               description="Draw a forecast inside the widening fan of its uncertainty.")
+    render_cli(
+        __file__,
+        "forecast-fan",
+        build_svg,
+        description="Draw a forecast inside the widening fan of its uncertainty.",
+    )
 
 
 if __name__ == "__main__":

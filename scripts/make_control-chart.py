@@ -283,6 +283,7 @@ def build_svg(
     str
         The SVG document.
     """
+
     def position(row: Dict[str, Any]) -> Tuple[int, float, str]:
         """Sort key that works for a batch number and for "2026-01" alike."""
         raw = row[x]
@@ -298,23 +299,20 @@ def build_svg(
     labels = [str(row[x]) for row in rows]
     n = len(values)
     if n < 2:
-        raise ValueError("a control chart needs at least two units to measure movement between them")
+        raise ValueError(
+            "a control chart needs at least two units to measure movement between them"
+        )
 
     wanted = set(rules) if rules else set(_RULE_NAMES)
     unknown = sorted(wanted - set(_RULE_NAMES))
     if unknown:
-        raise ValueError(
-            f"unknown rule(s) {unknown}; the rules are {sorted(_RULE_NAMES)}"
-        )
+        raise ValueError(f"unknown rule(s) {unknown}; the rules are {sorted(_RULE_NAMES)}")
     if limit_from not in ("moving-range", "sd"):
-        raise ValueError(
-            f"limit_from is 'moving-range' or 'sd', got {limit_from!r}"
-        )
+        raise ValueError(f"limit_from is 'moving-range' or 'sd', got {limit_from!r}")
 
     middle = centre if centre is not None else _mean(values)
     sigma = (
-        _sigma_from_moving_range(values) if limit_from == "moving-range"
-        else _sigma_from_sd(values)
+        _sigma_from_moving_range(values) if limit_from == "moving-range" else _sigma_from_sd(values)
     )
     upper = middle + sigma_multiplier * sigma
     lower = middle - sigma_multiplier * sigma
@@ -368,12 +366,16 @@ def build_svg(
         return fmt_measured(value, sigma)
 
     limit_lines = (
-        [limit_note] if limit_note is not None
+        [limit_note]
+        if limit_note is not None
         else [
             f"control limits at {measured(middle)} ± {fmt_number(sigma_multiplier)} × "
             f"{measured(sigma)}, sigma from the "
-            + ("mean moving range" if limit_from == "moving-range"
-               else "standard deviation of all points"),
+            + (
+                "mean moving range"
+                if limit_from == "moving-range"
+                else "standard deviation of all points"
+            ),
             spec_caution,
         ]
     )
@@ -399,16 +401,15 @@ def build_svg(
 
     parts: List[str] = []
     parts.append(
-        svg_open(width, height, "spc-title", "spc-desc",
-                 font_family=chrome_stack_for_theme(theme))
+        svg_open(width, height, "spc-title", "spc-desc", font_family=chrome_stack_for_theme(theme))
     )
     parts.append(f'<title id="spc-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="spc-desc">An individuals control chart of {n} units from '
-        f'{xml_escape(labels[0])} to {xml_escape(labels[-1])}, with a centre line at '
-        f'{measured(middle)} and control limits at {measured(lower)} and '
-        f'{measured(upper)}. {xml_escape(said_limits)}. '
-        f'{xml_escape(" ".join(said_parts))}</desc>'
+        f"{xml_escape(labels[0])} to {xml_escape(labels[-1])}, with a centre line at "
+        f"{measured(middle)} and control limits at {measured(lower)} and "
+        f"{measured(upper)}. {xml_escape(said_limits)}. "
+        f"{xml_escape(' '.join(said_parts))}</desc>"
     )
     parts.append(
         "<style>"
@@ -459,7 +460,7 @@ def build_svg(
         parts.append(
             f'<text x="{plot_x - 10:.1f}" y="{py(tick) + 4:.1f}" font-size="11" '
             f'fill="{SECONDARY}" text-anchor="end" font-family="{mono_family}">'
-            f'{fmt_number(tick)}</text>'
+            f"{fmt_number(tick)}</text>"
         )
 
     for value, label, dash in (
@@ -487,7 +488,7 @@ def build_svg(
         parts.append(
             f'<text x="{plot_x + plot_w + 6:.1f}" y="{py(spec) + 4:.1f}" font-size="10" '
             f'fill="{spec_ink}" font-family="{mono_family}">{xml_escape(spec_label)} '
-            f'{measured(spec)}</text>'
+            f"{measured(spec)}</text>"
         )
 
     path = " ".join(
@@ -514,17 +515,23 @@ def build_svg(
         parts.append(
             f'<rect id="pt-{index}" class="pt hit" tabindex="0" role="img" '
             f'aria-label="{xml_escape(x_label)} {xml_escape(labels[index])}: '
-            f'{measured(value)}'
+            f"{measured(value)}"
             + ("".join(f", {_RULE_NAMES[rule]}" for rule in why))
             + f'" x="{px(index) - 5:.1f}" y="{plot_y:.1f}" width="10" '
             f'height="{plot_h:.1f}" fill="transparent">'
-            f'<title>{xml_escape(labels[index])}: {measured(value)}</title></rect>'
+            f"<title>{xml_escape(labels[index])}: {measured(value)}</title></rect>"
         )
         tips.append(
             tooltip_bubble(
-                px(index), py(value), caption,
-                canvas_w=width, canvas_h=height, ink=INK, secondary=SECONDARY,
-                border=GRIDLINE, elem_id=f"pttip-{index}",
+                px(index),
+                py(value),
+                caption,
+                canvas_w=width,
+                canvas_h=height,
+                ink=INK,
+                secondary=SECONDARY,
+                border=GRIDLINE,
+                elem_id=f"pttip-{index}",
             )
         )
 
@@ -533,7 +540,7 @@ def build_svg(
         parts.append(
             f'<text x="{px(index):.1f}" y="{plot_y + plot_h + 20:.1f}" font-size="11" '
             f'fill="{SECONDARY}" text-anchor="middle" font-family="{mono_family}">'
-            f'{xml_escape(labels[index])}</text>'
+            f"{xml_escape(labels[index])}</text>"
         )
     parts.append(
         f'<text x="{plot_x + plot_w / 2:.1f}" y="{plot_y + plot_h + 46:.1f}" '
@@ -638,17 +645,35 @@ def make_control_chart(
     True
     """
     svg = build_svg(
-        data, title=title, subtitle=subtitle, width=width, height=height,
-        x=x, y=y, sigma_multiplier=sigma_multiplier, limit_from=limit_from,
-        rules=rules, run_length=run_length, trend_length=trend_length,
-        centre=centre, spec_low=spec_low, spec_high=spec_high,
-        spec_low_label=spec_low_label, spec_high_label=spec_high_label,
+        data,
+        title=title,
+        subtitle=subtitle,
+        width=width,
+        height=height,
+        x=x,
+        y=y,
+        sigma_multiplier=sigma_multiplier,
+        limit_from=limit_from,
+        rules=rules,
+        run_length=run_length,
+        trend_length=trend_length,
+        centre=centre,
+        spec_low=spec_low,
+        spec_high=spec_high,
+        spec_low_label=spec_low_label,
+        spec_high_label=spec_high_label,
         zones=zones,
-        spec_caution=spec_caution, centre_label=centre_label,
+        spec_caution=spec_caution,
+        centre_label=centre_label,
         upper_label=upper_label,
-        lower_label=lower_label, x_label=x_label, y_label=y_label,
-        limit_note=limit_note, finding=finding, mode=mode,
-        accessibility=accessibility, theme=theme,
+        lower_label=lower_label,
+        x_label=x_label,
+        y_label=y_label,
+        limit_note=limit_note,
+        finding=finding,
+        mode=mode,
+        accessibility=accessibility,
+        theme=theme,
     )
     dest = Path(out) if out else svg_example_path(__file__, "control-chart")
     return write_svg(dest, svg, theme=theme)
@@ -656,8 +681,12 @@ def make_control_chart(
 
 def main() -> None:
     """CLI entry point: build the SVG and write it to disk."""
-    render_cli(__file__, "control-chart", build_svg,
-               description="Draw an individuals control chart with run rules applied.")
+    render_cli(
+        __file__,
+        "control-chart",
+        build_svg,
+        description="Draw an individuals control chart with run rules applied.",
+    )
 
 
 if __name__ == "__main__":

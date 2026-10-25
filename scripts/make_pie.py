@@ -176,9 +176,7 @@ def build_svg(
     str
         A complete, standalone SVG document.
     """
-    rows = _rolled_up(
-        list(data if data else DEMO_DATA), category, value, max_slices, other_label
-    )
+    rows = _rolled_up(list(data if data else DEMO_DATA), category, value, max_slices, other_label)
     total = sum(float(r[value]) for r in rows) or 1.0
     palette = load_palette(accessibility, theme=theme)
     # Slices are adjacent by construction and the last one wraps back onto
@@ -194,9 +192,14 @@ def build_svg(
     hue_order = [
         palette.get(h, d)
         for h, d in (
-            ("Blue", "#007AFF"), ("Orange", "#FF9500"), ("Purple", "#AF52DE"),
-            ("Green", "#28CD41"), ("Yellow", "#FFCC00"), ("Teal", "#79DBDC"),
-            ("Red", "#FF3B30"), ("Pink", "#FF2D55"),
+            ("Blue", "#007AFF"),
+            ("Orange", "#FF9500"),
+            ("Purple", "#AF52DE"),
+            ("Green", "#28CD41"),
+            ("Yellow", "#FFCC00"),
+            ("Teal", "#79DBDC"),
+            ("Red", "#FF3B30"),
+            ("Pink", "#FF2D55"),
         )
     ]
 
@@ -221,9 +224,9 @@ def build_svg(
     biggest = rows[0]
     parts.append(
         f'<desc id="pie-desc">Pie chart of {len(rows)} parts of a whole totalling '
-        f'{quantity(total)}. The largest is {xml_escape(str(biggest[category]))} at '
-        f'{float(biggest[value]) / total * 100:.0f}%. Every slice is labelled on the '
-        f'figure; hover or focus one for its exact value.</desc>'
+        f"{quantity(total)}. The largest is {xml_escape(str(biggest[category]))} at "
+        f"{float(biggest[value]) / total * 100:.0f}%. Every slice is labelled on the "
+        f"figure; hover or focus one for its exact value.</desc>"
     )
     parts.append(
         "<style>"
@@ -279,7 +282,7 @@ def build_svg(
             f'aria-label="{xml_escape(name)}: {share * 100:.1f} percent" '
             f'd="{_sector_path(cx, cy, r_outer, a0, a1)}" fill="{color}" '
             f'stroke="{BG}" stroke-width="2">'
-            f'<title>{xml_escape(f"{name}: {measured}")}</title></path>'
+            f"<title>{xml_escape(f'{name}: {measured}')}</title></path>"
         )
 
         if a1 - a0 >= _INSIDE_MIN_ANGLE:
@@ -294,8 +297,15 @@ def build_svg(
             )
             tips.append(
                 tooltip_bubble(
-                    lx, ly + 14, tip_lines, canvas_w=width, canvas_h=height,
-                    ink=INK, secondary=SECONDARY, border=GRIDLINE, elem_id=f"slicetip-{i}",
+                    lx,
+                    ly + 14,
+                    tip_lines,
+                    canvas_w=width,
+                    canvas_h=height,
+                    ink=INK,
+                    secondary=SECONDARY,
+                    border=GRIDLINE,
+                    elem_id=f"slicetip-{i}",
                 )
             )
         else:
@@ -311,8 +321,7 @@ def build_svg(
     # one above, removes the crossing by construction.
     for side in ("right", "left"):
         on_this_side = [
-            item for item in outside
-            if (math.sin(item["mid"]) >= 0) == (side == "right")
+            item for item in outside if (math.sin(item["mid"]) >= 0) == (side == "right")
         ]
         for item in on_this_side:
             item["ex"], item["ey"] = _polar(cx, cy, r_outer + 10.0, item["mid"])
@@ -347,8 +356,14 @@ def build_svg(
             )
             tips.append(
                 tooltip_bubble(
-                    label_x, ly + 16, list(item["tip"]), canvas_w=width, canvas_h=height,
-                    ink=INK, secondary=SECONDARY, border=GRIDLINE,
+                    label_x,
+                    ly + 16,
+                    list(item["tip"]),
+                    canvas_w=width,
+                    canvas_h=height,
+                    ink=INK,
+                    secondary=SECONDARY,
+                    border=GRIDLINE,
                     elem_id=f"slicetip-{item['i']}",
                 )
             )
@@ -381,8 +396,7 @@ def build_svg(
             )
         if rolled_wedge is not None:
             foot += (
-                f" · {rolled_wedge[category]} groups the "
-                f"{int(rolled_wedge['_rolled'])} smallest"
+                f" · {rolled_wedge[category]} groups the {int(rolled_wedge['_rolled'])} smallest"
             )
     parts.append(
         f'<text x="{width / 2:.1f}" y="{height - 20:.1f}" font-size="12" fill="{SECONDARY}" '
@@ -451,10 +465,20 @@ def make_pie(
     True
     """
     svg = build_svg(
-        data, title=title, subtitle=subtitle, width=width, height=height,
-        category=category, value=value, unit=unit, max_slices=max_slices,
-        other_label=other_label, footer=footer, mode=mode,
-        accessibility=accessibility, theme=theme,
+        data,
+        title=title,
+        subtitle=subtitle,
+        width=width,
+        height=height,
+        category=category,
+        value=value,
+        unit=unit,
+        max_slices=max_slices,
+        other_label=other_label,
+        footer=footer,
+        mode=mode,
+        accessibility=accessibility,
+        theme=theme,
     )
     dest = Path(out) if out else svg_example_path(__file__, "pie")
     return write_svg(dest, svg, theme=theme)

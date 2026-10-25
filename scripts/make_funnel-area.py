@@ -142,9 +142,14 @@ def build_svg(
     mono_family = mono_stack_for_theme(theme)
     palette = load_palette(accessibility, theme=theme)
     wheel = [
-        palette.get(key, fallback) for key, fallback in (
-            ("Blue", "#007AFF"), ("Teal", "#30B0C7"), ("Green", "#28CD41"),
-            ("Purple", "#5856D6"), ("Orange", "#FF9500"), ("Red", "#FF3B30"),
+        palette.get(key, fallback)
+        for key, fallback in (
+            ("Blue", "#007AFF"),
+            ("Teal", "#30B0C7"),
+            ("Green", "#28CD41"),
+            ("Purple", "#5856D6"),
+            ("Orange", "#FF9500"),
+            ("Red", "#FF3B30"),
         )
     ]
     accent = palette.get("Orange", "#FF9500")
@@ -159,8 +164,7 @@ def build_svg(
     # any information of its own.
     boundaries = len(rows) + 1
     half = [
-        plot_w / 2.0 * (1.0 - taper * index / max(boundaries - 1, 1))
-        for index in range(boundaries)
+        plot_w / 2.0 * (1.0 - taper * index / max(boundaries - 1, 1)) for index in range(boundaries)
     ]
 
     # Band i is a trapezoid of height h_i whose mean full width is
@@ -192,7 +196,8 @@ def build_svg(
         tops.append(tops[-1] + height_of)
 
     method_lines = (
-        [method_note] if method_note is not None
+        [method_note]
+        if method_note is not None
         else [
             f"each band's area is its count — the quantity the eye measures; "
             f"sizing by height instead would draw the last stage "
@@ -200,14 +205,19 @@ def build_svg(
             f"{'too large' if distortion > 0 else 'too small'}"
             if size_by == "area"
             else f"each band's *height* is its count, so the taper leaves the last "
-                 f"stage {fmt_number(abs(distortion))}% "
-                 f"{'too large' if distortion > 0 else 'too small'} by area",
+            f"stage {fmt_number(abs(distortion))}% "
+            f"{'too large' if distortion > 0 else 'too small'} by area",
             f"{fmt_number(counts[-1] / counts[0] * 100.0)}% of "
             f"{fmt_number(counts[0])} reach the last stage",
-        ] + ([
-            f"warning: {len(climbs)} stage(s) are larger than the one above, so this is "
-            f"not a funnel"
-        ] if climbs else [])
+        ]
+        + (
+            [
+                f"warning: {len(climbs)} stage(s) are larger than the one above, so this is "
+                f"not a funnel"
+            ]
+            if climbs
+            else []
+        )
     )
     said_method = " · ".join(method_lines)
     said_parts: List[str] = []
@@ -226,15 +236,16 @@ def build_svg(
 
     parts: List[str] = []
     parts.append(
-        svg_open(width, height, "funnel-title", "funnel-desc",
-                 font_family=chrome_stack_for_theme(theme))
+        svg_open(
+            width, height, "funnel-title", "funnel-desc", font_family=chrome_stack_for_theme(theme)
+        )
     )
     parts.append(f'<title id="funnel-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="funnel-desc">A funnel of {len(rows)} stages from '
-        f'{xml_escape(names[0])} at {fmt_number(counts[0])} down to '
-        f'{xml_escape(names[-1])} at {fmt_number(counts[-1])}. '
-        f'{xml_escape(said_method)}. {xml_escape(" ".join(said_parts))}</desc>'
+        f"{xml_escape(names[0])} at {fmt_number(counts[0])} down to "
+        f"{xml_escape(names[-1])} at {fmt_number(counts[-1])}. "
+        f"{xml_escape(said_method)}. {xml_escape(' '.join(said_parts))}</desc>"
     )
     parts.append(
         "<style>"
@@ -287,7 +298,7 @@ def build_svg(
             parts.append(
                 f'<text x="{centre:.1f}" y="{middle + 4:.1f}" font-size="12" '
                 f'fill="#FFFFFF" text-anchor="middle" font-weight="600">'
-                f'{fmt_number(counts[index])}</text>'
+                f"{fmt_number(counts[index])}</text>"
             )
         parts.append(
             f'<text x="{plot_x - 16:.1f}" y="{middle + 4:.1f}" font-size="12" '
@@ -300,7 +311,7 @@ def build_svg(
         parts.append(
             f'<text x="{plot_x - 16:.1f}" y="{middle + 18:.1f}" font-size="10" '
             f'fill="{SECONDARY}" text-anchor="end" font-family="{mono_family}">'
-            f'{fmt_number(share)}% of the top</text>'
+            f"{fmt_number(share)}% of the top</text>"
         )
         if index:
             rate = rates[index - 1]
@@ -309,28 +320,34 @@ def build_svg(
                 f'<text x="{plot_x + plot_w + 16:.1f}" y="{top + 4:.1f}" font-size="11" '
                 f'fill="{accent if hot else SECONDARY}" '
                 f'font-weight="{700 if hot else 400}">'
-                f'{fmt_number(rate * 100.0)}% {xml_escape(rate_label)}</text>'
+                f"{fmt_number(rate * 100.0)}% {xml_escape(rate_label)}</text>"
             )
         parts.append(
             f'<rect id="band-{index}" class="band hit" tabindex="0" role="img" '
             f'aria-label="{xml_escape(name)}: {fmt_number(counts[index])}, '
-            f'{fmt_number(share)}% of the first stage'
-            + (f", {fmt_number(rates[index - 1] * 100.0)}% of the one above"
-               if index else "")
+            f"{fmt_number(share)}% of the first stage"
+            + (f", {fmt_number(rates[index - 1] * 100.0)}% of the one above" if index else "")
             + f'" x="{centre - upper:.1f}" y="{top:.1f}" '
             f'width="{2 * upper:.1f}" height="{max(bottom - top, 1.0):.1f}" '
             f'fill="transparent"><title>{xml_escape(name)}: '
-            f'{fmt_number(counts[index])}</title></rect>'
+            f"{fmt_number(counts[index])}</title></rect>"
         )
         tips.append(
             tooltip_bubble(
-                centre, middle,
-                [name, fmt_number(counts[index]),
-                 f"{fmt_number(share)}% of the top"
-                 + (f" · {fmt_number(rates[index - 1] * 100.0)}% {rate_label}"
-                    if index else "")],
-                canvas_w=width, canvas_h=height, ink=INK, secondary=SECONDARY,
-                border=GRIDLINE, elem_id=f"bandtip-{index}",
+                centre,
+                middle,
+                [
+                    name,
+                    fmt_number(counts[index]),
+                    f"{fmt_number(share)}% of the top"
+                    + (f" · {fmt_number(rates[index - 1] * 100.0)}% {rate_label}" if index else ""),
+                ],
+                canvas_w=width,
+                canvas_h=height,
+                ink=INK,
+                secondary=SECONDARY,
+                border=GRIDLINE,
+                elem_id=f"bandtip-{index}",
             )
         )
 
@@ -399,10 +416,21 @@ def make_funnel_area(
     True
     """
     svg = build_svg(
-        data, title=title, subtitle=subtitle, width=width, height=height,
-        stage=stage, value=value, size_by=size_by, taper=taper,
-        rate_label=rate_label, method_note=method_note, finding=finding,
-        mode=mode, accessibility=accessibility, theme=theme,
+        data,
+        title=title,
+        subtitle=subtitle,
+        width=width,
+        height=height,
+        stage=stage,
+        value=value,
+        size_by=size_by,
+        taper=taper,
+        rate_label=rate_label,
+        method_note=method_note,
+        finding=finding,
+        mode=mode,
+        accessibility=accessibility,
+        theme=theme,
     )
     dest = Path(out) if out else svg_example_path(__file__, "funnel-area")
     return write_svg(dest, svg, theme=theme)
@@ -410,8 +438,12 @@ def make_funnel_area(
 
 def main() -> None:
     """CLI entry point: build the SVG and write it to disk."""
-    render_cli(__file__, "funnel-area", build_svg,
-               description="Draw a funnel whose area, not width, is the quantity.")
+    render_cli(
+        __file__,
+        "funnel-area",
+        build_svg,
+        description="Draw a funnel whose area, not width, is the quantity.",
+    )
 
 
 if __name__ == "__main__":

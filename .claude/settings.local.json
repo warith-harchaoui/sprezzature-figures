@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//Users/warithharchaoui/.sprezzature-studio/projects/ventes-trimestrielles-csv-34180611/exports/**)",
+      "Bash(mkdir -p /private/tmp/claude-501/-Users-warithharchaoui-sprezzature-figures/3f997550-6e1f-43e2-9e7e-704ea6aa3dc0/scratchpad/export_check)",
+      "Bash(rm -rf *)",
+      "Bash(unzip -o /Users/warithharchaoui/.sprezzature-studio/projects/ventes-trimestrielles-csv-34180611/exports/ventes-trimestrielles-csv.sprezzature.zip)"
+    ]
+  }
+}

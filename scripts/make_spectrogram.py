@@ -56,17 +56,14 @@ from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_the
 
 # Repo-relative default output — the one SVG artifact this figure ships.
 _DEFAULT_OUT = (
-    Path(__file__).resolve().parent.parent
-    / "assets"
-    / "svg-examples"
-    / "spectrogram.svg"
+    Path(__file__).resolve().parent.parent / "assets" / "svg-examples" / "spectrogram.svg"
 )
 
 # House-style tokens (mirrors the house-style constants, kept literal so this
 # generator needs no import of the dataviz tier at build time).
-_INK = "#1D1D1F"        # primary text
+_INK = "#1D1D1F"  # primary text
 _SECONDARY = "#6E6E73"  # subtitle / secondary text
-_BG = "#FFFFFF"         # white ground
+_BG = "#FFFFFF"  # white ground
 
 # Sequential *power* ramp. A perceptually-uniform viridis-style stop list
 # (dark blue → teal → green → yellow) reads loudness monotonically and is
@@ -128,8 +125,8 @@ def _synthesise_clip(
     """
     rows = list(components) if components else DEMO_DATA
     rng = np.random.default_rng(seed)
-    sr = 8000                       # sample rate (Hz) — enough for a 0–4 kHz view
-    dur = 3.0                       # clip length (seconds)
+    sr = 8000  # sample rate (Hz) — enough for a 0–4 kHz view
+    dur = 3.0  # clip length (seconds)
     t = np.linspace(0.0, dur, int(sr * dur), endpoint=False)
 
     gliss = np.zeros_like(t)
@@ -156,7 +153,7 @@ def _synthesise_clip(
             drone += amp * np.sin(2.0 * np.pi * hz * t)
         elif kind == "tap":
             centre = float(row.get("time_s", 0.0))
-            env = np.exp(-((t - centre) ** 2) / (2.0 * 0.004 ** 2))
+            env = np.exp(-((t - centre) ** 2) / (2.0 * 0.004**2))
             taps += env * rng.standard_normal(t.size)
     taps *= 0.5
 
@@ -209,9 +206,9 @@ def _stft_db(
         axis=1,
     )  # shape (n_fft, n_frames)
 
-    spectrum = np.fft.rfft(frames, axis=0)          # (n_fft//2+1, n_frames)
+    spectrum = np.fft.rfft(frames, axis=0)  # (n_fft//2+1, n_frames)
     power = np.abs(spectrum) ** 2
-    freqs = np.fft.rfftfreq(n_fft, d=1.0 / sr)      # (n_fft//2+1,)
+    freqs = np.fft.rfftfreq(n_fft, d=1.0 / sr)  # (n_fft//2+1,)
     times = (np.arange(n_frames) * hop + n_fft / 2) / sr
 
     # Keep only the sub-f_max band (the informative range for this clip).
@@ -306,7 +303,7 @@ def build_svg(
     del accessibility
     font_family = chrome_stack_for_theme(theme)
     mono_family = mono_stack_for_theme(theme)
-    power_db: np.ndarray = stft["power_db"]         # (n_freq, n_frames)
+    power_db: np.ndarray = stft["power_db"]  # (n_freq, n_frames)
     times: np.ndarray = stft["times"]
     freqs: np.ndarray = stft["freqs"]
     n_freq, n_frames = power_db.shape
@@ -314,7 +311,7 @@ def build_svg(
     # ---- canvas geometry -------------------------------------------------- #
     # Poster-size canvas: generous, readable at a glance, no cramping.
     width, height = 1240, 820
-    m_left, m_right = 104, 156        # right margin holds the colour legend
+    m_left, m_right = 104, 156  # right margin holds the colour legend
     m_top, m_bottom = 132, 108
     plot_w = width - m_left - m_right
     plot_h = height - m_top - m_bottom
@@ -340,10 +337,7 @@ def build_svg(
 
     # ---- header ----------------------------------------------------------- #
     title = title or "A rising tone climbs the frequency axis over three seconds"
-    subtitle = (
-        "Short-time Fourier transform of a synthesised clip — brighter = louder "
-        ""
-    )
+    subtitle = "Short-time Fourier transform of a synthesised clip — brighter = louder "
     parts.append(
         f'<svg role="img" aria-label="{title}" '
         f'xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" '
@@ -396,8 +390,7 @@ def build_svg(
         f'fill="{_INK}">{title}</text>'
     )
     parts.append(
-        f'<text x="{m_left - 42}" y="90" font-size="17" '
-        f'fill="{_SECONDARY}">{subtitle}</text>'
+        f'<text x="{m_left - 42}" y="90" font-size="17" fill="{_SECONDARY}">{subtitle}</text>'
     )
 
     # ---- heatmap cells (clipped to the plot rectangle) -------------------- #
@@ -493,7 +486,7 @@ def build_svg(
         one a one-line tooltip explaining what the annotated feature is.
         """
         pad_x, pad_y = 8.0, 6.0
-        char_w = 8.6                       # rough advance for 15px Roboto 600
+        char_w = 8.6  # rough advance for 15px Roboto 600
         w = len(text) * char_w + 2 * pad_x
         h = 24.0
         if anchor == "start":
@@ -517,17 +510,26 @@ def build_svg(
 
     # Label the glissando diagonal.
     _labelled(
-        x_px(2.28), y_px(2650.0), "rising tone", anchor="start",
+        x_px(2.28),
+        y_px(2650.0),
+        "rising tone",
+        anchor="start",
         tip="The glissando: a tone sweeping upward from about 300 Hz to 3 kHz over the full 3 seconds.",
     )
     # Label the drone band.
     _labelled(
-        x_px(0.14), y_px(560.0), "bass drone", anchor="start",
+        x_px(0.14),
+        y_px(560.0),
+        "bass drone",
+        anchor="start",
         tip="A steady low-frequency drone held constant for the whole clip.",
     )
     # Label one of the percussive taps (the broadband vertical streaks).
     _labelled(
-        x_px(1.5), y_px(3750.0), "percussive tap", anchor="middle",
+        x_px(1.5),
+        y_px(3750.0),
+        "percussive tap",
+        anchor="middle",
         tip="A broadband transient (energy across all frequencies at once) -- three of these are synthesized into the clip.",
     )
 
@@ -584,9 +586,7 @@ def _build_parser() -> argparse.ArgumentParser:
         default=_DEFAULT_OUT,
         help="Destination SVG path (default: the shipped example).",
     )
-    parser.add_argument(
-        "--seed", type=int, default=3, help="Random seed for the synthesised clip."
-    )
+    parser.add_argument("--seed", type=int, default=3, help="Random seed for the synthesised clip.")
     parser.add_argument(
         "--mode",
         choices=("self-contained", "external", "static"),
@@ -596,8 +596,12 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--accessibility",
         choices=(
-            "universal", "high-contrast", "monochrome",
-            "deuteranopia", "protanopia", "tritanopia",
+            "universal",
+            "high-contrast",
+            "monochrome",
+            "deuteranopia",
+            "protanopia",
+            "tritanopia",
         ),
         default="universal",
         help=(
@@ -658,8 +662,17 @@ def make_spectrogram(
     """
     signal, sr = _synthesise_clip(data, seed=seed)
     stft = _stft_db(signal, sr)
-    svg = build_svg(stft, sr, mode, accessibility=accessibility, theme=theme,
-                     x_axis_title=x_axis_title, y_axis_title=y_axis_title, legend_title=legend_title, title=title or None)
+    svg = build_svg(
+        stft,
+        sr,
+        mode,
+        accessibility=accessibility,
+        theme=theme,
+        x_axis_title=x_axis_title,
+        y_axis_title=y_axis_title,
+        legend_title=legend_title,
+        title=title or None,
+    )
     dest = Path(out) if out else svg_example_path(__file__, "spectrogram")
     return write_svg(dest, svg, theme=theme)
 

@@ -226,9 +226,7 @@ def rows_from_reading(reading: Any, kind: str) -> list[dict[str, Any]] | None:
     """
     if not getattr(reading, "values_are_readable", False):
         return None
-    filled = [
-        s for s in reading.series if s.values and len(s.values) == len(s.labels) and s.labels
-    ]
+    filled = [s for s in reading.series if s.values and len(s.values) == len(s.labels) and s.labels]
     if len(filled) != 1:
         return None
     pair = _binding_roles(get_figure_definition(kind))
@@ -397,8 +395,7 @@ def redraw(
 
     if reading.kind_confidence == "low":
         warnings.append(
-            f"The model was unsure this is a {target!r}. Name the kind yourself if it "
-            f"picked wrong."
+            f"The model was unsure this is a {target!r}. Name the kind yourself if it picked wrong."
         )
 
     kwargs: dict[str, Any] = {"title": title or reading.suggested_title or reading.title or ""}

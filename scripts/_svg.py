@@ -105,6 +105,7 @@ def wrap_no_orphan(text: str, width: int) -> _List[str]:
                 changed = True
     return [ln for ln in lines if ln] or [""]
 
+
 try:
     from sprezzature_figures.fonts import DEFAULT_SVG_FACES, svg_font_defs
 except ImportError:  # pragma: no cover - fonts.py is stdlib-only, always importable
@@ -371,7 +372,11 @@ def fmt_magnitude(v: float, lang: str = "en") -> str:
             # 999_999 / 1e6 is 0.999999, which is not integral, yet its label
             # is "1M" and the ".0" carries nothing.
             arrondi = round(reduit, 1)
-            texte = f"{reduit:.0f}" if abs(reduit) >= 100 or arrondi == int(arrondi) else f"{reduit:.1f}"
+            texte = (
+                f"{reduit:.0f}"
+                if abs(reduit) >= 100 or arrondi == int(arrondi)
+                else f"{reduit:.1f}"
+            )
             if lang == "fr":
                 return f"{texte.replace('.', ',')} {suffixe}"
             return f"{texte}{suffixe}"
@@ -379,8 +384,14 @@ def fmt_magnitude(v: float, lang: str = "en") -> str:
 
 
 def rounded_rect_path(
-    x: float, y: float, w: float, h: float,
-    r_tl: float = 0.0, r_tr: float = 0.0, r_br: float = 0.0, r_bl: float = 0.0,
+    x: float,
+    y: float,
+    w: float,
+    h: float,
+    r_tl: float = 0.0,
+    r_tr: float = 0.0,
+    r_br: float = 0.0,
+    r_bl: float = 0.0,
 ) -> str:
     """SVG path ``d`` for a rectangle with per-corner radii (SVG house config
     for the Sprezzature Corner Policy, see references/corners.md).
@@ -395,10 +406,14 @@ def rounded_rect_path(
     f = fmt_compact
     return (
         f"M{f(x + tl)},{f(y)} "
-        f"H{f(x + w - tr)} " + (f"A{f(tr)},{f(tr)} 0 0 1 {f(x + w)},{f(y + tr)} " if tr else "")
-        + f"V{f(y + h - br)} " + (f"A{f(br)},{f(br)} 0 0 1 {f(x + w - br)},{f(y + h)} " if br else "")
-        + f"H{f(x + bl)} " + (f"A{f(bl)},{f(bl)} 0 0 1 {f(x)},{f(y + h - bl)} " if bl else "")
-        + f"V{f(y + tl)} " + (f"A{f(tl)},{f(tl)} 0 0 1 {f(x + tl)},{f(y)} " if tl else "")
+        f"H{f(x + w - tr)} "
+        + (f"A{f(tr)},{f(tr)} 0 0 1 {f(x + w)},{f(y + tr)} " if tr else "")
+        + f"V{f(y + h - br)} "
+        + (f"A{f(br)},{f(br)} 0 0 1 {f(x + w - br)},{f(y + h)} " if br else "")
+        + f"H{f(x + bl)} "
+        + (f"A{f(bl)},{f(bl)} 0 0 1 {f(x)},{f(y + h - bl)} " if bl else "")
+        + f"V{f(y + tl)} "
+        + (f"A{f(tl)},{f(tl)} 0 0 1 {f(x + tl)},{f(y)} " if tl else "")
         + "Z"
     )
 
@@ -663,9 +678,7 @@ def catmull_rom_beziers(
         # the neighbour-difference scaled by 1/tension.
         c1x, c1y = p1[0] + (p2[0] - p0[0]) / tension, p1[1] + (p2[1] - p0[1]) / tension
         c2x, c2y = p2[0] - (p3[0] - p1[0]) / tension, p2[1] - (p3[1] - p1[1]) / tension
-        seg.append(
-            f" C{fmt(c1x)},{fmt(c1y)} {fmt(c2x)},{fmt(c2y)} {fmt(p2[0])},{fmt(p2[1])}"
-        )
+        seg.append(f" C{fmt(c1x)},{fmt(c1y)} {fmt(c2x)},{fmt(c2y)} {fmt(p2[0])},{fmt(p2[1])}")
     return "".join(seg)
 
 

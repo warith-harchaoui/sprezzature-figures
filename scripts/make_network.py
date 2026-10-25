@@ -61,10 +61,10 @@ _MODULE_WIDTH, _MODULE_HEIGHT = WIDTH, HEIGHT  # baseline size before per-graph 
 # even a max-radius node (52px, see _radius) sitting at the very top of the layout box
 # clears the hint line at y=134 with margin, instead of visually overlapping it.
 PLOT_TOP = 210
-PLOT_PAD = 92              # inner margin around the layout box
+PLOT_PAD = 92  # inner margin around the layout box
 
-SUBINK = "#6E6E73"          # secondary text
-EDGE = "#C7C7CC"            # resting edge colour (light neutral)
+SUBINK = "#6E6E73"  # secondary text
+EDGE = "#C7C7CC"  # resting edge colour (light neutral)
 
 FONT = "Roboto, system-ui, sans-serif"
 
@@ -129,6 +129,7 @@ CALLS: List[Tuple[str, str]] = [
     ("search", "catalog"),
 ]
 
+
 # Team → brand hue. Built from the palette at render time so the accessibility
 # level can remap the hues.
 def _team_color(accessibility: str = "universal", theme: str = "corporate") -> Dict[str, str]:
@@ -155,6 +156,7 @@ def _team_color(accessibility: str = "universal", theme: str = "corporate") -> D
         "Fulfilment": palette.get("Green", "#34C759"),
         "Growth": palette.get("Purple", "#AF52DE"),
     }
+
 
 #: Fallback hue-name cycling order for custom team sets beyond the five the
 #: default story names (kept in the same order the default teams already use
@@ -515,22 +517,29 @@ def build_svg(
     subtitle_txt = (
         subtitle if subtitle is not None else "Service-to-service calls in an online-store backend"
     )
-    desc_txt = desc if desc is not None else (
-        "Force-directed node-link diagram of a microservice call graph. Each "
-        "node is a service, coloured by owning team and sized by how many "
-        "other services call it. Edges join services that call each other. "
-        "The Auth service is the largest node: nearly every checkout, order "
-        "and profile path calls it, so a stall in Auth cascades across the "
-        "whole store. Hover or focus any service to highlight only the "
-        "services it talks to."
+    desc_txt = (
+        desc
+        if desc is not None
+        else (
+            "Force-directed node-link diagram of a microservice call graph. Each "
+            "node is a service, coloured by owning team and sized by how many "
+            "other services call it. Edges join services that call each other. "
+            "The Auth service is the largest node: nearly every checkout, order "
+            "and profile path calls it, so a stall in Auth cascades across the "
+            "whole store. Hover or focus any service to highlight only the "
+            "services it talks to."
+        )
     )
-    hint_txt = hint if hint is not None else (
-        "Node size ∝ how many services call it · hover or focus a service "
-        "to trace its calls"
+    hint_txt = (
+        hint
+        if hint is not None
+        else ("Node size ∝ how many services call it · hover or focus a service to trace its calls")
     )
 
     parts: List[str] = []
-    parts.append(svg_open(WIDTH, HEIGHT, "net-title", "net-desc", font_family=chrome_stack_for_theme(theme)))
+    parts.append(
+        svg_open(WIDTH, HEIGHT, "net-title", "net-desc", font_family=chrome_stack_for_theme(theme))
+    )
     parts.append(f'<title id="net-title">{escape(title_txt)}</title>')
     parts.append(f'<desc id="net-desc">{escape(desc_txt)}</desc>')
 
@@ -554,7 +563,7 @@ def build_svg(
         # NOTE: :is(:hover,:focus-within) keeps ``cond`` a *single* complex
         # selector — a bare comma here would split the descendant rules and
         # silently break the fade.
-        cond = f'#graph:has(.node.n-{slug[nid]}:is(:hover,:focus-within))'
+        cond = f"#graph:has(.node.n-{slug[nid]}:is(:hover,:focus-within))"
         # Fade all.
         css_lines.append(f"{cond} .edge{{opacity:.07}}")
         css_lines.append(f"{cond} .node{{opacity:.20}}")
@@ -580,9 +589,7 @@ def build_svg(
     # always-visible text label, so team identity survives without colour: the
     # nodes become CanvasText discs and the labels + edges follow the system
     # palette too.
-    team_series = {
-        f".team-{_team_slug(team)}": color for team, color in TEAM_COLOR.items()
-    }
+    team_series = {f".team-{_team_slug(team)}": color for team, color in TEAM_COLOR.items()}
     css_lines.append(
         os_adaptive_style(
             team_series,
@@ -596,14 +603,7 @@ def build_svg(
     # white halo — under dark the text flips to off-white, so the halo must flip
     # to the dark paper (not stay white) or it would swallow the light text. The
     # resting edges dim to a mid-grey that reads as connectors on the dark ground.
-    css_lines.append(
-        os_dark_style(
-            extra=(
-                ".nlabel{stroke:#0B0B0C;}"
-                ".edge{stroke:#4A4A50;}"
-            )
-        )
-    )
+    css_lines.append(os_dark_style(extra=(".nlabel{stroke:#0B0B0C;}.edge{stroke:#4A4A50;}")))
     parts.append("<style>" + "".join(css_lines) + "</style>")
 
     # --- background ---
@@ -615,8 +615,7 @@ def build_svg(
         f'fill="{INK}">{escape(title_txt)}</text>'
     )
     parts.append(
-        f'<text x="48" y="102" font-size="19" fill="{SUBINK}">'
-        f'{escape(subtitle_txt)}</text>'
+        f'<text x="48" y="102" font-size="19" fill="{SUBINK}">{escape(subtitle_txt)}</text>'
     )
 
     parts.append('<g id="graph">')
@@ -651,8 +650,12 @@ def build_svg(
     # otherwise land squarely on top of an unrelated neighbouring circle
     # (labels only used to dodge other labels, never the circles themselves).
     label_boxes: List[Dict[str, float]] = [
-        {"left": x - radii[nid], "right": x + radii[nid],
-         "top": y - radii[nid], "bottom": y + radii[nid]}
+        {
+            "left": x - radii[nid],
+            "right": x + radii[nid],
+            "top": y - radii[nid],
+            "bottom": y + radii[nid],
+        }
         for nid, (x, y) in pos.items()
     ]
     placements: Dict[str, Tuple[float, float, str]] = {}
@@ -682,7 +685,12 @@ def build_svg(
         while guard < 8 and below <= max_below:
             collided = False
             for box in label_boxes:
-                if left < box["right"] and left + w > box["left"] and below < box["bottom"] and below + LABEL_SIZE > box["top"]:
+                if (
+                    left < box["right"]
+                    and left + w > box["left"]
+                    and below < box["bottom"]
+                    and below + LABEL_SIZE > box["top"]
+                ):
                     below = box["bottom"] + 4
                     collided = True
                     break
@@ -690,7 +698,9 @@ def build_svg(
                 break
             guard += 1
         below = min(below, max_below)
-        label_boxes.append({"left": left, "right": left + w, "top": below, "bottom": below + LABEL_SIZE})
+        label_boxes.append(
+            {"left": left, "right": left + w, "top": below, "bottom": below + LABEL_SIZE}
+        )
         placements[nid] = (lx, below, anchor)
 
     parts.append('<g id="labels">')
@@ -718,10 +728,7 @@ def build_svg(
         color = TEAM_COLOR[team_of[nid]]
         callers = sorted({c for c, e in calls if e == nid}, key=lambda c: label_of.get(c, c))
         callee_of = sorted({e for c, e in calls if c == nid}, key=lambda e: label_of.get(e, e))
-        tip = (
-            f"{label_of[nid]} · {team_of[nid]} team — "
-            f"called by {indeg[nid]} service(s)"
-        )
+        tip = f"{label_of[nid]} · {team_of[nid]} team — called by {indeg[nid]} service(s)"
         if callers:
             tip += ": " + ", ".join(label_of.get(c, c) for c in callers)
         if callee_of:
@@ -739,7 +746,9 @@ def build_svg(
         )
         tip_lines = [label_of[nid], f"{team_of[nid]} team"]
         if callers:
-            tip_lines.append(f"Called by {indeg[nid]}: " + ", ".join(label_of.get(c, c) for c in callers))
+            tip_lines.append(
+                f"Called by {indeg[nid]}: " + ", ".join(label_of.get(c, c) for c in callers)
+            )
         else:
             tip_lines.append(f"Called by {indeg[nid]} service(s)")
         if callee_of:
@@ -751,10 +760,15 @@ def build_svg(
             tip_anchor, tip_x = "end", x
         node_tips.append(
             tooltip_bubble(
-                tip_x, y - r - 14,
+                tip_x,
+                y - r - 14,
                 tip_lines,
-                anchor=tip_anchor, canvas_w=WIDTH, canvas_h=HEIGHT,
-                ink=INK, secondary=SUBINK, border=EDGE,
+                anchor=tip_anchor,
+                canvas_w=WIDTH,
+                canvas_h=HEIGHT,
+                ink=INK,
+                secondary=SUBINK,
+                border=EDGE,
                 elem_id=f"node-tip-{node_i}",
             )
         )
@@ -772,9 +786,7 @@ def build_svg(
     )
     cursor: float = lx
     for team, color in TEAM_COLOR.items():
-        parts.append(
-            f'<circle cx="{cursor + 9:.1f}" cy="{ly - 6:.1f}" r="9" fill="{color}"/>'
-        )
+        parts.append(f'<circle cx="{cursor + 9:.1f}" cy="{ly - 6:.1f}" r="9" fill="{color}"/>')
         parts.append(
             f'<text x="{cursor + 26:.1f}" y="{ly:.1f}" font-size="18" '
             f'fill="{INK}">{escape(team)}</text>'
@@ -783,9 +795,7 @@ def build_svg(
 
     # --- size + hover hint: sits under the subtitle so it never collides
     #     with the legend row at the bottom of a dense graph. ---
-    parts.append(
-        f'<text x="48" y="134" font-size="17" fill="{SUBINK}">{escape(hint_txt)}</text>'
-    )
+    parts.append(f'<text x="48" y="134" font-size="17" fill="{SUBINK}">{escape(hint_txt)}</text>')
 
     parts.append(fullscreen_control(WIDTH, HEIGHT, mode))
     parts.append("</svg>")
@@ -799,8 +809,12 @@ _LABEL_OF: Dict[str, str] = {s[0]: s[1] for s in SERVICES}
 _TEAM_OF: Dict[str, str] = {s[0]: s[2] for s in SERVICES}
 DEMO_DATA: List[Dict[str, Any]] = [
     {
-        "source": a, "source_label": _LABEL_OF[a], "source_team": _TEAM_OF[a],
-        "target": b, "target_label": _LABEL_OF[b], "target_team": _TEAM_OF[b],
+        "source": a,
+        "source_label": _LABEL_OF[a],
+        "source_team": _TEAM_OF[a],
+        "target": b,
+        "target_label": _LABEL_OF[b],
+        "target_team": _TEAM_OF[b],
     }
     for a, b in CALLS
 ]
@@ -816,10 +830,14 @@ def _rows_to_graph(
     for r in rows:
         src, tgt = str(r["source"]), str(r["target"])
         if src not in seen:
-            services.append((src, str(r.get("source_label", src)), str(r.get("source_team", "Team"))))
+            services.append(
+                (src, str(r.get("source_label", src)), str(r.get("source_team", "Team")))
+            )
             seen.add(src)
         if tgt not in seen:
-            services.append((tgt, str(r.get("target_label", tgt)), str(r.get("target_team", "Team"))))
+            services.append(
+                (tgt, str(r.get("target_label", tgt)), str(r.get("target_team", "Team")))
+            )
             seen.add(tgt)
         calls.append((src, tgt))
     return services, calls
@@ -870,8 +888,15 @@ def make_network(
     rows = data if data else DEMO_DATA
     services, calls = _rows_to_graph(rows)
     svg = build_svg(
-        services=services, calls=calls, mode=mode, accessibility=accessibility,
-        title=title, subtitle=subtitle, desc=desc, legend_title=legend_title, hint=hint,
+        services=services,
+        calls=calls,
+        mode=mode,
+        accessibility=accessibility,
+        title=title,
+        subtitle=subtitle,
+        desc=desc,
+        legend_title=legend_title,
+        hint=hint,
         theme=theme,
     )
     dest = Path(out) if out else svg_example_path(__file__, "network")
@@ -885,9 +910,7 @@ def main() -> None:
     (``self-contained`` / ``external`` / ``static``); see
     :func:`_interactive.fullscreen_control`.
     """
-    render_cli(
-        __file__, "network", build_svg, description="Render the node-link network SVG."
-    )
+    render_cli(__file__, "network", build_svg, description="Render the node-link network SVG.")
 
 
 if __name__ == "__main__":

@@ -63,17 +63,17 @@ WIDTH = 1300
 HEIGHT = 1000
 MARGIN_LEFT = 40
 MARGIN_RIGHT = 40
-MARGIN_TOP = 176         # room for title + two-line subtitle + column headers
-MARGIN_BOTTOM = 72       # room for the hover-affordance footnote
+MARGIN_TOP = 176  # room for title + two-line subtitle + column headers
+MARGIN_BOTTOM = 72  # room for the hover-affordance footnote
 
-SUBINK = "#6E6E73"       # secondary text
-HAIRLINE = "#E5E5EA"     # neutral hairline
+SUBINK = "#6E6E73"  # secondary text
+HAIRLINE = "#E5E5EA"  # neutral hairline
 
 FONT = "Roboto, system-ui, sans-serif"
 
-NODE_H = 48              # card height
-ROW_GAP = 26             # vertical gap between leaf rows
-LINK_COLOR = "#C7C7CC"   # default (dimmed) link color
+NODE_H = 48  # card height
+ROW_GAP = 26  # vertical gap between leaf rows
+LINK_COLOR = "#C7C7CC"  # default (dimmed) link color
 
 
 # ------------------------------------------------------------------
@@ -94,7 +94,6 @@ Node = Tuple[str, str, Optional[str]]
 #: tuple list every layout/emission helper below already understands.
 DEMO_DATA: List[Dict[str, Any]] = [
     {"id": "root", "label": "Machine learning", "parent": None},
-
     # ---- Family: Supervised (the heavy branch) ----
     {"id": "sup", "label": "Supervised", "parent": "root"},
     {"id": "cls", "label": "Classification", "parent": "sup"},
@@ -104,17 +103,14 @@ DEMO_DATA: List[Dict[str, Any]] = [
     {"id": "reg", "label": "Regression", "parent": "sup"},
     {"id": "linreg", "label": "Linear & ridge", "parent": "reg"},
     {"id": "gp", "label": "Gaussian processes", "parent": "reg"},
-
     # ---- Family: Unsupervised ----
     {"id": "uns", "label": "Unsupervised", "parent": "root"},
     {"id": "clust", "label": "Clustering", "parent": "uns"},
     {"id": "dimred", "label": "Dimensionality reduction", "parent": "uns"},
-
     # ---- Family: Deep learning ----
     {"id": "deep", "label": "Deep learning", "parent": "root"},
     {"id": "cnn", "label": "Convolutional nets", "parent": "deep"},
     {"id": "transf", "label": "Transformers", "parent": "deep"},
-
     # ---- Family: Reinforcement ----
     {"id": "rl", "label": "Reinforcement", "parent": "root"},
     {"id": "policy", "label": "Policy gradients", "parent": "rl"},
@@ -143,10 +139,10 @@ FAMILY_COLOR: Dict[str, str] = {
 # large-text 3:1 bar, so the pills use darker, same-hue shades — every one
 # now clears 4.5:1 with white — while the links keep the vivid hues above.
 FAMILY_PILL: Dict[str, str] = {
-    "sup": "#0064D2",   # deeper blue  — 5.6:1 on white text
-    "uns": "#B35900",   # deeper orange — 4.8:1
+    "sup": "#0064D2",  # deeper blue  — 5.6:1 on white text
+    "uns": "#B35900",  # deeper orange — 4.8:1
     "deep": "#9A3FCB",  # deeper purple — 5.3:1
-    "rl": "#22883A",    # deeper green  — 4.5:1
+    "rl": "#22883A",  # deeper green  — 4.5:1
 }
 ROOT_COLOR = INK
 
@@ -260,7 +256,7 @@ def _compute_geometry(
     # Centre the whole stack vertically in the plot band so the tree is
     # never bottom-heavy or top-heavy: measure the row span the leaves
     # actually occupy, then offset every node by the leftover slack / 2.
-    n_rows = next_row[0]                       # leaf count == packed rows
+    n_rows = next_row[0]  # leaf count == packed rows
     plot_top = MARGIN_TOP
     plot_bottom = HEIGHT - MARGIN_BOTTOM
     band_h = plot_bottom - plot_top
@@ -283,7 +279,7 @@ def _compute_geometry(
         fam = _family_of(node_id, parent, root_id)
         color = ROOT_COLOR if node_id == root_id else fam_color.get(fam or "", SUBINK)
         geometry[node_id] = {
-            "x": col_x[d],                     # left-anchor x for this column
+            "x": col_x[d],  # left-anchor x for this column
             "y": y_offset + NODE_H / 2.0 + row[node_id] * row_pitch,
             "depth": d,
             "family": fam,
@@ -406,7 +402,11 @@ def build_svg(
         "branch, reaching individual algorithms such as gradient-boosted trees "
         "and Gaussian processes. Each family is tinted its own color."
     )
-    parts.append(svg_open(WIDTH, HEIGHT, "tree-title", "tree-desc", font_family=chrome_stack_for_theme(theme)))
+    parts.append(
+        svg_open(
+            WIDTH, HEIGHT, "tree-title", "tree-desc", font_family=chrome_stack_for_theme(theme)
+        )
+    )
     parts.append(f'<title id="tree-title">{escape(title_txt)}</title>')
     parts.append(f'<desc id="tree-desc">{escape(desc_txt)}</desc>')
 
@@ -506,7 +506,7 @@ def build_svg(
         parts.append(
             f'<text x="{gx:.1f}" y="{MARGIN_TOP - 30:.1f}" font-size="15" '
             f'font-weight="600" letter-spacing="1.0" fill="{SUBINK}">'
-            f'{escape(GEN_NAMES[d].upper())}</text>'
+            f"{escape(GEN_NAMES[d].upper())}</text>"
         )
 
     # ------------------------------------------------------------------
@@ -566,7 +566,12 @@ def build_svg(
         # the nodes along the chain
         for node_id in chain:
             bubble = _emit_one_node(
-                parts, geometry, label_of, kids, node_id, interactive=True,
+                parts,
+                geometry,
+                label_of,
+                kids,
+                node_id,
+                interactive=True,
                 emit_tip=(last_leaf_for_node.get(node_id) == leaf),
                 tip_index=tip_index_for_node[node_id],
             )
@@ -582,7 +587,7 @@ def build_svg(
     parts.append(
         f'<text x="{MARGIN_LEFT}" y="{HEIGHT - 20}" font-size="15" '
         f'fill="{SUBINK}">Hover or focus any topic to trace its path back '
-        f'to the root</text>'
+        f"to the root</text>"
     )
 
     parts.append(fullscreen_control(WIDTH, HEIGHT, mode))
@@ -610,7 +615,9 @@ def _wrap_subtitle(text: str, max_chars: int = 96) -> List[str]:
 # ------------------------------------------------------------------
 # Link / node emitters
 # ------------------------------------------------------------------
-def _card_geom(geometry: Dict[str, dict], node_id: str, label: str) -> Tuple[float, float, float, float]:
+def _card_geom(
+    geometry: Dict[str, dict], node_id: str, label: str
+) -> Tuple[float, float, float, float]:
     """Return (x_left, y_top, width, height) of a node card.
 
     Every card is **left-anchored** on its column x, whatever its width,
@@ -758,10 +765,8 @@ def _emit_one_node(
     tab = ' tabindex="0"' if (interactive and (not is_leaf or emit_tip)) else ""
     hit_cls = " hit" if emit_tip else ""
     id_attr = f' id="hit-{tip_index}"' if emit_tip else ""
-    title_or_aria = (
-        f' role="img" aria-label="{escape(tip)}"' if emit_tip else ""
-    )
-    title_child = "" if emit_tip else f'<title>{escape(tip)}</title>'
+    title_or_aria = f' role="img" aria-label="{escape(tip)}"' if emit_tip else ""
+    title_child = "" if emit_tip else f"<title>{escape(tip)}</title>"
 
     if depth <= 1:
         # Filled pill — root is ink, families are their AA-safe deeper hue so
@@ -772,22 +777,22 @@ def _emit_one_node(
         pill_fill = ROOT_COLOR if is_root else FAMILY_PILL.get(fam or "", color)
         # Family pills (not the ink root) get a family class so the OS-adaptive
         # contrast rule can deepen the pill fill together with its branch.
-        pill_cls = f' pill-{fam}' if fam else ""
+        pill_cls = f" pill-{fam}" if fam else ""
         parts.append(
             f'<g class="node">'
             f'<rect{id_attr} class="card{pill_cls}{hit_cls}"{tab}{title_or_aria} x="{x_left:.1f}" y="{y_top:.1f}" '
             f'width="{w:.1f}" height="{h:.1f}" rx="{h / 2:.1f}" fill="{pill_fill}">'
-            f'{title_child}</rect>'
+            f"{title_child}</rect>"
             f'<text x="{cx:.1f}" y="{cy:.1f}" text-anchor="middle" '
             f'dominant-baseline="central" font-size="19" font-weight="700" '
             f'fill="{text_fill}">{escape(label)}</text>'
-            f'</g>'
+            f"</g>"
         )
     else:
         # White chip with a colored left rule + colored label.
         rule_w = 5.0
         fam = g["family"]
-        rule_cls = f' fam-{fam}' if fam else ""
+        rule_cls = f" fam-{fam}" if fam else ""
         chip_cls = f' class="{hit_cls.strip()}"' if hit_cls else ""
         parts.append(
             f'<g class="node">'
@@ -800,14 +805,19 @@ def _emit_one_node(
             f'<text x="{x_left + rule_w + 11:.1f}" y="{cy:.1f}" '
             f'dominant-baseline="central" font-size="17" font-weight="500" '
             f'fill="{INK}">{escape(label)}</text>'
-            f'</g>'
+            f"</g>"
         )
     if emit_tip:
         return tooltip_bubble(
-            cx, y_top - 14,
+            cx,
+            y_top - 14,
             [label, gen_label, detail2],
-            anchor="middle", canvas_w=WIDTH, canvas_h=HEIGHT,
-            ink=INK, secondary=SUBINK, border=HAIRLINE,
+            anchor="middle",
+            canvas_w=WIDTH,
+            canvas_h=HEIGHT,
+            ink=INK,
+            secondary=SUBINK,
+            border=HAIRLINE,
             elem_id=f"tip-{tip_index}",
         )
     return None

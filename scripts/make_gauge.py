@@ -42,8 +42,8 @@ from sprezzature_figures.fonts import chrome_stack_for_theme
 # plausible) reading the needle starts on so the animation is
 # base-visible — it eases *between* two real states, never in from zero.
 # ------------------------------------------------------------------
-VALUE: float = 72.0            # % — where the needle points (static truth)
-SETTLE_FROM: float = 58.0      # % — where the settle animation begins
+VALUE: float = 72.0  # % — where the needle points (static truth)
+SETTLE_FROM: float = 58.0  # % — where the settle animation begins
 UNIT: str = "%"
 VMIN, VMAX = 0.0, 100.0
 
@@ -53,23 +53,22 @@ SUBTITLE = "app-07 · 12:40 UTC · 1-minute average"
 #: Row-record view of the single reading this gauge plots, the shape the
 #: ``make_<kind>`` contract asks for: one row (a gauge shows one KPI).
 DEMO_DATA: List[Dict[str, Any]] = [
-    {"label": TITLE, "sublabel": SUBTITLE, "value": VALUE, "unit": UNIT,
-     "settle_from": SETTLE_FROM}
+    {"label": TITLE, "sublabel": SUBTITLE, "value": VALUE, "unit": UNIT, "settle_from": SETTLE_FROM}
 ]
 
 # Coloured performance zones, low → high. Each is (upper-bound, colour-key,
 # label). Bounds are cumulative and end at VMAX.
 ZONES: List[Tuple[float, str, str]] = [
-    (50.0, "Green",  "Healthy"),
+    (50.0, "Green", "Healthy"),
     (75.0, "Yellow", "Busy"),
     (90.0, "Orange", "Hot"),
-    (100.0, "Red",   "Critical"),
+    (100.0, "Red", "Critical"),
 ]
 
 PAL = load_palette()
 
 TICK = "#C7C7CC"
-TRACK = "#ECECEF"      # faint full-arc groove behind the coloured zones
+TRACK = "#ECECEF"  # faint full-arc groove behind the coloured zones
 FONT = "Roboto, system-ui, sans-serif"
 
 # ------------------------------------------------------------------
@@ -80,14 +79,14 @@ FONT = "Roboto, system-ui, sans-serif"
 # ------------------------------------------------------------------
 W, H = 1200, 860
 CX, CY = 600, 560
-R_MID = 300.0                  # centre-line radius of the coloured band
-BAND = 46.0                    # band thickness
+R_MID = 300.0  # centre-line radius of the coloured band
+BAND = 46.0  # band thickness
 R_OUT = R_MID + BAND / 2.0
 R_IN = R_MID - BAND / 2.0
 
-START_DEG = 150.0              # low end (0 %)
-SWEEP_DEG = 240.0              # total sweep, clockwise in screen space
-GAP_DEG = 1.4                  # tiny gap between neighbouring zones
+START_DEG = 150.0  # low end (0 %)
+SWEEP_DEG = 240.0  # total sweep, clockwise in screen space
+GAP_DEG = 1.4  # tiny gap between neighbouring zones
 
 
 def _text_on(hex_fill: str) -> str:
@@ -98,7 +97,7 @@ def _text_on(hex_fill: str) -> str:
     low-contrast white-on-yellow.
     """
     h = hex_fill.lstrip("#")
-    r, g, b = (int(h[i:i + 2], 16) / 255.0 for i in (0, 2, 4))
+    r, g, b = (int(h[i : i + 2], 16) / 255.0 for i in (0, 2, 4))
     # Perceptual luminance (sRGB coefficients, gamma left linear-ish — the
     # threshold is tuned for the eight house hues, not a colour-science lab).
     lum = 0.2126 * r + 0.7152 * g + 0.0722 * b
@@ -158,7 +157,7 @@ def _needle(deg: float) -> str:
     """
     tip = R_IN - 10.0
     back = 58.0
-    half = 9.0            # half-width at the hub
+    half = 9.0  # half-width at the hub
     # Local frame: needle points along +x at angle 0, caller rotates it.
     d = (
         f"M{tip:.1f},0 "
@@ -227,7 +226,7 @@ def _ticks() -> List[str]:
     n = int(round((VMAX - VMIN) / step))
     for i in range(n + 1):
         v = VMIN + i * step
-        major = (v % 25 == 0)
+        major = v % 25 == 0
         a = _ang(v)
         r_from = R_IN - 6.0
         r_to = R_IN - (26.0 if major else 14.0)
@@ -388,10 +387,7 @@ def build_svg(
     for upper, key, _name in ZONES:
         a0 = _ang(lo) + (seg_gap if lo > VMIN else 0.0)
         a1 = _ang(upper) - (seg_gap if upper < VMAX else 0.0)
-        parts.append(
-            f'<path class="zone-{key}" d="{_band_segment(a0, a1)}" '
-            f'fill="{pal[key]}"/>'
-        )
+        parts.append(f'<path class="zone-{key}" d="{_band_segment(a0, a1)}" fill="{pal[key]}"/>')
         lo = upper
 
     parts.extend(_ticks())
@@ -402,8 +398,9 @@ def build_svg(
     # number sits in the open bottom of the dial — the two never overlap.
     if animated:
         parts.append(
-            _needle_animated(START_DEG + SWEEP_DEG * (from_val / 100.0),
-                             START_DEG + SWEEP_DEG * (val / 100.0))
+            _needle_animated(
+                START_DEG + SWEEP_DEG * (from_val / 100.0), START_DEG + SWEEP_DEG * (val / 100.0)
+            )
         )
     else:
         parts.append(_needle(START_DEG + SWEEP_DEG * (val / 100.0)))
@@ -520,7 +517,14 @@ def main() -> None:
     )
     parser.add_argument(
         "--accessibility",
-        choices=("universal", "high-contrast", "monochrome", "deuteranopia", "protanopia", "tritanopia"),
+        choices=(
+            "universal",
+            "high-contrast",
+            "monochrome",
+            "deuteranopia",
+            "protanopia",
+            "tritanopia",
+        ),
         default="universal",
         help="palette accessibility level (default: universal, the CVD-safe standard)",
     )
@@ -534,14 +538,18 @@ def main() -> None:
     out_svg = svg_example_path(__file__, "gauge")
     write_svg(
         out_svg,
-        build_svg(animated=True, mode=args.mode, accessibility=args.accessibility, theme=args.theme),
+        build_svg(
+            animated=True, mode=args.mode, accessibility=args.accessibility, theme=args.theme
+        ),
         theme=args.theme,
     )
 
     # Static (non-animated) SVG for the raster companions so the PNG is the
     # settled truth, not a mid-animation frame.
     write_raster_companions(
-        build_svg(animated=False, mode="static", accessibility=args.accessibility, theme=args.theme),
+        build_svg(
+            animated=False, mode="static", accessibility=args.accessibility, theme=args.theme
+        ),
         __file__,
         "gauge",
     )

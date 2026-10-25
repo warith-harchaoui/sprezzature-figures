@@ -17,7 +17,9 @@ predeclared shapes.
 ```python
 class LLMClient(Protocol):
     def chat_text(self, prompt, *, system=None, response_model=None, temperature=0.1): ...
-    def chat_vision(self, prompt, image: bytes, *, system=None, response_model=None, temperature=0.1): ...
+    def chat_vision(
+        self, prompt, image: bytes, *, system=None, response_model=None, temperature=0.1
+    ): ...
 ```
 
 `BestEngineLLMClient` is the real implementation: it wraps
@@ -106,7 +108,7 @@ operation at a time, not the whole proposal.
 ```python
 class VisualCritique(BaseModel):
     verdict: Literal["satisfied", "needs_changes", "blocked"]
-    message_alignment_score: int       # 0-100, same for the next 4 fields
+    message_alignment_score: int  # 0-100, same for the next 4 fields
     readability_score: int
     visual_hierarchy_score: int
     accessibility_score: int

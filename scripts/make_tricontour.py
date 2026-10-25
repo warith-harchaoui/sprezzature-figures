@@ -100,11 +100,13 @@ def _network(seed: int = 7) -> List[Dict[str, Any]]:
         # The works and its yard: fenced, no sensor inside it.
         if 6.0 <= x <= 7.9 and 3.3 <= y <= 5.3:
             continue
-        rows.append({
-            "east_km": round(x, 3),
-            "north_km": round(y, 3),
-            "pm25": round(level(x, y) + rng.gauss(0.0, 0.9), 2),
-        })
+        rows.append(
+            {
+                "east_km": round(x, 3),
+                "north_km": round(y, 3),
+                "pm25": round(level(x, y) + rng.gauss(0.0, 0.9), 2),
+            }
+        )
     return rows
 
 
@@ -197,6 +199,7 @@ def _clip_above(
     list of tuple of float
         The clipped corners; empty when nothing survives.
     """
+
     def inside(z: float) -> bool:
         return z >= level if keep_above else z <= level
 
@@ -210,11 +213,13 @@ def _clip_above(
             out.append(current)
         if here != there and following[2] != current[2]:
             share = (level - current[2]) / (following[2] - current[2])
-            out.append((
-                current[0] + share * (following[0] - current[0]),
-                current[1] + share * (following[1] - current[1]),
-                level,
-            ))
+            out.append(
+                (
+                    current[0] + share * (following[0] - current[0]),
+                    current[1] + share * (following[1] - current[1]),
+                    level,
+                )
+            )
     return out
 
 
@@ -396,9 +401,7 @@ def build_svg(
     span = max(x_hi - x_lo, y_hi - y_lo) or 1.0
 
     spacing = _nearest_spacing(points)
-    support_at = (
-        support_radius if support_radius is not None else spacing * support_spacing
-    )
+    support_at = support_radius if support_radius is not None else spacing * support_spacing
 
     def longest_edge(triangle: Tuple[int, int, int]) -> float:
         return max(
@@ -429,16 +432,21 @@ def build_svg(
                 tally[key] = tally.get(key, 0) + 1
 
         doomed = {
-            triangle for triangle in mesh
+            triangle
+            for triangle in mesh
             # On the hull: at least one edge belongs to this triangle alone.
             if any(
-                tally[(min(triangle[i], triangle[(i + 1) % 3]),
-                       max(triangle[i], triangle[(i + 1) % 3]))] == 1
+                tally[
+                    (
+                        min(triangle[i], triangle[(i + 1) % 3]),
+                        max(triangle[i], triangle[(i + 1) % 3]),
+                    )
+                ]
+                == 1
                 for i in range(3)
             )
-            and _smallest_angle(
-                points[triangle[0]], points[triangle[1]], points[triangle[2]]
-            ) < min_angle
+            and _smallest_angle(points[triangle[0]], points[triangle[1]], points[triangle[2]])
+            < min_angle
         }
         if not doomed:
             break
@@ -454,9 +462,7 @@ def build_svg(
         long thin triangle can still carry a segment that passes right
         beside a sensor, and that segment is evidence.
         """
-        return all(
-            math.hypot(mx - px, my - py) > support_at for px, py in points
-        )
+        return all(math.hypot(mx - px, my - py) > support_at for px, py in points)
 
     bands = cuts if cuts is not None else _nice_levels(z_lo, z_hi, levels)
     bands = [c for c in bands if z_lo < c < z_hi]
@@ -489,9 +495,7 @@ def build_svg(
             if crossing is None:
                 continue
             length = math.hypot(crossing[2] - crossing[0], crossing[3] - crossing[1])
-            if unsupported(
-                (crossing[0] + crossing[2]) / 2.0, (crossing[1] + crossing[3]) / 2.0
-            ):
+            if unsupported((crossing[0] + crossing[2]) / 2.0, (crossing[1] + crossing[3]) / 2.0):
                 loose.append(crossing)
                 if is_threshold:
                     unsupported_km += length
@@ -500,24 +504,30 @@ def build_svg(
                 if is_threshold:
                     supported_km += length
         if firm or loose:
-            cut_lines.append({
-                "index": index, "level": level, "firm": firm, "loose": loose,
-                "threshold": is_threshold,
-            })
+            cut_lines.append(
+                {
+                    "index": index,
+                    "level": level,
+                    "firm": firm,
+                    "loose": loose,
+                    "threshold": is_threshold,
+                }
+            )
 
     total_km = supported_km + unsupported_km
     share = (unsupported_km / total_km) if total_km else 0.0
 
     splinters = (
-        "1 peeled as a hull splinter" if peeled == 1
-        else f"{peeled} peeled as hull splinters"
+        "1 peeled as a hull splinter" if peeled == 1 else f"{peeled} peeled as hull splinters"
     )
     # Composed as whole lines rather than as one paragraph that wraps:
     # a wrapped line breaks wherever the width runs out, which makes
     # each half a fragment -- unreadable on its own, and untranslatable
     # as a unit. One statement per line survives both.
     said_lines = (
-        wrap_no_orphan(summary, 108) if summary is not None else [
+        wrap_no_orphan(summary, 108)
+        if summary is not None
+        else [
             f"{len(rows)} sensors · {len(mesh)} triangles, {stretched} dropped for "
             f"spanning more than {fmt_number(max_edge * 100)}% of the width, "
             f"{splinters}",
@@ -575,31 +585,35 @@ def build_svg(
 
     def as_path(segments: Sequence[Tuple[float, float, float, float]]) -> str:
         return " ".join(
-            "M {:.1f},{:.1f} L {:.1f},{:.1f}".format(
-                *to_px(s[0], s[1]), *to_px(s[2], s[3])
-            )
+            "M {:.1f},{:.1f} L {:.1f},{:.1f}".format(*to_px(s[0], s[1]), *to_px(s[2], s[3]))
             for s in segments
         )
 
     # ---- the document, in drawing order ----
     parts: List[str] = []
     parts.append(
-        svg_open(width, height, "tricontour-title", "tricontour-desc",
-                 font_family=chrome_stack_for_theme(theme))
+        svg_open(
+            width,
+            height,
+            "tricontour-title",
+            "tricontour-desc",
+            font_family=chrome_stack_for_theme(theme),
+        )
     )
     parts.append(f'<title id="tricontour-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="tricontour-desc">Iso-lines of {xml_escape(value_label)} over '
-        f'{len(rows)} scattered sensors, triangulated into {len(mesh)} facets and '
-        f'filled in bands. {xml_escape(said)}. {xml_escape(found)}</desc>'
+        f"{len(rows)} scattered sensors, triangulated into {len(mesh)} facets and "
+        f"filled in bands. {xml_escape(said)}. {xml_escape(found)}</desc>"
     )
     parts.append(
         "<style>"
         ".hit{cursor:default;}"
         ".hit:hover,.hit:focus{outline:none;}"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        + foreground_tip_css(len(points) if show_points else 0,
-                             mark_prefix="sensor", tip_prefix="sensortip")
+        + foreground_tip_css(
+            len(points) if show_points else 0, mark_prefix="sensor", tip_prefix="sensortip"
+        )
         + "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
         "</style>"
     )
@@ -639,8 +653,7 @@ def build_svg(
                 # anti-aliasing seam, and four hundred of them read as a
                 # cobweb over a fill meant to be seen as continuous.
                 parts.append(
-                    f'<path d="{path} Z" fill="{colour}" stroke="{colour}" '
-                    f'stroke-width="1"/>'
+                    f'<path d="{path} Z" fill="{colour}" stroke="{colour}" stroke-width="1"/>'
                 )
 
     if show_mesh:
@@ -683,8 +696,14 @@ def build_svg(
             )
 
         if label_levels:
-            labels.append((index, is_threshold, float(line["level"]),
-                           list(line["firm"]) + list(line["loose"])))
+            labels.append(
+                (
+                    index,
+                    is_threshold,
+                    float(line["level"]),
+                    list(line["firm"]) + list(line["loose"]),
+                )
+            )
 
     # ---- the sensors themselves ----
     if show_points:
@@ -709,8 +728,7 @@ def build_svg(
             plot_y + plot_h * (0.5 - 0.33 * math.sin(angle)),
         )
         anchors = [
-            to_px((piece[0] + piece[2]) / 2.0, (piece[1] + piece[3]) / 2.0)
-            for piece in pieces
+            to_px((piece[0] + piece[2]) / 2.0, (piece[1] + piece[3]) / 2.0) for piece in pieces
         ]
         lx, ly = min(
             anchors,
@@ -737,19 +755,24 @@ def build_svg(
                 f'<circle class="hit" id="sensor-{index}" cx="{cx:.1f}" cy="{cy:.1f}" '
                 f'r="7" fill="transparent" tabindex="0" role="img" '
                 f'aria-label="{xml_escape(label)}">'
-                f'<title>{xml_escape(label)}</title></circle>'
+                f"<title>{xml_escape(label)}</title></circle>"
             )
         for index, (px, py) in enumerate(points):
             cx, cy = to_px(px, py)
             parts.append(
                 tooltip_bubble(
-                    cx, cy - 10.0,
+                    cx,
+                    cy - 10.0,
                     [
                         f"{measured(values[index])} {unit}",
                         f"east {located(px)} · north {located(py)}",
                     ],
-                    canvas_w=width, canvas_h=height,
-                    bg=BG, border=GRIDLINE, ink=INK, secondary=SECONDARY,
+                    canvas_w=width,
+                    canvas_h=height,
+                    bg=BG,
+                    border=GRIDLINE,
+                    ink=INK,
+                    secondary=SECONDARY,
                     font_family=chrome_stack_for_theme(theme),
                     elem_id=f"sensortip-{index}",
                 )
@@ -768,7 +791,7 @@ def build_svg(
         parts.append(
             f'<text x="{px:.1f}" y="{plot_y + plot_h + 20:.1f}" font-size="11" '
             f'fill="{SECONDARY}" text-anchor="middle" font-family="{mono_family}">'
-            f'{fmt_number(value)}</text>'
+            f"{fmt_number(value)}</text>"
         )
     for value in nice_ticks_range(y_lo, y_hi, 5):
         if not y_lo <= value <= y_hi:
@@ -777,7 +800,7 @@ def build_svg(
         parts.append(
             f'<text x="{plot_x - 10:.1f}" y="{py + 4:.1f}" font-size="11" '
             f'fill="{SECONDARY}" text-anchor="end" font-family="{mono_family}">'
-            f'{fmt_number(value)}</text>'
+            f"{fmt_number(value)}</text>"
         )
     parts.append(
         f'<text x="{plot_x + plot_w / 2:.1f}" y="{plot_y + plot_h + 44:.1f}" font-size="12" '
@@ -785,7 +808,7 @@ def build_svg(
     )
     parts.append(
         f'<text x="{plot_x:.1f}" y="{plot_y - 12:.1f}" font-size="12" fill="{SECONDARY}">'
-        f'{xml_escape(y_label)}</text>'
+        f"{xml_escape(y_label)}</text>"
     )
 
     # ---- the band legend, each band labelled with the level that opens it ----
@@ -793,7 +816,7 @@ def build_svg(
     band_h = min(26.0, plot_h / (len(bands) + 1))
     parts.append(
         f'<text x="{legend_x:.1f}" y="{plot_y - 12:.1f}" font-size="11" fill="{SECONDARY}">'
-        f'{xml_escape(value_label)}</text>'
+        f"{xml_escape(value_label)}</text>"
     )
     for index in range(len(bands), -1, -1):
         top = plot_y + (len(bands) - index) * band_h
@@ -811,7 +834,7 @@ def build_svg(
                 f'<text x="{legend_x + (24 if fill else 0):.1f}" '
                 f'y="{top + band_h + 4:.1f}" font-size="10" '
                 f'fill="{SECONDARY}" font-family="{mono_family}">'
-                f'{measured(bands[index - 1])}</text>'
+                f"{measured(bands[index - 1])}</text>"
             )
     if threshold is not None:
         key_y = plot_y + (len(bands) + 1) * band_h + 30.0
@@ -826,7 +849,7 @@ def build_svg(
         parts.append(
             f'<text x="{legend_x:.1f}" y="{key_y + 29:.1f}" font-size="10" '
             f'fill="{SECONDARY}" font-family="{mono_family}">'
-            f'{measured(threshold)} {xml_escape(unit)}</text>'
+            f"{measured(threshold)} {xml_escape(unit)}</text>"
         )
         parts.append(
             f'<path d="M {legend_x:.1f},{key_y + 50:.1f} L {legend_x + 30:.1f},'
@@ -840,7 +863,7 @@ def build_svg(
         parts.append(
             f'<text x="{legend_x:.1f}" y="{key_y + 79:.1f}" font-size="10" '
             f'fill="{SECONDARY}" font-family="{mono_family}">'
-            f'{located(support_at)} {xml_escape(coord_unit)}</text>'
+            f"{located(support_at)} {xml_escape(coord_unit)}</text>"
         )
 
     for line_no, line_text in enumerate(found_lines):
@@ -848,7 +871,7 @@ def build_svg(
             f'<text x="{frame_x:.1f}" '
             f'y="{height - 24 - (len(found_lines) - 1 - line_no) * 17:.1f}" '
             f'font-size="12" fill="{SECONDARY}" font-family="{mono_family}">'
-            f'{xml_escape(line_text)}</text>'
+            f"{xml_escape(line_text)}</text>"
         )
     parts.append(fullscreen_control(width, height, mode))
     parts.append("</svg>")
@@ -948,16 +971,36 @@ def make_tricontour(
     True
     """
     svg = build_svg(
-        data, title=title, subtitle=subtitle, width=width, height=height,
-        x=x, y=y, z=z, levels=levels, cuts=cuts, threshold=threshold,
-        threshold_label=threshold_label, max_edge=max_edge,
-        support_radius=support_radius, support_spacing=support_spacing,
+        data,
+        title=title,
+        subtitle=subtitle,
+        width=width,
+        height=height,
+        x=x,
+        y=y,
+        z=z,
+        levels=levels,
+        cuts=cuts,
+        threshold=threshold,
+        threshold_label=threshold_label,
+        max_edge=max_edge,
+        support_radius=support_radius,
+        support_spacing=support_spacing,
         min_angle=min_angle,
-        fill=fill, show_mesh=show_mesh, show_points=show_points,
-        label_levels=label_levels, x_label=x_label, y_label=y_label,
-        value_label=value_label, unit=unit, coord_unit=coord_unit,
-        summary=summary, finding=finding,
-        mode=mode, accessibility=accessibility, theme=theme,
+        fill=fill,
+        show_mesh=show_mesh,
+        show_points=show_points,
+        label_levels=label_levels,
+        x_label=x_label,
+        y_label=y_label,
+        value_label=value_label,
+        unit=unit,
+        coord_unit=coord_unit,
+        summary=summary,
+        finding=finding,
+        mode=mode,
+        accessibility=accessibility,
+        theme=theme,
     )
     dest = Path(out) if out else svg_example_path(__file__, "tricontour")
     return write_svg(dest, svg, theme=theme)
@@ -966,7 +1009,9 @@ def make_tricontour(
 def main() -> None:
     """CLI entry point: build the SVG and write it to disk."""
     render_cli(
-        __file__, "tricontour", build_svg,
+        __file__,
+        "tricontour",
+        build_svg,
         description="Generate iso-lines over scattered, triangulated samples.",
     )
 

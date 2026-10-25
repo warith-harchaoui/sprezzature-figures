@@ -61,15 +61,15 @@ _HEIGHT: int = 940
 #: single-set lobes and the pairwise crescents both stay roomy enough to
 #: hold a two- or three-digit count without crowding a stroke.
 _R: float = 205.0
-_CX: float = 540.0    # horizontal center of the whole trio
-_CY: float = 520.0    # vertical center of the whole trio
-_OFF: float = 120.0   # how far each center is pushed off the trio center
+_CX: float = 540.0  # horizontal center of the whole trio
+_CY: float = 520.0  # vertical center of the whole trio
+_OFF: float = 120.0  # how far each center is pushed off the trio center
 
 #: House-style inks.
-_INK: str = "#1D1D1F"       # primary text
-_SUBTLE: str = "#6E6E73"    # secondary text
-_BG: str = "#FFFFFF"        # background
-_FOCUS: str = "#0A4DA0"     # focus-ring blue
+_INK: str = "#1D1D1F"  # primary text
+_SUBTLE: str = "#6E6E73"  # secondary text
+_BG: str = "#FFFFFF"  # background
+_FOCUS: str = "#0A4DA0"  # focus-ring blue
 
 
 #: Row records: one per disjoint region, ``sets`` naming the exact set
@@ -80,13 +80,13 @@ _FOCUS: str = "#0A4DA0"     # focus-ring blue
 #: seven rows are the disjoint tallies, so they sum to the number of
 #: respondents who know at least one of the three.
 DEMO_DATA: List[Dict[str, Any]] = [
-    {"sets": ["Python"], "count": 96},                    # Python only
-    {"sets": ["SQL"], "count": 74},                        # SQL only
-    {"sets": ["Cloud"], "count": 58},                       # Cloud only
-    {"sets": ["Python", "SQL"], "count": 188},              # Python + SQL
-    {"sets": ["Python", "Cloud"], "count": 121},            # Python + Cloud
-    {"sets": ["SQL", "Cloud"], "count": 63},                # SQL + Cloud
-    {"sets": ["Python", "SQL", "Cloud"], "count": 214},     # all three
+    {"sets": ["Python"], "count": 96},  # Python only
+    {"sets": ["SQL"], "count": 74},  # SQL only
+    {"sets": ["Cloud"], "count": 58},  # Cloud only
+    {"sets": ["Python", "SQL"], "count": 188},  # Python + SQL
+    {"sets": ["Python", "Cloud"], "count": 121},  # Python + Cloud
+    {"sets": ["SQL", "Cloud"], "count": 63},  # SQL + Cloud
+    {"sets": ["Python", "SQL", "Cloud"], "count": 214},  # all three
 ]
 
 #: Hue key (into the house palette) for each set, matched by first-seen
@@ -247,17 +247,15 @@ def build_svg(
 
     # ---- header ----
     parts: List[str] = []
-    parts.append(svg_open(_WIDTH, _HEIGHT, "vn-title", "vn-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(
-        '<title id="vn-title">Overlapping skills among data '
-        'professionals</title>'
+        svg_open(_WIDTH, _HEIGHT, "vn-title", "vn-desc", font_family=chrome_stack_for_theme(theme))
     )
+    parts.append('<title id="vn-title">Overlapping skills among data professionals</title>')
     desc = (
         "Three-set Venn diagram of skills held by 1,000 surveyed data "
         "professionals. "
         + "; ".join(
-            f"{_xml(str(sets[key]['label']))} total {totals[key]}"
-            for key in ("A", "B", "C")
+            f"{_xml(str(sets[key]['label']))} total {totals[key]}" for key in ("A", "B", "C")
         )
         + f". The central region — fluent in all three — is the largest at "
         f"{regions['ABC']}, and Python plus SQL together add another "
@@ -281,16 +279,18 @@ def build_svg(
             f".grp-{ltr}:hover .setlabel-{ltr}, .grp-{ltr}:focus .setlabel-{ltr} "
             f"{{ opacity: 1; }}"
         )
-    style_rows.extend([
-        ".grp { cursor: pointer; }",
-        f".grp:focus {{ outline: 3px solid {_FOCUS}; outline-offset: 3px; "
-        f"border-radius: 12px; }}",
-        ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}",
-        foreground_tip_css(len(centroids), mark_prefix="region", tip_prefix="regiontip"),
-        foreground_tip_css(3, mark_prefix="setlobe", tip_prefix="settip"),
-        "@media (prefers-reduced-motion: reduce) { "
-        ".lobe, .setlabel { transition: none; } .tip{transition:none} }",
-    ])
+    style_rows.extend(
+        [
+            ".grp { cursor: pointer; }",
+            f".grp:focus {{ outline: 3px solid {_FOCUS}; outline-offset: 3px; "
+            f"border-radius: 12px; }}",
+            ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}",
+            foreground_tip_css(len(centroids), mark_prefix="region", tip_prefix="regiontip"),
+            foreground_tip_css(3, mark_prefix="setlobe", tip_prefix="settip"),
+            "@media (prefers-reduced-motion: reduce) { "
+            ".lobe, .setlabel { transition: none; } .tip{transition:none} }",
+        ]
+    )
     # OS-adaptive overrides (additive; the default render is unchanged because
     # every rule below lives inside a media query). Under prefers-contrast the
     # set labels and outlines deepen to their high-contrast hues while the lobe
@@ -341,13 +341,12 @@ def build_svg(
     # when the caller supplies none.
     title = title or "Most data pros speak Python, SQL and Cloud at once"
     parts.append(
-        f'<text x="52" y="66" font-size="31" font-weight="700" '
-        f'fill="{_INK}">{_xml(title)}</text>'
+        f'<text x="52" y="66" font-size="31" font-weight="700" fill="{_INK}">{_xml(title)}</text>'
     )
     parts.append(
         f'<text x="52" y="102" font-size="19" fill="{_SUBTLE}">'
-        f'Skills held by 1,000 surveyed data professionals · counts are '
-        f'people per region</text>'
+        f"Skills held by 1,000 surveyed data professionals · counts are "
+        f"people per region</text>"
     )
 
     # ---- the three circles ----
@@ -361,7 +360,7 @@ def build_svg(
             f'<circle class="lobe lobe-{ltr}" cx="{s["cx"]}" cy="{s["cy"]}" '
             f'r="{_R}" fill="{s["color"]}" fill-opacity="0.40"/>'
         )
-    parts.append('</g>')
+    parts.append("</g>")
 
     # Solid outlines on top (not blended) so each boundary stays crisp.
     for ltr in ("A", "B", "C"):
@@ -403,14 +402,19 @@ def build_svg(
             f'<text id="region-{region_i}" class="hit" tabindex="0" x="{x:.1f}" y="{y:.1f}" font-size="28" font-weight="700" '
             f'fill="{_INK}" text-anchor="middle" dominant-baseline="middle" '
             f'role="img" aria-label="{_xml(region_tip)}">'
-            f'{count}</text>'
+            f"{count}</text>"
         )
         region_bubbles.append(
             tooltip_bubble(
-                x, y - 34,
+                x,
+                y - 34,
                 [region_names, f"{count} people", f"{share:.0f}% of {grand}"],
-                anchor="middle", canvas_w=_WIDTH, canvas_h=_HEIGHT,
-                ink=_INK, secondary=_SUBTLE, border="#E5E5EA",
+                anchor="middle",
+                canvas_w=_WIDTH,
+                canvas_h=_HEIGHT,
+                ink=_INK,
+                secondary=_SUBTLE,
+                border="#E5E5EA",
                 elem_id=f"regiontip-{region_i}",
             )
         )
@@ -427,12 +431,10 @@ def build_svg(
         s = sets[ltr]
         lx, ly, anchor = label_pos[ltr]
         set_tip = (
-            f'{_xml(str(s["label"]))}: {totals[ltr]} of {grand} '
-            f'({100 * totals[ltr] / grand:.0f}%)'
+            f"{_xml(str(s['label']))}: {totals[ltr]} of {grand} ({100 * totals[ltr] / grand:.0f}%)"
         )
         parts.append(
-            f'<g class="grp grp-{ltr}" tabindex="0" role="listitem" '
-            f'aria-label="{set_tip}">'
+            f'<g class="grp grp-{ltr}" tabindex="0" role="listitem" aria-label="{set_tip}">'
         )
         # Invisible hit area over the circle so hovering the lobe works too.
         parts.append(
@@ -457,25 +459,34 @@ def build_svg(
         # content reaching this far is not a realistic collision here.
         parts.append(
             tooltip_bubble(
-                lx, ly - 34,
-                [str(s["label"]), f"{totals[ltr]} of {grand} people", f"{100 * totals[ltr] / grand:.0f}% of total"],
-                anchor=anchor, canvas_w=_WIDTH, canvas_h=_HEIGHT,
-                ink=_INK, secondary=_SUBTLE, border="#E5E5EA",
+                lx,
+                ly - 34,
+                [
+                    str(s["label"]),
+                    f"{totals[ltr]} of {grand} people",
+                    f"{100 * totals[ltr] / grand:.0f}% of total",
+                ],
+                anchor=anchor,
+                canvas_w=_WIDTH,
+                canvas_h=_HEIGHT,
+                ink=_INK,
+                secondary=_SUBTLE,
+                border="#E5E5EA",
                 elem_id=f"settip-{set_i}",
             )
         )
-        parts.append('</g>')
+        parts.append("</g>")
 
     # ---- footer note ----
     parts.append(
         f'<text x="52" y="{_HEIGHT - 30}" font-size="17" fill="{_SUBTLE}">'
-        f'Each region counts people once · hover or tab to a set to bring it '
-        f'forward</text>'
+        f"Each region counts people once · hover or tab to a set to bring it "
+        f"forward</text>"
     )
 
     parts.extend(region_bubbles)
     parts.append(fullscreen_control(_WIDTH, _HEIGHT, mode))
-    parts.append('</svg>')
+    parts.append("</svg>")
     return "\n".join(parts)
 
 

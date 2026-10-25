@@ -94,7 +94,11 @@ def test_heatmap_vmin_vmax_override_the_legend_range() -> None:
 def test_line_multi_default_axis_kwargs_match_unset_kwargs() -> None:
     default_svg = line_multi_build_svg()
     explicit_svg = line_multi_build_svg(
-        x_domain=None, x_tick_step=None, y_domain=None, y_tick_step=None, y_minor_step=None,
+        x_domain=None,
+        x_tick_step=None,
+        y_domain=None,
+        y_tick_step=None,
+        y_minor_step=None,
     )
     assert default_svg == explicit_svg
 

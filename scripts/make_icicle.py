@@ -148,13 +148,15 @@ def flatten(
     out : list of dict
         Accumulator that receives one positioned record per node.
     """
-    out.append({
-        "name": node["name"],
-        "ms": node["ms"],
-        "depth": depth,
-        "x_ms": x0,
-        "w_ms": node["ms"],
-    })
+    out.append(
+        {
+            "name": node["name"],
+            "ms": node["ms"],
+            "depth": depth,
+            "x_ms": x0,
+            "w_ms": node["ms"],
+        }
+    )
     child_x = x0
     for child in node.get("children", []):
         flatten(child, depth + 1, child_x, px_per_ms, out)
@@ -340,15 +342,17 @@ def render_svg(
     height = int(round(_rows_bottom + 46.0 + 40.0 + 50.0))
 
     parts: List[str] = []
-    parts.append(svg_open(width, height, "ice-t", "ice-d", font_family=chrome_stack_for_theme(theme)))
+    parts.append(
+        svg_open(width, height, "ice-t", "ice-d", font_family=chrome_stack_for_theme(theme))
+    )
     parts.append(f'<title id="ice-t">{xml_escape(title or TITLE)}</title>')
     parts.append(
         '<desc id="ice-d">Icicle / flame graph of one GET /api/checkout request totalling 480 '
-        'milliseconds. The root bar spans the full width; each row below splits its parent by time. '
-        'The highlighted warm tower load_cart to fetch_user_orders to run_sql to wait_on_lock is the '
-        'critical path: wait_on_lock alone is 176 ms, about 37 percent of the request, and run_sql '
-        'as a whole is 214 ms, about 45 percent. Off-path calls (authenticate, render_response) are '
-        'shown in muted grey.</desc>'
+        "milliseconds. The root bar spans the full width; each row below splits its parent by time. "
+        "The highlighted warm tower load_cart to fetch_user_orders to run_sql to wait_on_lock is the "
+        "critical path: wait_on_lock alone is 176 ms, about 37 percent of the request, and run_sql "
+        "as a whole is 214 ms, about 45 percent. Off-path calls (authenticate, render_response) are "
+        "shown in muted grey.</desc>"
     )
 
     # Hover lift + focus ring, guarded by reduced-motion.
@@ -452,18 +456,18 @@ def render_svg(
         on_hot = r["name"] in HOT_PATH
         fill = depth_fill(r["depth"], on_hot)
         pct = r["ms"] / total_ms * 100.0
-        tip = f'{r["name"]}  -  {r["ms"]} ms  ({pct:.0f}% of request, depth {r["depth"]})'
+        tip = f"{r['name']}  -  {r['ms']} ms  ({pct:.0f}% of request, depth {r['depth']})"
         parts.append(
             f'<rect id="bar-{i}" class="bar hit" tabindex="0" x="{fmt_compact(x, decimals=2)}" y="{fmt_compact(y, decimals=2)}" '
             f'width="{fmt_compact(max(w - 2.0, 1.0), decimals=2)}" height="{fmt_compact(row_h, decimals=2)}" rx="{fmt_compact(rx, decimals=2)}" '
             f'fill="{fill}" stroke="#FFFFFF" stroke-width="2">'
-            f'<title>{xml_escape(tip)}</title></rect>'
+            f"<title>{xml_escape(tip)}</title></rect>"
         )
         tip_bubbles.append(
             tooltip_bubble(
                 x + w / 2.0,
                 max(4.0, y - 92.0),
-                [r["name"], f'{r["ms"]} ms', f'{pct:.0f}% of request - depth {r["depth"]}'],
+                [r["name"], f"{r['ms']} ms", f"{pct:.0f}% of request - depth {r['depth']}"],
                 canvas_w=width,
                 canvas_h=height,
                 ink=ink,
@@ -535,7 +539,7 @@ def render_svg(
     )
     parts.append(
         f'<text x="{fmt_compact(lx + 106, decimals=2)}" y="{fmt_compact(legend_y, decimals=2)}" font-size="15" fill="{muted}">'
-        f'request root</text>'
+        f"request root</text>"
     )
 
     # Warm ramp swatches + label.
@@ -640,7 +644,14 @@ def make_icicle(
     _ = title
     rows = data if data else DEMO_DATA
     tree = _rows_to_tree(rows) or TREE
-    svg = render_svg(tree, mode=mode, accessibility=accessibility, theme=theme, legend_title=legend_title, title=title or None)
+    svg = render_svg(
+        tree,
+        mode=mode,
+        accessibility=accessibility,
+        theme=theme,
+        legend_title=legend_title,
+        title=title or None,
+    )
     dest = Path(__file__).resolve().parent.parent / "assets" / "svg-examples" / "icicle.svg"
     dest = Path(out) if out else dest
     return write_svg(dest, svg, theme=theme)
@@ -651,7 +662,9 @@ def make_icicle(
 # --------------------------------------------------------------------------- #
 def main() -> None:
     """Write the icicle SVG to disk."""
-    render_cli(__file__, "icicle", render_svg, description="Render the icicle / flame-graph example SVG.")
+    render_cli(
+        __file__, "icicle", render_svg, description="Render the icicle / flame-graph example SVG."
+    )
 
 
 if __name__ == "__main__":

@@ -87,15 +87,15 @@ _MAP_H: float = 688.0
 _HEX_R: float = 15.5
 
 #: House-style inks.
-_INK: str = "#1D1D1F"        # primary text
-_SUBTLE: str = "#6E6E73"     # secondary text
-_BG: str = "#FFFFFF"         # background
-_LAND: str = "#E1E6EC"       # land silhouette under the lattice (clearly readable)
+_INK: str = "#1D1D1F"  # primary text
+_SUBTLE: str = "#6E6E73"  # secondary text
+_BG: str = "#FFFFFF"  # background
+_LAND: str = "#E1E6EC"  # land silhouette under the lattice (clearly readable)
 _LAND_EDGE: str = "#A9B2BF"  # coastline hairline (present, so continents read)
-_OCEAN: str = "#F3F7FB"      # faint cool ocean wash so land / sea separate
-_GRAT: str = "#DCE3EB"       # graticule / ocean grid
-_STROKE: str = "#FFFFFF"     # white casing between hexes
-_FOCUS: str = "#7A0C12"      # focus / hover outline (deep red)
+_OCEAN: str = "#F3F7FB"  # faint cool ocean wash so land / sea separate
+_GRAT: str = "#DCE3EB"  # graticule / ocean grid
+_STROKE: str = "#FFFFFF"  # white casing between hexes
+_FOCUS: str = "#7A0C12"  # focus / hover outline (deep red)
 
 #: The hexbin ramp top — a single saturated hue keeps the surface coherent.
 _RAMP_KEY: str = "Red"
@@ -149,7 +149,7 @@ def _ramp(
     if theme == "academic":
         return viridis(t)
     t = max(0.0, min(1.0, t))
-    t = t ** 0.68  # gentle gamma so the sparse tail separates from empty land
+    t = t**0.68  # gentle gamma so the sparse tail separates from empty land
     # A three-stop ramp: straw -> orange -> Red, so the mid range reads as a
     # true heat gradient rather than a straight tint of one hue.
     mid = (255, 149, 0)  # palette Orange as the waypoint
@@ -162,11 +162,13 @@ def _ramp(
         u = (t - 0.5) / 0.5
         r1, g1, b1 = mid
         rr, gg, bb = (r2, g2, b2)
-    return _rgb_to_hex((
-        r1 + (rr - r1) * u,
-        g1 + (gg - g1) * u,
-        b1 + (bb - b1) * u,
-    ))
+    return _rgb_to_hex(
+        (
+            r1 + (rr - r1) * u,
+            g1 + (gg - g1) * u,
+            b1 + (bb - b1) * u,
+        )
+    )
 
 
 # ------------------------------------------------------------------
@@ -231,14 +233,16 @@ def _fit(rings: List[Ring]) -> None:
     scale = min((_MAP_W - 2 * pad) / span_x, (_MAP_H - 2 * pad) / span_y)
     draw_w = span_x * scale
     draw_h = span_y * scale
-    _FIT.update({
-        "scale": scale,
-        "offset_x": _MAP_X + (_MAP_W - draw_w) / 2.0,
-        "offset_y": _MAP_Y + (_MAP_H - draw_h) / 2.0,
-        "min_px": min_px,
-        "min_py": min_py,
-        "span_py": span_y,
-    })
+    _FIT.update(
+        {
+            "scale": scale,
+            "offset_x": _MAP_X + (_MAP_W - draw_w) / 2.0,
+            "offset_y": _MAP_Y + (_MAP_H - draw_h) / 2.0,
+            "min_px": min_px,
+            "min_py": min_py,
+            "span_py": span_y,
+        }
+    )
 
 
 def _to_screen(lon: float, lat: float) -> Tuple[float, float]:
@@ -246,9 +250,7 @@ def _to_screen(lon: float, lat: float) -> Tuple[float, float]:
     px, py = _equal_earth(lon, lat)
     sx = _FIT["offset_x"] + (px - _FIT["min_px"]) * _FIT["scale"]
     sy = (
-        _FIT["offset_y"]
-        + (_FIT["span_py"] * _FIT["scale"])
-        - (py - _FIT["min_py"]) * _FIT["scale"]
+        _FIT["offset_y"] + (_FIT["span_py"] * _FIT["scale"]) - (py - _FIT["min_py"]) * _FIT["scale"]
     )
     return sx, sy
 
@@ -265,51 +267,78 @@ def _to_screen(lon: float, lat: float) -> Tuple[float, float]:
 _BELTS: List[Dict[str, Any]] = [
     # ---- Ring of Fire (the horseshoe carries most of the mass) ----
     {  # Andes — South America west coast
-        "w": 0.15, "sigma": 1.6,
+        "w": 0.15,
+        "sigma": 1.6,
         "pts": [(-73, -45), (-71, -33), (-70, -23), (-72, -14), (-77, -6), (-79, 1)],
     },
     {  # Central America / Mexico trench
-        "w": 0.09, "sigma": 1.5,
+        "w": 0.09,
+        "sigma": 1.5,
         "pts": [(-84, 8), (-90, 13), (-96, 16), (-104, 18), (-106, 23)],
     },
     {  # Cascadia + Alaska + Aleutians
-        "w": 0.11, "sigma": 1.7,
-        "pts": [(-124, 40), (-130, 48), (-140, 57), (-150, 59), (-160, 55),
-                (-172, 52), (177, 52), (170, 53)],
+        "w": 0.11,
+        "sigma": 1.7,
+        "pts": [
+            (-124, 40),
+            (-130, 48),
+            (-140, 57),
+            (-150, 59),
+            (-160, 55),
+            (-172, 52),
+            (177, 52),
+            (170, 53),
+        ],
     },
     {  # Kamchatka -> Kuril -> Japan
-        "w": 0.12, "sigma": 1.5,
+        "w": 0.12,
+        "sigma": 1.5,
         "pts": [(163, 55), (156, 50), (148, 45), (142, 40), (140, 35), (138, 31)],
     },
     {  # Ryukyu -> Taiwan -> Philippines
-        "w": 0.11, "sigma": 1.5,
+        "w": 0.11,
+        "sigma": 1.5,
         "pts": [(131, 30), (128, 26), (123, 22), (122, 15), (126, 9), (127, 3)],
     },
     {  # Indonesia (Sunda arc) — Sumatra -> Java -> Banda
-        "w": 0.14, "sigma": 1.5,
+        "w": 0.14,
+        "sigma": 1.5,
         "pts": [(95, 4), (100, -2), (106, -7), (114, -9), (122, -9), (130, -6), (134, -3)],
     },
     {  # New Guinea -> Solomons -> Vanuatu -> Tonga-Kermadec
-        "w": 0.13, "sigma": 1.6,
-        "pts": [(138, -4), (148, -6), (156, -8), (166, -14), (172, -20),
-                (178, -25), (-176, -30), (-178, -37)],
+        "w": 0.13,
+        "sigma": 1.6,
+        "pts": [
+            (138, -4),
+            (148, -6),
+            (156, -8),
+            (166, -14),
+            (172, -20),
+            (178, -25),
+            (-176, -30),
+            (-178, -37),
+        ],
     },
     {  # New Zealand
-        "w": 0.03, "sigma": 1.3,
+        "w": 0.03,
+        "sigma": 1.3,
         "pts": [(173, -39), (170, -43), (167, -46)],
     },
     # ---- Alpide belt (continental collision) ----
     {  # Himalaya -> Hindu Kush
-        "w": 0.05, "sigma": 1.4,
+        "w": 0.05,
+        "sigma": 1.4,
         "pts": [(74, 34), (80, 30), (88, 27), (95, 27), (98, 25)],
     },
     {  # Iran / Anatolia / Mediterranean
-        "w": 0.05, "sigma": 1.4,
+        "w": 0.05,
+        "sigma": 1.4,
         "pts": [(60, 30), (52, 33), (44, 38), (36, 37), (28, 38), (22, 38), (15, 40)],
     },
     # ---- Mid-Atlantic ridge (sparse background) ----
     {
-        "w": 0.02, "sigma": 1.2,
+        "w": 0.02,
+        "sigma": 1.2,
         "pts": [(-30, 0), (-25, 20), (-30, 40), (-20, 60), (-18, 65)],
     },
 ]
@@ -420,8 +449,8 @@ def _build_lattice(land_mask: List[Ring]) -> List[Dict[str, float]]:
         ``on_land`` flag; ``count`` is filled in by :func:`_bin_points`.
     """
     r = _HEX_R
-    hex_w = math.sqrt(3.0) * r          # width of a pointy-top hex
-    v_step = 1.5 * r                    # vertical distance between rows
+    hex_w = math.sqrt(3.0) * r  # width of a pointy-top hex
+    v_step = 1.5 * r  # vertical distance between rows
 
     # Draw the frame from the projected graticule extent so the lattice fills
     # the same box the basemap occupies.
@@ -459,9 +488,7 @@ def _point_in_rings(x: float, y: float, rings: List[Ring]) -> bool:
         for i in range(n):
             xi, yi = ring[i]
             xj, yj = ring[j]
-            if ((yi > y) != (yj > y)) and (
-                x < (xj - xi) * (y - yi) / (yj - yi + 1e-12) + xi
-            ):
+            if ((yi > y) != (yj > y)) and (x < (xj - xi) * (y - yi) / (yj - yi + 1e-12) + xi):
                 inside = not inside
             j = i
     return inside
@@ -638,9 +665,7 @@ def build_svg(
     _fit(rings)
 
     # Project land rings to screen once (reused for drawing and land masking).
-    screen_rings: List[Ring] = [
-        [_to_screen(lon, lat) for lon, lat in ring] for ring in rings
-    ]
+    screen_rings: List[Ring] = [[_to_screen(lon, lat) for lon, lat in ring] for ring in rings]
 
     rng = random.Random(_SEED)
     quakes = _sample_quakes(_N_QUAKES, rng)
@@ -660,7 +685,9 @@ def build_svg(
 
     # ---- header scaffold ----
     parts: List[str] = []
-    parts.append(svg_open(_WIDTH, _HEIGHT, "hb-title", "hb-desc", font_family=chrome_stack_for_theme(theme)))
+    parts.append(
+        svg_open(_WIDTH, _HEIGHT, "hb-title", "hb-desc", font_family=chrome_stack_for_theme(theme))
+    )
     parts.append(
         # The accessible name is the headline a sighted reader sees: when
         # the two disagree, a screen-reader user is told about a different
@@ -708,10 +735,7 @@ def build_svg(
     # untouched — it stays legible on the darker land.
     style_rows.append(
         os_dark_style(
-            extra=(
-                f'[fill="{_LAND}"]{{fill:#1C1C1E;}} '
-                f'[fill="{_OCEAN}"]{{fill:#111417;}}'
-            )
+            extra=(f'[fill="{_LAND}"]{{fill:#1C1C1E;}} [fill="{_OCEAN}"]{{fill:#111417;}}')
         )
     )
     style_rows.append(".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}")
@@ -738,14 +762,14 @@ def build_svg(
     )
     parts.append(
         f'<text x="{_MAP_X + 6:.1f}" y="112" font-size="21" fill="{_SUBTLE}">'
-        f'{xml_escape(subtitle)}</text>'
+        f"{xml_escape(subtitle)}</text>"
     )
 
     # ---- ocean graticule (faint, drawn first) ----
     parts.append('<g stroke="' + _GRAT + '" stroke-width="1" fill="none">')
     for d in _graticule_paths():
         parts.append(f'<path d="{d}"/>')
-    parts.append('</g>')
+    parts.append("</g>")
 
     # ---- land silhouette (readable backdrop under the lattice) ----
     parts.append(
@@ -754,7 +778,7 @@ def build_svg(
     )
     for ring in screen_rings:
         parts.append(f'<path d="{_ring_path(ring)}"/>')
-    parts.append('</g>')
+    parts.append("</g>")
 
     # ---- geographic anchor labels (name oceans + continents) ----
     # Drawn under the hexbins in faint, letter-spaced small caps so they read
@@ -768,9 +792,9 @@ def build_svg(
         parts.append(
             f'<text x="{sx:.1f}" y="{sy:.1f}" stroke="{_OCEAN}" '
             f'stroke-width="3.0" stroke-linejoin="round" paint-order="stroke">'
-            f'{_xml(label)}</text>'
+            f"{_xml(label)}</text>"
         )
-    parts.append('</g>')
+    parts.append("</g>")
 
     # ---- hexbin layer ----
     # Empty cells are drawn very faint (and only the ones sitting over land or
@@ -797,27 +821,32 @@ def build_svg(
         t = min(cnt, ramp_max) / ramp_max
         fill = _ramp(t, red, theme=theme)
         d = _hex_path(c["px"], c["py"], r_draw)
-        label = f'{cnt} quake{"" if cnt == 1 else "s"}'
+        label = f"{cnt} quake{'' if cnt == 1 else 's'}"
         parts.append(
             f'<path id="hex-{k}" class="hex hit" d="{d}" fill="{fill}" stroke="{_STROKE}" '
             f'stroke-width="1.0" tabindex="0" role="listitem">'
-            f'<title>{label}</title></path>'
+            f"<title>{label}</title></path>"
         )
         tip_bubbles.append(
             tooltip_bubble(
-                c["px"], c["py"] - r_draw - 6,
+                c["px"],
+                c["py"] - r_draw - 6,
                 [label, f"{t * 100:.0f}% of ramp max"],
-                anchor="middle", canvas_w=_WIDTH, canvas_h=_HEIGHT,
-                ink=_INK, secondary=_SUBTLE, border=_GRAT,
+                anchor="middle",
+                canvas_w=_WIDTH,
+                canvas_h=_HEIGHT,
+                ink=_INK,
+                secondary=_SUBTLE,
+                border=_GRAT,
                 elem_id=f"hextip-{k}",
             )
         )
         k += 1
     parts.extend(tip_bubbles)
-    parts.append('</g>')
+    parts.append("</g>")
 
     # ---- region call-outs (leader-free text labels in ink) ----
-    parts.append('<g>')
+    parts.append("<g>")
     for label, lon, lat, anchor in _CALLOUTS:
         sx, sy = _to_screen(lon, lat)
         # A soft white halo via paint-order so the ink label stays legible
@@ -828,23 +857,31 @@ def build_svg(
             f'stroke="#FFFFFF" stroke-width="3.2" stroke-linejoin="round" '
             f'paint-order="stroke" opacity="0.98">{_xml(label)}</text>'
         )
-    parts.append('</g>')
+    parts.append("</g>")
 
     # ---- sequential legend + stat callout (bottom band) ----
-    parts.extend(_legend_and_stat(
-        red, ramp_max, true_max, total, active, theme=theme,
-        headline_stat_label=headline_stat_label, ramp_legend_title=ramp_legend_title,
-    ))
+    parts.extend(
+        _legend_and_stat(
+            red,
+            ramp_max,
+            true_max,
+            total,
+            active,
+            theme=theme,
+            headline_stat_label=headline_stat_label,
+            ramp_legend_title=ramp_legend_title,
+        )
+    )
 
     # ---- footnote / method note ----
     parts.append(
         f'<text x="{_MAP_X + 6:.1f}" y="{_HEIGHT - 20}" font-size="14" '
         f'fill="{_SUBTLE}">One hexagon ≈ 250,000 km² · colour = earthquake '
-        f'count per hexagon · Equal Earth (equal-area) projection</text>'
+        f"count per hexagon · Equal Earth (equal-area) projection</text>"
     )
 
     parts.append(fullscreen_control(_WIDTH, _HEIGHT, mode))
-    parts.append('</svg>')
+    parts.append("</svg>")
     return "\n".join(parts)
 
 
@@ -896,8 +933,8 @@ def _legend_and_stat(
     )
     out.append(
         f'<text x="{lx:.1f}" y="{ly + 56:.1f}" font-size="17" fill="{_SUBTLE}">'
-        f'{active:,} hexagons hold quakes · the busiest holds {true_max}, '
-        f'all on the Pacific rim</text>'
+        f"{active:,} hexagons hold quakes · the busiest holds {true_max}, "
+        f"all on the Pacific rim</text>"
     )
 
     # ---- horizontal ramp (right edge of the map) ----
@@ -960,9 +997,13 @@ def make_hexbin_map(
     accessible name.
     """
     svg = build_svg(
-        mode=mode, accessibility=accessibility, theme=theme,
-        title=title, subtitle=subtitle,
-        headline_stat_label=headline_stat_label, ramp_legend_title=ramp_legend_title,
+        mode=mode,
+        accessibility=accessibility,
+        theme=theme,
+        title=title,
+        subtitle=subtitle,
+        headline_stat_label=headline_stat_label,
+        ramp_legend_title=ramp_legend_title,
     )
     dest = Path(out) if out else svg_example_path(__file__, "hexbin-map")
     return write_svg(dest, svg, theme=theme)

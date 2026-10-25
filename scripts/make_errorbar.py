@@ -49,8 +49,11 @@ def _nice_step(span: float, target_ticks: int = 5) -> float:
     raw_step = span / target_ticks
     exponent = math.floor(math.log10(raw_step))
     fraction = raw_step / (10.0**exponent)
-    nice_fraction = 1.0 if fraction < 1.5 else 2.0 if fraction < 3 else 5.0 if fraction < 7 else 10.0
+    nice_fraction = (
+        1.0 if fraction < 1.5 else 2.0 if fraction < 3 else 5.0 if fraction < 7 else 10.0
+    )
     return nice_fraction * (10.0**exponent)
+
 
 DEMO_DATA: List[Dict[str, Any]] = [
     {"g": "Control", "mean": 40, "lo": 34, "hi": 46},
@@ -120,11 +123,13 @@ def build_svg(
         return plot_y + plot_h - (v - (v_min - pad)) / ((v_max + pad) - (v_min - pad)) * plot_h
 
     parts: List[str] = []
-    parts.append(svg_open(width, height, "eb-title", "eb-desc", font_family=chrome_stack_for_theme(theme)))
+    parts.append(
+        svg_open(width, height, "eb-title", "eb-desc", font_family=chrome_stack_for_theme(theme))
+    )
     parts.append(f'<title id="eb-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="eb-desc">Error bar chart of {n} groups. Hover or focus a bar for its '
-        f'exact mean and interval.</desc>'
+        f"exact mean and interval.</desc>"
     )
     parts.append(
         "<style>"
@@ -141,7 +146,9 @@ def build_svg(
         f'<text x="40" y="46" font-size="22" font-weight="700" fill="{INK}" '
         f'letter-spacing="-0.3">{xml_escape(title)}</text>'
     )
-    parts.append(f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>')
+    parts.append(
+        f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>'
+    )
 
     # ---- y-axis gridlines (round "nice" steps, not a naive 5-way split) ----
     axis_lo, axis_hi = v_min - pad, v_max + pad
@@ -172,18 +179,35 @@ def build_svg(
         y_mean = y_for(float(r["mean"]))
         tip = f"{r['g']}: mean {float(r['mean']):.0f} (95% CI {float(r['lo']):.0f}-{float(r['hi']):.0f})"
         parts.append(f'<g id="errbar-{i}" class="errbar hit" tabindex="0">')
-        parts.append(f'<title>{xml_escape(tip)}</title>')
-        parts.append(f'<line x1="{cx:.1f}" y1="{y_lo:.1f}" x2="{cx:.1f}" y2="{y_hi:.1f}" stroke="{INK}" stroke-width="1.5"/>')
-        parts.append(f'<line x1="{cx - cap_w / 2:.1f}" y1="{y_lo:.1f}" x2="{cx + cap_w / 2:.1f}" y2="{y_lo:.1f}" stroke="{INK}" stroke-width="1.5"/>')
-        parts.append(f'<line x1="{cx - cap_w / 2:.1f}" y1="{y_hi:.1f}" x2="{cx + cap_w / 2:.1f}" y2="{y_hi:.1f}" stroke="{INK}" stroke-width="1.5"/>')
-        parts.append(f'<circle cx="{cx:.1f}" cy="{y_mean:.1f}" r="6" fill="{COLOR_POINT}" stroke="{BG}" stroke-width="1.5"/>')
+        parts.append(f"<title>{xml_escape(tip)}</title>")
+        parts.append(
+            f'<line x1="{cx:.1f}" y1="{y_lo:.1f}" x2="{cx:.1f}" y2="{y_hi:.1f}" stroke="{INK}" stroke-width="1.5"/>'
+        )
+        parts.append(
+            f'<line x1="{cx - cap_w / 2:.1f}" y1="{y_lo:.1f}" x2="{cx + cap_w / 2:.1f}" y2="{y_lo:.1f}" stroke="{INK}" stroke-width="1.5"/>'
+        )
+        parts.append(
+            f'<line x1="{cx - cap_w / 2:.1f}" y1="{y_hi:.1f}" x2="{cx + cap_w / 2:.1f}" y2="{y_hi:.1f}" stroke="{INK}" stroke-width="1.5"/>'
+        )
+        parts.append(
+            f'<circle cx="{cx:.1f}" cy="{y_mean:.1f}" r="6" fill="{COLOR_POINT}" stroke="{BG}" stroke-width="1.5"/>'
+        )
         parts.append("</g>")
         errbar_tips.append(
             tooltip_bubble(
-                cx, y_hi - 14,
-                [str(r["g"]), f"mean {float(r['mean']):.0f}", f"95% CI {float(r['lo']):.0f}-{float(r['hi']):.0f}"],
-                anchor="middle", canvas_w=width, canvas_h=height,
-                ink=INK, secondary=SECONDARY, border=GRIDLINE,
+                cx,
+                y_hi - 14,
+                [
+                    str(r["g"]),
+                    f"mean {float(r['mean']):.0f}",
+                    f"95% CI {float(r['lo']):.0f}-{float(r['hi']):.0f}",
+                ],
+                anchor="middle",
+                canvas_w=width,
+                canvas_h=height,
+                ink=INK,
+                secondary=SECONDARY,
+                border=GRIDLINE,
                 elem_id=f"errbartip-{i}",
             )
         )
@@ -257,8 +281,18 @@ def make_errorbar(
     >>> p.exists()
     True
     """
-    svg = build_svg(data, title=title, subtitle=subtitle, y_axis_title=y_axis_title, x_axis_title=x_axis_title,
-                     width=width, height=height, mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(
+        data,
+        title=title,
+        subtitle=subtitle,
+        y_axis_title=y_axis_title,
+        x_axis_title=x_axis_title,
+        width=width,
+        height=height,
+        mode=mode,
+        accessibility=accessibility,
+        theme=theme,
+    )
     dest = Path(out) if out else svg_example_path(__file__, "errorbar")
     return write_svg(dest, svg, theme=theme)
 

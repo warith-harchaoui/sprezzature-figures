@@ -188,30 +188,32 @@ def build_svg(
     def py(value: float) -> float:
         return plot_y + plot_h - (value - y_lo) / ((y_hi - y_lo) or 1.0) * plot_h
 
-    best_text = best_label if best_label is not None else (
-        f"best epoch {fmt_number(best_epoch)} · {fmt_number(best_value)}"
+    best_text = (
+        best_label
+        if best_label is not None
+        else (f"best epoch {fmt_number(best_epoch)} · {fmt_number(best_value)}")
     )
-    wasted_text = wasted_label if wasted_label is not None else (
-        f"{wasted} epochs past the minimum" if wasted else ""
+    wasted_text = (
+        wasted_label
+        if wasted_label is not None
+        else (f"{wasted} epochs past the minimum" if wasted else "")
     )
 
     parts: List[str] = []
     parts.append(
-        svg_open(width, height, "loss-title", "loss-desc",
-                 font_family=chrome_stack_for_theme(theme))
+        svg_open(
+            width, height, "loss-title", "loss-desc", font_family=chrome_stack_for_theme(theme)
+        )
     )
     parts.append(f'<title id="loss-title">{xml_escape(title)}</title>')
-    final_gap = abs(
-        curves[validation_name][-1][1]
-        - curves[series_names[0]][-1][1]
-    )
+    final_gap = abs(curves[validation_name][-1][1] - curves[series_names[0]][-1][1])
     parts.append(
         f'<desc id="loss-desc">Loss per epoch for '
-        f'{xml_escape(", ".join(series_names))} over {len(epochs)} epochs. '
-        f'{xml_escape(validation_name)} reaches its minimum of {fmt_number(best_value)} at '
-        f'epoch {fmt_number(best_epoch)}; the {wasted} epochs after it are shaded, and over '
-        f'them the loss rises rather than falls. At the last epoch the two curves are '
-        f'{fmt_number(final_gap)} apart.</desc>'
+        f"{xml_escape(', '.join(series_names))} over {len(epochs)} epochs. "
+        f"{xml_escape(validation_name)} reaches its minimum of {fmt_number(best_value)} at "
+        f"epoch {fmt_number(best_epoch)}; the {wasted} epochs after it are shaded, and over "
+        f"them the loss rises rather than falls. At the last epoch the two curves are "
+        f"{fmt_number(final_gap)} apart.</desc>"
     )
     parts.append(
         "<style>"
@@ -229,16 +231,16 @@ def build_svg(
     )
     parts.append(
         f'<text x="{plot_x:.1f}" y="72" font-size="14" fill="{SECONDARY}">'
-        f'{xml_escape(subtitle)}</text>'
+        f"{xml_escape(subtitle)}</text>"
     )
     parts.append(
         f'<text x="{plot_x:.1f}" y="98" font-size="12" fill="{SECONDARY}" '
         f'font-family="{mono_family}">at the last epoch the two are '
-        f'{fmt_number(final_gap)} apart</text>'
+        f"{fmt_number(final_gap)} apart</text>"
     )
     parts.append(
         f'<text x="{plot_x:.1f}" y="{plot_y - 14:.1f}" font-size="12" fill="{SECONDARY}">'
-        f'{xml_escape(y_label)}</text>'
+        f"{xml_escape(y_label)}</text>"
     )
 
     # Everything after the minimum, shaded: that span is the answer the
@@ -265,7 +267,7 @@ def build_svg(
         parts.append(
             f'<text x="{px(epoch):.1f}" y="{plot_y + plot_h + 22:.1f}" font-size="11" '
             f'fill="{SECONDARY}" text-anchor="middle" font-family="{mono_family}">'
-            f'{fmt_number(epoch)}</text>'
+            f"{fmt_number(epoch)}</text>"
         )
     parts.append(
         f'<text x="{plot_x + plot_w / 2:.1f}" y="{height - 22:.1f}" font-size="12" '
@@ -288,22 +290,27 @@ def build_svg(
         parts.append(
             f'<rect id="ep-{index}" class="ep hit" tabindex="0" role="img" '
             f'aria-label="{xml_escape(name)}: from {fmt_number(curves[name][0][1])} at epoch '
-            f'{fmt_number(curves[name][0][0])} to {fmt_number(last_value)} at epoch '
+            f"{fmt_number(curves[name][0][0])} to {fmt_number(last_value)} at epoch "
             f'{fmt_number(last_epoch)}" '
             f'x="{plot_x:.1f}" y="{py(max(v for _, v in curves[name])) - 6:.1f}" '
             f'width="{plot_w:.1f}" height="12" fill="transparent">'
-            f'<title>{xml_escape(name)}: {fmt_number(last_value)} at the last epoch</title></rect>'
+            f"<title>{xml_escape(name)}: {fmt_number(last_value)} at the last epoch</title></rect>"
         )
         tips.append(
             tooltip_bubble(
-                plot_x + plot_w * 0.5, py(last_value),
+                plot_x + plot_w * 0.5,
+                py(last_value),
                 [
                     name,
                     f"start {fmt_number(curves[name][0][1])} · end {fmt_number(last_value)}",
                     f"over {len(curves[name])} epochs",
                 ],
-                canvas_w=width, canvas_h=height, ink=INK, secondary=SECONDARY,
-                border=GRIDLINE, elem_id=f"eptip-{index}",
+                canvas_w=width,
+                canvas_h=height,
+                ink=INK,
+                secondary=SECONDARY,
+                border=GRIDLINE,
+                elem_id=f"eptip-{index}",
             )
         )
 
@@ -324,7 +331,7 @@ def build_svg(
     parts.append(
         f'<text x="{px(best_epoch) + 13:.1f}" y="{plot_y + 20:.1f}" font-size="11" '
         f'font-weight="700" fill="{INK}" font-family="{mono_family}">'
-        f'{xml_escape(best_text)}</text>'
+        f"{xml_escape(best_text)}</text>"
     )
     if wasted_text:
         parts.append(
@@ -396,10 +403,21 @@ def make_loss_curve(
     True
     """
     svg = build_svg(
-        data, title=title, subtitle=subtitle, width=width, height=height,
-        x=x, series=series, y=y, x_label=x_label, y_label=y_label,
-        best_label=best_label, wasted_label=wasted_label, mode=mode,
-        accessibility=accessibility, theme=theme,
+        data,
+        title=title,
+        subtitle=subtitle,
+        width=width,
+        height=height,
+        x=x,
+        series=series,
+        y=y,
+        x_label=x_label,
+        y_label=y_label,
+        best_label=best_label,
+        wasted_label=wasted_label,
+        mode=mode,
+        accessibility=accessibility,
+        theme=theme,
     )
     dest = Path(out) if out else svg_example_path(__file__, "loss-curve")
     return write_svg(dest, svg, theme=theme)

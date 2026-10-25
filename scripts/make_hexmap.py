@@ -67,17 +67,17 @@ _MAP_Y1: float = 852.0
 _HEX_R: float = 30.0
 
 #: House-style inks.
-_INK: str = "#1D1D1F"       # primary text
-_SUBTLE: str = "#6E6E73"    # secondary text
-_SEA: str = "#DCE7F4"       # water / out-of-extent fill (faint blue)
-_LAND: str = "#FBFCFE"      # land silhouette under the hex lattice
-_EMPTY: str = "#DDDDE2"     # a land hex that caught zero points (kept clearly
-                             # greyer/darker than the palest ramp step —
-                             # #E2ECFA at count=1 — so "no data" never reads
-                             # as "lowest density")
-_STROKE: str = "#FFFFFF"    # white casing between hexes
-_BG: str = "#FFFFFF"        # background
-_FOCUS: str = "#0A4DA0"     # focus-ring blue
+_INK: str = "#1D1D1F"  # primary text
+_SUBTLE: str = "#6E6E73"  # secondary text
+_SEA: str = "#DCE7F4"  # water / out-of-extent fill (faint blue)
+_LAND: str = "#FBFCFE"  # land silhouette under the hex lattice
+_EMPTY: str = "#DDDDE2"  # a land hex that caught zero points (kept clearly
+# greyer/darker than the palest ramp step —
+# #E2ECFA at count=1 — so "no data" never reads
+# as "lowest density")
+_STROKE: str = "#FFFFFF"  # white casing between hexes
+_BG: str = "#FFFFFF"  # background
+_FOCUS: str = "#0A4DA0"  # focus-ring blue
 
 #: Reproducible point cloud.
 _SEED: int = 20260725
@@ -128,14 +128,16 @@ def _ramp(
     if theme == "academic":
         return viridis(t)
     t = max(0.0, min(1.0, t))
-    t = t ** 0.72  # gentle gamma so mid densities separate
+    t = t**0.72  # gentle gamma so mid densities separate
     r1, g1, b1 = light
     r2, g2, b2 = _hex_to_rgb(top)
-    return _rgb_to_hex((
-        r1 + (r2 - r1) * t,
-        g1 + (g2 - g1) * t,
-        b1 + (b2 - b1) * t,
-    ))
+    return _rgb_to_hex(
+        (
+            r1 + (r2 - r1) * t,
+            g1 + (g2 - g1) * t,
+            b1 + (b2 - b1) * t,
+        )
+    )
 
 
 # ------------------------------------------------------------------
@@ -147,10 +149,22 @@ def _ramp(
 #: A rounded landmass with a water inlet biting in from the lower-right,
 #: evoking a coastal metro where downtown hugs the shore.
 _COAST: List[Tuple[float, float]] = [
-    (0.06, 0.10), (0.34, 0.04), (0.60, 0.08), (0.82, 0.06),
-    (0.95, 0.18), (0.97, 0.40), (0.86, 0.52), (0.90, 0.70),
-    (0.78, 0.86), (0.60, 0.80), (0.52, 0.92), (0.36, 0.96),
-    (0.22, 0.90), (0.10, 0.74), (0.04, 0.52), (0.09, 0.30),
+    (0.06, 0.10),
+    (0.34, 0.04),
+    (0.60, 0.08),
+    (0.82, 0.06),
+    (0.95, 0.18),
+    (0.97, 0.40),
+    (0.86, 0.52),
+    (0.90, 0.70),
+    (0.78, 0.86),
+    (0.60, 0.80),
+    (0.52, 0.92),
+    (0.36, 0.96),
+    (0.22, 0.90),
+    (0.10, 0.74),
+    (0.04, 0.52),
+    (0.09, 0.30),
 ]
 
 
@@ -175,10 +189,10 @@ def _point_in_poly(x: float, y: float, poly: List[Tuple[float, float]]) -> bool:
 #: with a weight (how many of the sampled trips it draws) and a spread.
 _HOTSPOTS: List[Tuple[float, float, float, float]] = [
     # (cx, cy, weight, sigma)
-    (0.40, 0.34, 0.42, 0.09),   # downtown core (the peak)
-    (0.58, 0.52, 0.24, 0.11),   # waterfront district
-    (0.26, 0.60, 0.16, 0.12),   # university quarter
-    (0.72, 0.24, 0.10, 0.10),   # airport / north gateway
+    (0.40, 0.34, 0.42, 0.09),  # downtown core (the peak)
+    (0.58, 0.52, 0.24, 0.11),  # waterfront district
+    (0.26, 0.60, 0.16, 0.12),  # university quarter
+    (0.72, 0.24, 0.10, 0.10),  # airport / north gateway
 ]
 
 
@@ -224,8 +238,7 @@ def _sample_points(n: int, rng: random.Random) -> List[Tuple[float, float]]:
 #: ``make_<kind>`` contract asks for: one dict per event with its
 #: normalised ``[0, 1]`` map-extent coordinates.
 DEMO_DATA: List[Dict[str, Any]] = [
-    {"x": round(x, 4), "y": round(y, 4)}
-    for x, y in _sample_points(3200, random.Random(_SEED))
+    {"x": round(x, 4), "y": round(y, 4)} for x, y in _sample_points(3200, random.Random(_SEED))
 ]
 
 
@@ -260,8 +273,8 @@ def _build_lattice() -> List[Dict[str, float]]:
         the normalised-extent centre ``nx``/``ny`` (used to bin points).
     """
     r = _HEX_R
-    hex_w = math.sqrt(3.0) * r          # width of a pointy-top hex
-    v_step = 1.5 * r                    # vertical distance between rows
+    hex_w = math.sqrt(3.0) * r  # width of a pointy-top hex
+    v_step = 1.5 * r  # vertical distance between rows
     ext_w = _MAP_X1 - _MAP_X0
     ext_h = _MAP_Y1 - _MAP_Y0
 
@@ -373,10 +386,11 @@ def build_svg(
 
     # ---- header ----
     parts: List[str] = []
-    parts.append(svg_open(_WIDTH, _HEIGHT, "hx-title", "hx-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(
-        '<title id="hx-title">Bike-share trips pile up downtown, '
-        'thin out at the edges</title>'
+        svg_open(_WIDTH, _HEIGHT, "hx-title", "hx-desc", font_family=chrome_stack_for_theme(theme))
+    )
+    parts.append(
+        '<title id="hx-title">Bike-share trips pile up downtown, thin out at the edges</title>'
     )
     desc = (
         f"Hexbin density map: the coastal-metro service area is tiled with "
@@ -437,15 +451,15 @@ def build_svg(
     # ---- title + subtitle ----
     # The headline the figure writes about its own data, used only when
     # the caller supplies none.
-    title = title or 'Bike-share demand clusters on the downtown core'
+    title = title or "Bike-share demand clusters on the downtown core"
     parts.append(
         f'<text x="{_MAP_X0}" y="70" font-size="34" font-weight="700" '
         f'fill="{_INK}">{xml_escape(title)}</text>'
     )
     parts.append(
         f'<text x="{_MAP_X0}" y="106" font-size="20" fill="{_SUBTLE}">'
-        f'Morning trips (7-10 AM) per hexagonal bin across the metro '
-        f'service area · one hex ≈ 400 m</text>'
+        f"Morning trips (7-10 AM) per hexagonal bin across the metro "
+        f"service area · one hex ≈ 400 m</text>"
     )
 
     # ---- water / extent backdrop (the coastline outline as "land base") ----
@@ -458,9 +472,7 @@ def build_svg(
         f'height="{ext_h:.1f}" rx="16" fill="{_SEA}"/>'
     )
     # The coastline path (land silhouette) as a faint casing under the hexes.
-    coast_pts = [
-        (_MAP_X0 + nx * ext_w, _MAP_Y0 + ny * ext_h) for nx, ny in _COAST
-    ]
+    coast_pts = [(_MAP_X0 + nx * ext_w, _MAP_Y0 + ny * ext_h) for nx, ny in _COAST]
     coast_d = "M" + " L".join(f"{x:.1f},{y:.1f}" for x, y in coast_pts) + "Z"
     parts.append(
         f'<path d="{coast_d}" fill="{_LAND}" stroke="#9FB4CE" '
@@ -482,38 +494,38 @@ def build_svg(
         else:
             fill = _ramp(cnt / max_count, blue, theme=theme)
         d = _hex_path(c["px"], c["py"], r * 0.985)  # tiny gap => white casing
-        label = (
-            f'{cnt} trip{"" if cnt == 1 else "s"}'
-            if cnt > 0
-            else "no trips"
-        )
+        label = f"{cnt} trip{'' if cnt == 1 else 's'}" if cnt > 0 else "no trips"
         parts.append(
             f'<path id="hex-{i}" class="hex hit" d="{d}" fill="{fill}" stroke="{_STROKE}" '
             f'stroke-width="1.6" tabindex="0" role="listitem">'
-            f'<title>{label}</title></path>'
+            f"<title>{label}</title></path>"
         )
         bubble_lines = [label]
         if cnt > 0:
             bubble_lines.append(f"{cnt / max_count * 100:.0f}% of busiest hex")
         tip_bubbles.append(
             tooltip_bubble(
-                c["px"], c["py"] - r - 6,
+                c["px"],
+                c["py"] - r - 6,
                 bubble_lines,
-                anchor="middle", canvas_w=_WIDTH, canvas_h=_HEIGHT,
-                ink=_INK, secondary=_SUBTLE, border=GRIDLINE,
+                anchor="middle",
+                canvas_w=_WIDTH,
+                canvas_h=_HEIGHT,
+                ink=_INK,
+                secondary=_SUBTLE,
+                border=GRIDLINE,
                 elem_id=f"tip-{i}",
             )
         )
     parts.extend(tip_bubbles)
-    parts.append('</g>')
+    parts.append("</g>")
 
     # ---- sequential legend (right column) ----
     lx = 992.0
     ly = 268.0
     parts.append(f'<g transform="translate({lx:.1f},{ly:.1f})">')
     parts.append(
-        f'<text x="0" y="-24" font-size="20" font-weight="700" '
-        f'fill="{_INK}">{legend_title}</text>'
+        f'<text x="0" y="-24" font-size="20" font-weight="700" fill="{_INK}">{legend_title}</text>'
     )
     # A vertical gradient bar built from discrete swatches (self-contained,
     # no <defs> gradient needed) top = busiest.
@@ -521,7 +533,7 @@ def build_svg(
     seg_h = 34.0
     n_seg = 8
     for i in range(n_seg):
-        t = 1.0 - i / (n_seg - 1)          # top swatch = darkest
+        t = 1.0 - i / (n_seg - 1)  # top swatch = darkest
         col = _ramp(t, blue, theme=theme)
         parts.append(
             f'<rect class="legend-swatch" x="0" y="{i * seg_h:.1f}" '
@@ -561,18 +573,17 @@ def build_svg(
         f'fill="{blue}">{busiest_share}%</text>'
     )
     parts.append(
-        f'<text x="0" y="{stat_y + 34:.1f}" font-size="17.5" fill="{_SUBTLE}">'
-        f'of trips start</text>'
+        f'<text x="0" y="{stat_y + 34:.1f}" font-size="17.5" fill="{_SUBTLE}">of trips start</text>'
     )
     parts.append(
         f'<text x="0" y="{stat_y + 56:.1f}" font-size="17.5" fill="{_SUBTLE}">'
-        f'in the busiest 10% of hexes</text>'
+        f"in the busiest 10% of hexes</text>"
     )
-    parts.append('</g>')
+    parts.append("</g>")
 
     # Fullscreen control per interactivity mode, just before the close.
     parts.append(fullscreen_control(_WIDTH, _HEIGHT, mode))
-    parts.append('</svg>')
+    parts.append("</svg>")
     return "\n".join(parts)
 
 
@@ -594,7 +605,13 @@ def make_hexmap(
     ``title`` are accepted for dispatcher parity and unused. ``theme`` is
     forwarded to :func:`build_svg`.
     """
-    svg = build_svg(mode=mode, accessibility=accessibility, theme=theme, legend_title=legend_title, title=title or None)
+    svg = build_svg(
+        mode=mode,
+        accessibility=accessibility,
+        theme=theme,
+        legend_title=legend_title,
+        title=title or None,
+    )
     dest = Path(out) if out else svg_example_path(__file__, "hexmap")
     return write_svg(dest, svg, theme=theme)
 

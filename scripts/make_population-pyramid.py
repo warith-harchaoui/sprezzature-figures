@@ -35,12 +35,18 @@ AGE_BANDS = ["75+", "60-74", "45-59", "30-44", "15-29", "0-14"]
 SEXES = ["Male", "Female"]
 
 DEMO_DATA: List[Dict[str, Any]] = [
-    {"age": "0-14", "sex": "Male", "pct": -12}, {"age": "0-14", "sex": "Female", "pct": 11},
-    {"age": "15-29", "sex": "Male", "pct": -15}, {"age": "15-29", "sex": "Female", "pct": 14},
-    {"age": "30-44", "sex": "Male", "pct": -14}, {"age": "30-44", "sex": "Female", "pct": 14},
-    {"age": "45-59", "sex": "Male", "pct": -12}, {"age": "45-59", "sex": "Female", "pct": 13},
-    {"age": "60-74", "sex": "Male", "pct": -8}, {"age": "60-74", "sex": "Female", "pct": 9},
-    {"age": "75+", "sex": "Male", "pct": -4}, {"age": "75+", "sex": "Female", "pct": 6},
+    {"age": "0-14", "sex": "Male", "pct": -12},
+    {"age": "0-14", "sex": "Female", "pct": 11},
+    {"age": "15-29", "sex": "Male", "pct": -15},
+    {"age": "15-29", "sex": "Female", "pct": 14},
+    {"age": "30-44", "sex": "Male", "pct": -14},
+    {"age": "30-44", "sex": "Female", "pct": 14},
+    {"age": "45-59", "sex": "Male", "pct": -12},
+    {"age": "45-59", "sex": "Female", "pct": 13},
+    {"age": "60-74", "sex": "Male", "pct": -8},
+    {"age": "60-74", "sex": "Female", "pct": 9},
+    {"age": "75+", "sex": "Male", "pct": -4},
+    {"age": "75+", "sex": "Female", "pct": 6},
 ]
 
 
@@ -110,11 +116,13 @@ def build_svg(
         return abs(v) / max_abs * half_w * 0.86
 
     parts: List[str] = []
-    parts.append(svg_open(width, height, "pp-title", "pp-desc", font_family=chrome_stack_for_theme(theme)))
+    parts.append(
+        svg_open(width, height, "pp-title", "pp-desc", font_family=chrome_stack_for_theme(theme))
+    )
     parts.append(f'<title id="pp-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="pp-desc">Population pyramid across {n} age bands. Hover or focus a '
-        f'bar for its exact share.</desc>'
+        f"bar for its exact share.</desc>"
     )
     parts.append(
         "<style>"
@@ -136,14 +144,20 @@ def build_svg(
         f'<text x="40" y="46" font-size="22" font-weight="700" fill="{INK}" '
         f'letter-spacing="-0.3">{xml_escape(title)}</text>'
     )
-    parts.append(f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>')
+    parts.append(
+        f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>'
+    )
 
     # ---- legend ----
     lx, ly = 40.0, 100.0
     cursor = lx
     for sex in SEXES:
-        parts.append(f'<rect x="{cursor:.1f}" y="{ly - 12:.1f}" width="14" height="14" rx="3" fill="{colors[sex]}"/>')
-        parts.append(f'<text x="{cursor + 20:.1f}" y="{ly:.1f}" font-size="12" fill="{INK}">{xml_escape(sex)}</text>')
+        parts.append(
+            f'<rect x="{cursor:.1f}" y="{ly - 12:.1f}" width="14" height="14" rx="3" fill="{colors[sex]}"/>'
+        )
+        parts.append(
+            f'<text x="{cursor + 20:.1f}" y="{ly:.1f}" font-size="12" fill="{INK}">{xml_escape(sex)}</text>'
+        )
         cursor += 20 + 7.0 * len(sex) + 22
 
     # ---- center axis + age labels ----
@@ -162,7 +176,9 @@ def build_svg(
         parts.append(
             f'<rect x="{plot_x - 26:.1f}" y="{cy - 12:.1f}" width="52" height="16" fill="{BG}"/>'
         )
-        parts.append(f'<text x="{plot_x:.1f}" y="{cy:.1f}" font-size="12" fill="{INK}" text-anchor="middle">{xml_escape(age)}</text>')
+        parts.append(
+            f'<text x="{plot_x:.1f}" y="{cy:.1f}" font-size="12" fill="{INK}" text-anchor="middle">{xml_escape(age)}</text>'
+        )
 
     # ---- bars ----
     # Every bar is drawn first, every one of its bubbles appended afterward
@@ -196,10 +212,19 @@ def build_svg(
             )
             pyr_tips.append(
                 tooltip_bubble(
-                    x0 + (length if sign < 0 else 0.0), y0 - 12,
-                    [f"{sex}, {age}", f"{abs(v):.0f}% of population", f"{share:.1f}% of pyramid total"],
-                    anchor="middle", canvas_w=width, canvas_h=height,
-                    ink=INK, secondary=SECONDARY, border=GRIDLINE,
+                    x0 + (length if sign < 0 else 0.0),
+                    y0 - 12,
+                    [
+                        f"{sex}, {age}",
+                        f"{abs(v):.0f}% of population",
+                        f"{share:.1f}% of pyramid total",
+                    ],
+                    anchor="middle",
+                    canvas_w=width,
+                    canvas_h=height,
+                    ink=INK,
+                    secondary=SECONDARY,
+                    border=GRIDLINE,
                     elem_id=f"pyr-tip-{this_mark_i}",
                 )
             )
@@ -258,15 +283,25 @@ def make_population_pyramid(
     >>> p.exists()
     True
     """
-    svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
-                     mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(
+        data,
+        title=title,
+        subtitle=subtitle,
+        width=width,
+        height=height,
+        mode=mode,
+        accessibility=accessibility,
+        theme=theme,
+    )
     dest = Path(out) if out else svg_example_path(__file__, "population-pyramid")
     return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:
     """CLI entry point: build the SVG and write it to disk."""
-    render_cli(__file__, "population-pyramid", build_svg, description="Generate a population pyramid.")
+    render_cli(
+        __file__, "population-pyramid", build_svg, description="Generate a population pyramid."
+    )
 
 
 if __name__ == "__main__":

@@ -62,7 +62,10 @@ from _style import leveled_colors, load_palette, os_adaptive_style, os_dark_styl
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 from _scale import nice_ticks_range  # noqa: E402
 from _svg import (  # noqa: E402
-    foreground_tip_css, svg_open, tooltip_bubble, wrap_no_orphan,
+    foreground_tip_css,
+    svg_open,
+    tooltip_bubble,
+    wrap_no_orphan,
     xml_escape,
 )
 
@@ -314,7 +317,7 @@ def build_svg(
     width = 1280
     height = 940
     m_left = 128
-    m_right = 210          # extra room on the right for the value chips
+    m_right = 210  # extra room on the right for the value chips
     m_top = 232
     m_bottom = 132
     plot_x = m_left
@@ -361,19 +364,19 @@ def build_svg(
     parts.append(svg_open(width, height, "ba-title", "ba-desc", font_family=chrome_family))
     parts.append(
         '<title id="ba-title">Bland-Altman plot comparing a wrist '
-        'blood-pressure monitor with an arm cuff</title>'
+        "blood-pressure monitor with an arm cuff</title>"
     )
     parts.append(
         f'<desc id="ba-desc">A Bland-Altman agreement plot of paired '
-        f'systolic-pressure readings from a wrist monitor and an arm cuff. '
-        f'The horizontal axis is the mean of the two readings; the vertical '
-        f'axis is their difference (wrist minus arm). Each dot is one of '
-        f'{len(data)} patients. A solid blue line marks the mean bias '
-        f'({bias:+.1f} mmHg) and two dashed red lines mark the 95 percent '
-        f'limits of agreement ({loa_lo:+.1f} to {loa_hi:+.1f} mmHg). The bias '
-        f'sits below zero and the cloud tilts down to the right, so the wrist '
-        f'tends to read low, and more so at higher pressure. '
-        f'</desc>'
+        f"systolic-pressure readings from a wrist monitor and an arm cuff. "
+        f"The horizontal axis is the mean of the two readings; the vertical "
+        f"axis is their difference (wrist minus arm). Each dot is one of "
+        f"{len(data)} patients. A solid blue line marks the mean bias "
+        f"({bias:+.1f} mmHg) and two dashed red lines mark the 95 percent "
+        f"limits of agreement ({loa_lo:+.1f} to {loa_hi:+.1f} mmHg). The bias "
+        f"sits below zero and the cloud tilts down to the right, so the wrist "
+        f"tends to read low, and more so at higher pressure. "
+        f"</desc>"
     )
 
     # OS-adaptive overrides (additive; the default render is byte-for-byte
@@ -431,16 +434,10 @@ def build_svg(
     # sujet de la démonstration. Ils deviennent neutres dès que les données
     # viennent d'ailleurs, et paramétrables dans tous les cas.
     suffixe = f" ({unit})" if unit else ""
-    x_axis_title = x_axis_title or (
-        (chrome["axe_x_demo"] if demo else chrome["axe_x"]) + suffixe
-    )
-    y_axis_title = y_axis_title or (
-        (chrome["axe_y_demo"] if demo else chrome["axe_y"]) + suffixe
-    )
+    x_axis_title = x_axis_title or ((chrome["axe_x_demo"] if demo else chrome["axe_x"]) + suffixe)
+    y_axis_title = y_axis_title or ((chrome["axe_y_demo"] if demo else chrome["axe_y"]) + suffixe)
     headline = title or (chrome["titre_demo"] if demo else "")
-    explication = subtitle or (
-        chrome["explication_demo"] if demo else chrome["explication"]
-    )
+    explication = subtitle or (chrome["explication_demo"] if demo else chrome["explication"])
     if headline:
         parts.append(
             f'<text x="{m_left}" y="88" font-size="40" font-weight="700" '
@@ -452,9 +449,14 @@ def build_svg(
     # canevas. On les REPLIE toutes, et on les empile à la suite plutôt qu'à
     # des positions écrites d'avance.
     unite = f" {unit}" if unit else ""
-    lignes = [explication, chrome["lignes"].format(
-        bias=f"{bias:+.1f}{unite}", lo=f"{loa_lo:+.1f}{unite}", hi=f"{loa_hi:+.1f}{unite}",
-    )]
+    lignes = [
+        explication,
+        chrome["lignes"].format(
+            bias=f"{bias:+.1f}{unite}",
+            lo=f"{loa_lo:+.1f}{unite}",
+            hi=f"{loa_hi:+.1f}{unite}",
+        ),
+    ]
     if demo:
         lignes.append(chrome["constat_demo"])
     ordonnee = 134
@@ -527,7 +529,7 @@ def build_svg(
     parts.append(
         f'<text x="{plot_x + plot_w / 2:.1f}" y="{ax_bottom + 78:.1f}" '
         f'font-size="23" fill="{ink}" text-anchor="middle">'
-        f'{xml_escape(x_axis_title)}</text>'
+        f"{xml_escape(x_axis_title)}</text>"
     )
     ytitle_x = 48
     ytitle_y = plot_y + plot_h / 2
@@ -535,7 +537,7 @@ def build_svg(
         f'<text x="{ytitle_x:.1f}" y="{ytitle_y:.1f}" font-size="23" '
         f'fill="{ink}" text-anchor="middle" '
         f'transform="rotate(-90 {ytitle_x:.1f} {ytitle_y:.1f})">'
-        f'{xml_escape(y_axis_title)}</text>'
+        f"{xml_escape(y_axis_title)}</text>"
     )
 
     # --- zero rule (dashed grey) + its caption -------------------
@@ -563,9 +565,7 @@ def build_svg(
     for pt_idx, rec in enumerate(data):
         cx = sx(rec["mean"])
         cy = sy(rec["diff"])
-        tip = (
-            f'Mean {rec["mean"]:.0f} mmHg, wrist − arm {rec["diff"]:+.0f} mmHg'
-        )
+        tip = f"Mean {rec['mean']:.0f} mmHg, wrist − arm {rec['diff']:+.0f} mmHg"
         parts.append(
             f'<g id="pt-hit-{pt_idx}" class="pt hit" tabindex="0" role="img" '
             f'aria-label="{xml_escape(tip)}">'
@@ -583,13 +583,17 @@ def build_svg(
         within_loa = loa_lo <= rec["diff"] <= loa_hi
         pt_tips.append(
             tooltip_bubble(
-                cx, cy - 18,
+                cx,
+                cy - 18,
                 [
                     f"Mean {rec['mean']:.0f} mmHg",
                     f"wrist − arm {rec['diff']:+.1f} mmHg",
                     f"{'within' if within_loa else 'outside'} 95% limits of agreement",
                 ],
-                canvas_w=width, canvas_h=height, ink=ink, secondary=secondary,
+                canvas_w=width,
+                canvas_h=height,
+                ink=ink,
+                secondary=secondary,
                 border="#EEEEEE",
                 elem_id=f"pt-tip-{pt_idx}",
             )
@@ -601,9 +605,7 @@ def build_svg(
     # differences on the means, clipped to the x-window. Kept thin and
     # dotted so it signals the drift without competing with the bias /
     # limit lines that carry the primary read.
-    slope, intercept = _linear_fit(
-        [r["mean"] for r in data], [r["diff"] for r in data]
-    )
+    slope, intercept = _linear_fit([r["mean"] for r in data], [r["diff"] for r in data])
     tx0, tx1 = x_min, x_max
     ty0 = slope * tx0 + intercept
     ty1 = slope * tx1 + intercept
@@ -699,9 +701,16 @@ def make_blandaltman(
     True
     """
     svg = build_svg(
-        data, mode=mode, accessibility=accessibility, theme=theme, title=title,
-        subtitle=subtitle, unit=unit, x_axis_title=x_axis_title,
-        y_axis_title=y_axis_title, language=language,
+        data,
+        mode=mode,
+        accessibility=accessibility,
+        theme=theme,
+        title=title,
+        subtitle=subtitle,
+        unit=unit,
+        x_axis_title=x_axis_title,
+        y_axis_title=y_axis_title,
+        language=language,
     )
     dest = Path(out) if out else svg_example_path(__file__, "blandaltman")
     return write_svg(dest, svg, theme=theme)
@@ -710,7 +719,9 @@ def make_blandaltman(
 def main() -> None:
     """Write the Bland-Altman SVG to the canonical assets path (or --out)."""
     render_cli(
-        __file__, "blandaltman", build_svg,
+        __file__,
+        "blandaltman",
+        build_svg,
         description=(
             "Render the house-style Bland-Altman agreement plot "
             "(difference vs mean, bias + limits of agreement) to SVG."

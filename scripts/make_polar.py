@@ -51,20 +51,15 @@ from typing import Any, Dict, List, Optional, Tuple
 import numpy as np
 
 # Repo-relative default output — the one SVG artifact this figure ships.
-_DEFAULT_OUT = (
-    Path(__file__).resolve().parent.parent
-    / "assets"
-    / "svg-examples"
-    / "polar.svg"
-)
+_DEFAULT_OUT = Path(__file__).resolve().parent.parent / "assets" / "svg-examples" / "polar.svg"
 
 # House-style tokens (mirrors the house-style constants, kept literal so this
 # generator needs no import of the dataviz tier at build time).
-_INK = "#1D1D1F"        # primary text
+_INK = "#1D1D1F"  # primary text
 _SECONDARY = "#6E6E73"  # subtitle / secondary text
-_BG = "#FFFFFF"         # white ground
-_GRID = "#E5E5EA"       # light grid rings / spokes
-_ACCENT = "#007AFF"     # Apple-system Blue — the series colour
+_BG = "#FFFFFF"  # white ground
+_GRID = "#E5E5EA"  # light grid rings / spokes
+_ACCENT = "#007AFF"  # Apple-system Blue — the series colour
 _ACCENT_FILL = "#7FBBFF"  # a lighter Blue for the filled area
 _FONT = "Roboto, system-ui, sans-serif"
 _MONO = "Roboto Mono, ui-monospace, monospace"
@@ -204,9 +199,7 @@ def build_svg(
     """
     # The series colour is a categorical set of two (the accent line/dots and
     # its lighter area fill); level it so the figure answers to accessibility.
-    _levelled = leveled_colors(
-        {"accent": _ACCENT, "accent_fill": _ACCENT_FILL}, accessibility
-    )
+    _levelled = leveled_colors({"accent": _ACCENT, "accent_fill": _ACCENT_FILL}, accessibility)
     accent = _levelled["accent"]
     accent_fill = _levelled["accent_fill"]
 
@@ -219,8 +212,8 @@ def build_svg(
     # radial-scale caption, and centre the dial in the remaining space.
     cx = width / 2.0
     cy = 560.0
-    r_outer = 340.0     # outermost grid ring (the rounded scale max maps here)
-    r_inner = 0.0       # centre
+    r_outer = 340.0  # outermost grid ring (the rounded scale max maps here)
+    r_inner = 0.0  # centre
 
     # ---- radial scale ----------------------------------------------------- #
     # Round the domain up to a friendly tick so the outer ring is a round
@@ -244,16 +237,18 @@ def build_svg(
 
     # ---- header / accessibility ------------------------------------------- #
     title = title or "The city breathes twice a day"
-    subtitle = (
-        "Bike-share departures by hour of an average weekday"
-    )
+    subtitle = "Bike-share departures by hour of an average weekday"
     aria = (
         "Polar clock plot of bike-share departures by hour of day, running "
         "clockwise from midnight at the top. Departures are lowest overnight, "
         "rise to a sharp morning peak near 8 a.m., dip at midday, then climb to "
         "the day's tallest peak near 6 p.m. before falling into the night."
     )
-    parts.append(svg_open(width, height, "polar-title", "polar-desc", font_family=chrome_stack_for_theme(theme)))
+    parts.append(
+        svg_open(
+            width, height, "polar-title", "polar-desc", font_family=chrome_stack_for_theme(theme)
+        )
+    )
     parts.append(f'<title id="polar-title">{title}</title>')
     parts.append(f'<desc id="polar-desc">{aria}</desc>')
     # OS-adaptive override (additive; the default render is byte-identical
@@ -283,17 +278,11 @@ def build_svg(
     )
     # Figure frame: corner-lg (12px) per the Sprezzature Corner Policy —
     # chrome is fixed, not size-scaled (references/corners.md §5).
+    parts.append(f'<rect width="{width}" height="{height}" rx="{CORNERS["lg"]:.0f}" fill="{_BG}"/>')
     parts.append(
-        f'<rect width="{width}" height="{height}" rx="{CORNERS["lg"]:.0f}" '
-        f'fill="{_BG}"/>'
+        f'<text x="64" y="76" font-size="36" font-weight="700" fill="{_INK}">{title}</text>'
     )
-    parts.append(
-        f'<text x="64" y="76" font-size="36" font-weight="700" fill="{_INK}">'
-        f"{title}</text>"
-    )
-    parts.append(
-        f'<text x="64" y="114" font-size="21" fill="{_SECONDARY}">{subtitle}</text>'
-    )
+    parts.append(f'<text x="64" y="114" font-size="21" fill="{_SECONDARY}">{subtitle}</text>')
 
     # ---- grid rings + radial tick labels ---------------------------------- #
     for ring_val in rings:
@@ -378,10 +367,15 @@ def build_svg(
         )
         pt_tips.append(
             tooltip_bubble(
-                px, py - radius - 14,
+                px,
+                py - radius - 14,
                 [f"{hour:02d}:00", f"{value:.0f} departures", f"{share:.1f}% of the day's total"],
-                anchor="middle", canvas_w=width, canvas_h=height,
-                ink=_INK, secondary=_SECONDARY, border=_GRID,
+                anchor="middle",
+                canvas_w=width,
+                canvas_h=height,
+                ink=_INK,
+                secondary=_SECONDARY,
+                border=_GRID,
                 elem_id=f"pt-tip-{hour}",
             )
         )
@@ -391,9 +385,7 @@ def build_svg(
     # Each peak dot gets an ink label set into the open interior of the dial,
     # joined to its dot by a thin accent leader. Values are called out so the
     # reader gets the height without tracing back to a ring.
-    def _callout(
-        hour: int, text: str, dx: float, dy: float, anchor: str
-    ) -> None:
+    def _callout(hour: int, text: str, dx: float, dy: float, anchor: str) -> None:
         """Draw a peak label with a leader line back to its data dot.
 
         The nudge (``dx``/``dy``) tucks the two-line label into the open
@@ -420,8 +412,8 @@ def build_svg(
             f'fill="{_SECONDARY}">{value:.0f} departures/h</text>'
         )
 
-    peak_hour = int(np.argmax(counts))                 # 18:00 — evening peak
-    morning_hour = int(np.argmax(counts[6:11]) + 6)    # 08:00 — morning peak
+    peak_hour = int(np.argmax(counts))  # 18:00 — evening peak
+    morning_hour = int(np.argmax(counts[6:11]) + 6)  # 08:00 — morning peak
     # Evening dot sits at the far-left edge, so lift its label up-and-inward,
     # clear of the "18h" hour label. Morning dot has open room below-right.
     _callout(peak_hour, "Evening rush", dx=-6, dy=-96, anchor="middle")
@@ -455,9 +447,7 @@ def _build_parser() -> argparse.ArgumentParser:
         default=_DEFAULT_OUT,
         help="Destination SVG path (default: the shipped example).",
     )
-    parser.add_argument(
-        "--seed", type=int, default=11, help="Random seed for the sample data."
-    )
+    parser.add_argument("--seed", type=int, default=11, help="Random seed for the sample data.")
     parser.add_argument(
         "--mode",
         choices=("self-contained", "external", "static"),
@@ -467,8 +457,12 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--accessibility",
         choices=(
-            "universal", "high-contrast", "monochrome",
-            "deuteranopia", "protanopia", "tritanopia",
+            "universal",
+            "high-contrast",
+            "monochrome",
+            "deuteranopia",
+            "protanopia",
+            "tritanopia",
         ),
         default="universal",
         help="palette accessibility level (default: universal, the CVD-safe standard)",

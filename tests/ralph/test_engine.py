@@ -39,7 +39,11 @@ def _isolated_studio_home(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> No
 
 def _profile() -> DatasetProfile:
     return DatasetProfile(
-        dataset_id="d1", fingerprint="f", source_name="t.csv", row_count=4, column_count=2,
+        dataset_id="d1",
+        fingerprint="f",
+        source_name="t.csv",
+        row_count=4,
+        column_count=2,
         columns=[
             ColumnProfile(name="region", physical_dtype="object", semantic_type="categorical"),
             ColumnProfile(name="value", physical_dtype="int64", semantic_type="numeric"),
@@ -63,8 +67,12 @@ def _new_iteration() -> tuple[str, Path]:
 
 def _needs_fix(observation: str, repair: SetStyleOption) -> VisualCritique:
     return VisualCritique(
-        verdict="needs_changes", message_alignment_score=60, readability_score=40,
-        visual_hierarchy_score=60, accessibility_score=50, data_fidelity_score=90,
+        verdict="needs_changes",
+        message_alignment_score=60,
+        readability_score=40,
+        visual_hierarchy_score=60,
+        accessibility_score=50,
+        data_fidelity_score=90,
         issues=[VisualIssue(category="labeling", severity="high", observation=observation)],
         safe_repairs=[repair],
     )
@@ -73,15 +81,27 @@ def _needs_fix(observation: str, repair: SetStyleOption) -> VisualCritique:
 def _run(engine: RalphEngine, plan: FigurePlan, message: str, mode: RalphMode, **kwargs):
     project_id, iteration_dir = _new_iteration()
     return engine.apply_user_request(
-        plan, _data(), message,
-        mode=mode, project_id=project_id, iteration_dir=iteration_dir, dataset=_profile(), **kwargs,
+        plan,
+        _data(),
+        message,
+        mode=mode,
+        project_id=project_id,
+        iteration_dir=iteration_dir,
+        dataset=_profile(),
+        **kwargs,
     )
 
 
 def test_manual_mode_applies_request_and_renders_without_critique() -> None:
-    proposal = EditProposal(summary="rename", operations=[SetTitle(operation_id="op1", title="Revenue")])
-    result = _run(RalphEngine(client=FakeLLMClient([proposal])), FigurePlan(figure_kind="bar", title="Old"),
-                  "rename", RalphMode.manual)
+    proposal = EditProposal(
+        summary="rename", operations=[SetTitle(operation_id="op1", title="Revenue")]
+    )
+    result = _run(
+        RalphEngine(client=FakeLLMClient([proposal])),
+        FigurePlan(figure_kind="bar", title="Old"),
+        "rename",
+        RalphMode.manual,
+    )
 
     assert result.plan.title == "Revenue"
     assert result.critique is None
@@ -92,9 +112,15 @@ def test_manual_mode_applies_request_and_renders_without_critique() -> None:
 
 
 def test_manual_mode_holds_confirmation_required_operations() -> None:
-    proposal = EditProposal(summary="switch kind", operations=[SetFigureKind(operation_id="op1", new_kind="line")])
-    result = _run(RalphEngine(client=FakeLLMClient([proposal])), FigurePlan(figure_kind="bar"),
-                  "switch to a line chart", RalphMode.manual)
+    proposal = EditProposal(
+        summary="switch kind", operations=[SetFigureKind(operation_id="op1", new_kind="line")]
+    )
+    result = _run(
+        RalphEngine(client=FakeLLMClient([proposal])),
+        FigurePlan(figure_kind="bar"),
+        "switch to a line chart",
+        RalphMode.manual,
+    )
 
     assert result.plan.figure_kind == "bar"  # not applied
     assert [op.operation_id for op in result.pending_confirmation] == ["op1"]
@@ -105,8 +131,12 @@ def test_assisted_mode_applies_one_safe_repair_pass() -> None:
     proposal = EditProposal(summary="no-op", operations=[])
     repair_op = SetStyleOption(operation_id="r1", option="font_scale", value=1.4)
     critique = _needs_fix("small labels", repair_op)
-    result = _run(RalphEngine(client=FakeLLMClient([proposal, critique])), FigurePlan(figure_kind="bar"),
-                  "make it nicer", RalphMode.assisted)
+    result = _run(
+        RalphEngine(client=FakeLLMClient([proposal, critique])),
+        FigurePlan(figure_kind="bar"),
+        "make it nicer",
+        RalphMode.assisted,
+    )
 
     assert result.plan.style.font_scale == 1.4
     assert [op.operation_id for op in result.applied_operations] == ["r1"]
@@ -135,8 +165,12 @@ def test_manual_mode_survives_a_failing_interpretation() -> None:
     # If the text model can't interpret the request, the current figure still
     # renders unchanged and the failure is reported, not raised.
     client = FakeLLMClient([RuntimeError("model returned no JSON")])
-    result = _run(RalphEngine(client=client), FigurePlan(figure_kind="bar", title="Original"),
-                  "do something ambiguous", RalphMode.manual)
+    result = _run(
+        RalphEngine(client=client),
+        FigurePlan(figure_kind="bar", title="Original"),
+        "do something ambiguous",
+        RalphMode.manual,
+    )
 
     assert result.render.preview_path.exists()
     assert result.applied_operations == []
@@ -149,11 +183,19 @@ def test_autopilot_mode_loops_until_satisfied() -> None:
     repair_op = SetStyleOption(operation_id="r1", option="font_scale", value=1.4)
     needs_fix = _needs_fix("small labels", repair_op)
     satisfied = VisualCritique(
-        verdict="satisfied", message_alignment_score=90, readability_score=90,
-        visual_hierarchy_score=90, accessibility_score=90, data_fidelity_score=95,
+        verdict="satisfied",
+        message_alignment_score=90,
+        readability_score=90,
+        visual_hierarchy_score=90,
+        accessibility_score=90,
+        data_fidelity_score=95,
     )
-    result = _run(RalphEngine(client=FakeLLMClient([proposal, needs_fix, satisfied])),
-                  FigurePlan(figure_kind="bar"), "make it nicer", RalphMode.autopilot)
+    result = _run(
+        RalphEngine(client=FakeLLMClient([proposal, needs_fix, satisfied])),
+        FigurePlan(figure_kind="bar"),
+        "make it nicer",
+        RalphMode.autopilot,
+    )
 
     assert result.critique.verdict == "satisfied"
     assert result.stopped_reason == "satisfied"
@@ -167,8 +209,12 @@ def test_autopilot_mode_stops_on_repeated_issue_signature() -> None:
     # reports the identical signature, so the loop should stop early.
     unhelpful_repair = SetStyleOption(operation_id="r1", option="font_scale", value=1.1)
     critique = _needs_fix("same issue every time", unhelpful_repair)
-    result = _run(RalphEngine(client=FakeLLMClient([proposal, critique, critique])),
-                  FigurePlan(figure_kind="bar"), "make it nicer", RalphMode.autopilot)
+    result = _run(
+        RalphEngine(client=FakeLLMClient([proposal, critique, critique])),
+        FigurePlan(figure_kind="bar"),
+        "make it nicer",
+        RalphMode.autopilot,
+    )
 
     assert result.stopped_reason == "repeated_issue_signature"
     assert result.rounds == 1
@@ -199,8 +245,13 @@ def test_autopilot_enforces_max_auto_repairs_cap(
         history.record(_needs_fix(f"prior round {i}", repair_op), [repair_op])
 
     responses = [proposal, *[_needs_fix(text, repair_op) for text in later_critiques]]
-    result = _run(RalphEngine(client=FakeLLMClient(responses)), FigurePlan(figure_kind="bar"),
-                  "tweak more", RalphMode.autopilot, history=history)
+    result = _run(
+        RalphEngine(client=FakeLLMClient(responses)),
+        FigurePlan(figure_kind="bar"),
+        "tweak more",
+        RalphMode.autopilot,
+        history=history,
+    )
 
     assert result.stopped_reason == "max_auto_repairs_applied"
     assert result.rounds == expected_rounds

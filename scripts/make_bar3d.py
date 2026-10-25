@@ -64,16 +64,16 @@ from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_the
 
 # House-style tokens (mirrors the house-style constants, kept literal so this
 # generator needs no import of the dataviz tier at build time).
-_INK = "#1D1D1F"        # primary text
+_INK = "#1D1D1F"  # primary text
 _SECONDARY = "#6E6E73"  # subtitle / secondary / axis text
-_BG = "#FFFFFF"         # white ground
+_BG = "#FFFFFF"  # white ground
 _MONO = "Roboto Mono, ui-monospace, monospace"
 
 # Height ramp endpoints: short bars read a pale teal, tall bars a deep house
 # blue, so height is legible from colour alone as well as from the box height
 # — a redundant channel that survives greyscale and colour-vision deficiency.
-_LOW = "#B9E4E8"        # pale teal  — shortest bars
-_HIGH = "#0A4DA0"       # deep blue  — tallest bars
+_LOW = "#B9E4E8"  # pale teal  — shortest bars
+_HIGH = "#0A4DA0"  # deep blue  — tallest bars
 
 # Chrome text (title/subtitle/desc/legend) in the two languages Studio can
 # ask for (studio/i18n.py detects the language from the imported CSV's
@@ -132,14 +132,14 @@ def _sample_grid() -> Dict[str, Any]:
         ``{"rows": [...], "cols": [...], "z": [[...], ...]}`` where ``z`` is
         indexed ``z[row][col]`` and the units are thousands of US dollars.
     """
-    rows = ["Data", "Web", "Mobile", "Docs"]      # depth axis (back -> sprezzature)
-    cols = ["Q1", "Q2", "Q3", "Q4"]               # width axis (left -> right)
+    rows = ["Data", "Web", "Mobile", "Docs"]  # depth axis (back -> sprezzature)
+    cols = ["Q1", "Q2", "Q3", "Q4"]  # width axis (left -> right)
     # z[row][col] — thousands of USD. Data ramps up; Docs stays flat.
     z = [
-        [42.0, 58.0, 74.0, 96.0],   # Data  — the towering ridge
-        [31.0, 34.0, 40.0, 46.0],   # Web
-        [22.0, 28.0, 25.0, 33.0],   # Mobile
-        [9.0, 11.0, 10.0, 12.0],    # Docs  — the flat plain
+        [42.0, 58.0, 74.0, 96.0],  # Data  — the towering ridge
+        [31.0, 34.0, 40.0, 46.0],  # Web
+        [22.0, 28.0, 25.0, 33.0],  # Mobile
+        [9.0, 11.0, 10.0, 12.0],  # Docs  — the flat plain
     ]
     return {"rows": rows, "cols": cols, "z": z}
 
@@ -287,9 +287,9 @@ def _luminance(hex_colour: str) -> float:
 #: the camera — exactly the painter-order key used below. Constants are tuned
 #: so cells stay separated and the Data ridge reads clearly. Scaled up for a
 #: generous, poster-sized field.
-_U = (88.0, 37.0)    # per column step: (dx, dy) — right + down (toward viewer)
-_V = (-68.0, 28.0)   # per row step:    (dx, dy) — left  + down (toward viewer)
-_H = (0.0, -1.0)     # per height unit: straight up (dy negative = up on screen)
+_U = (88.0, 37.0)  # per column step: (dx, dy) — right + down (toward viewer)
+_V = (-68.0, 28.0)  # per row step:    (dx, dy) — left  + down (toward viewer)
+_H = (0.0, -1.0)  # per height unit: straight up (dy negative = up on screen)
 
 
 def _project(
@@ -393,14 +393,14 @@ def _bar_faces(
     # footprint is (max col, max row). The two walls the camera sees are the
     # +col wall (right, along increasing col at r1) and the +row wall (left,
     # along increasing row at c1). Name the four floor corners by screen role.
-    near = p(c1, r1, 0.0)          # nearest floor corner (down-front)
+    near = p(c1, r1, 0.0)  # nearest floor corner (down-front)
     col_far_floor = p(c0, r1, 0.0)  # up the +col wall, floor
     row_far_floor = p(c1, r0, 0.0)  # up the +row wall, floor
     # Their tops at full height (straight up).
     near_top = p(c1, r1, height)
     col_far_top = p(c0, r1, height)
     row_far_top = p(c1, r0, height)
-    back_top = p(c0, r0, height)    # top cap's far corner
+    back_top = p(c0, r0, height)  # top cap's far corner
 
     # Face shades: top brightest, right wall mid, left wall darkest (light
     # from upper right). These multipliers give a calm, solid look.
@@ -547,7 +547,7 @@ def build_svg(
         + contrast
         + os_dark_style(
             ink_map={"#1D1D1F": "#F2F2F7", "#6E6E73": "#9C9CA3"},
-            extra=".paper{fill:#0B0B0C;}[stroke=\"#D2D2D7\"]{stroke:#3A3A3C;}",
+            extra='.paper{fill:#0B0B0C;}[stroke="#D2D2D7"]{stroke:#3A3A3C;}',
         )
         + ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
         # A bubble drawn right next to its own bar would be covered by any
@@ -563,13 +563,9 @@ def build_svg(
     parts.append(f"<title>{title}</title><desc>{strings['desc']}</desc>")
     parts.append(f'<rect class="paper" width="{width}" height="{height}" rx="14" fill="{_BG}"/>')
     parts.append(
-        f'<text x="52" y="60" font-size="30" font-weight="700" '
-        f'fill="{_INK}">{title}</text>'
+        f'<text x="52" y="60" font-size="30" font-weight="700" fill="{_INK}">{title}</text>'
     )
-    parts.append(
-        f'<text x="52" y="92" font-size="18" '
-        f'fill="{_SECONDARY}">{subtitle}</text>'
-    )
+    parts.append(f'<text x="52" y="92" font-size="18" fill="{_SECONDARY}">{subtitle}</text>')
 
     # ---- floor grid (a subtle plane the bars stand on) -------------------- #
     # Draw the (n_rows+1) x (n_cols+1) lattice of floor lines so the field has
@@ -608,9 +604,16 @@ def build_svg(
         fill = _lerp_hex(_LOW, _HIGH, t)
         label = f"{rows[r]} · {cols[c]}: ${val:.0f}k"
         group = _bar_faces(
-            c, r, val,
-            ox=ox, oy=oy, h_scale=h_scale, bar_w=bar_w,
-            fill=fill, value=val, mono_family=mono_family,
+            c,
+            r,
+            val,
+            ox=ox,
+            oy=oy,
+            h_scale=h_scale,
+            bar_w=bar_w,
+            fill=fill,
+            value=val,
+            mono_family=mono_family,
         )
         # Splice the accessible per-bar tooltip in as the group's first child,
         # and mark the group as the hover/focus hit target. Bar faces stay in
@@ -625,9 +628,14 @@ def build_svg(
         share = (val / z_max * 100.0) if z_max else 0.0
         bar_tips.append(
             tooltip_bubble(
-                cap_x, cap_y - 10,
+                cap_x,
+                cap_y - 10,
                 [f"{rows[r]} · {cols[c]}", f"${val:.0f}k", f"{share:.0f}% of tallest bar"],
-                canvas_w=width, canvas_h=height, ink=_INK, secondary=_SECONDARY, border="#D2D2D7",
+                canvas_w=width,
+                canvas_h=height,
+                ink=_INK,
+                secondary=_SECONDARY,
+                border="#D2D2D7",
                 elem_id=f"bar-tip-{bar_idx}",
             )
         )
@@ -741,14 +749,23 @@ def make_bar3d(
     _ = title
     rows = data if data else DEMO_DATA
     grid = _rows_to_grid(rows)
-    svg = build_svg(grid, mode=mode, accessibility=accessibility, language=language, theme=theme, title=title or None)
+    svg = build_svg(
+        grid,
+        mode=mode,
+        accessibility=accessibility,
+        language=language,
+        theme=theme,
+        title=title or None,
+    )
     dest = Path(out) if out else svg_example_path(__file__, "bar3d")
     return write_svg(dest, svg, theme=theme)
 
 
 def main() -> None:
     """CLI entry point: build the SVG and write it to disk."""
-    render_cli(__file__, "bar3d", build_svg, description="Write the house-style 3D-bar-chart SVG example.")
+    render_cli(
+        __file__, "bar3d", build_svg, description="Write the house-style 3D-bar-chart SVG example."
+    )
 
 
 if __name__ == "__main__":

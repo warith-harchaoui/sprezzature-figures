@@ -36,9 +36,9 @@ from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 # --- data: a 3-class pet classifier (rows = actual, cols = predicted) ---------
 CLASSES = ["Cat", "Dog", "Fox"]
 MATRIX = [
-    [52, 5, 3],   # actual Cat
-    [6, 44, 4],   # actual Dog
-    [2, 7, 39],   # actual Fox
+    [52, 5, 3],  # actual Cat
+    [6, 44, 4],  # actual Dog
+    [2, 7, 39],  # actual Fox
 ]
 
 # The make_<kind> contract's row-record view of MATRIX: one row per cell.
@@ -82,6 +82,7 @@ def _rows_to_matrix(rows: List[Dict[str, Any]]) -> tuple[List[str], List[List[in
         matrix[i][j] = int(r["count"])
     return classes, matrix
 
+
 # --- geometry + house-style constants -----------------------------------------
 # Floors, not fixed sizes: build_svg() grows width/height from these to fit
 # however many classes `data` actually has (the grid itself always scales
@@ -90,10 +91,10 @@ def _rows_to_matrix(rows: List[Dict[str, Any]]) -> tuple[List[str], List[List[in
 # used to clip by 16px against a literal `_HEIGHT = 640`).
 _WIDTH = 820
 _HEIGHT = 640
-_CELL = 150.0          # cell size
-_GAP = 8.0             # gap between cells (a tile grid)
-_GRID_X = 250.0        # left edge of the grid (room for row labels + axis)
-_GRID_Y = 190.0        # top edge of the grid (room for title + column labels)
+_CELL = 150.0  # cell size
+_GAP = 8.0  # gap between cells (a tile grid)
+_GRID_X = 250.0  # left edge of the grid (room for row labels + axis)
+_GRID_Y = 190.0  # top edge of the grid (room for title + column labels)
 
 _INK = "#1D1D1F"
 _SUBTLE = "#6E6E73"
@@ -101,7 +102,7 @@ _BG = "#FFFFFF"
 
 # Blue sequential ramp endpoints (light -> dark), lerped by normalised count.
 _LO = (234, 243, 255)  # #EAF3FF
-_HI = (10, 77, 160)    # #0A4DA0
+_HI = (10, 77, 160)  # #0A4DA0
 
 
 def _shade(t: float) -> str:
@@ -176,24 +177,26 @@ def build_svg(
     height = max(_HEIGHT, _GRID_Y + grid_h + 40.0)
 
     parts: List[str] = []
-    parts.append(svg_open(width, height, "cm-title", "cm-desc", font_family=chrome_stack_for_theme(theme)))
+    parts.append(
+        svg_open(width, height, "cm-title", "cm-desc", font_family=chrome_stack_for_theme(theme))
+    )
     parts.append(
         f'<title id="cm-title">A {n_cls_word} confusion matrix: the classifier is '
-        f'right on the diagonal and confuses {worst_actual} with {worst_pred} most</title>'
+        f"right on the diagonal and confuses {worst_actual} with {worst_pred} most</title>"
     )
     parts.append(
         f'<desc id="cm-desc">Confusion matrix of a {n_cls_word} classifier over '
-        f'{total} test images. Rows are the actual class ({", ".join(classes)}), '
-        f'columns the predicted class; each cell is shaded on a blue ramp by its '
-        f'count, darkest on the correct diagonal, with the count printed. The '
-        f'diagonal ({diag_str}) shows most predictions are correct; the largest '
-        f'error is {worst_count} {worst_actual} predicted as {worst_pred}.</desc>'
+        f"{total} test images. Rows are the actual class ({', '.join(classes)}), "
+        f"columns the predicted class; each cell is shaded on a blue ramp by its "
+        f"count, darkest on the correct diagonal, with the count printed. The "
+        f"diagonal ({diag_str}) shows most predictions are correct; the largest "
+        f"error is {worst_count} {worst_actual} predicted as {worst_pred}.</desc>"
     )
     parts.append(
         "<style>"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        + foreground_tip_css(len(classes) * len(classes)) +
-        "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
+        + foreground_tip_css(len(classes) * len(classes))
+        + "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
         "</style>"
     )
     parts.append(f'<rect width="{width}" height="{height}" fill="{_BG}"/>')
@@ -205,14 +208,14 @@ def build_svg(
     )
     parts.append(
         f'<text x="40" y="84" font-size="14" fill="{_SUBTLE}">'
-        f'Actual vs predicted class over {total} test images · diagonal = correct</text>'
+        f"Actual vs predicted class over {total} test images · diagonal = correct</text>"
     )
 
     # Column axis label ("Predicted"), centred above the grid.
     parts.append(
         f'<text x="{_GRID_X + grid_w / 2:.1f}" y="{_GRID_Y - 56:.1f}" '
         f'font-size="16" font-weight="700" fill="{_INK}" text-anchor="middle">'
-        f'{xml_escape(x_axis_label)}</text>'
+        f"{xml_escape(x_axis_label)}</text>"
     )
     # Column class names across the top.
     for j, name in enumerate(classes):
@@ -260,14 +263,19 @@ def build_svg(
             row_share = count / row_total * 100.0 if row_total else 0.0
             tip_cards.append(
                 tooltip_bubble(
-                    x + _CELL / 2, y - 8,
+                    x + _CELL / 2,
+                    y - 8,
                     [
                         f"actual {name} → predicted {pred}",
                         f"{count} images ({kind})",
                         f"{row_share:.1f}% of actual {name}",
                     ],
-                    anchor="middle", canvas_w=width, canvas_h=height,
-                    ink=_INK, secondary=_SUBTLE, border=GRIDLINE,
+                    anchor="middle",
+                    canvas_w=width,
+                    canvas_h=height,
+                    ink=_INK,
+                    secondary=_SUBTLE,
+                    border=GRIDLINE,
                     elem_id=f"tip-{idx}",
                 )
             )
@@ -276,7 +284,7 @@ def build_svg(
                 f'<text x="{x + _CELL / 2:.1f}" y="{y + _CELL / 2 + 8:.1f}" '
                 f'font-size="24" font-weight="700" font-family="Roboto Mono, monospace" '
                 f'fill="{txt_fill}" text-anchor="middle" style="pointer-events:none">'
-                f'{count}</text>'
+                f"{count}</text>"
             )
     parts.extend(tip_cards)
 
@@ -287,8 +295,9 @@ def build_svg(
 
 def main() -> None:
     """Write the confusion-matrix SVG to the canonical assets path."""
-    render_cli(__file__, "confusion-matrix", build_svg,
-               description="Render the confusion-matrix SVG.")
+    render_cli(
+        __file__, "confusion-matrix", build_svg, description="Render the confusion-matrix SVG."
+    )
 
 
 def make_confusion_matrix(
@@ -336,8 +345,13 @@ def make_confusion_matrix(
     True
     """
     svg = build_svg(
-        data, title=title, x_axis_label=x_axis_label, y_axis_label=y_axis_label,
-        mode=mode, accessibility=accessibility, theme=theme,
+        data,
+        title=title,
+        x_axis_label=x_axis_label,
+        y_axis_label=y_axis_label,
+        mode=mode,
+        accessibility=accessibility,
+        theme=theme,
     )
     dest = Path(out) if out else svg_example_path(__file__, "confusion-matrix")
     return write_svg(dest, svg, theme=theme)

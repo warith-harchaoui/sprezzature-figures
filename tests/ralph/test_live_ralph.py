@@ -47,7 +47,11 @@ def _gate_and_home(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
 
 def _profile() -> DatasetProfile:
     return DatasetProfile(
-        dataset_id="d1", fingerprint="f", source_name="sales.csv", row_count=4, column_count=2,
+        dataset_id="d1",
+        fingerprint="f",
+        source_name="sales.csv",
+        row_count=4,
+        column_count=2,
         columns=[
             ColumnProfile(name="region", physical_dtype="object", semantic_type="categorical"),
             ColumnProfile(name="value", physical_dtype="int64", semantic_type="numeric"),
@@ -57,8 +61,12 @@ def _profile() -> DatasetProfile:
 
 def _plan() -> FigurePlan:
     return FigurePlan(
-        figure_kind="bar", title="Revenue by Region",
-        bindings={"region": ColumnBinding(columns=["region"]), "value": ColumnBinding(columns=["value"])},
+        figure_kind="bar",
+        title="Revenue by Region",
+        bindings={
+            "region": ColumnBinding(columns=["region"]),
+            "value": ColumnBinding(columns=["value"]),
+        },
     )
 
 

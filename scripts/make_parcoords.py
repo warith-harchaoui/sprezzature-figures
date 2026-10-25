@@ -146,23 +146,27 @@ def build_svg(
         return _AX_BOT - t * (_AX_BOT - _AX_TOP)
 
     parts: List[str] = []
-    parts.append(svg_open(_WIDTH, _HEIGHT, "pc-title", "pc-desc", font_family=chrome_stack_for_theme(theme)))
+    parts.append(
+        svg_open(_WIDTH, _HEIGHT, "pc-title", "pc-desc", font_family=chrome_stack_for_theme(theme))
+    )
     parts.append(
         '<title id="pc-title">Car classes separate cleanly across four metrics: '
-        'compacts light and economical, SUVs heavy and powerful</title>'
+        "compacts light and economical, SUVs heavy and powerful</title>"
     )
     parts.append(
         '<desc id="pc-desc">Parallel-coordinates plot of three car classes '
-        '(compact, midsize, SUV) across four metrics — fuel economy (mpg), power '
-        '(hp), weight (lb) and 0-100 km/h time (s). Each car is a polyline '
-        'crossing all four vertical axes; the three classes fall into three '
-        'separated bands.</desc>'
+        "(compact, midsize, SUV) across four metrics — fuel economy (mpg), power "
+        "(hp), weight (lb) and 0-100 km/h time (s). Each car is a polyline "
+        "crossing all four vertical axes; the three classes fall into three "
+        "separated bands.</desc>"
     )
     parts.append(
         "<style>"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
         + foreground_tip_css(
-            sum(len(cars) for cars in cars_by_class.values()), mark_prefix="car", tip_prefix="car-tip"
+            sum(len(cars) for cars in cars_by_class.values()),
+            mark_prefix="car",
+            tip_prefix="car-tip",
         )
         + "@media (prefers-reduced-motion: reduce){.tip{transition:none}}"
         "</style>"
@@ -172,14 +176,14 @@ def build_svg(
     # Title + subtitle.
     # The headline the figure writes about its own data, used only when
     # the caller supplies none.
-    title = title or 'The classes separate on every measure but acceleration'
+    title = title or "The classes separate on every measure but acceleration"
     parts.append(
         f'<text x="40" y="56" font-size="26" font-weight="600" fill="{_INK}" '
         f'letter-spacing="-0.3">{xml_escape(title)}</text>'
     )
     parts.append(
         f'<text x="40" y="84" font-size="14" fill="{_SUBTLE}">'
-        f'Three classes over four measures · no overlap in economy, power or weight</text>'
+        f"Three classes over four measures · no overlap in economy, power or weight</text>"
     )
 
     # Legend (top, under the subtitle).
@@ -187,9 +191,7 @@ def build_svg(
     for name in cars_by_class:
         color = class_color[name]
         parts.append(f'<rect x="{lx:.1f}" y="108" width="16" height="16" rx="3" fill="{color}"/>')
-        parts.append(
-            f'<text x="{lx + 22:.1f}" y="121" font-size="14" fill="{_INK}">{name}</text>'
-        )
+        parts.append(f'<text x="{lx + 22:.1f}" y="121" font-size="14" fill="{_INK}">{name}</text>')
         lx += 40 + 8.5 * len(name) + 26
 
     # Axes: vertical line, title (with unit), min/max ticks.
@@ -206,12 +208,12 @@ def build_svg(
         parts.append(
             f'<text x="{x:.1f}" y="{_AX_TOP - 4:.1f}" font-size="12.5" '
             f'font-family="{mono_family}" fill="{_SUBTLE}" text-anchor="middle">'
-            f'{_fmt(hi)}</text>'
+            f"{_fmt(hi)}</text>"
         )
         parts.append(
             f'<text x="{x:.1f}" y="{_AX_BOT + 20:.1f}" font-size="12.5" '
             f'font-family="{mono_family}" fill="{_SUBTLE}" text-anchor="middle">'
-            f'{_fmt(lo)}</text>'
+            f"{_fmt(lo)}</text>"
         )
 
     # Polylines: one per car, coloured by class. Every polyline is drawn
@@ -241,10 +243,15 @@ def build_svg(
             mid_y = y_of(car[mid_key], mid_lo, mid_hi)
             car_tips.append(
                 tooltip_bubble(
-                    mid_x, mid_y - 14.0,
+                    mid_x,
+                    mid_y - 14.0,
                     [name] + [f"{k} {_fmt(car[k])}" for k, _t, _l, _h in AXES],
-                    anchor="middle", canvas_w=_WIDTH, canvas_h=_HEIGHT,
-                    ink=_INK, secondary=_SUBTLE, border=_GRID,
+                    anchor="middle",
+                    canvas_w=_WIDTH,
+                    canvas_h=_HEIGHT,
+                    ink=_INK,
+                    secondary=_SUBTLE,
+                    border=_GRID,
                     elem_id=f"car-tip-{car_i}",
                 )
             )
@@ -302,8 +309,7 @@ def make_parcoords(
 
 def main() -> None:
     """Write the parallel-coordinates SVG to the canonical assets path."""
-    render_cli(__file__, "parcoords", build_svg,
-               description="Render the parallel-coordinates SVG.")
+    render_cli(__file__, "parcoords", build_svg, description="Render the parallel-coordinates SVG.")
 
 
 if __name__ == "__main__":

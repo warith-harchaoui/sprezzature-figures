@@ -60,7 +60,6 @@ except ImportError:  # pragma: no cover - dependency guard
         sys.exit(1)
 
 else:
-
     # Reuse the exact same FastAPI app -- MCP is a thin wrapper on top.
     from sprezzature_figures.api import app
 
@@ -86,7 +85,6 @@ else:
         mcp.mount_http()
     else:  # pragma: no cover -- legacy fastapi-mcp
         mcp.mount()
-
 
     def main(argv: list[str] | None = None) -> None:
         """
@@ -141,6 +139,7 @@ else:
         # Single worker: the figure registry and generator-module cache
         # (sys.modules) are process-local state, so multiple workers would
         uvicorn.run(app, host=args.host, port=args.port, workers=1)
+
 
 if __name__ == "__main__":  # pragma: no cover
     main()

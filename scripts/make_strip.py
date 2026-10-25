@@ -124,11 +124,15 @@ def build_svg(
 
     rng = random.Random(41)
     parts: List[str] = []
-    parts.append(svg_open(width, height, "strip-title", "strip-desc", font_family=chrome_stack_for_theme(theme)))
+    parts.append(
+        svg_open(
+            width, height, "strip-title", "strip-desc", font_family=chrome_stack_for_theme(theme)
+        )
+    )
     parts.append(f'<title id="strip-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="strip-desc">Strip plot of {len(rows)} observations across {n_groups} '
-        f'groups. Hover or focus a dot for its exact value.</desc>'
+        f"groups. Hover or focus a dot for its exact value.</desc>"
     )
     parts.append(
         "<style>"
@@ -145,7 +149,9 @@ def build_svg(
         f'<text x="40" y="46" font-size="22" font-weight="700" fill="{INK}" '
         f'letter-spacing="-0.3">{xml_escape(title)}</text>'
     )
-    parts.append(f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>')
+    parts.append(
+        f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>'
+    )
 
     # ---- gridlines ----
     for val in y_gridline_vals:
@@ -188,10 +194,15 @@ def build_svg(
             )
             bubbles.append(
                 tooltip_bubble(
-                    cx, cy - 14,
+                    cx,
+                    cy - 14,
                     [g, f"{v:.1f}", f"#{rank} of {len(group_rows)} in {g}"],
-                    anchor="middle", canvas_w=width, canvas_h=height,
-                    ink=INK, secondary=SECONDARY, border=GRIDLINE,
+                    anchor="middle",
+                    canvas_w=width,
+                    canvas_h=height,
+                    ink=INK,
+                    secondary=SECONDARY,
+                    border=GRIDLINE,
                     elem_id=f"tip-{dot_idx}",
                 )
             )
@@ -265,9 +276,18 @@ def make_strip(
     >>> p.exists()
     True
     """
-    svg = build_svg(data, title=title, subtitle=subtitle, y_axis_title=y_axis_title,
-                     x_axis_title=x_axis_title, width=width, height=height,
-                     mode=mode, accessibility=accessibility, theme=theme)
+    svg = build_svg(
+        data,
+        title=title,
+        subtitle=subtitle,
+        y_axis_title=y_axis_title,
+        x_axis_title=x_axis_title,
+        width=width,
+        height=height,
+        mode=mode,
+        accessibility=accessibility,
+        theme=theme,
+    )
     dest = Path(out) if out else svg_example_path(__file__, "strip")
     return write_svg(dest, svg, theme=theme)
 

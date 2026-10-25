@@ -76,16 +76,16 @@ _PLOT_W: float = 1360.0
 _PLOT_H: float = 520.0
 
 #: House-style inks.
-_INK: str = "#1D1D1F"       # primary text
-_SUBTLE: str = "#6E6E73"    # secondary text
-_BG: str = "#FFFFFF"        # background
+_INK: str = "#1D1D1F"  # primary text
+_SUBTLE: str = "#6E6E73"  # secondary text
+_BG: str = "#FFFFFF"  # background
 _GRIDLINE: str = "#E5E5EA"  # faint horizontal guides
 
 #: Genome-wide significance threshold, p = 5e-8, on the -log10 scale.
 _GW_THRESHOLD: float = -math.log10(5e-8)  # ≈ 7.30
 
 #: A softer "suggestive" threshold, p = 1e-5, common in GWAS practice.
-_SUGGESTIVE: float = -math.log10(1e-5)    # = 5.0
+_SUGGESTIVE: float = -math.log10(1e-5)  # = 5.0
 
 #: Top of the y-axis, in -log10(p) units. Leaves headroom above the
 #: tallest peak so labels do not collide with the header.
@@ -117,11 +117,28 @@ def _chromosome_lengths() -> List[Tuple[str, int]]:
         chromosome 1 through chromosome 22.
     """
     return [
-        ("1", 249), ("2", 242), ("3", 198), ("4", 190), ("5", 182),
-        ("6", 171), ("7", 159), ("8", 145), ("9", 138), ("10", 134),
-        ("11", 135), ("12", 133), ("13", 114), ("14", 107), ("15", 102),
-        ("16", 90), ("17", 83), ("18", 80), ("19", 59), ("20", 64),
-        ("21", 47), ("22", 51),
+        ("1", 249),
+        ("2", 242),
+        ("3", 198),
+        ("4", 190),
+        ("5", 182),
+        ("6", 171),
+        ("7", 159),
+        ("8", 145),
+        ("9", 138),
+        ("10", 134),
+        ("11", 135),
+        ("12", 133),
+        ("13", 114),
+        ("14", 107),
+        ("15", 102),
+        ("16", 90),
+        ("17", 83),
+        ("18", 80),
+        ("19", 59),
+        ("20", 64),
+        ("21", 47),
+        ("22", 51),
     ]
 
 
@@ -174,11 +191,21 @@ _PEAKS: List[Tuple[str, float, float, str]] = [
 #: :data:`_PEAKS` minus the gene name: ``(chromosome, position_fraction,
 #: peak_-log10p)``.
 _MINOR_PEAKS: List[Tuple[str, float, float]] = [
-    ("1", 0.22, 11.0), ("1", 0.74, 9.5), ("2", 0.48, 13.0),
-    ("4", 0.36, 10.0), ("5", 0.62, 12.0), ("7", 0.29, 9.0),
-    ("9", 0.51, 10.5), ("10", 0.44, 11.5), ("11", 0.66, 9.5),
-    ("14", 0.33, 10.0), ("16", 0.55, 9.0), ("17", 0.41, 12.5),
-    ("18", 0.58, 8.5), ("19", 0.37, 10.0), ("22", 0.5, 8.5),
+    ("1", 0.22, 11.0),
+    ("1", 0.74, 9.5),
+    ("2", 0.48, 13.0),
+    ("4", 0.36, 10.0),
+    ("5", 0.62, 12.0),
+    ("7", 0.29, 9.0),
+    ("9", 0.51, 10.5),
+    ("10", 0.44, 11.5),
+    ("11", 0.66, 9.5),
+    ("14", 0.33, 10.0),
+    ("16", 0.55, 9.0),
+    ("17", 0.41, 12.5),
+    ("18", 0.58, 8.5),
+    ("19", 0.37, 10.0),
+    ("22", 0.5, 8.5),
 ]
 
 
@@ -293,10 +320,12 @@ def build_svg(
     parts: List[str] = []
 
     # ---- header / accessibility ----
-    parts.append(svg_open(_WIDTH, _HEIGHT, "mh-title", "mh-desc", font_family=chrome_stack_for_theme(theme)))
+    parts.append(
+        svg_open(_WIDTH, _HEIGHT, "mh-title", "mh-desc", font_family=chrome_stack_for_theme(theme))
+    )
     parts.append(
         '<title id="mh-title">Manhattan plot of a genome-wide association '
-        'study for adult height</title>'
+        "study for adult height</title>"
     )
     desc = (
         "Manhattan plot. The horizontal axis lays chromosomes 1 to 22 end "
@@ -357,19 +386,19 @@ def build_svg(
     # ---- title + subtitle ----
     # The headline the figure writes about its own data, used only when
     # the caller supplies none.
-    title = title or 'Height is written across the whole genome'
+    title = title or "Height is written across the whole genome"
     parts.append(
         f'<text x="{_PLOT_X}" y="62" font-size="32" font-weight="700" '
         f'fill="{_INK}">{xml_escape(title)}</text>'
     )
     parts.append(
         f'<text x="{_PLOT_X}" y="96" font-size="18" fill="{_SUBTLE}">'
-        f'Genome-wide association study of adult height: dozens of loci across '
-        f'many chromosomes clear significance, so the signal is spread wide</text>'
+        f"Genome-wide association study of adult height: dozens of loci across "
+        f"many chromosomes clear significance, so the signal is spread wide</text>"
     )
 
     # ---- horizontal gridlines + y-axis ticks ----
-    parts.append('<g>')
+    parts.append("<g>")
     for tick in (0, 5, 10, 15, 20, 25, 30):
         ty = _y_to_px(float(tick))
         parts.append(
@@ -382,7 +411,7 @@ def build_svg(
             f'font-size="15" font-family="Roboto Mono, monospace" '
             f'fill="{_SUBTLE}" text-anchor="end">{tick}</text>'
         )
-    parts.append('</g>')
+    parts.append("</g>")
 
     # ---- y-axis title (rotated) ----
     axis_cy = _PLOT_Y + _PLOT_H / 2.0
@@ -390,7 +419,7 @@ def build_svg(
         f'<text x="34" y="{axis_cy:.1f}" font-size="17" font-weight="600" '
         f'fill="{_INK}" text-anchor="middle" '
         f'transform="rotate(-90 34 {axis_cy:.1f})">'
-        f'−log₁₀(p)  association strength</text>'
+        f"−log₁₀(p)  association strength</text>"
     )
 
     # ---- scattered variants, one <g> per chromosome for tint + labels ----
@@ -448,11 +477,9 @@ def build_svg(
                     f'r="{_DOT_R}" fill="{hit_hex}" fill-opacity="0.9"/>'
                 )
             else:
-                parts.append(
-                    f'<circle cx="{px:.1f}" cy="{py:.1f}" r="{_DOT_R}"/>'
-                )
+                parts.append(f'<circle cx="{px:.1f}" cy="{py:.1f}" r="{_DOT_R}"/>')
 
-        parts.append('</g>')
+        parts.append("</g>")
 
         # Place the lead SNP for each labelled peak at its exact target
         # height and remember it for the label + interactive tooltip layer.
@@ -472,7 +499,7 @@ def build_svg(
             f'width="{width:.1f}" height="21" rx="5" '
             f'fill="{_BG}" fill-opacity="0.86"/>'
         )
-        weight = ' font-weight="600"' if bold else ''
+        weight = ' font-weight="600"' if bold else ""
         parts.append(
             f'<text x="{right_x - 8:.1f}" y="{baseline_y:.1f}" '
             f'font-size="14"{weight} fill="{fill}" '
@@ -493,9 +520,7 @@ def build_svg(
         f'x2="{_PLOT_X + _PLOT_W:.1f}" y2="{gw_y:.1f}" '
         f'stroke="{hit_hex}" stroke-width="1.8" stroke-dasharray="6 5"/>'
     )
-    _label_pill(
-        "genome-wide significance · p = 5×10⁻⁸", _PLOT_X + _PLOT_W, gw_y - 8, hit_hex, True
-    )
+    _label_pill("genome-wide significance · p = 5×10⁻⁸", _PLOT_X + _PLOT_W, gw_y - 8, hit_hex, True)
 
     # ---- labelled lead SNPs: gene tag + interactive tooltip ----
     # Every peak group is drawn first, every one of its bubbles appended
@@ -525,14 +550,18 @@ def build_svg(
             f'font-weight="700" font-style="italic" fill="{_INK}" '
             f'text-anchor="{anchor}">{_xml(gene)}</text>'
         )
-        parts.append('</g>')
+        parts.append("</g>")
         peak_tips.append(
             tooltip_bubble(
-                lx, py - 40,
+                lx,
+                py - 40,
                 [gene, f"chr{chrom}:{bp:,}", _fmt_p(peak_val)],
                 anchor=anchor if anchor != "middle" else "middle",
-                canvas_w=_WIDTH, canvas_h=_HEIGHT,
-                ink=_INK, secondary=_SUBTLE, border=_GRIDLINE,
+                canvas_w=_WIDTH,
+                canvas_h=_HEIGHT,
+                ink=_INK,
+                secondary=_SUBTLE,
+                border=_GRIDLINE,
                 elem_id=f"peak-tip-{peak_i}",
             )
         )
@@ -543,14 +572,14 @@ def build_svg(
 
     # ---- x-axis: chromosome labels ----
     x_label_y = _PLOT_Y + _PLOT_H + 28.0
-    parts.append('<g>')
+    parts.append("<g>")
     for label, _length, _x0, _x1, xc in bands:
         parts.append(
             f'<text x="{xc:.1f}" y="{x_label_y:.1f}" font-size="14" '
             f'font-family="Roboto Mono, monospace" fill="{_SUBTLE}" '
             f'text-anchor="middle">{label}</text>'
         )
-    parts.append('</g>')
+    parts.append("</g>")
     parts.append(
         f'<text x="{_PLOT_X + _PLOT_W / 2:.1f}" '
         f'y="{x_label_y + 34:.1f}" font-size="17" font-weight="600" '
@@ -561,20 +590,19 @@ def build_svg(
     parts.append(
         f'<text x="{_PLOT_X}" y="{_HEIGHT - 22:.1f}" font-size="14" '
         f'fill="{_SUBTLE}">one point per genetic '
-        f'variant · alternating tints separate chromosomes · hover a '
-        f'labelled peak for its position and p-value</text>'
+        f"variant · alternating tints separate chromosomes · hover a "
+        f"labelled peak for its position and p-value</text>"
     )
 
     parts.append(fullscreen_control(_WIDTH, _HEIGHT, mode))
-    parts.append('</svg>')
+    parts.append("</svg>")
     return "\n".join(parts)
 
 
 #: The registry contract's DEMO_DATA: the labelled lead-SNP peaks (the
 #: figure's one first-class data series) as row records.
 DEMO_DATA: List[Dict[str, Any]] = [
-    {"chromosome": c, "position_fraction": p, "neg_log10p": v, "gene": g}
-    for c, p, v, g in _PEAKS
+    {"chromosome": c, "position_fraction": p, "neg_log10p": v, "gene": g} for c, p, v, g in _PEAKS
 ]
 
 
@@ -615,10 +643,22 @@ def make_manhattan(
     _ = title
     rows = data if data else DEMO_DATA
     peaks = [
-        (str(r["chromosome"]), float(r["position_fraction"]), float(r["neg_log10p"]), str(r["gene"]))
+        (
+            str(r["chromosome"]),
+            float(r["position_fraction"]),
+            float(r["neg_log10p"]),
+            str(r["gene"]),
+        )
         for r in rows
     ]
-    svg = build_svg(peaks, x_axis_title=x_axis_title, mode=mode, accessibility=accessibility, theme=theme, title=title or None)
+    svg = build_svg(
+        peaks,
+        x_axis_title=x_axis_title,
+        mode=mode,
+        accessibility=accessibility,
+        theme=theme,
+        title=title or None,
+    )
     dest = Path(out) if out else svg_example_path(__file__, "manhattan")
     return write_svg(dest, svg, theme=theme)
 

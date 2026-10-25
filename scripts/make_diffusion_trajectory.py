@@ -158,7 +158,9 @@ DEMO_DATA: List[Dict[str, Any]] = _make_demo_data()
 
 def _reshape(
     data: Optional[List[Dict[str, Any]]],
-) -> Tuple[List[int], Dict[int, Dict[int, Tuple[float, float]]], Dict[int, float], Dict[int, float]]:
+) -> Tuple[
+    List[int], Dict[int, Dict[int, Tuple[float, float]]], Dict[int, float], Dict[int, float]
+]:
     """Group the long-format rows by step.
 
     Parameters
@@ -208,9 +210,9 @@ def _knn_edges(points: Dict[int, Tuple[float, float]], k: int) -> List[Tuple[int
     edges: set = set()
     for i in ids:
         xi, yi = points[i]
-        near = sorted(
-            (math.hypot(points[j][0] - xi, points[j][1] - yi), j) for j in ids if j != i
-        )[:k]
+        near = sorted((math.hypot(points[j][0] - xi, points[j][1] - yi), j) for j in ids if j != i)[
+            :k
+        ]
         for _, j in near:
             edges.add((min(i, j), max(i, j)))
     return sorted(edges)
@@ -284,10 +286,7 @@ def _mini_chart(
     out: List[str] = []
     top = max(series) or 1.0
     n = len(series)
-    pts = [
-        (x0 + (i / max(1, n - 1)) * w, y0 + h - (v / top) * h)
-        for i, v in enumerate(series)
-    ]
+    pts = [(x0 + (i / max(1, n - 1)) * w, y0 + h - (v / top) * h) for i, v in enumerate(series)]
     out.append(
         f'<text x="{x0:.1f}" y="{y0 - 14:.1f}" font-size="13" font-weight="600" '
         f'fill="{INK}">{xml_escape(heading)}</text>'
@@ -301,7 +300,9 @@ def _mini_chart(
         f'points="{" ".join(f"{x:.1f},{y:.1f}" for x, y in pts)}"/>'
     )
     for px, py in pts:
-        out.append(f'<circle cx="{px:.1f}" cy="{py:.1f}" r="2.6" fill="{INK}" fill-opacity="0.45"/>')
+        out.append(
+            f'<circle cx="{px:.1f}" cy="{py:.1f}" r="2.6" fill="{INK}" fill-opacity="0.45"/>'
+        )
     out.append(
         f'<text x="{x0:.1f}" y="{y0 + h + 17:.1f}" font-size="11" fill="{SECONDARY}" '
         f'font-family="{FONT_MONO}">{xml_escape(lo_label)}</text>'
@@ -317,7 +318,7 @@ def _mini_chart(
         f'stroke="{BG}" stroke-width="2">'
         f'<animate attributeName="cx" values="{_vals(cx)}" dur="{dur}" repeatCount="indefinite"/>'
         f'<animate attributeName="cy" values="{_vals(cy)}" dur="{dur}" repeatCount="indefinite"/>'
-        f'</circle>'
+        f"</circle>"
     )
     return out
 
@@ -410,11 +411,11 @@ def build_svg(
     parts.append(f'<title id="dt-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="dt-desc">{_N_POINTS if not data else len(point_ids)} points sampled on a '
-        f'2-D spiral, shown across {n_steps} noise levels from sigma '
-        f'{sigmas[steps[0]]:g} to {sigmas[steps[-1]]:g}. A {_K}-nearest-neighbour graph '
-        f'computed on the clean data is held fixed and dragged along, so the loss of '
-        f'neighbourhood structure is visible as tangling. The filmstrip below shows every '
-        f'step statically; the main panel animates through them and back.</desc>'
+        f"2-D spiral, shown across {n_steps} noise levels from sigma "
+        f"{sigmas[steps[0]]:g} to {sigmas[steps[-1]]:g}. A {_K}-nearest-neighbour graph "
+        f"computed on the clean data is held fixed and dragged along, so the loss of "
+        f"neighbourhood structure is visible as tangling. The filmstrip below shows every "
+        f"step statically; the main panel animates through them and back.</desc>"
     )
 
     style_rows = [
@@ -467,7 +468,7 @@ def build_svg(
             f'<animate attributeName="y1" values="{_vals(ya)}" dur="{dur}" repeatCount="indefinite"/>'
             f'<animate attributeName="x2" values="{_vals(xb)}" dur="{dur}" repeatCount="indefinite"/>'
             f'<animate attributeName="y2" values="{_vals(yb)}" dur="{dur}" repeatCount="indefinite"/>'
-            f'</line>'
+            f"</line>"
         )
 
     # ---- animated points ----
@@ -482,10 +483,10 @@ def build_svg(
         fill = viridis(values[p])
         parts.append(
             f'<circle class="pt" cx="{px[0]:.1f}" cy="{py[0]:.1f}" r="3.5" fill="{fill}">'
-            f'<title>Point {p}: position {values[p]:.2f} along the spiral</title>'
+            f"<title>Point {p}: position {values[p]:.2f} along the spiral</title>"
             f'<animate attributeName="cx" values="{_vals(px)}" dur="{dur}" repeatCount="indefinite"/>'
             f'<animate attributeName="cy" values="{_vals(py)}" dur="{dur}" repeatCount="indefinite"/>'
-            f'</circle>'
+            f"</circle>"
         )
 
     # ---- side column: colour key + noise schedule ----
@@ -520,12 +521,17 @@ def build_svg(
     sched_y0 = ramp_y + ramp_h + 54.0
     parts.extend(
         _mini_chart(
-            side_x0, sched_y0, side_w, chart_h,
-            [sigmas[s] for s in steps], order,
+            side_x0,
+            sched_y0,
+            side_w,
+            chart_h,
+            [sigmas[s] for s in steps],
+            order,
             heading="Noise added (σ)",
             lo_label=f"σ {sigmas[steps[0]]:.2f}",
             hi_label=f"σ {sigmas[steps[-1]]:.2f}",
-            dur=dur, cursor=_FOCUS,
+            dur=dur,
+            cursor=_FOCUS,
         )
     )
 
@@ -538,18 +544,22 @@ def build_svg(
     # merely *looks* random.
     base_edges = set(edges)
     retention = [
-        len(set(_knn_edges(coords[s], _K)) & base_edges) / max(1, len(base_edges))
-        for s in steps
+        len(set(_knn_edges(coords[s], _K)) & base_edges) / max(1, len(base_edges)) for s in steps
     ]
     dist_y0 = sched_y0 + chart_h + 74.0
     parts.extend(
         _mini_chart(
-            side_x0, dist_y0, side_w, chart_h,
-            retention, order,
+            side_x0,
+            dist_y0,
+            side_w,
+            chart_h,
+            retention,
+            order,
             heading="Neighbours still neighbours",
             lo_label="100%",
             hi_label=f"{retention[-1] * 100:.0f}%",
-            dur=dur, cursor=_FOCUS,
+            dur=dur,
+            cursor=_FOCUS,
         )
     )
 
@@ -572,7 +582,7 @@ def build_svg(
         parts.append(
             f'<text x="{ox + thumb / 2:.1f}" y="{strip_y0 + thumb + 16:.1f}" font-size="10.5" '
             f'fill="{SECONDARY}" text-anchor="middle" font-family="{FONT_MONO}">'
-            f'{sigmas[s]:.2f}</text>'
+            f"{sigmas[s]:.2f}</text>"
         )
     # Sliding highlight, in sync with the main panel.
     hx = [left_pad + i * (thumb + strip_gap) - 2.0 for i in order]
@@ -580,7 +590,7 @@ def build_svg(
         f'<rect x="{hx[0]:.1f}" y="{strip_y0 - 2:.1f}" width="{thumb + 4:.1f}" '
         f'height="{thumb + 4:.1f}" fill="none" stroke="{_FOCUS}" stroke-width="2.5" rx="7">'
         f'<animate attributeName="x" values="{_vals(hx)}" dur="{dur}" repeatCount="indefinite"/>'
-        f'</rect>'
+        f"</rect>"
     )
     parts.append(
         f'<text x="{left_pad:.1f}" y="{strip_y0 + thumb + 36:.1f}" font-size="11.5" '
@@ -591,11 +601,11 @@ def build_svg(
     # clean data — a complete figure, not a half-formed one. The filmstrip
     # above already tells the whole story without any motion.
     parts.append(
-        '<script><![CDATA['
-        '(function(){var s=document.documentElement;try{'
+        "<script><![CDATA["
+        "(function(){var s=document.documentElement;try{"
         'if(matchMedia("(prefers-reduced-motion: reduce)").matches){'
-        's.pauseAnimations();s.setCurrentTime(0);}}catch(e){}})();'
-        ']]></script>'
+        "s.pauseAnimations();s.setCurrentTime(0);}}catch(e){}})();"
+        "]]></script>"
     )
     parts.append(fullscreen_control(width, height, mode))
     parts.append("</svg>")

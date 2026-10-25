@@ -77,15 +77,15 @@ _GRID_COLS: int = 24
 _CELL_METRES: float = 400.0
 
 #: House-style inks and basemap tints.
-_INK: str = "#1D1D1F"       # primary text
-_SUBTLE: str = "#6E6E73"    # secondary text
-_WATER: str = "#CBDCF0"     # river / water (faint blue)
-_PARK: str = "#CFE9D4"      # green space (faint green)
-_LAND: str = "#F5F6F8"      # land base under the grid
-_EMPTY: str = "#ECEEF1"     # a land cell that caught zero incidents
-_STROKE: str = "#FFFFFF"    # white casing between cells
-_BG: str = "#FFFFFF"        # background
-_OUTLINE: str = "#B9C2CE"   # city boundary casing
+_INK: str = "#1D1D1F"  # primary text
+_SUBTLE: str = "#6E6E73"  # secondary text
+_WATER: str = "#CBDCF0"  # river / water (faint blue)
+_PARK: str = "#CFE9D4"  # green space (faint green)
+_LAND: str = "#F5F6F8"  # land base under the grid
+_EMPTY: str = "#ECEEF1"  # a land cell that caught zero incidents
+_STROKE: str = "#FFFFFF"  # white casing between cells
+_BG: str = "#FFFFFF"  # background
+_OUTLINE: str = "#B9C2CE"  # city boundary casing
 
 #: Reproducible event cloud.
 _SEED: int = 20260726
@@ -130,14 +130,16 @@ def _ramp(
     if theme == "academic":
         return viridis(t)
     t = max(0.0, min(1.0, t))
-    t = t ** 0.70  # gentle gamma so mid densities separate
+    t = t**0.70  # gentle gamma so mid densities separate
     r1, g1, b1 = light
     r2, g2, b2 = _hex_to_rgb(top)
-    return _rgb_to_hex((
-        r1 + (r2 - r1) * t,
-        g1 + (g2 - g1) * t,
-        b1 + (b2 - b1) * t,
-    ))
+    return _rgb_to_hex(
+        (
+            r1 + (r2 - r1) * t,
+            g1 + (g2 - g1) * t,
+            b1 + (b2 - b1) * t,
+        )
+    )
 
 
 # ------------------------------------------------------------------
@@ -148,17 +150,33 @@ def _ramp(
 #: A closed city-boundary polygon in normalised [0, 1] extent coordinates.
 #: An irregular municipal outline so the corner cells vary in fill.
 _BOUNDARY: List[Tuple[float, float]] = [
-    (0.05, 0.14), (0.30, 0.05), (0.55, 0.09), (0.78, 0.04),
-    (0.94, 0.16), (0.97, 0.42), (0.88, 0.58), (0.95, 0.78),
-    (0.80, 0.94), (0.56, 0.90), (0.40, 0.97), (0.20, 0.92),
-    (0.07, 0.72), (0.03, 0.44), (0.08, 0.28),
+    (0.05, 0.14),
+    (0.30, 0.05),
+    (0.55, 0.09),
+    (0.78, 0.04),
+    (0.94, 0.16),
+    (0.97, 0.42),
+    (0.88, 0.58),
+    (0.95, 0.78),
+    (0.80, 0.94),
+    (0.56, 0.90),
+    (0.40, 0.97),
+    (0.20, 0.92),
+    (0.07, 0.72),
+    (0.03, 0.44),
+    (0.08, 0.28),
 ]
 
 #: A river ribbon (poly-line, thick stroke) cutting diagonally through the
 #: city. Points in normalised extent coordinates.
 _RIVER: List[Tuple[float, float]] = [
-    (0.02, 0.30), (0.22, 0.40), (0.40, 0.46), (0.55, 0.58),
-    (0.70, 0.66), (0.86, 0.82), (0.99, 0.92),
+    (0.02, 0.30),
+    (0.22, 0.40),
+    (0.40, 0.46),
+    (0.55, 0.58),
+    (0.70, 0.66),
+    (0.86, 0.82),
+    (0.99, 0.92),
 ]
 
 #: Two green spaces (closed polygons) — a central park and a riverside strip.
@@ -198,7 +216,7 @@ def _dist_to_polyline(x: float, y: float, line: List[Tuple[float, float]]) -> fl
         d = (x - px) ** 2 + (y - py) ** 2
         if d < best:
             best = d
-    return best ** 0.5
+    return best**0.5
 
 
 # ------------------------------------------------------------------
@@ -208,11 +226,11 @@ def _dist_to_polyline(x: float, y: float, line: List[Tuple[float, float]]) -> fl
 #: with a weight (share of the sampled incidents) and a spread.
 _HOTSPOTS: List[Tuple[float, float, float, float]] = [
     # (cx, cy, weight, sigma)
-    (0.30, 0.30, 0.40, 0.075),   # nightlife / downtown core (the peak)
-    (0.50, 0.52, 0.24, 0.10),    # transit-hub district
-    (0.72, 0.70, 0.16, 0.11),    # riverside market
-    (0.20, 0.62, 0.12, 0.10),    # west-end retail strip
-    (0.82, 0.34, 0.08, 0.09),    # north gateway
+    (0.30, 0.30, 0.40, 0.075),  # nightlife / downtown core (the peak)
+    (0.50, 0.52, 0.24, 0.10),  # transit-hub district
+    (0.72, 0.70, 0.16, 0.11),  # riverside market
+    (0.20, 0.62, 0.12, 0.10),  # west-end retail strip
+    (0.82, 0.34, 0.08, 0.09),  # north gateway
 ]
 
 # The make_<kind> contract's row-record view of the hotspot mixture that
@@ -222,8 +240,7 @@ _HOTSPOTS: List[Tuple[float, float, float, float]] = [
 # make_binned_grid_map() accepts ``data`` for dispatcher parity but does
 # not thread custom rows into the render; see its docstring below.
 DEMO_DATA: List[Dict[str, Any]] = [
-    {"lon": cx, "lat": cy, "weight": w, "sigma": sigma}
-    for cx, cy, w, sigma in _HOTSPOTS
+    {"lon": cx, "lat": cy, "weight": w, "sigma": sigma} for cx, cy, w, sigma in _HOTSPOTS
 ]
 
 
@@ -394,12 +411,10 @@ def _north_arrow(cx: float, cy: float, *, r: float = 26.0) -> str:
     left = (cx - half_w, cy)
     right = (cx + half_w, cy)
     north_tri = (
-        f'M{top[0]:.1f},{top[1]:.1f} L{right[0]:.1f},{right[1]:.1f} '
-        f'L{left[0]:.1f},{left[1]:.1f} Z'
+        f"M{top[0]:.1f},{top[1]:.1f} L{right[0]:.1f},{right[1]:.1f} L{left[0]:.1f},{left[1]:.1f} Z"
     )
     south_tri = (
-        f'M{bot[0]:.1f},{bot[1]:.1f} L{right[0]:.1f},{right[1]:.1f} '
-        f'L{left[0]:.1f},{left[1]:.1f} Z'
+        f"M{bot[0]:.1f},{bot[1]:.1f} L{right[0]:.1f},{right[1]:.1f} L{left[0]:.1f},{left[1]:.1f} Z"
     )
     parts: List[str] = [
         '<g role="img" aria-label="North is up">',
@@ -411,12 +426,14 @@ def _north_arrow(cx: float, cy: float, *, r: float = 26.0) -> str:
         f'<path d="{north_tri}" fill="{_INK}" stroke-linejoin="round"/>',
         f'<text x="{cx:.1f}" y="{cy - ring - 4:.1f}" text-anchor="middle" '
         f'font-size="17" font-weight="700" fill="{_INK}">N</text>',
-        '</g>',
+        "</g>",
     ]
     return "".join(parts)
 
 
-def _scale_bar(x0: float, y0: float, cell_px: float, mono_family: str = "Roboto Mono, monospace") -> str:
+def _scale_bar(
+    x0: float, y0: float, cell_px: float, mono_family: str = "Roboto Mono, monospace"
+) -> str:
     """Return a labelled distance scale bar with its left edge at ``(x0, y0)``.
 
     The bar is an integer number of grid cells wide so it doubles as a "read
@@ -443,8 +460,7 @@ def _scale_bar(x0: float, y0: float, cell_px: float, mono_family: str = "Roboto 
     bar_len = cell_px * n_seg
     bar_h = 8.0
     parts: List[str] = [
-        f'<g role="img" aria-label="Scale bar: 0 to '
-        f'{seg_total_m / 1000:.0f} kilometres">'
+        f'<g role="img" aria-label="Scale bar: 0 to {seg_total_m / 1000:.0f} kilometres">'
     ]
     # A soft white plate so the rule reads over grid or land alike.
     plate_pad = 12.0
@@ -471,14 +487,14 @@ def _scale_bar(x0: float, y0: float, cell_px: float, mono_family: str = "Roboto 
         f'<text x="{x0 + bar_len:.1f}" y="{y0 - 6:.1f}" text-anchor="middle" '
         f'font-size="14" fill="{_INK}" '
         f'font-family="{mono_family}">'
-        f'{seg_total_m / 1000:.0f} km</text>'
+        f"{seg_total_m / 1000:.0f} km</text>"
     )
     parts.append(
         f'<text x="{x0 + bar_len / 2:.1f}" y="{y0 + bar_h + 15:.1f}" '
         f'text-anchor="middle" font-size="12.5" fill="{_SUBTLE}">'
-        f'each cell = {_CELL_METRES:.0f} m</text>'
+        f"each cell = {_CELL_METRES:.0f} m</text>"
     )
-    parts.append('</g>')
+    parts.append("</g>")
     return "".join(parts)
 
 
@@ -486,7 +502,9 @@ def _scale_bar(x0: float, y0: float, cell_px: float, mono_family: str = "Roboto 
 # SVG assembly
 # ------------------------------------------------------------------
 def build_svg(
-    mode: str = "self-contained", accessibility: str = "universal", theme: str = "corporate",
+    mode: str = "self-contained",
+    accessibility: str = "universal",
+    theme: str = "corporate",
     title: str = "Riverbend: incidents cluster on the downtown core",
     subtitle: str = "Night-time incidents (10 PM-4 AM) per 400 m grid cell across Riverbend",
     river_label: str = "River",
@@ -604,17 +622,14 @@ def build_svg(
         f'fill="{_INK}">{_xml(title)}</text>'
     )
     parts.append(
-        f'<text x="{_MAP_X0}" y="106" font-size="20" fill="{_SUBTLE}">'
-        f'{_xml(subtitle)}</text>'
+        f'<text x="{_MAP_X0}" y="106" font-size="20" fill="{_SUBTLE}">{_xml(subtitle)}</text>'
     )
 
     # ---- land base + city boundary ----
     boundary_px = _to_px(_BOUNDARY)
     boundary_d = "M" + " L".join(f"{x:.1f},{y:.1f}" for x, y in boundary_px) + "Z"
     # A clip path so water, parks and grid never bleed past the city edge.
-    parts.append(
-        f'<defs><clipPath id="cityclip"><path d="{boundary_d}"/></clipPath></defs>'
-    )
+    parts.append(f'<defs><clipPath id="cityclip"><path d="{boundary_d}"/></clipPath></defs>')
     parts.append(
         f'<path d="{boundary_d}" fill="{_LAND}" stroke="{_OUTLINE}" '
         f'stroke-width="2.5" stroke-linejoin="round"/>'
@@ -635,7 +650,7 @@ def build_svg(
         f'stroke-width="{0.040 * ext_w:.1f}" stroke-linecap="round" '
         f'stroke-linejoin="round"/>'
     )
-    parts.append('</g>')
+    parts.append("</g>")
 
     # ---- faint basemap labels (over the open water / green negative space) ----
     # Placed on empty basemap so they never fight a filled cell for contrast.
@@ -664,31 +679,31 @@ def build_svg(
             fill = _EMPTY
         else:
             fill = _ramp(cnt / max_count, red, theme=theme)
-        label = (
-            f'{cnt} incident{"" if cnt == 1 else "s"}'
-            if cnt > 0
-            else "no incidents"
-        )
+        label = f"{cnt} incident{'' if cnt == 1 else 's'}" if cnt > 0 else "no incidents"
         parts.append(
             f'<rect id="cell-hit-{cell_idx}" class="cell hit" x="{c["x"] + gap / 2:.1f}" '
             f'y="{c["y"] + gap / 2:.1f}" width="{inner:.1f}" '
             f'height="{inner:.1f}" rx="2" fill="{fill}" stroke="{_STROKE}" '
             f'stroke-width="{gap:.1f}" tabindex="0" role="listitem">'
-            f'<title>{label}</title></rect>'
+            f"<title>{label}</title></rect>"
         )
         if cnt > 0:
             cell_share = cnt / total * 100.0 if total else 0.0
             cell_tips.append(
                 tooltip_bubble(
-                    c["x"] + inner / 2.0, c["y"] - 4,
+                    c["x"] + inner / 2.0,
+                    c["y"] - 4,
                     [label, f"{cell_share:.1f}% of all incidents"],
-                    canvas_w=_WIDTH, canvas_h=_HEIGHT, ink=_INK, secondary=_SUBTLE,
+                    canvas_w=_WIDTH,
+                    canvas_h=_HEIGHT,
+                    ink=_INK,
+                    secondary=_SUBTLE,
                     border=_OUTLINE,
                     elem_id=f"cell-tip-{cell_idx}",
                 )
             )
     parts.extend(cell_tips)
-    parts.append('</g>')
+    parts.append("</g>")
 
     # ---- sequential legend (right column) ----
     lx = 992.0
@@ -704,7 +719,7 @@ def build_svg(
     seg_h = 34.0
     n_seg = 8
     for i in range(n_seg):
-        t = 1.0 - i / (n_seg - 1)          # top swatch = darkest
+        t = 1.0 - i / (n_seg - 1)  # top swatch = darkest
         col = _ramp(t, red, theme=theme)
         parts.append(
             f'<rect class="legend-swatch" x="0" y="{i * seg_h:.1f}" '
@@ -745,13 +760,13 @@ def build_svg(
     )
     parts.append(
         f'<text x="0" y="{stat_y + 34:.1f}" font-size="17.5" fill="{_SUBTLE}">'
-        f'of incidents fall</text>'
+        f"of incidents fall</text>"
     )
     parts.append(
         f'<text x="0" y="{stat_y + 56:.1f}" font-size="17.5" fill="{_SUBTLE}">'
-        f'in the busiest 10% of cells</text>'
+        f"in the busiest 10% of cells</text>"
     )
-    parts.append('</g>')
+    parts.append("</g>")
 
     # ---- cartographic furniture: north arrow + scale bar ----
     # Both sit on empty basemap in the map's right margin, clear of the dense
@@ -762,7 +777,7 @@ def build_svg(
     parts.append(_scale_bar(sb_x, sb_y, cell_px, mono_family=mono_family))
 
     parts.append(fullscreen_control(_WIDTH, _HEIGHT, mode))
-    parts.append('</svg>')
+    parts.append("</svg>")
     return "\n".join(parts)
 
 
@@ -792,9 +807,14 @@ def make_binned_grid_map(
     figure's accessible name. ``theme`` is forwarded to :func:`build_svg`.
     """
     svg = build_svg(
-        mode=mode, accessibility=accessibility, theme=theme,
-        title=title, subtitle=subtitle, river_label=river_label,
-        park_label=park_label, legend_title=legend_title,
+        mode=mode,
+        accessibility=accessibility,
+        theme=theme,
+        title=title,
+        subtitle=subtitle,
+        river_label=river_label,
+        park_label=park_label,
+        legend_title=legend_title,
     )
     dest = Path(out) if out else svg_example_path(__file__, "binned-grid-map")
     return write_svg(dest, svg, theme=theme)
@@ -802,7 +822,9 @@ def make_binned_grid_map(
 
 def main() -> None:
     """Write the binned-grid-map SVG to the skill's ``svg-examples`` folder."""
-    render_cli(__file__, "binned-grid-map", build_svg, description="Render the binned-grid-map SVG.")
+    render_cli(
+        __file__, "binned-grid-map", build_svg, description="Render the binned-grid-map SVG."
+    )
 
 
 if __name__ == "__main__":

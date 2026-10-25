@@ -79,7 +79,11 @@ def sample_xlsx(tmp_path: Path) -> Path:
         # Regression: bare month names parse "successfully" via pd.to_datetime
         # against an implicit year/day and must not be misread as full dates.
         (pd.Series(["Jan", "Apr", "Jan", "Apr"]), "month", "categorical"),
-        (pd.Series(["2024-01-15", "2024-02-20", "2024-03-05", "2024-04-10"]), "event_date", "datetime"),
+        (
+            pd.Series(["2024-01-15", "2024-02-20", "2024-03-05", "2024-04-10"]),
+            "event_date",
+            "datetime",
+        ),
         (pd.Series(["a@b.com", "c@d.org", "e@f.net", "g@h.io"]), "contact", "email"),
         (pd.Series(["https://a.com", "https://b.com", "http://c.org"]), "link", "url"),
         (pd.Series([48.85, 40.71, 51.50, -33.87]), "latitude", "latitude"),
@@ -93,7 +97,9 @@ def sample_xlsx(tmp_path: Path) -> Path:
         (pd.Series([1000.0, 1200.0, 1500.0, 1800.0]), "montant_eur", "currency"),
         (pd.Series([f"user_{i}" for i in range(50)]), "user_id", "identifier"),
         (
-            pd.Series([f"this is a fairly unique free-text sentence number {i}" for i in range(50)]),
+            pd.Series(
+                [f"this is a fairly unique free-text sentence number {i}" for i in range(50)]
+            ),
             "comment",
             "text",
         ),
@@ -233,7 +239,10 @@ def test_profile_dataframe_workflow(sample_csv: Path) -> None:
 def test_profile_dataframe_structural_warnings() -> None:
     """Duplicate column names and entirely-empty columns are surfaced as warnings."""
     dup = profile_dataframe(
-        pd.DataFrame([[1, 2]], columns=["x", "x"]), dataset_id="d1", fingerprint="f", source_name="dup.csv"
+        pd.DataFrame([[1, 2]], columns=["x", "x"]),
+        dataset_id="d1",
+        fingerprint="f",
+        source_name="dup.csv",
     )
     assert any("duplicate column name" in w.message for w in dup.warnings)
 
@@ -262,15 +271,23 @@ def test_profile_dataframe_data_quality_warnings() -> None:
 
     profile = profile_dataframe(df, dataset_id="d1", fingerprint="f", source_name="anomalies.csv")
 
-    assert any("manquante" in w.message and w.column == "amount" for w in profile.warnings), profile.warnings
-    assert any("aberrante" in w.message and w.column == "amount" for w in profile.warnings), profile.warnings
-    assert any("double" in w.message and w.column is None for w in profile.warnings), profile.warnings
+    assert any("manquante" in w.message and w.column == "amount" for w in profile.warnings), (
+        profile.warnings
+    )
+    assert any("aberrante" in w.message and w.column == "amount" for w in profile.warnings), (
+        profile.warnings
+    )
+    assert any("double" in w.message and w.column is None for w in profile.warnings), (
+        profile.warnings
+    )
 
 
 def test_profile_dataframe_clean_data_has_no_data_quality_warnings() -> None:
     """A dataset with no nulls, no outliers, and no duplicate rows must not
     manufacture false positives."""
-    df = pd.DataFrame({"amount": [10.0, 11.0, 12.0, 10.5, 11.5], "region": ["N", "S", "E", "W", "N"]})
+    df = pd.DataFrame(
+        {"amount": [10.0, 11.0, 12.0, 10.5, 11.5], "region": ["N", "S", "E", "W", "N"]}
+    )
     profile = profile_dataframe(df, dataset_id="d1", fingerprint="f", source_name="clean.csv")
     assert profile.warnings == []
 
@@ -360,8 +377,6 @@ def test_outlier_warning_survives_a_profile_whose_bounds_are_text() -> None:
         }
     )
 
-    warnings = _data_quality_warnings(
-        pd.DataFrame({"client": ["Alice", "Bob", "Zoe"]}), [poisoned]
-    )
+    warnings = _data_quality_warnings(pd.DataFrame({"client": ["Alice", "Bob", "Zoe"]}), [poisoned])
 
     assert all(w.column == "client" for w in warnings)

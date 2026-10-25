@@ -297,9 +297,7 @@ def _without_demo_chrome(
     return rempli
 
 
-def validate_figure_input(
-    kind: str, data: Any = None, **kwargs: Any
-) -> list[ValidationIssue]:
+def validate_figure_input(kind: str, data: Any = None, **kwargs: Any) -> list[ValidationIssue]:
     """
     Check `data` against the registered required data roles for `kind`.
 

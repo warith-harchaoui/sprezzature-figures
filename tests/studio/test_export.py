@@ -42,7 +42,11 @@ def _isolated_studio_home(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> No
 
 def _profile() -> DatasetProfile:
     return DatasetProfile(
-        dataset_id="d", fingerprint="f", source_name="t.csv", row_count=2, column_count=2,
+        dataset_id="d",
+        fingerprint="f",
+        source_name="t.csv",
+        row_count=2,
+        column_count=2,
         columns=[
             ColumnProfile(name="region", physical_dtype="object", semantic_type="categorical"),
             ColumnProfile(name="value", physical_dtype="int64", semantic_type="numeric"),
@@ -55,7 +59,10 @@ def _export() -> Path:
     plan = FigurePlan(
         figure_kind="bar",
         title="Revenue",
-        bindings={"region": ColumnBinding(columns=["region"]), "value": ColumnBinding(columns=["value"])},
+        bindings={
+            "region": ColumnBinding(columns=["region"]),
+            "value": ColumnBinding(columns=["value"]),
+        },
     )
     project_dir = create_project("export test")
     iteration_dir = allocate_iteration_dir(project_dir)
@@ -81,7 +88,11 @@ def test_export_project_writes_a_self_contained_zip() -> None:
 
     # It carries the full reproducibility bundle.
     with zipfile.ZipFile(archive) as z:
-        names = {Path(n).relative_to(Path(n).parts[0]).as_posix() for n in z.namelist() if not n.endswith("/")}
+        names = {
+            Path(n).relative_to(Path(n).parts[0]).as_posix()
+            for n in z.namelist()
+            if not n.endswith("/")
+        }
     expected = {
         "README.md",
         "manifest.json",
@@ -105,7 +116,11 @@ def test_reproduce_script_actually_regenerates_the_figure(tmp_path: Path) -> Non
     assert (project_root / "reproduce.py").exists()
 
     result = subprocess.run(
-        [sys.executable, "reproduce.py"], cwd=project_root, capture_output=True, text=True, timeout=60
+        [sys.executable, "reproduce.py"],
+        cwd=project_root,
+        capture_output=True,
+        text=True,
+        timeout=60,
     )
     assert result.returncode == 0, result.stdout + result.stderr
     assert (project_root / "output" / "figure.svg").exists()
@@ -114,7 +129,9 @@ def test_reproduce_script_actually_regenerates_the_figure(tmp_path: Path) -> Non
 
 
 def test_generated_reproduce_script_and_alt_text_are_wellformed() -> None:
-    plan = FigurePlan(figure_kind="bar", title="Revenue", bindings={"region": ColumnBinding(columns=["region"])})
+    plan = FigurePlan(
+        figure_kind="bar", title="Revenue", bindings={"region": ColumnBinding(columns=["region"])}
+    )
 
     # reproduce.py drives only the public make_figure() API, never internals.
     script = generate_reproduce_script(plan)

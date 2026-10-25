@@ -53,9 +53,7 @@ __all__ = [
     "validate_options",
 ]
 
-OptionType = Literal[
-    "str", "int", "float", "bool", "str_list", "float_list", "float_pair"
-]
+OptionType = Literal["str", "int", "float", "bool", "str_list", "float_list", "float_pair"]
 
 #: Parameters that are not options: the rows themselves, and the output
 #: path. Both are owned by the caller's transport (``--out``, the API's
@@ -451,7 +449,8 @@ def coerce_option(option: OptionDefinition, raw: Any) -> Any:
             # API, a notebook) passes them through untouched; a caller
             # holding a command line passes "8,12,16".
             items = (
-                raw if isinstance(raw, (list, tuple))
+                raw
+                if isinstance(raw, (list, tuple))
                 else [part for part in str(text).split(",") if part.strip()]
             )
             value = [float(item) for item in items]
@@ -482,7 +481,7 @@ def coerce_option(option: OptionDefinition, raw: Any) -> Any:
                 f"{option.name}={raw!r} is not one of: {', '.join(option.choices)}."
                 if len(candidates) == 1
                 else f"{option.name}={raw!r} has {len(rejected)} value(s) outside "
-                     f"{', '.join(option.choices)}: {', '.join(str(r) for r in rejected)}."
+                f"{', '.join(option.choices)}: {', '.join(str(r) for r in rejected)}."
             )
     return value
 

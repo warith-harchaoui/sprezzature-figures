@@ -189,8 +189,8 @@ def build_svg(
         A complete, standalone SVG document.
     """
     palette: Dict[str, str] = load_palette(accessibility, theme=theme)
-    accent = palette.get("Blue", "#007AFF")       # central scatter
-    trend = palette.get("Orange", "#FF9500")      # fitted trend line
+    accent = palette.get("Blue", "#007AFF")  # central scatter
+    trend = palette.get("Orange", "#FF9500")  # fitted trend line
     # Each marginal carries its OWN hue so the eye tells the two distributions
     # apart at a glance: sleep (top) is Apple Green, reaction time (right) is
     # Apple Purple. Green / Blue / Orange / Purple all separate under
@@ -222,8 +222,8 @@ def build_svg(
     # goes to the scatter (plot_h grows automatically below), not wasted.
     m_top = 160
     m_bottom = 96
-    marg = 132            # thickness of each marginal band
-    gap = 12              # gap between a marginal and the scatter
+    marg = 132  # thickness of each marginal band
+    gap = 12  # gap between a marginal and the scatter
 
     # The scatter fills the space left after the margins and the two bands.
     plot_x = m_left
@@ -261,20 +261,19 @@ def build_svg(
     parts: List[str] = []
 
     # --- SVG root + accessible description ------------------------
-    parts.append(svg_open(width, height, "jp-title", "jp-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(
-        '<title id="jp-title">A good night\'s sleep sharpens reaction '
-        'time</title>'
+        svg_open(width, height, "jp-title", "jp-desc", font_family=chrome_stack_for_theme(theme))
     )
+    parts.append('<title id="jp-title">A good night\'s sleep sharpens reaction time</title>')
     parts.append(
         '<desc id="jp-desc">Joint plot of a sleep study: a central scatter '
-        'of mean reaction time (vertical, milliseconds, lower is better) '
-        'against hours slept the night before (horizontal) for 120 '
-        'volunteers, with a fitted trend line sloping downward — more sleep, '
-        'faster responses. A green histogram along the top rail shows hours '
-        'slept are roughly symmetric; a purple histogram along the right '
-        'rail shows reaction time has a long slow upper tail. Illustrative '
-        'data.</desc>'
+        "of mean reaction time (vertical, milliseconds, lower is better) "
+        "against hours slept the night before (horizontal) for 120 "
+        "volunteers, with a fitted trend line sloping downward — more sleep, "
+        "faster responses. A green histogram along the top rail shows hours "
+        "slept are roughly symmetric; a purple histogram along the right "
+        "rail shows reaction time has a long slow upper tail. Illustrative "
+        "data.</desc>"
     )
 
     # Static figure: hover / focus enlargement only, no motion to guard.
@@ -309,11 +308,18 @@ def build_svg(
         f"{foreground_tip_css(len(right_hist), mark_prefix='rightbar', tip_prefix='rightbartip')}"
         f"{foreground_tip_css(len(data), mark_prefix='point', tip_prefix='pointtip')}"
         "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
-        "\n" + contrast + "\n" + contrast_line + "\n" + fcp_style + "\n"
+        "\n"
+        + contrast
+        + "\n"
+        + contrast_line
+        + "\n"
+        + fcp_style
+        + "\n"
         # Additive OS dark mode: dark paper + light ink (default ink_map); the
         # scatter Blue and trend Orange are data hues, left alone. The very light
         # gridlines are darkened so they read on the dark surface.
-        + os_dark_style(extra='[stroke="#EEEEEE"]{stroke:#2E2E31;}') + "\n"
+        + os_dark_style(extra='[stroke="#EEEEEE"]{stroke:#2E2E31;}')
+        + "\n"
         "</style>"
     )
     # Forced-colors pattern tiles (referenced only inside the media query above).
@@ -325,7 +331,7 @@ def build_svg(
     # --- title + subtitle (the takeaway) -------------------------
     # The headline the figure writes about its own data, used only when
     # the caller supplies none.
-    title = title or "A good night\'s sleep sharpens reaction time"
+    title = title or "A good night's sleep sharpens reaction time"
     parts.append(
         f'<text x="{m_left}" y="70" font-size="34" font-weight="700" '
         f'fill="{ink}">{xml_escape(title)}</text>'
@@ -335,13 +341,12 @@ def build_svg(
         f"\u2014 marginals show each distribution"
     )
     parts.append(
-        f'<text x="{m_left}" y="108" font-size="19" fill="{secondary}">'
-        f'{xml_escape(said)}</text>'
+        f'<text x="{m_left}" y="108" font-size="19" fill="{secondary}">{xml_escape(said)}</text>'
     )
     # --- top marginal: histogram of hours slept ------------------
     # Bars grow downward from the top rail toward the scatter, so the marginal
     # reads as a distribution hugging the shared x-window.
-    top_base = m_top + marg           # the rail the bars stand on
+    top_base = m_top + marg  # the rail the bars stand on
     # This chart has three independent hit/tip groups (top bars, right bars,
     # scatter points below); each gets its own id prefix and bubble list so
     # ids never collide across groups. Every group draws its marks first,
@@ -361,7 +366,7 @@ def build_svg(
             f'<rect id="topbar-{i}" class="jp-topbar hit" tabindex="0" x="{bx + 1:.1f}" y="{by:.1f}" '
             f'width="{max(bw - 2, 0.5):.1f}" '
             f'height="{bh:.1f}" rx="3" fill="{top_fill}">'
-            f'<title>{xml_escape(bar_tip)}</title></rect>'
+            f"<title>{xml_escape(bar_tip)}</title></rect>"
         )
         topbar_tips.append(
             tooltip_bubble(
@@ -383,7 +388,7 @@ def build_svg(
 
     # --- right marginal: histogram of reaction times -------------
     # Bars grow leftward from the right rail toward the scatter.
-    right_base = plot_x + plot_w + gap    # left edge the bars stand on
+    right_base = plot_x + plot_w + gap  # left edge the bars stand on
     rightbar_tips: List[str] = []
     for i, (lo, hi, count) in enumerate(right_hist):
         by = sy(hi)
@@ -394,7 +399,7 @@ def build_svg(
             f'<rect id="rightbar-{i}" class="jp-rightbar hit" tabindex="0" x="{right_base:.1f}" y="{by + 1:.1f}" '
             f'width="{bw:.1f}" '
             f'height="{max(bh - 2, 0.5):.1f}" rx="3" fill="{right_fill}">'
-            f'<title>{xml_escape(bar_tip)}</title></rect>'
+            f"<title>{xml_escape(bar_tip)}</title></rect>"
         )
         rightbar_tips.append(
             tooltip_bubble(
@@ -417,7 +422,7 @@ def build_svg(
         f'<text x="{rcap_x:.1f}" y="{rcap_y:.1f}" font-size="16" '
         f'fill="{secondary}" text-anchor="middle" '
         f'transform="rotate(90 {rcap_x:.1f} {rcap_y:.1f})">'
-        f'Distribution of reaction time</text>'
+        f"Distribution of reaction time</text>"
     )
 
     # --- gridlines (very light) ----------------------------------
@@ -472,7 +477,7 @@ def build_svg(
     parts.append(
         f'<text x="{plot_x + plot_w / 2:.1f}" y="{ax_bottom + 62:.1f}" '
         f'font-size="19" fill="{ink}" text-anchor="middle">'
-        f'Sleep the night before (hours)</text>'
+        f"Sleep the night before (hours)</text>"
     )
     ytitle_x = 44
     ytitle_y = plot_y + plot_h / 2
@@ -480,7 +485,7 @@ def build_svg(
         f'<text x="{ytitle_x:.1f}" y="{ytitle_y:.1f}" font-size="19" '
         f'fill="{ink}" text-anchor="middle" '
         f'transform="rotate(-90 {ytitle_x:.1f} {ytitle_y:.1f})">'
-        f'Mean reaction time, ms (lower is better)</text>'
+        f"Mean reaction time, ms (lower is better)</text>"
     )
 
     # --- scatter points ------------------------------------------
@@ -561,7 +566,7 @@ def build_svg(
         f'font-weight="700" fill="{trend}" stroke="#FFFFFF" stroke-width="3.5" '
         f'paint-order="stroke" text-anchor="middle" '
         f'transform="rotate({ang:.1f} {tl_x:.1f} {tl_y:.1f})">'
-        f'fitted trend</text>'
+        f"fitted trend</text>"
     )
 
     parts.extend(topbar_tips)
@@ -611,8 +616,12 @@ def make_jointplot(
     """
     rows = data if data else DEMO_DATA
     svg = build_svg(
-        rows, mode=mode, accessibility=accessibility, theme=theme,
-        title=title or None, subtitle=subtitle or None,
+        rows,
+        mode=mode,
+        accessibility=accessibility,
+        theme=theme,
+        title=title or None,
+        subtitle=subtitle or None,
     )
     dest = Path(out) if out else svg_example_path(__file__, "jointplot")
     return write_svg(dest, svg, theme=theme)
@@ -621,7 +630,9 @@ def make_jointplot(
 def main() -> None:
     """Write the joint-plot SVG to the canonical assets path (or --out)."""
     render_cli(
-        __file__, "jointplot", build_svg,
+        __file__,
+        "jointplot",
+        build_svg,
         description="Render the joint plot (scatter + marginal histograms) SVG.",
     )
 

@@ -33,9 +33,9 @@ path = make_figure("treemap", data, out="budget.png", title="Budget breakdown")
 ```python
 data = [
     {"source": "Coal", "target": "Electricity", "value": 120},
-    {"source": "Gas",  "target": "Electricity", "value": 80},
+    {"source": "Gas", "target": "Electricity", "value": 80},
     {"source": "Electricity", "target": "Industry", "value": 90},
-    {"source": "Electricity", "target": "Homes",    "value": 110},
+    {"source": "Electricity", "target": "Homes", "value": 110},
 ]
 path = make_figure("sankey", data, out="energy.png", title="Energy flow")
 ```
@@ -49,6 +49,7 @@ chart expects.
 
 ```python
 import random
+
 data = [{"horsepower": random.uniform(80, 320), "mpg": random.uniform(10, 40)} for _ in range(200)]
 path = make_figure("scatter", data, out="scatter.png")
 ```
@@ -84,14 +85,14 @@ result = redraw(
     out="ours.svg",
     data=[{"region": "North", "value": 61}, {"region": "South", "value": 39}],
 )
-print(result.kind)         # 'bar' -- what the vision model saw
+print(result.kind)  # 'bar' -- what the vision model saw
 print(result.data_origin)  # 'your-data' -- the numbers are yours, not read off pixels
 for change in result.changes:
-    print("-", change)     # what the redraw does differently, costliest first
+    print("-", change)  # what the redraw does differently, costliest first
 
 # No data to hand: you get the redesign on sample rows, captioned as such
 mockup = redraw("their-chart.png", out="mockup.svg")
-mockup.data_origin         # 'demo' -- look at it, don't publish it
+mockup.data_origin  # 'demo' -- look at it, don't publish it
 ```
 
 ```bash
@@ -106,6 +107,7 @@ Ollama). Accepts PNG, JPEG, GIF, WebP and SVG.
 
 ```python
 from sprezzature_figures.make_figure import list_kinds
+
 print(list_kinds())
 # ['alluvial', 'andrews', 'arcdiagram', 'bar3d', 'bellcurve', ...]
 ```

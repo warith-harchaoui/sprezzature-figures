@@ -77,16 +77,22 @@ def _curve(seed: int = 3, folds: int = 5) -> List[Dict[str, Any]]:
         for fold in range(folds):
             spread_t = 0.004 + 0.002 * rng.random()
             spread_v = 0.030 - 0.0022 * steps + 0.004 * rng.random()
-            rows.append({
-                "size": size, "split": "Training",
-                "score": round(train_mean + (rng.random() - 0.5) * spread_t, 4),
-                "fold": fold,
-            })
-            rows.append({
-                "size": size, "split": "Validation",
-                "score": round(valid_mean + (rng.random() - 0.5) * spread_v, 4),
-                "fold": fold,
-            })
+            rows.append(
+                {
+                    "size": size,
+                    "split": "Training",
+                    "score": round(train_mean + (rng.random() - 0.5) * spread_t, 4),
+                    "fold": fold,
+                }
+            )
+            rows.append(
+                {
+                    "size": size,
+                    "split": "Validation",
+                    "score": round(valid_mean + (rng.random() - 0.5) * spread_v, 4),
+                    "fold": fold,
+                }
+            )
     return rows
 
 
@@ -236,15 +242,14 @@ def build_svg(
 
     parts: List[str] = []
     parts.append(
-        svg_open(width, height, "lc-title", "lc-desc",
-                 font_family=chrome_stack_for_theme(theme))
+        svg_open(width, height, "lc-title", "lc-desc", font_family=chrome_stack_for_theme(theme))
     )
     parts.append(f'<title id="lc-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="lc-desc">Learning curves for {xml_escape(", ".join(series_names))} '
-        f'against training-set size, from {fmt_number(sizes[0])} to {fmt_number(sizes[-1])} '
-        f'examples on a doubling scale. Each band is the range across folds, each line their '
-        f'mean. {xml_escape(said)}</desc>'
+        f"against training-set size, from {fmt_number(sizes[0])} to {fmt_number(sizes[-1])} "
+        f"examples on a doubling scale. Each band is the range across folds, each line their "
+        f"mean. {xml_escape(said)}</desc>"
     )
     parts.append(
         "<style>"
@@ -262,7 +267,7 @@ def build_svg(
     )
     parts.append(
         f'<text x="{plot_x:.1f}" y="72" font-size="14" fill="{SECONDARY}">'
-        f'{xml_escape(subtitle)}</text>'
+        f"{xml_escape(subtitle)}</text>"
     )
     if said:
         parts.append(
@@ -271,7 +276,7 @@ def build_svg(
         )
     parts.append(
         f'<text x="{plot_x:.1f}" y="{plot_y - 14:.1f}" font-size="12" fill="{SECONDARY}">'
-        f'{xml_escape(y_label)}</text>'
+        f"{xml_escape(y_label)}</text>"
     )
 
     for value_at in ticks:
@@ -288,7 +293,7 @@ def build_svg(
         parts.append(
             f'<text x="{px(size):.1f}" y="{plot_y + plot_h + 22:.1f}" font-size="11" '
             f'fill="{SECONDARY}" text-anchor="middle" font-family="{mono_family}">'
-            f'{fmt_number(size)}</text>'
+            f"{fmt_number(size)}</text>"
         )
     parts.append(
         f'<text x="{plot_x + plot_w / 2:.1f}" y="{height - 22:.1f}" font-size="12" '
@@ -300,12 +305,8 @@ def build_svg(
         colour = colour_for(name)
         present = [size for size in sizes if (name, size) in bands]
         upper = " ".join(f"{px(s):.1f},{py(bands[(name, s)][2]):.1f}" for s in present)
-        lower = " ".join(
-            f"{px(s):.1f},{py(bands[(name, s)][1]):.1f}" for s in reversed(present)
-        )
-        parts.append(
-            f'<polygon points="{upper} {lower}" fill="{colour}" opacity="0.16"/>'
-        )
+        lower = " ".join(f"{px(s):.1f},{py(bands[(name, s)][1]):.1f}" for s in reversed(present))
+        parts.append(f'<polygon points="{upper} {lower}" fill="{colour}" opacity="0.16"/>')
         parts.append(
             '<polyline points="'
             + " ".join(f"{px(s):.1f},{py(bands[(name, s)][0]):.1f}" for s in present)
@@ -324,18 +325,23 @@ def build_svg(
                 f'{fmt_number(mean)}, folds {fmt_number(low)} to {fmt_number(high)}" '
                 f'x="{px(size) - 10:.1f}" y="{py(high) - 10:.1f}" width="20" '
                 f'height="{max(py(low) - py(high) + 20, 20):.1f}" fill="transparent">'
-                f'<title>{xml_escape(name)} · {fmt_number(size)}: {fmt_number(mean)}</title></rect>'
+                f"<title>{xml_escape(name)} · {fmt_number(size)}: {fmt_number(mean)}</title></rect>"
             )
             tips.append(
                 tooltip_bubble(
-                    px(size), py(mean),
+                    px(size),
+                    py(mean),
                     [
                         f"{name} · {fmt_number(size)} examples",
                         f"mean {fmt_number(mean)}",
                         f"folds {fmt_number(low)} to {fmt_number(high)}",
                     ],
-                    canvas_w=width, canvas_h=height, ink=INK, secondary=SECONDARY,
-                    border=GRIDLINE, elem_id=f"pttip-{element}",
+                    canvas_w=width,
+                    canvas_h=height,
+                    ink=INK,
+                    secondary=SECONDARY,
+                    border=GRIDLINE,
+                    elem_id=f"pttip-{element}",
                 )
             )
         last = present[-1]
@@ -346,9 +352,7 @@ def build_svg(
 
     # The gap at the right edge is the bias-variance reading, in one number.
     if len(series_names) == 2:
-        top_name, bottom_name = sorted(
-            series_names, key=lambda n: -bands[(n, sizes[-1])][0]
-        )
+        top_name, bottom_name = sorted(series_names, key=lambda n: -bands[(n, sizes[-1])][0])
         gap = bands[(top_name, sizes[-1])][0] - bands[(bottom_name, sizes[-1])][0]
         gy_top = py(bands[(top_name, sizes[-1])][0])
         gy_bottom = py(bands[(bottom_name, sizes[-1])][0])
@@ -439,10 +443,21 @@ def make_learning_curve(
     True
     """
     svg = build_svg(
-        data, title=title, subtitle=subtitle, width=width, height=height,
-        x=x, series=series, y=y, x_label=x_label, y_label=y_label,
-        score_name=score_name, verdict=verdict, mode=mode,
-        accessibility=accessibility, theme=theme,
+        data,
+        title=title,
+        subtitle=subtitle,
+        width=width,
+        height=height,
+        x=x,
+        series=series,
+        y=y,
+        x_label=x_label,
+        y_label=y_label,
+        score_name=score_name,
+        verdict=verdict,
+        mode=mode,
+        accessibility=accessibility,
+        theme=theme,
     )
     dest = Path(out) if out else svg_example_path(__file__, "learning-curve")
     return write_svg(dest, svg, theme=theme)

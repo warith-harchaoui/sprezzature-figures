@@ -28,8 +28,13 @@ from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _scale import log_position, log_ticks, nice_ticks  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY, cycle_hues  # noqa: E402
 from _svg import (  # noqa: E402
-    edge_anchor, fmt_number, foreground_tip_css, svg_open, tooltip_bubble,
-    visible_tick_indices, xml_escape,
+    edge_anchor,
+    fmt_number,
+    foreground_tip_css,
+    svg_open,
+    tooltip_bubble,
+    visible_tick_indices,
+    xml_escape,
 )
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
@@ -59,7 +64,9 @@ def _channel_colors(
     # desaturated -- caught by the grayscale pass of the Ralph Eyeball Loop.
     # This set's adjacent-band luminance gaps are all >=38, so every band
     # boundary stays visible in grayscale.
-    return cycle_hues(channels, accessibility, hues=['Brown', 'Blue', 'Yellow', 'Green'], theme=theme)
+    return cycle_hues(
+        channels, accessibility, hues=["Brown", "Blue", "Yellow", "Green"], theme=theme
+    )
 
 
 def build_svg(
@@ -121,7 +128,9 @@ def build_svg(
     months = sorted({r["month"] for r in rows}, key=lambda m: MONTHS.index(m) if m in MONTHS else 0)
     colors = _channel_colors(channels, accessibility, theme=theme)
 
-    lookup: Dict[tuple, float] = {(r["month"], r.get("channel", "")): float(r["visits"]) for r in rows}
+    lookup: Dict[tuple, float] = {
+        (r["month"], r.get("channel", "")): float(r["visits"]) for r in rows
+    }
     # Cumulative stack, bottom-to-top in channel order, per month.
     cum: Dict[str, List[float]] = {m: [] for m in months}
     for m in months:
@@ -162,14 +171,18 @@ def build_svg(
             return plot_y + plot_h - (v / y_domain * plot_h if y_domain else 0.0)
 
     parts: List[str] = []
-    parts.append(svg_open(width, height, "area-title", "area-desc", font_family=chrome_stack_for_theme(theme)))
+    parts.append(
+        svg_open(
+            width, height, "area-title", "area-desc", font_family=chrome_stack_for_theme(theme)
+        )
+    )
     parts.append(f'<title id="area-title">{xml_escape(title)}</title>')
     top_channel = channels[-1] if len(channels) > 1 else ""
     stack_note = f" {xml_escape(top_channel)} sits on top of the stack." if top_channel else ""
     parts.append(
         f'<desc id="area-desc">Stacked area chart of {len(channels)} channel'
-        f'{"s" if len(channels) != 1 else ""} over {n} months, peaking at '
-        f'{max_total:.0f} thousand visits.{stack_note}</desc>'
+        f"{'s' if len(channels) != 1 else ''} over {n} months, peaking at "
+        f"{max_total:.0f} thousand visits.{stack_note}</desc>"
     )
 
     parts.append(
@@ -177,7 +190,7 @@ def build_svg(
         ".band{transition:opacity .15s ease;}"
         "svg:hover .band,svg:focus-within .band{opacity:.35;}"
         + "".join(
-            f'svg:has(.band-{i}:hover,.band-{i}:focus) .band-{i}{{opacity:1;}}'
+            f"svg:has(.band-{i}:hover,.band-{i}:focus) .band-{i}{{opacity:1;}}"
             for i in range(len(channels))
         )
         + "@media (prefers-reduced-motion: reduce){.band{transition:none;}}"
@@ -196,19 +209,27 @@ def build_svg(
         f'<text x="40" y="46" font-size="24" font-weight="700" fill="{INK}" '
         f'letter-spacing="-0.3">{xml_escape(title)}</text>'
     )
-    parts.append(f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>')
+    parts.append(
+        f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>'
+    )
 
     # ---- legend (top-left, below subtitle) ----
     # A single unnamed series needs no legend box -- the title already names it.
     if len(channels) > 1:
         lx = 40.0
         ly = 100.0
-        parts.append(f'<text x="{lx:.1f}" y="{ly:.1f}" font-size="13" font-weight="700" fill="{INK}">{xml_escape(legend_title)}</text>')
+        parts.append(
+            f'<text x="{lx:.1f}" y="{ly:.1f}" font-size="13" font-weight="700" fill="{INK}">{xml_escape(legend_title)}</text>'
+        )
         cursor = lx
         ly2 = ly + 22
         for ch in channels:
-            parts.append(f'<circle cx="{cursor + 6:.1f}" cy="{ly2 - 5:.1f}" r="6" fill="{colors[ch]}"/>')
-            parts.append(f'<text x="{cursor + 18:.1f}" y="{ly2:.1f}" font-size="12" fill="{INK}">{xml_escape(ch)}</text>')
+            parts.append(
+                f'<circle cx="{cursor + 6:.1f}" cy="{ly2 - 5:.1f}" r="6" fill="{colors[ch]}"/>'
+            )
+            parts.append(
+                f'<text x="{cursor + 18:.1f}" y="{ly2:.1f}" font-size="12" fill="{INK}">{xml_escape(ch)}</text>'
+            )
             cursor += 18 + 7.2 * len(ch) + 22
 
     # ---- y-axis gridlines ----
@@ -233,7 +254,7 @@ def build_svg(
     parts.append(
         f'<text x="18" y="{plot_y + plot_h / 2:.1f}" font-size="13" fill="{INK}" '
         f'text-anchor="middle" transform="rotate(-90 18 {plot_y + plot_h / 2:.1f})">'
-        f'{xml_escape(y_label)}</text>'
+        f"{xml_escape(y_label)}</text>"
     )
 
     # ---- stacked bands (bottom-to-top) ----
@@ -257,9 +278,14 @@ def build_svg(
         share = (band_total / sum(totals.values()) * 100.0) if sum(totals.values()) else 0.0
         band_tips.append(
             tooltip_bubble(
-                top_pts[mid_i][0], min(top_pts[mid_i][1], bottom_pts[mid_i][1]),
+                top_pts[mid_i][0],
+                min(top_pts[mid_i][1], bottom_pts[mid_i][1]),
                 [ch, f"{band_total:.0f}k visits total", f"{share:.0f}% of stacked total"],
-                canvas_w=width, canvas_h=height, ink=INK, secondary=SECONDARY, border=GRIDLINE,
+                canvas_w=width,
+                canvas_h=height,
+                ink=INK,
+                secondary=SECONDARY,
+                border=GRIDLINE,
                 elem_id=f"band-tip-{ci}",
             )
         )
@@ -343,9 +369,20 @@ def make_area(
     >>> p.exists()
     True
     """
-    svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
-                     mode=mode, accessibility=accessibility, x_label=x_label,
-                     y_label=y_label, log_y=log_y, theme=theme, legend_title=legend_title)
+    svg = build_svg(
+        data,
+        title=title,
+        subtitle=subtitle,
+        width=width,
+        height=height,
+        mode=mode,
+        accessibility=accessibility,
+        x_label=x_label,
+        y_label=y_label,
+        log_y=log_y,
+        theme=theme,
+        legend_title=legend_title,
+    )
     dest = Path(out) if out else svg_example_path(__file__, "area")
     return write_svg(dest, svg, theme=theme)
 

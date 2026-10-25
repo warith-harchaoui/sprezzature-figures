@@ -38,15 +38,17 @@ def _critique(**overrides) -> VisualCritique:
     return VisualCritique(**defaults)
 
 
-def _issue(category: str = "contrast", severity: str = "high", observation: str = "x") -> VisualIssue:
+def _issue(
+    category: str = "contrast", severity: str = "high", observation: str = "x"
+) -> VisualIssue:
     return VisualIssue(category=category, severity=severity, observation=observation)
 
 
 def test_issue_signature_normalizes_and_discriminates() -> None:
     # Same problem, different whitespace/case -> identical signature.
-    assert issue_signature(_issue(category="labeling", observation="  Labels   Too Small  ")) == issue_signature(
-        _issue(category="labeling", observation="labels too small")
-    )
+    assert issue_signature(
+        _issue(category="labeling", observation="  Labels   Too Small  ")
+    ) == issue_signature(_issue(category="labeling", observation="labels too small"))
     # Category or severity changing -> distinct signature.
     base = _issue(category="labeling", severity="high")
     assert issue_signature(base) != issue_signature(_issue(category="contrast", severity="high"))
@@ -63,8 +65,11 @@ def test_has_blocking_issues_only_for_high_or_critical(severity: str, blocking: 
 
 def test_score_total_sums_all_five_scores() -> None:
     c = _critique(
-        message_alignment_score=10, readability_score=20, visual_hierarchy_score=30,
-        accessibility_score=40, data_fidelity_score=50,
+        message_alignment_score=10,
+        readability_score=20,
+        visual_hierarchy_score=30,
+        accessibility_score=40,
+        data_fidelity_score=50,
     )
     assert score_total(c) == 150
 
@@ -82,23 +87,49 @@ _BLOCKING = _critique(issues=[_issue()])
     [
         (_SATISFIED, {"remaining_safe_repairs": 0}, (True, "satisfied")),
         (_LOW_ONLY, {"remaining_safe_repairs": 1}, (True, "no_high_or_critical_issues")),
-        (_REPEATED, {"previous_signature_set": signature_set(_REPEATED), "remaining_safe_repairs": 1},
-         (True, "repeated_issue_signature")),
+        (
+            _REPEATED,
+            {"previous_signature_set": signature_set(_REPEATED), "remaining_safe_repairs": 1},
+            (True, "repeated_issue_signature"),
+        ),
         (_BLOCKING, {"remaining_safe_repairs": 0}, (True, "no_safe_repair_available")),
-        (_BLOCKING, {"repairs_applied_so_far": 2, "remaining_safe_repairs": 1},
-         (True, "max_auto_repairs_applied")),
-        (_BLOCKING, {"previous_signature_set": frozenset(), "previous_score_total": score_total(_BLOCKING) + 50,
-                     "remaining_safe_repairs": 1}, (True, "render_regressed")),
-        (_BLOCKING, {"previous_signature_set": frozenset({"other:high:different"}),
-                     "previous_score_total": score_total(_BLOCKING) - 10, "remaining_safe_repairs": 1},
-         (False, None)),
+        (
+            _BLOCKING,
+            {"repairs_applied_so_far": 2, "remaining_safe_repairs": 1},
+            (True, "max_auto_repairs_applied"),
+        ),
+        (
+            _BLOCKING,
+            {
+                "previous_signature_set": frozenset(),
+                "previous_score_total": score_total(_BLOCKING) + 50,
+                "remaining_safe_repairs": 1,
+            },
+            (True, "render_regressed"),
+        ),
+        (
+            _BLOCKING,
+            {
+                "previous_signature_set": frozenset({"other:high:different"}),
+                "previous_score_total": score_total(_BLOCKING) - 10,
+                "remaining_safe_repairs": 1,
+            },
+            (False, None),
+        ),
     ],
     ids=[
-        "satisfied", "no_blocking_issues", "repeated_signature", "no_safe_repair",
-        "max_auto_repairs", "render_regressed", "progress_continues",
+        "satisfied",
+        "no_blocking_issues",
+        "repeated_signature",
+        "no_safe_repair",
+        "max_auto_repairs",
+        "render_regressed",
+        "progress_continues",
     ],
 )
-def test_should_stop(critique: VisualCritique, state: dict, expected: tuple[bool, str | None]) -> None:
+def test_should_stop(
+    critique: VisualCritique, state: dict, expected: tuple[bool, str | None]
+) -> None:
     kwargs = {
         "repairs_applied_so_far": 0,
         "previous_signature_set": None,

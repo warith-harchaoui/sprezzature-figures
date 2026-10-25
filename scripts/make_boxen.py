@@ -172,7 +172,7 @@ def letter_values(
     boxes: List[Dict[str, float]] = []
     depth = 1
     while True:
-        tail = 0.5 * (0.5 ** depth)  # probability mass in ONE tail beyond the box
+        tail = 0.5 * (0.5**depth)  # probability mass in ONE tail beyond the box
         if tail * n < min_per_box:
             break
         lower_q = tail
@@ -342,7 +342,9 @@ def _boxen_group(
     boxes = letter_values(samples)
     stats = box_stats(samples)
     n_boxes = len(boxes)
-    parts: List[str] = [f'  <g class="stack" role="listitem" aria-label="{label} latency distribution">']
+    parts: List[str] = [
+        f'  <g class="stack" role="listitem" aria-label="{label} latency distribution">'
+    ]
 
     # Whisker line from the outermost box edges to median — a thin spine
     # so the reader sees the full extent even where pale boxes fade out.
@@ -368,8 +370,8 @@ def _boxen_group(
         h = max(1.0, bot_y - top_y)
         pct = box["coverage"] * 100.0
         tip = (
-            f'{label} · middle {pct:.1f}% of requests · '
-            f'{_fmt_ms(box["lower"])}–{_fmt_ms(box["upper"])}'
+            f"{label} · middle {pct:.1f}% of requests · "
+            f"{_fmt_ms(box['lower'])}–{_fmt_ms(box['upper'])}"
         )
         box_id = start_index + local_i
         parts.append(
@@ -380,10 +382,18 @@ def _boxen_group(
         )
         lv_tips.append(
             tooltip_bubble(
-                cx, top_y - 6,
-                [label, f"middle {pct:.1f}% of requests",
-                 f"{_fmt_ms(box['lower'])}–{_fmt_ms(box['upper'])}"],
-                canvas_w=WIDTH, canvas_h=HEIGHT, ink=INK, secondary=SUBTLE, border=GRID,
+                cx,
+                top_y - 6,
+                [
+                    label,
+                    f"middle {pct:.1f}% of requests",
+                    f"{_fmt_ms(box['lower'])}–{_fmt_ms(box['upper'])}",
+                ],
+                canvas_w=WIDTH,
+                canvas_h=HEIGHT,
+                ink=INK,
+                secondary=SUBTLE,
+                border=GRID,
                 elem_id=f"lv-tip-{box_id}",
             )
         )
@@ -401,7 +411,7 @@ def _boxen_group(
         f'    <line class="median" x1="{cx - half_width:.1f}" y1="{med_y:.1f}" '
         f'x2="{cx + half_width:.1f}" y2="{med_y:.1f}" '
         f'stroke="{INK}" stroke-width="1.9">'
-        f'<title>{label} · median {_fmt_ms(stats["median"])}</title></line>'
+        f"<title>{label} · median {_fmt_ms(stats['median'])}</title></line>"
     )
 
     # p99 marker: a short dark tick straddling the box edge at the p99
@@ -490,7 +500,9 @@ def _legend() -> str:
     x = 0.0
     for hexc, txt in swatch:
         parts.append(f'    <rect x="{x:.1f}" y="-13" width="17" height="17" rx="3" fill="{hexc}"/>')
-        parts.append(f'    <text x="{x + 24:.1f}" y="1" font-size="15" fill="{SUBTLE}">{txt}</text>')
+        parts.append(
+            f'    <text x="{x + 24:.1f}" y="1" font-size="15" fill="{SUBTLE}">{txt}</text>'
+        )
         x += 24 + 9.4 * len(txt) + 24
     parts.append("  </g>")
     return "\n".join(parts)
@@ -637,9 +649,7 @@ def build_svg(
     # Additive dark mode: flip paper + ink, restate the CSS `text{fill}` default
     # in off-white (the attribute selector cannot see CSS-set fills), and darken
     # the hairline gridlines. The blue box ramp and white keylines are left be.
-    dark = _style.os_dark_style(
-        extra="text{fill:#F2F2F7;}[stroke=\"%s\"]{stroke:#2C2C2E;}" % GRID
-    )
+    dark = _style.os_dark_style(extra='text{fill:#F2F2F7;}[stroke="%s"]{stroke:#2C2C2E;}' % GRID)
     style = f"""  <style>
     .lv {{ transition: opacity .12s ease; }}
     .stack:hover .lv {{ opacity: .6; }}
