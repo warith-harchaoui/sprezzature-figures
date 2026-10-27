@@ -31,6 +31,7 @@ from _interactive import fullscreen_control  # noqa: E402
 from _render import svg_example_path, write_raster_companions, write_svg  # noqa: E402
 from _style import load_palette, os_adaptive_style, os_dark_style, qualitative_sequence  # noqa: E402
 from _svg import foreground_tip_css, point_on_circle, tooltip_bubble, xml_escape  # noqa: E402
+from _textfit import text_width  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
 # ------------------------------------------------------------------
@@ -41,6 +42,20 @@ from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 # Row-record demo data: one row per speaker, the contract's
 # ``list[dict[str, Any]]`` shape (``name`` + ``seconds``).
 # ------------------------------------------------------------------
+# Chrome written for :data:`DEMO_DATA` and for it alone. ``make_figure`` blanks both the
+# moment a caller supplies its own rows (``_without_demo_chrome``), which only works if
+# they are *parameters*: while the subtitle was hardcoded inside the builder, every caller
+# got "a 40-minute round table" printed over its own recording. False chrome is worse than
+# none, because it affirms. ``None`` means "use these", ``""`` means "print nothing".
+TITLE: str = "Who spoke, and for how long"
+SUBTITLE: str = "Speaking time per participant · a 40-minute round table"
+
+#: The caption under the total, in the middle of the ring. A parameter rather than a
+#: literal because the host page may well be in another language: a French report with an
+#: English "total time" in the middle of its figure reads as a picture borrowed from
+#: somewhere else.
+CENTRE_LABEL: str = "total time"
+
 DEMO_DATA: List[Dict[str, Any]] = [
     {"name": "Alice NGUYEN", "seconds": 984},   # 16:24 · 41 %
     {"name": "Marc DUBOIS", "seconds": 648},     # 10:48 · 27 %
@@ -153,6 +168,10 @@ def build_svg(
     accessibility: str = "universal",
     theme: str = "corporate",
     title: Optional[str] = None,
+    subtitle: Optional[str] = None,
+    centre_label: Optional[str] = None,
+    description: str = "",
+    colors: Optional[Dict[str, str]] = None,
 ) -> str:
     """Assemble the full speaking-time donut as an SVG string.
 
@@ -174,9 +193,35 @@ def build_svg(
         Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
         the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
         See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
+    title, subtitle : str, optional
+        The headline and the line under it. ``None`` (default) prints
+        :data:`TITLE` / :data:`SUBTITLE`, which describe the demo rows; ``""``
+        prints nothing, which is what ``make_figure`` asks for over caller data.
+    description : str, optional
+        What a screen reader is told about the figure. Empty (default) composes the
+        English description below from the data; a host whose page is in another language
+        passes its own.
+    centre_label : str, optional
+        The caption under the total in the middle of the ring. Defaults to
+        :data:`CENTRE_LABEL`; pass the host page's own wording to keep the figure
+        in the language of the document it sits in.
+    colors : dict of str to str, optional
+        The host page's own ``{name: "#RRGGBB"}`` mapping, for a figure embedded
+        where each participant already carries a colour (a transcript view, a
+        speaker legend): matching them is what makes the figure read as part of
+        the page rather than as a picture pasted into it. A name absent from the
+        mapping keeps its position in the house sequence, so a partial mapping is
+        safe, and the OS-adaptive contrast overrides are derived from whatever
+        hues end up being used.
     """
     speakers = data if data else DEMO_DATA
+    is_demo = not data
     slice_colors = _slice_colors(accessibility, n=len(speakers), theme=theme)
+    if colors:
+        slice_colors = [
+            colors.get(str(spk["name"]), house)
+            for spk, house in zip(speakers, slice_colors, strict=True)
+        ]
     total = sum(int(s["seconds"]) for s in speakers)
 
     # Accessible name + description. Every slice is also labelled outside
@@ -189,20 +234,24 @@ def build_svg(
         f"({round(100 * int(s['seconds']) / total)} %)"
         for s in speakers
     )
-    a11y_title = "Who spoke, and for how long"
-    a11y_desc = (
-        "Anneau (donut) du temps de parole par intervenant sur une table "
-        "40-minute round table. Each slice is one participant, labelled "
-        "outside the ring with a name, a duration (mm:ss) and a share of the "
-        f"du total en pourcentage : {ranked}. Le centre affiche le temps "
-        "total, 40:00. Illustrative data."
+    # Built from the rows, not from the demo: this text used to state a forty-minute
+    # round table and a 40:00 centre whatever it was given, so a screen reader was told
+    # the wrong duration on every real recording. (It was also half-translated
+    # mid-sentence.) One language, and every number taken from the data.
+    a11y_title = title if title is not None else TITLE
+    a11y_desc = description or (
+        f"Donut of speaking time per participant over {_mmss(total)} of recording. "
+        "Each slice is one participant, labelled outside the ring with a name, a "
+        f"duration (mm:ss) and a share of the total: {ranked}. The centre shows the "
+        f"total, {_mmss(total)}." + (" Illustrative data." if is_demo else "")
     )
 
-    # The headline the figure writes about its own data, used only
-
-    # when the caller supplies none.
-
-    title = title or "Who spoke, and for how long"
+    # None means "the caller said nothing, print the demo chrome"; "" means "the caller
+    # said: print nothing". `or` would collapse the two and resurrect the demo headline
+    # over caller data, which is exactly what make_figure blanks it to avoid.
+    title = TITLE if title is None else title
+    subtitle = SUBTITLE if subtitle is None else subtitle
+    centre_label = CENTRE_LABEL if centre_label is None else centre_label
 
     parts: List[str] = [
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" '
@@ -215,7 +264,7 @@ def build_svg(
         f'<text x="60" y="66" font-size="30" font-weight="700" fill="{INK}">'
         f"{xml_escape(title)}</text>",
         f'<text x="60" y="98" font-size="18" fill="{SECONDARY}">'
-        f"Speaking time per participant · a 40-minute round table</text>",
+        f"{xml_escape(subtitle)}</text>",
     ]
 
     # OS-adaptive overrides (additive, all inside @media so the default render
@@ -250,6 +299,8 @@ def build_svg(
     # no z-index, so a bubble drawn in place would be covered by any slice
     # drawn afterward, no matter which one is hovered.
     bubbles: List[str] = []
+    # (x, measured width, anchor) per label drawn outside the ring, for _fit_canvas.
+    side_labels: List[tuple] = []
     ranked_names = [s["name"] for s in sorted(speakers, key=lambda s: -int(s["seconds"]))]
     for i, (spk, color) in enumerate(zip(speakers, slice_colors, strict=True)):
         secs = int(spk["seconds"])
@@ -288,6 +339,10 @@ def build_svg(
             tx, anchor = ex, "middle"
             hx = ex
         pct = round(100 * secs / total)
+        value_line = f"{_mmss(secs)} · {pct}%"
+        # Measured with the same table the checker uses, so the canvas and the check agree.
+        side_labels.append((tx, text_width(spk["name"], 19), anchor))
+        side_labels.append((tx, text_width(value_line, 16), anchor))
         labels.append(
             f'<polyline points="{rx:.1f},{ry:.1f} {ex:.1f},{ey:.1f} {hx:.1f},{ey:.1f}" '
             f'fill="none" stroke="{LEADER}" stroke-width="1.4"/>'
@@ -307,18 +362,78 @@ def build_svg(
     )
     parts.append(
         f'<text x="{CX}" y="{CY + 30}" font-size="19" fill="{SECONDARY}" '
-        f'text-anchor="middle">total time</text>'
+        f'text-anchor="middle">{xml_escape(centre_label)}</text>'
     )
     parts.append(fullscreen_control(W, H, mode))
     parts.append("</svg>")
-    return "".join(parts)
+    svg = "".join(parts)
+    return _fit_canvas(svg, side_labels)
+
+
+#: Clearance kept between a side label and the canvas edge, as a share of the label's own
+#: measured width plus a flat margin. Proportional because the per-character width table
+#: is an estimate and its error grows with the string: measured on "Général Dominique
+#: Trinquand" in the 19 px bold face, the table was ~7 % short, which was enough to put the
+#: capital's stem outside a canvas the table said it cleared by 16 px.
+LABEL_CLEARANCE_RATIO: float = 0.10
+LABEL_CLEARANCE_FLAT: float = 24.0
+
+
+def _fit_canvas(svg: str, side_labels: List[tuple]) -> str:
+    """Widen the canvas so no side label is cut, keeping every coordinate as drawn.
+
+    The ring, its leaders and its labels are laid out against a fixed 1120-wide canvas,
+    which is right until a participant has a long name: the outermost label then runs off
+    the edge and the capital is clipped. Rather than move the drawing (every coordinate,
+    the tooltips, the fullscreen control), the viewBox is allowed to start left of zero and
+    end right of ``W``, so the picture is unchanged and the frame grows around it.
+
+    Parameters
+    ----------
+    svg : str
+        The assembled document, whose root still carries the nominal ``W`` x ``H``.
+    side_labels : list of tuple
+        ``(x, width, anchor)`` for every label drawn outside the ring.
+
+    Returns
+    -------
+    str
+        The same document, with the root ``viewBox`` / ``width`` widened when needed.
+    """
+    left, right = 0.0, float(W)
+    for x, width, anchor in side_labels:
+        start = x - width if anchor == "end" else (x - width / 2 if anchor == "middle" else x)
+        clearance = width * LABEL_CLEARANCE_RATIO + LABEL_CLEARANCE_FLAT
+        left = min(left, start - clearance)
+        right = max(right, start + width + clearance)
+    if left >= 0 and right <= W:
+        return svg
+    total = right - left
+    svg = svg.replace(
+        f'width="{W}" height="{H}" viewBox="0 0 {W} {H}"',
+        f'width="{total:.0f}" height="{H}" viewBox="{left:.0f} 0 {total:.0f} {H}"',
+        1,
+    )
+    # The background rectangle has to grow with the frame, or the widened strip renders
+    # transparent (black, once flattened). Its width and height stay equal to the root's,
+    # which is how :mod:`sprezzature_figures.darkmode` recognises a full-canvas background
+    # and drops it.
+    return svg.replace(
+        f'<rect width="{W}" height="{H}" fill="#FFFFFF"/>',
+        f'<rect x="{left:.0f}" y="0" width="{total:.0f}" height="{H}" fill="#FFFFFF"/>',
+        1,
+    )
 
 
 def make_speaking_time(
     data: Optional[List[Dict[str, Any]]] = None,
     *,
     out: "Path | str | None" = None,
-    title: str = "",
+    title: Optional[str] = None,
+    subtitle: Optional[str] = None,
+    centre_label: Optional[str] = None,
+    description: str = "",
+    colors: Optional[Dict[str, str]] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -336,16 +451,21 @@ def make_speaking_time(
     out : Path, str, or None
         Output path (.svg). Defaults to
         ``assets/svg-examples/speaking_time.svg``.
-    title : str, optional
-        Accepted for signature parity; the figure's headline is in French
-        by design (unused).
+    title, subtitle : str, optional
+        The headline and the line under it. ``None`` keeps :data:`TITLE` /
+        :data:`SUBTITLE` (written for the demo rows), ``""`` prints nothing.
+    centre_label : str, optional
+        Caption under the total, in the host's language. Forwarded to :func:`build_svg`.
+    colors : dict of str to str, optional
+        The host page's ``{name: colour}`` mapping. Forwarded to :func:`build_svg`.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
     theme : str, optional
         Visual theme. Forwarded to :func:`build_svg`.
     """
-    _ = title
-    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme, title=title or None)
+    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme,
+                    title=title, subtitle=subtitle, centre_label=centre_label,
+                    description=description, colors=colors)
     dest = Path(out) if out else svg_example_path(__file__, "speaking_time")
     return write_svg(dest, svg, theme=theme)
 

@@ -1,5 +1,70 @@
 # Changelog
 
+## Unreleased: a figure can now wear the host page's clothes
+
+Everything here comes from one real embedding: notes-helper draws the figures of a
+meeting report, and the two it had reimplemented (a speaking-time ring, a who-cuts-whom
+matrix) now come from this catalogue instead. What it needed to make that possible says
+more about the gap between "a figure" and "a figure inside a document" than any amount
+of design thinking would have.
+
+### Added
+
+- **`colors=` on `speaking_time`, `interruption-matrix` and `line-multi`** (as
+  `series_colors=` on the last, matching its own vocabulary): the host's
+  `{name: "#RRGGBB"}` mapping. A page that already gives each speaker a colour, in its
+  transcript or its legend, needs the figure to use those hues; different ones make the
+  figure read as a picture borrowed from elsewhere. A name absent from the mapping keeps
+  its place on the house wheel, and the accessibility levelling still runs over the result.
+- **`embed_fonts=` on `make_figure`**, handled there like `dark=` rather than by each
+  generator. A figure carries its own 430 kB of base64 Roboto so it renders identically
+  anywhere, which is right when it travels alone and wrong when six of them are inlined
+  into one page that already serves those faces: 2.5 MB of a document whose text is
+  already in the right font. The block is rebuilt from `fonts` and removed by equality,
+  never matched by pattern.
+- **`description=` on `speaking_time` and `interruption-matrix`**, and `centre_label=` on
+  the first: a screen reader should hear the figure in the language of the page it sits
+  in, and the caption inside a ring should not say "total time" in the middle of a French
+  report. `cutter_summary` / `target_summary` do the same for the matrix's bilan line.
+- **`text_width` is public.** It is the calibrated advance table the generators lay out
+  with and `check_render` measures against. A host drawing its own figures beside these
+  ones has to reserve room the same way: measuring differently from the thing that checks
+  you is exactly how a label ends up clipped while every check passes.
+- **The width table knows what an emoji is.** Anything outside the Latin table was counted
+  as 0.52 em, half a letter, so a caption built from 🔪 and 🥩 measured ~25 % short, the
+  fitter reported room to spare, and the line ran off both edges. Emoji and ideographs are
+  measured in a square cell, arrows and dingbats a little narrower, and the variation
+  selectors that follow most emoji take no advance at all.
+
+### Fixed
+
+- **`check_render` reads the viewBox origin.** A viewBox may start anywhere, not only at
+  `0 0`; comparing labels against `0..width` called every label on a left-shifted canvas
+  clipped while it was plainly visible. `speaking_time` now uses exactly that freedom.
+- **`speaking_time` grows its canvas rather than cutting long names.** A participant
+  called "Général Dominique Trinquand" had the stem of their capital rendered off the
+  canvas, 13 px past where the estimate said it ended. The frame now widens around the
+  drawing, coordinates untouched, with clearance proportional to the label's own measured
+  width, because that is how the estimator's error behaves.
+- **`speaking_time` stopped printing the demo's chrome over caller data.** Its subtitle
+  ("a 40-minute round table") was hardcoded inside the builder rather than being a
+  parameter, so `make_figure`'s own `_without_demo_chrome` could not blank it: every
+  caller got a sentence about a forty-minute round table printed over its own recording,
+  whatever its real duration. Its accessible description had the same problem and was
+  half-translated mid-sentence; `interruption-matrix` carried the same bilingual text and
+  an unconditional "Illustrative data."
+
+### Tried and rejected
+
+- **A safety margin in `check_render`.** A label whose estimated box merely approaches the
+  edge can still be clipped, so a margin seemed right: flat (16 px), then proportional
+  (8 % of the label's width). Both accused 114 of the 343 committed examples, whose chrome
+  legitimately sits flush against the edge. A check that cries wolf on a third of the
+  catalogue is worse than one that misses a graze, so the rule stayed "outside the canvas"
+  and the clearance is reserved by the generator laying the figure out, which knows what
+  it is drawing. The reasoning is kept in the source so it is not re-tried blind.
+
+
 ## 2.7.0 (2026-10-16): the wheel carries every face the module offers
 
 **Roboto Serif is back in the wheel, and the wheel grows 3.4 MB to 11.4 MB for
