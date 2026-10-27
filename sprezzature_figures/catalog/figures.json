@@ -8930,6 +8930,30 @@
         "choices": [],
         "description": ""
       },
+      "cutter_summary": {
+        "type": "str",
+        "default": "interrupts most ({count})",
+        "choices": [],
+        "description": ""
+      },
+      "target_summary": {
+        "type": "str",
+        "default": "is interrupted most ({count})",
+        "choices": [],
+        "description": ""
+      },
+      "description": {
+        "type": "str",
+        "default": "",
+        "choices": [],
+        "description": ""
+      },
+      "colors": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": ""
+      },
       "mode": {
         "type": "str",
         "default": "self-contained",
@@ -9752,6 +9776,12 @@
         "default": 480,
         "choices": [],
         "description": "Canvas size in pixels."
+      },
+      "series_colors": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": ""
       },
       "mode": {
         "type": "str",
@@ -16762,9 +16792,33 @@
     "options_schema": {
       "title": {
         "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "The headline and the line under it. None keeps TITLE / SUBTITLE (written for the demo rows), \"\" prints nothing."
+      },
+      "subtitle": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "The headline and the line under it. None keeps TITLE / SUBTITLE (written for the demo rows), \"\" prints nothing."
+      },
+      "centre_label": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "Caption under the total, in the host's language. Forwarded to build_svg."
+      },
+      "description": {
+        "type": "str",
         "default": "",
         "choices": [],
-        "description": "Accepted for signature parity; the figure's headline is in French by design (unused)."
+        "description": ""
+      },
+      "colors": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "The host page's {name: colour} mapping. Forwarded to build_svg."
       },
       "mode": {
         "type": "str",

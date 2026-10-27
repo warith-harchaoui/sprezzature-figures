@@ -54,6 +54,50 @@ _ORPHANS = _ORPHANS_EN | _ORPHANS_FR
 _MONO_EM = 0.6
 
 
+#: Code points the Latin table says nothing useful about, by the width they actually take.
+#: Deliberately narrow: the dingbats, arrows and geometric shapes of ranges 2190-2BFF are
+#: drawn at about a Latin advance in this stack and the chrome of a hundred committed
+#: figures is laid out against that, so widening them would call every one of those
+#: layouts wrong without a single clipped glyph to show for it. Only the ranges that are
+#: genuinely drawn in a square cell are listed.
+#: Falling back to :data:`_DEFAULT_EM` (0.52, a Latin average) for an emoji is the error
+#: that matters here, because it is an error in the dangerous direction: a caption built
+#: from "🔪" and "🥩" measured ~25 % short, the fitter reported room to spare, and the line
+#: ran off both edges of the canvas while the render check — measuring with this same
+#: table — saw nothing wrong. Emoji and ideographs are drawn in a square cell, arrows and
+#: gender signs a little narrower; the values stay a hair generous, like the table above,
+#: so the layout errs toward whitespace rather than toward a clip.
+_WIDE_RANGES: tuple[tuple[int, int, float], ...] = (
+    (0x1F300, 0x1FAFF, 1.20),  # pictographs, emoji proper (🔪 🥩 📺 …)
+    (0x1F000, 0x1F2FF, 1.20),  # mahjong/domino/playing cards, enclosed alphanumerics
+    (0x2600, 0x27BF, 1.00),    # misc symbols and dingbats (★ ✓ ➜ …)
+    (0x2190, 0x21FF, 0.90),    # arrows (→ ← ↔)
+    (0x2B00, 0x2BFF, 1.00),    # misc symbols and arrows
+    (0x3000, 0x9FFF, 1.00),    # CJK: full-width by construction
+    (0xFF00, 0xFFEF, 1.00),    # full-width Latin forms
+)
+#: Zero-advance code points: they modify the previous glyph instead of taking their own
+#: cell. Counting the variation selector that follows most emoji as half a Latin character
+#: inflates every emoji by that much again.
+_ZERO_WIDTH: frozenset[int] = frozenset({0xFE0E, 0xFE0F, 0x200D, 0x200B, 0x20E3})
+
+
+def _advance(ch: str) -> float:
+    """The advance of one character, in em units."""
+    known = _EM.get(ch)
+    if known is not None:
+        return known
+    code = ord(ch)
+    if code in _ZERO_WIDTH:
+        return 0.0
+    for start, end, em in _WIDE_RANGES:
+        if start <= code <= end:
+            return em
+    if 0x2640 <= code <= 0x2642:  # ♀ ♂, drawn about as wide as a digit
+        return 0.70
+    return _DEFAULT_EM
+
+
 def text_width(
     text: str, font_size: float, *, bold: bool = False, mono: bool = False
 ) -> float:
@@ -61,11 +105,12 @@ def text_width(
 
     Bold Roboto is a little wider; ``bold`` scales the estimate by 3%.
     ``mono`` switches to the fixed advance of a monospaced face, which
-    the proportional table badly under-reads.
+    the proportional table badly under-reads. Characters outside the Latin table are
+    measured by :func:`_advance`, which knows that an emoji is not half a letter wide.
     """
     if mono:
         return len(text) * _MONO_EM * font_size * (1.03 if bold else 1.0)
-    ems = sum(_EM.get(ch, _DEFAULT_EM) for ch in text)
+    ems = sum(_advance(ch) for ch in text)
     return ems * font_size * (1.03 if bold else 1.0)
 
 

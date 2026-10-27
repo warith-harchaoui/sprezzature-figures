@@ -66,6 +66,11 @@ TOP = 236      # room for title, subtitle and the rotated column names
 MARGIN = 48
 PAD_B = 86     # bottom band for the Σ row + the one-line "bilan"
 SUBTITLE = "Column interrupts · row gets interrupted · cell counts the interruptions"
+#: The one-line summary under the grid, as two templates taking ``{count}``: the speaker's
+#: name is drawn separately, in their own colour, so only the phrase around it is text to
+#: translate. A host page in another language passes its own.
+CUTTER_SUMMARY = "interrupts most ({count})"
+TARGET_SUMMARY = "is interrupted most ({count})"
 TITLE = "Who talks over whom"
 
 
@@ -97,7 +102,11 @@ _WHEEL: List[str] = [
 ]
 
 
-def _person_colors(order: List[str], accessibility: str = "universal") -> Dict[str, str]:
+def _person_colors(
+    order: List[str],
+    accessibility: str = "universal",
+    colors: "Dict[str, str] | None" = None,
+) -> Dict[str, str]:
     """Map each speaker to a stable, CVD-safe, contrast-safe hue.
 
     The same speaker keeps the same colour across renders (and cycles past the
@@ -105,8 +114,16 @@ def _person_colors(order: List[str], accessibility: str = "universal") -> Dict[s
     accessibility level (identity at ``"universal"``), so ``--accessibility
     deuteranopia`` and friends remap the wheel when sprezzature-colors is
     co-installed.
+
+    ``colors`` lets a host page impose its own ``{name: "#RRGGBB"}``: embedded in a
+    document that already gives each speaker a colour (a transcript view, a legend), a
+    figure that picks different hues for the same people reads as a picture borrowed from
+    elsewhere. A name absent from the mapping keeps its place on the house wheel, so a
+    partial mapping is safe, and the accessibility levelling still runs over the result.
     """
     base = {name: _WHEEL[i % len(_WHEEL)] for i, name in enumerate(order)}
+    if colors:
+        base.update({name: colors[name] for name in base if name in colors})
     return leveled_colors(base, accessibility)
 
 
@@ -203,6 +220,10 @@ def build_svg(
     subtitle: str = SUBTITLE,
     row_total_label: str = "Σ taken",
     col_total_label: str = "Σ made",
+    cutter_summary: str = CUTTER_SUMMARY,
+    target_summary: str = TARGET_SUMMARY,
+    description: str = "",
+    colors: "Dict[str, str] | None" = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -238,9 +259,10 @@ def build_svg(
         See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
     """
     rows = data if data else DEMO_DATA
+    is_demo = not data
     order, m, made, got = _aggregate(rows)
     n = len(order)
-    color_of = _person_colors(order, accessibility)
+    color_of = _person_colors(order, accessibility, colors)
     hi = max([v for r in m.values() for v in r.values()] + [1])
 
     # Centre the content block (row-label gutter + the (n+1)-wide grid) inside a
@@ -270,19 +292,20 @@ def build_svg(
     top_cutter = max(order, key=lambda s: made[s])
     top_target = max(order, key=lambda s: got[s])
     hot = max(((a, b, m[a][b]) for a in order for b in order if a != b), key=lambda t: t[2])
-    a11y_desc = (
-        f"Directed interruption matrix across {n} speakers. Each "
-        "colonne est un intervenant qui coupe la parole, chaque ligne un "
-        "speaker being interrupted; a cell gives how many times the "
+    # One language throughout: this description was half English and half French, switching
+    # mid-sentence ("Each colonne est un intervenant"), which a screen reader reads out as
+    # written. The closing caveat belongs to the demo rows and is dropped for caller data.
+    a11y_desc = description or (
+        f"Directed interruption matrix across {n} speakers. Each column is a speaker who "
+        "interrupts, each row a speaker being interrupted; a cell gives how many times the "
         "person in a column interrupted the person in that row; the cell is tinted in the "
-        "interrupter's colour, with opacity proportional to the count. "
-        "La diagonale est vide. La colonne de droite totalise les interruptions "
-        "taken per row, the bottom row the interruptions made per "
-        f"column. {xml_escape(top_cutter)} interrupts most ({made[top_cutter]} "
-        f"times), {xml_escape(top_target)} is interrupted most "
+        "interrupter's colour, with opacity proportional to the count. The diagonal is "
+        "empty. The right-hand column totals the interruptions taken per row, the bottom "
+        f"row the interruptions made per column. {xml_escape(top_cutter)} interrupts most "
+        f"({made[top_cutter]} times), {xml_escape(top_target)} is interrupted most "
         f"({got[top_target]} times); the most frequent exchange is "
-        f"{xml_escape(hot[1])} coupant {xml_escape(hot[0])} {hot[2]} fois. "
-        "Illustrative data."
+        f"{xml_escape(hot[1])} cutting {xml_escape(hot[0])} {hot[2]} times."
+        + (" Illustrative data." if is_demo else "")
     )
 
     p: List[str] = [
@@ -436,9 +459,9 @@ def build_svg(
     p.append(
         f'<text x="{w / 2:.1f}" y="{by:.1f}" text-anchor="middle" font-size="15" fill="{SECONDARY}">'
         f'<tspan font-weight="700" fill="{color_of[top_cutter]}">{xml_escape(top_cutter)}</tspan>'
-        f" interrupts most ({made[top_cutter]}) · "
+        f" {xml_escape(cutter_summary.format(count=made[top_cutter]))} · "
         f'<tspan font-weight="700" fill="{color_of[top_target]}">{xml_escape(top_target)}</tspan>'
-        f" is interrupted most ({got[top_target]})</text>"
+        f" {xml_escape(target_summary.format(count=got[top_target]))}</text>"
     )
 
     if mode == "self-contained":
@@ -457,6 +480,10 @@ def make_interruption_matrix(
     subtitle: str = SUBTITLE,
     row_total_label: str = "Σ taken",
     col_total_label: str = "Σ made",
+    cutter_summary: str = CUTTER_SUMMARY,
+    target_summary: str = TARGET_SUMMARY,
+    description: str = "",
+    colors: "Dict[str, str] | None" = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -475,7 +502,8 @@ def make_interruption_matrix(
     svg = build_svg(
         data=data, title=title, subtitle=subtitle,
         row_total_label=row_total_label, col_total_label=col_total_label,
-        mode=mode, accessibility=accessibility, theme=theme,
+        cutter_summary=cutter_summary, target_summary=target_summary,
+        description=description, colors=colors, mode=mode, accessibility=accessibility, theme=theme,
     )
     dest = Path(out) if out else svg_example_path(__file__, "interruption-matrix")
     return write_svg(dest, svg, theme=theme)

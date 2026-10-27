@@ -46,9 +46,21 @@ DEMO_DATA: List[Dict[str, Any]] = [
 
 
 def _series_colors(
-    series: List[str], accessibility: str = "universal", theme: str = "corporate"
+    series: List[str],
+    accessibility: str = "universal",
+    theme: str = "corporate",
+    colors: Optional[Dict[str, str]] = None,
 ) -> Dict[str, str]:
-    return cycle_hues(series, accessibility, theme=theme)
+    """One hue per series, with the host page's own mapping taking precedence.
+
+    ``colors`` is how a figure embedded in a document keeps that document's colours: a
+    series absent from the mapping keeps its place on the house wheel, so a partial mapping
+    is safe.
+    """
+    base = cycle_hues(series, accessibility, theme=theme)
+    if colors:
+        base.update({name: colors[name] for name in base if name in colors})
+    return base
 
 
 def build_svg(
@@ -57,6 +69,7 @@ def build_svg(
     subtitle: str = "Sessions per hour by platform",
     width: int = 745,
     height: int = 480,
+    series_colors: Optional[Dict[str, str]] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
     x_label: str = "Hour of Day",
@@ -117,7 +130,7 @@ def build_svg(
         if r["platform"] not in seen_platforms:
             seen_platforms.append(r["platform"])
     series = [s for s in PLATFORMS if s in seen_platforms] + [s for s in seen_platforms if s not in PLATFORMS]
-    colors = _series_colors(series, accessibility, theme=theme)
+    colors = _series_colors(series, accessibility, theme=theme, colors=series_colors)
 
     lookup: Dict[tuple, float] = {(r["platform"], float(r["hour"])): float(r["sessions"]) for r in rows}
 
@@ -312,6 +325,7 @@ def make_line_multi(
     subtitle: str = "Sessions per hour by platform",
     width: int = 745,
     height: int = 480,
+    series_colors: Optional[Dict[str, str]] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
     x_label: str = "Hour of Day",
@@ -359,7 +373,7 @@ def make_line_multi(
     True
     """
     svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
-                     mode=mode, accessibility=accessibility, x_label=x_label, y_label=y_label,
+                     series_colors=series_colors, mode=mode, accessibility=accessibility, x_label=x_label, y_label=y_label,
                      log_x=log_x, log_y=log_y, theme=theme, x_domain=x_domain,
                      x_tick_step=x_tick_step, y_domain=y_domain, y_tick_step=y_tick_step,
                      y_minor_step=y_minor_step)

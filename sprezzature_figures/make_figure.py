@@ -375,6 +375,31 @@ def validate_figure_input(
     return issues
 
 
+def _without_embedded_fonts(svg: str) -> str:
+    """Return *svg* with the embedded ``@font-face`` block removed, byte for byte.
+
+    Every figure carries its own typeface so it renders identically anywhere, which is
+    right for a figure that travels alone. It is the wrong trade for a figure *embedded in
+    a page that already serves those faces*: six figures inlined into one report is the
+    same 430 kB of base64 Roboto repeated six times, 2.5 MB of a document whose text is
+    already in the right font.
+
+    The block is rebuilt from :mod:`.fonts` and removed by equality, never matched by
+    pattern, so a figure's own ``<defs>`` or ``<style>`` cannot be swept up by accident.
+    """
+    from .fonts import DEFAULT_SVG_FACES, svg_faces_for_theme, svg_font_defs
+
+    candidates = {DEFAULT_SVG_FACES}
+    for theme in ("corporate", "academic"):
+        faces = svg_faces_for_theme(theme)
+        if faces:
+            candidates.add(tuple(faces))
+    out = svg
+    for faces in candidates:
+        out = out.replace(svg_font_defs(faces), "", 1)
+    return out
+
+
 def make_figure(kind: str, data: Any = None, **kwargs: Any) -> FigurePath:
     """
     Render a figure of the given kind and return the output path.
@@ -410,6 +435,10 @@ def make_figure(kind: str, data: Any = None, **kwargs: Any) -> FigurePath:
         lightened chrome so the figure reads on a dark surface. Handled by
         make_figure itself (SVG output), not passed to the generator; see
         :mod:`sprezzature_figures.darkmode`.
+        ``embed_fonts`` (bool, default True): carry the house typeface inside the
+        SVG. Pass False when the figure is inlined into a page that already serves
+        those faces, so the same 430 kB of base64 is not repeated once per figure.
+        Handled by make_figure itself (SVG output), not passed to the generator.
 
     Returns
     -------
@@ -446,6 +475,10 @@ def make_figure(kind: str, data: Any = None, **kwargs: Any) -> FigurePath:
     # it before the kwargs ever reach a figure script (which would reject it),
     # and apply it to the rendered SVG at the end (see :mod:`.darkmode`).
     dark = bool(kwargs.pop("dark", False))
+    # ``embed_fonts`` is a make_figure-level option for the same reason ``dark`` is: it
+    # describes the destination, not the chart. False suits a figure inlined into a page
+    # that already serves the house faces; see :func:`_without_embedded_fonts`.
+    embed_fonts = bool(kwargs.pop("embed_fonts", True))
     # One normalisation, at the one door every caller comes through: all
     # 162 generators gain DataFrame support here rather than each one
     # growing its own conversion.
@@ -522,10 +555,15 @@ def make_figure(kind: str, data: Any = None, **kwargs: Any) -> FigurePath:
         raise RuntimeError(
             f"make_figure({canonical!r}) did not produce an output file at {result_path}"
         )
-    if dark and result_path.suffix.lower() == ".svg":
-        from .darkmode import to_dark
+    if result_path.suffix.lower() == ".svg" and (dark or not embed_fonts):
+        rendered = result_path.read_text(encoding="utf-8")
+        if dark:
+            from .darkmode import to_dark
 
-        result_path.write_text(to_dark(result_path.read_text(encoding="utf-8")), encoding="utf-8")
+            rendered = to_dark(rendered)
+        if not embed_fonts:
+            rendered = _without_embedded_fonts(rendered)
+        result_path.write_text(rendered, encoding="utf-8")
     return as_figure_path(result_path)
 
 

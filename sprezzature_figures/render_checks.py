@@ -432,10 +432,26 @@ def _text_labels(root: ET.Element) -> list[_Label]:
 
 
 def _canvas(root: ET.Element) -> tuple[float, float]:
+    """The visible canvas SIZE, from the viewBox when there is one."""
+    return _canvas_box(root)[2:]
+
+
+def _canvas_box(root: ET.Element) -> tuple[float, float, float, float]:
+    """The visible canvas as ``(min_x, min_y, width, height)``.
+
+    A viewBox may start anywhere, not only at ``0 0``: a figure needing room to the left of
+    its drawing (a long label hanging off a ring, say) can grow the canvas around the
+    coordinates it already has rather than moving every one of them. Reading only
+    ``viewBox[2:]`` and comparing labels against ``0..width`` would report every such label
+    as clipped while it is plainly visible, so the origin travels with the size.
+    """
     view_box = (root.get("viewBox") or "").split()
     if len(view_box) == 4:
-        return _float(view_box[2], 0.0), _float(view_box[3], 0.0)
-    return _float(root.get("width"), 0.0), _float(root.get("height"), 0.0)
+        return (
+            _float(view_box[0], 0.0), _float(view_box[1], 0.0),
+            _float(view_box[2], 0.0), _float(view_box[3], 0.0),
+        )
+    return 0.0, 0.0, _float(root.get("width"), 0.0), _float(root.get("height"), 0.0)
 
 
 def _check_overlaps(labels: Sequence[_Label]) -> list[RenderFinding]:
@@ -481,24 +497,45 @@ def _check_overlaps(labels: Sequence[_Label]) -> list[RenderFinding]:
     return findings
 
 
-def _check_inside_canvas(labels: Sequence[_Label], width: float, height: float) -> list[RenderFinding]:
+#: Why there is no safety margin here, having tried one. A label whose estimated box
+#: merely *approaches* the edge can still be clipped, because the per-character table is
+#: an estimate: measured on "Général Dominique Trinquand" labelling a speaking-time ring,
+#: the computed left edge was 12.9 px of a 1120 px canvas, and the raster had ink in
+#: column 0 with the capital cut. A margin to catch that, flat (16 px) or proportional
+#: (8 % of the label's own width), accused 114 of the 343 committed examples, whose chrome
+#: legitimately sits flush against the edge. A check that cries wolf on a third of the
+#: catalogue is worse than one that misses a graze, so the rule stayed "outside the
+#: canvas", and the clearance is reserved where it belongs: by the generator laying the
+#: figure out, which knows what it is drawing (see ``make_speaking_time._fit_canvas``).
+
+
+def _check_inside_canvas(
+    labels: Sequence[_Label],
+    width: float,
+    height: float,
+    min_x: float = 0.0,
+    min_y: float = 0.0,
+) -> list[RenderFinding]:
     if not width or not height:
         return []
+    left, right = min_x - 1, min_x + width + 1
+    top, bottom = min_y - 1, min_y + height + 1
     findings: list[RenderFinding] = []
     for label in labels:
         debut, fin = label.box
         # Rotated text is anchored at a point and drawn along its own axis:
         # the horizontal extent computed above does not describe it.
         if label.rotated:
-            dehors = not (-1 <= label.x <= width + 1) or not (-1 <= label.y <= height + 1)
+            dehors = not (left <= label.x <= right) or not (top <= label.y <= bottom)
         else:
-            dehors = debut < -1 or fin > width + 1 or label.y < -1 or label.y > height + 1
+            dehors = debut < left or fin > right or label.y < top or label.y > bottom
         if dehors:
             findings.append(
                 RenderFinding(
                     "text_outside_canvas",
                     "a label is drawn outside the canvas and will be clipped",
-                    f"{label.text!r} at x={label.x:.0f} y={label.y:.0f} (canvas {width:.0f}x{height:.0f})",
+                    f"{label.text!r} at x={label.x:.0f} y={label.y:.0f} "
+                    f"(canvas {width:.0f}x{height:.0f} from {min_x:.0f},{min_y:.0f})",
                 )
             )
     return findings
@@ -1001,12 +1038,12 @@ def check_render(
 
     ancestors = {child: parent for parent in root.iter() for child in parent}
     labels = _text_labels(root)
-    width, height = _canvas(root)
+    min_x, min_y, width, height = _canvas_box(root)
 
     findings: list[RenderFinding] = []
     findings += _check_accessible_names(root)
     findings += _check_text_is_text(root, labels)
-    findings += _check_inside_canvas(labels, width, height)
+    findings += _check_inside_canvas(labels, width, height, min_x, min_y)
     findings += _check_overlaps(labels)
     findings += _check_legible_size(labels, _display_scale(root))
     findings += _check_identical_ticks(labels)
