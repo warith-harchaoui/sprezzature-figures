@@ -8949,7 +8949,7 @@
         "description": ""
       },
       "colors": {
-        "type": "str",
+        "type": "str_map",
         "default": null,
         "choices": [],
         "description": ""
@@ -9778,7 +9778,7 @@
         "description": "Canvas size in pixels."
       },
       "series_colors": {
-        "type": "str",
+        "type": "str_map",
         "default": null,
         "choices": [],
         "description": ""
@@ -16815,7 +16815,7 @@
         "description": ""
       },
       "colors": {
-        "type": "str",
+        "type": "str_map",
         "default": null,
         "choices": [],
         "description": "The host page's {name: colour} mapping. Forwarded to build_svg."

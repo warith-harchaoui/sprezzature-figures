@@ -54,7 +54,7 @@ __all__ = [
 ]
 
 OptionType = Literal[
-    "str", "int", "float", "bool", "str_list", "float_list", "float_pair"
+    "str", "int", "float", "bool", "str_list", "float_list", "float_pair", "str_map"
 ]
 
 #: Parameters that are not options: the rows themselves, and the output
@@ -172,6 +172,12 @@ _PASS_THROUGH_RE = re.compile(r"^forwarded to [\w.:`~ ]+\.?$", re.IGNORECASE)
 #: the normalised string, since ``"Optional[float]"`` contains ``"float"``.
 _ANNOTATION_TYPES: tuple[tuple[str, OptionType], ...] = (
     ("bool", "bool"),
+    # Before the scalar entries, and before "str" above all: "dict[str,str]" contains
+    # "str", so a colour mapping used to be read as a caption. A test that probes every
+    # text option by rendering it with a sentinel then reported the mapping as "an option
+    # that never reaches the drawing", which was true of the sentinel and false of the
+    # option.
+    ("dict", "str_map"),
     ("list[str]", "str_list"),
     ("list[float]", "float_list"),
     ("list[int]", "float_list"),
@@ -455,6 +461,20 @@ def coerce_option(option: OptionDefinition, raw: Any) -> Any:
                 else [part for part in str(text).split(",") if part.strip()]
             )
             value = [float(item) for item in items]
+        elif option.type == "str_map":
+            # A mapping a caller already holds (the API, a notebook, a host application
+            # passing its own palette) goes through untouched; a caller holding a command
+            # line writes "Ada=#0e7490,Alan=#c2410c".
+            if isinstance(raw, dict):
+                value = {str(k): str(v) for k, v in raw.items()}
+            else:
+                pairs = [part for part in str(text).split(",") if part.strip()]
+                if any("=" not in part for part in pairs):
+                    raise ValueError("expected 'key=value' pairs separated by commas")
+                value = {
+                    part.split("=", 1)[0].strip(): part.split("=", 1)[1].strip()
+                    for part in pairs
+                }
         elif option.type == "float_pair":
             parts = raw if isinstance(raw, (list, tuple)) else str(text).split(",")
             pair = [float(part) for part in parts]
@@ -496,6 +516,7 @@ def _type_hint(option: OptionDefinition) -> str:
         "str_list": "a comma-separated list",
         "float_list": "a comma-separated list of numbers",
         "float_pair": "two numbers as 'low,high'",
+        "str_map": "'key=value' pairs separated by commas",
         "str": "text",
     }[option.type]
 
