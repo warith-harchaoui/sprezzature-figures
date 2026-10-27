@@ -15,12 +15,12 @@ Warith HARCHAOUI <warithmetics@deraison.ai>
 
 from __future__ import annotations
 
+from ._textfit_bridge import text_width
 from .darkmode import to_dark
 from .frames import as_rows
 from .make_figure import get_figure_definition, list_kinds, make_figure, validate_figure_input
 from .notebook import FigurePath
 from .redraw import RedrawResult, redraw
-from ._textfit_bridge import text_width
 from .render_checks import RenderFinding, check_render
 
 __all__ = [
