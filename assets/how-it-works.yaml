@@ -1,0 +1,100 @@
+# How this brick works, as drawn in README.md and LISEZMOI.md.
+#
+# The renderer lives in the hub, at sprezzature/scripts/make_brick_diagram.py,
+# because the ten bricks share one drawing and ten generators would have become
+# ten dialects of it. The content lives here, because the brick is what knows
+# what is true about itself.
+#
+# This figure is deliberately not a 168th catalogue kind: a flow diagram has no
+# scale and no encoding, and the number 167 is claimed on the website, in the
+# films, and by several guards.
+#
+# Redraw after any edit:
+#   python ~/sprezzature/scripts/make_brick_diagram.py sprezzature-figures
+package: sprezzature-figures
+
+en:
+  title: How sprezzature-figures works
+  subtitle: Chart kinds written as SVG by hand, and two ways of looking at what came out.
+  alt: >-
+    Flow diagram. At the top, your rows or somebody else's chart feed two lanes.
+    The left lane draws: it ranks the kinds that serve your goal, writes the SVG
+    directly with no charting library underneath, and can redraw a screenshot of
+    someone else's chart without inventing its numbers. The right lane audits: a
+    static check reads any SVG at all for labels printed over each other and names
+    off the canvas, then the Ralph Eyeball Loop renders the figure, looks at it,
+    and refines the source. Both meet in one outcome, a figure that is correct
+    before it is beautiful.
+  input:
+    label: Your rows, or somebody else's chart
+    note: "a pandas, polars or Arrow frame, a dict of columns, a CSV. Or a screenshot of a figure that is hard to read."
+  lanes:
+    - title: "Make: draw it"
+      steps:
+        - label: Pick the kind, or ask for one
+          note: "recommend ranks by what the figure is for: comparison, trend, distribution, composition, relationship, flow, hierarchy, geography, model evaluation. Readability alone rarely separates the candidates; the goal is what makes the ranking decisive."
+        - label: Write the SVG directly
+          note: no charting library underneath, one self-contained generator per kind, and never ASCII art
+        - label: Or redraw a picture of a chart
+          note: "a vision model reads the design, which pixels carry, and never the numbers, which they usually do not. Every result says whether it got your data, read it off the image, or fell back to a demo, and that caption is written onto the figure itself."
+      result:
+        label: An SVG
+        note: PNG and PDF through the same renderer that rasterises TikZ and Mermaid
+    - title: "Audit: the facts first, the judgement after"
+      steps:
+        - label: A static check, on any SVG at all
+          note: "two labels printed on top of each other, a name running off the canvas, a value drawn in the colour of the bar behind it, demo chrome that survived into a real render, a title the generator was given and quietly dropped."
+        - label: Say so when there is nothing left to read
+          note: "a figure whose text was converted to outlines has no text in it, no screen reader can read it, and every rule would pass on an empty sight. It reports that rather than returning the empty list that looks like a pass."
+        - label: Then the Ralph Eyeball Loop
+          note: render it, look at the picture, refine the source, render again. The model is never allowed to contradict a fact the static check established.
+      result:
+        label: Findings, each with a severity
+        note: "error is wrong whoever drew the figure and whatever it is for; warning is wrong under this house's charter. Exit 1 on any, so it gates a commit."
+  outcome:
+    label: A figure that is correct before it is beautiful, and both before it is published
+    note: "The published work on visualisation linting checks a chart specification, so it has nothing to say about a figure that was not written in one. This reads the drawing, which is why it can audit a figure it did not draw."
+  footer: What it will never tell you is that the chart type suits the question. That is a judgement, and the loop is where a model is asked for one.
+
+fr:
+  title: Comment fonctionne sprezzature-figures
+  subtitle: Des types de figures écrits en SVG avec soin, et deux façons de regarder ce qui en sort.
+  alt: >-
+    Schéma de flux. En haut, vos données ou la figure de quelqu'un d'autre
+    alimentent deux voies. La voie de gauche dessine : elle classe les types selon
+    votre objectif, écrit le SVG directement sans bibliothèque de tracé dessous, et
+    sait redessiner la capture d'écran d'une figure sans en inventer les nombres.
+    La voie de droite contrôle : un examen statique lit n'importe quel SVG pour y
+    trouver les étiquettes superposées et les noms sortis du cadre, puis la boucle
+    Ralph rend la figure, la regarde, et corrige la source. Les deux se rejoignent
+    en un seul résultat, une figure juste avant d'être belle.
+  input:
+    label: Vos données, ou la figure de quelqu'un d'autre
+    note: "un tableau pandas, polars ou Arrow, un dictionnaire de colonnes, un CSV. Ou la capture d'écran d'une figure difficile à lire."
+  lanes:
+    - title: "Fabriquer : la dessiner"
+      steps:
+        - label: Choisir le type, ou en demander un
+          note: "recommend classe selon ce à quoi sert la figure : comparaison, tendance, distribution, composition, relation, flux, hiérarchie, géographie, évaluation de modèle. La lisibilité seule départage rarement les candidats ; c'est l'objectif qui rend le classement décisif."
+        - label: Écrire le SVG directement
+          note: aucune bibliothèque de tracé dessous, un générateur autonome par type, et jamais d'art ASCII
+        - label: Ou redessiner l'image d'une figure
+          note: "un modèle de vision lit la conception, que les pixels portent, et jamais les nombres, qu'ils ne portent généralement pas. Chaque résultat dit s'il a reçu vos données, les a lues sur l'image, ou s'est rabattu sur un jeu de démonstration, et cette mention est écrite sur la figure elle-même."
+      result:
+        label: Un SVG
+        note: PNG et PDF par le même rendu qui rastérise TikZ et Mermaid
+    - title: "Contrôler : les faits d'abord, le jugement ensuite"
+      steps:
+        - label: Un examen statique, sur n'importe quel SVG
+          note: "deux étiquettes imprimées l'une sur l'autre, un nom qui sort du cadre, une valeur tracée dans la couleur de la barre derrière elle, des ornements de démonstration restés dans un vrai rendu, un titre donné au générateur et perdu en route."
+        - label: Le dire quand il n'y a plus rien à lire
+          note: "une figure dont le texte a été vectorisé n'a plus de texte, aucun lecteur d'écran ne la lit, et chaque règle passerait sur une page vide. Elle le signale plutôt que de rendre la liste vide qui ressemble à un succès."
+        - label: Puis la boucle Ralph
+          note: rendre, regarder l'image, corriger la source, rendre à nouveau. Le modèle n'a jamais le droit de contredire un fait établi par l'examen statique.
+      result:
+        label: Des constats, chacun avec sa gravité
+        note: "une erreur est fautive quel que soit l'auteur et quel que soit l'usage ; un avertissement est fautif au regard de la charte de la maison. Code de sortie 1 au premier, ce qui en fait une barrière avant commit."
+  outcome:
+    label: Une figure juste avant d'être belle, et les deux avant d'être publiée
+    note: "Les travaux publiés sur le contrôle des visualisations examinent une spécification de graphique, et n'ont donc rien à dire d'une figure qui n'en a jamais eu. Celui-ci lit le dessin, et c'est pourquoi il peut contrôler une figure qu'il n'a pas tracée."
+  footer: Ce qu'il ne vous dira jamais, c'est que le type de figure convient à la question. C'est un jugement, et c'est à la boucle qu'on en demande un.

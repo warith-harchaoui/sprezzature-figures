@@ -13,6 +13,10 @@ Fait partie de la suite [sprezzature](https://sprezzature.ai/).
 
 ---
 
+## Comment ça marche
+
+![Schéma de flux. En haut, vos données ou la figure de quelqu'un d'autre alimentent deux voies. La voie de gauche dessine : elle classe les types selon votre objectif, écrit le SVG directement sans bibliothèque de tracé dessous, et sait redessiner la capture d'écran d'une figure sans en inventer les nombres. La voie de droite contrôle : un examen statique lit n'importe quel SVG pour y trouver les étiquettes superposées et les noms sortis du cadre, puis la boucle Ralph rend la figure, la regarde, et corrige la source. Les deux se rejoignent en un seul résultat, une figure juste avant d'être belle.](https://raw.githubusercontent.com/warith-harchaoui/sprezzature-figures/main/assets/comment-ca-marche.svg)
+
 ## Installation
 
 Nécessite **Python 3.10–3.13**. Testé sur 🍎 macOS, 🐧 Ubuntu et 🪟 Windows
@@ -27,7 +31,6 @@ Extras optionnels (combinables, ex. `"sprezzature-figures[cli,dataviz]"`) :
 
 | Extra | Ajoute |
 |-------|--------|
-| `[cli]` | l'interface Click, jumelle de la CLI `make-figure` toujours installée |
 | `[dataviz]` | networkx / scikit-learn / pandas / shapely / pyproj / pyyaml — le côté données (tableaux, géométrie, modèles) derrière le catalogue, l'inférence causale et l'explicabilité ; rien ici ne dessine |
 | `[studio]` | Sprezzature Studio : l'application NiceGUI + le copilote Ralph (voir plus bas) |
 | `[api]` | Surface HTTP FastAPI (voir plus bas) |
@@ -201,9 +204,8 @@ make-figure recommend --data budget.csv --intent hierarchy
 
 `recommend`, `redraw`, `check`, `list` et `describe` sont des sous-commandes
 des deux lignes de commande : `make-figure recommend ...` et
-`sprezzature-figures recommend ...` font la même chose par le même code. Le
-jumeau Click (extra `[cli]`) existe pour son `--help` plus agréable, pas pour
-un périmètre plus large.
+`sprezzature-figures recommend ...` font la même chose, parce que c'est le
+même appelable sous deux noms. Les deux sont toujours installés.
 
 Ajoutez `--intent BUT` (`comparison`, `trend`, `distribution`, `composition`,
 `relationship`, `flow`, `hierarchy`, `geography`, `model_evaluation`) pour
@@ -407,7 +409,7 @@ sprezzature-figures/
 ├── sprezzature_figures/
 │   ├── __init__.py        # exporte make_figure, list_kinds, get_figure_definition
 │   ├── make_figure.py     # répartiteur adossé au registre + CLI argparse
-│   ├── cli.py             # point d'entrée Click (optionnel, extra [cli])
+│   ├── cli.py             # la ligne de commande, en click (make-figure ET sprezzature-figures)
 │   └── catalog/           # registre des figures : FigureDefinition + figures.json
 ├── scripts/
 │   ├── make_treemap.py            # script autonome par type de graphique
@@ -438,7 +440,7 @@ Ce dépôt contient deux choses :
 
 - **La bibliothèque** (`sprezzature_figures.make_figure`, `make-figure`,
   CLI `sprezzature-figures`) : tout ce qui précède, sans dépendance
-  supplémentaire au-delà de `[cli]`/`[dataviz]`.
+  supplémentaire au-delà de `[dataviz]`.
 - **Sprezzature Studio** (`sprezzature_figures.studio`, CLI
   `sprezzature-studio`) : une application NiceGUI locale pour importer un
   CSV/TSV/XLSX/JSON, choisir un type de graphique, associer les colonnes, puis
@@ -483,14 +485,12 @@ joignable sur le réseau de deux façons : comme une simple API HTTP, et
 comme un outil MCP. Le MCP (_Model Context Protocol_) est une norme qui
 permet à un assistant IA d'appeler directement les fonctions d'un
 programme, de la même façon qu'un humain les appellerait depuis un script,
-sans avoir à lire une documentation et à deviner. Quatre interfaces
-exposent au total le même dispatcheur `make_figure()`, avec les mêmes
-commandes :
+sans avoir à lire une documentation et à deviner. Trois voies mènent au
+même dispatcheur `make_figure()`, avec les mêmes commandes :
 
 | Interface | Toujours installée ? | Point d'entrée |
 |---|---|---|
-| CLI (argparse) | Oui | `make-figure` |
-| CLI (Click) | Extra `[cli]` | `sprezzature-figures` |
+| CLI (click) | Oui | `make-figure` et `sprezzature-figures`, un seul appelable |
 | API HTTP (FastAPI) | Extra `[api]` | `uvicorn sprezzature_figures.api:app` |
 | Outils MCP (fastapi-mcp) | Extras `[api,mcp]` | `sprezzature-figures-mcp` |
 
