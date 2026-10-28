@@ -13,6 +13,12 @@ build/
 !assets/svg-examples/*.svg
 !assets/landscape.svg
 !assets/paysage.svg
+# The how-it-works figure README.md and LISEZMOI.md open with. Generated,
+# like everything the blanket rule above is for, and tracked anyway: a
+# README cannot show an image a clone does not carry, and the raw URL it
+# points at is served from this repository.
+!assets/how-it-works.svg
+!assets/comment-ca-marche.svg
 
 .private/
 sideprojects/
