@@ -14,7 +14,9 @@ helper makes that layout *adaptive to the actual string*, in any language:
   fitting.
 - :func:`wrap_to_width` greedily wraps a string to a pixel budget and then
   enforces the house rule that a line may never end on a dangling function word
-  ("of the" / "the" / "l'" ...), pulling such a word down to the next line.
+  ("of the" / "the" / "l'" ...), pulling such a word down to the next line. The
+  last line is exempt: nothing follows it, so its final word is the end of the
+  sentence rather than something left hanging.
 - :func:`fit_font_size` shrinks a font size until a string fits one line.
 
 Author
@@ -155,6 +157,11 @@ def wrap_to_width(text: str, max_px: float, font_size: float, *, bold: bool = Fa
         lines.append(cur)
 
     # Orphan pass: while a line ends on a function word, move that word down.
+    # It terminates because words only ever travel downward and the list of
+    # lines never grows: at worst every word ends up on the last line. That was
+    # not true while the pass below could open a new trailing line, and a
+    # sentence ending in a run of function words ("... says what it is for.")
+    # made the two rules hand the same word back and forth forever.
     changed = True
     while changed:
         changed = False
@@ -165,15 +172,15 @@ def wrap_to_width(text: str, max_px: float, font_size: float, *, bold: bool = Fa
                 lines[i] = " ".join(words_i)
                 lines[i + 1] = f"{moved} {lines[i + 1]}"
                 changed = True
-        # The last line may also strand an orphan ("... share of the"); if so and
-        # there is room to fold the previous word up would not help, so open a new
-        # trailing line to carry the dangling word rather than leave it hanging.
-        if lines and _ends_on_orphan(lines[-1]) and len(lines[-1].split()) > 1:
-            words_last = lines[-1].split()
-            moved = words_last.pop()
-            lines[-1] = " ".join(words_last)
-            lines.append(moved)
-            changed = True
+        # The last line is left alone, deliberately. A function word at the very
+        # end of the text is not dangling off anything: it is the last word of
+        # the sentence, and "the alt text they ask for." is how that sentence is
+        # written. The rule used to open a new trailing line to carry it, which
+        # on a sentence ending in a run of function words ("... says what it is
+        # for.") dragged each one onto a line of its own and, together with the
+        # pass above, never terminated at all. Checked before removing it, by
+        # instrumenting this branch and running the whole render matrix: it
+        # fired on nothing, so no committed figure moves.
     return [ln for ln in lines if ln]
 
 
@@ -181,7 +188,8 @@ if __name__ == "__main__":  # tiny self-test
     assert text_width("", 20) == 0
     assert text_width("mmm", 20) > text_width("iii", 20)
     w = wrap_to_width("The ring is one full year; follow it clockwise from the top.", 180, 15)
-    assert all(not _ends_on_orphan(ln) for ln in w), w
+    # Every line but the last; the last one ends the sentence.
+    assert all(not _ends_on_orphan(ln) for ln in w[:-1]), w
     fr = wrap_to_width("La longueur de chaque arc est sa part de l’année entière.", 180, 15)
     assert all(not ln.rstrip().endswith(("’", "'")) for ln in fr), fr
     assert fit_font_size("Very wide title here", 60, 30) < 30
