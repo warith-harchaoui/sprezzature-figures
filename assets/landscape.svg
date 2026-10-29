@@ -1,223 +1,1805 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1224" height="1168" viewBox="0 0 1224 1168" role="img" aria-labelledby="sp-title sp-desc" font-family="Roboto, -apple-system, Helvetica, Arial, sans-serif"><title id="sp-title">Data viz tools in the Quadrant</title><desc id="sp-desc">A 2D positioning map of 37 data viz tools, Intuitive to Refined on the horizontal axis, Dynamic to Insightful on the vertical axis.</desc><style>.sp-dot{cursor:pointer}.sp-dot:hover circle,.sp-dot:focus circle{stroke-width:2.4}.sp-dot:hover,.sp-dot:focus{filter:brightness(1.08);outline:none}</style><line x1="169.2" y1="595.0" x2="1076.9" y2="595.0" stroke="#C7C7CC" stroke-width="1.2" stroke-dasharray="2,4"/><line x1="612.0" y1="1082.1" x2="612.0" y2="107.9" stroke="#C7C7CC" stroke-width="1.2" stroke-dasharray="2,4"/><text data-pole="right" x="1164.0" y="601.6" font-size="19" font-style="italic" fill="#6E6E73" text-anchor="end">Refined</text><text data-pole="left" x="60.0" y="601.6" font-size="19" font-style="italic" fill="#6E6E73" text-anchor="start">Intuitive</text><text data-pole="top" x="612.0" y="74.9" font-size="19" font-style="italic" fill="#6E6E73" text-anchor="middle">Insightful</text><text data-pole="bottom" x="612.0" y="1126.3" font-size="19" font-style="italic" fill="#6E6E73" text-anchor="middle">Dynamic</text><g class="sp-dot" tabindex="0" role="img" aria-label="Data viz tools: sprezzature-figures
-role: best
-axis1: 4.12
-axis2: 3.81"><circle cx="912.0" cy="314.5" r="5.75" fill="#FF3B30" stroke="white" stroke-width="1" opacity="0.95"/><title>Data viz tools: sprezzature-figures
-role: best
-axis1: 4.12
-axis2: 3.81</title></g><text x="899.5" y="318.7" font-size="12" fill="#1C1C1E" text-anchor="end">sprezzature-figures</text><g class="sp-dot" tabindex="0" role="img" aria-label="Data viz tools: Matplotlib
-role: competitor
-axis1: 3.86
-axis2: 1.29"><circle cx="893.0" cy="499.9" r="5.75" fill="#8DBAFF" stroke="white" stroke-width="1" opacity="0.95"/><title>Data viz tools: Matplotlib
-role: competitor
-axis1: 3.86
-axis2: 1.29</title></g><text x="905.5" y="504.1" font-size="12" fill="#1C1C1E" text-anchor="start">Matplotlib</text><g class="sp-dot" tabindex="0" role="img" aria-label="Data viz tools: Seaborn
-role: competitor
-axis1: 1.69
-axis2: 3.32"><circle cx="735.1" cy="350.4" r="5.75" fill="#9B99F0" stroke="white" stroke-width="1" opacity="0.95"/><title>Data viz tools: Seaborn
-role: competitor
-axis1: 1.69
-axis2: 3.32</title></g><text x="747.6" y="354.6" font-size="12" fill="#1C1C1E" text-anchor="start">Seaborn</text><g class="sp-dot" tabindex="0" role="img" aria-label="Data viz tools: Plotly / Dash
-role: competitor
-axis1: 2.21
-axis2: -3.63"><circle cx="772.7" cy="862.3" r="5.75" fill="#3FD6C7" stroke="white" stroke-width="1" opacity="0.95"/><title>Data viz tools: Plotly / Dash
-role: competitor
-axis1: 2.21
-axis2: -3.63</title></g><text x="760.2" y="866.5" font-size="12" fill="#1C1C1E" text-anchor="end">Plotly / Dash</text><g class="sp-dot" tabindex="0" role="img" aria-label="Data viz tools: Bokeh
-role: competitor
-axis1: 0.79
-axis2: -2.85"><circle cx="669.7" cy="804.9" r="5.75" fill="#229F73" stroke="white" stroke-width="1" opacity="0.95"/><title>Data viz tools: Bokeh
-role: competitor
-axis1: 0.79
-axis2: -2.85</title></g><text x="682.2" y="809.1" font-size="12" fill="#1C1C1E" text-anchor="start">Bokeh</text><g class="sp-dot" tabindex="0" role="img" aria-label="Data viz tools: Altair
-role: competitor
-axis1: 2.02
-axis2: 0.37"><circle cx="759.5" cy="568.1" r="5.75" fill="#5699DF" stroke="white" stroke-width="1" opacity="0.95"/><title>Data viz tools: Altair
-role: competitor
-axis1: 2.02
-axis2: 0.37</title></g><text x="772.0" y="572.3" font-size="12" fill="#1C1C1E" text-anchor="start">Altair</text><g class="sp-dot" tabindex="0" role="img" aria-label="Data viz tools: ggplot
-role: competitor
-axis1: 2.96
-axis2: 3.18"><circle cx="827.7" cy="361.2" r="5.75" fill="#8195E8" stroke="white" stroke-width="1" opacity="0.95"/><title>Data viz tools: ggplot
-role: competitor
-axis1: 2.96
-axis2: 3.18</title></g><text x="840.2" y="365.4" font-size="12" fill="#1C1C1E" text-anchor="start">ggplot</text><g class="sp-dot" tabindex="0" role="img" aria-label="Data viz tools: HoloViews
-role: competitor
-axis1: 0.81
-axis2: -2.60"><circle cx="671.2" cy="786.4" r="5.75" fill="#46CEAF" stroke="white" stroke-width="1" opacity="0.95"/><title>Data viz tools: HoloViews
-role: competitor
-axis1: 0.81
-axis2: -2.60</title></g><text x="658.7" y="790.6" font-size="12" fill="#1C1C1E" text-anchor="end">HoloViews</text><g class="sp-dot" tabindex="0" role="img" aria-label="Data viz tools: PyGWalker
-role: competitor
-axis1: -1.82
-axis2: -0.45"><circle cx="479.1" cy="628.3" r="5.75" fill="#F8918E" stroke="white" stroke-width="1" opacity="0.95"/><title>Data viz tools: PyGWalker
-role: competitor
-axis1: -1.82
-axis2: -0.45</title></g><text x="491.6" y="632.5" font-size="12" fill="#1C1C1E" text-anchor="start">PyGWalker</text><g class="sp-dot" tabindex="0" role="img" aria-label="Data viz tools: Streamlit
-role: competitor
-axis1: -1.99
-axis2: -1.54"><circle cx="467.4" cy="708.6" r="5.75" fill="#E3AB51" stroke="white" stroke-width="1" opacity="0.95"/><title>Data viz tools: Streamlit
-role: competitor
-axis1: -1.99
-axis2: -1.54</title></g><text x="479.9" y="712.8" font-size="12" fill="#1C1C1E" text-anchor="start">Streamlit</text><g class="sp-dot" tabindex="0" role="img" aria-label="Data viz tools: Gradio
-role: competitor
-axis1: -1.81
-axis2: -0.91"><circle cx="480.0" cy="662.2" r="5.75" fill="#D57460" stroke="white" stroke-width="1" opacity="0.95"/><title>Data viz tools: Gradio
-role: competitor
-axis1: -1.81
-axis2: -0.91</title></g><text x="492.5" y="666.4" font-size="12" fill="#1C1C1E" text-anchor="start">Gradio</text><g class="sp-dot" tabindex="0" role="img" aria-label="Data viz tools: Taipy
-role: competitor
-axis1: -1.93
-axis2: -1.26"><circle cx="471.2" cy="687.5" r="5.75" fill="#CC724B" stroke="white" stroke-width="1" opacity="0.95"/><title>Data viz tools: Taipy
-role: competitor
-axis1: -1.93
-axis2: -1.26</title></g><text x="483.7" y="691.7" font-size="12" fill="#1C1C1E" text-anchor="start">Taipy</text><g class="sp-dot" tabindex="0" role="img" aria-label="Data viz tools: D3.js
-role: right
-axis1: 4.12
-axis2: -3.18"><circle cx="912.0" cy="829.4" r="5.75" fill="#007AFF" stroke="white" stroke-width="1" opacity="0.95"/><title>Data viz tools: D3.js
-role: right
-axis1: 4.12
-axis2: -3.18</title></g><text x="924.5" y="833.6" font-size="12" fill="#1C1C1E" text-anchor="start">D3.js</text><g class="sp-dot" tabindex="0" role="img" aria-label="Data viz tools: Chart.js
-role: competitor
-axis1: 0.01
-axis2: -1.05"><circle cx="612.4" cy="672.3" r="5.75" fill="#62BD80" stroke="white" stroke-width="1" opacity="0.95"/><title>Data viz tools: Chart.js
-role: competitor
-axis1: 0.01
-axis2: -1.05</title></g><text x="624.9" y="676.5" font-size="12" fill="#1C1C1E" text-anchor="start">Chart.js</text><g class="sp-dot" tabindex="0" role="img" aria-label="Data viz tools: ECharts
-role: competitor
-axis1: 3.12
-axis2: -3.81"><circle cx="839.2" cy="875.5" r="5.75" fill="#00B2C4" stroke="white" stroke-width="1" opacity="0.95"/><title>Data viz tools: ECharts
-role: competitor
-axis1: 3.12
-axis2: -3.81</title></g><text x="851.7" y="879.7" font-size="12" fill="#1C1C1E" text-anchor="start">ECharts</text><g class="sp-dot" tabindex="0" role="img" aria-label="Data viz tools: Highcharts
-role: competitor
-axis1: 2.17
-axis2: -3.02"><circle cx="769.9" cy="817.2" r="5.75" fill="#2FD0D3" stroke="white" stroke-width="1" opacity="0.95"/><title>Data viz tools: Highcharts
-role: competitor
-axis1: 2.17
-axis2: -3.02</title></g><text x="782.4" y="821.4" font-size="12" fill="#1C1C1E" text-anchor="start">Highcharts</text><g class="sp-dot" tabindex="0" role="img" aria-label="Data viz tools: Vega
-role: competitor
-axis1: 1.98
-axis2: -0.37"><circle cx="756.1" cy="622.4" r="5.75" fill="#0093C2" stroke="white" stroke-width="1" opacity="0.95"/><title>Data viz tools: Vega
-role: competitor
-axis1: 1.98
-axis2: -0.37</title></g><text x="768.6" y="626.6" font-size="12" fill="#1C1C1E" text-anchor="start">Vega</text><g class="sp-dot" tabindex="0" role="img" aria-label="Data viz tools: Observable Plot
-role: competitor
-axis1: 1.19
-axis2: -1.32"><circle cx="698.9" cy="691.9" r="5.75" fill="#4FD7FA" stroke="white" stroke-width="1" opacity="0.95"/><title>Data viz tools: Observable Plot
-role: competitor
-axis1: 1.19
-axis2: -1.32</title></g><text x="711.4" y="696.1" font-size="12" fill="#1C1C1E" text-anchor="start">Observable Plot</text><g class="sp-dot" tabindex="0" role="img" aria-label="Data viz tools: vis.js
-role: competitor
-axis1: 0.01
-axis2: -1.40"><circle cx="612.5" cy="698.3" r="5.75" fill="#68AA61" stroke="white" stroke-width="1" opacity="0.95"/><title>Data viz tools: vis.js
-role: competitor
-axis1: 0.01
-axis2: -1.40</title></g><text x="625.0" y="702.5" font-size="12" fill="#1C1C1E" text-anchor="start">vis.js</text><g class="sp-dot" tabindex="0" role="img" aria-label="Data viz tools: Datawrapper
-role: competitor
-axis1: 0.73
-axis2: 0.09"><circle cx="665.1" cy="588.6" r="5.75" fill="#6BC8FF" stroke="white" stroke-width="1" opacity="0.95"/><title>Data viz tools: Datawrapper
-role: competitor
-axis1: 0.73
-axis2: 0.09</title></g><text x="652.6" y="580.3" font-size="12" fill="#1C1C1E" text-anchor="end">Datawrapper</text><g class="sp-dot" tabindex="0" role="img" aria-label="Data viz tools: Flourish
-role: competitor
-axis1: -0.82
-axis2: -1.87"><circle cx="552.3" cy="733.0" r="5.75" fill="#92BE68" stroke="white" stroke-width="1" opacity="0.95"/><title>Data viz tools: Flourish
-role: competitor
-axis1: -0.82
-axis2: -1.87</title></g><text x="564.8" y="737.2" font-size="12" fill="#1C1C1E" text-anchor="start">Flourish</text><g class="sp-dot" tabindex="0" role="img" aria-label="Data viz tools: RAWGraphs
-role: competitor
-axis1: -0.99
-axis2: 3.10"><circle cx="539.6" cy="366.5" r="5.75" fill="#B5A0F7" stroke="white" stroke-width="1" opacity="0.95"/><title>Data viz tools: RAWGraphs
-role: competitor
-axis1: -0.99
-axis2: 3.10</title></g><text x="552.1" y="370.7" font-size="12" fill="#1C1C1E" text-anchor="start">RAWGraphs</text><g class="sp-dot" tabindex="0" role="img" aria-label="Data viz tools: Infogram
-role: competitor
-axis1: -3.39
-axis2: -0.10"><circle cx="365.0" cy="602.5" r="5.75" fill="#F08A99" stroke="white" stroke-width="1" opacity="0.95"/><title>Data viz tools: Infogram
-role: competitor
-axis1: -3.39
-axis2: -0.10</title></g><text x="377.5" y="634.8" font-size="12" fill="#1C1C1E" text-anchor="start">Infogram</text><g class="sp-dot" tabindex="0" role="img" aria-label="Data viz tools: Vizzu
-role: competitor
-axis1: -0.69
-axis2: -0.02"><circle cx="561.5" cy="596.5" r="5.75" fill="#CC6D8C" stroke="white" stroke-width="1" opacity="0.95"/><title>Data viz tools: Vizzu
-role: competitor
-axis1: -0.69
-axis2: -0.02</title></g><text x="574.0" y="628.8" font-size="12" fill="#1C1C1E" text-anchor="start">Vizzu</text><g class="sp-dot" tabindex="0" role="img" aria-label="Data viz tools: Tableau
-role: competitor
-axis1: -1.34
-axis2: -2.66"><circle cx="514.3" cy="790.7" r="5.75" fill="#99AE4E" stroke="white" stroke-width="1" opacity="0.95"/><title>Data viz tools: Tableau
-role: competitor
-axis1: -1.34
-axis2: -2.66</title></g><text x="526.8" y="794.9" font-size="12" fill="#1C1C1E" text-anchor="start">Tableau</text><g class="sp-dot" tabindex="0" role="img" aria-label="Data viz tools: Power BI
-role: competitor
-axis1: -2.32
-axis2: -2.71"><circle cx="443.4" cy="794.2" r="5.75" fill="#C29B35" stroke="white" stroke-width="1" opacity="0.95"/><title>Data viz tools: Power BI
-role: competitor
-axis1: -2.32
-axis2: -2.71</title></g><text x="430.9" y="798.4" font-size="12" fill="#1C1C1E" text-anchor="end">Power BI</text><g class="sp-dot" tabindex="0" role="img" aria-label="Data viz tools: Looker
-role: competitor
-axis1: -2.42
-axis2: -1.60"><circle cx="436.1" cy="713.0" r="5.75" fill="#D48248" stroke="white" stroke-width="1" opacity="0.95"/><title>Data viz tools: Looker
-role: competitor
-axis1: -2.42
-axis2: -1.60</title></g><text x="423.6" y="745.3" font-size="12" fill="#1C1C1E" text-anchor="end">Looker</text><g class="sp-dot" tabindex="0" role="img" aria-label="Data viz tools: Apache Superset
-role: competitor
-axis1: -1.10
-axis2: -1.84"><circle cx="531.7" cy="730.6" r="5.75" fill="#D7C35C" stroke="white" stroke-width="1" opacity="0.95"/><title>Data viz tools: Apache Superset
-role: competitor
-axis1: -1.10
-axis2: -1.84</title></g><text x="544.2" y="762.9" font-size="12" fill="#1C1C1E" text-anchor="start">Apache Superset</text><g class="sp-dot" tabindex="0" role="img" aria-label="Data viz tools: Metabase
-role: competitor
-axis1: -2.41
-axis2: -1.61"><circle cx="436.5" cy="713.6" r="5.75" fill="#DE974B" stroke="white" stroke-width="1" opacity="0.95"/><title>Data viz tools: Metabase
-role: competitor
-axis1: -2.41
-axis2: -1.61</title></g><text x="449.0" y="745.9" font-size="12" fill="#1C1C1E" text-anchor="start">Metabase</text><g class="sp-dot" tabindex="0" role="img" aria-label="Data viz tools: Grafana
-role: competitor
-axis1: -1.57
-axis2: -2.77"><circle cx="497.9" cy="798.8" r="5.75" fill="#A5A53D" stroke="white" stroke-width="1" opacity="0.95"/><title>Data viz tools: Grafana
-role: competitor
-axis1: -1.57
-axis2: -2.77</title></g><text x="510.4" y="831.1" font-size="12" fill="#1C1C1E" text-anchor="start">Grafana</text><g class="sp-dot" tabindex="0" role="img" aria-label="Data viz tools: Julius AI
-role: competitor
-axis1: -3.79
-axis2: 1.76"><circle cx="335.8" cy="465.7" r="5.75" fill="#E588B7" stroke="white" stroke-width="1" opacity="0.95"/><title>Data viz tools: Julius AI
-role: competitor
-axis1: -3.79
-axis2: 1.76</title></g><text x="348.3" y="469.9" font-size="12" fill="#1C1C1E" text-anchor="start">Julius AI</text><g class="sp-dot" tabindex="0" role="img" aria-label="Data viz tools: ChatGPT
-role: top
-axis1: -3.70
-axis2: 3.81"><circle cx="342.8" cy="314.5" r="5.75" fill="#AF52DE" stroke="white" stroke-width="1" opacity="0.95"/><title>Data viz tools: ChatGPT
-role: top
-axis1: -3.70
-axis2: 3.81</title></g><text x="355.3" y="318.7" font-size="12" fill="#1C1C1E" text-anchor="start">ChatGPT</text><g class="sp-dot" tabindex="0" role="img" aria-label="Data viz tools: Claude
-role: competitor
-axis1: -3.19
-axis2: 2.42"><circle cx="379.5" cy="416.8" r="5.75" fill="#BA75B9" stroke="white" stroke-width="1" opacity="0.95"/><title>Data viz tools: Claude
-role: competitor
-axis1: -3.19
-axis2: 2.42</title></g><text x="392.0" y="421.0" font-size="12" fill="#1C1C1E" text-anchor="start">Claude</text><g class="sp-dot" tabindex="0" role="img" aria-label="Data viz tools: ThoughtSpot
-role: worst
-axis1: -4.12
-axis2: -1.36"><circle cx="312.0" cy="695.2" r="5.75" fill="#A52A2A" stroke="white" stroke-width="1" opacity="0.95"/><title>Data viz tools: ThoughtSpot
-role: worst
-axis1: -4.12
-axis2: -1.36</title></g><text x="324.5" y="699.4" font-size="12" fill="#1C1C1E" text-anchor="start">ThoughtSpot</text><g class="sp-dot" tabindex="0" role="img" aria-label="Data viz tools: Excel
-role: competitor
-axis1: -2.04
-axis2: 2.31"><circle cx="463.3" cy="425.2" r="5.75" fill="#AA72BE" stroke="white" stroke-width="1" opacity="0.95"/><title>Data viz tools: Excel
-role: competitor
-axis1: -2.04
-axis2: 2.31</title></g><text x="475.8" y="429.4" font-size="12" fill="#1C1C1E" text-anchor="start">Excel</text><g class="sp-dot" tabindex="0" role="img" aria-label="Data viz tools: Google Sheets
-role: competitor
-axis1: -3.79
-axis2: 2.10"><circle cx="335.9" cy="440.2" r="5.75" fill="#F5A0DC" stroke="white" stroke-width="1" opacity="0.95"/><title>Data viz tools: Google Sheets
-role: competitor
-axis1: -3.79
-axis2: 2.10</title></g><text x="348.4" y="444.4" font-size="12" fill="#1C1C1E" text-anchor="start">Google Sheets</text><g class="sp-dot" tabindex="0" role="img" aria-label="Data viz tools: Canva
-role: competitor
-axis1: -2.65
-axis2: 3.71"><circle cx="419.1" cy="322.0" r="5.75" fill="#9C75C6" stroke="white" stroke-width="1" opacity="0.95"/><title>Data viz tools: Canva
-role: competitor
-axis1: -2.65
-axis2: 3.71</title></g><text x="431.6" y="326.2" font-size="12" fill="#1C1C1E" text-anchor="start">Canva</text><text x="612.0" y="26" font-size="18" font-weight="bold" fill="#000" text-anchor="middle">Data viz tools in the Quadrant</text><text class="provenance-stamp" x="23.4" y="1144.6" font-size="21.0" fill="#6b7280" font-family="Roboto, system-ui, sans-serif">Ratings as of October 2026 — LANDSCAPE.md</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1384" height="1272" viewBox="0 0 1384 1272" role="img" aria-labelledby="sp-title sp-desc" font-family="Roboto, -apple-system, Helvetica, Arial, sans-serif"><title id="sp-title">Tools in the Quadrant</title><desc id="sp-desc">A 2D positioning map of 41 tools, Insightful to Adaptable on the horizontal axis, Dynamic to Intuitive on the vertical axis.</desc><style>.sp-dot{cursor:pointer}.sp-dot:hover circle,.sp-dot:focus circle{stroke-width:2.4}.sp-dot:hover,.sp-dot:focus{filter:brightness(1.08);outline:none}</style><line x1="174.4" y1="647.0" x2="1060.0" y2="647.0" stroke="#C7C7CC" stroke-width="1.2" stroke-dasharray="2,4"/><line x1="612.0" y1="1183.0" x2="612.0" y2="111.0" stroke="#C7C7CC" stroke-width="1.2" stroke-dasharray="2,4"/><text data-pole="right" x="1164.0" y="653.3" font-size="18" font-style="italic" fill="#6E6E73" text-anchor="end">Adaptable</text><text data-pole="left" x="60.0" y="653.3" font-size="18" font-style="italic" fill="#6E6E73" text-anchor="start">Insightful</text><text data-pole="top" x="612.0" y="79.3" font-size="18" font-style="italic" fill="#6E6E73" text-anchor="middle">Intuitive</text><text data-pole="bottom" x="612.0" y="1225.4" font-size="18" font-style="italic" fill="#6E6E73" text-anchor="middle">Dynamic</text><g class="sp-dot" tabindex="0" role="img" aria-label="Tools: sprezzature-figures
+Free or open source: 5
+Chart type breadth: 5
+Publication quality: 5
+Ease of use: 4
+Programmability: 4
+Interactive: 3
+AI natural language copilot: 4
+Vision QA on render: 5
+Local and offline (no account): 5
+Reproducibility: 5
+Export to SVG PNG PDF: 5
+Customization and theming: 4
+Data source flexibility: 3
+Maturity and community: 1
+Geospatial and maps: 2
+Dashboards and BI: 1
+Accessibility features: 5
+Animated: 2
+Large-dataset performance: 3
+Web embeddability: 3
+Statistical and analytical depth: 4
+Responsive: 3"><circle cx="912.0" cy="340.5" r="5.35" fill="#FF3B30" stroke="white" stroke-width="1" opacity="0.95"/><title>Tools: sprezzature-figures
+Free or open source: 5
+Chart type breadth: 5
+Publication quality: 5
+Ease of use: 4
+Programmability: 4
+Interactive: 3
+AI natural language copilot: 4
+Vision QA on render: 5
+Local and offline (no account): 5
+Reproducibility: 5
+Export to SVG PNG PDF: 5
+Customization and theming: 4
+Data source flexibility: 3
+Maturity and community: 1
+Geospatial and maps: 2
+Dashboards and BI: 1
+Accessibility features: 5
+Animated: 2
+Large-dataset performance: 3
+Web embeddability: 3
+Statistical and analytical depth: 4
+Responsive: 3</title></g><text x="899.5" y="344.4" font-size="11" fill="#1C1C1E" text-anchor="end">sprezzature-figures</text><g class="sp-dot" tabindex="0" role="img" aria-label="Tools: Matplotlib
+Free or open source: 5
+Chart type breadth: 5
+Publication quality: 5
+Ease of use: 2
+Programmability: 5
+Interactive: 2
+AI natural language copilot: 1
+Vision QA on render: 1
+Local and offline (no account): 5
+Reproducibility: 4
+Export to SVG PNG PDF: 5
+Customization and theming: 5
+Data source flexibility: 3
+Maturity and community: 5
+Geospatial and maps: 3
+Dashboards and BI: 2
+Accessibility features: 3
+Animated: 3
+Large-dataset performance: 4
+Web embeddability: 3
+Statistical and analytical depth: 3
+Responsive: 2"><circle cx="912.0" cy="746.7" r="5.35" fill="#007AFF" stroke="white" stroke-width="1" opacity="0.95"/><title>Tools: Matplotlib
+Free or open source: 5
+Chart type breadth: 5
+Publication quality: 5
+Ease of use: 2
+Programmability: 5
+Interactive: 2
+AI natural language copilot: 1
+Vision QA on render: 1
+Local and offline (no account): 5
+Reproducibility: 4
+Export to SVG PNG PDF: 5
+Customization and theming: 5
+Data source flexibility: 3
+Maturity and community: 5
+Geospatial and maps: 3
+Dashboards and BI: 2
+Accessibility features: 3
+Animated: 3
+Large-dataset performance: 4
+Web embeddability: 3
+Statistical and analytical depth: 3
+Responsive: 2</title></g><text x="924.5" y="750.6" font-size="11" fill="#1C1C1E" text-anchor="start">Matplotlib</text><g class="sp-dot" tabindex="0" role="img" aria-label="Tools: Seaborn
+Free or open source: 5
+Chart type breadth: 3
+Publication quality: 5
+Ease of use: 2
+Programmability: 4
+Interactive: 1
+AI natural language copilot: 1
+Vision QA on render: 1
+Local and offline (no account): 5
+Reproducibility: 4
+Export to SVG PNG PDF: 4
+Customization and theming: 4
+Data source flexibility: 3
+Maturity and community: 5
+Geospatial and maps: 1
+Dashboards and BI: 1
+Accessibility features: 3
+Animated: 1
+Large-dataset performance: 3
+Web embeddability: 3
+Statistical and analytical depth: 5
+Responsive: 2"><circle cx="853.8" cy="619.1" r="5.35" fill="#8599ED" stroke="white" stroke-width="1" opacity="0.95"/><title>Tools: Seaborn
+Free or open source: 5
+Chart type breadth: 3
+Publication quality: 5
+Ease of use: 2
+Programmability: 4
+Interactive: 1
+AI natural language copilot: 1
+Vision QA on render: 1
+Local and offline (no account): 5
+Reproducibility: 4
+Export to SVG PNG PDF: 4
+Customization and theming: 4
+Data source flexibility: 3
+Maturity and community: 5
+Geospatial and maps: 1
+Dashboards and BI: 1
+Accessibility features: 3
+Animated: 1
+Large-dataset performance: 3
+Web embeddability: 3
+Statistical and analytical depth: 5
+Responsive: 2</title></g><text x="841.3" y="623.0" font-size="11" fill="#1C1C1E" text-anchor="end">Seaborn</text><g class="sp-dot" tabindex="0" role="img" aria-label="Tools: Plotly / Dash
+Free or open source: 4
+Chart type breadth: 5
+Publication quality: 4
+Ease of use: 3
+Programmability: 5
+Interactive: 5
+AI natural language copilot: 3
+Vision QA on render: 1
+Local and offline (no account): 4
+Reproducibility: 4
+Export to SVG PNG PDF: 4
+Customization and theming: 5
+Data source flexibility: 5
+Maturity and community: 5
+Geospatial and maps: 4
+Dashboards and BI: 5
+Accessibility features: 3
+Animated: 4
+Large-dataset performance: 4
+Web embeddability: 5
+Statistical and analytical depth: 4
+Responsive: 5"><circle cx="693.6" cy="933.3" r="5.35" fill="#BFBB55" stroke="white" stroke-width="1" opacity="0.95"/><title>Tools: Plotly / Dash
+Free or open source: 4
+Chart type breadth: 5
+Publication quality: 4
+Ease of use: 3
+Programmability: 5
+Interactive: 5
+AI natural language copilot: 3
+Vision QA on render: 1
+Local and offline (no account): 4
+Reproducibility: 4
+Export to SVG PNG PDF: 4
+Customization and theming: 5
+Data source flexibility: 5
+Maturity and community: 5
+Geospatial and maps: 4
+Dashboards and BI: 5
+Accessibility features: 3
+Animated: 4
+Large-dataset performance: 4
+Web embeddability: 5
+Statistical and analytical depth: 4
+Responsive: 5</title></g><text x="706.1" y="937.2" font-size="11" fill="#1C1C1E" text-anchor="start">Plotly / Dash</text><g class="sp-dot" tabindex="0" role="img" aria-label="Tools: Bokeh
+Free or open source: 5
+Chart type breadth: 4
+Publication quality: 3
+Ease of use: 2
+Programmability: 4
+Interactive: 5
+AI natural language copilot: 1
+Vision QA on render: 1
+Local and offline (no account): 5
+Reproducibility: 4
+Export to SVG PNG PDF: 3
+Customization and theming: 4
+Data source flexibility: 4
+Maturity and community: 4
+Geospatial and maps: 3
+Dashboards and BI: 4
+Accessibility features: 2
+Animated: 4
+Large-dataset performance: 5
+Web embeddability: 5
+Statistical and analytical depth: 3
+Responsive: 4"><circle cx="736.2" cy="858.7" r="5.35" fill="#509C58" stroke="white" stroke-width="1" opacity="0.95"/><title>Tools: Bokeh
+Free or open source: 5
+Chart type breadth: 4
+Publication quality: 3
+Ease of use: 2
+Programmability: 4
+Interactive: 5
+AI natural language copilot: 1
+Vision QA on render: 1
+Local and offline (no account): 5
+Reproducibility: 4
+Export to SVG PNG PDF: 3
+Customization and theming: 4
+Data source flexibility: 4
+Maturity and community: 4
+Geospatial and maps: 3
+Dashboards and BI: 4
+Accessibility features: 2
+Animated: 4
+Large-dataset performance: 5
+Web embeddability: 5
+Statistical and analytical depth: 3
+Responsive: 4</title></g><text x="748.7" y="850.1" font-size="11" fill="#1C1C1E" text-anchor="start">Bokeh</text><g class="sp-dot" tabindex="0" role="img" aria-label="Tools: Altair
+Free or open source: 5
+Chart type breadth: 4
+Publication quality: 4
+Ease of use: 3
+Programmability: 4
+Interactive: 4
+AI natural language copilot: 1
+Vision QA on render: 1
+Local and offline (no account): 5
+Reproducibility: 5
+Export to SVG PNG PDF: 4
+Customization and theming: 4
+Data source flexibility: 3
+Maturity and community: 4
+Geospatial and maps: 3
+Dashboards and BI: 2
+Accessibility features: 3
+Animated: 2
+Large-dataset performance: 2
+Web embeddability: 4
+Statistical and analytical depth: 3
+Responsive: 4"><circle cx="845.1" cy="737.9" r="5.35" fill="#4299D8" stroke="white" stroke-width="1" opacity="0.95"/><title>Tools: Altair
+Free or open source: 5
+Chart type breadth: 4
+Publication quality: 4
+Ease of use: 3
+Programmability: 4
+Interactive: 4
+AI natural language copilot: 1
+Vision QA on render: 1
+Local and offline (no account): 5
+Reproducibility: 5
+Export to SVG PNG PDF: 4
+Customization and theming: 4
+Data source flexibility: 3
+Maturity and community: 4
+Geospatial and maps: 3
+Dashboards and BI: 2
+Accessibility features: 3
+Animated: 2
+Large-dataset performance: 2
+Web embeddability: 4
+Statistical and analytical depth: 3
+Responsive: 4</title></g><text x="857.6" y="741.7" font-size="11" fill="#1C1C1E" text-anchor="start">Altair</text><g class="sp-dot" tabindex="0" role="img" aria-label="Tools: ggplot2
+Free or open source: 5
+Chart type breadth: 4
+Publication quality: 5
+Ease of use: 2
+Programmability: 4
+Interactive: 1
+AI natural language copilot: 1
+Vision QA on render: 1
+Local and offline (no account): 5
+Reproducibility: 5
+Export to SVG PNG PDF: 4
+Customization and theming: 5
+Data source flexibility: 3
+Maturity and community: 4
+Geospatial and maps: 2
+Dashboards and BI: 1
+Accessibility features: 3
+Animated: 2
+Large-dataset performance: 3
+Web embeddability: 2
+Statistical and analytical depth: 5
+Responsive: 2"><circle cx="903.0" cy="646.3" r="5.35" fill="#749CEB" stroke="white" stroke-width="1" opacity="0.95"/><title>Tools: ggplot2
+Free or open source: 5
+Chart type breadth: 4
+Publication quality: 5
+Ease of use: 2
+Programmability: 4
+Interactive: 1
+AI natural language copilot: 1
+Vision QA on render: 1
+Local and offline (no account): 5
+Reproducibility: 5
+Export to SVG PNG PDF: 4
+Customization and theming: 5
+Data source flexibility: 3
+Maturity and community: 4
+Geospatial and maps: 2
+Dashboards and BI: 1
+Accessibility features: 3
+Animated: 2
+Large-dataset performance: 3
+Web embeddability: 2
+Statistical and analytical depth: 5
+Responsive: 2</title></g><text x="915.5" y="637.6" font-size="11" fill="#1C1C1E" text-anchor="start">ggplot2</text><g class="sp-dot" tabindex="0" role="img" aria-label="Tools: HoloViews
+Free or open source: 5
+Chart type breadth: 4
+Publication quality: 3
+Ease of use: 2
+Programmability: 4
+Interactive: 5
+AI natural language copilot: 1
+Vision QA on render: 1
+Local and offline (no account): 5
+Reproducibility: 4
+Export to SVG PNG PDF: 3
+Customization and theming: 4
+Data source flexibility: 4
+Maturity and community: 3
+Geospatial and maps: 4
+Dashboards and BI: 4
+Accessibility features: 2
+Animated: 4
+Large-dataset performance: 5
+Web embeddability: 4
+Statistical and analytical depth: 3
+Responsive: 4"><circle cx="732.7" cy="848.0" r="5.35" fill="#66C68D" stroke="white" stroke-width="1" opacity="0.95"/><title>Tools: HoloViews
+Free or open source: 5
+Chart type breadth: 4
+Publication quality: 3
+Ease of use: 2
+Programmability: 4
+Interactive: 5
+AI natural language copilot: 1
+Vision QA on render: 1
+Local and offline (no account): 5
+Reproducibility: 4
+Export to SVG PNG PDF: 3
+Customization and theming: 4
+Data source flexibility: 4
+Maturity and community: 3
+Geospatial and maps: 4
+Dashboards and BI: 4
+Accessibility features: 2
+Animated: 4
+Large-dataset performance: 5
+Web embeddability: 4
+Statistical and analytical depth: 3
+Responsive: 4</title></g><text x="720.2" y="851.9" font-size="11" fill="#1C1C1E" text-anchor="end">HoloViews</text><g class="sp-dot" tabindex="0" role="img" aria-label="Tools: PyGWalker
+Free or open source: 5
+Chart type breadth: 3
+Publication quality: 3
+Ease of use: 4
+Programmability: 3
+Interactive: 5
+AI natural language copilot: 2
+Vision QA on render: 1
+Local and offline (no account): 5
+Reproducibility: 3
+Export to SVG PNG PDF: 3
+Customization and theming: 3
+Data source flexibility: 4
+Maturity and community: 3
+Geospatial and maps: 2
+Dashboards and BI: 4
+Accessibility features: 2
+Animated: 2
+Large-dataset performance: 3
+Web embeddability: 3
+Statistical and analytical depth: 3
+Responsive: 4"><circle cx="610.4" cy="718.6" r="5.35" fill="#D9A247" stroke="white" stroke-width="1" opacity="0.95"/><title>Tools: PyGWalker
+Free or open source: 5
+Chart type breadth: 3
+Publication quality: 3
+Ease of use: 4
+Programmability: 3
+Interactive: 5
+AI natural language copilot: 2
+Vision QA on render: 1
+Local and offline (no account): 5
+Reproducibility: 3
+Export to SVG PNG PDF: 3
+Customization and theming: 3
+Data source flexibility: 4
+Maturity and community: 3
+Geospatial and maps: 2
+Dashboards and BI: 4
+Accessibility features: 2
+Animated: 2
+Large-dataset performance: 3
+Web embeddability: 3
+Statistical and analytical depth: 3
+Responsive: 4</title></g><text x="597.9" y="709.9" font-size="11" fill="#1C1C1E" text-anchor="end">PyGWalker</text><g class="sp-dot" tabindex="0" role="img" aria-label="Tools: Streamlit
+Free or open source: 4
+Chart type breadth: 3
+Publication quality: 3
+Ease of use: 3
+Programmability: 4
+Interactive: 4
+AI natural language copilot: 2
+Vision QA on render: 1
+Local and offline (no account): 4
+Reproducibility: 3
+Export to SVG PNG PDF: 2
+Customization and theming: 3
+Data source flexibility: 5
+Maturity and community: 4
+Geospatial and maps: 3
+Dashboards and BI: 4
+Accessibility features: 2
+Animated: 2
+Large-dataset performance: 3
+Web embeddability: 4
+Statistical and analytical depth: 3
+Responsive: 4"><circle cx="584.2" cy="762.4" r="5.35" fill="#EB9C5B" stroke="white" stroke-width="1" opacity="0.95"/><title>Tools: Streamlit
+Free or open source: 4
+Chart type breadth: 3
+Publication quality: 3
+Ease of use: 3
+Programmability: 4
+Interactive: 4
+AI natural language copilot: 2
+Vision QA on render: 1
+Local and offline (no account): 4
+Reproducibility: 3
+Export to SVG PNG PDF: 2
+Customization and theming: 3
+Data source flexibility: 5
+Maturity and community: 4
+Geospatial and maps: 3
+Dashboards and BI: 4
+Accessibility features: 2
+Animated: 2
+Large-dataset performance: 3
+Web embeddability: 4
+Statistical and analytical depth: 3
+Responsive: 4</title></g><text x="571.7" y="753.7" font-size="11" fill="#1C1C1E" text-anchor="end">Streamlit</text><g class="sp-dot" tabindex="0" role="img" aria-label="Tools: marimo
+Free or open source: 5
+Chart type breadth: 2
+Publication quality: 3
+Ease of use: 4
+Programmability: 5
+Interactive: 5
+AI natural language copilot: 4
+Vision QA on render: 1
+Local and offline (no account): 5
+Reproducibility: 5
+Export to SVG PNG PDF: 2
+Customization and theming: 3
+Data source flexibility: 5
+Maturity and community: 3
+Geospatial and maps: 2
+Dashboards and BI: 4
+Accessibility features: 2
+Animated: 2
+Large-dataset performance: 4
+Web embeddability: 4
+Statistical and analytical depth: 3
+Responsive: 4"><circle cx="626.7" cy="750.3" r="5.35" fill="#B9932B" stroke="white" stroke-width="1" opacity="0.95"/><title>Tools: marimo
+Free or open source: 5
+Chart type breadth: 2
+Publication quality: 3
+Ease of use: 4
+Programmability: 5
+Interactive: 5
+AI natural language copilot: 4
+Vision QA on render: 1
+Local and offline (no account): 5
+Reproducibility: 5
+Export to SVG PNG PDF: 2
+Customization and theming: 3
+Data source flexibility: 5
+Maturity and community: 3
+Geospatial and maps: 2
+Dashboards and BI: 4
+Accessibility features: 2
+Animated: 2
+Large-dataset performance: 4
+Web embeddability: 4
+Statistical and analytical depth: 3
+Responsive: 4</title></g><g class="sp-dot" tabindex="0" role="img" aria-label="Tools: Great Tables
+Free or open source: 5
+Chart type breadth: 1
+Publication quality: 5
+Ease of use: 4
+Programmability: 4
+Interactive: 2
+AI natural language copilot: 1
+Vision QA on render: 1
+Local and offline (no account): 5
+Reproducibility: 5
+Export to SVG PNG PDF: 3
+Customization and theming: 5
+Data source flexibility: 3
+Maturity and community: 3
+Geospatial and maps: 1
+Dashboards and BI: 1
+Accessibility features: 3
+Animated: 1
+Large-dataset performance: 2
+Web embeddability: 4
+Statistical and analytical depth: 2
+Responsive: 3"><circle cx="872.5" cy="612.8" r="5.35" fill="#A8AAFF" stroke="white" stroke-width="1" opacity="0.95"/><title>Tools: Great Tables
+Free or open source: 5
+Chart type breadth: 1
+Publication quality: 5
+Ease of use: 4
+Programmability: 4
+Interactive: 2
+AI natural language copilot: 1
+Vision QA on render: 1
+Local and offline (no account): 5
+Reproducibility: 5
+Export to SVG PNG PDF: 3
+Customization and theming: 5
+Data source flexibility: 3
+Maturity and community: 3
+Geospatial and maps: 1
+Dashboards and BI: 1
+Accessibility features: 3
+Animated: 1
+Large-dataset performance: 2
+Web embeddability: 4
+Statistical and analytical depth: 2
+Responsive: 3</title></g><text x="885.0" y="616.6" font-size="11" fill="#1C1C1E" text-anchor="start">Great Tables</text><g class="sp-dot" tabindex="0" role="img" aria-label="Tools: Quarto
+Free or open source: 5
+Chart type breadth: 2
+Publication quality: 5
+Ease of use: 3
+Programmability: 4
+Interactive: 3
+AI natural language copilot: 1
+Vision QA on render: 1
+Local and offline (no account): 5
+Reproducibility: 5
+Export to SVG PNG PDF: 5
+Customization and theming: 4
+Data source flexibility: 4
+Maturity and community: 4
+Geospatial and maps: 2
+Dashboards and BI: 3
+Accessibility features: 3
+Animated: 2
+Large-dataset performance: 2
+Web embeddability: 4
+Statistical and analytical depth: 4
+Responsive: 4"><circle cx="842.0" cy="722.8" r="5.35" fill="#5C9AE2" stroke="white" stroke-width="1" opacity="0.95"/><title>Tools: Quarto
+Free or open source: 5
+Chart type breadth: 2
+Publication quality: 5
+Ease of use: 3
+Programmability: 4
+Interactive: 3
+AI natural language copilot: 1
+Vision QA on render: 1
+Local and offline (no account): 5
+Reproducibility: 5
+Export to SVG PNG PDF: 5
+Customization and theming: 4
+Data source flexibility: 4
+Maturity and community: 4
+Geospatial and maps: 2
+Dashboards and BI: 3
+Accessibility features: 3
+Animated: 2
+Large-dataset performance: 2
+Web embeddability: 4
+Statistical and analytical depth: 4
+Responsive: 4</title></g><text x="829.5" y="726.7" font-size="11" fill="#1C1C1E" text-anchor="end">Quarto</text><g class="sp-dot" tabindex="0" role="img" aria-label="Tools: Observable Framework
+Free or open source: 5
+Chart type breadth: 4
+Publication quality: 4
+Ease of use: 3
+Programmability: 4
+Interactive: 5
+AI natural language copilot: 1
+Vision QA on render: 1
+Local and offline (no account): 4
+Reproducibility: 4
+Export to SVG PNG PDF: 2
+Customization and theming: 4
+Data source flexibility: 5
+Maturity and community: 3
+Geospatial and maps: 4
+Dashboards and BI: 5
+Accessibility features: 3
+Animated: 3
+Large-dataset performance: 4
+Web embeddability: 5
+Statistical and analytical depth: 2
+Responsive: 5"><circle cx="705.3" cy="874.9" r="5.35" fill="#AFD377" stroke="white" stroke-width="1" opacity="0.95"/><title>Tools: Observable Framework
+Free or open source: 5
+Chart type breadth: 4
+Publication quality: 4
+Ease of use: 3
+Programmability: 4
+Interactive: 5
+AI natural language copilot: 1
+Vision QA on render: 1
+Local and offline (no account): 4
+Reproducibility: 4
+Export to SVG PNG PDF: 2
+Customization and theming: 4
+Data source flexibility: 5
+Maturity and community: 3
+Geospatial and maps: 4
+Dashboards and BI: 5
+Accessibility features: 3
+Animated: 3
+Large-dataset performance: 4
+Web embeddability: 5
+Statistical and analytical depth: 2
+Responsive: 5</title></g><text x="717.8" y="878.7" font-size="11" fill="#1C1C1E" text-anchor="start">Observable Framework</text><g class="sp-dot" tabindex="0" role="img" aria-label="Tools: Evidence
+Free or open source: 5
+Chart type breadth: 3
+Publication quality: 4
+Ease of use: 4
+Programmability: 3
+Interactive: 4
+AI natural language copilot: 3
+Vision QA on render: 1
+Local and offline (no account): 4
+Reproducibility: 4
+Export to SVG PNG PDF: 2
+Customization and theming: 4
+Data source flexibility: 4
+Maturity and community: 3
+Geospatial and maps: 3
+Dashboards and BI: 5
+Accessibility features: 3
+Animated: 2
+Large-dataset performance: 4
+Web embeddability: 4
+Statistical and analytical depth: 2
+Responsive: 5"><circle cx="636.2" cy="782.4" r="5.35" fill="#BAA43C" stroke="white" stroke-width="1" opacity="0.95"/><title>Tools: Evidence
+Free or open source: 5
+Chart type breadth: 3
+Publication quality: 4
+Ease of use: 4
+Programmability: 3
+Interactive: 4
+AI natural language copilot: 3
+Vision QA on render: 1
+Local and offline (no account): 4
+Reproducibility: 4
+Export to SVG PNG PDF: 2
+Customization and theming: 4
+Data source flexibility: 4
+Maturity and community: 3
+Geospatial and maps: 3
+Dashboards and BI: 5
+Accessibility features: 3
+Animated: 2
+Large-dataset performance: 4
+Web embeddability: 4
+Statistical and analytical depth: 2
+Responsive: 5</title></g><text x="648.7" y="786.3" font-size="11" fill="#1C1C1E" text-anchor="start">Evidence</text><g class="sp-dot" tabindex="0" role="img" aria-label="Tools: Mosaic / vgplot
+Free or open source: 5
+Chart type breadth: 3
+Publication quality: 3
+Ease of use: 2
+Programmability: 4
+Interactive: 5
+AI natural language copilot: 1
+Vision QA on render: 1
+Local and offline (no account): 4
+Reproducibility: 4
+Export to SVG PNG PDF: 2
+Customization and theming: 3
+Data source flexibility: 4
+Maturity and community: 2
+Geospatial and maps: 3
+Dashboards and BI: 3
+Accessibility features: 2
+Animated: 2
+Large-dataset performance: 5
+Web embeddability: 4
+Statistical and analytical depth: 3
+Responsive: 4"><circle cx="688.8" cy="759.7" r="5.35" fill="#53D9BA" stroke="white" stroke-width="1" opacity="0.95"/><title>Tools: Mosaic / vgplot
+Free or open source: 5
+Chart type breadth: 3
+Publication quality: 3
+Ease of use: 2
+Programmability: 4
+Interactive: 5
+AI natural language copilot: 1
+Vision QA on render: 1
+Local and offline (no account): 4
+Reproducibility: 4
+Export to SVG PNG PDF: 2
+Customization and theming: 3
+Data source flexibility: 4
+Maturity and community: 2
+Geospatial and maps: 3
+Dashboards and BI: 3
+Accessibility features: 2
+Animated: 2
+Large-dataset performance: 5
+Web embeddability: 4
+Statistical and analytical depth: 3
+Responsive: 4</title></g><g class="sp-dot" tabindex="0" role="img" aria-label="Tools: D3.js
+Free or open source: 5
+Chart type breadth: 5
+Publication quality: 5
+Ease of use: 1
+Programmability: 5
+Interactive: 5
+AI natural language copilot: 1
+Vision QA on render: 1
+Local and offline (no account): 5
+Reproducibility: 4
+Export to SVG PNG PDF: 4
+Customization and theming: 5
+Data source flexibility: 4
+Maturity and community: 5
+Geospatial and maps: 5
+Dashboards and BI: 3
+Accessibility features: 3
+Animated: 5
+Large-dataset performance: 3
+Web embeddability: 5
+Statistical and analytical depth: 2
+Responsive: 5"><circle cx="901.2" cy="931.9" r="5.35" fill="#009D9D" stroke="white" stroke-width="1" opacity="0.95"/><title>Tools: D3.js
+Free or open source: 5
+Chart type breadth: 5
+Publication quality: 5
+Ease of use: 1
+Programmability: 5
+Interactive: 5
+AI natural language copilot: 1
+Vision QA on render: 1
+Local and offline (no account): 5
+Reproducibility: 4
+Export to SVG PNG PDF: 4
+Customization and theming: 5
+Data source flexibility: 4
+Maturity and community: 5
+Geospatial and maps: 5
+Dashboards and BI: 3
+Accessibility features: 3
+Animated: 5
+Large-dataset performance: 3
+Web embeddability: 5
+Statistical and analytical depth: 2
+Responsive: 5</title></g><text x="913.7" y="935.8" font-size="11" fill="#1C1C1E" text-anchor="start">D3.js</text><g class="sp-dot" tabindex="0" role="img" aria-label="Tools: Chart.js
+Free or open source: 5
+Chart type breadth: 3
+Publication quality: 3
+Ease of use: 2
+Programmability: 4
+Interactive: 4
+AI natural language copilot: 1
+Vision QA on render: 1
+Local and offline (no account): 5
+Reproducibility: 4
+Export to SVG PNG PDF: 3
+Customization and theming: 3
+Data source flexibility: 3
+Maturity and community: 4
+Geospatial and maps: 2
+Dashboards and BI: 3
+Accessibility features: 2
+Animated: 3
+Large-dataset performance: 2
+Web embeddability: 5
+Statistical and analytical depth: 2
+Responsive: 5"><circle cx="776.7" cy="750.3" r="5.35" fill="#00B4D1" stroke="white" stroke-width="1" opacity="0.95"/><title>Tools: Chart.js
+Free or open source: 5
+Chart type breadth: 3
+Publication quality: 3
+Ease of use: 2
+Programmability: 4
+Interactive: 4
+AI natural language copilot: 1
+Vision QA on render: 1
+Local and offline (no account): 5
+Reproducibility: 4
+Export to SVG PNG PDF: 3
+Customization and theming: 3
+Data source flexibility: 3
+Maturity and community: 4
+Geospatial and maps: 2
+Dashboards and BI: 3
+Accessibility features: 2
+Animated: 3
+Large-dataset performance: 2
+Web embeddability: 5
+Statistical and analytical depth: 2
+Responsive: 5</title></g><text x="764.2" y="754.1" font-size="11" fill="#1C1C1E" text-anchor="end">Chart.js</text><g class="sp-dot" tabindex="0" role="img" aria-label="Tools: Apache ECharts
+Free or open source: 5
+Chart type breadth: 5
+Publication quality: 4
+Ease of use: 2
+Programmability: 4
+Interactive: 5
+AI natural language copilot: 1
+Vision QA on render: 1
+Local and offline (no account): 5
+Reproducibility: 4
+Export to SVG PNG PDF: 4
+Customization and theming: 5
+Data source flexibility: 4
+Maturity and community: 5
+Geospatial and maps: 5
+Dashboards and BI: 4
+Accessibility features: 3
+Animated: 5
+Large-dataset performance: 5
+Web embeddability: 5
+Statistical and analytical depth: 3
+Responsive: 5"><circle cx="801.7" cy="953.5" r="5.35" fill="#60D5A8" stroke="white" stroke-width="1" opacity="0.95"/><title>Tools: Apache ECharts
+Free or open source: 5
+Chart type breadth: 5
+Publication quality: 4
+Ease of use: 2
+Programmability: 4
+Interactive: 5
+AI natural language copilot: 1
+Vision QA on render: 1
+Local and offline (no account): 5
+Reproducibility: 4
+Export to SVG PNG PDF: 4
+Customization and theming: 5
+Data source flexibility: 4
+Maturity and community: 5
+Geospatial and maps: 5
+Dashboards and BI: 4
+Accessibility features: 3
+Animated: 5
+Large-dataset performance: 5
+Web embeddability: 5
+Statistical and analytical depth: 3
+Responsive: 5</title></g><text x="814.2" y="957.4" font-size="11" fill="#1C1C1E" text-anchor="start">Apache ECharts</text><g class="sp-dot" tabindex="0" role="img" aria-label="Tools: Highcharts
+Free or open source: 2
+Chart type breadth: 5
+Publication quality: 4
+Ease of use: 3
+Programmability: 4
+Interactive: 5
+AI natural language copilot: 1
+Vision QA on render: 1
+Local and offline (no account): 4
+Reproducibility: 4
+Export to SVG PNG PDF: 4
+Customization and theming: 5
+Data source flexibility: 4
+Maturity and community: 5
+Geospatial and maps: 4
+Dashboards and BI: 4
+Accessibility features: 4
+Animated: 4
+Large-dataset performance: 4
+Web embeddability: 5
+Statistical and analytical depth: 3
+Responsive: 5"><circle cx="718.7" cy="908.6" r="5.35" fill="#ADBD5A" stroke="white" stroke-width="1" opacity="0.95"/><title>Tools: Highcharts
+Free or open source: 2
+Chart type breadth: 5
+Publication quality: 4
+Ease of use: 3
+Programmability: 4
+Interactive: 5
+AI natural language copilot: 1
+Vision QA on render: 1
+Local and offline (no account): 4
+Reproducibility: 4
+Export to SVG PNG PDF: 4
+Customization and theming: 5
+Data source flexibility: 4
+Maturity and community: 5
+Geospatial and maps: 4
+Dashboards and BI: 4
+Accessibility features: 4
+Animated: 4
+Large-dataset performance: 4
+Web embeddability: 5
+Statistical and analytical depth: 3
+Responsive: 5</title></g><text x="731.2" y="912.5" font-size="11" fill="#1C1C1E" text-anchor="start">Highcharts</text><g class="sp-dot" tabindex="0" role="img" aria-label="Tools: Recharts
+Free or open source: 5
+Chart type breadth: 3
+Publication quality: 3
+Ease of use: 4
+Programmability: 4
+Interactive: 4
+AI natural language copilot: 1
+Vision QA on render: 1
+Local and offline (no account): 5
+Reproducibility: 3
+Export to SVG PNG PDF: 2
+Customization and theming: 4
+Data source flexibility: 3
+Maturity and community: 4
+Geospatial and maps: 1
+Dashboards and BI: 3
+Accessibility features: 3
+Animated: 3
+Large-dataset performance: 2
+Web embeddability: 5
+Statistical and analytical depth: 1
+Responsive: 5"><circle cx="738.9" cy="733.1" r="5.35" fill="#00BECC" stroke="white" stroke-width="1" opacity="0.95"/><title>Tools: Recharts
+Free or open source: 5
+Chart type breadth: 3
+Publication quality: 3
+Ease of use: 4
+Programmability: 4
+Interactive: 4
+AI natural language copilot: 1
+Vision QA on render: 1
+Local and offline (no account): 5
+Reproducibility: 3
+Export to SVG PNG PDF: 2
+Customization and theming: 4
+Data source flexibility: 3
+Maturity and community: 4
+Geospatial and maps: 1
+Dashboards and BI: 3
+Accessibility features: 3
+Animated: 3
+Large-dataset performance: 2
+Web embeddability: 5
+Statistical and analytical depth: 1
+Responsive: 5</title></g><text x="726.4" y="724.5" font-size="11" fill="#1C1C1E" text-anchor="end">Recharts</text><g class="sp-dot" tabindex="0" role="img" aria-label="Tools: Vega-Lite / Vega
+Free or open source: 5
+Chart type breadth: 4
+Publication quality: 4
+Ease of use: 3
+Programmability: 4
+Interactive: 4
+AI natural language copilot: 2
+Vision QA on render: 1
+Local and offline (no account): 5
+Reproducibility: 5
+Export to SVG PNG PDF: 4
+Customization and theming: 4
+Data source flexibility: 3
+Maturity and community: 4
+Geospatial and maps: 4
+Dashboards and BI: 3
+Accessibility features: 3
+Animated: 2
+Large-dataset performance: 2
+Web embeddability: 5
+Statistical and analytical depth: 3
+Responsive: 4"><circle cx="817.9" cy="775.6" r="5.35" fill="#4ECEF8" stroke="white" stroke-width="1" opacity="0.95"/><title>Tools: Vega-Lite / Vega
+Free or open source: 5
+Chart type breadth: 4
+Publication quality: 4
+Ease of use: 3
+Programmability: 4
+Interactive: 4
+AI natural language copilot: 2
+Vision QA on render: 1
+Local and offline (no account): 5
+Reproducibility: 5
+Export to SVG PNG PDF: 4
+Customization and theming: 4
+Data source flexibility: 3
+Maturity and community: 4
+Geospatial and maps: 4
+Dashboards and BI: 3
+Accessibility features: 3
+Animated: 2
+Large-dataset performance: 2
+Web embeddability: 5
+Statistical and analytical depth: 3
+Responsive: 4</title></g><text x="830.4" y="779.4" font-size="11" fill="#1C1C1E" text-anchor="start">Vega-Lite / Vega</text><g class="sp-dot" tabindex="0" role="img" aria-label="Tools: Observable Plot
+Free or open source: 5
+Chart type breadth: 4
+Publication quality: 4
+Ease of use: 3
+Programmability: 4
+Interactive: 4
+AI natural language copilot: 1
+Vision QA on render: 1
+Local and offline (no account): 4
+Reproducibility: 4
+Export to SVG PNG PDF: 3
+Customization and theming: 4
+Data source flexibility: 4
+Maturity and community: 3
+Geospatial and maps: 4
+Dashboards and BI: 3
+Accessibility features: 3
+Animated: 3
+Large-dataset performance: 3
+Web embeddability: 5
+Statistical and analytical depth: 3
+Responsive: 4"><circle cx="764.2" cy="799.2" r="5.35" fill="#49DCCD" stroke="white" stroke-width="1" opacity="0.95"/><title>Tools: Observable Plot
+Free or open source: 5
+Chart type breadth: 4
+Publication quality: 4
+Ease of use: 3
+Programmability: 4
+Interactive: 4
+AI natural language copilot: 1
+Vision QA on render: 1
+Local and offline (no account): 4
+Reproducibility: 4
+Export to SVG PNG PDF: 3
+Customization and theming: 4
+Data source flexibility: 4
+Maturity and community: 3
+Geospatial and maps: 4
+Dashboards and BI: 3
+Accessibility features: 3
+Animated: 3
+Large-dataset performance: 3
+Web embeddability: 5
+Statistical and analytical depth: 3
+Responsive: 4</title></g><text x="776.7" y="803.1" font-size="11" fill="#1C1C1E" text-anchor="start">Observable Plot</text><g class="sp-dot" tabindex="0" role="img" aria-label="Tools: Datawrapper
+Free or open source: 3
+Chart type breadth: 3
+Publication quality: 5
+Ease of use: 5
+Programmability: 2
+Interactive: 4
+AI natural language copilot: 1
+Vision QA on render: 1
+Local and offline (no account): 2
+Reproducibility: 3
+Export to SVG PNG PDF: 4
+Customization and theming: 4
+Data source flexibility: 3
+Maturity and community: 4
+Geospatial and maps: 4
+Dashboards and BI: 2
+Accessibility features: 5
+Animated: 2
+Large-dataset performance: 2
+Web embeddability: 5
+Statistical and analytical depth: 2
+Responsive: 5"><circle cx="668.5" cy="747.2" r="5.35" fill="#92CA78" stroke="white" stroke-width="1" opacity="0.95"/><title>Tools: Datawrapper
+Free or open source: 3
+Chart type breadth: 3
+Publication quality: 5
+Ease of use: 5
+Programmability: 2
+Interactive: 4
+AI natural language copilot: 1
+Vision QA on render: 1
+Local and offline (no account): 2
+Reproducibility: 3
+Export to SVG PNG PDF: 4
+Customization and theming: 4
+Data source flexibility: 3
+Maturity and community: 4
+Geospatial and maps: 4
+Dashboards and BI: 2
+Accessibility features: 5
+Animated: 2
+Large-dataset performance: 2
+Web embeddability: 5
+Statistical and analytical depth: 2
+Responsive: 5</title></g><text x="656.0" y="738.5" font-size="11" fill="#1C1C1E" text-anchor="end">Datawrapper</text><g class="sp-dot" tabindex="0" role="img" aria-label="Tools: Flourish
+Free or open source: 3
+Chart type breadth: 4
+Publication quality: 4
+Ease of use: 5
+Programmability: 2
+Interactive: 5
+AI natural language copilot: 1
+Vision QA on render: 1
+Local and offline (no account): 2
+Reproducibility: 2
+Export to SVG PNG PDF: 3
+Customization and theming: 4
+Data source flexibility: 3
+Maturity and community: 4
+Geospatial and maps: 4
+Dashboards and BI: 3
+Accessibility features: 3
+Animated: 5
+Large-dataset performance: 2
+Web embeddability: 5
+Statistical and analytical depth: 2
+Responsive: 5"><circle cx="578.1" cy="812.3" r="5.35" fill="#DD9A4A" stroke="white" stroke-width="1" opacity="0.95"/><title>Tools: Flourish
+Free or open source: 3
+Chart type breadth: 4
+Publication quality: 4
+Ease of use: 5
+Programmability: 2
+Interactive: 5
+AI natural language copilot: 1
+Vision QA on render: 1
+Local and offline (no account): 2
+Reproducibility: 2
+Export to SVG PNG PDF: 3
+Customization and theming: 4
+Data source flexibility: 3
+Maturity and community: 4
+Geospatial and maps: 4
+Dashboards and BI: 3
+Accessibility features: 3
+Animated: 5
+Large-dataset performance: 2
+Web embeddability: 5
+Statistical and analytical depth: 2
+Responsive: 5</title></g><text x="590.6" y="816.2" font-size="11" fill="#1C1C1E" text-anchor="start">Flourish</text><g class="sp-dot" tabindex="0" role="img" aria-label="Tools: RAWGraphs
+Free or open source: 5
+Chart type breadth: 5
+Publication quality: 4
+Ease of use: 5
+Programmability: 1
+Interactive: 2
+AI natural language copilot: 1
+Vision QA on render: 1
+Local and offline (no account): 3
+Reproducibility: 2
+Export to SVG PNG PDF: 4
+Customization and theming: 3
+Data source flexibility: 2
+Maturity and community: 3
+Geospatial and maps: 2
+Dashboards and BI: 1
+Accessibility features: 2
+Animated: 1
+Large-dataset performance: 2
+Web embeddability: 3
+Statistical and analytical depth: 2
+Responsive: 3"><circle cx="650.9" cy="590.4" r="5.35" fill="#AD9CF4" stroke="white" stroke-width="1" opacity="0.95"/><title>Tools: RAWGraphs
+Free or open source: 5
+Chart type breadth: 5
+Publication quality: 4
+Ease of use: 5
+Programmability: 1
+Interactive: 2
+AI natural language copilot: 1
+Vision QA on render: 1
+Local and offline (no account): 3
+Reproducibility: 2
+Export to SVG PNG PDF: 4
+Customization and theming: 3
+Data source flexibility: 2
+Maturity and community: 3
+Geospatial and maps: 2
+Dashboards and BI: 1
+Accessibility features: 2
+Animated: 1
+Large-dataset performance: 2
+Web embeddability: 3
+Statistical and analytical depth: 2
+Responsive: 3</title></g><text x="663.4" y="594.2" font-size="11" fill="#1C1C1E" text-anchor="start">RAWGraphs</text><g class="sp-dot" tabindex="0" role="img" aria-label="Tools: Vizzu
+Free or open source: 5
+Chart type breadth: 3
+Publication quality: 3
+Ease of use: 3
+Programmability: 4
+Interactive: 4
+AI natural language copilot: 1
+Vision QA on render: 1
+Local and offline (no account): 4
+Reproducibility: 3
+Export to SVG PNG PDF: 3
+Customization and theming: 3
+Data source flexibility: 3
+Maturity and community: 3
+Geospatial and maps: 1
+Dashboards and BI: 2
+Accessibility features: 2
+Animated: 5
+Large-dataset performance: 2
+Web embeddability: 4
+Statistical and analytical depth: 2
+Responsive: 4"><circle cx="735.0" cy="698.7" r="5.35" fill="#2198CC" stroke="white" stroke-width="1" opacity="0.95"/><title>Tools: Vizzu
+Free or open source: 5
+Chart type breadth: 3
+Publication quality: 3
+Ease of use: 3
+Programmability: 4
+Interactive: 4
+AI natural language copilot: 1
+Vision QA on render: 1
+Local and offline (no account): 4
+Reproducibility: 3
+Export to SVG PNG PDF: 3
+Customization and theming: 3
+Data source flexibility: 3
+Maturity and community: 3
+Geospatial and maps: 1
+Dashboards and BI: 2
+Accessibility features: 2
+Animated: 5
+Large-dataset performance: 2
+Web embeddability: 4
+Statistical and analytical depth: 2
+Responsive: 4</title></g><text x="747.5" y="702.5" font-size="11" fill="#1C1C1E" text-anchor="start">Vizzu</text><g class="sp-dot" tabindex="0" role="img" aria-label="Tools: Tableau
+Free or open source: 1
+Chart type breadth: 4
+Publication quality: 4
+Ease of use: 4
+Programmability: 2
+Interactive: 5
+AI natural language copilot: 4
+Vision QA on render: 1
+Local and offline (no account): 3
+Reproducibility: 2
+Export to SVG PNG PDF: 4
+Customization and theming: 4
+Data source flexibility: 5
+Maturity and community: 5
+Geospatial and maps: 5
+Dashboards and BI: 5
+Accessibility features: 3
+Animated: 3
+Large-dataset performance: 5
+Web embeddability: 4
+Statistical and analytical depth: 4
+Responsive: 4"><circle cx="416.0" cy="874.4" r="5.35" fill="#A52A2A" stroke="white" stroke-width="1" opacity="0.95"/><title>Tools: Tableau
+Free or open source: 1
+Chart type breadth: 4
+Publication quality: 4
+Ease of use: 4
+Programmability: 2
+Interactive: 5
+AI natural language copilot: 4
+Vision QA on render: 1
+Local and offline (no account): 3
+Reproducibility: 2
+Export to SVG PNG PDF: 4
+Customization and theming: 4
+Data source flexibility: 5
+Maturity and community: 5
+Geospatial and maps: 5
+Dashboards and BI: 5
+Accessibility features: 3
+Animated: 3
+Large-dataset performance: 5
+Web embeddability: 4
+Statistical and analytical depth: 4
+Responsive: 4</title></g><text x="428.5" y="878.2" font-size="11" fill="#1C1C1E" text-anchor="start">Tableau</text><g class="sp-dot" tabindex="0" role="img" aria-label="Tools: Power BI
+Free or open source: 2
+Chart type breadth: 4
+Publication quality: 3
+Ease of use: 4
+Programmability: 2
+Interactive: 5
+AI natural language copilot: 4
+Vision QA on render: 1
+Local and offline (no account): 2
+Reproducibility: 2
+Export to SVG PNG PDF: 3
+Customization and theming: 4
+Data source flexibility: 5
+Maturity and community: 5
+Geospatial and maps: 4
+Dashboards and BI: 5
+Accessibility features: 3
+Animated: 3
+Large-dataset performance: 5
+Web embeddability: 4
+Statistical and analytical depth: 4
+Responsive: 4"><circle cx="385.4" cy="849.6" r="5.35" fill="#DF7A7C" stroke="white" stroke-width="1" opacity="0.95"/><title>Tools: Power BI
+Free or open source: 2
+Chart type breadth: 4
+Publication quality: 3
+Ease of use: 4
+Programmability: 2
+Interactive: 5
+AI natural language copilot: 4
+Vision QA on render: 1
+Local and offline (no account): 2
+Reproducibility: 2
+Export to SVG PNG PDF: 3
+Customization and theming: 4
+Data source flexibility: 5
+Maturity and community: 5
+Geospatial and maps: 4
+Dashboards and BI: 5
+Accessibility features: 3
+Animated: 3
+Large-dataset performance: 5
+Web embeddability: 4
+Statistical and analytical depth: 4
+Responsive: 4</title></g><text x="397.9" y="853.4" font-size="11" fill="#1C1C1E" text-anchor="start">Power BI</text><g class="sp-dot" tabindex="0" role="img" aria-label="Tools: Looker
+Free or open source: 3
+Chart type breadth: 3
+Publication quality: 3
+Ease of use: 5
+Programmability: 3
+Interactive: 4
+AI natural language copilot: 4
+Vision QA on render: 1
+Local and offline (no account): 2
+Reproducibility: 3
+Export to SVG PNG PDF: 3
+Customization and theming: 4
+Data source flexibility: 5
+Maturity and community: 4
+Geospatial and maps: 3
+Dashboards and BI: 5
+Accessibility features: 3
+Animated: 2
+Large-dataset performance: 5
+Web embeddability: 4
+Statistical and analytical depth: 4
+Responsive: 4"><circle cx="435.9" cy="787.9" r="5.35" fill="#D67284" stroke="white" stroke-width="1" opacity="0.95"/><title>Tools: Looker
+Free or open source: 3
+Chart type breadth: 3
+Publication quality: 3
+Ease of use: 5
+Programmability: 3
+Interactive: 4
+AI natural language copilot: 4
+Vision QA on render: 1
+Local and offline (no account): 2
+Reproducibility: 3
+Export to SVG PNG PDF: 3
+Customization and theming: 4
+Data source flexibility: 5
+Maturity and community: 4
+Geospatial and maps: 3
+Dashboards and BI: 5
+Accessibility features: 3
+Animated: 2
+Large-dataset performance: 5
+Web embeddability: 4
+Statistical and analytical depth: 4
+Responsive: 4</title></g><text x="448.4" y="791.8" font-size="11" fill="#1C1C1E" text-anchor="start">Looker</text><g class="sp-dot" tabindex="0" role="img" aria-label="Tools: Apache Superset
+Free or open source: 5
+Chart type breadth: 4
+Publication quality: 3
+Ease of use: 4
+Programmability: 3
+Interactive: 4
+AI natural language copilot: 2
+Vision QA on render: 1
+Local and offline (no account): 4
+Reproducibility: 3
+Export to SVG PNG PDF: 3
+Customization and theming: 4
+Data source flexibility: 5
+Maturity and community: 4
+Geospatial and maps: 3
+Dashboards and BI: 5
+Accessibility features: 2
+Animated: 2
+Large-dataset performance: 5
+Web embeddability: 3
+Statistical and analytical depth: 3
+Responsive: 4"><circle cx="568.9" cy="800.2" r="5.35" fill="#FFA776" stroke="white" stroke-width="1" opacity="0.95"/><title>Tools: Apache Superset
+Free or open source: 5
+Chart type breadth: 4
+Publication quality: 3
+Ease of use: 4
+Programmability: 3
+Interactive: 4
+AI natural language copilot: 2
+Vision QA on render: 1
+Local and offline (no account): 4
+Reproducibility: 3
+Export to SVG PNG PDF: 3
+Customization and theming: 4
+Data source flexibility: 5
+Maturity and community: 4
+Geospatial and maps: 3
+Dashboards and BI: 5
+Accessibility features: 2
+Animated: 2
+Large-dataset performance: 5
+Web embeddability: 3
+Statistical and analytical depth: 3
+Responsive: 4</title></g><g class="sp-dot" tabindex="0" role="img" aria-label="Tools: Metabase
+Free or open source: 4
+Chart type breadth: 3
+Publication quality: 3
+Ease of use: 5
+Programmability: 3
+Interactive: 4
+AI natural language copilot: 3
+Vision QA on render: 1
+Local and offline (no account): 4
+Reproducibility: 3
+Export to SVG PNG PDF: 3
+Customization and theming: 3
+Data source flexibility: 5
+Maturity and community: 4
+Geospatial and maps: 3
+Dashboards and BI: 5
+Accessibility features: 2
+Animated: 2
+Large-dataset performance: 4
+Web embeddability: 4
+Statistical and analytical depth: 3
+Responsive: 4"><circle cx="498.0" cy="773.0" r="5.35" fill="#E68375" stroke="white" stroke-width="1" opacity="0.95"/><title>Tools: Metabase
+Free or open source: 4
+Chart type breadth: 3
+Publication quality: 3
+Ease of use: 5
+Programmability: 3
+Interactive: 4
+AI natural language copilot: 3
+Vision QA on render: 1
+Local and offline (no account): 4
+Reproducibility: 3
+Export to SVG PNG PDF: 3
+Customization and theming: 3
+Data source flexibility: 5
+Maturity and community: 4
+Geospatial and maps: 3
+Dashboards and BI: 5
+Accessibility features: 2
+Animated: 2
+Large-dataset performance: 4
+Web embeddability: 4
+Statistical and analytical depth: 3
+Responsive: 4</title></g><text x="510.5" y="776.8" font-size="11" fill="#1C1C1E" text-anchor="start">Metabase</text><g class="sp-dot" tabindex="0" role="img" aria-label="Tools: Grafana
+Free or open source: 4
+Chart type breadth: 3
+Publication quality: 3
+Ease of use: 4
+Programmability: 3
+Interactive: 4
+AI natural language copilot: 3
+Vision QA on render: 1
+Local and offline (no account): 4
+Reproducibility: 3
+Export to SVG PNG PDF: 3
+Customization and theming: 4
+Data source flexibility: 5
+Maturity and community: 5
+Geospatial and maps: 3
+Dashboards and BI: 5
+Accessibility features: 2
+Animated: 3
+Large-dataset performance: 5
+Web embeddability: 4
+Statistical and analytical depth: 3
+Responsive: 5"><circle cx="526.5" cy="839.3" r="5.35" fill="#DB7D5E" stroke="white" stroke-width="1" opacity="0.95"/><title>Tools: Grafana
+Free or open source: 4
+Chart type breadth: 3
+Publication quality: 3
+Ease of use: 4
+Programmability: 3
+Interactive: 4
+AI natural language copilot: 3
+Vision QA on render: 1
+Local and offline (no account): 4
+Reproducibility: 3
+Export to SVG PNG PDF: 3
+Customization and theming: 4
+Data source flexibility: 5
+Maturity and community: 5
+Geospatial and maps: 3
+Dashboards and BI: 5
+Accessibility features: 2
+Animated: 3
+Large-dataset performance: 5
+Web embeddability: 4
+Statistical and analytical depth: 3
+Responsive: 5</title></g><text x="539.0" y="843.2" font-size="11" fill="#1C1C1E" text-anchor="start">Grafana</text><g class="sp-dot" tabindex="0" role="img" aria-label="Tools: ThoughtSpot
+Free or open source: 1
+Chart type breadth: 3
+Publication quality: 3
+Ease of use: 5
+Programmability: 2
+Interactive: 4
+AI natural language copilot: 5
+Vision QA on render: 1
+Local and offline (no account): 2
+Reproducibility: 2
+Export to SVG PNG PDF: 3
+Customization and theming: 3
+Data source flexibility: 5
+Maturity and community: 4
+Geospatial and maps: 3
+Dashboards and BI: 5
+Accessibility features: 3
+Animated: 2
+Large-dataset performance: 5
+Web embeddability: 4
+Statistical and analytical depth: 4
+Responsive: 4"><circle cx="312.0" cy="769.4" r="5.35" fill="#FB96B6" stroke="white" stroke-width="1" opacity="0.95"/><title>Tools: ThoughtSpot
+Free or open source: 1
+Chart type breadth: 3
+Publication quality: 3
+Ease of use: 5
+Programmability: 2
+Interactive: 4
+AI natural language copilot: 5
+Vision QA on render: 1
+Local and offline (no account): 2
+Reproducibility: 2
+Export to SVG PNG PDF: 3
+Customization and theming: 3
+Data source flexibility: 5
+Maturity and community: 4
+Geospatial and maps: 3
+Dashboards and BI: 5
+Accessibility features: 3
+Animated: 2
+Large-dataset performance: 5
+Web embeddability: 4
+Statistical and analytical depth: 4
+Responsive: 4</title></g><text x="324.5" y="773.2" font-size="11" fill="#1C1C1E" text-anchor="start">ThoughtSpot</text><g class="sp-dot" tabindex="0" role="img" aria-label="Tools: Julius AI
+Free or open source: 2
+Chart type breadth: 3
+Publication quality: 3
+Ease of use: 5
+Programmability: 3
+Interactive: 4
+AI natural language copilot: 5
+Vision QA on render: 2
+Local and offline (no account): 1
+Reproducibility: 3
+Export to SVG PNG PDF: 3
+Customization and theming: 3
+Data source flexibility: 4
+Maturity and community: 3
+Geospatial and maps: 2
+Dashboards and BI: 3
+Accessibility features: 2
+Animated: 2
+Large-dataset performance: 3
+Web embeddability: 2
+Statistical and analytical depth: 5
+Responsive: 3"><circle cx="389.7" cy="628.9" r="5.35" fill="#E184B1" stroke="white" stroke-width="1" opacity="0.95"/><title>Tools: Julius AI
+Free or open source: 2
+Chart type breadth: 3
+Publication quality: 3
+Ease of use: 5
+Programmability: 3
+Interactive: 4
+AI natural language copilot: 5
+Vision QA on render: 2
+Local and offline (no account): 1
+Reproducibility: 3
+Export to SVG PNG PDF: 3
+Customization and theming: 3
+Data source flexibility: 4
+Maturity and community: 3
+Geospatial and maps: 2
+Dashboards and BI: 3
+Accessibility features: 2
+Animated: 2
+Large-dataset performance: 3
+Web embeddability: 2
+Statistical and analytical depth: 5
+Responsive: 3</title></g><text x="402.2" y="632.7" font-size="11" fill="#1C1C1E" text-anchor="start">Julius AI</text><g class="sp-dot" tabindex="0" role="img" aria-label="Tools: ChatGPT
+Free or open source: 2
+Chart type breadth: 3
+Publication quality: 2
+Ease of use: 5
+Programmability: 4
+Interactive: 2
+AI natural language copilot: 5
+Vision QA on render: 3
+Local and offline (no account): 1
+Reproducibility: 3
+Export to SVG PNG PDF: 3
+Customization and theming: 3
+Data source flexibility: 3
+Maturity and community: 4
+Geospatial and maps: 2
+Dashboards and BI: 1
+Accessibility features: 2
+Animated: 1
+Large-dataset performance: 2
+Web embeddability: 2
+Statistical and analytical depth: 5
+Responsive: 2"><circle cx="438.4" cy="519.7" r="5.35" fill="#AC7CCB" stroke="white" stroke-width="1" opacity="0.95"/><title>Tools: ChatGPT
+Free or open source: 2
+Chart type breadth: 3
+Publication quality: 2
+Ease of use: 5
+Programmability: 4
+Interactive: 2
+AI natural language copilot: 5
+Vision QA on render: 3
+Local and offline (no account): 1
+Reproducibility: 3
+Export to SVG PNG PDF: 3
+Customization and theming: 3
+Data source flexibility: 3
+Maturity and community: 4
+Geospatial and maps: 2
+Dashboards and BI: 1
+Accessibility features: 2
+Animated: 1
+Large-dataset performance: 2
+Web embeddability: 2
+Statistical and analytical depth: 5
+Responsive: 2</title></g><text x="450.9" y="523.5" font-size="11" fill="#1C1C1E" text-anchor="start">ChatGPT</text><g class="sp-dot" tabindex="0" role="img" aria-label="Tools: Claude
+Free or open source: 2
+Chart type breadth: 3
+Publication quality: 3
+Ease of use: 5
+Programmability: 4
+Interactive: 3
+AI natural language copilot: 5
+Vision QA on render: 2
+Local and offline (no account): 1
+Reproducibility: 3
+Export to SVG PNG PDF: 3
+Customization and theming: 3
+Data source flexibility: 3
+Maturity and community: 4
+Geospatial and maps: 2
+Dashboards and BI: 2
+Accessibility features: 2
+Animated: 2
+Large-dataset performance: 2
+Web embeddability: 3
+Statistical and analytical depth: 5
+Responsive: 3"><circle cx="451.3" cy="604.3" r="5.35" fill="#C16EA6" stroke="white" stroke-width="1" opacity="0.95"/><title>Tools: Claude
+Free or open source: 2
+Chart type breadth: 3
+Publication quality: 3
+Ease of use: 5
+Programmability: 4
+Interactive: 3
+AI natural language copilot: 5
+Vision QA on render: 2
+Local and offline (no account): 1
+Reproducibility: 3
+Export to SVG PNG PDF: 3
+Customization and theming: 3
+Data source flexibility: 3
+Maturity and community: 4
+Geospatial and maps: 2
+Dashboards and BI: 2
+Accessibility features: 2
+Animated: 2
+Large-dataset performance: 2
+Web embeddability: 3
+Statistical and analytical depth: 5
+Responsive: 3</title></g><text x="463.8" y="608.1" font-size="11" fill="#1C1C1E" text-anchor="start">Claude</text><g class="sp-dot" tabindex="0" role="img" aria-label="Tools: Gemini
+Free or open source: 2
+Chart type breadth: 3
+Publication quality: 2
+Ease of use: 5
+Programmability: 3
+Interactive: 2
+AI natural language copilot: 5
+Vision QA on render: 2
+Local and offline (no account): 1
+Reproducibility: 2
+Export to SVG PNG PDF: 3
+Customization and theming: 3
+Data source flexibility: 3
+Maturity and community: 4
+Geospatial and maps: 2
+Dashboards and BI: 2
+Accessibility features: 2
+Animated: 1
+Large-dataset performance: 2
+Web embeddability: 2
+Statistical and analytical depth: 4
+Responsive: 2"><circle cx="389.2" cy="540.5" r="5.35" fill="#B375BE" stroke="white" stroke-width="1" opacity="0.95"/><title>Tools: Gemini
+Free or open source: 2
+Chart type breadth: 3
+Publication quality: 2
+Ease of use: 5
+Programmability: 3
+Interactive: 2
+AI natural language copilot: 5
+Vision QA on render: 2
+Local and offline (no account): 1
+Reproducibility: 2
+Export to SVG PNG PDF: 3
+Customization and theming: 3
+Data source flexibility: 3
+Maturity and community: 4
+Geospatial and maps: 2
+Dashboards and BI: 2
+Accessibility features: 2
+Animated: 1
+Large-dataset performance: 2
+Web embeddability: 2
+Statistical and analytical depth: 4
+Responsive: 2</title></g><text x="401.7" y="544.4" font-size="11" fill="#1C1C1E" text-anchor="start">Gemini</text><g class="sp-dot" tabindex="0" role="img" aria-label="Tools: AgentVision
+Free or open source: 5
+Chart type breadth: 1
+Publication quality: 1
+Ease of use: 3
+Programmability: 4
+Interactive: 1
+AI natural language copilot: 2
+Vision QA on render: 5
+Local and offline (no account): 4
+Reproducibility: 3
+Export to SVG PNG PDF: 1
+Customization and theming: 1
+Data source flexibility: 2
+Maturity and community: 1
+Geospatial and maps: 1
+Dashboards and BI: 1
+Accessibility features: 4
+Animated: 1
+Large-dataset performance: 1
+Web embeddability: 1
+Statistical and analytical depth: 1
+Responsive: 1"><circle cx="672.9" cy="340.5" r="5.35" fill="#AF52DE" stroke="white" stroke-width="1" opacity="0.95"/><title>Tools: AgentVision
+Free or open source: 5
+Chart type breadth: 1
+Publication quality: 1
+Ease of use: 3
+Programmability: 4
+Interactive: 1
+AI natural language copilot: 2
+Vision QA on render: 5
+Local and offline (no account): 4
+Reproducibility: 3
+Export to SVG PNG PDF: 1
+Customization and theming: 1
+Data source flexibility: 2
+Maturity and community: 1
+Geospatial and maps: 1
+Dashboards and BI: 1
+Accessibility features: 4
+Animated: 1
+Large-dataset performance: 1
+Web embeddability: 1
+Statistical and analytical depth: 1
+Responsive: 1</title></g><text x="685.4" y="344.4" font-size="11" fill="#1C1C1E" text-anchor="start">AgentVision</text><g class="sp-dot" tabindex="0" role="img" aria-label="Tools: Excel
+Free or open source: 3
+Chart type breadth: 3
+Publication quality: 3
+Ease of use: 5
+Programmability: 2
+Interactive: 2
+AI natural language copilot: 3
+Vision QA on render: 1
+Local and offline (no account): 5
+Reproducibility: 2
+Export to SVG PNG PDF: 3
+Customization and theming: 4
+Data source flexibility: 3
+Maturity and community: 5
+Geospatial and maps: 2
+Dashboards and BI: 3
+Accessibility features: 3
+Animated: 2
+Large-dataset performance: 2
+Web embeddability: 2
+Statistical and analytical depth: 4
+Responsive: 2"><circle cx="542.6" cy="616.2" r="5.35" fill="#B66DAE" stroke="white" stroke-width="1" opacity="0.95"/><title>Tools: Excel
+Free or open source: 3
+Chart type breadth: 3
+Publication quality: 3
+Ease of use: 5
+Programmability: 2
+Interactive: 2
+AI natural language copilot: 3
+Vision QA on render: 1
+Local and offline (no account): 5
+Reproducibility: 2
+Export to SVG PNG PDF: 3
+Customization and theming: 4
+Data source flexibility: 3
+Maturity and community: 5
+Geospatial and maps: 2
+Dashboards and BI: 3
+Accessibility features: 3
+Animated: 2
+Large-dataset performance: 2
+Web embeddability: 2
+Statistical and analytical depth: 4
+Responsive: 2</title></g><text x="555.1" y="620.1" font-size="11" fill="#1C1C1E" text-anchor="start">Excel</text><g class="sp-dot" tabindex="0" role="img" aria-label="Tools: Canva
+Free or open source: 3
+Chart type breadth: 2
+Publication quality: 4
+Ease of use: 5
+Programmability: 1
+Interactive: 2
+AI natural language copilot: 3
+Vision QA on render: 1
+Local and offline (no account): 1
+Reproducibility: 1
+Export to SVG PNG PDF: 4
+Customization and theming: 4
+Data source flexibility: 2
+Maturity and community: 4
+Geospatial and maps: 1
+Dashboards and BI: 1
+Accessibility features: 3
+Animated: 3
+Large-dataset performance: 1
+Web embeddability: 3
+Statistical and analytical depth: 1
+Responsive: 2"><circle cx="545.0" cy="551.4" r="5.35" fill="#9776C8" stroke="white" stroke-width="1" opacity="0.95"/><title>Tools: Canva
+Free or open source: 3
+Chart type breadth: 2
+Publication quality: 4
+Ease of use: 5
+Programmability: 1
+Interactive: 2
+AI natural language copilot: 3
+Vision QA on render: 1
+Local and offline (no account): 1
+Reproducibility: 1
+Export to SVG PNG PDF: 4
+Customization and theming: 4
+Data source flexibility: 2
+Maturity and community: 4
+Geospatial and maps: 1
+Dashboards and BI: 1
+Accessibility features: 3
+Animated: 3
+Large-dataset performance: 1
+Web embeddability: 3
+Statistical and analytical depth: 1
+Responsive: 2</title></g><text x="557.5" y="555.2" font-size="11" fill="#1C1C1E" text-anchor="start">Canva</text><text x="1236.0" y="42.0" font-size="9" font-weight="700" fill="#1C1C1E">Tools</text><circle cx="1242.0" cy="58.9" r="6" fill="#FF3B30" opacity="0.95"/><text x="1254.0" y="62.0" font-size="9" fill="#1C1C1E">sprezzature-figures</text><circle cx="1242.0" cy="75.9" r="6" fill="#AF52DE" opacity="0.95"/><text x="1254.0" y="79.1" font-size="9" fill="#1C1C1E">AgentVision</text><circle cx="1242.0" cy="93.0" r="6" fill="#AD9CF4" opacity="0.95"/><text x="1254.0" y="96.2" font-size="9" fill="#1C1C1E">RAWGraphs</text><circle cx="1242.0" cy="110.1" r="6" fill="#9776C8" opacity="0.95"/><text x="1254.0" y="113.3" font-size="9" fill="#1C1C1E">Canva</text><circle cx="1242.0" cy="127.2" r="6" fill="#C16EA6" opacity="0.95"/><text x="1254.0" y="130.4" font-size="9" fill="#1C1C1E">Claude</text><circle cx="1242.0" cy="144.3" r="6" fill="#AC7CCB" opacity="0.95"/><text x="1254.0" y="147.5" font-size="9" fill="#1C1C1E">ChatGPT</text><circle cx="1242.0" cy="161.4" r="6" fill="#B375BE" opacity="0.95"/><text x="1254.0" y="164.6" font-size="9" fill="#1C1C1E">Gemini</text><circle cx="1242.0" cy="178.5" r="6" fill="#749CEB" opacity="0.95"/><text x="1254.0" y="181.7" font-size="9" fill="#1C1C1E">ggplot2</text><circle cx="1242.0" cy="195.6" r="6" fill="#A8AAFF" opacity="0.95"/><text x="1254.0" y="198.8" font-size="9" fill="#1C1C1E">Great Tables</text><circle cx="1242.0" cy="212.7" r="6" fill="#8599ED" opacity="0.95"/><text x="1254.0" y="215.9" font-size="9" fill="#1C1C1E">Seaborn</text><circle cx="1242.0" cy="229.8" r="6" fill="#2198CC" opacity="0.95"/><text x="1254.0" y="233.0" font-size="9" fill="#1C1C1E">Vizzu</text><circle cx="1242.0" cy="246.9" r="6" fill="#D9A247" opacity="0.95"/><text x="1254.0" y="250.1" font-size="9" fill="#1C1C1E">PyGWalker</text><circle cx="1242.0" cy="264.1" r="6" fill="#B66DAE" opacity="0.95"/><text x="1254.0" y="267.2" font-size="9" fill="#1C1C1E">Excel</text><circle cx="1242.0" cy="281.1" r="6" fill="#E184B1" opacity="0.95"/><text x="1254.0" y="284.3" font-size="9" fill="#1C1C1E">Julius AI</text><circle cx="1242.0" cy="298.2" r="6" fill="#007AFF" opacity="0.95"/><text x="1254.0" y="301.4" font-size="9" fill="#1C1C1E">Matplotlib</text><circle cx="1242.0" cy="315.3" r="6" fill="#4299D8" opacity="0.95"/><text x="1254.0" y="318.5" font-size="9" fill="#1C1C1E">Altair</text><circle cx="1242.0" cy="332.4" r="6" fill="#5C9AE2" opacity="0.95"/><text x="1254.0" y="335.6" font-size="9" fill="#1C1C1E">Quarto</text><circle cx="1242.0" cy="349.6" r="6" fill="#00B4D1" opacity="0.95"/><text x="1254.0" y="352.7" font-size="9" fill="#1C1C1E">Chart.js</text><circle cx="1242.0" cy="366.6" r="6" fill="#00BECC" opacity="0.95"/><text x="1254.0" y="369.8" font-size="9" fill="#1C1C1E">Recharts</text><circle cx="1242.0" cy="383.8" r="6" fill="#92CA78" opacity="0.95"/><text x="1254.0" y="386.9" font-size="9" fill="#1C1C1E">Datawrapper</text><circle cx="1242.0" cy="400.8" r="6" fill="#B9932B" opacity="0.95"/><text x="1254.0" y="404.0" font-size="9" fill="#1C1C1E">marimo</text><circle cx="1242.0" cy="417.9" r="6" fill="#4ECEF8" opacity="0.95"/><text x="1254.0" y="421.1" font-size="9" fill="#1C1C1E">Vega-Lite / Vega</text><circle cx="1242.0" cy="435.0" r="6" fill="#53D9BA" opacity="0.95"/><text x="1254.0" y="438.2" font-size="9" fill="#1C1C1E">Mosaic / vgplot</text><circle cx="1242.0" cy="452.1" r="6" fill="#BAA43C" opacity="0.95"/><text x="1254.0" y="455.3" font-size="9" fill="#1C1C1E">Evidence</text><circle cx="1242.0" cy="469.2" r="6" fill="#EB9C5B" opacity="0.95"/><text x="1254.0" y="472.4" font-size="9" fill="#1C1C1E">Streamlit</text><circle cx="1242.0" cy="486.3" r="6" fill="#E68375" opacity="0.95"/><text x="1254.0" y="489.5" font-size="9" fill="#1C1C1E">Metabase</text><circle cx="1242.0" cy="503.4" r="6" fill="#D67284" opacity="0.95"/><text x="1254.0" y="506.6" font-size="9" fill="#1C1C1E">Looker</text><circle cx="1242.0" cy="520.5" r="6" fill="#FB96B6" opacity="0.95"/><text x="1254.0" y="523.7" font-size="9" fill="#1C1C1E">ThoughtSpot</text><circle cx="1242.0" cy="537.6" r="6" fill="#49DCCD" opacity="0.95"/><text x="1254.0" y="540.8" font-size="9" fill="#1C1C1E">Observable Plot</text><circle cx="1242.0" cy="554.7" r="6" fill="#509C58" opacity="0.95"/><text x="1254.0" y="557.9" font-size="9" fill="#1C1C1E">Bokeh</text><circle cx="1242.0" cy="571.8" r="6" fill="#66C68D" opacity="0.95"/><text x="1254.0" y="575.0" font-size="9" fill="#1C1C1E">HoloViews</text><circle cx="1242.0" cy="588.9" r="6" fill="#DD9A4A" opacity="0.95"/><text x="1254.0" y="592.1" font-size="9" fill="#1C1C1E">Flourish</text><circle cx="1242.0" cy="606.0" r="6" fill="#FFA776" opacity="0.95"/><text x="1254.0" y="609.2" font-size="9" fill="#1C1C1E">Apache Superset</text><circle cx="1242.0" cy="623.1" r="6" fill="#DB7D5E" opacity="0.95"/><text x="1254.0" y="626.3" font-size="9" fill="#1C1C1E">Grafana</text><circle cx="1242.0" cy="640.2" r="6" fill="#DF7A7C" opacity="0.95"/><text x="1254.0" y="643.4" font-size="9" fill="#1C1C1E">Power BI</text><circle cx="1242.0" cy="657.3" r="6" fill="#009D9D" opacity="0.95"/><text x="1254.0" y="660.5" font-size="9" fill="#1C1C1E">D3.js</text><circle cx="1242.0" cy="674.4" r="6" fill="#60D5A8" opacity="0.95"/><text x="1254.0" y="677.6" font-size="9" fill="#1C1C1E">Apache ECharts</text><circle cx="1242.0" cy="691.5" r="6" fill="#ADBD5A" opacity="0.95"/><text x="1254.0" y="694.7" font-size="9" fill="#1C1C1E">Highcharts</text><circle cx="1242.0" cy="708.6" r="6" fill="#AFD377" opacity="0.95"/><text x="1254.0" y="711.8" font-size="9" fill="#1C1C1E">Observable Framework</text><circle cx="1242.0" cy="725.7" r="6" fill="#BFBB55" opacity="0.95"/><text x="1254.0" y="728.9" font-size="9" fill="#1C1C1E">Plotly / Dash</text><circle cx="1242.0" cy="742.8" r="6" fill="#A52A2A" opacity="0.95"/><text x="1254.0" y="746.0" font-size="9" fill="#1C1C1E">Tableau</text><text x="612.0" y="26" font-size="18" font-weight="bold" fill="#000" text-anchor="middle">Tools in the Quadrant</text></svg>

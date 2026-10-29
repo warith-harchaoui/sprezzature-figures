@@ -1,28 +1,16 @@
-# sprezzature-figures
-
-## Interprétation
-
-L'analyse de cette carte de positionnement révèle un enjeu central pour l'exploration et la visualisation de données: le passage d'une approche "plug and play" orientée vers une simplicité immédiate à une maîtrise technique permettant des personnalisations poussées et une précision accrue. Sprezzature-figures se distingue clairement par sa capacité à offrir cette maîtrise sans sacrifier un certain dynamisme visuel, ce qui la place en position de leader incontesté. Elle excelle particulièrement dans l'art de combiner esthétique sophistiquée et contrôle précis sur les éléments graphiques, une qualité absente des solutions plus grand public comme ThoughtSpot où la priorité est donnée à la facilité d’utilisation au détriment du raffinement visuel et de la granularité du contrôle.
-
-L'arbitrage le plus significatif se situe entre RAWGraphs et Vega : RAWGraphs privilégie un point d'entrée bas pour des visualisations rapidement réalisables, tandis que Vega offre une flexibilité extrême mais exige une expertise en programmation significative. Pour les utilisateurs cherchant à créer des graphiques personnalisés sans s’engager dans un apprentissage technique approfondi, RAWGraphs constitue un choix judicieux. En revanche, si la priorité est l'exploration de visualisations complexes et non standardisées, Vega représente le meilleur investissement malgré sa courbe d'apprentissage plus abrupte.
-
-Canva, bien que positionné relativement bas sur cette carte, démontre une capacité à surpasser son rang en termes de rapidité de création pour des besoins de communication visuelle simple et efficace. Inversement, Matplotlib, souvent considéré comme un pilier de la visualisation scientifique, semble légèrement sous-performer par rapport à Altair ou Seaborn, notamment dans sa capacité à produire des graphiques esthétiquement plaisants sans effort supplémentaire significatif. ChatGPT se positionne avec justesse en termes de précision mais manque encore d'une maîtrise globale du domaine de la visualisation, tandis que D3.js, malgré son positionnement vers la maîtrise, peut s’avérer intimidant pour un utilisateur novice.
+# Outils dans le quadrant
 
 ## Axes
 
-**Horizontal (Simplicité ↔ Maîtrise) :** ~30% de l'information.
+- **Horizontal: Ingéniosité ↔ Liberté** — ~30 % de la variance
+- **Vertical: Dynamisme ↔ Précision** — ~20 % de la variance
 
-Colonnes pertinentes pour l'axe : Qualité de publication · Reproductibilité · Personnalisation et thèmes · Étendue des types de graphiques · Export en SVG PNG PDF · Local et hors ligne (sans compte) · Programmabilité · Gratuit ou open source · Fonctionnalités d'accessibilité · Géospatial et cartes · Animé · Intégrabilité web · Contrôle qualité visuel du rendu · Maturité et communauté · Adaptatif · Performance sur grands jeux de données · Profondeur statistique et analytique · Interactif · Flexibilité des sources de données · Tableaux de bord et BI · Copilote IA en langage naturel · Facilité d'utilisation.
+En deux axes, nous avons préservé ~50 % de l'information du tableau.
 
-**Vertical (Dynamisme ↔ Précision) :** ~20% de l'information.
+## Analyse
 
-Colonnes pertinentes pour l'axe : Contrôle qualité visuel du rendu · Export en SVG PNG PDF · Copilote IA en langage naturel · Qualité de publication · Profondeur statistique et analytique · Facilité d'utilisation · Fonctionnalités d'accessibilité · Gratuit ou open source · Reproductibilité · Programmabilité · Local et hors ligne (sans compte) · Personnalisation et thèmes · Étendue des types de graphiques · Maturité et communauté · Géospatial et cartes · Animé · Performance sur grands jeux de données · Intégrabilité web · Flexibilité des sources de données · Adaptatif · Tableaux de bord et BI · Interactif.
+L'axe horizontal distingue principalement les outils qui privilégient une grande liberté d'action et de personnalisation, de ceux qui se concentrent davantage sur l'ingéniosité et la sophistication de leurs fonctionnalités. Les options positionnées à droite, vers la Liberté, bénéficient d'une plus grande flexibilité, notamment grâce à leur nature open source ou à la présence d'un coprocesseur IA et offrent une plus grande reproductibilité. À l'inverse, les outils situés à gauche, vers l'Ingéniosité, mettent l'accent sur des fonctionnalités avancées et une automatisation poussée, mais peuvent être moins accessibles ou moins personnalisables.
 
-Sur deux axes, nous avons préservé **~50%** de l'information.
+L'axe vertical oppose, quant à lui, les solutions qui se veulent dynamiques et réactives, à celles qui privilégient la précision et le contrôle. Les options en bas, vers le Dynamisme, se distinguent par leur capacité à s'adapter rapidement et à offrir une expérience utilisateur interactive, souvent au détriment d'un contrôle visuel précis. À l'inverse, les outils en haut, vers la Précision, mettent l'accent sur la qualité de la publication et la rigueur de l'analyse, mais peuvent être moins flexibles et moins intuitifs.
 
-## Approches mises en avant
-
-- **Référence en tête choisie :** sprezzature-figures
-- **Opposé exact de la référence :** ThoughtSpot (diamétralement opposé au leader sur la carte)
-- **Plus fort vers Précision :** ChatGPT (challenger le plus haut sur l'axe vertical)
-- **Plus fort vers Maîtrise :** D3.js (challenger le plus à droite sur l'axe horizontal)
+On observe que *sprezzature-figures*, l'option de référence, excelle dans les deux dimensions, combinant liberté et précision, ce qui explique sa position en haut à droite. Plusieurs options, comme *Tableau*, *Power BI*, *Looker*, *Apache Superset*, *Metabase*, *Grafana* et *ThoughtSpot*, se regroupent en bas à gauche, partagent une forte orientation vers l'ingéniosité et la puissance de calcul, mais peuvent manquer de dynamisme. D'autres, comme *Matplotlib*, *Plotly / Dash*, *Bokeh*, *Altair*, *marimo*, *Quarto*, *Observable Framework*, *Evidence*, *Mosaic / vgplot*, *D3.js*, *Chart.js*, *Apache ECharts*, *Highcharts*, *Recharts*, *Vega-Lite / Vega*, *Observable Plot*, *Datawrapper* et *Vizzu*, se positionnent en bas à droite, privilégiant la liberté et la flexibilité, mais peuvent sacrifier une certaine rigueur analytique. Enfin, *Julius AI*, *ChatGPT*, *Claude*, *Gemini*, *Excel* et *Canva* se regroupent en haut à gauche, mettant en avant l'ingéniosité et la précision, mais manquant de dynamisme.
