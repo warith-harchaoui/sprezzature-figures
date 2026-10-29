@@ -1,105 +1,143 @@
 # Landscape
 
-`sprezzature-figures` is the data-visualisation skill of the [sprezzature](https://sprezzature.ai/) suite, a set of Python packages for building publication-quality web content.
+`sprezzature-figures` is the data-visualisation brick of the [sprezzature](https://sprezzature.ai/) suite, ten Python packages for building publication-quality web content. It holds 167 chart types in 68 categories, every one of them written as SVG directly, with no charting library underneath. It also holds the Ralph Eyeball Loop, which renders a figure, looks at the picture, and edits the source until the picture reads.
 
 ## How it fits in the ecosystem
 
 ```
 sprezzature suite
-├── sprezzature-figures   ← this package (167 chart types)
-├── sprezzature-colors    (accessible colour palettes)
-├── sprezzature-vision    (alt-text generation, image captioning)
-├── sprezzature-audio     (audio transcription, caption translation)
-├── sprezzature-publish   (plain-language rewrite, meta tags, SEO)
-└── best-engine-ai-helper (LLM/VLM hardware detection and model selection)
+├── sprezzature-figures        ← this package (167 chart types, the Ralph Eyeball Loop)
+├── sprezzature-maps           (the same numbers attached to real places)
+├── sprezzature-colors         (the palettes a figure is drawn in)
+├── sprezzature-accessibility  (static HTML lint, and the alt text it says is missing)
+├── sprezzature-ui             (the page a figure is embedded in)
+├── sprezzature-ux-laws        (whether that page feels right)
+├── sprezzature-cli-gui        (a web form over a command-line tool)
+├── sprezzature-publish        (Markdown to a findable site, narration included)
+├── sprezzature-audio          (speech to text, text to speech)
+└── sprezzature-video          (what a film about a project claims, checked)
 ```
 
-## When to choose sprezzature-figures
+What comes before: rows, from a CSV file, a DataFrame, standard input, or a screenshot of somebody else's chart. What comes after: an SVG file, which `sprezzature-publish` puts on a page and `sprezzature-accessibility` then lints. The sister brick is `sprezzature-maps`: the moment the numbers are attached to real places, projections, basemaps and choropleths become the whole problem, and that is a different repository. `choropleth` and `situation_map` used to live here and moved there.
 
-- You need 128 ready-to-use chart types behind a single consistent API, where `make_figure("treemap", data)` just works without reading docs.
-- You want the output to stay entirely on your machine: import, profiling, manual figure choice, and export all run with no model and no cloud.
-- You want a copilot that edits a structured, reproducible plan and actually looks at the rendered image (the Ralph Eyeball Loop) rather than one that emits a chart on faith.
-- You are building a pipeline that feeds publication-grade figures into a web page, and you want a plan plus a `reproduce.py` you can rerun later.
+## When to choose it
 
-Reach for something else when you need a live business-intelligence dashboard over a database (a BI tool), a drag-and-drop editorial chart with a hosted embed (a no-code web tool), or fully bespoke browser animation (a JavaScript library). The table below places `sprezzature-figures` next to those alternatives.
+- You want a chart kind by name and you do not want to read a tutorial first. `make_figure("treemap", rows, out="t.svg")` resolves the kind through `sprezzature_figures/catalog/figures.json` and returns a path. There are 167 names, and all 167 are marked stable.
+- You need the figure to stay on your machine. Import, profiling, the choice of chart kind, the render and the export all run with no model and no account. The only step that wants a model is the critique, and `--local` runs it offline through Ollama.
+- You want a copilot that actually looks at what it drew. Most assistants emit a chart and move on. The Ralph Eyeball Loop renders, reads the picture, writes a critique, edits the source, and renders again.
+- You have somebody else's chart and want it redrawn without the numbers being invented. `redraw()` separates the design from the data, and every result carries a `data_origin` field saying which of the two it recovered.
+- You are feeding figures into a web page and want the SVG to be self-contained: embedded fonts, an accessible title and description, dark-mode peers, reduced-motion guards.
+
+## When to pick something else
+
+- **A live dashboard over a database.** Apache Superset, Metabase and Grafana connect to the warehouse, refresh on a schedule, and give a team somewhere to look. This package draws one figure from rows you already have. It scores one star on dashboards and business intelligence (BI) and deserves it.
+- **A chart over a very large table.** [Mosaic](https://idl.uw.edu/mosaic/) pushes the work into DuckDB and keeps a view over a billion rows interactive by building data-cube indexes. This package writes SVG elements, and SVG stops being the right container somewhere in the tens of thousands of marks.
+- **Anything geographic.** `deck.gl`, Apache ECharts and D3 do projections and basemaps properly. Inside this suite the answer is `sprezzature-maps`. The eleven map-shaped kinds that remain here are marks arranged in the shape of a country, not cartography.
+- **A chart a newsroom publishes this afternoon.** [Datawrapper](https://www.datawrapper.de/) and Flourish are faster from spreadsheet to embed than any library can be, they handle the responsive behaviour, and Datawrapper's accessibility defaults are better than most libraries manage after a week of work.
+- **A reusable component in a React application.** Recharts has a TypeScript rewrite, two and a half million weekly downloads, and lives inside the component tree where the state already is. An SVG file written by a Python process does not.
+- **The ecosystem itself.** Matplotlib has twenty years of answered questions, every statistics textbook, and a backend for every output you can name. This package has one author and a short history. On maturity it scores one star against Matplotlib's five, and that is the honest reading.
+
+## Ideas worth stealing
+
+Forty-one tools were read for this document. Studying a competitor and bringing nothing back is wasted work, so here is what is worth taking, best value first. Two entries are refusals, with the reason.
+
+**[Vega-Lite](https://vega.github.io/vega-lite/): a published JSON Schema, and a `$schema` key in every spec.** A Vega-Lite document names the schema it was written against, so an editor completes it, a validator rejects it before anything renders, and a version mismatch is a readable error rather than a wrong picture. Here, `sprezzature_figures/catalog/models.py` is already Pydantic, so `model_json_schema()` exists and nobody publishes it. The work is a `sprezzature-figures schema <kind>` command that emits it, a `$schema` field on the `FigurePlan`, and a stable URL per version. That gives `sprezzature-cli-gui` a form it can generate without reading our code, and gives Model Context Protocol (MCP) clients the same validation the HTTP routes do. Cost: half a day, because the hard half is already written. Best ratio on this list.
+
+**[AgentVision](https://github.com/amitpatole/agent-vision): a three-level verdict, and issues with coordinates.** Its loop returns `pass` / `warn` / `fail` plus issues anchored to a box on the image, so a calling agent knows whether it may claim it is done. Here, `check_render()` in `sprezzature_figures/render_checks.py` returns a flat list of findings and the `check` action in `actions.py` turns any non-empty list into a non-zero exit. A build that trips one soft warning fails the same way as a build with text off the canvas, so in practice the check gets switched off. The work is a severity field on `RenderFinding`, a verdict on `ActionResult`, and a `--fail-on warn|error` flag. Cost: an afternoon. This is the idea the brick has half: the checks are all there, the triage is not.
+
+**[Mosaic](https://idl.uw.edu/mosaic/): bin before you draw, rather than drawing everything.** Mosaic never sends a million marks to the browser; it computes a binned summary in the database and draws that. Here, `max_recommended_rows` is already a field on every entry in `figures.json`, and the only code that reads it is `sprezzature_figures/studio/recommendation/scoring.py`, where it is a soft scoring penalty. `make_figure()` ignores it completely and will happily emit fifty thousand `<circle>` elements. The work is a check in `make_figure.py` that refuses past the ceiling and names the binned kind to use instead (`scatter` to `hexbin`, `line` to `horizon`), with a `--force` escape. Cost: a day, most of it writing the fallback table. The full Mosaic architecture is refused: DuckDB as a hard dependency is a different product.
+
+**[Quarto](https://quarto.org/): the freeze manifest.** Quarto writes a `_freeze/` record of what was computed and from what, so a rebuild skips unchanged documents and a reader can tell whether an artefact matches its source. Here, the brick writes a `reproduce.py` that replays a figure, which answers "how was this made" but not "is this still true". A small sidecar JSON next to each SVG holding the kind, the resolved option values, a checksum of the rows and the package version would let `check` say "this figure is stale with respect to its data". Cost: an afternoon for the manifest, a day for the staleness check. It also hands `sprezzature-video` the asset ledger it already asks for, which is why it is this high.
+
+**[Datawrapper](https://www.datawrapper.de/): the chart carries its own evidence.** Every published Datawrapper chart has a visible source line and a "get the data" link, by default, not as an option somebody remembers to switch on. Here the figures are self-contained SVG with embedded fonts, so there is room: a `source=` option in the shared chrome and the rows themselves in a `<metadata>` island would make a figure checkable by the person reading it. Cost: cheaper than it looks, and checking that was worth it. `scripts/_svg.py:svg_open` is called by 144 of the 167 generators (`grep -l 'svg_open(' scripts/make_*.py | wc -l`), so one slot in the shared chrome reaches most of the catalogue in a single edit and leaves 23 stragglers to sweep by hand. Call it an afternoon for `svg_open`, a day for the rest, and cap the embedded rows (500, say) so a big figure does not double in size. Note that the docstring of `_svg.py` still says the helper is shared by about 46 generators, which was true once and has been wrong for a long time.
+
+**[Great Tables](https://posit-dev.github.io/great-tables/): a name for every region of the output.** Its API is built on named parts, `tab_header`, `tab_source_note`, `tab_spanner`, `tab_stubhead`, so an instruction like "put a footnote on the third column" has somewhere to land. Here, `sprezzature_figures/core/operations.py` has typed operations for the data (`SetTitle`, `SetSubtitle`, `SetStyleOption`) but the chrome of the drawing has no vocabulary, so when the critic says the legend overlaps the subtitle, the apply layer has no operation that means that. A named-parts enum shared by `svg_open`, the critic prompt and `operations.py` would close that gap. Cost: a week, and it is the one on this list most likely to grow. Worth it only if the critic is going to be trusted to repair layout unattended.
+
+**[marimo](https://marimo.io/): `marimo pair`, an agent driving a live session. Refused.** marimo opened its notebook kernel to coding agents with token authentication and live cell execution, which is genuinely the right shape for iterating on one figure across many turns. The equivalent here would be a stateful MCP session holding an open `FigurePlan`. It is refused because `sprezzature_figures/mcp.py` is deliberately a one-line wrap of the FastAPI application via `fastapi_mcp`: the MCP tools and the HTTP routes cannot drift because they are the same routes. Session state would end that, and the drift it would permit costs more than the round trips it would save.
+
+**[Observable Framework](https://observablehq.com/framework): data loaders, any executable in any language. Refused as written.** In Framework, `data/sales.csv` is produced by `data/sales.csv.py`, and the build runs it. It is an elegant convention and it would suit `--data` perfectly: a figure in a repository could be rebuilt from a query instead of from a committed extract. It is refused in that form because `make-figure --data foo.csv` executing `foo.csv.py` means a chart command runs code the user did not know was there. If it is ever taken, it is behind an explicit `--allow-exec` flag, never by file extension alone.
+
+## How the field divides
+
+The first split is between a **library** and a **product**. A library gives you a function and leaves the rest to you: Matplotlib, D3, Chart.js, Recharts, Observable Plot, this package. A product gives you somewhere to log in and something to look at: Tableau, Power BI, Looker, Metabase, Datawrapper. The library camp wins on control and reproducibility; the product camp wins on time to first chart and on everything that happens after the chart exists, which is most of the work in an organisation. Between them sits a third camp that barely existed five years ago, the **BI-as-code** tools: Evidence, Observable Framework, Quarto with its dashboards, and `marimo`. These keep the product's output and the library's source control, defining a whole site in a git repository.
+
+The second split is **static artefact against running view**. A figure is a file: it can be put in a paper, a slide deck, an email, a printed report, and it will look the same in ten years. A view is a process: it queries something, it refreshes, it responds to a click, and it is dead the moment the service behind it stops. Apache ECharts, Plotly/Dash, Bokeh, HoloViews and Mosaic are in the second camp and are much better at it than anything in the first. This package is firmly in the first, which is why it scores three stars on interactive and one on dashboards. The map below finds this split on its own and puts it on the vertical axis.
+
+The third split is newer and it is about **who writes the chart**. In 2026 every large model will produce a chart from a sentence, and the business intelligence vendors have all shipped a natural-language layer: Power BI Copilot, Tableau Pulse, ThoughtSpot Spotter, Looker with Gemini. What almost none of them do is look at the result. The assistant writes plotting code, the code runs, an image comes out, and nothing in the chain reads that image to check that the labels did not collide. [Microsoft's LIDA](https://microsoft.github.io/lida/) framed the generate-and-filter shape back in 2023, and the research since, [ChartAgent](https://arxiv.org/abs/2510.04514) and the pixel-guided self-refine work, has mostly been about closing exactly that gap. AgentVision, shipped in October 2026, is the first tool found for this document that treats the visual feedback loop as the product rather than as a feature. It draws nothing, which is the point: it is the one row in the table that competes with this package on a single column and loses everywhere else.
 
 ## How it compares
 
-Every alternative rated 1 to 5 on each criterion, higher is better (⭐ weak to ⭐⭐⭐⭐⭐ strongest). The scores are a considered judgement, not a benchmark, and each axis is oriented so more stars mean stronger on that trait (for cost, more stars mean cheaper or more open). The machine-readable source is [`landscape.csv`](landscape.csv): 37 tools across 22 criteria.
+Every alternative is rated 1 to 5 on each criterion, higher is better (⭐ weak to ⭐⭐⭐⭐⭐ strongest). The scores are an argued judgement, not a benchmark, and every axis is oriented so that more stars mean stronger on that trait, including cost, where more stars mean cheaper or more open. The machine-readable source is [`assets/landscape.csv`](assets/landscape.csv), generated from the table below: 41 tools across 22 criteria.
 
 | Data Viz Tool | Free or open source | Chart type breadth | Publication quality | Ease of use | Programmability | Interactive | AI natural language copilot | Vision QA on render | Local and offline (no account) | Reproducibility | Export to SVG PNG PDF | Customization and theming | Data source flexibility | Maturity and community | Geospatial and maps | Dashboards and BI | Accessibility features | Animated | Large-dataset performance | Web embeddability | Statistical and analytical depth | Responsive |
 | --- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| sprezzature-figures | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐ | ⭐⭐⭐⭐ | ⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ |
+| sprezzature-figures | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐ | ⭐⭐ | ⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ |
 | Matplotlib | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐ | ⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ |
 | Seaborn | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ | ⭐ | ⭐ | ⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐ | ⭐ | ⭐⭐⭐ | ⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ |
-| Plotly / Dash | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐ | ⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
+| Plotly / Dash | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
 | Bokeh | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐ | ⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ |
 | Altair | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐ | ⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ |
 | ggplot2 | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ | ⭐ | ⭐ | ⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐ | ⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ |
 | HoloViews | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐ | ⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ |
 | PyGWalker | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ |
 | Streamlit | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐ | ⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ |
-| Gradio | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐ | ⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ |
-| Taipy | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐ | ⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ |
+| marimo | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ |
+| Great Tables | ⭐⭐⭐⭐⭐ | ⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐ | ⭐ | ⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐ | ⭐ | ⭐⭐⭐ | ⭐ | ⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ |
+| Quarto | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐ | ⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ |
+| Observable Framework | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐ | ⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ |
+| Evidence | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ |
+| Mosaic / vgplot | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐ | ⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ |
 | D3.js | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐ | ⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ |
 | Chart.js | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐ | ⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ |
 | Apache ECharts | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐ | ⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
 | Highcharts | ⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐ | ⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
-| Vega | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐ | ⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ |
+| Recharts | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐ | ⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐ | ⭐⭐⭐⭐⭐ |
+| Vega-Lite / Vega | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐ | ⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ |
 | Observable Plot | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐ | ⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ |
-| vis.js | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐ | ⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ |
-| Datawrapper | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ | ⭐ | ⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ |
+| Datawrapper | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ | ⭐ | ⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ |
 | Flourish | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐ | ⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ |
 | RAWGraphs | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐ | ⭐⭐ | ⭐ | ⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐ | ⭐⭐ | ⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ |
-| Infogram | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐ | ⭐⭐⭐⭐ | ⭐ | ⭐ | ⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ | ⭐ | ⭐⭐⭐⭐ |
 | Vizzu | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐ | ⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ |
-| Tableau | ⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ |
-| Power BI | ⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ |
-| Looker | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ |
-| Apache Superset | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐ | ⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ |
-| Metabase | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐ | ⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ |
-| Grafana | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐ | ⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
-| Julius AI | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ |
-| ChatGPT | ⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐ | ⭐ | ⭐⭐ | ⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ |
-| Claude | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ |
+| Tableau | ⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ |
+| Power BI | ⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ |
+| Looker | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ |
+| Apache Superset | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐ | ⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ |
+| Metabase | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ |
+| Grafana | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
 | ThoughtSpot | ⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ |
-| Excel | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐ |
-| Google Sheets | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐ | ⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ |
+| Julius AI | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ |
+| ChatGPT | ⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐ | ⭐ | ⭐⭐ | ⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ |
+| Claude | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ |
+| Gemini | ⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐ |
+| AgentVision | ⭐⭐⭐⭐⭐ | ⭐ | ⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐ | ⭐ | ⭐⭐ | ⭐ | ⭐ | ⭐ | ⭐⭐⭐⭐ | ⭐ | ⭐ | ⭐ | ⭐ | ⭐ |
+| Excel | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐ |
 | Canva | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐ | ⭐ | ⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ | ⭐ | ⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐ | ⭐⭐⭐ | ⭐ | ⭐⭐ |
 
-![sprezzature-figures against 36 other data-viz tools, positioned on two PCA-derived axes](assets/landscape.svg)
+![Positioning map of 41 data-visualisation tools on two axes derived by principal component analysis. The horizontal axis runs from Insightful on the left to Adaptable on the right; the vertical runs from Dynamic at the bottom to Intuitive at the top. sprezzature-figures sits in the top-right corner, by construction, since it is the reference row. AgentVision sits at the same height on its left, the only other tool that looks at what was rendered. Matplotlib, ggplot2, D3.js and Great Tables are also far right, but much lower. Apache ECharts, Plotly/Dash, D3.js and Highcharts are at the bottom, where the running, embeddable, responsive view lives. Tableau, Power BI, Looker and ThoughtSpot sit in the opposite corner from the reference, bottom left: paid platforms with a natural-language layer and a dashboard behind it.](assets/landscape.svg)
 
-The source is [`assets/landscape.csv`](assets/landscape.csv) — the star table
-above, nothing added — and the map is regenerated with:
+The source is [`assets/landscape.csv`](assets/landscape.csv), the star table above and nothing added, and the map is regenerated with:
 
 ```sh
-standpoint assets/landscape.csv --outdir assets --stem landscape
+python ../sprezzature/scripts/landscape_to_csv.py LANDSCAPE.md
+standpoint assets/landscape.csv --outdir assets --stem landscape --check
 ```
 
-The geometry is ordinary correlation PCA and is **deterministic**: the same
-table gives the same map every run, whatever model named the poles. What the
-model contributes is the four words at the edges, and they are vaguer than the
-loadings behind them, so here is what the two axes are actually made of.
+The geometry is ordinary correlation principal component analysis (PCA) and it is **deterministic**: the same table gives the same map every run, whatever model named the poles. What the model contributes is the four words at the edges, and those words are vaguer than the loadings behind them, so here is what the two axes are actually made of.
 
-**Horizontal.** Publication quality (+0.35), reproducibility (+0.33),
-customisation and theming (+0.32) and chart-type breadth (+0.30) pull one way;
-ease of use (−0.30) pulls the other. It is the craft-against-immediacy axis,
-and `sprezzature-figures` sits at the far right of it by construction — it is
-the reference row, and `standpoint` anchors the reference top-right.
+**Horizontal, `Insightful` on the left against `Adaptable` on the right.** Free or open source (+0.371), local and offline (+0.351), reproducibility (+0.345) and publication quality (+0.275) pull right. The AI natural-language copilot (−0.354) and ease of use (−0.328) pull left. It is the craft-against-immediacy axis: on the right you build the figure yourself and keep it, on the left you ask for one and get it. `sprezzature-figures` is at the far right by construction, because it is the reference row and `standpoint` anchors the reference top-right. Matplotlib, ggplot2 and D3 are just as far right on their own merits.
 
-**Vertical.** Interactive (−0.39), dashboards and BI (−0.38), responsive
-(−0.37), data-source flexibility (−0.33), web embeddability (−0.32) all load
-together at the bottom. That pole is a single coherent thing — *a product
-somebody browses* — and the top is its absence: a finished artefact. ECharts,
-Plotly/Dash and D3 are at the bottom; ChatGPT and Canva at the top with this
-package, which is the map noticing that "makes you a picture" and "gives you a
-dashboard" are different businesses.
+**Vertical, `Dynamic` at the bottom against `Intuitive` at the top.** Interactive (−0.338), responsive (−0.332), geospatial and maps (−0.325), dashboards and BI (−0.320) and web embeddability (−0.313) all load together downward. That pole is one coherent thing, a product somebody browses, and the top is mostly its absence: a finished artefact. Apache ECharts, Plotly/Dash, D3 and Highcharts are at the bottom; this package, AgentVision, ChatGPT and Canva are at the top. The map is noticing on its own that "makes you a picture" and "gives you a dashboard" are different businesses. One warning about the top pole: the only criterion that loads it positively is vision quality assurance on the render (+0.247), and that column is nearly constant, 35 of the 41 tools scoring one star. A thin column makes a thin pole, and the word `Intuitive` is carrying more than the arithmetic gives it.
 
-**Two axes carry about 50 % of the table.** That is the number to hold onto:
-half of what those 22 criteria say is *not* on this page. With 22 criteria
-across 37 tools a low figure is expected — there genuinely are more than two
-ways these tools differ — but it means the map is a first orientation and the
-table is the evidence. `standpoint` also writes a prose interpretation
-alongside; it is not reproduced here, because a model reading back ratings
-somebody wrote is not a finding, and this file is more useful if the
-judgements stay visibly mine.
+**The two axes carry 50.4 % of the table**, 30.0 % horizontally and 20.4 % vertically. That is the number to hold onto: half of what those 22 criteria say is not on this page. With 22 criteria across 41 tools a figure around half is expected, because these tools genuinely differ in more than two ways, but it means the map is a first orientation and the table is the evidence. Two honest caveats. First, `standpoint --check` reports `readable: False` on this map: at 41 points some labels sit close enough to risk overlapping (Seaborn and Great Tables, Bokeh and HoloViews, Altair and Quarto, Mosaic and Datawrapper, Flourish and Apache Superset). The interactive SVG separates them on hover; the static PNG does not. Second, `standpoint` also writes a prose interpretation next to the figure, and it is not reproduced here. Its own layout check caught that interpretation placing Excel on the right when Excel sits on the left, which is the short argument for not quoting it: a model reading back ratings somebody else wrote is not a finding, and this file is more useful if the judgements stay visibly mine.
+
+## Sources
+
+- [Mosaic, UW Interactive Data Lab](https://idl.uw.edu/mosaic/), the DuckDB-backed architecture for interactive views over very large tables.
+- [Evidence](https://evidence.dev/blog/business-intelligence-tools), whose own review of code-based business-intelligence tools is the most useful single page on that family.
+- [Observable Framework](https://observablehq.com/framework), data loaders and static data apps.
+- [Great Tables v0.22.0](https://opensource.posit.co/blog/2026-06-25_great-tables-0-22-0/), June 2026, image export and much improved LaTeX output.
+- [AgentVision](https://github.com/amitpatole/agent-vision), October 2026, the render-perceive-report-fix loop as a product in itself.
+- [ChartAgent](https://arxiv.org/abs/2510.04514), a multimodal agent that looks at its own intermediate renders to verify them.
+- [Microsoft LIDA](https://microsoft.github.io/lida/), the 2023 paper that framed grammar-agnostic generation of visualisations with large language models.
+- [Best React chart libraries in 2026, LogRocket](https://blog.logrocket.com/best-react-chart-libraries-2026/), for where Recharts, nivo and Tremor stand today.
+- [Plotly Studio](https://plotly.com/studio/), the desktop AI app builder that put a copilot in front of Dash in 2026.
