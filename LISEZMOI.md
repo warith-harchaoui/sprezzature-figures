@@ -27,7 +27,7 @@ wheel sur les trois).
 pip install sprezzature-figures
 ```
 
-Extras optionnels (combinables, ex. `"sprezzature-figures[cli,dataviz]"`) :
+Extras optionnels (combinables, ex. `"sprezzature-figures[dataviz]"`) :
 
 | Extra | Ajoute |
 |-------|--------|
@@ -45,7 +45,7 @@ Utilisez un environnement virtuel pour tout isoler :
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
-pip install "sprezzature-figures[cli,dataviz]"
+pip install "sprezzature-figures[dataviz]"
 ```
 </details>
 
@@ -56,7 +56,7 @@ pip install "sprezzature-figures[cli,dataviz]"
 py -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
-pip install "sprezzature-figures[cli,dataviz]"
+pip install "sprezzature-figures[dataviz]"
 ```
 </details>
 
