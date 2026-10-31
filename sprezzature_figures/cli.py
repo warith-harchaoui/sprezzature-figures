@@ -95,6 +95,15 @@ class FigureRenderCommand(click.Command):
     flag exists in both commands or in neither.
     """
 
+    #: Declared here although it is Click's, because this class both reads
+    #: and reassigns it and mypy 2 refuses to infer a type through that
+    #: cycle: `_base_params` is taken from `self.params` and `self.params`
+    #: is then rebuilt from `_base_params`. mypy 1 guessed; 2.4 reports
+    #: `Cannot determine type of "params"  [has-type]`, and the CI here
+    #: does not bound mypy, so the next push would have been red on a
+    #: release nobody made. One declaration ends the cycle.
+    params: list[click.Parameter]
+
     #: The decorator-declared options, kept aside the first time the
     #: command runs so each parse starts from them rather than from the
     #: previous parse's figure.
