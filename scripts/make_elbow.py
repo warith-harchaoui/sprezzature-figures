@@ -18,16 +18,21 @@ demo k-means inertia curve and finds the elbow at ``k = 4``. Pass real
 ``data`` (see :func:`make_elbow`) to plot an actual sweep instead, and the axis
 domain, the elbow marker, and the Kneedle inset all follow the data.
 
-A caller with its own uncertainty estimate (e.g. a bootstrap confidence
-interval, a detection rate across resamples, a null-model p-value, see
-`elbow-helper <https://github.com/warith-harchaoui/elbow-helper>`_, whose
-``robust_elbow()`` computes exactly these) can pass them through ``ci``,
-``detection_rate``, and ``null_p_value`` to enrich the Kneedle inset instead
-of drawing a bare point estimate. Passing ``is_clear=False`` with an
-``abstain_reason`` switches the whole figure to an honest "no clear elbow"
-state (greyed curve, no marker, no inset, a plain-language reason) rather
-than forcing a possibly-spurious point estimate onto noisy or structureless
-data.
+Kneedle always answers, which is the one thing this figure could not check
+for itself. The abstention state existed -- ``is_clear=False`` with an
+``abstain_reason`` greys the curve, drops the marker and the inset, and prints
+a plain-language reason -- but only a caller who had already done the
+statistics could reach it, so the figure was able not to lie only if somebody
+else decided whether it would be lying. ``robust=True`` closes that: it hands
+the curve to `elbow-helper
+<https://github.com/warith-harchaoui/elbow-helper>`_, whose ``robust_elbow()``
+asks whether any candidate is strong, unique, persistent, reproducible and
+unlikely under a no-knee model, and takes ``is_clear``, the reason, the
+interval, the detection rate and the null-model p-value from its verdict. It
+is opt-in, for a measured reason written out in :func:`robust_verdict`: that
+test needs about two dozen points and a k-means sweep rarely has them. A
+caller with its own uncertainty estimate can still pass ``ci``,
+``detection_rate`` and ``null_p_value`` directly, and those win.
 
 The generator builds the SVG string by hand so the elbow marker, the
 split between steep gains and diminishing returns, and the inset signal
@@ -49,7 +54,7 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-from typing import Any
+from typing import Any, NamedTuple
 from xml.sax.saxutils import escape
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -108,6 +113,10 @@ _STRINGS: dict[str, dict[str, str]] = {
         "null_p": "null-model p",
         "no_elbow_title": "No clear elbow",
         "no_elbow_hint": "The evidence was too weak to report a point estimate.",
+        "robust_subtitle": (
+            "The curve falls steeply, then flattens; a robust knee test — which "
+            "abstains when no candidate is strong enough — puts the elbow at k = {k}"
+        ),
         "x_axis_default": "Number of clusters (k)",
         "y_axis_default": "Inertia (within-cluster sum of squares)",
     },
@@ -121,6 +130,10 @@ _STRINGS: dict[str, dict[str, str]] = {
         "null_p": "p (modèle nul)",
         "no_elbow_title": "Aucun coude net",
         "no_elbow_hint": "L'évidence était trop faible pour une estimation ponctuelle.",
+        "robust_subtitle": (
+            "La courbe chute puis s'aplatit ; un test de coude robuste — qui s'abstient "
+            "quand aucun candidat n'est assez net — place le coude à k = {k}"
+        ),
         "x_axis_default": "Nombre de clusters (k)",
         "y_axis_default": "Inertie (somme des carrés intra-cluster)",
     },
@@ -130,6 +143,139 @@ _STRINGS: dict[str, dict[str, str]] = {
 def _strings(language: str) -> dict[str, str]:
     """Chrome-text dict for `language`, falling back to English."""
     return _STRINGS.get(language, _STRINGS["en"])
+
+
+#: Deterministic seed for the bootstrap inside ``robust_elbow``. Its config
+#: defaults ``random_seed`` to ``None``, which is right for a library and wrong
+#: for a figure: two renders of the same curve came back with detection rates of
+#: 0.91 and 0.95, and a committed SVG that changes between runs is a diff nobody
+#: can read. Pass your own ``RobustKneeConfig`` to choose otherwise.
+_ROBUST_SEED: int = 0
+
+
+class RobustVerdict(NamedTuple):
+    """What a robust knee test says about a curve, in this figure's own fields.
+
+    Attributes
+    ----------
+    is_clear : bool
+        Whether a knee survived every gate.
+    abstain_reason : str or None
+        The plain-language sentence naming the gate that closed, in the
+        requested language. ``None`` when a knee was accepted.
+    ci : tuple of float or None
+        90% bootstrap interval for the elbow, in the curve's own x units.
+    detection_rate : float or None
+        Fraction of bootstrap resamples that redetected the same elbow.
+    null_p_value : float or None
+        Monte-Carlo p-value under a no-knee null model.
+    elbow_index : int or None
+        Index into the caller's rows of the accepted elbow.
+    """
+
+    is_clear: bool
+    abstain_reason: str | None
+    ci: tuple[float, float] | None
+    detection_rate: float | None
+    null_p_value: float | None
+    elbow_index: int | None
+
+
+def robust_verdict(
+    xs: list[float], ys: list[float], language: str = "en", config: Any | None = None
+) -> RobustVerdict:
+    """Ask `elbow-helper`_ whether this curve has an elbow at all.
+
+    .. _elbow-helper: https://github.com/warith-harchaoui/elbow-helper
+
+    :func:`kneedle_elbow` always answers. That is Kneedle working as designed
+    -- it returns the peak of a difference curve, and a difference curve has a
+    peak on a straight line too -- and it is the one thing this figure cannot
+    check for itself. Measured on 24-point curves: Kneedle put the elbow at
+    k = 22, 23, 20, 4 and 4 on five noisy *straight lines*, and at k = 1, 1, 4,
+    1 and 2 on five curves of pure uniform noise. Ten confident answers, ten
+    curves with nothing to be confident about.
+
+    ``robust_elbow`` is the half that can say no: it asks whether any candidate
+    is strong, unique, persistent across smoothing scales, reproducible under
+    resampling and unlikely under a no-knee model, and returns ``NoClearKnee``
+    with a reason when it is not. On those same ten curves it abstained ten
+    times out of ten -- ``ALL_CANDIDATES_WEAK`` for the lines,
+    ``INCOMPATIBLE_GLOBAL_SHAPE`` for the noise.
+
+    Where both can speak they agree, which is what makes this a substitution
+    rather than a second opinion. On noiseless convex-decreasing sweeps with
+    the elbow away from either end, Kneedle and ``robust_elbow`` returned the
+    same k at 8, 12 and 20, and 33 against 35 and 60 against 64 on the two
+    longest.
+
+    **Why this is opt-in.** The detector is calibrated for 20 points or more
+    and rejects any candidate sitting within 5 points of an end, and a k-means
+    sweep is neither: this module's own demo is k = 1..10 with the elbow at 4,
+    so ``robust_elbow`` abstains on it with ``INSUFFICIENT_DATA`` -- 10 usable
+    points, under the 20 it is calibrated for. Lowering ``min_samples`` to 8
+    does not rescue it either; the verdict becomes ``ALL_CANDIDATES_WEAK``,
+    because k = 4 of 10 is inside the boundary margin. Measured on planted
+    noiseless elbows at a fifth of the range: abstains at n = 10, 15 and 20,
+    accepts from n = 24 up. So a sweep has to be about two dozen k values
+    before this test can speak, and most are not. Defaulting it on would turn
+    the flagship figure of "here is the elbow" into "no clear elbow" -- which
+    is the honest answer to a question nobody asked, since the demo curve does
+    have a visible elbow and is merely under-measured for a statistical test.
+
+    Parameters
+    ----------
+    xs, ys : list of float
+        The curve, ordered by ``xs``.
+    language : str, optional
+        ``"en"`` or ``"fr"``; selects the language of ``abstain_reason``.
+        elbow-helper writes the reason itself in both.
+    config : elbow_helper.RobustKneeConfig, optional
+        Thresholds and replicate counts. Defaults to elbow-helper's own, with
+        ``language`` set and ``random_seed`` fixed (see :data:`_ROBUST_SEED`).
+
+    Returns
+    -------
+    RobustVerdict
+        The five fields :func:`build_svg` already accepts, plus the index of
+        the accepted elbow.
+
+    Raises
+    ------
+    ModuleNotFoundError
+        When ``elbow-helper`` is not installed, with the install line. It is
+        declared in the ``dataviz`` extra and imported here rather than at
+        module scope so that the 167-kind catalogue still imports without it.
+    """
+    try:
+        import elbow_helper as eh
+    except ModuleNotFoundError as exc:  # pragma: no cover - depends on the env
+        raise ModuleNotFoundError(
+            "make_elbow(robust=True) needs elbow-helper: "
+            'pip install "sprezzature-figures[dataviz]"'
+        ) from exc
+
+    if config is None:
+        config = eh.RobustKneeConfig(
+            language=language if language in {"en", "fr"} else "en",
+            random_seed=_ROBUST_SEED,
+        )
+    result = eh.robust_elbow(xs, ys, config=config)
+    if not isinstance(result, eh.ClearKnee):
+        return RobustVerdict(False, result.detail or None, None, None, None, None)
+
+    # `knee_index` indexes elbow-helper's cleaned and sorted curve, which is
+    # not necessarily the caller's row order. Match on the value instead, so
+    # that a curve it deduplicated or re-sorted still marks the right row.
+    nearest = min(range(len(xs)), key=lambda i: abs(xs[i] - result.knee_x))
+    return RobustVerdict(
+        True,
+        None,
+        (float(result.ci90[0]), float(result.ci90[1])),
+        float(result.detection_rate),
+        float(result.null_p_value),
+        nearest,
+    )
 
 
 # ------------------------------------------------------------------
@@ -191,6 +337,7 @@ def build_svg(
     abstain_reason: str | None = None,
     detection_rate: float | None = None,
     null_p_value: float | None = None,
+    robust: bool = False,
     theme: str = "corporate",
 ) -> str:
     """Assemble the full elbow-detection SVG document as a string.
@@ -232,6 +379,19 @@ def build_svg(
     null_p_value : float, optional
         P-value of the elbow under a no-knee null model. When given,
         appended as an extra line in the Kneedle inset card.
+    robust : bool, optional
+        Let the figure decide for itself whether there is an elbow, instead
+        of being told. ``True`` runs :func:`robust_verdict` on the curve and
+        takes ``is_clear``, the abstention reason, the interval, the detection
+        rate and the null-model p-value from it; the elbow marker then sits
+        where the robust test put it rather than where Kneedle did.
+
+        Off by default, and the reason is measured: the test is calibrated for
+        twenty points or more and this module's demo sweep is ten, so turning
+        it on globally would render "No clear elbow" over a curve that plainly
+        has one. See :func:`robust_verdict` for the numbers and the threshold.
+        Explicit ``ci``/``detection_rate``/``null_p_value`` arguments still
+        win over the computed ones.
     theme : str, optional
         Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
         the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
@@ -270,6 +430,20 @@ def build_svg(
         """Map a y value to a pixel y coordinate (0 at the baseline)."""
         return PB - (v / y_max) * PLOT_H
 
+    # The one thing Kneedle cannot do is decline. Asked for it, hand the curve
+    # to elbow-helper and let its verdict drive the abstention state, so a
+    # figure that says "the elbow is here" has been through a test that could
+    # have said otherwise.
+    robust_index: int | None = None
+    if robust:
+        verdict = robust_verdict(ks, inertia, language=language)
+        is_clear = verdict.is_clear
+        robust_index = verdict.elbow_index
+        abstain_reason = abstain_reason or verdict.abstain_reason
+        ci = ci if ci is not None else verdict.ci
+        detection_rate = detection_rate if detection_rate is not None else verdict.detection_rate
+        null_p_value = null_p_value if null_p_value is not None else verdict.null_p_value
+
     palette = load_palette(accessibility, theme=theme)
     curve_hue = palette.get("Blue", "#007AFF")
     curve_deep = palette.get("Indigo", "#0051A8")
@@ -278,14 +452,21 @@ def build_svg(
 
     if is_clear:
         elbow_i, diff = kneedle_elbow(ks, inertia)
+        # The inset always draws Kneedle's difference curve -- that is what it
+        # is -- but the marker belongs to whichever test actually decided.
+        if robust_index is not None:
+            elbow_i = robust_index
         elbow_k = ks[elbow_i]
         elbow_val = inertia[elbow_i]
         ex, ey = sx(elbow_k), sy(elbow_val)
         title_txt = "Elbow detection: where adding clusters stops paying off"
-        subtitle_txt = (
-            f"The curve falls steeply, then flattens; the Kneedle method "
-            f"flags the elbow at k = {fmt_compact(elbow_k)}"
-        )
+        if robust:
+            subtitle_txt = strings["robust_subtitle"].format(k=fmt_compact(elbow_k))
+        else:
+            subtitle_txt = (
+                f"The curve falls steeply, then flattens; the Kneedle method "
+                f"flags the elbow at k = {fmt_compact(elbow_k)}"
+            )
         desc_txt = (
             f"Line chart of a diminishing-returns curve against k, from "
             f"{fmt_compact(ks[0])} to {fmt_compact(ks[-1])}. The curve drops "
@@ -689,6 +870,7 @@ def make_elbow(
     abstain_reason: str | None = None,
     detection_rate: float | None = None,
     null_p_value: float | None = None,
+    robust: bool = False,
     theme: str = "corporate",
 ) -> Path:
     """Render an elbow/knee (Kneedle) SVG and write it to ``out``.
@@ -726,6 +908,11 @@ def make_elbow(
         Forwarded to :func:`build_svg`.
     null_p_value : float, optional
         Forwarded to :func:`build_svg`.
+    robust : bool, optional
+        Decide the abstention state from the curve itself via
+        :func:`robust_verdict` instead of being told. Forwarded to
+        :func:`build_svg`, where the measured reason it is off by default is
+        written down.
     theme : str, optional
         Visual theme. Forwarded to :func:`build_svg`.
 
@@ -748,6 +935,7 @@ def make_elbow(
         abstain_reason=abstain_reason,
         detection_rate=detection_rate,
         null_p_value=null_p_value,
+        robust=robust,
         theme=theme,
     )
     dest = Path(out) if out else svg_example_path(__file__, "elbow")
