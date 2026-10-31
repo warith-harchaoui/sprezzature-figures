@@ -19,10 +19,18 @@ SVG of its own (``to_svg``), so this script is a thin call into it against the c
 as the reference row). That CSV is itself generated from the star table in
 ``LANDSCAPE.md`` by ``sprezzature/scripts/landscape_to_csv.py``, which is the
 single source of truth: the Markdown table is written, the CSV is derived,
-and nothing is rated twice. ``standpoint`` is a dev-time tool for regenerating this one
-asset, not a runtime dependency of the shipped package (it is not listed in
-``pyproject.toml``), matching how the Ralph Eyeball Loop's own dev tooling
-stays outside the installable ``dataviz`` extra.
+and nothing is rated twice.
+
+``standpoint`` is a dev-time tool for regenerating this one asset, not a
+runtime dependency of the shipped package, so it is declared in the ``dev``
+extra and nowhere else. This paragraph used to read "it is not listed in
+``pyproject.toml``" as though the absence were the design. It was not: the
+import below is bare and at module scope, no installed distribution pulled
+``standpoint`` in by transitivity, and ``ignore_missing_imports`` in
+``mypy.ini`` meant the type gate read the module as ``Any`` and had nothing
+to say. The only reader of the defect was a contributor on a clean clone,
+getting a bare ``ModuleNotFoundError`` -- which is what a dependency used
+directly and inherited by luck becomes the first time the luck runs out.
 
 Author
 ------
