@@ -89,7 +89,19 @@ explain = [
 # Local VLM critique (ralph_eyeball_loop.py --local mode). Every LLM/VLM
 # call across sprezzature-* routes through best_engine_ai_helper.llm.chat,
 # which itself defaults to a local Ollama backend -- no cloud API required.
-local = ["best-engine-ai-helper>=0.4.0"]
+local = [
+    "best-engine-ai-helper>=0.4.0",
+    # What keeps that call from being made twice for the same answer. The
+    # critique is memoized on the PNG's bytes, the prompt and the model name --
+    # measured at 121.3 s and 94.6 s for two identical runs before, 0.004 s for
+    # the second run after -- and `SqliteLedger` gives the single-flight across
+    # processes that two loops launched at once actually need.
+    #
+    # Ceiling on a tool, for the reason mypy's and standpoint's are bounded in
+    # `dev`: an unbounded tool hands its next major a vote on whether the gate
+    # passes today.
+    "wallet-helper>=1.3,<2",
+]
 # FastAPI HTTP surface (sprezzature_figures/api.py) -- GET /kinds,
 # GET /kinds/{kind}, POST /render/{kind}.
 api = [
@@ -152,6 +164,14 @@ dev = [
     # "whatever is newest" gives its next major a vote on whether this repository
     # still builds.
     "standpoint>=0.13,<1",
+    # Also in `local`, which is where the feature lives -- the memoized `--local`
+    # critique in ralph_eyeball_loop.py. It is repeated here for one reason: CI
+    # installs `.[dev,dataviz,studio,api,mcp]` and not `local`, and
+    # tests/test_the_critique_cache_is_addressed_by_content.py skips without
+    # wallet_helper. A guard that skips in every CI run is a guard that never
+    # runs, and a skip reads as a pass. (`best-engine-ai-helper` is already
+    # declared twice, in `studio` and `local`, for the same kind of reason.)
+    "wallet-helper>=1.3,<2",
 ]
 
 [project.scripts]

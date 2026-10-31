@@ -101,7 +101,12 @@ Usage
 Notes
 -----
 * Assessment files are keyed by a stable 8-char MD5 of the *resolved* source
-  path: the same source always maps to the same assessment slot.
+  path: the same source always maps to the same assessment slot. That is a
+  slot, not a cache — the file is a journal and iterations accumulate in it.
+  The cache is a separate thing, added 2026-10-31: the ``--local`` critique
+  is memoized through ``wallet_helper`` on the PNG's bytes, the prompt and
+  the model name, so re-running the loop on a figure nobody changed costs
+  nothing instead of 95-120 s. ``--no-critique-cache`` asks again anyway.
 * ``.private/`` is in the top-level ``.gitignore``; assessment files and
   rendered PNGs are never committed.
 * For diagram surfaces (TikZ / Mermaid / SVG), rendering is delegated
@@ -119,11 +124,14 @@ import argparse
 import hashlib
 import json
 import shutil
+import sqlite3
 import subprocess
 import sys
+import time
 import urllib.error
 import urllib.request
 from datetime import datetime
+from functools import lru_cache
 from pathlib import Path
 from typing import Optional
 
@@ -133,6 +141,13 @@ from typing import Optional
 # (SPREZZATURE_LLM_BACKEND defaults to "ollama") and shapes the request the
 # same way regardless of which backend answers it.
 from best_engine_ai_helper.llm import chat as _llm_chat
+
+# The critique above is the expensive part of this loop and it was paid for in
+# full on every run, including the runs where the figure had not changed by a
+# single pixel. `wallet_helper` is the suite's answer to precisely that:
+# content-addressed memoization with cross-process single-flight. The key and
+# the measurement are in `_vlm_critique`.
+import wallet_helper as _wallet
 
 # ---------------------------------------------------------------------------
 # Paths — resolved at import time so the script works from any cwd
@@ -436,6 +451,25 @@ def _detect_kind(path: Path) -> str:
 def _source_hash(path: Path) -> str:
     """Return an 8-char MD5 of the *resolved* absolute source path.
 
+    A **slot identifier, not a content digest**, and the distinction is the
+    whole point. The assessment file is a journal: iteration 2 is appended
+    underneath iteration 1, so the same source has to land in the same file
+    across runs however much its bytes changed in between. Keying it on the
+    path is therefore right here.
+
+    What it is not is a cache key, and ``assessment-<hash>.md`` read exactly
+    like one for a long time — a hex digest in a filename says
+    "content-addressed" to anybody who has met the idiom, so two runs on an
+    unchanged figure repaid the entire VLM inference while looking as though
+    they could not. That is the same shape as the defect found in
+    ``os_helper.hashfile`` on 2026-10-31, which handed back a digest of the
+    path when asked for a digest of the content, and therefore could not
+    notice that the file was not there at all. A path digest and a content
+    digest are both 32 hex characters, and the names do not tell them apart.
+
+    The content-addressed half now exists, in :func:`_vlm_critique`, where it
+    belongs: keyed on the pixels, the prompt and the model name.
+
     Parameters
     ----------
     path : Path
@@ -444,7 +478,7 @@ def _source_hash(path: Path) -> str:
     Returns
     -------
     str
-        8 lowercase hex characters.
+        8 lowercase hex characters, derived from the path and nothing else.
     """
     return hashlib.md5(str(path.resolve()).encode()).hexdigest()[:8]
 
@@ -611,7 +645,95 @@ def _build_critique_prompt(kind: str) -> str:
     return prompt.strip()
 
 
-def _vlm_critique(png_path: Path, kind: str) -> str:
+class _VisionBackendUnreachable(RuntimeError):
+    """The VLM backend refused the call or timed out.
+
+    Raised inside the wallet-wrapped call rather than :exc:`SystemExit`,
+    which is a :exc:`BaseException`: the ledger releases its in-flight claim
+    when a computation fails, and handing third-party machinery a
+    ``BaseException`` is not the way to find out whether it still does.
+    Measured both ways — a raising call leaves no poisoned claim and the next
+    caller recomputes — but the narrow exception is the honest contract.
+    :func:`_vlm_critique` converts it to :exc:`SystemExit` at the boundary.
+    """
+
+
+#: Cache scope for the critique, so nothing else sharing a ledger can collide
+#: with it whatever its payload happens to hash to.
+_CRITIQUE_NAMESPACE: str = "sprezzature-figures.ralph.vlm-critique"
+
+#: Where the stored critiques live: inside the loop's own gitignored output
+#: directory, beside the assessments and PNGs they describe.
+#:
+#: Deliberately *not* the shared default (``$WALLET_HELPER_DIR``, then
+#: ``~/.cache/wallet-helper``), for one reason: ``max_entries`` below evicts
+#: within whichever database it is handed, so a cap set here against a ledger
+#: shared by the whole suite would throw away other packages' entries. A
+#: private file keeps the bound local to the thing being bounded.
+_CRITIQUE_LEDGER: Path = _PRIVATE_LOOP_DIR / "critique-ledger.db"
+
+#: Size cap on the store, applied on every write. 167 chart kinds plus web
+#: pages and diagrams, several viewports each, at a couple of kilobytes per
+#: critique: a generous ceiling that is still a ceiling. Without one the store
+#: has no bound at all, which is the difference between a cache and a
+#: directory that only grows.
+_CRITIQUE_MAX_ENTRIES: int = 500
+
+
+@lru_cache(maxsize=1)
+def _critique_wallet() -> _wallet.Wallet:
+    """The wallet behind :func:`_vlm_critique`, built once per process.
+
+    ``SqliteLedger`` and not the default JSON ``Ledger``, because the
+    single-flight guarantee differs between them and the difference is the one
+    that matters here. Measured with two processes started together on the same
+    key against a four-second call: with ``SqliteLedger`` the heavy call ran
+    **once** and the loser returned the stored answer; with the JSON ``Ledger``
+    it ran **twice**, its single-flight being in-process only. Three sessions
+    working this repository in parallel is a Saturday afternoon here, not a
+    thought experiment.
+
+    The retry is a measured wrinkle, not superstition: two processes *creating*
+    the database file at the same instant race inside the constructor's own
+    ``PRAGMA journal_mode=WAL``, and one of them gets ``sqlite3.OperationalError:
+    database is locked`` before any of this package's code runs. Once the file
+    exists the race is gone. So: retry, then degrade to the JSON ledger, which
+    still gives content-addressed reuse across runs and gives up only the
+    cross-process half.
+    """
+    _CRITIQUE_LEDGER.parent.mkdir(parents=True, exist_ok=True)
+    for attempt in range(4):
+        try:
+            return _wallet.Wallet(
+                _wallet.SqliteLedger(_CRITIQUE_LEDGER, max_entries=_CRITIQUE_MAX_ENTRIES)
+            )
+        except sqlite3.OperationalError:
+            if attempt == 3:
+                print(
+                    "ralph_eyeball_loop: the critique ledger stayed locked; falling back "
+                    "to the JSON store (caching still works, cross-process single-flight "
+                    "does not).",
+                    file=sys.stderr,
+                )
+                return _wallet.Wallet(
+                    _wallet.Ledger(_CRITIQUE_LEDGER.parent, max_entries=_CRITIQUE_MAX_ENTRIES)
+                )
+            time.sleep(0.25 * (attempt + 1))
+    raise AssertionError("unreachable")  # pragma: no cover - the loop always returns
+
+
+def _unreachable_message(exc: Exception) -> str:
+    """The start-and-pull hint shown when the vision backend does not answer."""
+    return (
+        f"ralph_eyeball_loop: could not reach the vision model backend "
+        f"(default: Ollama at {_OLLAMA_URL}).\n"
+        "  Start it with:  ollama serve\n"
+        f"  Pull the model: ollama pull {_VISION_MODEL}\n"
+        f"  Error: {exc}"
+    )
+
+
+def _vlm_critique(png_path: Path, kind: str, use_cache: bool = True) -> str:
     """Call ``qwen3-vl:8b`` to critique a PNG, via ``best_engine_ai_helper``.
 
     The call is routed through :func:`best_engine_ai_helper.llm.chat`
@@ -622,12 +744,40 @@ def _vlm_critique(png_path: Path, kind: str) -> str:
     argument passed here (:data:`_VISION_MODEL`) is a per-call override on
     top of that, since this loop always wants ``qwen3-vl:8b`` specifically.
 
+    The result is memoized through ``wallet_helper`` on the three inputs the
+    critique is a function of — **the PNG's bytes, the prompt, and the model
+    name** — and on nothing else. Not the path: ``.private/ralph-loop/``
+    already held one file per source path, and that file is a journal rather
+    than a cache (see :func:`_source_hash`), so re-running the loop on a figure
+    nobody had touched bought the whole inference a second time. Measured on
+    ``assets/svg-examples/elbow.svg`` at 700 px with the model already resident
+    in memory: **121.3 s** then **94.6 s** for two identical runs before the
+    change. The variance between those two numbers is the other half of the
+    argument — the critiques came back 3 039 and 3 495 characters long, so an
+    unchanged figure drew a different verdict each time and the journal's next
+    iteration read as progress.
+
+    The bytes go in explicitly even though ``make_key`` would have done it for
+    us: it recognises a string naming an existing file and digests the file's
+    content rather than the text, which was measured here by sabotaging the key
+    back to ``str(png_path)`` and watching the guard stay green. Two reasons to
+    keep the bytes anyway. ``make_key``'s documented fallback is the path text
+    when the file vanishes between detection and hashing, and that is the one
+    case where this loop would silently reuse a critique of other pixels. And a
+    key whose content-addressing depends on a courtesy of the library reads, to
+    the next person, exactly like the path key this replaced.
+
     Parameters
     ----------
     png_path : Path
         Rendered PNG to critique.
     kind : str
         Surface kind (used to extend the prompt for web pages).
+    use_cache : bool, optional
+        Whether to consult the store. ``False`` (``--no-critique-cache``)
+        forces a fresh inference and writes it back, which is what asking a
+        non-deterministic model for a second opinion on the same pixels looks
+        like.
 
     Returns
     -------
@@ -640,18 +790,37 @@ def _vlm_critique(png_path: Path, kind: str) -> str:
         When the backend is unreachable or the model is not pulled.
     """
     prompt = _build_critique_prompt(kind)
-    print(f"ralph_eyeball_loop: calling {_VISION_MODEL} for visual critique "
-          "(first call loads the model, ~30 s cold) …", file=sys.stderr)
+    png_bytes = png_path.read_bytes()
+
+    def _ask_the_model() -> str:
+        print(f"ralph_eyeball_loop: calling {_VISION_MODEL} for visual critique "
+              "(first call loads the model, ~30 s cold) …", file=sys.stderr)
+        try:
+            return str(_llm_chat(prompt, images=[png_bytes], model=_VISION_MODEL)).strip()
+        except Exception as exc:
+            raise _VisionBackendUnreachable(str(exc)) from exc
+
+    if not use_cache:
+        try:
+            return _ask_the_model()
+        except _VisionBackendUnreachable as exc:
+            raise SystemExit(_unreachable_message(exc)) from exc
+
     try:
-        return str(_llm_chat(prompt, images=[png_path.read_bytes()], model=_VISION_MODEL)).strip()
-    except Exception as exc:
-        raise SystemExit(
-            f"ralph_eyeball_loop: could not reach the vision model backend "
-            f"(default: Ollama at {_OLLAMA_URL}).\n"
-            "  Start it with:  ollama serve\n"
-            f"  Pull the model: ollama pull {_VISION_MODEL}\n"
-            f"  Error: {exc}"
-        ) from exc
+        critique, was_stored = _critique_wallet().call(
+            _CRITIQUE_NAMESPACE,
+            {"png": png_bytes, "prompt": prompt, "model": _VISION_MODEL},
+            _ask_the_model,
+        )
+    except _VisionBackendUnreachable as exc:
+        raise SystemExit(_unreachable_message(exc)) from exc
+    if was_stored:
+        print(
+            f"ralph_eyeball_loop: reusing the stored critique of {_rel(png_path)} — same "
+            "pixels, same prompt, same model. --no-critique-cache asks again.",
+            file=sys.stderr,
+        )
+    return str(critique)
 
 
 # ---------------------------------------------------------------------------
@@ -844,6 +1013,17 @@ def _build_parser() -> argparse.ArgumentParser:
         ),
     )
     p.add_argument(
+        "--no-critique-cache",
+        action="store_true",
+        help=(
+            "Ask the model again even though these exact pixels, prompt and model "
+            "already have a stored critique. The critique is memoized on those three "
+            "inputs (wallet_helper), so re-assessing an unchanged figure normally "
+            "costs nothing; this is how you buy a second opinion from a model that "
+            "does not give the same one twice."
+        ),
+    )
+    p.add_argument(
         "--width", type=int, default=1440,
         help="Viewport width for HTML renders in CSS pixels (default: 1440). "
              "Values below ~500 are clamped up (Chrome's headless minimum); "
@@ -942,7 +1122,7 @@ def main(argv: Optional[list[str]] = None) -> int:
     # ---- Critique ----
     auto_critique: Optional[str] = None
     if args.local:
-        auto_critique = _vlm_critique(png_path, kind)
+        auto_critique = _vlm_critique(png_path, kind, use_cache=not args.no_critique_cache)
 
     iteration = _write_assessment(assess_path, src, png_path, kind, h, auto_critique)
 
