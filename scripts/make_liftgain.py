@@ -276,24 +276,41 @@ def build_svg(
     secondary = "#6E6E73"
     band = "#F5F5F7"
 
-    # --- canvas geometry (square plot, so the diagonal reads at 45°) --
+    # --- canvas geometry -----------------------------------------
+    # Both axes carry the same unit -- a share of a population, in [0, 1] --
+    # so one rule fixes the geometry: **equal pixels per unit on both axes**,
+    #
+    #     plot_w / (x_max - x_min) == plot_h / (y_max - y_min)
+    #
+    # which is what puts the random baseline at a true 45°, the angle that
+    # lets a reader judge the gain above it by eye. A square *frame* is not
+    # that rule and does not imply it: this block used to carry the comment
+    # "square plot, so the diagonal reads at 45°" over an 862 x 620 frame
+    # whose y axis ran to 1.06, and the baseline it called "the diagonal"
+    # shipped at 34.2°. The frame is square here only because the two spans
+    # are equal; the side below is derived from the rule, not chosen.
+    #
+    # The headroom that keeps the perfect-model plateau off the top of the
+    # plot band is ``head``: drawn space above y = 1, measured in pixels.
+    # Widening the y range to 1.06 to buy that air is the distortion above.
+    x_min, x_max = 0.0, 1.0
+    y_min, y_max = 0.0, 1.0
+    ticks = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
+
     width = 1040
-    height = 940
     m_left = 118
     m_right = 60
-    m_top = 200
+    m_top = 200        # canvas top to the top of the plot band
     m_bottom = 120
     plot_x = m_left
-    plot_y = m_top
     plot_w = width - m_left - m_right
-    plot_h = height - m_top - m_bottom
+    plot_h = plot_w * (y_max - y_min) / (x_max - x_min)
+    head = round(0.06 * plot_h)
+    plot_y = m_top + head
     ax_bottom = plot_y + plot_h
-
-    # Both axes are shares in [0, 1]; a hair of headroom on y keeps the
-    # plateau of the perfect / model curves off the top frame.
-    x_min, x_max = 0.0, 1.0
-    y_min, y_max = 0.0, 1.06
-    ticks = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
+    band_y = m_top                  # the light band, which includes the head
+    band_h = head + plot_h
+    height = round(m_top + band_h + m_bottom)
 
     def sx(v: float) -> float:
         """Map a population share (0..1) to an x pixel coordinate."""
@@ -375,8 +392,8 @@ def build_svg(
     # --- background ----------------------------------------------
     parts.append(f'<rect width="{width}" height="{height}" fill="#FFFFFF"/>')
     parts.append(
-        f'<rect x="{plot_x}" y="{plot_y}" width="{plot_w}" height="{plot_h}" '
-        f'fill="{band}" rx="10"/>'
+        f'<rect x="{plot_x}" y="{band_y}" width="{plot_w:.1f}" '
+        f'height="{band_h:.1f}" fill="{band}" rx="10"/>'
     )
 
     # --- title + subtitle (the takeaway) -------------------------
@@ -390,10 +407,12 @@ def build_svg(
     )
 
     # --- gridlines (very light, on the shared 0..1 grid) ---------
+    # The verticals run the full band, head included, so the drawn headroom
+    # above y = 1 reads as part of the plot rather than a bare strip.
     for t in ticks:
         gx, gy = sx(t), sy(t)
         parts.append(
-            f'<line class="lg-grid" x1="{gx:.1f}" y1="{plot_y:.1f}" x2="{gx:.1f}" '
+            f'<line class="lg-grid" x1="{gx:.1f}" y1="{band_y:.1f}" x2="{gx:.1f}" '
             f'y2="{ax_bottom:.1f}" stroke="#FFFFFF" stroke-width="1.6"/>'
         )
         parts.append(
@@ -448,12 +467,14 @@ def build_svg(
         f'<text x="{kx + 14:.1f}" y="{ky - 14:.1f}" font-size="21" '
         f'font-weight="600" fill="{perfect_c}">{xml_escape(perfect_model_label)}</text>'
     )
-    # Random baseline: label riding the diagonal in the lower-right.
+    # Random baseline: label riding the diagonal in the lower-right. The
+    # rotation is -45 because the baseline *is* at 45° now (it was -40 under
+    # a 34° diagonal, parallel to neither).
     rb_x, rb_y = sx(0.72), sy(0.72)
     parts.append(
         f'<text x="{rb_x + 6:.1f}" y="{rb_y + 30:.1f}" font-size="21" '
         f'font-weight="600" fill="{baseline_c}" '
-        f'transform="rotate(-40 {rb_x + 6:.1f} {rb_y + 30:.1f})">'
+        f'transform="rotate(-45 {rb_x + 6:.1f} {rb_y + 30:.1f})">'
         f'{xml_escape(random_baseline_label)}</text>'
     )
     # Model: label at the curve's right end, where it plateaus near 100 %.
@@ -536,8 +557,10 @@ def build_svg(
     )
 
     # --- axes ----------------------------------------------------
+    # The spine spans the band, head included (the usual convention for a
+    # padded plot area); the ticks below are what carry the values.
     parts.append(
-        f'<line x1="{plot_x:.1f}" y1="{plot_y:.1f}" x2="{plot_x:.1f}" '
+        f'<line x1="{plot_x:.1f}" y1="{band_y:.1f}" x2="{plot_x:.1f}" '
         f'y2="{ax_bottom:.1f}" stroke="{ink}" stroke-width="1.6"/>'
     )
     parts.append(

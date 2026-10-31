@@ -427,8 +427,17 @@ def build_svg(
     }
 
     # --- canvas geometry -----------------------------------------
+    # Recall and precision are both shares in [0, 1]: one unit, two axes. So
+    # the geometry obeys **equal pixels per unit on both axes** --
+    # ``plot_w / x_span == plot_h / y_span`` -- and the canvas height is
+    # derived from it rather than picked. The reference a PR curve is read
+    # against is the *horizontal* prevalence line, not a diagonal, so there
+    # is no 45° to check here; what equal scales buy is that the shape of a
+    # curve, the size of the gap between two of them and the area each one
+    # encloses are the same quantity in both directions. On the 916 x 740
+    # frame this shipped with, recall was stretched about 24 % against
+    # precision, and every one of those readings was off by that much.
     width = 1180
-    height = 1140
     m_left = 168
     m_right = 96
     m_top = 250
@@ -436,7 +445,8 @@ def build_svg(
     plot_x = m_left
     plot_y = m_top
     plot_w = width - m_left - m_right
-    plot_h = height - m_top - m_bottom
+    plot_h = plot_w  # both spans are 1.0, so equal scales means a square
+    height = round(m_top + plot_h + m_bottom)
 
     ticks = [0.0, 0.25, 0.5, 0.75, 1.0]
 
