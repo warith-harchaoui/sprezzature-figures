@@ -19,6 +19,16 @@ What this does that the usual version does not
   curve over its final doubling is computed and stated, in the units of
   the score. A reader who wanted a number gets one; a reader who wanted a
   shape still has the shape.
+* **It says how much is left.** A slope says the curve is still moving; it
+  does not say where it is going. The saturating curve
+  ``ceiling - amplitude * n ** -exponent`` is fitted to the validation
+  means, the fitted ceiling is drawn as a dashed line, and the distance
+  from the last point up to it is stated with the number of further
+  doublings that closes nine tenths of it. That last figure is what a
+  budget is written against, and it falls straight out of the exponent.
+  When the data will not carry the claim -- too few sizes, or a fit whose
+  ceiling lands at or below the last observation, or above 1 -- the line
+  and the sentence are both withheld rather than guessed.
 * **It names the gap.** The distance between the two curves at the right
   edge is the bias-variance diagnosis in one number -- a wide gap means
   the model memorises, a low pair means it cannot fit -- and it is
@@ -26,6 +36,13 @@ What this does that the usual version does not
 * **The band is named.** Shaded regions on a learning curve may be a
   standard deviation across folds, a standard error, or an interval. Here
   it is the fold-to-fold range, and the chrome says so.
+* **The demo data is a learning curve.** Two straight lines in ``log(n)``
+  are not one: they never flatten, they cross just past the right edge,
+  and they make the figure's own headline measurement a constant. The
+  shape of the demo is now saturating by construction -- see
+  :func:`_curve`, which records what the straight lines did and why that
+  was impossible, and ``tests/test_a_learning_curve_is_a_learning_curve.py``,
+  which asserts it of the shipped data rather than of the formula.
 
 Author
 ------
@@ -55,42 +72,198 @@ from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_the
 _SIZES = (250, 500, 1000, 2000, 4000, 8000, 16000, 32000)
 
 
+#: The irreducible score: what the task itself allows, and what no quantity
+#: of training data buys past. Label noise, overlapping classes and features
+#: nobody collected all live in the six points between this and 1.0.
+#:
+#: Every learning curve has one. A pair of demo curves that does not is the
+#: defect this constant exists to prevent, so it is named here rather than
+#: left implicit in two slopes.
+_CEILING = 0.94
+
+#: Where each curve stands at the smallest training size, and how fast its
+#: distance to the ceiling decays per doubling of data.
+#:
+#: Both curves are ``ceiling -/+ offset * (n / n0) ** -exponent``: validation
+#: climbs toward the ceiling from below, training descends toward it from
+#: above. Two properties follow from that *form* rather than from the
+#: numbers, and both are the point:
+#:
+#: * neither curve can cross the other at any training size, because one
+#:   stays above the ceiling and the other below it;
+#: * neither can leave ``[0, 1]``, because validation's supremum is the
+#:   ceiling and the ceiling is under 1.
+#:
+#: An exponent near a half is the rate the statistics give you. The gentler
+#: one on validation is the usual empirical finding on real tasks.
+_VALID_AT_SMALLEST, _VALID_EXPONENT = 0.758, 0.42
+_TRAIN_AT_SMALLEST, _TRAIN_EXPONENT = 0.986, 0.55
+
+
+def _mean_scores(size: float) -> Tuple[float, float]:
+    """Training and validation score this kind of model reaches at ``size``.
+
+    Returns
+    -------
+    tuple of float
+        ``(training, validation)``, both saturating on :data:`_CEILING`.
+    """
+    return (
+        _CEILING + (_TRAIN_AT_SMALLEST - _CEILING) * (size / _SIZES[0]) ** -_TRAIN_EXPONENT,
+        _CEILING - (_CEILING - _VALID_AT_SMALLEST) * (size / _SIZES[0]) ** -_VALID_EXPONENT,
+    )
+
+
 def _curve(seed: int = 3, folds: int = 5) -> List[Dict[str, Any]]:
     """A model that fits easily and generalises slowly, one row per fold.
 
-    Shaped rather than random: training score falls gently from near-one
-    as the model stops being able to memorise, validation climbs and is
-    still climbing at the right edge. That is the interesting case -- the
-    one where the figure's answer is "yes, buy more data" -- and it is the
-    case a demo should show.
+    Shaped rather than random -- and shaped as a learning curve rather than
+    as two straight lines. Training score falls from near-one as the model
+    stops being able to memorise; validation climbs, decelerating, and is
+    still climbing at the right edge but by much less than it was. That is
+    the interesting case -- "yes, buy more data, and here is how much it is
+    still worth" -- and it is the case a demo should show.
+
+    What was wrong with the straight lines, because it is worth not doing
+    again. The first version was linear in ``log2(n)``: training
+    ``0.995 - 0.0055 * doublings``, validation ``0.742 + 0.0265 * doublings``.
+    Three things followed, and all three are impossible.
+
+    * **The curves never flattened.** Linear in the log of ``n`` means every
+      doubling buys exactly what the one before it bought, for ever.
+      Extending that validation line reaches accuracy ``1.0000`` at 213 000
+      examples and passes it after. A score above 1 is not a score.
+    * **They crossed.** The gap closed at ``0.032`` per doubling from
+      ``0.253``, so validation overtook training at about 60 000 examples --
+      a model scoring better on data it has never seen. The last point
+      plotted was 32 000: the curves did not avoid the crossing, the x-axis
+      stopped one doubling short of it, while a comment here claimed the case
+      had been designed out.
+    * **The figure's own measurement was a constant.** This chart exists to
+      say whether the last doubling still bought anything. On a line, the
+      slope over the final doubling is the slope everywhere: ``+0.0265``, at
+      250 examples and at 32 000 alike. The one number it was built to
+      deliver could not vary, and the "flat" verdict :func:`_verdict` knows
+      how to write was unreachable from the demo data. A figure whose demo
+      cannot produce one of its own answers has not been tried against its
+      own claim.
+
+    Here the slope decays from ``+0.046`` over the first doubling to
+    ``+0.008`` over the last, which is the shape that number is read for.
     """
     rng = random.Random(seed)
     rows: List[Dict[str, Any]] = []
     for size in _SIZES:
-        steps = math.log2(size / _SIZES[0])
-        # The two curves converge without crossing. A first draft had
-        # validation finish above training, which happens about as often as
-        # a model scoring better on data it has never seen -- rarely, and
-        # never in a figure meant to teach the shape.
-        train_mean = 0.995 - 0.0055 * steps
-        valid_mean = 0.742 + 0.0265 * steps
+        train_mean, valid_mean = _mean_scores(size)
         for fold in range(folds):
-            spread_t = 0.004 + 0.002 * rng.random()
-            spread_v = 0.030 - 0.0022 * steps + 0.004 * rng.random()
-            rows.append({
-                "size": size, "split": "Training",
-                "score": round(train_mean + (rng.random() - 0.5) * spread_t, 4),
-                "fold": fold,
-            })
-            rows.append({
-                "size": size, "split": "Validation",
-                "score": round(valid_mean + (rng.random() - 0.5) * spread_v, 4),
-                "fold": fold,
-            })
+            # Fold-to-fold spread shrinks as 1/sqrt(n), the rate the standard
+            # error of a mean actually follows. The old version decayed it
+            # linearly in doublings, and went negative past 7.5 million.
+            spread_t = 0.11 * size**-0.5 * (0.8 + 0.4 * rng.random())
+            spread_v = 0.46 * size**-0.5 * (0.8 + 0.4 * rng.random())
+            rows.append(
+                {
+                    "size": size,
+                    "split": "Training",
+                    "score": round(train_mean + (rng.random() - 0.5) * spread_t, 4),
+                    "fold": fold,
+                }
+            )
+            rows.append(
+                {
+                    "size": size,
+                    "split": "Validation",
+                    "score": round(valid_mean + (rng.random() - 0.5) * spread_v, 4),
+                    "fold": fold,
+                }
+            )
     return rows
 
 
 DEMO_DATA: List[Dict[str, Any]] = _curve()
+
+
+def _fit_ceiling(points: List[Tuple[float, float]]) -> Optional[Tuple[float, float]]:
+    """Estimate the score this curve is saturating on, and how fast.
+
+    Fits ``score = ceiling - amplitude * size ** -exponent`` -- the
+    saturating form a learning curve actually takes -- and returns the
+    ceiling with the exponent.
+
+    The fit is a one-dimensional search, which is why it needs no solver and
+    cannot fail to converge: with the exponent held fixed the model is linear
+    in its two remaining parameters, so each candidate exponent is scored by
+    an ordinary least-squares line through ``size ** -exponent`` and the best
+    exponent is picked off a grid, then refined around the winner.
+
+    Parameters
+    ----------
+    points : list of tuple of float
+        ``(size, score)`` for one curve, in any order, sizes positive.
+
+    Returns
+    -------
+    tuple of float or None
+        ``(ceiling, exponent)``, or ``None`` when the data does not support
+        the claim: fewer than four sizes, a curve going the wrong way, or a
+        ceiling at or below the last observation (nothing left to promise) or
+        above 1 (a score that does not exist). Refusing to answer is part of
+        the answer -- a fitted ceiling of 1.4 drawn as a line would be read.
+    """
+    usable = sorted({(size, score) for size, score in points if size > 0})
+    if len(usable) < 4:
+        return None
+
+    def best_line(exponent: float) -> Tuple[float, float, float]:
+        """Least-squares ``ceiling - amplitude * x`` and its error, at one exponent."""
+        xs = [size**-exponent for size, _ in usable]
+        ys = [score for _, score in usable]
+        n = float(len(xs))
+        mean_x, mean_y = sum(xs) / n, sum(ys) / n
+        var_x = sum((x - mean_x) ** 2 for x in xs)
+        if var_x <= 0:
+            return (mean_y, 0.0, float("inf"))
+        slope = sum((x - mean_x) * (y - mean_y) for x, y in zip(xs, ys, strict=True)) / var_x
+        intercept = mean_y - slope * mean_x
+        error = sum((intercept + slope * x - y) ** 2 for x, y in zip(xs, ys, strict=True))
+        # The model is written with a minus, so a rising curve has slope < 0.
+        return (intercept, -slope, error)
+
+    grid = [0.05 + 0.025 * step for step in range(60)]
+    exponent = min(grid, key=lambda e: best_line(e)[2])
+    for width in (0.0125, 0.00625, 0.003125):
+        around = [exponent - width, exponent, exponent + width]
+        exponent = min((e for e in around if e > 0), key=lambda e: best_line(e)[2])
+
+    ceiling, amplitude, _ = best_line(exponent)
+    if amplitude <= 0 or not 0.0 < ceiling <= 1.0:
+        return None
+    if ceiling <= max(score for _, score in usable):
+        return None
+    return (ceiling, exponent)
+
+
+def _headroom(
+    points: List[Tuple[float, float]], score_name: str
+) -> Optional[Tuple[float, float, float]]:
+    """How much score is left below the ceiling, and what it costs to get it.
+
+    Returns
+    -------
+    tuple of float or None
+        ``(ceiling, headroom, doublings)`` where ``headroom`` is the distance
+        from the last observed score to the fitted ceiling, and ``doublings``
+        is how many further doublings of data close nine tenths of it. That
+        last number is the one a budget is written against, and it comes
+        straight out of the exponent: closing a tenth of the remaining gap
+        costs ``log2(10) / exponent`` doublings whatever the scale.
+    """
+    fit = _fit_ceiling(points)
+    if fit is None:
+        return None
+    ceiling, exponent = fit
+    last = max(points, key=lambda pair: pair[0])[1]
+    return (ceiling, ceiling - last, math.log2(10.0) / exponent)
 
 
 def _verdict(points: List[Tuple[float, float]], score_name: str) -> str:
@@ -100,6 +273,10 @@ def _verdict(points: List[Tuple[float, float]], score_name: str) -> str:
     normally does not say. The threshold is deliberately explicit: below a
     thousandth of a point per doubling the curve is flat for any practical
     purpose, and saying so is more useful than a hedge.
+
+    Read over the *last* doubling specifically, which is only informative
+    because the curve decelerates. See :func:`_curve` for what happened when
+    it did not.
     """
     if len(points) < 2:
         return ""
@@ -123,8 +300,8 @@ def _verdict(points: List[Tuple[float, float]], score_name: str) -> str:
 
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
-    title: str = "The validation curve has not flattened: more data is still worth buying",
-    subtitle: str = "Accuracy against training-set size, five folds. Bands are the fold-to-fold range.",
+    title: str = "More data is still worth buying, but each doubling buys less than the last",
+    subtitle: str = "Accuracy against training-set size, five folds. Bands are the fold-to-fold range; the dashed line is the fitted ceiling.",
     width: int = 900,
     height: int = 580,
     x: str = "size",
@@ -233,18 +410,22 @@ def build_svg(
         if (name, size) in bands
     ]
     said = verdict if verdict is not None else _verdict(validation, score_name)
+    # The slope says the curve is still moving. What a budget needs next is
+    # how far there is left to go, which is a property of the whole curve
+    # rather than of its last segment -- so it is fitted, and it is allowed
+    # to come back empty when the data will not carry the claim.
+    head = _headroom(validation, score_name)
 
     parts: List[str] = []
     parts.append(
-        svg_open(width, height, "lc-title", "lc-desc",
-                 font_family=chrome_stack_for_theme(theme))
+        svg_open(width, height, "lc-title", "lc-desc", font_family=chrome_stack_for_theme(theme))
     )
     parts.append(f'<title id="lc-title">{xml_escape(title)}</title>')
     parts.append(
         f'<desc id="lc-desc">Learning curves for {xml_escape(", ".join(series_names))} '
-        f'against training-set size, from {fmt_number(sizes[0])} to {fmt_number(sizes[-1])} '
-        f'examples on a doubling scale. Each band is the range across folds, each line their '
-        f'mean. {xml_escape(said)}</desc>'
+        f"against training-set size, from {fmt_number(sizes[0])} to {fmt_number(sizes[-1])} "
+        f"examples on a doubling scale. Each band is the range across folds, each line their "
+        f"mean. {xml_escape(said)}</desc>"
     )
     parts.append(
         "<style>"
@@ -262,16 +443,35 @@ def build_svg(
     )
     parts.append(
         f'<text x="{plot_x:.1f}" y="72" font-size="14" fill="{SECONDARY}">'
-        f'{xml_escape(subtitle)}</text>'
+        f"{xml_escape(subtitle)}</text>"
     )
     if said:
         parts.append(
             f'<text x="{plot_x:.1f}" y="98" font-size="12" fill="{SECONDARY}" '
             f'font-family="{mono_family}">{xml_escape(said)}</text>'
         )
+    if head is not None:
+        ceiling, left, doublings = head
+        # Three decimals, not fmt_number: the headroom here is 0.023 and
+        # fmt_number prints it 0.02, which rounds away most of what is left to
+        # buy. A measurement whose last useful digit is dropped still reads as
+        # a measurement.
+        #
+        # Built as a local rather than inlined into the append, because a
+        # replacement field spanning lines inside a single-quoted f-string is
+        # 3.12 syntax -- which ruff format produces willingly and this
+        # package's 3.10 floor cannot parse.
+        headroom_line = (
+            f"Fitted ceiling {ceiling:.3f} -- {left:.3f} left, about "
+            f"{doublings:.0f} more doublings to close nine tenths of it."
+        )
+        parts.append(
+            f'<text x="{plot_x:.1f}" y="118" font-size="12" fill="{SECONDARY}" '
+            f'font-family="{mono_family}">{xml_escape(headroom_line)}</text>'
+        )
     parts.append(
         f'<text x="{plot_x:.1f}" y="{plot_y - 14:.1f}" font-size="12" fill="{SECONDARY}">'
-        f'{xml_escape(y_label)}</text>'
+        f"{xml_escape(y_label)}</text>"
     )
 
     for value_at in ticks:
@@ -284,11 +484,30 @@ def build_svg(
             f'<text x="{plot_x - 10:.1f}" y="{gy + 4:.1f}" font-size="11" fill="{SECONDARY}" '
             f'text-anchor="end" font-family="{mono_family}">{fmt_number(value_at)}</text>'
         )
+
+    # The ceiling, drawn where the two curves are heading. It is the quantity
+    # the chart is read for -- the distance between the validation curve and
+    # this line is what is left to buy -- and it is drawn only when it is on
+    # the plot, because a reference line clipped to an edge reads as a value
+    # the axis happens to end on.
+    if head is not None and y_lo <= head[0] <= y_hi:
+        ceiling_y = py(head[0])
+        parts.append(
+            f'<line x1="{plot_x:.1f}" y1="{ceiling_y:.1f}" '
+            f'x2="{plot_x + plot_w:.1f}" y2="{ceiling_y:.1f}" stroke="{SECONDARY}" '
+            f'stroke-width="1.4" stroke-dasharray="7 5"/>'
+        )
+        parts.append(
+            f'<text x="{plot_x + plot_w - 4:.1f}" y="{ceiling_y - 7:.1f}" font-size="11" '
+            f'fill="{SECONDARY}" text-anchor="end" font-family="{mono_family}">'
+            f"ceiling {head[0]:.3f}</text>"
+        )
+
     for size in sizes:
         parts.append(
             f'<text x="{px(size):.1f}" y="{plot_y + plot_h + 22:.1f}" font-size="11" '
             f'fill="{SECONDARY}" text-anchor="middle" font-family="{mono_family}">'
-            f'{fmt_number(size)}</text>'
+            f"{fmt_number(size)}</text>"
         )
     parts.append(
         f'<text x="{plot_x + plot_w / 2:.1f}" y="{height - 22:.1f}" font-size="12" '
@@ -300,12 +519,8 @@ def build_svg(
         colour = colour_for(name)
         present = [size for size in sizes if (name, size) in bands]
         upper = " ".join(f"{px(s):.1f},{py(bands[(name, s)][2]):.1f}" for s in present)
-        lower = " ".join(
-            f"{px(s):.1f},{py(bands[(name, s)][1]):.1f}" for s in reversed(present)
-        )
-        parts.append(
-            f'<polygon points="{upper} {lower}" fill="{colour}" opacity="0.16"/>'
-        )
+        lower = " ".join(f"{px(s):.1f},{py(bands[(name, s)][1]):.1f}" for s in reversed(present))
+        parts.append(f'<polygon points="{upper} {lower}" fill="{colour}" opacity="0.16"/>')
         parts.append(
             '<polyline points="'
             + " ".join(f"{px(s):.1f},{py(bands[(name, s)][0]):.1f}" for s in present)
@@ -324,18 +539,23 @@ def build_svg(
                 f'{fmt_number(mean)}, folds {fmt_number(low)} to {fmt_number(high)}" '
                 f'x="{px(size) - 10:.1f}" y="{py(high) - 10:.1f}" width="20" '
                 f'height="{max(py(low) - py(high) + 20, 20):.1f}" fill="transparent">'
-                f'<title>{xml_escape(name)} · {fmt_number(size)}: {fmt_number(mean)}</title></rect>'
+                f"<title>{xml_escape(name)} · {fmt_number(size)}: {fmt_number(mean)}</title></rect>"
             )
             tips.append(
                 tooltip_bubble(
-                    px(size), py(mean),
+                    px(size),
+                    py(mean),
                     [
                         f"{name} · {fmt_number(size)} examples",
                         f"mean {fmt_number(mean)}",
                         f"folds {fmt_number(low)} to {fmt_number(high)}",
                     ],
-                    canvas_w=width, canvas_h=height, ink=INK, secondary=SECONDARY,
-                    border=GRIDLINE, elem_id=f"pttip-{element}",
+                    canvas_w=width,
+                    canvas_h=height,
+                    ink=INK,
+                    secondary=SECONDARY,
+                    border=GRIDLINE,
+                    elem_id=f"pttip-{element}",
                 )
             )
         last = present[-1]
@@ -346,9 +566,7 @@ def build_svg(
 
     # The gap at the right edge is the bias-variance reading, in one number.
     if len(series_names) == 2:
-        top_name, bottom_name = sorted(
-            series_names, key=lambda n: -bands[(n, sizes[-1])][0]
-        )
+        top_name, bottom_name = sorted(series_names, key=lambda n: -bands[(n, sizes[-1])][0])
         gap = bands[(top_name, sizes[-1])][0] - bands[(bottom_name, sizes[-1])][0]
         gy_top = py(bands[(top_name, sizes[-1])][0])
         gy_bottom = py(bands[(bottom_name, sizes[-1])][0])
@@ -384,8 +602,8 @@ def make_learning_curve(
     data: Optional[List[Dict[str, Any]]] = None,
     *,
     out: Optional[Path | str] = None,
-    title: str = "The validation curve has not flattened: more data is still worth buying",
-    subtitle: str = "Accuracy against training-set size, five folds. Bands are the fold-to-fold range.",
+    title: str = "More data is still worth buying, but each doubling buys less than the last",
+    subtitle: str = "Accuracy against training-set size, five folds. Bands are the fold-to-fold range; the dashed line is the fitted ceiling.",
     width: int = 900,
     height: int = 580,
     x: str = "size",
@@ -439,10 +657,21 @@ def make_learning_curve(
     True
     """
     svg = build_svg(
-        data, title=title, subtitle=subtitle, width=width, height=height,
-        x=x, series=series, y=y, x_label=x_label, y_label=y_label,
-        score_name=score_name, verdict=verdict, mode=mode,
-        accessibility=accessibility, theme=theme,
+        data,
+        title=title,
+        subtitle=subtitle,
+        width=width,
+        height=height,
+        x=x,
+        series=series,
+        y=y,
+        x_label=x_label,
+        y_label=y_label,
+        score_name=score_name,
+        verdict=verdict,
+        mode=mode,
+        accessibility=accessibility,
+        theme=theme,
     )
     dest = Path(out) if out else svg_example_path(__file__, "learning-curve")
     return write_svg(dest, svg, theme=theme)
