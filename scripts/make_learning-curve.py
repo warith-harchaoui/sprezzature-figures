@@ -44,6 +44,32 @@ What this does that the usual version does not
   was impossible, and ``tests/test_a_learning_curve_is_a_learning_curve.py``,
   which asserts it of the shipped data rather than of the formula.
 
+Not a knee detector, and the number that decided it
+---------------------------------------------------
+"Where do diminishing returns start" is one of `elbow-helper
+<https://github.com/warith-harchaoui/elbow-helper>`_'s own trigger phrases, so
+it was measured against this figure on 2026-10-31 and *not* adopted. Two
+reasons, both numbers.
+
+The demo plots eight training sizes and ``robust_knee`` is calibrated for
+twenty, so on the shipped data it returns ``INSUFFICIENT_DATA`` and there is
+nothing to show. That alone would only be an argument for sampling more
+densely. The second one is not: sampled to 200 points, the saturating model
+below gets a confident ``ClearKnee`` whose location is a property of the
+x-axis rather than of the curve. Over 250-4 000 examples it reports the knee
+at n = 1 190; over 250-32 000, at n = 4 550; over 250-320 000, at n = 21 582.
+The windows 250-32 000 and 2 000-256 000 both put it at the *same* normalised
+position, 0.1354 along the log-x axis -- 4 550 in one and 36 402 in the other.
+A power law has no characteristic scale, so there is no knee to find and the
+detector obligingly finds one anyway, thirteen percent of the way across
+whatever range you happened to plot.
+
+Which is why this figure answers the question by fitting the saturating form
+and reporting the ceiling, the headroom and the number of further doublings
+that closes nine tenths of it, and withholds all three when the fit will not
+carry them (see :func:`_fit_ceiling`). That is a statement about the curve.
+A knee on a power law is a statement about the axis.
+
 Author
 ------
 `Warith HARCHAOUI, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
