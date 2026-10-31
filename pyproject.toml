@@ -66,9 +66,25 @@ causal = [
     "econml>=0.14",
 ]
 # Explainability (explain_model.py)
+#
+# All five, and the last three were added on 2026-10-31 by
+# tests/test_every_import_is_declared.py on its first run. `explain_model.py`
+# imports `timeshap`, `lime` and `joblib` as well as `shap` and `shapash`, and
+# only the first two were here -- so `pip install "sprezzature-figures[explain]"`
+# installed half the tier and left the TimeSHAP and LIME paths to raise
+# ModuleNotFoundError on first use. All three were correctly listed in
+# `scripts/requirements-explain.txt`, which is read by install_figures.py and by
+# nobody installing from PyPI: the same defect shape as `standpoint` in `dev`,
+# a dependency declared somewhere that the install does not look.
+#
+# TimeSHAP pulls `torch` transitively and does not pin it, deliberately, so a
+# user picks their own CPU / CUDA / MPS build.
 explain = [
     "shap>=0.44",
     "shapash>=2.6",
+    "timeshap>=1.0.4",
+    "lime>=0.2.0",
+    "joblib>=1.3",
 ]
 # Local VLM critique (ralph_eyeball_loop.py --local mode). Every LLM/VLM
 # call across sprezzature-* routes through best_engine_ai_helper.llm.chat,
@@ -121,6 +137,21 @@ dev = [
     # CI installs `.[dev,...]` and never reads requirements-dev.txt, so the
     # declaration has to be where the install actually looks.
     "httpx2>=2.0.0",
+    # `tools/build_landscape.py` regenerates assets/landscape.* and opens with a
+    # bare `import standpoint as sp` at module scope. Until 2026-10-31 that import
+    # was declared nowhere: not here, not in either requirements file, and nothing
+    # installed it by transitivity either -- measured, no installed distribution
+    # declares it. `mypy.ini` sets `ignore_missing_imports = True`, so the type
+    # gate read the module as `Any` and had nothing to say; the script is not run
+    # in CI, so the only reader of the defect was a contributor on a clean clone
+    # getting a bare ModuleNotFoundError. `dev` rather than a narrow extra because
+    # `pip install -e ".[dev]"` is the install the README hands a contributor, and
+    # this is a contributor-only tool that ships in no wheel.
+    #
+    # Ceiling for the reason mypy's is three entries up: a tool resolved to
+    # "whatever is newest" gives its next major a vote on whether this repository
+    # still builds.
+    "standpoint>=0.13,<1",
 ]
 
 [project.scripts]
