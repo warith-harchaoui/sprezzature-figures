@@ -562,7 +562,7 @@ sprezzature-figures-mcp
 ```bash
 git clone https://github.com/warith-harchaoui/sprezzature-figures.git
 cd sprezzature-figures
-pip install -e ".[dev,cli]"
+pip install -e ".[dev]"
 ruff check sprezzature_figures/
 python -m pytest tests/ -q
 ```
