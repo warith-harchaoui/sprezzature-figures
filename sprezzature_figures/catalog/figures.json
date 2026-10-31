@@ -5799,7 +5799,7 @@
     "label": "Elbow",
     "aliases": [],
     "category": "Model selection",
-    "description": "Detect the elbow (knee) of a diminishing-returns curve with the Kneedle method: pick k for k-means, the number of PCA components, or `eps` for DBSCAN. An inset draws the normalised difference curve whose peak locates the elbow.",
+    "description": "Detect the elbow (knee) of a diminishing-returns curve with the Kneedle method: pick k for k-means, the number of PCA components, or `eps` for DBSCAN. An inset draws the normalised difference curve whose peak locates the elbow. `robust=True` hands the decision to `elbow-helper` instead, which abstains with a stated reason when the curve has no elbow to report -- off by default because that test needs about two dozen points and a k-means sweep rarely has them.",
     "intents": [],
     "status": "stable",
     "renderer": "svg",
@@ -5919,6 +5919,12 @@
         "default": null,
         "choices": [],
         "description": "Forwarded to build_svg."
+      },
+      "robust": {
+        "type": "bool",
+        "default": false,
+        "choices": [],
+        "description": "Decide the abstention state from the curve itself via robust_verdict instead of being told. Forwarded to build_svg, where the measured reason it is off by default is written down."
       },
       "theme": {
         "type": "str",

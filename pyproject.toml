@@ -59,6 +59,13 @@ dataviz = [
     "pyyaml>=6",
     "shapely>=2",
     "pyproj>=3.6",
+    # `make_elbow(robust=True)`: the half of elbow detection that can decline.
+    # Kneedle always answers -- measured, it put an elbow at k = 22, 23, 20, 4
+    # and 4 on five noisy straight lines -- and `robust_elbow` abstained on all
+    # of them with a reason. Imported lazily inside the `robust` branch, so the
+    # 167-kind catalogue still imports without it; declared here because this is
+    # the data-side tier and that is what this is.
+    "elbow-helper>=0.4,<1",
 ]
 # Causal inference (make_causal_estimate.py)
 causal = [
