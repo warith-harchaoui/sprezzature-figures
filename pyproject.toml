@@ -97,7 +97,17 @@ mcp = [
 dev = [
     "pytest>=8",
     "ruff",
-    "mypy",
+    # Bounded on 2026-10-31, and the reason is three lines away in this file's own
+    # history: a tool resolved to "whatever is newest" is a red suite waiting for
+    # somebody else's release day. mypy 2.4.1 is out, this machine has 1.20.2, and
+    # a runner installs the former -- a whole major apart. It broke exactly one
+    # brick (`sprezzature-figures`, an inference cycle mypy 1 guessed through and 2
+    # reports), which is one more than zero and was invisible until measured.
+    #
+    # A floor as well as a ceiling: bare `mypy` was not even a floor, so a resolver
+    # was free to reach for an ancient one. Raise the ceiling deliberately, after
+    # running the new major against the tree, not by surprise.
+    "mypy>=1.11,<3",
     "build",
     # tests/test_linter_is_not_blind.py reads a nested pyproject table, and
     # `tomllib` only joined the standard library in 3.11.
