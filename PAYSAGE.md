@@ -133,11 +133,20 @@ La géométrie est une analyse en composantes principales (ACP) sur corrélation
 
 **Les deux axes portent ensemble 51,1 % de la table.** C'est le chiffre à retenir : un peu moins de la moitié de ce que disent ces 22 critères n'est pas sur cette page. Avec 22 critères sur 42 outils, un chiffre autour de la moitié est attendu, parce que ces outils diffèrent réellement de plus de deux façons, mais cela veut dire que la carte est une première orientation et que la table est la preuve.
 
-Ce pourcentage appartient au **plan**, pas à l'horizontale et à la verticale séparément, et ce fichier le découpait comme s'il y appartenait. `standpoint` nomme les axes qu'il *dessine* mais chiffre la variance des composantes principales sous-jacentes, et le repère dessiné est une rotation de ce plan : 155,1° ici, −71,7° à l'exécution précédente. Une rotation préserve le plan, donc le cumul est solide tandis qu'aucune part par axe n'est attribuable, et la formulation antérieure — « 30,0 % à l'horizontale et 20,4 % à la verticale » — lisait un partage que la rotation avait déjà mélangé. Les charges ci-dessus, elles, sont citées depuis le repère orienté de `standpoint` : celles-là décrivent bien l'horizontale et la verticale telles qu'elles sont dessinées.
+Ce pourcentage appartient au **plan**, pas à l'horizontale et à la verticale séparément, et ce fichier le découpait comme s'il y appartenait. `standpoint` nomme les axes qu'il *dessine* mais chiffre la variance des composantes principales sous-jacentes, et le repère dessiné est une rotation de ce plan : 155,1° ici, −71,7° à l'exécution précédente,
+ce que n'importe qui peut remesurer au lieu de me croire :
+
+```sh
+grep -v '^Claude Dashboards,' assets/landscape.csv > /tmp/before.csv
+standpoint /tmp/before.csv --outdir /tmp --stem before --check
+```
+ Une rotation préserve le plan, donc le cumul est solide tandis qu'aucune part par axe n'est attribuable, et la formulation antérieure — « 30,0 % à l'horizontale et 20,4 % à la verticale » — lisait un partage que la rotation avait déjà mélangé. Les charges ci-dessus, elles, sont citées depuis le repère orienté de `standpoint` : celles-là décrivent bien l'horizontale et la verticale telles qu'elles sont dessinées.
 
 C'est la même rotation qui fait qu'une carte se lit contre ses charges et jamais contre la figure du mois dernier. L'ajout d'une seule ligne, Claude Dashboards, a déplacé la rotation assez pour que l'horizontale et la verticale dessinées **échangent le partage qu'elles portent** : l'axe de la vue qui tourne était vertical sur la carte à 41 outils et il est horizontal ici, avec le même contenu et presque les mêmes charges. Rien n'a changé dans le domaine ; c'est la caméra qui a tourné.
 
 Restent deux réserves honnêtes. D'abord, `standpoint --check` annonce `readable: False` sur cette carte : à 42 points, certaines étiquettes sont assez proches pour risquer de se chevaucher (Seaborn et Great Tables, Bokeh et HoloViews, Altair et Quarto, Streamlit et marimo). Le SVG interactif les sépare au survol ; le PNG statique, non. Ensuite, `standpoint` écrit aussi une interprétation en prose à côté de la figure, et elle n'est pas reprise ici. Sa propre vérification de mise en page a attrapé cette interprétation en train de placer Excel en haut alors qu'Excel est en bas, ce qui est l'argument court pour ne pas la citer : un modèle qui relit des notes écrites par quelqu'un d'autre n'est pas un résultat, et ce fichier est plus utile si les jugements restent visiblement les miens.
+
+Un dernier mot sur les quatre mots, et c'est la raison pour laquelle ils ne sont jamais cités ici sans leurs charges. L'édition anglaise de cette page n'est pas une exécution ultérieure qui aurait dérivé : son nuage de points est **identique** à celui-ci, comparé coordonnée par coordonnée sur les 42 points, à la même rotation de 155,1°, et elle nomme ces deux mêmes axes *Dynamic ↔ Intuitive* et *Insightful ↔ Adaptable*. Ce ne sont pas les traductions de *Dynamisme ↔ Clarté* et *Ingéniosité ↔ Liberté* ; c'est un second tirage des mêmes dés. La démonstration vaut mieux que l'avertissement, parce que l'avertissement demande de me croire alors que l'objet est dans le dépôt, à côté de ce fichier.
 
 ## Sources
 
