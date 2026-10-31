@@ -26,7 +26,7 @@ Requires **Python 3.10–3.13**. Tested on 🍎 macOS, 🐧 Ubuntu, and 🪟 Win
 pip install sprezzature-figures
 ```
 
-Optional extras (combine as needed, e.g. `"sprezzature-figures[cli,dataviz]"`):
+Optional extras (combine as needed, e.g. `"sprezzature-figures[dataviz]"`):
 
 | Extra | Adds |
 |-------|------|
@@ -44,7 +44,7 @@ Use a virtual environment to keep things isolated:
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
-pip install "sprezzature-figures[cli,dataviz]"
+pip install "sprezzature-figures[dataviz]"
 ```
 </details>
 
@@ -55,7 +55,7 @@ pip install "sprezzature-figures[cli,dataviz]"
 py -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
-pip install "sprezzature-figures[cli,dataviz]"
+pip install "sprezzature-figures[dataviz]"
 ```
 </details>
 
