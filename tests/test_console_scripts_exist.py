@@ -56,13 +56,39 @@ def _declared_console_scripts() -> set[str]:
     return set(_console_scripts())
 
 
+#: Directories the scan must not read. ``tests`` above all: fixtures in there
+#: spell command names that are deliberately wrong, which is their job.
+_UNSCANNED = frozenset({".git", ".venv", "build", "dist", "__pycache__", "tests", "node_modules"})
+
+
+def _sources() -> list[Path]:
+    """Every Python file this repository ships, wherever it keeps them."""
+    return sorted(
+        path
+        for path in REPO_ROOT.rglob("*.py")
+        if not _UNSCANNED & set(path.relative_to(REPO_ROOT).parts)
+    )
+
+
 def _advertised_names() -> list[tuple[str, str]]:
-    """``(script file name, command it tells the reader to type)`` pairs."""
+    """``(file, command it tells the reader to type)`` pairs, repo-wide.
+
+    Read from the whole repository, not from ``scripts/`` alone. A front
+    door's ``prog=`` lives wherever its package keeps sources: under
+    ``scripts/`` in some bricks, in the importable package in
+    sprezzature-cli-gui and sprezzature-figures. Scanning the one directory
+    made this check **vacuous** in those two — an empty parameter set, which
+    pytest reports as a skip and a reader takes for a pass. Measured on
+    2026-10-31 across the six bricks carrying this file: the directory scan
+    read 0 names in cli-gui and figures and missed 3 to 4 in each of the other
+    four; the repository scan reads them all, and every name it finds is a
+    command that is installed.
+    """
     out: list[tuple[str, str]] = []
-    for path in sorted(SCRIPTS_DIR.glob("*.py")):
+    for path in _sources():
         text = path.read_text(encoding="utf-8", errors="replace")
         for match in _PROG_RE.finditer(text):
-            out.append((path.name, match.group(1)))
+            out.append((str(path.relative_to(REPO_ROOT)), match.group(1)))
     return out
 
 
@@ -85,24 +111,33 @@ def test_the_command_the_help_names_is_a_command_that_exists(
 
 def test_the_scan_that_feeds_the_check_actually_read_something() -> None:
     """
-    An empty advertised set has to mean "none advertised", not "none read".
+    An empty advertised set means the scan went blind, not that nothing is named.
 
-    When no script spells a suite command the parametrised check above gets an
+    When nothing spells a suite command the parametrised check above gets an
     empty set, pytest turns it into a skip, and the file reports green while
-    testing nothing. That is the right answer in a package whose scripts do
-    not advertise suite commands, and the wrong one — indistinguishable from
-    it — once ``scripts/`` moves, is renamed, or ships in a layout the glob no
-    longer matches. This pins the difference: the directory is there and has
-    Python in it, so an empty result is a fact about the scripts rather than
-    about the scan.
+    testing nothing. Until 2026-10-31 this test accepted that outcome as long
+    as ``scripts/`` existed and held Python — which is exactly the state
+    sprezzature-cli-gui and sprezzature-figures were in while the check above
+    ran on nothing at all, because their front doors live in the importable
+    package and the scan only read ``scripts/``. The directory being populated
+    said nothing about whether the scan had looked where the parsers are.
+
+    What is asserted now is the result, not the premise: every one of these
+    packages has a front door that names itself, so an empty set can only mean
+    the scan stopped finding them.
     """
-    assert SCRIPTS_DIR.is_dir(), (
-        f"{SCRIPTS_DIR} is gone: the advertised-command scan has nothing to "
-        f"read, and the check above would skip rather than fail."
+    sources = _sources()
+    assert sources, (
+        f"the scan read no Python at all under {REPO_ROOT}: the check above "
+        f"would skip rather than fail, and a skip reads as a pass."
     )
-    assert list(SCRIPTS_DIR.glob("*.py")), (
-        f"{SCRIPTS_DIR} holds no .py file: either the scripts moved or the "
-        f"glob no longer matches how they are named."
+    assert _advertised_names(), (
+        f"not one of the {len(sources)} Python files here spells a suite "
+        f"command in a prog= or name=. A package whose front door does not "
+        f"name itself is the thing this file exists to catch, so an empty "
+        f"result is a blind scan rather than a clean bill of health. Either "
+        f"_PROG_RE stopped matching how the front doors are written, or the "
+        f"front doors stopped naming themselves."
     )
 
 
