@@ -278,8 +278,16 @@ def build_svg(
     band_col = "#8E8E93"
 
     # --- canvas geometry -----------------------------------------
+    # Both axes are probabilities in [0, 1]: one unit, two axes. The rule is
+    # **equal pixels per unit on both axes** (``plot_w / x_span ==
+    # plot_h / y_span``), and the canvas height follows from it. Nothing else
+    # makes the reference line a real 45°, and this figure prints "Perfect
+    # fit (45°)" on that line, rotates the caption -45 to ride it, and calls
+    # itself a square unit view in its own docstring. On the 1160 x 1160
+    # canvas it shipped with, the frame was 914 x 760 and the line was drawn
+    # at 39.7°: the caption crossed it instead of lying along it, and the
+    # ±0.05 tolerance ribbon was flatter than it claimed.
     width = 1160
-    height = 1160
     m_left = 150
     m_right = 96
     m_top = 250
@@ -287,7 +295,8 @@ def build_svg(
     plot_x = m_left
     plot_y = m_top
     plot_w = width - m_left - m_right
-    plot_h = height - m_top - m_bottom
+    plot_h = plot_w  # both spans are 1.0, so equal scales means a square
+    height = round(m_top + plot_h + m_bottom)
 
     ticks = [0.0, 0.25, 0.5, 0.75, 1.0]
 

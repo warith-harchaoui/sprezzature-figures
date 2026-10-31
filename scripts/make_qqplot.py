@@ -145,8 +145,16 @@ def build_svg(
 
     plot_x, plot_y = 70.0, 118.0
     right_margin, bottom_reserved = 30.0, 60.0
-    plot_w = width - plot_x - right_margin
-    plot_h = height - plot_y - bottom_reserved
+    # Both axes are quantiles of the same variable, over the same ``lo..hi``
+    # domain: one unit, two axes. So the plot takes the smaller of the two
+    # available sides -- **equal pixels per unit on both axes** -- which is
+    # what makes the dashed y = x reference a real 45° and lets a reader see
+    # a departure from it as a departure. Fitting the available box instead
+    # drew that line at 39.2° and tilted every judgement made against it.
+    # Same rule, same line, as make_roc-curve.py.
+    plot_w = plot_h = min(
+        width - plot_x - right_margin, height - plot_y - bottom_reserved
+    )
 
     def x_for(v: float) -> float:
         return plot_x + (v - lo) / (hi - lo) * plot_w
