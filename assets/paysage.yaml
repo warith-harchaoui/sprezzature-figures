@@ -1,11 +1,11 @@
 meta:
   reference: sprezzature-figures
-  rotation_deg: -71.697
+  rotation_deg: 155.067
   explained_variance_ratio:
-  - 0.2999
-  - 0.204
-  cumulative_variance: 0.5039
-  n_approaches: 41
+  - 0.2975
+  - 0.2131
+  cumulative_variance: 0.5106
+  n_approaches: 42
   attributes:
   - Gratuit ou open source
   - Étendue des types de graphiques
@@ -33,64 +33,64 @@ meta:
   imputed_cells: []
 axes:
   axis_1:
-    name: Ingéniosité ↔ Liberté
-    pole_left: Ingéniosité
-    pole_right: Liberté
+    name: Dynamisme ↔ Clarté
+    pole_left: Dynamisme
+    pole_right: Clarté
     loadings:
-      Gratuit ou open source: 0.371
-      Étendue des types de graphiques: 0.0822
-      Qualité de publication: 0.2745
-      Facilité d'utilisation: -0.328
-      Programmabilité: 0.2694
-      Interactif: -0.1013
-      Copilote IA en langage naturel: -0.3537
-      Contrôle qualité visuel du rendu: 0.014
-      Local et hors ligne (sans compte): 0.351
-      Reproductibilité: 0.3447
-      Export en SVG PNG PDF: 0.1638
-      Personnalisation et thèmes: 0.1839
-      Flexibilité des sources de données: -0.1976
-      Maturité et communauté: -0.0763
-      Géospatial et cartes: -0.0511
-      Tableaux de bord et BI: -0.2194
-      Fonctionnalités d'accessibilité: 0.1476
-      Animé: 0.0624
-      Performance sur grands jeux de données: -0.1275
-      Intégrabilité web: 0.0851
-      Profondeur statistique et analytique: -0.13
-      Adaptatif: -0.0117
+      Gratuit ou open source: 0.0126
+      Étendue des types de graphiques: -0.2175
+      Qualité de publication: -0.0823
+      Facilité d'utilisation: 0.1134
+      Programmabilité: -0.0425
+      Interactif: -0.3424
+      Copilote IA en langage naturel: 0.0677
+      Contrôle qualité visuel du rendu: 0.2476
+      Local et hors ligne (sans compte): -0.0733
+      Reproductibilité: -0.0417
+      Export en SVG PNG PDF: -0.0364
+      Personnalisation et thèmes: -0.1977
+      Flexibilité des sources de données: -0.2933
+      Maturité et communauté: -0.1905
+      Géospatial et cartes: -0.3278
+      Tableaux de bord et BI: -0.3216
+      Fonctionnalités d'accessibilité: 0.033
+      Animé: -0.2707
+      Performance sur grands jeux de données: -0.2889
+      Intégrabilité web: -0.3085
+      Profondeur statistique et analytique: 0.0077
+      Adaptatif: -0.338
   axis_2:
-    name: Dynamisme ↔ Précision
-    pole_bottom: Dynamisme
-    pole_top: Précision
+    name: Ingéniosité ↔ Liberté
+    pole_bottom: Ingéniosité
+    pole_top: Liberté
     loadings:
-      Gratuit ou open source: 0.0156
-      Étendue des types de graphiques: -0.2179
-      Qualité de publication: -0.0895
-      Facilité d'utilisation: 0.1144
-      Programmabilité: -0.0418
-      Interactif: -0.3383
-      Copilote IA en langage naturel: 0.0706
-      Contrôle qualité visuel du rendu: 0.2474
-      Local et hors ligne (sans compte): -0.0752
-      Reproductibilité: -0.0429
-      Export en SVG PNG PDF: -0.0444
-      Personnalisation et thèmes: -0.2119
-      Flexibilité des sources de données: -0.2927
-      Maturité et communauté: -0.1996
-      Géospatial et cartes: -0.3247
-      Tableaux de bord et BI: -0.3201
-      Fonctionnalités d'accessibilité: 0.0291
-      Animé: -0.2678
-      Performance sur grands jeux de données: -0.2838
-      Intégrabilité web: -0.3129
-      Profondeur statistique et analytique: 0.0055
-      Adaptatif: -0.3316
+      Gratuit ou open source: 0.3512
+      Étendue des types de graphiques: 0.0949
+      Qualité de publication: 0.2814
+      Facilité d'utilisation: -0.3119
+      Programmabilité: 0.2589
+      Interactif: -0.132
+      Copilote IA en langage naturel: -0.3466
+      Contrôle qualité visuel du rendu: -0.0098
+      Local et hors ligne (sans compte): 0.3364
+      Reproductibilité: 0.3113
+      Export en SVG PNG PDF: 0.2059
+      Personnalisation et thèmes: 0.2251
+      Flexibilité des sources de données: -0.2215
+      Maturité et communauté: -0.0015
+      Géospatial et cartes: -0.0286
+      Tableaux de bord et BI: -0.2407
+      Fonctionnalités d'accessibilité: 0.1683
+      Animé: 0.0673
+      Performance sur grands jeux de données: -0.1411
+      Intégrabilité web: 0.1072
+      Profondeur statistique et analytique: -0.1025
+      Adaptatif: -0.029
 approaches:
 - name: sprezzature-figures
   coordinates:
-    axis_1: 3.9473
-    axis_2: 6.0766
+    axis_1: 6.0034
+    axis_2: 4.3494
   role: best
   color: '#FF3B30'
   attributes:
@@ -119,10 +119,10 @@ approaches:
   imputed_attributes: []
 - name: Matplotlib
   coordinates:
-    axis_1: 3.9473
-    axis_2: -1.9774
-  role: right
-  color: '#007AFF'
+    axis_1: -1.8498
+    axis_2: 4.3494
+  role: top
+  color: '#AF52DE'
   attributes:
     Gratuit ou open source: 5.0
     Étendue des types de graphiques: 5.0
@@ -149,10 +149,10 @@ approaches:
   imputed_attributes: []
 - name: Seaborn
   coordinates:
-    axis_1: 3.1815
-    axis_2: 0.5522
+    axis_1: 0.6771
+    axis_2: 3.5341
   role: competitor
-  color: '#8599ED'
+  color: '#11B8A2'
   attributes:
     Gratuit ou open source: 5.0
     Étendue des types de graphiques: 3.0
@@ -179,10 +179,10 @@ approaches:
   imputed_attributes: []
 - name: Plotly / Dash
   coordinates:
-    axis_1: 1.0743
-    axis_2: -5.6769
+    axis_1: -5.5919
+    axis_2: 1.3824
   role: competitor
-  color: '#BFBB55'
+  color: '#EA94CC'
   attributes:
     Gratuit ou open source: 4.0
     Étendue des types de graphiques: 5.0
@@ -209,10 +209,10 @@ approaches:
   imputed_attributes: []
 - name: Bokeh
   coordinates:
-    axis_1: 1.6346
-    axis_2: -4.1979
+    axis_1: -4.1631
+    axis_2: 1.6609
   role: competitor
-  color: '#509C58'
+  color: '#8C78CC'
   attributes:
     Gratuit ou open source: 5.0
     Étendue des types de graphiques: 4.0
@@ -239,10 +239,10 @@ approaches:
   imputed_attributes: []
 - name: Altair
   coordinates:
-    axis_1: 3.0676
-    axis_2: -1.8016
+    axis_1: -1.7297
+    axis_2: 3.2427
   role: competitor
-  color: '#4299D8'
+  color: '#00A6BA'
   attributes:
     Gratuit ou open source: 5.0
     Étendue des types de graphiques: 4.0
@@ -269,10 +269,10 @@ approaches:
   imputed_attributes: []
 - name: ggplot2
   coordinates:
-    axis_1: 3.8291
-    axis_2: 0.0145
+    axis_1: 0.133
+    axis_2: 4.1353
   role: competitor
-  color: '#749CEB'
+  color: '#00B5AD'
   attributes:
     Gratuit ou open source: 5.0
     Étendue des types de graphiques: 4.0
@@ -299,10 +299,10 @@ approaches:
   imputed_attributes: []
 - name: HoloViews
   coordinates:
-    axis_1: 1.5879
-    axis_2: -3.985
+    axis_1: -3.9786
+    axis_2: 1.5394
   role: competitor
-  color: '#66C68D'
+  color: '#BE9AEF'
   attributes:
     Gratuit ou open source: 5.0
     Étendue des types de graphiques: 4.0
@@ -329,10 +329,10 @@ approaches:
   imputed_attributes: []
 - name: PyGWalker
   coordinates:
-    axis_1: -0.0211
-    axis_2: -1.4194
+    axis_1: -1.4254
+    axis_2: -0.0819
   role: competitor
-  color: '#D9A247'
+  color: '#F18A8D'
   attributes:
     Gratuit ou open source: 5.0
     Étendue des types de graphiques: 3.0
@@ -359,10 +359,10 @@ approaches:
   imputed_attributes: []
 - name: Streamlit
   coordinates:
-    axis_1: -0.3652
-    axis_2: -2.2871
+    axis_1: -2.2771
+    axis_2: -0.3407
   role: competitor
-  color: '#EB9C5B'
+  color: '#F58F82'
   attributes:
     Gratuit ou open source: 4.0
     Étendue des types de graphiques: 3.0
@@ -389,10 +389,10 @@ approaches:
   imputed_attributes: []
 - name: marimo
   coordinates:
-    axis_1: 0.1932
-    axis_2: -2.0488
+    axis_1: -2.0614
+    axis_2: -0.0051
   role: competitor
-  color: '#B9932B'
+  color: '#D67595'
   attributes:
     Gratuit ou open source: 5.0
     Étendue des types de graphiques: 2.0
@@ -419,10 +419,10 @@ approaches:
   imputed_attributes: []
 - name: Great Tables
   coordinates:
-    axis_1: 3.4275
-    axis_2: 0.6781
+    axis_1: 0.7913
+    axis_2: 3.5157
   role: competitor
-  color: '#A8AAFF'
+  color: '#4DCCA8'
   attributes:
     Gratuit ou open source: 5.0
     Étendue des types de graphiques: 1.0
@@ -449,10 +449,10 @@ approaches:
   imputed_attributes: []
 - name: Quarto
   coordinates:
-    axis_1: 3.0268
-    axis_2: -1.503
+    axis_1: -1.3981
+    axis_2: 3.2218
   role: competitor
-  color: '#5C9AE2'
+  color: '#00ADB3'
   attributes:
     Gratuit ou open source: 5.0
     Étendue des types de graphiques: 2.0
@@ -479,10 +479,10 @@ approaches:
   imputed_attributes: []
 - name: Observable Framework
   coordinates:
-    axis_1: 1.2282
-    axis_2: -4.5178
+    axis_1: -4.5014
+    axis_2: 1.1528
   role: competitor
-  color: '#AFD377'
+  color: '#F3A6E9'
   attributes:
     Gratuit ou open source: 5.0
     Étendue des types de graphiques: 4.0
@@ -509,10 +509,10 @@ approaches:
   imputed_attributes: []
 - name: Evidence
   coordinates:
-    axis_1: 0.3183
-    axis_2: -2.6846
+    axis_1: -2.6739
+    axis_2: 0.2853
   role: competitor
-  color: '#BAA43C'
+  color: '#DE82AE'
   attributes:
     Gratuit ou open source: 5.0
     Étendue des types de graphiques: 3.0
@@ -539,10 +539,10 @@ approaches:
   imputed_attributes: []
 - name: Mosaic / vgplot
   coordinates:
-    axis_1: 1.0099
-    axis_2: -2.2344
+    axis_1: -2.2672
+    axis_2: 0.7903
   role: competitor
-  color: '#53D9BA'
+  color: '#E3A2ED'
   attributes:
     Gratuit ou open source: 5.0
     Étendue des types de graphiques: 3.0
@@ -569,10 +569,10 @@ approaches:
   imputed_attributes: []
 - name: D3.js
   coordinates:
-    axis_1: 3.8055
-    axis_2: -5.6492
+    axis_1: -5.5593
+    axis_2: 4.0633
   role: competitor
-  color: '#009D9D'
+  color: '#5088D0'
   attributes:
     Gratuit ou open source: 5.0
     Étendue des types de graphiques: 5.0
@@ -599,10 +599,10 @@ approaches:
   imputed_attributes: []
 - name: Chart.js
   coordinates:
-    axis_1: 2.1665
-    axis_2: -2.0476
+    axis_1: -2.0236
+    axis_2: 2.1715
   role: competitor
-  color: '#00B4D1'
+  color: '#45ABE4'
   attributes:
     Gratuit ou open source: 5.0
     Étendue des types de graphiques: 3.0
@@ -629,10 +629,10 @@ approaches:
   imputed_attributes: []
 - name: Apache ECharts
   coordinates:
-    axis_1: 2.4955
-    axis_2: -6.0766
+    axis_1: -6.0034
+    axis_2: 2.7595
   role: competitor
-  color: '#60D5A8'
+  color: '#B0AEFF'
   attributes:
     Gratuit ou open source: 5.0
     Étendue des types de graphiques: 5.0
@@ -659,10 +659,10 @@ approaches:
   imputed_attributes: []
 - name: Highcharts
   coordinates:
-    axis_1: 1.404
-    axis_2: -5.1871
+    axis_1: -5.0899
+    axis_2: 1.7979
   role: competitor
-  color: '#ADBD5A'
+  color: '#CD99EA'
   attributes:
     Gratuit ou open source: 2.0
     Étendue des types de graphiques: 5.0
@@ -689,10 +689,10 @@ approaches:
   imputed_attributes: []
 - name: Recharts
   coordinates:
-    axis_1: 1.6692
-    axis_2: -1.707
+    axis_1: -1.661
+    axis_2: 1.7119
   role: competitor
-  color: '#00BECC'
+  color: '#5FAEF1'
   attributes:
     Gratuit ou open source: 5.0
     Étendue des types de graphiques: 3.0
@@ -719,10 +719,10 @@ approaches:
   imputed_attributes: []
 - name: Vega-Lite / Vega
   coordinates:
-    axis_1: 2.7087
-    axis_2: -2.549
+    axis_1: -2.4743
+    axis_2: 2.9195
   role: competitor
-  color: '#4ECEF8'
+  color: '#52CBFA'
   attributes:
     Gratuit ou open source: 5.0
     Étendue des types de graphiques: 4.0
@@ -749,10 +749,10 @@ approaches:
   imputed_attributes: []
 - name: Observable Plot
   coordinates:
-    axis_1: 2.0029
-    axis_2: -3.0181
+    axis_1: -2.9756
+    axis_2: 2.0986
   role: competitor
-  color: '#49DCCD'
+  color: '#99BFFF'
   attributes:
     Gratuit ou open source: 5.0
     Étendue des types de graphiques: 4.0
@@ -779,10 +779,10 @@ approaches:
   imputed_attributes: []
 - name: Datawrapper
   coordinates:
-    axis_1: 0.744
-    axis_2: -1.9857
+    axis_1: -1.9083
+    axis_2: 1.1914
   role: competitor
-  color: '#92CA78'
+  color: '#9FB0FF'
   attributes:
     Gratuit ou open source: 3.0
     Étendue des types de graphiques: 3.0
@@ -809,10 +809,10 @@ approaches:
   imputed_attributes: []
 - name: Flourish
   coordinates:
-    axis_1: -0.4457
-    axis_2: -3.2774
+    axis_1: -3.2457
+    axis_2: -0.0883
   role: competitor
-  color: '#DD9A4A'
+  color: '#EB8698'
   attributes:
     Gratuit ou open source: 3.0
     Étendue des types de graphiques: 4.0
@@ -839,10 +839,10 @@ approaches:
   imputed_attributes: []
 - name: RAWGraphs
   coordinates:
-    axis_1: 0.5125
-    axis_2: 1.1229
+    axis_1: 1.1456
+    axis_2: 0.787
   role: competitor
-  color: '#AD9CF4'
+  color: '#56C391'
   attributes:
     Gratuit ou open source: 5.0
     Étendue des types de graphiques: 5.0
@@ -869,10 +869,10 @@ approaches:
   imputed_attributes: []
 - name: Vizzu
   coordinates:
-    axis_1: 1.618
-    axis_2: -1.0246
+    axis_1: -1.0257
+    axis_2: 1.6111
   role: competitor
-  color: '#2198CC'
+  color: '#009EBF'
   attributes:
     Gratuit ou open source: 5.0
     Étendue des types de graphiques: 3.0
@@ -899,10 +899,10 @@ approaches:
   imputed_attributes: []
 - name: Tableau
   coordinates:
-    axis_1: -2.5787
-    axis_2: -4.5074
-  role: worst
-  color: '#A52A2A'
+    axis_1: -4.4547
+    axis_2: -2.0982
+  role: competitor
+  color: '#D58647'
   attributes:
     Gratuit ou open source: 1.0
     Étendue des types de graphiques: 4.0
@@ -929,10 +929,10 @@ approaches:
   imputed_attributes: []
 - name: Power BI
   coordinates:
-    axis_1: -2.9814
-    axis_2: -4.0157
-  role: competitor
-  color: '#DF7A7C'
+    axis_1: -3.9808
+    axis_2: -2.5846
+  role: worst
+  color: '#A52A2A'
   attributes:
     Gratuit ou open source: 2.0
     Étendue des types de graphiques: 4.0
@@ -959,10 +959,10 @@ approaches:
   imputed_attributes: []
 - name: Looker
   coordinates:
-    axis_1: -2.3175
-    axis_2: -2.7943
+    axis_1: -2.7627
+    axis_2: -2.0644
   role: competitor
-  color: '#D67284'
+  color: '#C0892B'
   attributes:
     Gratuit ou open source: 3.0
     Étendue des types de graphiques: 3.0
@@ -989,10 +989,10 @@ approaches:
   imputed_attributes: []
 - name: Apache Superset
   coordinates:
-    axis_1: -0.5672
-    axis_2: -3.0376
+    axis_1: -3.0167
+    axis_2: -0.4986
   role: competitor
-  color: '#FFA776'
+  color: '#FFA283'
   attributes:
     Gratuit ou open source: 5.0
     Étendue des types de graphiques: 4.0
@@ -1019,10 +1019,10 @@ approaches:
   imputed_attributes: []
 - name: Metabase
   coordinates:
-    axis_1: -1.4997
-    axis_2: -2.4976
+    axis_1: -2.4887
+    axis_2: -1.3999
   role: competitor
-  color: '#E68375'
+  color: '#D69143'
   attributes:
     Gratuit ou open source: 4.0
     Étendue des types de graphiques: 3.0
@@ -1049,10 +1049,10 @@ approaches:
   imputed_attributes: []
 - name: Grafana
   coordinates:
-    axis_1: -1.1252
-    axis_2: -3.8128
+    axis_1: -3.7807
+    axis_2: -0.9485
   role: competitor
-  color: '#DB7D5E'
+  color: '#D88052'
   attributes:
     Gratuit ou open source: 4.0
     Étendue des types de graphiques: 3.0
@@ -1079,10 +1079,10 @@ approaches:
   imputed_attributes: []
 - name: ThoughtSpot
   coordinates:
-    axis_1: -3.9473
-    axis_2: -2.4262
+    axis_1: -2.4206
+    axis_2: -3.6247
   role: competitor
-  color: '#FB96B6'
+  color: '#DCB250'
   attributes:
     Gratuit ou open source: 1.0
     Étendue des types de graphiques: 3.0
@@ -1109,10 +1109,10 @@ approaches:
   imputed_attributes: []
 - name: Julius AI
   coordinates:
-    axis_1: -2.9253
-    axis_2: 0.3593
+    axis_1: 0.3464
+    axis_2: -2.7269
   role: competitor
-  color: '#E184B1'
+  color: '#B2A941'
   attributes:
     Gratuit ou open source: 2.0
     Étendue des types de graphiques: 3.0
@@ -1139,10 +1139,10 @@ approaches:
   imputed_attributes: []
 - name: ChatGPT
   coordinates:
-    axis_1: -2.2835
-    axis_2: 2.5244
+    axis_1: 2.5421
+    axis_2: -1.9374
   role: competitor
-  color: '#AC7CCB'
+  color: '#75A34F'
   attributes:
     Gratuit ou open source: 2.0
     Étendue des types de graphiques: 3.0
@@ -1169,10 +1169,10 @@ approaches:
   imputed_attributes: []
 - name: Claude
   coordinates:
-    axis_1: -2.1145
-    axis_2: 0.847
+    axis_1: 0.8636
+    axis_2: -1.763
   role: competitor
-  color: '#C16EA6'
+  color: '#8E962F'
   attributes:
     Gratuit ou open source: 2.0
     Étendue des types de graphiques: 3.0
@@ -1197,12 +1197,42 @@ approaches:
     Profondeur statistique et analytique: 5.0
     Adaptatif: 3.0
   imputed_attributes: []
+- name: Claude Dashboards
+  coordinates:
+    axis_1: -0.7337
+    axis_2: -4.3494
+  role: competitor
+  color: '#DCC15C'
+  attributes:
+    Gratuit ou open source: 1.0
+    Étendue des types de graphiques: 3.0
+    Qualité de publication: 3.0
+    Facilité d'utilisation: 5.0
+    Programmabilité: 2.0
+    Interactif: 5.0
+    Copilote IA en langage naturel: 5.0
+    Contrôle qualité visuel du rendu: 2.0
+    Local et hors ligne (sans compte): 1.0
+    Reproductibilité: 3.0
+    Export en SVG PNG PDF: 2.0
+    Personnalisation et thèmes: 2.0
+    Flexibilité des sources de données: 5.0
+    Maturité et communauté: 2.0
+    Géospatial et cartes: 2.0
+    Tableaux de bord et BI: 5.0
+    Fonctionnalités d'accessibilité: 2.0
+    Animé: 2.0
+    Performance sur grands jeux de données: 4.0
+    Intégrabilité web: 2.0
+    Profondeur statistique et analytique: 3.0
+    Adaptatif: 4.0
+  imputed_attributes: []
 - name: Gemini
   coordinates:
-    axis_1: -2.9314
-    axis_2: 2.1106
+    axis_1: 2.1246
+    axis_2: -2.5542
   role: competitor
-  color: '#B375BE'
+  color: '#819C3E'
   attributes:
     Gratuit ou open source: 2.0
     Étendue des types de graphiques: 3.0
@@ -1229,10 +1259,10 @@ approaches:
   imputed_attributes: []
 - name: AgentVision
   coordinates:
-    axis_1: 0.8008
-    axis_2: 6.0766
-  role: top
-  color: '#AF52DE'
+    axis_1: 6.0034
+    axis_2: 0.4597
+  role: right
+  color: '#007AFF'
   attributes:
     Gratuit ou open source: 5.0
     Étendue des types de graphiques: 1.0
@@ -1259,10 +1289,10 @@ approaches:
   imputed_attributes: []
 - name: Excel
   coordinates:
-    axis_1: -0.9129
-    axis_2: 0.6103
+    axis_1: 0.6882
+    axis_2: -0.4748
   role: competitor
-  color: '#B66DAE'
+  color: '#5B9E55'
   attributes:
     Gratuit ou open source: 3.0
     Étendue des types de graphiques: 3.0
@@ -1289,10 +1319,10 @@ approaches:
   imputed_attributes: []
 - name: Canva
   coordinates:
-    axis_1: -0.882
-    axis_2: 1.8961
+    axis_1: 1.9712
+    axis_2: -0.3698
   role: competitor
-  color: '#9776C8'
+  color: '#469F62'
   attributes:
     Gratuit ou open source: 3.0
     Étendue des types de graphiques: 2.0
