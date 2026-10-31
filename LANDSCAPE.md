@@ -133,11 +133,20 @@ The geometry is ordinary correlation principal component analysis (PCA) and it i
 
 **The two axes carry 51.1 % of the table between them.** That is the number to hold onto: just under half of what those 22 criteria say is not on this page. With 22 criteria across 42 tools a figure around half is expected, because these tools genuinely differ in more than two ways, but it means the map is a first orientation and the table is the evidence.
 
-That percentage belongs to the **plane**, not to the horizontal and the vertical separately, and this file used to split it as though it did. `standpoint` names the axes it *draws* but reports variance for the underlying principal components, and the drawn frame is a rotation of that plane: 155.1° here, −71.7° on the previous run. Rotating preserves the plane, so the cumulative figure is sound while any per-axis share is not attributable, and the earlier wording here — "30.0 % horizontally and 20.4 % vertically" — was reading a split that the rotation had already mixed. The loadings above are quoted from `standpoint`'s oriented frame, so those *do* describe the horizontal and the vertical as drawn.
+That percentage belongs to the **plane**, not to the horizontal and the vertical separately, and this file used to split it as though it did. `standpoint` names the axes it *draws* but reports variance for the underlying principal components, and the drawn frame is a rotation of that plane: 155.1° here, −71.7° on the previous run, which
+anyone can re-measure rather than take on faith:
+
+```sh
+grep -v '^Claude Dashboards,' assets/landscape.csv > /tmp/before.csv
+standpoint /tmp/before.csv --outdir /tmp --stem before --check
+```
+ Rotating preserves the plane, so the cumulative figure is sound while any per-axis share is not attributable, and the earlier wording here — "30.0 % horizontally and 20.4 % vertically" — was reading a split that the rotation had already mixed. The loadings above are quoted from `standpoint`'s oriented frame, so those *do* describe the horizontal and the vertical as drawn.
 
 The same rotation is why the map should be read against the loadings and never against last month's figure. Adding one row, Claude Dashboards, moved the rotation far enough that the drawn horizontal and vertical **swapped which split they carry**: the running-view axis was vertical on the 41-tool map and is horizontal here, with the same content and nearly the same loadings. Nothing about the field changed; the camera turned.
 
 Two honest caveats remain. First, `standpoint --check` reports `readable: False` on this map: at 42 points some labels sit close enough to risk overlapping (Seaborn and Great Tables, Bokeh and HoloViews, Altair and Quarto, Streamlit and marimo). The interactive SVG separates them on hover; the static PNG does not. Second, `standpoint` also writes a prose interpretation next to the figure, and it is not reproduced here. Its own layout check caught that interpretation placing Excel at the top when Excel sits at the bottom, which is the short argument for not quoting it: a model reading back ratings somebody else wrote is not a finding, and this file is more useful if the judgements stay visibly mine.
+
+One last thing about the four words, and it is the reason they are never quoted here without their loadings. The French edition of this page is not a later run that happened to drift: its point cloud is **identical** to this one, diffed coordinate by coordinate across all 42 points at the same 155.1° rotation, and it names these same two axes *Dynamisme ↔ Clarté* and *Ingéniosité ↔ Liberté*. Those are not translations of *Dynamic ↔ Intuitive* and *Insightful ↔ Adaptable*; they are a second roll of the same dice. The demonstration is better than the warning, because the warning asks you to trust me and the object is in the repository beside this file.
 
 ## Sources
 
