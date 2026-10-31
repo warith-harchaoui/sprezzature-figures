@@ -9347,13 +9347,13 @@
     "options_schema": {
       "title": {
         "type": "str",
-        "default": "The validation curve has not flattened: more data is still worth buying",
+        "default": "More data is still worth buying, but each doubling buys less than the last",
         "choices": [],
         "description": "Chart text."
       },
       "subtitle": {
         "type": "str",
-        "default": "Accuracy against training-set size, five folds. Bands are the fold-to-fold range.",
+        "default": "Accuracy against training-set size, five folds. Bands are the fold-to-fold range; the dashed line is the fitted ceiling.",
         "choices": [],
         "description": "Chart text."
       },
