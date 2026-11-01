@@ -63,7 +63,16 @@ dependencies = [
     "lime>=0.2.0",
     "joblib>=1.3",
     "best-engine-ai-helper>=0.4.0",
-    "wallet-helper>=1.3,<2",
+    # 1.3.2, like the three siblings that use this ledger. Up to 1.3.1,
+    # `SqliteLedger.__init__` ran `PRAGMA journal_mode=WAL`, which SQLite
+    # refuses with SQLITE_BUSY *without consulting the busy handler*, so the
+    # connection's timeout did not cover it and a cold start under concurrency
+    # could leave one process dead on "database is locked".
+    #
+    # The retry in `scripts/ralph_eyeball_loop.py` stays, for the branch that
+    # owes nothing to a release: a file that is not a database. Raising the
+    # floor removed the cause, not the defence.
+    "wallet-helper>=1.3.2,<2",
     "fastapi-mcp>=0.3",
     "mcp<2.0",
     "nicegui",
@@ -109,7 +118,9 @@ dev = [
     # wallet_helper. A guard that skips in every CI run is a guard that never
     # runs, and a skip reads as a pass. (`best-engine-ai-helper` is already
     # declared twice, in `studio` and `local`, for the same kind of reason.)
-    "wallet-helper>=1.3,<2",
+    # Same floor as the base declaration above, for the same reason -- 1.3.1
+    # could refuse to open on a cold start.
+    "wallet-helper>=1.3.2,<2",
 ]
 
 [project.scripts]

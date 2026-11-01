@@ -124,6 +124,7 @@ import argparse
 import hashlib
 import json
 import shutil
+import random
 import sqlite3
 import subprocess
 import sys
@@ -679,6 +680,14 @@ _CRITIQUE_LEDGER: Path = _PRIVATE_LOOP_DIR / "critique-ledger.db"
 #: directory that only grows.
 _CRITIQUE_MAX_ENTRIES: int = 500
 
+#: Attempts and first backoff step for opening the critique ledger. The names
+#: and the shape are `sprezzature-audio`'s and `sprezzature-publish`'s, in
+#: their `scripts/_wallet.py`: same defect, and they measured it first. Six
+#: attempts span roughly 1.3 s in the worst case, far shorter than one vision
+#: call.
+_LEDGER_ATTEMPTS: int = 6
+_LEDGER_BACKOFF: float = 0.02
+
 
 @lru_cache(maxsize=1)
 def _critique_wallet() -> _wallet.Wallet:
@@ -693,33 +702,54 @@ def _critique_wallet() -> _wallet.Wallet:
     working this repository in parallel is a Saturday afternoon here, not a
     thought experiment.
 
-    The retry is a measured wrinkle, not superstition: two processes *creating*
-    the database file at the same instant race inside the constructor's own
-    ``PRAGMA journal_mode=WAL``, and one of them gets ``sqlite3.OperationalError:
-    database is locked`` before any of this package's code runs. Once the file
-    exists the race is gone. So: retry, then degrade to the JSON ledger, which
-    still gives content-addressed reuse across runs and gives up only the
-    cross-process half.
+    The retry was a measured wrinkle, not superstition: two processes *creating*
+    the database file at the same instant raced inside the constructor's own
+    ``PRAGMA journal_mode=WAL``, and one of them got
+    ``sqlite3.OperationalError: database is locked`` before any of this
+    package's code ran. ``wallet-helper`` **1.3.2** reads the mode before
+    writing it, and this package's floor now names it, so that cause is out of
+    reach here.
+
+    What is left, and why the retry stays
+    -------------------------------------
+    A file that is not a database — ``sqlite3.DatabaseError`` — which is a disk
+    and not a release: a ledger truncated by a crash, or a path that collided
+    with something else. That degrades immediately, because no number of
+    retries repairs a bad file, and because taking the whole loop down over a
+    *cache* would trade a cache for a crash. ``sprezzature-audio`` and
+    ``sprezzature-publish`` carry this branch in their shared
+    ``scripts/_wallet.py``; this copy did not have it until the floor moved and
+    the question was asked out loud.
+
+    ``OperationalError`` keeps its retry for genuine contention past the busy
+    timeout, which no floor rules out. The backoff is **jittered** for the
+    reason the siblings' is: processes that collided and then back off on one
+    fixed schedule collide again on the next rung, which is the collision the
+    retry exists to recover from.
     """
     _CRITIQUE_LEDGER.parent.mkdir(parents=True, exist_ok=True)
-    for attempt in range(4):
+    reason = f"stayed locked after {_LEDGER_ATTEMPTS} attempts"
+    for attempt in range(_LEDGER_ATTEMPTS):
         try:
             return _wallet.Wallet(
                 _wallet.SqliteLedger(_CRITIQUE_LEDGER, max_entries=_CRITIQUE_MAX_ENTRIES)
             )
         except sqlite3.OperationalError:
-            if attempt == 3:
-                print(
-                    "ralph_eyeball_loop: the critique ledger stayed locked; falling back "
-                    "to the JSON store (caching still works, cross-process single-flight "
-                    "does not).",
-                    file=sys.stderr,
-                )
-                return _wallet.Wallet(
-                    _wallet.Ledger(_CRITIQUE_LEDGER.parent, max_entries=_CRITIQUE_MAX_ENTRIES)
-                )
-            time.sleep(0.25 * (attempt + 1))
-    raise AssertionError("unreachable")  # pragma: no cover - the loop always returns
+            # Contention. Jittered, so two processes that collided do not retry
+            # in lockstep. (`OperationalError` first: it is a subclass of the
+            # clause below.)
+            time.sleep(_LEDGER_BACKOFF * (2**attempt) * (0.5 + random.random()))
+        except sqlite3.DatabaseError as exc:
+            reason = f"is not a usable database ({exc})"
+            break
+    print(
+        f"ralph_eyeball_loop: the critique ledger {reason}; falling back to the "
+        "JSON store (caching still works, cross-process single-flight does not).",
+        file=sys.stderr,
+    )
+    return _wallet.Wallet(
+        _wallet.Ledger(_CRITIQUE_LEDGER.parent, max_entries=_CRITIQUE_MAX_ENTRIES)
+    )
 
 
 def _unreachable_message(exc: Exception) -> str:

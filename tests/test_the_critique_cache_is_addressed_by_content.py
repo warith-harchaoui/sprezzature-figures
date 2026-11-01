@@ -51,6 +51,8 @@ Warith HARCHAOUI <warithmetics@deraison.ai>
 from __future__ import annotations
 
 import importlib.util
+import inspect
+import sqlite3
 import subprocess
 import sys
 import textwrap
@@ -316,3 +318,83 @@ def test_two_loops_on_one_figure_collapse_into_one_inference(
     assert runs == expected_runs, (
         f"with the {backend} ledger the heavy call ran {runs} time(s), expected {expected_runs}"
     )
+
+
+# ------------------------------------------- opening the ledger, when it refuses
+#
+# Added on 2026-11-01, with the floor raised to `wallet-helper>=1.3.2`. Up to
+# 1.3.1, `SqliteLedger.__init__` could refuse on a cold start under concurrency,
+# and this file's retry was written for that. The floor removed the cause — and
+# asking what the retry was still for found that this copy was missing the
+# branch that owes nothing to a release.
+#
+# `sprezzature-audio` and `sprezzature-publish` both degrade on a file that is
+# not a database and both test it; this one raised, which would have taken a
+# whole loop down over a *cache*. So: the branch, and the two tests the siblings
+# have.
+
+
+def test_a_corrupt_ledger_degrades_instead_of_raising(
+    loop: Any, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """A disk, not a release — which is why the retry outlives the floor.
+
+    No number of retries repairs a bad file, so this degrades immediately, to
+    the JSON ledger over the same directory. What is lost is cross-process
+    single-flight; what is kept is the cache, the critique, and a loop that
+    answers.
+    """
+    loop._CRITIQUE_LEDGER.parent.mkdir(parents=True, exist_ok=True)
+    loop._CRITIQUE_LEDGER.write_bytes(b"this is not a database, it is a sentence")
+    loop._critique_wallet.cache_clear()
+
+    wallet = loop._critique_wallet()
+
+    assert wallet is not None
+    assert not isinstance(wallet.ledger, wallet_helper.SqliteLedger), (
+        "a corrupt file was accepted as a SQLite ledger"
+    )
+    said = capsys.readouterr().err
+    assert "not a usable database" in said, said
+    assert "cross-process single-flight does not" in said, said
+
+
+def test_a_locked_ledger_is_waited_out_then_given_up_on(
+    loop: Any, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """The retry tries more than once, and stops.
+
+    Both halves matter and they fail for different reasons: one attempt would
+    not survive the contention it is written for, and no limit would hang a
+    command line behind a cache. The refusal is injected because the real
+    window is narrower than a test can aim at.
+    """
+    attempts: list[int] = []
+    real = wallet_helper.SqliteLedger
+
+    def always_locked(*args: Any, **kwargs: Any) -> Any:
+        attempts.append(1)
+        raise sqlite3.OperationalError("database is locked")
+
+    monkeypatch.setattr(loop._wallet, "SqliteLedger", always_locked)
+    monkeypatch.setattr(loop, "_LEDGER_BACKOFF", 0.0)
+    loop._critique_wallet.cache_clear()
+
+    wallet = loop._critique_wallet()
+
+    assert len(attempts) == loop._LEDGER_ATTEMPTS, (
+        f"tried {len(attempts)} time(s) against {loop._LEDGER_ATTEMPTS} declared"
+    )
+    assert not isinstance(wallet.ledger, real)
+    assert "stayed locked" in capsys.readouterr().err
+
+
+def test_the_backoff_is_jittered(loop: Any) -> None:
+    """Not cosmetic: two processes that collided and then back off on one fixed
+    schedule collide again on the next rung, which is the collision the retry
+    exists to recover from. The siblings' is jittered; this one was not until
+    the floor moved and the three copies were compared.
+    """
+    source = Path(inspect.getsourcefile(loop._critique_wallet.__wrapped__) or "")
+    body = source.read_text(encoding="utf-8")
+    assert "random.random()" in body, "the ledger backoff is not jittered"
