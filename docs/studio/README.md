@@ -18,7 +18,7 @@ Requires **Python 3.10–3.13** on 🍎 macOS, 🐧 Ubuntu, or 🪟 Windows.
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
-pip install "sprezzature-figures[studio]"
+pip install "sprezzature-figures"
 sprezzature-studio
 ```
 </details>
@@ -30,7 +30,7 @@ sprezzature-studio
 py -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
-pip install "sprezzature-figures[studio]"
+pip install "sprezzature-figures"
 sprezzature-studio
 ```
 </details>

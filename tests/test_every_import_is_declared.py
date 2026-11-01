@@ -29,7 +29,7 @@ and asserts each third-party top-level name resolves to something
 more of the same shape on its first run: ``explain_model.py`` imports
 ``timeshap``, ``lime`` and ``joblib``, all three declared in
 ``scripts/requirements-explain.txt`` and none of them in the ``explain``
-extra, so ``pip install "sprezzature-figures[explain]"`` installed SHAP and
+extra, so ``pip install "sprezzature-figures"`` installed SHAP and
 Shapash and left the TimeSHAP and LIME paths to die on import.
 
 What it does not catch, measured on the same run: the converse. Five

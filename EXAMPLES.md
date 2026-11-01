@@ -99,7 +99,7 @@ sprezzature-figures redraw their-chart.png --out ours.svg --data sales.csv
 sprezzature-figures redraw their-chart.png --kind treemap --language fr
 ```
 
-Needs a vision model (`pip install 'sprezzature-figures[local]'` and a running
+Needs a vision model (`pip install 'sprezzature-figures'` and a running
 Ollama). Accepts PNG, JPEG, GIF, WebP and SVG.
 
 ## List all available kinds

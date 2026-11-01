@@ -252,7 +252,7 @@ def robust_verdict(
     except ModuleNotFoundError as exc:  # pragma: no cover - depends on the env
         raise ModuleNotFoundError(
             "make_elbow(robust=True) needs elbow-helper: "
-            'pip install "sprezzature-figures[dataviz]"'
+            'pip install "sprezzature-figures"'
         ) from exc
 
     if config is None:

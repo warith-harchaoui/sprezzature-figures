@@ -26,14 +26,18 @@ Requires **Python 3.10–3.13**. Tested on 🍎 macOS, 🐧 Ubuntu, and 🪟 Win
 pip install sprezzature-figures
 ```
 
-Optional extras (combine as needed, e.g. `"sprezzature-figures[dataviz]"`):
+Optional extras (combine as needed, e.g. `"sprezzature-figures"`):
 
 | Extra | Adds |
 |-------|------|
-| `[dataviz]` | networkx / scikit-learn / pandas / shapely / pyproj / pyyaml — the data side (tables, geometry, models) behind the catalogue, causal inference and explainability; nothing here draws |
-| `[studio]` | Sprezzature Studio: the NiceGUI app + Ralph copilot (see below) |
-| `[api]` | FastAPI HTTP surface (see below) |
-| `[mcp]` | MCP (Model Context Protocol) tool surface on top of `[api]`, for calling this library from an AI assistant (see below) |
+| everything below | `pip install sprezzature-figures` |
+
+There are no extras. The data side (networkx, scikit-learn, pandas, shapely,
+pyproj, pyyaml), Sprezzature Studio (the NiceGUI app and the Ralph copilot),
+the causal and explainability stacks, the FastAPI HTTP surface and the MCP
+tool surface all install with the package. They sat behind seven extras until
+2026-11-01, when the base was six dependencies and choosing the right extra
+was a prerequisite for the package being useful.
 
 Use a virtual environment to keep things isolated:
 
@@ -44,7 +48,7 @@ Use a virtual environment to keep things isolated:
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
-pip install "sprezzature-figures[dataviz]"
+pip install "sprezzature-figures"
 ```
 </details>
 
@@ -55,7 +59,7 @@ pip install "sprezzature-figures[dataviz]"
 py -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
-pip install "sprezzature-figures[dataviz]"
+pip install "sprezzature-figures"
 ```
 </details>
 
@@ -189,7 +193,7 @@ roles the chart expects (`make-figure --list --status stable`, then see
 when they don't, `--map role=column` binds them without touching the file.
 
 Not sure which chart fits your file? Ask for a recommendation (needs the
-`[studio]` extra for the profiling stack). This runs the same deterministic
+the profiling stack, in the base install). This runs the same deterministic
 compatibility + readability ranking the Studio GUI shows as cards, with no
 model involved:
 
@@ -256,7 +260,7 @@ and will be looked at by someone who never saw it.
 
 Input can be PNG, JPEG, GIF, WebP or SVG — a screenshot is the usual case. A
 PDF is refused by name, with what to do instead. Needs a vision model: the
-`[local]` extra plus a running [Ollama](https://ollama.com), same as every
+a running [Ollama](https://ollama.com), same as every
 other model call in the suite.
 
 What to expect from the model you run it on: a 7B vision model on a laptop
@@ -436,7 +440,7 @@ This repository is two things:
 
 - **The library** (`sprezzature_figures.make_figure`, `make-figure`,
   `sprezzature-figures` CLI): everything above, with no extra dependencies
-  beyond `[dataviz]`.
+  beyond what the base install already carries.
 - **Sprezzature Studio** (`sprezzature_figures.studio`, `sprezzature-studio`
   CLI): a local NiceGUI app to import a CSV/TSV/XLSX/JSON file, pick a chart type, bind
   columns, and refine the figure by chatting with **Ralph**, a copilot built
@@ -446,7 +450,7 @@ This repository is two things:
   Needs the `studio` extra:
 
   ```bash
-  pip install "sprezzature-figures[studio]"
+  pip install "sprezzature-figures"
   sprezzature-studio
   ```
 
@@ -484,11 +488,11 @@ commands:
 | Interface | Always installed? | Entry point |
 |---|---|---|
 | CLI (click) | Yes | `make-figure` and `sprezzature-figures`, one callable |
-| HTTP API (FastAPI) | `[api]` extra | `uvicorn sprezzature_figures.api:app` |
-| MCP tools (fastapi-mcp) | `[api,mcp]` extras | `sprezzature-figures-mcp` |
+| HTTP API (FastAPI) | in the base install | `uvicorn sprezzature_figures.api:app` |
+| MCP tools (fastapi-mcp) | in the base install | `sprezzature-figures-mcp` |
 
 ```bash
-pip install "sprezzature-figures[api]"
+pip install "sprezzature-figures"
 uvicorn sprezzature_figures.api:app --host 0.0.0.0 --port 8000
 
 # List stable chart kinds
@@ -533,7 +537,7 @@ role bindings already worked out — the same deterministic ranking the CLI's
 `recommend` command runs, over HTTP. It is the route to call before
 `/render/{kind}` whenever nobody has named a chart type.
 
-The MCP surface (`sprezzature-figures[api,mcp]`) exposes the exact same
+The MCP surface (`sprezzature-figures`) exposes the exact same
 routes as MCP tools (`list_kinds`, `get_kind`, `list_kind_options`,
 `recommend_figures`, `render_figure`, `redraw_figure`, `check_render`) at
 `/mcp` on the same FastAPI app. Each
@@ -544,7 +548,7 @@ for the routing rules an agent should follow.
 HTTP surface in one line, so the route definitions are never duplicated:
 
 ```bash
-pip install "sprezzature-figures[api,mcp]"
+pip install "sprezzature-figures"
 sprezzature-figures-mcp
 ```
 
@@ -576,7 +580,7 @@ except `llm` / `vision`.
 
 ### Alternative: conda (local) / Docker (server)
 
-`requirements.txt` (`-e .[cli,dataviz,studio]`) is the shared dependency list
+`requirements.txt` (`-e .`) is the shared dependency list
 behind both; `pyproject.toml`'s extras stay the actual source of truth, and
 this file just selects which of them to install, so there is nothing to
 fall out of sync.

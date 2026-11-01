@@ -131,7 +131,7 @@ def test_core_wheel_does_not_pull_in_studio_dependencies(wheel: Path, tmp_path: 
 def test_studio_extra_installs_and_console_scripts_resolve(wheel: Path, tmp_path: Path) -> None:
     """`pip install "<wheel>[studio]"` must pull nicegui + the studio deps,
     make every studio subpackage importable, and register all three console
-    entry points -- the exact `pip install "sprezzature-figures[studio]";
+    entry points -- the exact `pip install "sprezzature-figures";
     sprezzature-studio` flow the README documents.
     """
     venv_dir = tmp_path / "venv"

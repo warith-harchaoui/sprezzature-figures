@@ -102,7 +102,7 @@ sprezzature-figures redraw leur-graphique.png --out le-notre.svg --data ventes.c
 sprezzature-figures redraw leur-graphique.png --kind treemap --language fr
 ```
 
-Nécessite un modèle de vision (`pip install 'sprezzature-figures[local]'` et un
+Nécessite un modèle de vision (`pip install 'sprezzature-figures'` et un
 Ollama qui tourne). Accepte PNG, JPEG, GIF, WebP et SVG.
 
 ## Lister tous les types disponibles

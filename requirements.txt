@@ -17,9 +17,9 @@
 # api     — the FastAPI app; the container's default command serves it, and
 #           without this the image could not run its own CMD
 # mcp     — the same routes republished as agent tools
--e .[dataviz,studio,api,mcp]
+-e .
 
 # Heavier, narrow extras — opt in by uncommenting, not installed by default:
-# -e .[causal]   # make_causal_estimate.py (dowhy, econml)
-# -e .[explain]  # explain_model.py (shap, shapash, timeshap, lime)
-# -e .[local]    # ralph_eyeball_loop.py --local (offline VLM critique)
+# -e .   # make_causal_estimate.py (dowhy, econml)
+# -e .  # explain_model.py (shap, shapash, timeshap, lime)
+# -e .    # ralph_eyeball_loop.py --local (offline VLM critique)
