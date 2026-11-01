@@ -46,6 +46,44 @@ _SAFE_STYLE_OPTIONS = {
     "accessibility_mode",
 }
 
+#: StyleOptions fields a safe repair may **not** touch, each with the reason.
+#:
+#: Written on 2026-11-01, when counting found fourteen fields on
+#: :class:`StyleOptions` and eight in the set above. The other six were
+#: unclassified: :func:`is_safe_repair` answered False for them, so the
+#: behaviour was right, but nobody had chosen it -- the default had. That is
+#: the shape `sprezzature-maps` guards against in its own option registry,
+#: where ``OPTIONS`` and ``NOT_AN_OPTION`` together have to account for every
+#: keyword a renderer takes, so a new knob must be classified by somebody.
+#:
+#: The reasons matter more than the membership, because the next field will be
+#: classified by reading them:
+#:
+#: - ``sort_order`` -- the order of categories *is* a claim. Which bar is
+#:   first says which matters, and re-sorting a chart unattended rewrites that
+#:   claim without anyone agreeing to it.
+#: - ``highlight_values`` -- the same, more directly: emphasis is the message.
+#: - ``palette`` -- a diverging ramp read as sequential, or the reverse, tells
+#:   a different story about the same numbers. Cosmetic in general and not
+#:   here.
+#: - ``number_format`` and ``date_format`` -- rounding is a claim about
+#:   precision. 1 234.5 shown as 1.2k is not the same statement.
+#: - ``theme`` -- the one that is arguably cosmetic, and the one worth
+#:   deciding deliberately rather than by omission. A critique that says the
+#:   text is hard to read against this background could be answered by
+#:   switching it, which would be a real repair. It stays here until somebody
+#:   chooses otherwise, because widening what an unattended loop may change is
+#:   a decision and not a tidy-up.
+_NEEDS_CONFIRMATION_STYLE_OPTIONS = {
+    "date_format",
+    "highlight_values",
+    "number_format",
+    "palette",
+    "sort_order",
+    "theme",
+}
+
+
 #: Operation types that reshape what the figure shows and always require
 #: confirmation, regardless of what the model itself claims.
 _CONFIRMATION_REQUIRED_TYPES = (
