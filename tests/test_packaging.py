@@ -105,39 +105,74 @@ def test_core_wheel_installs_and_renders_a_stable_figure(wheel: Path, tmp_path: 
 
 
 @pytest.mark.packaging
-def test_core_wheel_does_not_pull_in_studio_dependencies(wheel: Path, tmp_path: Path) -> None:
-    """Installing the bare wheel must NOT make nicegui/pandas importable --
-    the library must stay usable without the studio extra (plan requirement).
+def test_importing_the_library_loads_no_studio_dependency(wheel: Path, tmp_path: Path) -> None:
+    """The wheel carries nicegui and pandas; importing the library must not load them.
+
+    This asserted the opposite until 2026-11-01 -- "installing the bare wheel
+    must NOT make nicegui/pandas importable", because the studio sat behind an
+    extra. Every extra was folded into the base install that day, so the
+    premise is gone: ``pip install sprezzature-figures`` now brings nicegui,
+    pandas, scikit-learn, dowhy, shap and the rest, deliberately, because a
+    library that cannot read a spreadsheet or draw a positioning map until the
+    reader guesses the right extra is a library with a riddle in front of it.
+
+    **The property worth keeping is the one that was always doing the work.**
+    What made the old split valuable was not that the packages were absent --
+    it was that a plain ``import sprezzature_figures`` did not pay for them.
+    That is still true, and this test is now the only thing that says so: they
+    are installed on every machine that has this package, so nothing else can
+    notice an eager import creeping in.
+
+    Measured inside a fresh interpreter, not with ``find_spec``: the question
+    is what got *loaded*, and ``find_spec`` answers what is *installed* -- a
+    different question with, as of today, a different answer.
     """
     python = _make_venv(tmp_path / "venv")
     _pip_install(python, str(wheel))
 
     check = tmp_path / "check.py"
     check.write_text(
+        "import sys\n"
         "import importlib.util\n"
-        "import sprezzature_figures  # must import with no studio deps\n"
         "for mod in ('nicegui', 'pandas'):\n"
-        "    assert importlib.util.find_spec(mod) is None, f'{mod} should NOT be installed by the bare wheel'\n"
-        "print('OK: core install is studio-independent')\n",
+        "    assert importlib.util.find_spec(mod) is not None, (\n"
+        "        f'{mod} is not installed by the wheel. It is a base dependency "
+        "since 2026-11-01, so this test is checking an isolation that no longer "
+        "costs anything -- which means it has stopped testing what it says.'\n"
+        "    )\n"
+        "import sprezzature_figures\n"
+        "from sprezzature_figures import make_figure, list_kinds\n"
+        "eager = sorted(m for m in ('nicegui', 'pandas') if m in sys.modules)\n"
+        "assert not eager, (\n"
+        "    f'importing sprezzature_figures loaded {eager}. Defer it to first "
+        "use: a reader who wants one SVG must not pay for the studio stack, and "
+        "since these are base dependencies nothing but this test can notice.'\n"
+        ")\n"
+        "print('OK: the library imports without loading the studio stack')\n",
         encoding="utf-8",
     )
     result = subprocess.run(
         [str(python), str(check)], cwd=tmp_path, check=True, capture_output=True, text=True
     )
-    assert "OK: core install is studio-independent" in result.stdout
+    assert "OK: the library imports without loading the studio stack" in result.stdout
 
 
 @pytest.mark.packaging
-def test_studio_extra_installs_and_console_scripts_resolve(wheel: Path, tmp_path: Path) -> None:
-    """`pip install "<wheel>[studio]"` must pull nicegui + the studio deps,
-    make every studio subpackage importable, and register all three console
-    entry points -- the exact `pip install "sprezzature-figures";
-    sprezzature-studio` flow the README documents.
+def test_the_studio_installs_and_console_scripts_resolve(wheel: Path, tmp_path: Path) -> None:
+    """A plain install must bring the studio and register all three scripts.
+
+    It installed ``"<wheel>[studio]"`` until 2026-11-01. The extra is gone, and
+    naming it would be worse than useless: **pip answers an unknown extra with
+    a warning and exit 0** -- measured -- so this test would have kept passing
+    while silently installing something other than what it says.
+
+    This is the `pip install sprezzature-figures; sprezzature-studio` flow the
+    README documents, and now the README and this test describe the same
+    command.
     """
     venv_dir = tmp_path / "venv"
     python = _make_venv(venv_dir)
-    # PEP 508 extras on a local wheel path: "<path>[studio]".
-    _pip_install(python, f"{wheel}[studio]")
+    _pip_install(python, str(wheel))
 
     check = tmp_path / "check.py"
     check.write_text(
