@@ -34,149 +34,46 @@ dependencies = [
     "pydantic>=2.7",
     # The command line, and the only parser since 2026-10-25.
     "click>=8.1",
-]
 
-[project.optional-dependencies]
-# the editor: NiceGUI app, data ingest, LLM-driven chat editing,
-# and the Ralph visual-critique loop. `from sprezzature_figures import
-# make_figure` must keep working without this extra installed.
-editor = [
-    "nicegui",
-    "pandas>=2.0",
-    "openpyxl>=3.1",
-    "charset-normalizer>=3",
-    "best-engine-ai-helper>=0.4.0",
-    # Plancher à 4.0.0 le 2026-11-01, et c'est une décision à deux moitiés.
+    # ------------------------------------------------- une seule installation
+    # Folded in from the extras on 2026-11-01. The base was 6
+    # dependencies, so `pip install sprezzature-figures` installed almost nothing and
+    # did almost nothing: choosing the right extra was a thing a reader had to
+    # know before the package could do its job. Across the suite that was 59
+    # extras over eleven repositories, six of them with a base of one.
     #
-    # La 4.0.0 d'os-helper est une release majeure parce qu'elle a cessé de mentir :
-    # `hashfile` ne rend plus de digest pour un fichier qu'il n'a pas lu (il
-    # hachait le chemin en silence), un répertoire est refusé, `hashfolder` ne rend
-    # plus le digest de la chaîne vide, et `date=True` prend la mtime de la cible
-    # au lieu de l'heure courante. C'est exactement l'empreinte dont ce dépôt a
-    # besoin : une empreinte de contenu qui échoue au lieu d'inventer.
-    #
-    # Et c'est devenu possible seulement maintenant : les seize paquets ai-helpers
-    # plafonnaient `os-helper<4`, donc demander la 4 rendait l'installation
-    # insoluble. Les seize sont republiés en `<5`, vérifié sur les métadonnées
-    # PUBLIÉES (pas sur le dépôt local ni sur l'éditable installé, qui m'ont
-    # trompé deux fois).
-    #
-    # Vérifié avant de l'écrire : cette machine exécute déjà le contrat 4.0.0 par
-    # un éditable, et les onze suites de la suite y sont vertes ; et un venv vierge
-    # résout `os-helper==4.0.0` avec audio 2.6.1, speaker 0.14.1, video 2.9.0,
-    # standpoint 0.13.1, best-engine 1.11.1, wallet 1.3.1 et elbow 0.4.1.
-    "os-helper>=4.0.0,<5",
-    "langdetect>=1.0.9",
-]
-# Data-side support for the 167-kind catalogue, explainability and
-# causality. Nothing here draws: every figure is authored as SVG directly,
-# so this tier is tables, geometry and models only.
-dataviz = [
+    # The surfaces are not features and they are not optional any more: the
+    # HTTP app and the MCP server are two of this package's five front doors,
+    # and a door you have to install separately is a door people do not find.
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+    "dowhy>=0.11",
+    "econml>=0.14",
     "networkx>=3.1",
     "scikit-learn>=1.3",
     "pandas>=2.0",
     "pyyaml>=6",
     "shapely>=2",
     "pyproj>=3.6",
-    # `make_elbow(robust=True)`: the half of elbow detection that can decline.
-    # Kneedle always answers -- measured, it put an elbow at k = 22, 23, 20, 4
-    # and 4 on five noisy straight lines -- and `robust_elbow` abstained on all
-    # of them with a reason. Imported lazily inside the `robust` branch, so the
-    # 167-kind catalogue still imports without it; declared here because this is
-    # the data-side tier and that is what this is.
     "elbow-helper>=0.4,<1",
-    # The positioning map, and it belongs here rather than in `dev`.
-    #
-    # `tools/build_landscape.py` regenerates assets/landscape.* and opens with a
-    # bare `import standpoint as sp` at module scope. Until 2026-10-31 that import
-    # was declared nowhere -- not here, not in either requirements file, and
-    # nothing installed it by transitivity either, measured. `mypy.ini` sets
-    # `ignore_missing_imports = True`, so the type gate read the module as `Any`
-    # and had nothing to say; the script is not run in CI, so the only reader of
-    # the defect was a contributor on a clean clone getting a bare
-    # ModuleNotFoundError.
-    #
-    # It landed in `dev` first, and that was the wrong shelf twice over. `dev` is
-    # for what runs the tests; and what this package draws with standpoint is a
-    # FIGURE, so the dependency belongs with the other drawing dependencies.
-    #
-    # To be clear about ownership, because the shelf could suggest otherwise:
-    # `standpoint` stays a brick of the ai-helpers suite, declared here as the
-    # external dependency it is. Nothing of it is vendored or absorbed. What is
-    # a figure is the positioning map it produces, not the package.
-    #
-    # Measured cost of
-    # the mistake: the `packaging` job installs `.[dev]` and nothing else, so
-    # standpoint pulled pandas and scikit-learn into a job that only builds a
-    # wheel -- 66 s of install for a dependency it never imports. Here, the
-    # `test` job still gets it (`.[dev,dataviz,editor,api,mcp]`) and `packaging`
-    # no longer pays.
-    #
-    # Ceiling for the reason mypy's is: a tool resolved to "whatever is newest"
-    # gives its next major a vote on whether this repository still builds.
     "standpoint>=0.13,<1",
-]
-# Causal inference (make_causal_estimate.py)
-causal = [
-    "dowhy>=0.11",
-    "econml>=0.14",
-]
-# Explainability (explain_model.py)
-#
-# All five, and the last three were added on 2026-10-31 by
-# tests/test_every_import_is_declared.py on its first run. `explain_model.py`
-# imports `timeshap`, `lime` and `joblib` as well as `shap` and `shapash`, and
-# only the first two were here -- so `pip install "sprezzature-figures[explain]"`
-# installed half the tier and left the TimeSHAP and LIME paths to raise
-# ModuleNotFoundError on first use. All three were correctly listed in
-# `scripts/requirements-explain.txt`, which is read by install_figures.py and by
-# nobody installing from PyPI: the same defect shape as `standpoint` in `dev`,
-# a dependency declared somewhere that the install does not look.
-#
-# TimeSHAP pulls `torch` transitively and does not pin it, deliberately, so a
-# user picks their own CPU / CUDA / MPS build.
-explain = [
     "shap>=0.44",
     "shapash>=2.6",
     "timeshap>=1.0.4",
     "lime>=0.2.0",
     "joblib>=1.3",
-]
-# Local VLM critique (ralph_eyeball_loop.py --local mode). Every LLM/VLM
-# call across sprezzature-* routes through best_engine_ai_helper.llm.chat,
-# which itself defaults to a local Ollama backend -- no cloud API required.
-local = [
     "best-engine-ai-helper>=0.4.0",
-    # What keeps that call from being made twice for the same answer. The
-    # critique is memoized on the PNG's bytes, the prompt and the model name --
-    # measured at 121.3 s and 94.6 s for two identical runs before, 0.004 s for
-    # the second run after -- and `SqliteLedger` gives the single-flight across
-    # processes that two loops launched at once actually need.
-    #
-    # Ceiling on a tool, for the reason mypy's and standpoint's are bounded in
-    # `dev`: an unbounded tool hands its next major a vote on whether the gate
-    # passes today.
     "wallet-helper>=1.3,<2",
-]
-# FastAPI HTTP surface (sprezzature_figures/api.py) -- GET /kinds,
-# GET /kinds/{kind}, POST /render/{kind}.
-api = [
-    "fastapi>=0.115",
-    "uvicorn[standard]>=0.30",
-]
-# MCP surface via fastapi-mcp (sprezzature_figures/mcp.py) -- mounts the
-# FastAPI app as MCP tools so any MCP-aware host can call them directly.
-mcp = [
     "fastapi-mcp>=0.3",
-    # fastapi-mcp 0.4.0 (the latest as of 2026-08) declares mcp>=1.12.0 with
-    # no upper bound, but calls mcp's Server(name, description) positionally
-    # -- mcp 2.0.0 made `description` keyword-only, so an unconstrained
-    # resolve breaks FastApiMCP(...) at construction time (verified: pip
-    # happily installs mcp 2.0.0 alongside fastapi-mcp 0.4.0, and
-    # `sprezzature_figures.mcp` then raises TypeError on import). Pin below
-    # 2.0 until fastapi-mcp ships a fix.
     "mcp<2.0",
+    "nicegui",
+    "openpyxl>=3.1",
+    "charset-normalizer>=3",
+    "os-helper>=4.0.0,<5",
+    "langdetect>=1.0.9",
 ]
+
+[project.optional-dependencies]
 # Developer extras
 dev = [
     "pytest>=8",
@@ -202,12 +99,12 @@ dev = [
     # `playwright install chromium` after this installs, pip can't do that part.
     "playwright>=1.40",
     # starlette 1.9.0 moved its TestClient onto httpx2. This repository's
-    # CI installs `.[dev,...]` and never reads requirements-dev.txt, so the
+    # CI installs `.[dev]` and never reads requirements-dev.txt, so the
     # declaration has to be where the install actually looks.
     "httpx2>=2.0.0",
     # Also in `local`, which is where the feature lives -- the memoized `--local`
     # critique in ralph_eyeball_loop.py. It is repeated here for one reason: CI
-    # installs `.[dev,dataviz,editor,api,mcp]` and not `local`, and
+    # installs `.[dev]` and not `local`, and
     # tests/test_the_critique_cache_is_addressed_by_content.py skips without
     # wallet_helper. A guard that skips in every CI run is a guard that never
     # runs, and a skip reads as a pass. (`best-engine-ai-helper` is already

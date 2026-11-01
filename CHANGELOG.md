@@ -2,6 +2,40 @@
 
 ## Unreleased: a figure can now wear the host page's clothes
 
+### Changed — one `pip install`
+
+**Everything this package does now installs with it.** 8 extras became
+**one**, and it is not a feature: `[dev]` is the test toolchain.
+
+  The data side (networkx, scikit-learn, pandas, shapely, pyproj, pyyaml),
+  the editor (the NiceGUI app and the Ralph copilot), the causal stack
+  (dowhy, econml), the explainability stack (shap, shapash, timeshap, lime) and
+  both surfaces all arrive with the package. This is the largest fold in the
+  suite and the one most worth stating: `pip install sprezzature-figures` was
+  six dependencies and could not read a spreadsheet, profile a column or draw a
+  positioning map.
+
+Measured across the suite before touching anything: **59 extras over eleven
+repositories**, and **six bricks whose base was a single dependency** — so
+`pip install <brick>` installed almost nothing and did almost nothing, and
+choosing the right extra was a thing a reader had to know *before* the package
+could do its job. Here the base goes from **6** to **32**
+dependencies.
+
+All eleven unions were dry-run resolved in a clean venv before any manifest was
+edited, so this is a measured feasibility and not an optimistic one.
+
+### Fixed — the places that encoded the extras
+
+Install lines, error messages, docstrings, the `Dockerfile`, the CI workflow and
+the README/LISEZMOI install sections all named extras that no longer exist. pip
+treats an unknown extra as a **warning and exits 0**, so none of these would
+have failed loudly: they would have quietly installed nothing.
+
+The hub's `test_no_document_promises_an_extra_that_does_not_exist` found the
+cross-repository ones — a document in one brick naming another brick's extra —
+which no per-repository pass would have caught.
+
 Everything here comes from one real embedding: notes-helper draws the figures of a
 meeting report, and the two it had reimplemented (a speaking-time ring, a who-cuts-whom
 matrix) now come from this catalogue instead. What it needed to make that possible says

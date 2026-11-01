@@ -9,9 +9,10 @@ custom shells) can call ``list_kinds`` / ``get_kind`` / ``list_kind_options``
 existing HTTP surface, so the same route definitions serve both plain HTTP
 callers and MCP hosts without being written twice.
 
-Install the extra to pull in ``fastapi-mcp``::
+``fastapi-mcp`` is a base dependency since 2026-11-01, so there is no
+extra to ask for::
 
-    pip install 'sprezzature-figures[api,mcp]'
+    pip install 'sprezzature-figures'
 
 Then run the MCP server::
 
@@ -53,8 +54,10 @@ except ImportError:  # pragma: no cover - dependency guard
         not a stack trace.
         """
         print(
-            "sprezzature-figures MCP surface requires fastapi-mcp. "
-            "Install with: pip install 'sprezzature-figures[api,mcp]'",
+            "sprezzature-figures MCP surface could not import fastapi-mcp, which is a "
+            "base dependency since 2026-11-01 -- a broken install rather than "
+            "a missing extra. Reinstall with: "
+            "pip install 'sprezzature-figures'",
             file=sys.stderr,
         )
         sys.exit(1)

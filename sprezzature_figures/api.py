@@ -24,9 +24,10 @@ What ships here
   a vision model (the ``[local]`` extra plus a running Ollama); answers
   503 with what to install when there isn't one.
 
-Install the extra to get the runtime dependencies::
+FastAPI and uvicorn are base dependencies since 2026-11-01, so there
+is no extra to ask for::
 
-    pip install 'sprezzature-figures[api]'
+    pip install 'sprezzature-figures'
 
 Then run the app with any ASGI server (the standard interface Python web
 servers and frameworks use to talk to each other; Uvicorn below is one
@@ -62,8 +63,10 @@ try:
     from fastapi.responses import RedirectResponse, Response
 except ImportError as exc:  # pragma: no cover
     raise ImportError(
-        "The FastAPI HTTP surface requires the [api] extra. "
-        "Install with: pip install 'sprezzature-figures[api]'"
+        "The FastAPI HTTP surface could not import fastapi, which is a base "
+        "dependency since 2026-11-01 -- so this is a broken install rather "
+        "than a missing extra. Reinstall with: "
+        "pip install 'sprezzature-figures'"
     ) from exc
 
 from pydantic import BaseModel, Field
@@ -536,7 +539,7 @@ def redraw_route(body: RedrawRequest) -> RedrawResponse:
                 status_code=503,
                 detail=(
                     "redraw needs a vision model. Install "
-                    "'sprezzature-figures[local]' and run Ollama. "
+                    "'sprezzature-figures' and run Ollama. "
                     f"({exc})"
                 ),
             ) from exc
@@ -575,7 +578,7 @@ def recommend(body: RecommendRequest) -> list[FigureCandidate]:
     is `comparison`; "how has this moved" is `trend`; "what is this made of"
     is `composition`.
 
-    Needs the profiling stack (`sprezzature-figures[editor]`); answers 503
+    Needs the profiling stack (`sprezzature-figures`); answers 503
     with what to install when it is absent.
     """
     try:
@@ -588,7 +591,7 @@ def recommend(body: RecommendRequest) -> list[FigureCandidate]:
             status_code=503,
             detail=(
                 "recommend needs the profiling stack. Install "
-                "'sprezzature-figures[editor]' (or [dataviz]). "
+                "'sprezzature-figures' (or [dataviz]). "
                 f"({exc})"
             ),
         ) from exc

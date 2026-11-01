@@ -131,7 +131,7 @@ def test_core_wheel_does_not_pull_in_editor_dependencies(wheel: Path, tmp_path: 
 def test_editor_extra_installs_and_console_scripts_resolve(wheel: Path, tmp_path: Path) -> None:
     """`pip install "<wheel>[editor]"` must pull nicegui + the editor deps,
     make every editor subpackage importable, and register all three console
-    entry points -- the exact `pip install "sprezzature-figures[editor]";
+    entry points -- the exact `pip install "sprezzature-figures";
     sprezzature-figures` flow the README documents.
     """
     venv_dir = tmp_path / "venv"

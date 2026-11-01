@@ -126,7 +126,7 @@ def redraw(
     except ImportError as exc:
         raise ActionError(
             "redraw needs a vision model. Install with: "
-            "pip install 'sprezzature-figures[local]' and make sure Ollama is running."
+            "pip install 'sprezzature-figures' and make sure Ollama is running."
         ) from exc
     except (ValueError, FileNotFoundError, RuntimeError) as exc:
         raise ActionError(f"Error redrawing {image!r}: {exc}") from exc
@@ -193,7 +193,7 @@ def recommend(
     except ImportError as exc:
         raise ActionError(
             "recommend needs the profiling stack. Install with: "
-            "pip install 'sprezzature-figures[editor]' (or [dataviz])."
+            "pip install 'sprezzature-figures' (or [dataviz])."
         ) from exc
 
     profile = profile_dataframe(

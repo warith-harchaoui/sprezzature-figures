@@ -27,14 +27,16 @@ wheel sur les trois).
 pip install sprezzature-figures
 ```
 
-Extras optionnels (combinables, ex. `"sprezzature-figures[dataviz]"`) :
+Extras optionnels (combinables, ex. `"sprezzature-figures"`) :
 
-| Extra | Ajoute |
-|-------|--------|
-| `[dataviz]` | networkx / scikit-learn / pandas / shapely / pyproj / pyyaml — le côté données (tableaux, géométrie, modèles) derrière le catalogue, l'inférence causale et l'explicabilité ; rien ici ne dessine |
-| `[editor]` | the editor : l'application NiceGUI + le copilote Ralph (voir plus bas) |
-| `[api]` | Surface HTTP FastAPI (voir plus bas) |
-| `[mcp]` | Surface d'outils MCP (_Model Context Protocol_) au-dessus de `[api]`, pour appeler cette bibliothèque depuis un assistant IA (voir plus bas) |
+| Tout ce qui suit | `pip install sprezzature-figures` |
+
+Il n'y a pas d'extras. Le côté données (networkx, scikit-learn, pandas,
+shapely, pyproj, pyyaml), the editor (l'application NiceGUI et le
+copilote Ralph), les piles causale et d'explicabilité, la surface HTTP FastAPI
+et la surface d'outils MCP s'installent avec le paquet. Ils étaient derrière
+sept extras jusqu'au 2026-11-01, quand la base faisait six dépendances et que
+savoir quel extra demander était un prérequis pour que le paquet serve.
 
 Utilisez un environnement virtuel pour tout isoler :
 
@@ -45,7 +47,7 @@ Utilisez un environnement virtuel pour tout isoler :
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
-pip install "sprezzature-figures[dataviz]"
+pip install "sprezzature-figures"
 ```
 </details>
 
@@ -56,7 +58,7 @@ pip install "sprezzature-figures[dataviz]"
 py -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
-pip install "sprezzature-figures[dataviz]"
+pip install "sprezzature-figures"
 ```
 </details>
 
@@ -192,7 +194,7 @@ depuis l'entrée standard (le format est détecté d'après le contenu). Les nom
 de colonnes doivent correspondre aux rôles attendus par le graphique.
 
 Vous ne savez pas quel graphique convient à votre fichier ? Demandez une
-recommandation (nécessite l'extra `[editor]` pour le profilage). C'est le même
+recommandation (le profilage est dans l'installation de base). C'est le même
 classement déterministe (compatibilité et lisibilité) que les cartes de la GUI
 Editor, sans aucun modèle :
 
@@ -260,8 +262,8 @@ de fonction et sera regardé par quelqu'un qui n'aura rien vu de tout cela.
 
 L'entrée accepte PNG, JPEG, GIF, WebP ou SVG — une capture d'écran fait
 l'affaire. Un PDF est refusé nommément, en disant quoi faire à la place. Il
-faut un modèle de vision : l'extra `[local]` et un [Ollama](https://ollama.com)
-qui tourne, comme tous les appels de modèle de la suite.
+faut un modèle de vision : un [Ollama](https://ollama.com) qui tourne, comme
+tous les appels de modèle de la suite.
 
 Ce qu'on peut attendre du modèle qu'on lui donne : un modèle de vision 7B sur
 un portable met environ 90 secondes, trouve sans faute le type de graphique et
@@ -440,7 +442,7 @@ Ce dépôt contient deux choses :
 
 - **La bibliothèque** (`sprezzature_figures.make_figure`, `make-figure`,
   CLI `sprezzature-figures`) : tout ce qui précède, sans dépendance
-  supplémentaire au-delà de `[dataviz]`.
+  supplémentaire au-delà de ce que la base porte déjà.
 - **the editor** (`sprezzature_figures.editor`, CLI
   `sprezzature-figures`) : une application NiceGUI locale pour importer un
   CSV/TSV/XLSX/JSON, choisir un type de graphique, associer les colonnes, puis
@@ -451,7 +453,7 @@ Ce dépôt contient deux choses :
   `editor` :
 
   ```bash
-  pip install "sprezzature-figures[editor]"
+  pip install "sprezzature-figures"
   sprezzature-figures
   ```
 
@@ -491,11 +493,11 @@ même dispatcheur `make_figure()`, avec les mêmes commandes :
 | Interface | Toujours installée ? | Point d'entrée |
 |---|---|---|
 | CLI (click) | Oui | `make-figure` et `sprezzature-figures`, un seul appelable |
-| API HTTP (FastAPI) | Extra `[api]` | `uvicorn sprezzature_figures.api:app` |
-| Outils MCP (fastapi-mcp) | Extras `[api,mcp]` | `sprezzature-figures-mcp` |
+| API HTTP (FastAPI) | Dans la base | `uvicorn sprezzature_figures.api:app` |
+| Outils MCP (fastapi-mcp) | Dans la base | `sprezzature-figures-mcp` |
 
 ```bash
-pip install "sprezzature-figures[api]"
+pip install "sprezzature-figures"
 uvicorn sprezzature_figures.api:app --host 0.0.0.0 --port 8000
 
 # Lister les types stables
@@ -540,7 +542,7 @@ remplir, chacun avec ses rôles déjà associés à vos colonnes — le même
 classement déterministe que la commande `recommend`, mais en HTTP. C'est la
 route à appeler avant `/render/{kind}` quand personne n'a nommé de type.
 
-La surface MCP (`sprezzature-figures[api,mcp]`) expose ces mêmes routes
+La surface MCP (`sprezzature-figures`) expose ces mêmes routes
 comme autant d'outils MCP (`list_kinds`, `get_kind`, `recommend_figures`,
 `render_figure`, `redraw_figure`) sur `/mcp`, dans la même app FastAPI.
 Chacun porte un résumé écrit à la main et une description qui dit **quand**
@@ -551,7 +553,7 @@ la surface HTTP en une seule ligne, les routes ne sont donc jamais
 dupliquées :
 
 ```bash
-pip install "sprezzature-figures[api,mcp]"
+pip install "sprezzature-figures"
 sprezzature-figures-mcp
 ```
 
