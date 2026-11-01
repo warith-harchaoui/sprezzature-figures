@@ -46,7 +46,26 @@ editor = [
     "openpyxl>=3.1",
     "charset-normalizer>=3",
     "best-engine-ai-helper>=0.4.0",
-    "os-helper>=1.8.0",
+    # Plancher à 4.0.0 le 2026-11-01, et c'est une décision à deux moitiés.
+    #
+    # La 4.0.0 d'os-helper est une release majeure parce qu'elle a cessé de mentir :
+    # `hashfile` ne rend plus de digest pour un fichier qu'il n'a pas lu (il
+    # hachait le chemin en silence), un répertoire est refusé, `hashfolder` ne rend
+    # plus le digest de la chaîne vide, et `date=True` prend la mtime de la cible
+    # au lieu de l'heure courante. C'est exactement l'empreinte dont ce dépôt a
+    # besoin : une empreinte de contenu qui échoue au lieu d'inventer.
+    #
+    # Et c'est devenu possible seulement maintenant : les seize paquets ai-helpers
+    # plafonnaient `os-helper<4`, donc demander la 4 rendait l'installation
+    # insoluble. Les seize sont republiés en `<5`, vérifié sur les métadonnées
+    # PUBLIÉES (pas sur le dépôt local ni sur l'éditable installé, qui m'ont
+    # trompé deux fois).
+    #
+    # Vérifié avant de l'écrire : cette machine exécute déjà le contrat 4.0.0 par
+    # un éditable, et les onze suites de la suite y sont vertes ; et un venv vierge
+    # résout `os-helper==4.0.0` avec audio 2.6.1, speaker 0.14.1, video 2.9.0,
+    # standpoint 0.13.1, best-engine 1.11.1, wallet 1.3.1 et elbow 0.4.1.
+    "os-helper>=4.0.0,<5",
     "langdetect>=1.0.9",
 ]
 # Data-side support for the 167-kind catalogue, explainability and
@@ -66,6 +85,36 @@ dataviz = [
     # 167-kind catalogue still imports without it; declared here because this is
     # the data-side tier and that is what this is.
     "elbow-helper>=0.4,<1",
+    # The positioning map, and it belongs here rather than in `dev`.
+    #
+    # `tools/build_landscape.py` regenerates assets/landscape.* and opens with a
+    # bare `import standpoint as sp` at module scope. Until 2026-10-31 that import
+    # was declared nowhere -- not here, not in either requirements file, and
+    # nothing installed it by transitivity either, measured. `mypy.ini` sets
+    # `ignore_missing_imports = True`, so the type gate read the module as `Any`
+    # and had nothing to say; the script is not run in CI, so the only reader of
+    # the defect was a contributor on a clean clone getting a bare
+    # ModuleNotFoundError.
+    #
+    # It landed in `dev` first, and that was the wrong shelf twice over. `dev` is
+    # for what runs the tests; and what this package draws with standpoint is a
+    # FIGURE, so the dependency belongs with the other drawing dependencies.
+    #
+    # To be clear about ownership, because the shelf could suggest otherwise:
+    # `standpoint` stays a brick of the ai-helpers suite, declared here as the
+    # external dependency it is. Nothing of it is vendored or absorbed. What is
+    # a figure is the positioning map it produces, not the package.
+    #
+    # Measured cost of
+    # the mistake: the `packaging` job installs `.[dev]` and nothing else, so
+    # standpoint pulled pandas and scikit-learn into a job that only builds a
+    # wheel -- 66 s of install for a dependency it never imports. Here, the
+    # `test` job still gets it (`.[dev,dataviz,editor,api,mcp]`) and `packaging`
+    # no longer pays.
+    #
+    # Ceiling for the reason mypy's is: a tool resolved to "whatever is newest"
+    # gives its next major a vote on whether this repository still builds.
+    "standpoint>=0.13,<1",
 ]
 # Causal inference (make_causal_estimate.py)
 causal = [
@@ -156,21 +205,6 @@ dev = [
     # CI installs `.[dev,...]` and never reads requirements-dev.txt, so the
     # declaration has to be where the install actually looks.
     "httpx2>=2.0.0",
-    # `tools/build_landscape.py` regenerates assets/landscape.* and opens with a
-    # bare `import standpoint as sp` at module scope. Until 2026-10-31 that import
-    # was declared nowhere: not here, not in either requirements file, and nothing
-    # installed it by transitivity either -- measured, no installed distribution
-    # declares it. `mypy.ini` sets `ignore_missing_imports = True`, so the type
-    # gate read the module as `Any` and had nothing to say; the script is not run
-    # in CI, so the only reader of the defect was a contributor on a clean clone
-    # getting a bare ModuleNotFoundError. `dev` rather than a narrow extra because
-    # `pip install -e ".[dev]"` is the install the README hands a contributor, and
-    # this is a contributor-only tool that ships in no wheel.
-    #
-    # Ceiling for the reason mypy's is three entries up: a tool resolved to
-    # "whatever is newest" gives its next major a vote on whether this repository
-    # still builds.
-    "standpoint>=0.13,<1",
     # Also in `local`, which is where the feature lives -- the memoized `--local`
     # critique in ralph_eyeball_loop.py. It is repeated here for one reason: CI
     # installs `.[dev,dataviz,editor,api,mcp]` and not `local`, and
