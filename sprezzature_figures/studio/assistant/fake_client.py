@@ -62,13 +62,20 @@ class FakeLLMClient:
         system: str | None,
         response_model: type[BaseModel] | None,
         temperature: float,
+        image: bytes | None = None,
     ) -> Any:
+        # `image` is recorded, not just accepted: a caller that is supposed to
+        # send a rendered picture can send nothing, or send SVG source, and the
+        # call still succeeds. Without this entry a test cannot tell the
+        # difference, and "the vision path was exercised" is exactly the claim
+        # that needs evidence.
         self.calls.append(
             {
                 "prompt": prompt,
                 "system": system,
                 "response_model": response_model,
                 "temperature": temperature,
+                "image": image,
             }
         )
         item = self._next()
@@ -110,5 +117,9 @@ class FakeLLMClient:
         temperature: float = 0.1,
     ) -> Any:
         return self._respond(
-            prompt, system=system, response_model=response_model, temperature=temperature
+            prompt,
+            system=system,
+            response_model=response_model,
+            temperature=temperature,
+            image=image,
         )

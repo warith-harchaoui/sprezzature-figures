@@ -93,13 +93,30 @@ def test_fake_client_chat_text_queue_and_recording() -> None:
     second = client.chat_text("b", response_model=UserIntent)
     assert first is intent and second is intent
 
-    # Every call is recorded with its full argument set.
+    # Every call is recorded with its full argument set. `image` is part of it
+    # even on the text path, where it is always None: a vision caller that
+    # sends no picture is indistinguishable from one that does unless the
+    # recording carries the payload.
     assert client.calls[0] == {
         "prompt": "a",
         "system": "sys",
         "response_model": UserIntent,
         "temperature": 0.3,
+        "image": None,
     }
+
+
+def test_fake_client_records_the_image_it_was_shown() -> None:
+    """The vision path forwards its payload, and the fake keeps it.
+
+    Without this, "the vision path was exercised" is a claim no test can
+    check — a caller that forgot the image, or sent SVG source instead of a
+    raster, gets the same successful call.
+    """
+    intent = UserIntent(analytical_goal="trend")
+    client = FakeLLMClient([intent])
+    client.chat_vision("look", b"\x89PNG\r\n\x1a\n", response_model=UserIntent)
+    assert client.calls[0]["image"] == b"\x89PNG\r\n\x1a\n"
 
 
 def test_fake_client_raises_queued_exception() -> None:
