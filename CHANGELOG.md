@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased: a figure can now wear the host page's clothes
+## [Unreleased]
+
+## 2.8.0 (2026-11-04): a figure can now wear the host page's clothes, and click everywhere
 
 ### Added
 
