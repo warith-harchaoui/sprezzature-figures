@@ -406,6 +406,15 @@ def build_svg(
         stage_names = list(_DEFAULT_STAGE_NAMES) if n_layers == len(_DEFAULT_STAGE_NAMES) else [
             f"Stage {i + 1}" for i in range(n_layers)
         ]
+    elif len(stage_names) < n_layers:
+        # One heading is drawn above each layer, so a short list would fail
+        # deep in the drawing as an IndexError that names nothing the caller
+        # passed. Say what was given and what the flows need instead.
+        raise ValueError(
+            f"stage_names has {len(stage_names)} name(s) but the flows form "
+            f"{n_layers} layers: give one name per layer, or omit stage_names "
+            f"for the defaults."
+        )
 
     if desc is None:
         top_root = max(roots, key=lambda r: _node_volume(r, links)) if roots else None

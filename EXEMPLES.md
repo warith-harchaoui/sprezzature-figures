@@ -44,7 +44,7 @@ path = make_figure("sankey", data, out="energie.png", title="Flux d'énergie")
 
 Les rôles requis par `scatter` portent le nom de son scénario de démonstration
 (`horsepower`/`mpg`, puissance et consommation) : voir
-`make-figure --list --status stable` et la fiche de chaque type dans
+`sprezzature-figures list --status stable` et la fiche de chaque type dans
 [FIGURES.md](FIGURES.md) pour le nom exact des rôles qu'un graphique donné
 attend.
 
@@ -56,21 +56,22 @@ path = make_figure("scatter", data, out="nuage.png")
 
 ## Gapminder (animé)
 
-Le graphique Gapminder utilise son propre jeu de données intégré ; on lui
-passe une liste vide, ou on appelle directement la CLI :
+Sans lignes (une liste vide ou `None`), le graphique Gapminder dessine son
+jeu de données intégré. En ligne de commande :
 
 ```bash
-make-figure gapminder --out gapminder.html
+sprezzature-figures render gapminder --out gapminder.html
 ```
 
 ## Nuage de mots
 
 ```python
+# `group` vaut « praise », « gripe » ou « neutral » : les trois couleurs du nuage.
 data = [
-    {"word": "Python", "weight": 100},
-    {"word": "donnée", "weight": 80},
-    {"word": "graphique", "weight": 60},
-    {"word": "figure", "weight": 50},
+    {"word": "silencieux", "count": 812, "group": "praise"},
+    {"word": "fluide", "count": 468, "group": "praise"},
+    {"word": "bruyant", "count": 300, "group": "gripe"},
+    {"word": "moulin", "count": 250, "group": "neutral"},
 ]
 path = make_figure("wordcloud", data, out="nuage_mots.png")
 ```
@@ -118,56 +119,56 @@ print(list_kinds())
 ```bash
 # Lister tous les types de graphiques (ajouter --status stable pour ceux
 # dont le rendu est vérifié)
-make-figure --list --status stable
+sprezzature-figures list --status stable
 
 # Rendre chaque graphique avec ses DEMO_DATA
-make-figure waterfall --out waterfall.png
-make-figure funnel --out funnel.png --title "Entonnoir de recrutement"
-make-figure sunburst --out sunburst.png
-make-figure heatmap --out heatmap.png
-make-figure dumbbell --out dumbbell.png --title "Écart de rémunération par poste"
+sprezzature-figures render waterfall --out waterfall.png
+sprezzature-figures render funnel --out funnel.png --title "Entonnoir de recrutement"
+sprezzature-figures render sunburst --out sunburst.png
+sprezzature-figures render heatmap --out heatmap.png
+sprezzature-figures render dumbbell --out dumbbell.png --title "Écart de rémunération par poste"
 
 # Rendre son propre fichier plutôt que les données de démonstration
 # (.csv, .tsv, .json, .jsonl)
-make-figure treemap --data budget.csv --out budget.png
-make-figure bar --data ventes.json --out ventes.svg --title "Ventes par région"
+sprezzature-figures render treemap --data budget.csv --out budget.png
+sprezzature-figures render bar --data ventes.json --out ventes.svg --title "Ventes par région"
 
 # Envoyer des données par l'entrée standard avec --data -
 # (JSON, JSONL ou CSV, détecté au contenu)
-curl -s https://exemple.com/ventes.json | make-figure bar --data - --out ventes.png
+curl -s https://exemple.com/ventes.json | sprezzature-figures render bar --data - --out ventes.png
 
 # Suréchantillonner la sortie raster/PDF pour l'écran haute densité avec
 # --scale (ignoré pour .svg/.html)
-make-figure treemap --data budget.csv --out budget@3x.png --scale 3
+sprezzature-figures render treemap --data budget.csv --out budget@3x.png --scale 3
 
 # Faire correspondre des colonnes à des rôles quand les en-têtes diffèrent
 # (répétable)
-make-figure bar --data pib.csv --map region=Pays --map value=PIB --out pib.png
+sprezzature-figures render bar --data pib.csv --map region=Pays --map value=PIB --out pib.png
 
 # Demander à une figure ce qu'elle exige et ce qu'elle accepte, avec les
 # valeurs par défaut
-make-figure sankey --describe
-make-figure sankey --help          # les mêmes options, en drapeaux
+sprezzature-figures describe sankey
+sprezzature-figures render sankey --help          # les mêmes options, en drapeaux
 
 # Les passer : un drapeau par option, ou --set pour l'écriture scriptable
-make-figure bar --out ventes.svg --subtitle "Exercice 2024" --width 1200 --theme academic
-make-figure sankey --out flux.svg --set volume-unit=sessions
-make-figure heatmap --out chaleur.svg --language fr --accessibility high-contrast
+sprezzature-figures render bar --out ventes.svg --subtitle "Exercice 2024" --width 1200 --theme academic
+sprezzature-figures render sankey --out flux.svg --set volume-unit=sessions
+sprezzature-figures render bar --out ventes-fr.svg --language fr --accessibility high-contrast
 
 # Demander quels types de graphiques conviennent à son fichier, puis rendre
-# le meilleur (nécessite l'extra [editor], aucun modèle requis)
-make-figure recommend --data ventes.csv
-make-figure recommend --data ventes.csv --render meilleur.png
+# le meilleur (classement déterministe, aucun modèle requis)
+sprezzature-figures recommend --data ventes.csv
+sprezzature-figures recommend --data ventes.csv --render meilleur.png
 
 # Préciser son objectif d'analyse pour que le classement choisisse la figure
 # adaptée à cette intention (comparison, trend, distribution, composition,
 # relationship, flow, hierarchy, geography, model_evaluation) plutôt que la
 # seule lisibilité
-make-figure recommend --data ventes.csv --intent comparison
+sprezzature-figures recommend --data ventes.csv --intent comparison
 
 # Vérifier une figure rendue sur ce que son balisage peut démentir
 # (code de sortie 1 au moindre constat)
-make-figure check ventes.svg --expect-title "Ventes par région"
+sprezzature-figures check ventes.svg --expect-title "Ventes par région"
 ```
 
 Le fichier `budget.csv` ci-dessus n'est qu'un tableau dont les colonnes

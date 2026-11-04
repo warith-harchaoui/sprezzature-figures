@@ -98,6 +98,44 @@ of design thinking would have.
   and the clearance is reserved by the generator laying the figure out, which knows what
   it is drawing. The reasoning is kept in the source so it is not re-tried blind.
 
+### Docs
+
+The documentation now says what the code does today. Every command, route and
+count below was checked against the code or recounted from it.
+
+- **Command line.** The READMEs, `EXAMPLES.md`/`EXEMPLES.md`, `FIGURES.md`,
+  `TRIGGERS.md`, `docs/editor/GENERATOR_CONTRACT.md` and `LANDSCAPE.md`/`PAYSAGE.md`
+  still used the argparse syntax removed on 2026-10-25 (`make-figure --list`,
+  `make-figure bar --out …`, `make-figure sankey --describe`). `make-figure` is the
+  same Click group as `sprezzature-figures`, so these are now `list`, `render <kind>`
+  and `describe <kind>`. Three examples that failed when run were fixed: a sankey with
+  three stage names for a four-stage demo, a heatmap given `--language`, which it does
+  not accept, and a wordcloud fed roles it does not have.
+- **Extras.** `[editor]`, `[cli]`, `[local]` and `[dataviz]` were still named in the
+  docs and in several docstrings and error messages. Install is one `pip install
+  sprezzature-figures`; `[dev]` is the test toolchain.
+- **CI.** The READMEs and `docs/editor/TESTING.md` described macOS, Ubuntu and Windows
+  runners. CI runs on Ubuntu only: the suite on 3.12 and an install check on 3.10.
+- **Counts.** The catalogue has 68 categories, not 52. The README's category table
+  listed `choropleth` and `situation_map`, which live in sprezzature-maps, and missed 43
+  kinds; it is now built from `figures.json`. The READMEs now say which number they
+  mean: 167 in the catalogue, 160 in the web gallery.
+- **TRIGGERS.md.** The generalisation comes first and routes on the closed vocabulary
+  (four request shapes, nine goals, the catalogue). A table lists every tool and the
+  request it answers, and the surface table gives the CLI name, MCP tool name
+  (`operation_id`) and HTTP route for each job. `health` was missing. The five glyph
+  maps were missing from the per-kind tables, and the section headings claimed goals
+  that the scorer does not apply; each row now shows the goal computed from
+  `scoring._GOAL_CATEGORY_KEYWORDS`.
+- **Undocumented until now.** The README covers the five surfaces, all public names
+  (`as_rows`, `to_dark`, `text_width`, `validate_figure_input`), the eight MCP tools,
+  `sprezzature-figures-mcp --host/--port`, Docker Compose and its profiles, the Ralph
+  Eyeball Loop and the other repository scripts, and the three-Roboto font rule.
+- **Editor docs.** The recommendation engine, its cards, the history panel, the export
+  bundle and the execution of `FigurePlan.transformations` were described as missing.
+  All are built. The architecture tree, the test counts and the ROADMAP's deferred items
+  were brought up to date. `STATUS.md` keeps its history, under a dated note.
+
 
 ## 2.7.0 (2026-10-16): the wheel carries every face the module offers
 

@@ -1,13 +1,13 @@
 """
-actions — what the commands *do*, written once for both command lines.
+actions — what the commands *do*, written once, apart from the terminal.
 
-``make-figure`` (argparse, always installed) and ``sprezzature-figures``
-(Click, behind the ``[cli]`` extra) are two spellings of one tool, and the
-HTTP API is a third. Rendering was already shared -- both call
-:func:`~sprezzature_figures.make_figure.make_figure` -- but ``redraw``,
-``recommend`` and ``check`` lived inside the Click command bodies, so the
-always-installed command simply did not have them: three of the API's
-routes had no command-line twin at all.
+``sprezzature-figures`` and ``make-figure`` are two names for one Click
+group (:mod:`sprezzature_figures.cli`), and the HTTP API is another front
+end. Rendering is shared through
+:func:`~sprezzature_figures.make_figure.make_figure`; ``redraw``,
+``recommend`` and ``check`` are written here, so the Click commands and the
+older argparse parser in :mod:`sprezzature_figures.make_figure` (no longer
+an entry point, kept for the parity tests) run the same code.
 
 Each function here takes the arguments a caller supplies, does the work,
 and returns an :class:`ActionResult`: the lines to print, the lines to
@@ -193,7 +193,7 @@ def recommend(
     except ImportError as exc:
         raise ActionError(
             "recommend needs the profiling stack. Install with: "
-            "pip install 'sprezzature-figures' (or [dataviz])."
+            "pip install 'sprezzature-figures'."
         ) from exc
 
     profile = profile_dataframe(

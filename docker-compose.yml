@@ -5,7 +5,7 @@
 #
 #   docker compose up -d
 #   curl -s localhost:8000/health
-#   docker compose run --rm api make-figure bell-curve --out /work/bell.svg
+#   docker compose run --rm api sprezzature-figures render bellcurve --out /work/bell.svg
 #   docker compose --profile editor up -d     # the NiceGUI app on :8080
 #   docker compose --profile assist up -d     # + the model the chat and the
 #                                             #   eyeball loop ask

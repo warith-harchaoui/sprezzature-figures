@@ -1,12 +1,15 @@
 """
-The two command lines must describe the same figures the same way.
+The Click command and the argparse parser it grew out of must describe the
+same figures the same way.
 
-``make-figure`` (argparse, always installed) and ``sprezzature-figures``
-(Click, behind the ``[cli]`` extra) are two spellings of one tool. They
-grow their per-figure flags by different mechanisms -- a two-pass parse on
-one side, a Click ``Command`` that rebuilds its parameter list on the
-other -- from the same ``options_schema``. These tests pin the thing that
-would otherwise drift: that a flag exists in both or in neither.
+Both console scripts, ``sprezzature-figures`` and ``make-figure``, run the
+Click group in :mod:`sprezzature_figures.cli` since 2026-10-25, and click is
+a base dependency. The argparse parser in :mod:`sprezzature_figures.make_figure`
+is no longer an entry point but still exists. The two grow their per-figure
+flags by different mechanisms -- a two-pass parse on one side, a Click
+``Command`` that rebuilds its parameter list on the other -- from the same
+``options_schema``. These tests pin the thing that would otherwise drift:
+that a flag exists in both or in neither.
 
 Author
 ------

@@ -1018,7 +1018,8 @@ def _build_parser() -> argparse.ArgumentParser:
             "Rendered PNGs:    .private/ralph-loop/<stem>-<hash>.png\n"
             "(both gitignored — never committed)\n\n"
             "Each re-run appends a new iteration section.\n\n"
-            "See sprezzature-figures/references/ralph-eyeball-loop.md for the full protocol."
+            "Full protocol: https://github.com/warith-harchaoui/sprezzature/blob/main/"
+            "sprezzature-figures/references/ralph-eyeball-loop.md"
         ),
     )
     p.add_argument(

@@ -46,6 +46,6 @@ EXPOSE 8000
 # catalogue and exits, which looks like it works and does nothing. There is
 # no ENTRYPOINT now, so any of the commands replaces this one directly:
 #
-#   docker run --rm -v "$PWD:/work" IMAGE make-figure bell-curve --out /work/bell.svg
+#   docker run --rm -v "$PWD:/work" IMAGE sprezzature-figures render bellcurve --out /work/bell.svg
 #   docker run --rm -p 8080:8080 IMAGE sprezzature-figures --host 0.0.0.0 --no-browser
 CMD ["uvicorn", "sprezzature_figures.api:app", "--host", "0.0.0.0", "--port", "8000"]

@@ -266,7 +266,7 @@ def test_make_figure_hyphenated_kind_dispatches_correctly(tmp_path: Path) -> Non
 
 def test_make_figure_warns_on_non_stable_status(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     """The status != 'stable' UserWarning contract, exercised without relying
-    on any real kind currently being non-stable (all 126 are 'stable' as of
+    on any real kind currently being non-stable (all 167 are 'stable' as of
     the legacy-generator promotion -- there is no naturally-broken fixture
     left in the registry). Monkeypatches the dispatcher's own definition
     lookup for one call so the warning path still gets real coverage.

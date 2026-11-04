@@ -1037,12 +1037,12 @@ def _verb_check(argv: list[str]) -> int:
     )
 
 
-#: ``make-figure`` sub-commands, by the word that selects them. They are the
-#: argparse twins of the Click command group, so the always-installed command
-#: can do everything the optional one can -- ``redraw``, ``recommend`` and
-#: ``check`` used to exist only behind the ``[cli]`` extra, while the HTTP API
-#: exposed all three as routes. A word here only wins if it is not also a
-#: chart kind; :func:`_verbs_are_not_chart_kinds` keeps that true.
+#: Sub-commands of the argparse parser below, by the word that selects them.
+#: They mirror the Click command group in :mod:`sprezzature_figures.cli`, which
+#: is what the ``make-figure`` and ``sprezzature-figures`` console scripts run
+#: since 2026-10-25; this parser is no longer an entry point and stays for the
+#: parity tests. A word here only wins if it is not also a chart kind;
+#: :func:`_verbs_are_not_chart_kinds` keeps that true.
 _VERBS: dict[str, Any] = {
     "list": _verb_list,
     "describe": _verb_describe,
@@ -1054,7 +1054,12 @@ _VERBS: dict[str, Any] = {
 
 def main(argv: list[str] | None = None) -> None:
     """
-    CLI entry point for the ``make-figure`` command.
+    The argparse command line, kept beside the helpers it shares with Click.
+
+    No console script points here any more: ``make-figure`` runs the Click
+    group in :mod:`sprezzature_figures.cli` since 2026-10-25. This parser is
+    reached by ``python -m sprezzature_figures.make_figure`` and by the
+    parity tests, and the usage below is its own, not the installed one's.
 
     Parses in two passes so a figure's own keywords can become flags: the
     first pass reads which kind was named, the second re-parses with that

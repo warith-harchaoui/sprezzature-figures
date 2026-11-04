@@ -43,7 +43,7 @@ path = make_figure("sankey", data, out="energy.png", title="Energy flow")
 ## Scatter (bivariate)
 
 `scatter`'s required roles are named after its demo scenario
-(horsepower/mpg); see `make-figure --list --status stable` and each
+(horsepower/mpg); see `sprezzature-figures list --status stable` and each
 kind's entry in [FIGURES.md](FIGURES.md) for the exact role names a given
 chart expects.
 
@@ -55,20 +55,21 @@ path = make_figure("scatter", data, out="scatter.png")
 
 ## Gapminder (animated)
 
-The Gapminder chart uses its built-in dataset; pass an empty list or use the CLI:
+With no rows (an empty list or `None`), the Gapminder chart draws its built-in dataset. From the command line:
 
 ```bash
-make-figure gapminder --out gapminder.html
+sprezzature-figures render gapminder --out gapminder.html
 ```
 
 ## Word cloud
 
 ```python
+# `group` is one of "praise", "gripe" or "neutral": the three colours of the cloud.
 data = [
-    {"word": "Python", "weight": 100},
-    {"word": "data", "weight": 80},
-    {"word": "chart", "weight": 60},
-    {"word": "figure", "weight": 50},
+    {"word": "quiet", "count": 812, "group": "praise"},
+    {"word": "smooth", "count": 468, "group": "praise"},
+    {"word": "noisy", "count": 300, "group": "gripe"},
+    {"word": "grinder", "count": 250, "group": "neutral"},
 ]
 path = make_figure("wordcloud", data, out="cloud.png")
 ```
@@ -114,49 +115,49 @@ print(list_kinds())
 
 ```bash
 # List all chart types (add --status stable for the render-verified ones)
-make-figure --list --status stable
+sprezzature-figures list --status stable
 
 # Render each chart with its DEMO_DATA
-make-figure waterfall --out waterfall.png
-make-figure funnel --out funnel.png --title "Hiring funnel"
-make-figure sunburst --out sunburst.png
-make-figure heatmap --out heatmap.png
-make-figure dumbbell --out dumbbell.png --title "Pay gap by role"
+sprezzature-figures render waterfall --out waterfall.png
+sprezzature-figures render funnel --out funnel.png --title "Hiring funnel"
+sprezzature-figures render sunburst --out sunburst.png
+sprezzature-figures render heatmap --out heatmap.png
+sprezzature-figures render dumbbell --out dumbbell.png --title "Pay gap by role"
 
 # Render your own file instead of the demo data (.csv, .tsv, .json, .jsonl)
-make-figure treemap --data budget.csv --out budget.png
-make-figure bar --data sales.json --out sales.svg --title "Sales by region"
+sprezzature-figures render treemap --data budget.csv --out budget.png
+sprezzature-figures render bar --data sales.json --out sales.svg --title "Sales by region"
 
 # Pipe data in from stdin with --data - (JSON, JSONL, or CSV, sniffed from content)
-curl -s https://example.com/sales.json | make-figure bar --data - --out sales.png
+curl -s https://example.com/sales.json | sprezzature-figures render bar --data - --out sales.png
 
 # Upsample raster/PDF output for hi-DPI with --scale (ignored for .svg/.html)
-make-figure treemap --data budget.csv --out budget@3x.png --scale 3
+sprezzature-figures render treemap --data budget.csv --out budget@3x.png --scale 3
 
 # Bind columns to roles when the headers differ (repeatable)
-make-figure bar --data gdp.csv --map region=Country --map value=GDP --out gdp.png
+sprezzature-figures render bar --data gdp.csv --map region=Country --map value=GDP --out gdp.png
 
 # Ask a figure what it needs and what it accepts, with every default
-make-figure sankey --describe
-make-figure sankey --help          # the same options, as flags
+sprezzature-figures describe sankey
+sprezzature-figures render sankey --help          # the same options, as flags
 
 # Set them: one flag per option, or --set for the scriptable spelling
-make-figure bar --out sales.svg --subtitle "FY-2024" --width 1200 --theme academic
-make-figure sankey --out flow.svg --set volume-unit=sessions
-make-figure heatmap --out heat.svg --language fr --accessibility high-contrast
+sprezzature-figures render bar --out sales.svg --subtitle "FY-2024" --width 1200 --theme academic
+sprezzature-figures render sankey --out flow.svg --set volume-unit=sessions
+sprezzature-figures render bar --out sales-fr.svg --language fr --accessibility high-contrast
 
 # Ask which chart types fit your file, then render the best one
-# (needs the [editor] extra; no model involved)
-make-figure recommend --data sales.csv
-make-figure recommend --data sales.csv --render best.png
+# (deterministic, no model involved)
+sprezzature-figures recommend --data sales.csv
+sprezzature-figures recommend --data sales.csv --render best.png
 
 # State your analytical goal so the ranking picks the figure for that intent
 # (comparison, trend, distribution, composition, relationship, flow,
 #  hierarchy, geography, model_evaluation) instead of readability alone
-make-figure recommend --data sales.csv --intent comparison
+sprezzature-figures recommend --data sales.csv --intent comparison
 
 # Check a rendered figure for what its markup can prove wrong (exit 1 on a finding)
-make-figure check sales.svg --expect-title "Sales by region"
+sprezzature-figures check sales.svg --expect-title "Sales by region"
 ```
 
 `budget.csv` above is just a table whose columns match the chart's roles, e.g.

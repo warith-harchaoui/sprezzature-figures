@@ -13,16 +13,19 @@ What ships here
 - ``GET /kinds/{kind}`` — full :class:`~sprezzature_figures.catalog.FigureDefinition`
   for one kind (required/optional data roles, default size, renderer, …).
 - ``GET /kinds/{kind}/options`` — every keyword that kind accepts besides
-  its rows, with type, default and allowed values. The same list the
-  ``make-figure <kind> --describe`` command prints.
+  its rows, with type, default and allowed values. The same list
+  ``sprezzature-figures describe <kind>`` prints.
 - ``POST /render/{kind}`` — render a chart and return the file bytes
   directly (``Content-Type`` set from the requested format). Body omits
   ``data`` to fall back to that figure's built-in demo rows, same as
-  ``make-figure <kind>`` with no ``--data``.
+  ``sprezzature-figures render <kind>`` with no ``--data``.
 - ``POST /redraw`` — send a picture of somebody else's chart and get it
   back redrawn here, with the diagnosis that justified each change. Needs
-  a vision model (the ``[local]`` extra plus a running Ollama); answers
-  503 with what to install when there isn't one.
+  a vision model (through best-engine-ai-helper, a running Ollama by
+  default); answers 503 with what to install when there isn't one.
+- ``POST /recommend`` — rank the kinds a set of rows can fill, with the
+  column bindings worked out.
+- ``POST /check_render`` — static check of a rendered SVG, no model.
 
 FastAPI and uvicorn are base dependencies since 2026-11-01, so there
 is no extra to ask for::
@@ -591,7 +594,7 @@ def recommend(body: RecommendRequest) -> list[FigureCandidate]:
             status_code=503,
             detail=(
                 "recommend needs the profiling stack. Install "
-                "'sprezzature-figures' (or [dataviz]). "
+                "'sprezzature-figures'. "
                 f"({exc})"
             ),
         ) from exc
