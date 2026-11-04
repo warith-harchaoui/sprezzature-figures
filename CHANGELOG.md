@@ -25,6 +25,33 @@ dependencies.
 All eleven unions were dry-run resolved in a clean venv before any manifest was
 edited, so this is a measured feasibility and not an optimistic one.
 
+### Changed
+
+**Click parses every command line of the package; argparse is gone from it.**
+
+- `sprezzature-figures-mcp` is a Click command. Same flags (`--host`, `--port`),
+  same defaults (127.0.0.1 and 8000), same environment variables
+  (`SPREZZATURE_FIGURES_HOST`, `SPREZZATURE_FIGURES_PORT`), same exit code 2 on a
+  usage error, and it gains `-V/--version`. `main(argv)` now returns the exit code
+  in both branches of the import guard.
+- The argparse `make_figure.main` and its five sub-command parsers are deleted.
+  No console script had pointed at them since 2026-10-25; they survived only for
+  the parity tests. Those tests now ask the Click group directly, and the
+  comparison of the two parsers became one question asked of the whole
+  catalogue: `render <kind> --help` names every option of every generator.
+  An unknown flag is answered with `sprezzature-figures describe <kind>`, the
+  spelling that exists.
+- The Docker image serves the MCP endpoint. Its `CMD` was
+  `uvicorn sprezzature_figures.api:app`, which never mounts `/mcp`; it is now
+  `sprezzature-figures-mcp --host 0.0.0.0 --port 8000`, the same FastAPI app with
+  `/mcp` beside `/health`, `/kinds` and `/render`, so one container on one port
+  answers both. `docker-compose.yml` spells the command out on the `api` service.
+- A guard, `tests/test_console_scripts_are_click.py`: every console script
+  answers `--help` with Click's `Usage:`, and no module under
+  `sprezzature_figures/` imports argparse. The standalone generator scripts in
+  `scripts/` keep their argparse parsers: they are not console scripts and run
+  from a downloaded skill with the standard library alone.
+
 ### Fixed — the places that encoded the extras
 
 Install lines, error messages, docstrings, the `Dockerfile`, the CI workflow and

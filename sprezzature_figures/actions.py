@@ -6,8 +6,7 @@ group (:mod:`sprezzature_figures.cli`), and the HTTP API is another front
 end. Rendering is shared through
 :func:`~sprezzature_figures.make_figure.make_figure`; ``redraw``,
 ``recommend`` and ``check`` are written here, so the Click commands and the
-older argparse parser in :mod:`sprezzature_figures.make_figure` (no longer
-an entry point, kept for the parity tests) run the same code.
+HTTP routes run the same code.
 
 Each function here takes the arguments a caller supplies, does the work,
 and returns an :class:`ActionResult`: the lines to print, the lines to
@@ -192,8 +191,7 @@ def recommend(
         from .editor.recommendation import assign_columns, rank
     except ImportError as exc:
         raise ActionError(
-            "recommend needs the profiling stack. Install with: "
-            "pip install 'sprezzature-figures'."
+            "recommend needs the profiling stack. Install with: pip install 'sprezzature-figures'."
         ) from exc
 
     profile = profile_dataframe(
@@ -204,7 +202,7 @@ def recommend(
         raise ActionError(
             f"No stable chart type can be filled from {name} "
             f"({profile.column_count} columns, {profile.row_count} rows). "
-            "See `make-figure --list --status stable`."
+            "See `sprezzature-figures list --status stable`."
         )
 
     lines = [f"Top {min(limit, len(ranked))} chart types for {name} (best first):"]

@@ -25,11 +25,12 @@ from __future__ import annotations
 
 import inspect
 from pathlib import Path
+from typing import Any
 
 import pytest
 
 from sprezzature_figures.catalog import get_figure_definition, list_kinds
-from sprezzature_figures.make_figure import _SCRIPTS_DIR, _load_module, main
+from sprezzature_figures.make_figure import _SCRIPTS_DIR, _load_module
 from sprezzature_figures.options import (
     OPTION_CHOICES,
     OptionDefinition,
@@ -214,63 +215,66 @@ def test_describe_prints_the_flag_the_default_and_the_help() -> None:
     assert "--stage-names" in text
 
 
-def test_cli_describe_lists_roles_then_options(capsys: pytest.CaptureFixture) -> None:
-    """``make-figure <kind> --describe`` answers both halves of "how do I call this"."""
-    main(["treemap", "--describe"])
-    printed = capsys.readouterr().out
+def _run(*args: str) -> Any:
+    """Invoke the console command (the Click group) in-process."""
+    from click.testing import CliRunner
+
+    from sprezzature_figures.cli import cli
+
+    return CliRunner().invoke(cli, list(args))
+
+
+def test_cli_describe_lists_roles_then_options() -> None:
+    """``sprezzature-figures describe <kind>`` answers both halves of "how do I call this"."""
+    printed = _run("describe", "treemap").output
     assert "Required data roles" in printed
     assert "parent" in printed and "value" in printed
     assert "--value-unit" in printed
     assert "--width" in printed
 
 
-def test_cli_describe_as_json_is_the_catalogue_entry(capsys: pytest.CaptureFixture) -> None:
+def test_cli_describe_as_json_is_the_catalogue_entry() -> None:
     import json
 
-    main(["treemap", "--describe", "--json"])
-    payload = json.loads(capsys.readouterr().out)
+    payload = json.loads(_run("describe", "treemap", "--json").output)
     assert payload["kind"] == "treemap"
     assert payload["options_schema"]["width"]["default"] == 900
 
 
-def test_cli_refuses_an_option_the_figure_does_not_have(
-    capsys: pytest.CaptureFixture,
-) -> None:
-    with pytest.raises(SystemExit) as exit_info:
-        main(["rose", "--width", "900"])
-    assert exit_info.value.code == 2
-    assert "rose has no option --width" in capsys.readouterr().err
+def test_cli_refuses_an_option_the_figure_does_not_have() -> None:
+    result = _run("render", "rose", "--width", "900")
+    assert result.exit_code == 2
+    assert "rose has no option --width" in result.output
 
 
-def test_cli_suggests_the_option_that_was_meant(capsys: pytest.CaptureFixture) -> None:
-    with pytest.raises(SystemExit):
-        main(["bar", "--subtitel", "oops"])
-    assert "Did you mean --subtitle" in capsys.readouterr().err
+def test_cli_suggests_the_option_that_was_meant() -> None:
+    result = _run("render", "bar", "--subtitel", "oops")
+    assert result.exit_code == 2
+    assert "Did you mean --subtitle" in result.output
 
 
-def test_cli_refuses_an_option_given_twice(capsys: pytest.CaptureFixture) -> None:
-    with pytest.raises(SystemExit) as exit_info:
-        main(["bar", "--width", "800", "--set", "width=900"])
-    assert exit_info.value.code == 2
-    assert "given twice" in capsys.readouterr().err
+def test_cli_refuses_an_option_given_twice() -> None:
+    result = _run("render", "bar", "--width", "800", "--set", "width=900")
+    assert result.exit_code == 2
+    assert "given twice" in result.output
 
 
 @pytest.mark.slow
-def test_cli_options_reach_the_figure(tmp_path: Path, capsys: pytest.CaptureFixture) -> None:
+def test_cli_options_reach_the_figure(tmp_path: Path) -> None:
     """A flag and a --set assignment both land in the rendered SVG."""
     out = tmp_path / "bar.svg"
-    main(["bar", "--out", str(out), "--width", "1234", "--set", "subtitle=Q3 figures"])
-    capsys.readouterr()
+    result = _run(
+        "render", "bar", "--out", str(out), "--width", "1234", "--set", "subtitle=Q3 figures"
+    )
+    assert result.exit_code == 0, result.output
     svg = out.read_text(encoding="utf-8")
     assert 'width="1234"' in svg
     assert "Q3 figures" in svg
 
 
 @pytest.mark.slow
-def test_a_demo_render_keeps_the_chrome_written_for_it(
-    tmp_path: Path, capsys: pytest.CaptureFixture
-) -> None:
-    """``make-figure sankey`` draws the reference figure, headline and all.
+def test_a_demo_render_keeps_the_chrome_written_for_it(tmp_path: Path) -> None:
+    """``sprezzature-figures render sankey`` draws the reference figure, headline and all.
 
     The CLI used to pass ``title=""`` always, and to hand the generator
     its own DEMO_DATA -- which the dispatcher cannot tell from caller data,
@@ -278,23 +282,21 @@ def test_a_demo_render_keeps_the_chrome_written_for_it(
     came out untitled, with no flag able to bring the title back.
     """
     out = tmp_path / "sankey.svg"
-    main(["sankey", "--out", str(out)])
-    capsys.readouterr()
+    result = _run("render", "sankey", "--out", str(out))
+    assert result.exit_code == 0, result.output
     svg = out.read_text(encoding="utf-8")
     assert "Organic search fills the funnel" in svg
     assert "One week of site visitors" in svg
 
 
 @pytest.mark.slow
-def test_your_data_never_inherits_the_demo_chrome(
-    tmp_path: Path, capsys: pytest.CaptureFixture
-) -> None:
+def test_your_data_never_inherits_the_demo_chrome(tmp_path: Path) -> None:
     """The flip side: over your rows, the demo's captions are simply false."""
     source = tmp_path / "rows.csv"
     source.write_text("region,value\nParis,12\nLyon,8\n", encoding="utf-8")
     out = tmp_path / "bar.svg"
-    main(["bar", "--out", str(out), "--data", str(source)])
-    capsys.readouterr()
+    result = _run("render", "bar", "--out", str(out), "--data", str(source))
+    assert result.exit_code == 0, result.output
     assert "Quarterly" not in out.read_text(encoding="utf-8")
 
 

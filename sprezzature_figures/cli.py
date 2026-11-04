@@ -4,11 +4,11 @@ cli — the ``sprezzature-figures`` / ``make-figure`` command.
 One front door, in Click. There were two until 2026-10-25: this one and the
 argparse ``make-figure``, both rebuilding their option list from the same
 ``options_schema`` so a flag could not exist in one and not the other. Both
-names resolve here now, which removes the agreement that had to be maintained
-rather than maintaining it.
+names resolve here now, and the argparse parser itself is gone, so there is
+no second implementation left to keep in agreement.
 
-Click is a base dependency rather than an extra: with argparse gone nothing
-ships with Python that can parse a command line.
+Click is a base dependency rather than an extra: it is the only thing in
+the package that parses a command line.
 
 Author
 ------
@@ -132,7 +132,7 @@ class FigureRenderCommand(click.Command):
             # Click's own message offers the nearest *generic* flag
             # ("--width? did you mean --data?"). The useful answer is
             # which options this figure has: the sentence `_unrecognised`
-            # writes, shared with the older argparse parser.
+            # writes from the catalogue.
             from .make_figure import _unrecognised
 
             raise click.UsageError(
@@ -280,9 +280,10 @@ def render_cmd(
         if mappings:
             click.echo("--map only applies with --data.", err=True)
             raise SystemExit(1)
-        # None, not the demo rows read back -- see the note in
-        # make_figure.main(): a generator handed its own DEMO_DATA
-        # cannot tell it from caller data, and drops its own chrome.
+        # None, not the demo rows read back: a generator handed its own
+        # DEMO_DATA cannot tell it from caller data, suppresses its demo
+        # chrome as a precaution, and `render bar` would then draw the
+        # reference figure untitled.
         data = None
 
     if scale is not None:

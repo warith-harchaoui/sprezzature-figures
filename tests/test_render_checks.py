@@ -27,8 +27,6 @@ Warith HARCHAOUI <warithmetics@deraison.ai>
 
 from __future__ import annotations
 
-import contextlib
-import io
 import json
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -329,16 +327,9 @@ def test_la_sortie_json_porte_la_regle_la_gravite_et_le_compte() -> None:
     assert rapport["findings"][0]["severity"] == "error"
 
 
-def test_les_deux_lignes_de_commande_offrent_le_meme_drapeau() -> None:
-    """``check`` is one command with two spellings; a flag lands on both."""
+def test_la_ligne_de_commande_offre_le_drapeau_format() -> None:
+    """``check --format json`` is reachable from the command line, not only the library."""
     from click.testing import CliRunner
-
-    from sprezzature_figures.make_figure import _verb_check
 
     aide = CliRunner().invoke(cli, ["check", "--help"]).output
     assert "--format" in aide and "json" in aide
-
-    tampon = io.StringIO()
-    with contextlib.redirect_stdout(tampon), pytest.raises(SystemExit):
-        _verb_check(["--help"])
-    assert "--format" in tampon.getvalue()

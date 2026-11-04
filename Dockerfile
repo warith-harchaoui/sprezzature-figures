@@ -41,11 +41,15 @@ USER appuser
 
 EXPOSE 8000
 
-# Serve what the image was built for. The previous default was
-# `ENTRYPOINT make-figure` / `CMD --list`: a container that starts, prints a
-# catalogue and exits, which looks like it works and does nothing. There is
-# no ENTRYPOINT now, so any of the commands replaces this one directly:
+# Serve what the image was built for: the HTTP routes and the MCP endpoint,
+# from one process on one port. `sprezzature-figures-mcp` runs the same
+# FastAPI app as `uvicorn sprezzature_figures.api:app`, with /mcp mounted
+# beside /health, /kinds and /render; the plain uvicorn line this replaces
+# served the routes and left an MCP client nothing to connect to. The
+# previous default before that was `ENTRYPOINT make-figure` / `CMD --list`:
+# a container that starts, prints a catalogue and exits. There is no
+# ENTRYPOINT now, so any of the commands replaces this one directly:
 #
 #   docker run --rm -v "$PWD:/work" IMAGE sprezzature-figures render bellcurve --out /work/bell.svg
 #   docker run --rm -p 8080:8080 IMAGE sprezzature-figures --host 0.0.0.0 --no-browser
-CMD ["uvicorn", "sprezzature_figures.api:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["sprezzature-figures-mcp", "--host", "0.0.0.0", "--port", "8000"]
