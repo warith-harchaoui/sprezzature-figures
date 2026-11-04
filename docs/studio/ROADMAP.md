@@ -1,5 +1,10 @@
 # Roadmap
 
+> Note, 2026-11-04: the "Built" list below is the record of the original build
+> plan, and its counts are the counts of that time. Today all 167 catalogue
+> kinds are `status="stable"`; see [GENERATOR_AUDIT.md](GENERATOR_AUDIT.md)
+> and the top-level [README.md](../../README.md) for the current state.
+
 ## Built (the original 13-commit build plan, plus follow-up hardening)
 
 - Reproducible generator audit (`tools/audit_generators.py`) and an
@@ -56,17 +61,14 @@
 Scoped out along the way, each documented at the point it was cut (see
 `docs/studio/STATUS.md` for the specific commit and reasoning):
 
-- **`difference-chart` generator adaptation.** ~640 lines of numpy
-  Catmull-Rom curve smoothing, dual clipPath band fills, and crossing
-  detection: a different order of complexity than the other
-  hand-authored-SVG generators, and 15 stable figures already clears the
-  build plan's ≥10 MVP bar.
 - **Richer recommendation scoring.** The engine (`studio/recommendation/`) and
-  its cards are built and wired, and stable figures now carry readability
-  limits so the score separates a tidy dataset from a sprawling one. The signal
-  is still coarse though: only `max_recommended_categories` / `_rows` / `min_rows`
-  feed it, and only for stable kinds. Intent-aware scoring (matching the user's
-  stated goal to a figure's `intents`) and per-figure tuning are the next step.
+  its cards are built and wired, and stable figures carry readability limits
+  (`max_recommended_categories` / `_rows` / `min_rows`) so the score separates
+  a tidy dataset from a sprawling one. Goal-aware ranking exists: a stated goal
+  (`comparison`, `trend`, ...) ranks first the kinds whose catalogue `category`
+  serves it, through the keyword table in `studio/recommendation/scoring.py`.
+  The catalogue's own `intents` field is still empty for every kind, so
+  per-figure intent annotation and per-figure tuning remain the next step.
 - **Separate `pages/home.py` / `pages/settings.py` routes.** Merged into
   one page to avoid session-id hand-off across NiceGUI page navigation,
   which the MVP's single import→edit loop doesn't need.
@@ -84,7 +86,6 @@ Scoped out along the way, each documented at the point it was cut (see
 ## Not attempted at all (out of the MVP's stated scope)
 
 Authentication, multi-tenant hosting, real-time collaboration, direct
-SVG editing by the user, arbitrary code generation, full adaptation of
-all 96 figures, remote databases, Google Sheets integration, pixel-level
-manual editing, an agent that modifies this repository, fine-tuning,
+SVG editing by the user, arbitrary code generation, remote databases,
+Google Sheets integration, pixel-level manual editing, an agent that modifies this repository, fine-tuning,
 cloud storage, legacy XLS support, automatic slide-deck export.

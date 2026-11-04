@@ -31,8 +31,8 @@ wrote, and that path must exist.
 may contain hyphens, e.g. `"connected-scatter"`) to a module path and
 callable name, resolved independent of any naming convention. This is a
 deliberate fix for a real bug: the dispatcher used to guess
-`scripts/make_<kind.replace("-", "_")>.py`, which is wrong for exactly the
-17 scripts whose filenames keep their hyphens
+`scripts/make_<kind.replace("-", "_")>.py`, which is wrong for every
+script whose filename keeps its hyphens (51 of them today)
 (`make_connected-scatter.py`, `make_liquid-gauge.py`, ...). `list_kinds()`,
 `get_figure_definition()`, and alias resolution (`connected_scatter`,
 `connected scatter`, and `connected-scatter` all resolve to the same
@@ -74,6 +74,6 @@ regenerating the catalogue re-applies these, so they survive a rebuild.
    `make_figure()`-ready rows with no per-kind glue code.
 4. Run `python tools/audit_generators.py --render` then
    `python tools/build_figures_catalog.py`.
-5. Confirm it: `make-figure <kind> --out check.svg` (or `.png`), and
+5. Confirm it: `sprezzature-figures render <kind> --out check.svg` (or `.png`), and
    look at the output; an audit `status="stable"` only means the file was
    non-empty, not that it looks right.

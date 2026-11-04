@@ -3,8 +3,8 @@ sprezzature-figures — Model Context Protocol (MCP) surface.
 
 Adapter that exposes the FastAPI app defined in :mod:`sprezzature_figures.api`
 as MCP tools so any MCP-aware host (agent runtimes, IDE integrations,
-custom shells) can call ``list_kinds`` / ``get_kind`` / ``list_kind_options``
-/ ``render_figure`` / ``redraw_figure`` as first-class tools. Uses :mod:`fastapi_mcp`
+custom shells) can call its eight routes as first-class tools, each named
+by its ``operation_id``. Uses :mod:`fastapi_mcp`
 (https://github.com/tadata-org/fastapi_mcp): one line wraps the whole
 existing HTTP surface, so the same route definitions serve both plain HTTP
 callers and MCP hosts without being written twice.
@@ -42,16 +42,16 @@ except ImportError:  # pragma: no cover - dependency guard
 
     def main(argv: list[str] | None = None) -> None:
         """
-        Entry point when the MCP extra is not installed.
+        Entry point when ``fastapi-mcp`` cannot be imported.
 
         Takes the same ``argv`` as the real entry point and ignores it:
         the two variants are reached through the same console script, so
         a caller that passes arguments must not get a ``TypeError`` from
         the branch that happens to be missing a dependency.
 
-        Says which extra is missing and stops. Reaching an MCP
-        command without the ``[mcp]`` extra needs a one-line fix,
-        not a stack trace.
+        Says the install is broken and stops: ``fastapi-mcp`` is a base
+        dependency, so the fix is a reinstall, and it deserves a one-line
+        message rather than a stack trace.
         """
         print(
             "sprezzature-figures MCP surface could not import fastapi-mcp, which is a "
@@ -143,6 +143,7 @@ else:
 
         # Single worker: the figure registry and generator-module cache
         # (sys.modules) are process-local state, so multiple workers would
+        # each hold a separate copy of it.
         uvicorn.run(app, host=args.host, port=args.port, workers=1)
 
 if __name__ == "__main__":  # pragma: no cover

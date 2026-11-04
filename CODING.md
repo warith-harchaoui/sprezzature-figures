@@ -7,15 +7,21 @@ annotations on all public functions and classes.
 
 ## Style
 
-- `ruff check` with zero warnings, `ruff format` applied, for
-  `sprezzature_figures/` and `tools/` only. `pyproject.toml`'s
-  `[tool.ruff] extend-exclude` deliberately leaves out `scripts/` (the 127
-  `make_<kind>.py` chart generators) and `tests/`. Reason: `scripts/`
-  keeps the older `List`/`Dict`/`Tuple` typing style and hand-formatted
-  f-strings on purpose, so that two sibling generators stay easy to diff
-  side by side and a stray `ruff format` never changes what a generator
-  actually renders. Do not run `ruff --fix` or `ruff format` on
-  `scripts/*.py`.
+- `ruff check .` with zero findings, over the whole repository: CI runs
+  exactly that command. Only `assets/` is excluded (`[tool.ruff]
+  extend-exclude` in `pyproject.toml`). `scripts/` (the 167
+  `make_<kind>.py` chart generators and their helpers) and `tests/` are
+  linted. For `scripts/`, `[tool.ruff.lint.per-file-ignores]` silences only
+  syntax modernisation and ordering (`UP`, `I001`, `C4`, `SIM`, `W`), so the
+  generators keep their older `List`/`Dict`/`Tuple` typing style while
+  pyflakes and the bugbear checks still run on them.
+- `ruff format` is not a CI gate, and most of the repository is not in
+  `ruff format` style. Format the files you write; do not run `ruff format`
+  or `ruff --fix` over `scripts/` or the whole tree. Two sibling generators
+  should stay easy to diff side by side, and a mass reformat of hand-tuned
+  generators is its own decision, not a side effect.
+- Types: CI runs `mypy sprezzature_figures`, `mypy scripts` and `mypy tools`
+  (three roots, because `scripts/` and `tools/` import siblings by bare name).
 - Line length: 100 characters (`[tool.ruff] line-length` in
   `pyproject.toml`).
 - Imports: standard library first, then third-party packages, then local
@@ -70,9 +76,9 @@ script defines:
   math, color palettes, or the write-and-report steps inline in a new
   script.
 
-`scripts/` is excluded from `ruff` and `ruff format` (see Style above),
-so match the formatting of the sibling scripts by hand instead of running
-the formatter on them.
+`scripts/` is linted but not formatted (see Style above), so match the
+formatting of the sibling scripts by hand instead of running the formatter
+on them.
 
 ## Testing
 
@@ -84,18 +90,23 @@ the formatter on them.
   change lands.
 - Tests marked `@pytest.mark.slow` render real figures and are excluded
   from the default run; run them with `pytest -m slow`. Tests marked
-  `packaging`, `llm`, or `vision` are excluded from CI's default run too
-  and have their own job or opt-in path (see `.github/workflows/ci.yml`).
+  `packaging`, `llm`, or `vision` are excluded from the default run too.
+  CI runs `-m slow` and `-m packaging` in their own steps; `llm` and
+  `vision` are opt-in and never run in CI (see `.github/workflows/ci.yml`).
 - A change to `scripts/*.py` should also pass
   `python tools/audit_generators.py --render` (see CONTRIBUTING.md): that
-  tool is what actually exercises all 127 generators end to end. There is
+  tool is what actually exercises all 167 generators end to end. There is
   no separate unit test per generator to keep in sync by hand.
 - No mocking of file I/O or rendering. Tests exercise the real dispatcher,
   the same code path a real caller would run.
 
 ## Dependencies
 
-Declare every dependency in `pyproject.toml` under `[project.dependencies]`.
-Do not pin exact versions there; use `>=` lower bounds only, and reserve
-exact pins for `requirements.txt`, whose only job is a reproducible
-install.
+Declare every runtime dependency in `pyproject.toml` under
+`[project] dependencies`. Since 2026-11-01 there are no feature extras:
+everything the package does installs with `pip install sprezzature-figures`,
+and `[dev]` holds only the test and lint toolchain. Use `>=` lower bounds,
+and add an upper bound only for a stated reason, written as a comment beside
+it (for example `wallet-helper>=1.3.2,<2`). `requirements.txt` pins nothing:
+it is `-e .`, the one dependency list the conda environment and the Docker
+image both install from.

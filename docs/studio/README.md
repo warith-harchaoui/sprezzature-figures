@@ -38,10 +38,12 @@ sprezzature-studio
 `sprezzature-studio` opens a browser tab at `http://127.0.0.1:8080`. Useful
 flags: `--host` / `--port` to change the bind address, `--no-browser` to
 skip auto-opening a tab, `--native` for a desktop window instead of a
-browser tab. The `[studio]` extra pulls in NiceGUI, pandas, openpyxl, and
-`best-engine-ai-helper` (which resolves the local or remote LLM/VLM. The
-app starts and stays usable even with no model configured; see
-[DATA_PRIVACY.md](DATA_PRIVACY.md)).
+browser tab, `--version` to print the installed version. There is no extra
+to ask for: NiceGUI, pandas, openpyxl and `best-engine-ai-helper` (which
+resolves the local or remote LLM/VLM) are base dependencies since
+2026-11-01. The app starts and stays usable with no model configured; see
+[DATA_PRIVACY.md](DATA_PRIVACY.md). Projects are saved under
+`~/.sprezzature-studio/`, or wherever `SPREZZATURE_STUDIO_HOME` points.
 
 Everything in this directory documents the Studio specifically. For the
 figure-rendering library itself (`make_figure()`, the 167-generator
@@ -87,7 +89,10 @@ not just recorded. The Ralph loop runs against a real model end to end and
 degrades gracefully: a model that returns malformed JSON, times out, or is
 unreachable is reported in `RalphResult.notes` instead of crashing the turn.
 Structured output is enforced by JSON schema all the way to the model (see
-[LLM_SCHEMAS.md](LLM_SCHEMAS.md)). The deterministic figure-recommendation
-*compatibility* engine (plan §6) and several UI panels (recommendation cards,
-history panel, export dialog) are scoped out of this MVP; see
-[ROADMAP.md](ROADMAP.md) for the full list of what's deferred and why.
+[LLM_SCHEMAS.md](LLM_SCHEMAS.md)). The deterministic figure recommendation
+(`studio/recommendation/`: a compatibility filter plus a readability score,
+ranked by analytical goal when one is known) is built and shown as one-click
+recommendation cards in the data panel; the same ranking runs headless as
+`sprezzature-figures recommend` and `POST /recommend`. The history panel
+(undo, redo, revert, compare) and the `.sprezzature.zip` export are wired into
+the editor. See [ROADMAP.md](ROADMAP.md) for what is still deferred and why.

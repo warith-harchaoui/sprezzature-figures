@@ -3,16 +3,18 @@
 ```bash
 python -m pytest -q                    # default: fast tests only
 python -m pytest -q -m slow            # + real rendering, LLM-free Ralph rounds, real server launch
-python -m pytest -q -m packaging       # builds + installs the wheel, incl. [studio] extra (network, ~50s)
+python -m pytest -q -m packaging       # builds the wheel, installs it in fresh venvs (network, several minutes)
 python -m pytest -q -m llm             # hits a live text model via best-engine-ai-helper
 python -m pytest -q -m vision          # hits a live vision model / VLM
-ruff check sprezzature_figures tools tests
+ruff check .                           # the whole tree, as CI runs it
 ```
 
-The suite holds about 100 test functions. It follows the project's
-test-rationalization philosophy ("test count is not a quality metric"):
-similar cases are merged with `@pytest.mark.parametrize`, and a test earns its
-place only when it catches a failure nothing else does. Coverage sits at ~81%.
+The suite holds 436 test functions, which parametrization expands to 1794
+collected tests. The default run collects 1368 of them; the four markers below
+deselect the other 426 (counted on 2026-11-04 with `pytest --collect-only`).
+It follows the project's test-rationalization philosophy ("test count is not
+a quality metric"): similar cases are merged with `@pytest.mark.parametrize`,
+and a test earns its place only when it catches a failure nothing else does.
 
 ## Markers
 
@@ -38,15 +40,16 @@ network call.
   registry itself, so it automatically covers new figures as they're
   promoted to `stable`, not two hardcoded kind names.
 - **The registry/dispatcher fix for hyphenated kinds**: a regression test
-  asserts `make_figure("connected-scatter", ...)` actually reaches
-  `make_connected-scatter.py` (raising `AttributeError` for the real
-  contract gap, not a misleading "no script" `ValueError`).
+  (`-m slow`) asserts `make_figure("connected-scatter", ...)` reaches
+  `make_connected-scatter.py` and renders it, rather than looking for a
+  nonexistent `make_connected_scatter.py` and raising a misleading
+  "no script" `ValueError`.
 - **The Ralph engine**: full end-to-end tests for all three modes
   (manual/assisted/autopilot), including the stopping criteria, against
   real rendering and `FakeLLMClient`, plus resilience tests that script the
   model to fail (empty JSON, timeout) and assert the loop degrades to
   `RalphResult.notes` / `critique_unavailable` instead of crashing.
-- **Transformations**: `test_transformations.py` exercises every `Transform`
+- **Transformations**: `tests/core/test_transformations.py` exercises every `Transform`
   type applied to rows (filter / sort / aggregate / top-N / group-others /
   calculate), the list-order semantics, the string/number tolerance, and the
   missing-column skip-note.
@@ -55,7 +58,7 @@ network call.
   directory, not just a string check that the template contains the
   right import.
 - **The NiceGUI app**: a real subprocess-launched server, HTTP-checked for
-  the expected page content (`test_app_smoke.py`). Deeper UI interaction
+  the expected page content (`tests/studio/test_app_smoke.py`). Deeper UI interaction
   (upload a file and click through via a simulated browser) was attempted
   with `nicegui.testing.User` and abandoned: the upload-simulation API
   assumed didn't exist in the installed nicegui version, and chasing it
@@ -64,28 +67,36 @@ network call.
   of non-NiceGUI logic behind the UI (`_load_upload`, `_resolve_data`,
   `_summarize_result`, `engine_status`, `SessionState` isolation) is unit
   tested directly.
-- **Not covered**: the deterministic figure-recommendation *compatibility*
-  engine (plan §6, not built yet, see [ROADMAP.md](ROADMAP.md)) and the
-  history/export NiceGUI panels (backend tested, no UI wired up to call it
-  yet). Live-model reliability on the harder chart edits (operations carrying
-  a nested transform, or an intent-to-style-option mapping) is a known limit
-  of small local models rather than a coverage gap; the engine handles a
-  failed or dropped operation gracefully.
+- **Recommendation**: `tests/studio/test_recommendation.py` covers the
+  compatibility filter and the goal-aware ranking; `tests/test_cli_recommend.py`
+  and `tests/test_api.py` cover the same ranking through
+  `sprezzature-figures recommend` and `POST /recommend`.
+- **Not covered**: the history and export NiceGUI panels are exercised
+  through their backend (`core.history`, `studio.export`), not through
+  simulated clicks. Live-model reliability on the harder chart edits
+  (operations carrying a nested transform, or an intent-to-style-option
+  mapping) is a known limit of small local models rather than a coverage gap;
+  the engine handles a failed or dropped operation gracefully.
 
 ## CI
 
-`.github/workflows/ci.yml` runs on 🍎 macOS, 🐧 Ubuntu, and 🪟 Windows, on
-push to `main` and on pull requests:
+`.github/workflows/ci.yml` runs on Ubuntu (`ubuntu-latest`) only, on push to
+`main` and on pull requests:
 
-- **`test` job**: ruff + the default suite + `-m slow`, across the 3 OSes ×
-  Python 3.10 and 3.13 (6 combinations).
-- **`packaging` job**, `-m packaging` on each of the 3 OSes (Python 3.12):
-  builds the wheel, installs it clean, renders a figure, confirms the bare
-  install stays studio-independent, then installs the `[studio]` extra and
-  checks every studio subpackage imports and all three console scripts
-  (`make-figure`, `sprezzature-figures`, `sprezzature-studio`) resolve.
-  This is the check that the documented `pip install` procedures actually
-  hold on a clean machine, on every supported OS.
+- **`test` job**, Python 3.12: `ruff check .`, then `mypy sprezzature_figures`,
+  `mypy scripts` and `mypy tools`, then the default suite, then `-m slow`.
+- **`packaging` job**, Python 3.12: `-m packaging tests/test_packaging.py`.
+  It builds the wheel, installs it in fresh virtual environments, renders a
+  figure, checks that importing the library loads no Studio dependency, checks
+  that every Studio subpackage imports from the same plain install and that the
+  three console scripts (`make-figure`, `sprezzature-figures`,
+  `sprezzature-studio`) answer `--help`, and checks that every font face the
+  module offers is in the wheel.
+- **`floor` job**, Python 3.10: `pip install .` and `import sprezzature_figures`,
+  which is the promise `requires-python` makes. The test suite does not run on
+  3.10.
+
+`llm` and `vision` tests never run in CI.
 
 CI caught a real bug local development never surfaced: `make_situation_map.py`
 (since moved to the [sprezzature-maps](https://github.com/warith-harchaoui/sprezzature-maps)

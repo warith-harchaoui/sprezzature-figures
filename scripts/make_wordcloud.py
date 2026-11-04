@@ -368,6 +368,13 @@ def _place_words(data: Optional[List[Dict[str, Any]]] = None) -> List[Dict[str, 
         word = str(row["word"])
         count = int(row["count"])
         group = str(row["group"])
+        if group not in glyphs:
+            # A colour and a sign exist only for the known themes; an
+            # unknown one used to surface as a bare KeyError.
+            raise ValueError(
+                f"wordcloud: row {word!r} has group {group!r}; the known groups "
+                f"are {', '.join(repr(g) for g in glyphs)}."
+            )
         size = _size_for(count, lo, hi)
         # A leading "+ " / "− " widens the box; measure the painted string.
         prefix = f"{glyphs[group]} " if glyphs[group] else ""

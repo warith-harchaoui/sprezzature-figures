@@ -18,7 +18,7 @@ together; do not just pick one and leave the other stale.
      type: a `Path` object, not a plain `str`, produced internally by
      `_render.write_svg`.
 3. `make_<kind>` must work when called with no `out` argument at all. In
-   that case it falls back to the skill's own
+   that case it falls back to the repository's own
    `assets/svg-examples/<kind>.svg`, computed by
    `_render.svg_example_path(__file__, "<kind>")`.
 4. Add a row to [FIGURES.md](FIGURES.md), in alphabetical order, with the
@@ -52,10 +52,12 @@ together; do not just pick one and leave the other stale.
 - NumPy-style docstrings on all public functions and classes.
 - Comment density of 25 to 30 percent of lines: a comment explains *why*,
   never *what* the code already shows.
-- `ruff check` and `ruff format` must both pass with zero warnings, for
-  `sprezzature_figures/` and `tools/`. `scripts/` and `tests/` are
-  excluded from both by `pyproject.toml`; match the existing style of the
-  sibling scripts there by hand instead (see CODING.md for why).
+- `ruff check .` must pass with zero findings, over the whole repository,
+  `scripts/` and `tests/` included; CI runs it. Do not run `ruff format`
+  over `scripts/`: match the style of the sibling scripts by hand instead
+  (see CODING.md for why).
+- `mypy sprezzature_figures`, `mypy scripts` and `mypy tools` must pass;
+  CI runs all three.
 - No unused imports.
 
 ## Commit style

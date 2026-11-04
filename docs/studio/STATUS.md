@@ -1,5 +1,14 @@
 # Sprezzature Studio: status
 
+> Note, 2026-11-04: this is a historical working log, kept per commit while
+> the Studio was built. Its counts (90 generators, 15 stable kinds), its
+> extras (`[cli]`, `[studio]`, `[dataviz]`) and its CI matrix (three systems,
+> two Python versions) describe that time and are left as written. Today the
+> catalogue holds 167 kinds, all stable; there are no feature extras since
+> 2026-11-01; and CI runs on Ubuntu only. For the current state read
+> [README.md](README.md), [TESTING.md](TESTING.md) and the top-level
+> [README.md](../../README.md).
+
 Maintained per commit while building Sprezzature Studio (see `.private/plan.md`
 for the full spec; not itself committed). Branch: `feature/sprezzature-studio`.
 

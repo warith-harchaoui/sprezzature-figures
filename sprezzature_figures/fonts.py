@@ -22,9 +22,8 @@ free alternative, were chosen.
 This module is deliberately **stdlib-only** at import time, meaning it
 imports nothing beyond Python's own standard library (only
 ``base64``/``functools``/``pathlib``, no third-party package). That matters
-because ``scripts/_svg.py`` must stay importable even without the
-``dataviz`` extra installed, and this module is one of the things it
-depends on. The rasteriser, the component
+because ``scripts/_svg.py`` must stay importable with nothing but the
+standard library, and this module is one of the things it depends on. The rasteriser, the component
 that turns an SVG into pixels (``resvg_py``), keeps no persistent
 font-directory registration of its own; callers pass
 :data:`RESVG_FONT_DIRS` as the ``font_dirs`` keyword on each

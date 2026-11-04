@@ -38,9 +38,8 @@ def cli() -> None:
 def _emit(action: Callable[[], ActionResult]) -> None:
     """Run one shared action and give its result to the terminal.
 
-    The work lives in :mod:`sprezzature_figures.actions` so the
-    argparse command can do exactly the same thing; all that is left
-    here is which stream each line goes to and what to exit with.
+    The work lives in :mod:`sprezzature_figures.actions`; all that is
+    left here is which stream each line goes to and what to exit with.
     """
     try:
         result = action()
@@ -90,18 +89,18 @@ class FigureRenderCommand(click.Command):
     the top of parsing, from the frozen catalogue -- which is also when
     ``--help`` is answered, so ``sprezzature-figures render sankey
     --help`` documents ``--volume-unit`` and the bare ``render --help``
-    does not. The argparse twin (``make-figure``) does the same thing
-    with a two-pass parse; both read the same ``options_schema``, so a
-    flag exists in both commands or in neither.
+    does not. The flags come from the same ``options_schema`` that
+    ``describe`` prints and the HTTP API validates against.
     """
 
     #: Declared here although it is Click's, because this class both reads
     #: and reassigns it and mypy 2 refuses to infer a type through that
     #: cycle: `_base_params` is taken from `self.params` and `self.params`
     #: is then rebuilt from `_base_params`. mypy 1 guessed; 2.4 reports
-    #: `Cannot determine type of "params"  [has-type]`, and the CI here
-    #: does not bound mypy, so the next push would have been red on a
-    #: release nobody made. One declaration ends the cycle.
+    #: `Cannot determine type of "params"  [has-type]`. The CI did not bound
+    #: mypy then, so the next push would have been red on a release nobody
+    #: made; `[dev]` now pins `mypy>=1.11,<3`, and one declaration ends the
+    #: cycle whichever major resolves.
     params: list[click.Parameter]
 
     #: The decorator-declared options, kept aside the first time the
@@ -132,8 +131,8 @@ class FigureRenderCommand(click.Command):
         except click.NoSuchOption as exc:
             # Click's own message offers the nearest *generic* flag
             # ("--width? did you mean --data?"). The useful answer is
-            # which options this figure has, which is the same sentence
-            # the argparse twin prints.
+            # which options this figure has: the sentence `_unrecognised`
+            # writes, shared with the older argparse parser.
             from .make_figure import _unrecognised
 
             raise click.UsageError(
@@ -341,7 +340,7 @@ def describe_cmd(kind: str, as_json: bool) -> None:
 
     The one place that answers "which columns must my rows carry, and
     what can I pass besides them" without reading the generator's
-    source. Same output as `make-figure KIND --describe`.
+    source. `make-figure describe KIND` is the same command.
     """
     from .make_figure import _describe
 

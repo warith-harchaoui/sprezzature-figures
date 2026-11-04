@@ -12,12 +12,14 @@ path = make_figure("bar", data, out="output.png")
 or via CLI:
 
 ```bash
-make-figure bar --out output.png --title "Revenue by region"
+sprezzature-figures render bar --out output.png --title "Revenue by region"
+sprezzature-figures describe bar     # the data roles and options of one kind
 ```
 
-Only `status="stable"` kinds are render-verified end to end today; run
-`make-figure --list --status stable` or see `docs/studio/GENERATOR_AUDIT.md`
-for the current per-chart status.
+All 167 kinds are `status="stable"`, which means the generator audit renders
+each of them end to end. `sprezzature-figures list --status stable` lists them;
+[docs/studio/GENERATOR_AUDIT.md](docs/studio/GENERATOR_AUDIT.md) has the
+per-chart detail.
 
 Every kind also accepts `theme="corporate"` (default, Roboto + the
 Apple-derived palette) or `theme="academic"` (Latin Modern + the
@@ -199,4 +201,4 @@ colour-vision-deficiency-safe Okabe-Ito palette); see
 
 ---
 
-*This file is auto-maintained. To add a chart type: add a `make_<kind>.py` script to `scripts/`, add its DEMO_DATA, and append a row to this table.*
+*This table is a source, not a report: `tools/build_figures_catalog.py` reads each row's kind, category and description into `sprezzature_figures/catalog/figures.json`, so the Category column is where the catalogue's 68 categories come from. To add a chart type: add a `make_<kind>.py` script with its `DEMO_DATA` to `scripts/`, append a row here, then follow the steps in [README.md#adding-a-chart-type](README.md#adding-a-chart-type).*
