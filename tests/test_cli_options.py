@@ -1,15 +1,12 @@
 """
-The Click command and the argparse parser it grew out of must describe the
-same figures the same way.
+The Click command offers every figure's own options, and only those.
 
 Both console scripts, ``sprezzature-figures`` and ``make-figure``, run the
-Click group in :mod:`sprezzature_figures.cli` since 2026-10-25, and click is
-a base dependency. The argparse parser in :mod:`sprezzature_figures.make_figure`
-is no longer an entry point but still exists. The two grow their per-figure
-flags by different mechanisms -- a two-pass parse on one side, a Click
-``Command`` that rebuilds its parameter list on the other -- from the same
-``options_schema``. These tests pin the thing that would otherwise drift:
-that a flag exists in both or in neither.
+Click group in :mod:`sprezzature_figures.cli`, and click is a base
+dependency. Until 2026-11-04 these tests compared it with the argparse parser
+it grew out of; that parser is gone, so what they pin now is the thing that
+parser comparison stood for: ``render <kind>`` grows one flag per keyword the
+catalogue says the figure accepts, for every figure, and refuses the rest.
 
 Author
 ------
@@ -99,16 +96,35 @@ def test_click_error_points_at_the_click_command(runner: CliRunner) -> None:
     assert "make-figure rose --describe" not in result.output
 
 
-def test_click_describe_matches_the_argparse_describe(
-    runner: CliRunner, capsys: pytest.CaptureFixture
-) -> None:
-    """One figure, one description, whichever command asked for it."""
-    from sprezzature_figures.make_figure import main as argparse_main
+def test_render_exposes_every_option_of_every_generator(runner: CliRunner) -> None:
+    """Every keyword in the catalogue has its flag under ``render <kind> --help``.
 
-    argparse_main(["sankey", "--describe"])
-    from_argparse = capsys.readouterr().out.strip()
-    from_click = runner.invoke(cli, ["describe", "sankey"]).output.strip()
-    assert from_click == from_argparse
+    Replaces the comparison with the argparse parser: the property that
+    comparison protected was "a flag the figure accepts is a flag you can
+    type", and this asks it of the whole catalogue rather than of a sample.
+    """
+    from sprezzature_figures.catalog import list_kinds
+
+    missing: dict[str, list[str]] = {}
+    for kind in list_kinds():
+        result = runner.invoke(cli, ["render", kind, "--help"])
+        assert result.exit_code == 0, f"render {kind} --help failed: {result.output}"
+        absent = [
+            option.cli_flag
+            for option in options_for(kind).values()
+            if option.cli_flag and option.cli_flag not in result.output
+        ]
+        if absent:
+            missing[kind] = absent
+    assert missing == {}, f"options with no flag under render <kind> --help: {missing}"
+
+
+def test_describe_lists_the_same_flags_render_accepts(runner: CliRunner) -> None:
+    """``describe`` and ``render --help`` name one set of flags for a figure."""
+    described = runner.invoke(cli, ["describe", "sankey"]).output
+    for option in options_for("sankey").values():
+        if option.cli_flag:
+            assert option.cli_flag in described, f"describe sankey omits {option.cli_flag}"
 
 
 def test_click_list_json_is_the_same_catalogue(runner: CliRunner) -> None:
@@ -133,24 +149,6 @@ def test_click_rejects_a_value_outside_a_closed_set(runner: CliRunner) -> None:
 
 
 @pytest.mark.slow
-def test_both_commands_render_the_same_figure(tmp_path: Path, runner: CliRunner) -> None:
-    """Same kind, same options, byte-for-byte the same SVG from either command."""
-    from sprezzature_figures.make_figure import main as argparse_main
-
-    through_argparse = tmp_path / "argparse.svg"
-    argparse_main(
-        ["bar", "--out", str(through_argparse), "--width", "1234", "--set", "subtitle=Q3"]
-    )
-    through_click = tmp_path / "click.svg"
-    result = runner.invoke(
-        cli,
-        ["render", "bar", "--out", str(through_click), "--width", "1234", "--set", "subtitle=Q3"],
-    )
-    assert result.exit_code == 0
-    assert through_click.read_text(encoding="utf-8") == through_argparse.read_text(encoding="utf-8")
-
-
-@pytest.mark.slow
 def test_click_demo_render_keeps_its_own_chrome(tmp_path: Path, runner: CliRunner) -> None:
     out = tmp_path / "sankey.svg"
     result = runner.invoke(cli, ["render", "sankey", "--out", str(out)])
@@ -159,44 +157,22 @@ def test_click_demo_render_keeps_its_own_chrome(tmp_path: Path, runner: CliRunne
 
 
 def test_no_chart_kind_is_named_like_a_sub_command() -> None:
-    """``make-figure redraw`` must mean the command, and never a figure.
-
-    The argparse command line has no sub-parser: the first word is either
-    a verb or a chart kind, decided by this exact check. A figure added
-    later under one of these names would silently take the word over.
-    """
+    """``render`` takes a kind; no kind should read like one of the commands beside it."""
     from sprezzature_figures.catalog import resolve_kind
-    from sprezzature_figures.make_figure import _VERBS
 
-    shadowed = {verb: resolve_kind(verb) for verb in _VERBS if resolve_kind(verb) is not None}
+    shadowed = {name: resolve_kind(name) for name in cli.commands if resolve_kind(name) is not None}
     assert shadowed == {}, f"these kinds shadow a sub-command: {shadowed}"
 
 
-def test_both_command_lines_offer_the_same_commands() -> None:
-    """Whatever one can do, the other can -- including the three that were Click-only.
-
-    ``redraw``, ``recommend`` and ``check`` had routes in the HTTP API and
-    commands in the Click twin, and no spelling at all in the
-    always-installed ``make-figure``.
-    """
-    from sprezzature_figures.make_figure import _VERBS
-
-    # `render` is the bare `make-figure <kind>` form, which needs no verb.
-    assert set(cli.commands) == set(_VERBS) | {"render"}
-
-
-def test_both_command_lines_report_the_same_findings(tmp_path: Path, runner: CliRunner) -> None:
-    """``check`` answers the same way whichever command asked."""
-    from sprezzature_figures.make_figure import _VERBS
-
+def test_check_reports_on_the_file_it_was_given(tmp_path: Path, runner: CliRunner) -> None:
+    """``check`` names the SVG it read, so a CI log says which figure failed."""
     svg = tmp_path / "flat.svg"
     svg.write_text(
         '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="50"></svg>',
         encoding="utf-8",
     )
     through_click = runner.invoke(cli, ["check", str(svg)])
-    code = _VERBS["check"]([str(svg)])
-    assert code == through_click.exit_code
+    assert through_click.exit_code in (0, 1)
     assert str(svg) in through_click.output
 
 
@@ -205,15 +181,8 @@ def test_both_console_names_resolve_to_the_click_command() -> None:
     ``sprezzature-figures`` and ``make-figure`` are one command.
 
     ``make-figure`` was the argparse front door until 2026-10-25; both names
-    now point at the Click one, so the parity the tests above check is no
-    longer an agreement that has to be maintained between two installed
-    commands — it is one command compared against the internal implementation
-    it grew out of.
-
-    That internal ``make_figure.main`` is now unreachable as an entry point.
-    It is left in place deliberately: the click command still imports a dozen
-    helpers that live beside it, and pulling the parser out of 662 interleaved
-    lines is its own change, not a side effect of this one.
+    now point at the Click one. The argparse ``make_figure.main`` it left
+    behind was removed on 2026-11-04, so there is one implementation to test.
     """
     scripts = _console_scripts()
     assert scripts["sprezzature-figures"] == scripts["make-figure"]
@@ -221,6 +190,6 @@ def test_both_console_names_resolve_to_the_click_command() -> None:
 
 
 def test_click_is_a_base_dependency_not_an_extra() -> None:
-    """With argparse gone from the console scripts, click cannot be optional."""
+    """Click parses every command line of the package, so it cannot be optional."""
     assert "click" in _base_dependencies()
     assert "cli" not in _extras()

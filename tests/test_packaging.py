@@ -197,7 +197,7 @@ def test_the_studio_installs_and_console_scripts_resolve(wheel: Path, tmp_path: 
     assert "OK: studio extra fully importable" in result.stdout
 
     # Console entry points exist and their --help runs without importing a
-    # display/server (sprezzature-studio defers the nicegui import past argparse).
+    # display/server (sprezzature-studio defers the nicegui import past argument parsing).
     for script_name in ("make-figure", "sprezzature-figures", "sprezzature-studio"):
         script = _venv_script(venv_dir, script_name)
         assert script.exists(), f"console script {script_name} not installed at {script}"

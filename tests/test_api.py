@@ -363,7 +363,6 @@ def test_every_api_action_has_a_command_line_twin() -> None:
     """
     click = pytest.importorskip("click")  # noqa: F841
     from sprezzature_figures.cli import cli
-    from sprezzature_figures.make_figure import _VERBS
 
     operations = {
         route.operation_id
@@ -383,6 +382,6 @@ def test_every_api_action_has_a_command_line_twin() -> None:
         "check_render": "check",
     }
     assert operations == set(twins), "a route gained or lost without a command to match"
-    commands = set(cli.commands) | set(_VERBS) | {"render"}
+    commands = set(cli.commands)
     missing = {name for name in twins.values() if name is not None} - commands
     assert missing == set(), f"routes with no command-line twin: {missing}"

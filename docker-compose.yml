@@ -4,7 +4,8 @@
 # `docker run` line in somebody's shell history.
 #
 #   docker compose up -d
-#   curl -s localhost:8000/health
+#   curl -s localhost:8000/health              # the HTTP routes
+#   # ...and the MCP endpoint at localhost:8000/mcp, same process, same port
 #   docker compose run --rm api sprezzature-figures render bellcurve --out /work/bell.svg
 #   docker compose --profile studio up -d     # the NiceGUI app on :8080
 #   docker compose --profile assist up -d     # + the model the chat and the
@@ -22,6 +23,10 @@ services:
   api:
     build: .
     image: sprezzature-figures:local
+    # Spelled out although it is the image's CMD: one server for the HTTP
+    # routes and for /mcp. --host 0.0.0.0, or the published port maps onto
+    # the container's own loopback and nothing answers.
+    command: ["sprezzature-figures-mcp", "--host", "0.0.0.0", "--port", "8000"]
     ports:
       - "8000:8000"
     environment:

@@ -708,11 +708,13 @@ The defaults also come from `SPREZZATURE_FIGURES_HOST` and
 
 ### Docker and Compose
 
-The image's default command serves the HTTP API on port 8000. There is no
-entrypoint, so any of the package's commands can replace it.
+The image's default command is `sprezzature-figures-mcp --host 0.0.0.0 --port
+8000`: one process serves the HTTP routes and the MCP endpoint at `/mcp`, on
+the same port. There is no entrypoint, so any of the package's commands can
+replace it.
 
 ```bash
-docker compose up -d                              # the API on :8000
+docker compose up -d                              # the API and /mcp on :8000
 curl -s localhost:8000/health
 docker compose run --rm api sprezzature-figures render bellcurve --out /work/bell.svg
 docker compose --profile studio up -d             # + the Studio on :8080
@@ -723,7 +725,7 @@ docker compose --profile assist up -d             # + an Ollama server for the c
 
 ```bash
 docker build -t sprezzature-figures .
-docker run --rm -p 8000:8000 sprezzature-figures
+docker run --rm -p 8000:8000 sprezzature-figures   # HTTP routes + /mcp
 ```
 
 ---
