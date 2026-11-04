@@ -2,6 +2,10 @@
 
 ## Unreleased: a figure can now wear the host page's clothes
 
+### Added
+
+- `python -m sprezzature_figures` runs the click group. `python -m sprezzature_figures.make_figure KIND` answered through the argparse `main` that left with the front door, and would otherwise have done nothing at all; two slow tests that used it now call `render` through the new entry point.
+
 ### Changed — one `pip install`
 
 **Everything this package does now installs with it.** 8 extras became
