@@ -38,7 +38,7 @@ sprezzature-studio
 `sprezzature-studio` opens a browser tab at `http://127.0.0.1:8080`. Useful
 flags: `--host` / `--port` to change the bind address, `--no-browser` to
 skip auto-opening a tab, `--native` for a desktop window instead of a
-browser tab, `--version` to print the installed version. There is no extra
+browser tab, `-V` / `--version` to print the installed version. There is no extra
 to ask for: NiceGUI, pandas, openpyxl and `best-engine-ai-helper` (which
 resolves the local or remote LLM/VLM) are base dependencies since
 2026-11-01. The app starts and stays usable with no model configured; see

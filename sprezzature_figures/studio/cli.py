@@ -27,7 +27,7 @@ from .config import DEFAULT_HOST, DEFAULT_PORT
         '  eval "$(_SPREZZATURE_STUDIO_COMPLETE=zsh_source sprezzature-studio)"    # zsh\n'
     ),
 )
-@click.version_option(package_name="sprezzature-figures")
+@click.version_option(None, "-V", "--version", package_name="sprezzature-figures")
 @click.option("--host", default=DEFAULT_HOST, show_default=True, help="Bind host.")
 @click.option("--port", type=int, default=DEFAULT_PORT, show_default=True, help="Bind port.")
 @click.option("--no-browser", is_flag=True, help="Don't auto-open a browser tab.")

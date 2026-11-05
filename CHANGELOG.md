@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- **`sprezzature-figures`, `make-figure` and `python -m sprezzature_figures`
+  answer `-V` and `--version`.** The front-door group had no version option
+  at all; `sprezzature-studio` knew `--version` but not `-V`. All four console
+  scripts now print `<prog>, version <v>` from the installed metadata, as
+  `sprezzature-figures-mcp` already did. No sub-command uses either spelling.
+- **`explain_model` has one default for how many rows it explains: 500.**
+  `--n-explain` and the SHAP / Shapash paths defaulted to 500, while
+  `run_lime` fell back to 10 when `ctx` carried no `n_explain`. The command
+  line always passes one, so the 10 was reached only by a library caller.
+  `DEFAULT_N_EXPLAIN` now feeds the flag and every engine; a direct
+  `run_lime` call without `n_explain` explains up to 500 rows, as the CLI
+  always has.
+
 ## [2.9.0] — 2026-11-05
 
 ### Fixed

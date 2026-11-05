@@ -83,6 +83,7 @@ pip install sprezzature-figures
 Vérifier l'installation :
 
 ```bash
+sprezzature-figures --version          # ou -V ; chaque commande installée répond aux deux
 sprezzature-figures list --status stable
 sprezzature-figures render bar --out check.svg
 ```
@@ -414,7 +415,7 @@ avec son `--help` :
 |---|---|
 | `render_diagram.py` | Rend en PNG une source TikZ, Mermaid ou SVG, aux couleurs de la palette maison. |
 | `audit_figure.py` | Contrôle statique de graphiques SVG, ou de HTML contenant des blocs `<figure>`. |
-| `explain_model.py` | Explique un modèle sérialisé avec SHAP, Shapash, TimeSHAP ou LIME (explications locales indépendantes du modèle). |
+| `explain_model.py` | Explique un modèle sérialisé avec SHAP, Shapash, TimeSHAP ou LIME (explications locales indépendantes du modèle). `--n-explain` (500 par défaut) est à la fois l'échantillon SHAP et le nombre de lignes LIME. |
 | `causal_estimate.py` | Estime un effet causal avec DoWhy et EconML, à partir d'un DAG (graphe orienté acyclique). |
 | `install_figures.py` | Installe les paliers de dépendances figés dans `scripts/requirements-*.txt` avec le gestionnaire d'environnement détecté. |
 

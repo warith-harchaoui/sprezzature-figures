@@ -83,6 +83,14 @@ import make_waterfall  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 
+#: Rows explained when nothing says otherwise: the SHAP and Shapash sample,
+#: and the number of LIME instances. ``--n-explain`` defaults to it and every
+#: engine falls back to it, so a call to :func:`run_lime` without
+#: ``n_explain`` explains as many rows as the command line does. LIME had its
+#: own fallback of 10 until 2.9.0, which no command-line run ever reached.
+DEFAULT_N_EXPLAIN = 500
+
+
 # ------------------------------------------------------------------
 # Model / data loading
 # ------------------------------------------------------------------
@@ -559,7 +567,7 @@ def run_shap(model: Any, data: Any, ctx: Dict[str, Any]) -> Dict[str, Any]:
     out.mkdir(parents=True, exist_ok=True)
 
     n_background = min(ctx.get("n_background", 100), len(data))
-    n_explain = min(ctx.get("n_explain", 500), len(data))
+    n_explain = min(ctx.get("n_explain", DEFAULT_N_EXPLAIN), len(data))
     background = data.sample(n_background, random_state=42) if hasattr(data, "sample") else data[:n_background]
     explain_rows = data.sample(n_explain, random_state=7) if hasattr(data, "sample") else data[:n_explain]
 
@@ -640,7 +648,7 @@ def run_shapash(model: Any, data: Any, ctx: Dict[str, Any]) -> Dict[str, Any]:
     out.mkdir(parents=True, exist_ok=True)
 
     n_background = min(ctx.get("n_background", 100), len(data))
-    n_explain = min(ctx.get("n_explain", 500), len(data))
+    n_explain = min(ctx.get("n_explain", DEFAULT_N_EXPLAIN), len(data))
     background = data.sample(n_background, random_state=42) if hasattr(data, "sample") else data[:n_background]
     explain_rows = data.sample(n_explain, random_state=7) if hasattr(data, "sample") else data[:n_explain]
 
@@ -808,7 +816,13 @@ def _write_timeshap_frame_svg(frame: Any, name: str, out: Path) -> Optional[Path
 # LIME path
 # ------------------------------------------------------------------
 def run_lime(model: Any, data: Any, ctx: Dict[str, Any]) -> Dict[str, Any]:
-    """Emit LIME HTML explanations for a black-box classifier."""
+    """Emit LIME HTML explanations for a black-box classifier.
+
+    One ``lime_row_<i>.html`` per explained row, for the first
+    ``ctx["n_explain"]`` rows (capped by the data), :data:`DEFAULT_N_EXPLAIN`
+    when the key is absent: the same default as ``--n-explain`` and the SHAP
+    paths.
+    """
     from lime.lime_tabular import LimeTabularExplainer
     import numpy as np
 
@@ -825,7 +839,7 @@ def run_lime(model: Any, data: Any, ctx: Dict[str, Any]) -> Dict[str, Any]:
         random_state=42,
     )
 
-    n_explain = min(ctx.get("n_explain", 10), len(values))
+    n_explain = min(ctx.get("n_explain", DEFAULT_N_EXPLAIN), len(values))
     predict_fn = model.predict_proba if hasattr(model, "predict_proba") else model.predict
 
     for i in range(n_explain):
@@ -857,7 +871,9 @@ def build_parser() -> argparse.ArgumentParser:
                         help='Add a Shapash HTML report on top of the chosen engine.')
     parser.add_argument("--out", default="./explain", help="Output directory.")
     parser.add_argument("--n-background", type=int, default=100, help="SHAP background sample size.")
-    parser.add_argument("--n-explain", type=int, default=500, help="Rows to explain (SHAP) / LIME instances.")
+    parser.add_argument("--n-explain", type=int, default=DEFAULT_N_EXPLAIN,
+                        help=f"Rows to explain: SHAP / Shapash sample, LIME instances "
+                             f"(default: {DEFAULT_N_EXPLAIN}).")
     parser.add_argument("--top-n", type=int, default=20, help="Top-N features for summary + dependence plots.")
     parser.add_argument("--waterfall-row", type=int, default=None, help="Row index for the SHAP waterfall.")
     parser.add_argument("--sequence-cols", default="", help="Comma-separated column names for TimeSHAP.")

@@ -30,7 +30,13 @@ from .make_figure import list_kinds, make_figure
 # attach to a real `click.Group`. Binding it to `main` directly made the
 # name mean a plain function in the fallback branch and a Group here, and
 # every decorator then read as an attribute on a function.
+#
+# `-V` / `--version` sit on the group itself, so they answer before any
+# sub-command is chosen; no sub-command declares either spelling. The
+# version is read from the installed distribution's metadata, the same
+# source as `sprezzature-figures-mcp --version`.
 @click.group()
+@click.version_option(None, "-V", "--version", package_name="sprezzature-figures")
 def cli() -> None:
     """sprezzature-figures: render publication-quality data figures."""
 
