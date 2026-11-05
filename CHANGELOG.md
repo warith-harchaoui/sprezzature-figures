@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [2.9.1] — 2026-11-05
+
 ### Fixed
 
 - **`sprezzature-figures`, `make-figure` and `python -m sprezzature_figures`
