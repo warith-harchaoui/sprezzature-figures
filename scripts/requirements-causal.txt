@@ -7,6 +7,6 @@ econml>=0.15
 networkx>=3.0
 # DOT *parser* only (networkx.nx_pydot.read_dot), so ``--dag x.dot`` works.
 # It reads the format; it never draws anything.
-pydot>=2.0
+pydot>=3.0.1
 scikit-learn>=1.3
 scipy>=1.11

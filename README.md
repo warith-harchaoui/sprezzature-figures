@@ -47,9 +47,9 @@ pip install sprezzature-figures
 ```
 
 That one command installs everything: the generators, the data side (pandas,
-scikit-learn, networkx, shapely, pyproj, pyyaml), the causal stack (dowhy,
-econml), the explainability stack (shap, shapash, timeshap, lime), Sprezzature
-Editor (NiceGUI), the FastAPI app and the MCP server. There are no feature
+scikit-learn, networkx, pyyaml), the causal stack (dowhy, econml, and pydot
+for DAGs written in DOT), the explainability stack (shap, shapash, timeshap,
+lime), the editor (NiceGUI), the FastAPI app and the MCP server. There are no feature
 extras. They were folded into the base on 2026-11-01. The only extra left is
 `[dev]`, the test and lint toolchain for contributors.
 
@@ -226,10 +226,9 @@ raster and PDF output, `--scale N` upsamples N times for hi-DPI (high dots per
 inch) displays (`--out chart.png --scale 3`); it is ignored for `.svg` and
 `.html`. `--dark` renders for a dark canvas.
 
-Always pass `--out` (or `out=` in Python). Without it, the generator falls back
-to its own example path, `assets/svg-examples/<kind>.svg` one level above the
-`scripts/` directory: in a checkout that overwrites the committed example, and
-in an installed package it writes under `site-packages/`.
+Without `--out` (or `out=` in Python), the figure is written to `<kind>.svg`
+in the current directory, named after the canonical kind (`connected_scatter`
+gives `connected-scatter.svg`).
 
 The `--data` file is read into one row dict per record: CSV/TSV cells are
 type-coerced (numbers stay numbers), and JSON accepts either a bare array of
