@@ -4,6 +4,9 @@ on:
   push:
     branches: [main]
   pull_request:
+  # Un push peut ne déclencher aucun run (2.9.2, le 2026-11-05) : on relance
+  # alors à la main avec `gh workflow run ci.yml`.
+  workflow_dispatch:
 
 concurrency:
   group: ci-${{ github.ref }}
