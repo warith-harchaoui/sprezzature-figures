@@ -403,7 +403,10 @@ python scripts/ralph_eyeball_loop.py figure.svg --local
 python scripts/ralph_eyeball_loop.py --check-tools
 ```
 
-C'est un script du dépôt, pas une commande installée. Le moteur Ralph du
+C'est un script, pas une commande installée : depuis un clone, lancez-le comme
+ci-dessus ; après `pip install sprezzature-figures`, la roue l'embarque et
+`python -m sprezzature_figures_scripts.ralph_eyeball_loop figure.svg` fait la
+même boucle. Le moteur Ralph du
 Editor (`sprezzature_figures.editor.ralph`) est une implémentation distincte.
 
 ### Autres scripts
