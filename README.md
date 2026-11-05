@@ -388,7 +388,10 @@ python scripts/ralph_eyeball_loop.py figure.svg --local
 python scripts/ralph_eyeball_loop.py --check-tools
 ```
 
-It is a script in the repository, not a console command. The Studio's Ralph
+It is a script, not a console command: from a clone, run it as above; after
+`pip install sprezzature-figures`, the wheel carries it and
+`python -m sprezzature_figures_scripts.ralph_eyeball_loop figure.svg` runs the
+same loop. The Studio's Ralph
 engine (`sprezzature_figures.studio.ralph`) is a separate implementation.
 
 ### Other scripts
