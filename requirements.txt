@@ -1,7 +1,10 @@
 # Runtime dependencies for local (conda) and server (Docker) installs alike.
 # pyproject.toml stays the single source of truth for version constraints —
-# this just selects which of its extras to install, so there is nothing here
-# to fall out of sync when a dependency's version bound changes.
+# this installs the package itself, so there is nothing here to fall out of
+# sync when a dependency's version bound changes. Since 2026-11-01 there are
+# no feature extras to select: the data side, the causal and explainability
+# stacks, the editor, the FastAPI app and the MCP server are all base
+# dependencies.
 #
 # There is no `cli` extra and this line asked for one until 2026-10-31. It
 # went away when click became a base dependency — the command line is always
@@ -10,16 +13,5 @@
 # which the CI install reads through requirements-dev.txt, was missed. pip
 # warns on an unknown extra and carries on, so the request neither installed
 # anything nor failed: the kind of defect a repository never reports on itself.
-#
-# dataviz — the data-side tier behind the generators, causal inference
-#           and explainability (tables, geometry, models; nothing draws)
-# editor  — the NiceGUI app (chat-driven figure editing, Ralph eyeball loop)
-# api     — the FastAPI app; the container's default command serves it, and
-#           without this the image could not run its own CMD
-# mcp     — the same routes republished as agent tools
--e .
 
-# Heavier, narrow extras — opt in by uncommenting, not installed by default:
-# -e .   # make_causal_estimate.py (dowhy, econml)
-# -e .  # explain_model.py (shap, shapash, timeshap, lime)
-# -e .    # ralph_eyeball_loop.py --local (offline VLM critique)
+-e .

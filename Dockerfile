@@ -26,9 +26,10 @@ COPY scripts/ ./scripts/
 COPY assets/ ./assets/
 
 # Same requirements.txt as the local conda env (environment.yaml) — one
-# dependency list for both, pyproject.toml's extras stay the real source of
-# truth. It selects cli, dataviz, editor, api and mcp: this image can serve
-# the API, republish it as MCP tools, serve the editor app, or run the CLI.
+# dependency list for both, pyproject.toml stays the real source of truth.
+# There are no extras to select since 2026-11-01: the plain install carries
+# the CLI, the API, the MCP server and the editor, so this image can run any
+# of them.
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Non-root user for production use. HOME must point at appuser's own home

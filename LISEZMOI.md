@@ -19,7 +19,7 @@ Fait partie de la suite [sprezzature](https://sprezzature.ai/).
 
 ## Comment ça marche
 
-![Schéma de flux. En haut, vos données ou la figure de quelqu'un d'autre alimentent deux voies. La voie de gauche dessine : elle classe les types selon votre objectif, écrit le SVG directement sans bibliothèque de tracé dessous, et sait redessiner la capture d'écran d'une figure sans en inventer les nombres. La voie de droite contrôle : un examen statique lit n'importe quel SVG pour y trouver les étiquettes superposées et les noms sortis du cadre, puis la boucle Ralph rend la figure, la regarde, et corrige la source. Les deux se rejoignent en un seul résultat, une figure juste avant d'être belle.](https://raw.githubusercontent.com/warith-harchaoui/sprezzature-figures/main/assets/comment-ca-marche.svg)
+![Schéma de flux. En haut, vos données ou la figure de quelqu'un d'autre alimentent deux voies. La voie de gauche dessine : elle classe les types selon votre objectif, écrit le SVG directement sans bibliothèque de tracé dessous, et sait redessiner la capture d'écran d'une figure sans en inventer les nombres. La voie de droite contrôle : un examen statique lit n'importe quel SVG pour y trouver les étiquettes superposées et les noms sortis du cadre, puis la boucle Ralph rend la figure, la regarde, et corrige la source. Les deux se rejoignent en un seul résultat, une figure juste avant d'être belle.](https://raw.githubusercontent.com/warith-harchaoui/sprezzature-figures/main/assets/comment-ca-marche.svg)
 
 ## Cinq portes d'entrée
 
@@ -176,9 +176,9 @@ de planter.
 ### Ligne de commande
 
 Un seul groupe de commandes Click, installé sous deux noms :
-`sprezzature-figures` et `make-figure` exécutent le même code. Ses
-sous-commandes sont `list`, `render`, `describe`, `recommend`, `redraw` et
-`check`.
+`sprezzature-figures` et `make-figure` exécutent le même code, tout comme
+`python -m sprezzature_figures`. Ses sous-commandes sont `list`, `render`,
+`describe`, `recommend`, `redraw` et `check`.
 
 ```bash
 # Lister tous les types (--status stable pour ceux vérifiés par rendu, --json pour un programme)
@@ -233,14 +233,19 @@ entièrement autonome avec les polices intégrées), `.png`, `.pdf`, `.jpg` ou
 fois pour les écrans haute densité (`--out chart.png --scale 3`) ; il est
 ignoré pour `.svg` et `.html`. `--dark` rend pour un fond sombre.
 
+Passez toujours `--out` (ou `out=` en Python). Sans lui, le générateur se
+rabat sur son propre chemin d'exemple, `assets/svg-examples/<type>.svg` un
+niveau au-dessus du répertoire `scripts/` : dans un dépôt cloné, cela écrase
+l'exemple versionné, et dans un paquet installé, cela écrit sous
+`site-packages/`.
+
 Le fichier `--data` est lu en un dictionnaire par enregistrement : les
 cellules CSV/TSV sont typées (les nombres restent des nombres), et le JSON
 accepte soit un tableau d'objets nu, soit un objet qui enveloppe un tableau
 `"data"`. Passez `--data -` pour lire les mêmes formats depuis l'entrée
 standard (la forme est reconnue d'après le contenu). Les noms de colonnes
 doivent correspondre aux rôles attendus
-(`sprezzature-figures describe <type>`, ou
-[FIGURES.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/FIGURES.md)) ;
+(`sprezzature-figures describe <type>` les liste) ;
 sinon `--map role=colonne` les associe sans toucher au fichier.
 
 Vous ne savez pas quel graphique convient à votre fichier ? Demandez une
@@ -560,9 +565,11 @@ ces fichiers de police pour toute la suite. Les fontes complètes sont dans
 importe au lieu de retaper une pile de polices.
 
 La sortie SVG intègre ses polices et n'a besoin d'aucun chargement externe.
-Les licences sont livrées à côté des fichiers : SIL Open Font License pour les
-trois Roboto, GUST Font License pour Latin Modern. Toutes deux autorisent la
-redistribution groupée.
+Quand plusieurs figures sont insérées dans une page qui sert déjà ces fontes,
+`make_figure(..., embed_fonts=False)` les laisse de côté au lieu de répéter le
+même base64 à chaque figure. Les licences sont livrées à côté des
+fichiers : SIL Open Font License pour les trois Roboto, GUST Font License
+pour Latin Modern. Toutes deux autorisent la redistribution groupée.
 
 ---
 

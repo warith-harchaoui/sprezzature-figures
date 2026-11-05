@@ -43,10 +43,9 @@ path = make_figure("sankey", data, out="energie.png", title="Flux d'énergie")
 ## Nuage de points (bivarié)
 
 Les rôles requis par `scatter` portent le nom de son scénario de démonstration
-(`horsepower`/`mpg`, puissance et consommation) : voir
-`sprezzature-figures list --status stable` et la fiche de chaque type dans
-[FIGURES.md](FIGURES.md) pour le nom exact des rôles qu'un graphique donné
-attend.
+(`horsepower`/`mpg`, puissance et consommation) :
+`sprezzature-figures describe scatter` en donne le nom exact, et la même
+commande répond pour tous les autres types.
 
 ```python
 import random
@@ -109,9 +108,9 @@ Ollama qui tourne). Accepte PNG, JPEG, GIF, WebP et SVG.
 ## Lister tous les types disponibles
 
 ```python
-from sprezzature_figures.make_figure import list_kinds
+from sprezzature_figures import list_kinds
 print(list_kinds())
-# ['alluvial', 'andrews', 'arcdiagram', 'bar3d', 'bellcurve', ...]
+# ['ablation_matrix', 'acf', 'alluvial', 'andrews', 'arcdiagram', 'area', ...]
 ```
 
 ## Exemples en ligne de commande
@@ -172,7 +171,7 @@ sprezzature-figures check ventes.svg --expect-title "Ventes par région"
 ```
 
 Le fichier `budget.csv` ci-dessus n'est qu'un tableau dont les colonnes
-correspondent aux rôles du graphique, par exemple :
+correspondent aux rôles du graphique, par exemple :
 
 ```csv
 parent,name,value

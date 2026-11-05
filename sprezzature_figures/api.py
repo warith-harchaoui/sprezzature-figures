@@ -2,7 +2,7 @@
 sprezzature-figures — FastAPI HTTP surface.
 
 Exposes :func:`sprezzature_figures.make_figure` (and the figure registry
-behind ``--list`` / ``get_figure_definition``) over HTTP, so the 167 chart
+behind ``list_kinds`` / ``get_figure_definition``) over HTTP, so the 167 chart
 types can be rendered from any language, not just Python.
 
 What ships here
@@ -592,11 +592,7 @@ def recommend(body: RecommendRequest) -> list[FigureCandidate]:
     except ImportError as exc:
         raise HTTPException(
             status_code=503,
-            detail=(
-                "recommend needs the profiling stack. Install "
-                "'sprezzature-figures'. "
-                f"({exc})"
-            ),
+            detail=(f"recommend needs the profiling stack. Install 'sprezzature-figures'. ({exc})"),
         ) from exc
 
     if not body.data:

@@ -1,6 +1,6 @@
 # Local dev, conda/mamba. Deliberately thin: conda only pins the interpreter
 # and pip itself, then hands off every actual dependency to requirements.txt
-# (which pip-installs this package's [cli,dataviz,editor] extras). This keeps
+# (which pip-installs this package, every dependency included). This keeps
 # one source of truth — pyproject.toml — instead of a second, drifting list
 # of conda-format package specs.
 #

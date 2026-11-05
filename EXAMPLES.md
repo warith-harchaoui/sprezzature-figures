@@ -43,9 +43,8 @@ path = make_figure("sankey", data, out="energy.png", title="Energy flow")
 ## Scatter (bivariate)
 
 `scatter`'s required roles are named after its demo scenario
-(horsepower/mpg); see `sprezzature-figures list --status stable` and each
-kind's entry in [FIGURES.md](FIGURES.md) for the exact role names a given
-chart expects.
+(horsepower/mpg); `sprezzature-figures describe scatter` prints the exact
+role names, and the same command answers for every other kind.
 
 ```python
 import random
@@ -106,9 +105,9 @@ Ollama). Accepts PNG, JPEG, GIF, WebP and SVG.
 ## List all available kinds
 
 ```python
-from sprezzature_figures.make_figure import list_kinds
+from sprezzature_figures import list_kinds
 print(list_kinds())
-# ['alluvial', 'andrews', 'arcdiagram', 'bar3d', 'bellcurve', ...]
+# ['ablation_matrix', 'acf', 'alluvial', 'andrews', 'arcdiagram', 'area', ...]
 ```
 
 ## CLI examples
