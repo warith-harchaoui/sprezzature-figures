@@ -1,7 +1,7 @@
 # Sprezzature Studio
 
 A local, chat-driven editor for the figures in this repository: import a
-CSV/XLSX, pick a chart type, bind columns to its data roles, then refine it
+CSV, TSV, XLSX, JSON or JSONL file, pick a chart type, bind columns to its data roles, then refine it
 by talking to **Ralph**, a copilot built on a language model that reads
 your text (an LLM) and a vision model that looks at the rendered chart (a
 VLM). Ralph edits a structured `FigurePlan`, re-renders, and actually

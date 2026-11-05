@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+### Docs
+
+- README / LISEZMOI: `python -m sprezzature_figures` named beside the two
+  console scripts; what happens without `--out` (the generator's own
+  `assets/svg-examples/<kind>.svg`, which in a checkout overwrites the
+  committed example and once installed lands under `site-packages/`);
+  `embed_fonts=False`; the role names come from `describe`, not from
+  FIGURES.md, which does not list them.
+- EXAMPLES / EXEMPLES: `list_kinds` imported from the package and shown with
+  its real first names; the scatter roles pointed at `describe scatter`.
+- The extras that no longer exist were still named in the comments of
+  `requirements.txt`, `environment.yaml` and the `Dockerfile`; the dead
+  commented `-e .` lines are gone. `docs/studio/` gets the Studio's real
+  import formats and today's test counts. French files take their
+  non-breaking spaces.
+
 ## 2.8.0 (2026-11-04): a figure can now wear the host page's clothes, and click everywhere
 
 ### Added

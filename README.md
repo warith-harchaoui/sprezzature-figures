@@ -170,8 +170,9 @@ left unbound: it renders a sensible default rather than crashing.
 ### Command line
 
 One Click command group, installed under two names: `sprezzature-figures` and
-`make-figure` run the same code. Its sub-commands are `list`, `render`,
-`describe`, `recommend`, `redraw` and `check`.
+`make-figure` run the same code, and so does `python -m sprezzature_figures`.
+Its sub-commands are `list`, `render`, `describe`, `recommend`, `redraw` and
+`check`.
 
 ```bash
 # List all chart types (--status stable for the render-verified ones, --json for a program)
@@ -225,13 +226,17 @@ raster and PDF output, `--scale N` upsamples N times for hi-DPI (high dots per
 inch) displays (`--out chart.png --scale 3`); it is ignored for `.svg` and
 `.html`. `--dark` renders for a dark canvas.
 
+Always pass `--out` (or `out=` in Python). Without it, the generator falls back
+to its own example path, `assets/svg-examples/<kind>.svg` one level above the
+`scripts/` directory: in a checkout that overwrites the committed example, and
+in an installed package it writes under `site-packages/`.
+
 The `--data` file is read into one row dict per record: CSV/TSV cells are
 type-coerced (numbers stay numbers), and JSON accepts either a bare array of
 objects or an object wrapping a `"data"` array. Pass `--data -` to read the
 same formats from standard input (the shape is sniffed from the content).
 Column names should match the roles the chart expects
-(`sprezzature-figures describe <kind>`, or
-[FIGURES.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/FIGURES.md));
+(`sprezzature-figures describe <kind>` lists them);
 when they don't, `--map role=column` binds them without touching the file.
 
 Not sure which chart fits your file? Ask for a recommendation. It runs the
@@ -538,9 +543,12 @@ theme. `sprezzature_figures.fonts` exposes the stacks (`SANS_STACK`,
 (`embedded_font_css()`, `web_font_faces_css()`), so another package imports
 them rather than retyping a font stack.
 
-SVG output embeds its fonts and needs no external font loading. The licences
-are vendored next to the files: SIL Open Font License for the three Roboto,
-GUST Font License for Latin Modern. Both permit bundling.
+SVG output embeds its fonts and needs no external font loading. When several
+figures are inlined into a page that already serves those faces,
+`make_figure(..., embed_fonts=False)` leaves them out rather than repeating
+the same base64 once per figure. The licences are vendored next to the
+files: SIL Open Font License for the three Roboto, GUST Font License for
+Latin Modern. Both permit bundling.
 
 ---
 

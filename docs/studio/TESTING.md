@@ -9,9 +9,9 @@ python -m pytest -q -m vision          # hits a live vision model / VLM
 ruff check .                           # the whole tree, as CI runs it
 ```
 
-The suite holds 436 test functions, which parametrization expands to 1794
-collected tests. The default run collects 1368 of them; the four markers below
-deselect the other 426 (counted on 2026-11-04 with `pytest --collect-only`).
+The suite holds 441 test functions, which parametrization expands to 1828
+collected tests. The default run collects 1401 of them; the four markers below
+deselect the other 427 (counted on 2026-11-05 with `pytest --collect-only`).
 It follows the project's test-rationalization philosophy ("test count is not
 a quality metric"): similar cases are merged with `@pytest.mark.parametrize`,
 and a test earns its place only when it catches a failure nothing else does.
