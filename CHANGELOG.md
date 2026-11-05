@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [2.9.0] — 2026-11-05
+
 ### Fixed
 
 - **A render without `--out` no longer writes into the checkout or into
