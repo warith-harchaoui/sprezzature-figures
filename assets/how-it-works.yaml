@@ -39,7 +39,7 @@ en:
           note: "a vision model reads the design, which pixels carry, and never the numbers, which they usually do not. Every result says whether it got your data, read it off the image, or fell back to a demo, and that caption is written onto the figure itself."
       result:
         label: An SVG
-        note: PNG and PDF through the same renderer that rasterises TikZ and Mermaid
+        note: PNG, PDF, JPG or HTML from that same SVG, rasterised in-process by resvg, with no browser
     - title: "Audit: the facts first, the judgement after"
       steps:
         - label: A static check, on any SVG at all
@@ -82,7 +82,7 @@ fr:
           note: "un modèle de vision lit la conception, que les pixels portent, et jamais les nombres, qu'ils ne portent généralement pas. Chaque résultat dit s'il a reçu vos données, les a lues sur l'image, ou s'est rabattu sur un jeu de démonstration, et cette mention est écrite sur la figure elle-même."
       result:
         label: Un SVG
-        note: PNG et PDF par le même rendu qui rastérise TikZ et Mermaid
+        note: PNG, PDF, JPG ou HTML depuis ce même SVG, rastérisé dans le processus par resvg, sans navigateur
     - title: "Contrôler : les faits d'abord, le jugement ensuite"
       steps:
         - label: Un examen statique, sur n'importe quel SVG

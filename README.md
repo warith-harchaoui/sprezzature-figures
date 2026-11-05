@@ -377,7 +377,8 @@ contradict a fact established here.
 
 `scripts/ralph_eyeball_loop.py` renders any visual made from code (`.svg`,
 `.html`, a TikZ `.tex`, a Mermaid `.mmd`) to a PNG and writes an assessment
-file under `.private/ralph-loop/`. You edit the source and run it again; each
+file under `.private/ralph-loop/`: the clone's own, or, installed from the
+wheel, the one in the directory you run it from. You edit the source and run it again; each
 run appends an iteration. In the default mode the agent running it reads the
 PNG itself. With `--local`, a local vision model (`qwen3-vl:8b`, through
 best-engine-ai-helper) writes the critique offline.

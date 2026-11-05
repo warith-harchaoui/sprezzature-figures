@@ -99,6 +99,12 @@ call `get_kind` for what the rows must carry.
 | `causal_estimate.py` | repository script | "Estimate the causal effect of X on Y, given this DAG (directed acyclic graph)." |
 | `install_figures.py` | repository script | "Install the pinned data-viz, explainability or causality tier." |
 
+The six repository scripts have no console command of their own, but the
+wheel carries them: once installed, each runs as
+`python -m sprezzature_figures_scripts.<name>` (`ralph_eyeball_loop`,
+`render_diagram`, `audit_figure`, `explain_model`, `causal_estimate`,
+`install_figures`).
+
 The MCP server (`sprezzature-figures-mcp`) publishes exactly eight tools:
 `health`, `list_kinds`, `get_kind`, `list_kind_options`, `recommend_figures`,
 `render_figure`, `redraw_figure` and `check_render`. Each tool name is the
@@ -119,7 +125,7 @@ route's FastAPI `operation_id`.
 | Redraw from a picture | `redraw(image, out=…)` | `sprezzature-figures redraw img.png` | `redraw_figure` | `POST /redraw` |
 | Check a rendered SVG | `check_render(svg)` | `sprezzature-figures check fig.svg` | `check_render` | `POST /check_render` |
 | Is the server up | none | none | `health` | `GET /health` |
-| Visual QA on a rendered figure | none | `python scripts/ralph_eyeball_loop.py <file>` | none | none |
+| Visual QA on a rendered figure | none | `python scripts/ralph_eyeball_loop.py <file>` from a clone, `python -m sprezzature_figures_scripts.ralph_eyeball_loop <file>` once installed | none | none |
 
 `make-figure` is the same Click group as `sprezzature-figures`: every CLI cell
 works under either name.
