@@ -48,9 +48,10 @@ pip install sprezzature-figures
 ```
 
 Cette seule commande installe tout : les générateurs, le côté données (pandas,
-scikit-learn, networkx, shapely, pyproj, pyyaml), la pile causale (dowhy,
-econml), la pile d'explicabilité (shap, shapash, timeshap, lime), Sprezzature
-Studio (NiceGUI), l'application FastAPI et le serveur MCP. Il n'y a pas
+scikit-learn, networkx, pyyaml), la pile causale (dowhy, econml, et pydot
+pour les DAG écrits en DOT), la pile d'explicabilité (shap, shapash,
+timeshap, lime), Sprezzature Studio (NiceGUI), l'application FastAPI et le
+serveur MCP. Il n'y a pas
 d'extras de fonctionnalité. Ils ont été versés dans la base le 2026-11-01. Le
 seul extra restant est `[dev]`, l'outillage de test et de lint pour qui
 contribue.
@@ -233,11 +234,9 @@ entièrement autonome avec les polices intégrées), `.png`, `.pdf`, `.jpg` ou
 fois pour les écrans haute densité (`--out chart.png --scale 3`) ; il est
 ignoré pour `.svg` et `.html`. `--dark` rend pour un fond sombre.
 
-Passez toujours `--out` (ou `out=` en Python). Sans lui, le générateur se
-rabat sur son propre chemin d'exemple, `assets/svg-examples/<type>.svg` un
-niveau au-dessus du répertoire `scripts/` : dans un dépôt cloné, cela écrase
-l'exemple versionné, et dans un paquet installé, cela écrit sous
-`site-packages/`.
+Sans `--out` (ou `out=` en Python), la figure est écrite dans `<type>.svg`
+dans le répertoire courant, au nom du type canonique (`connected_scatter`
+donne `connected-scatter.svg`).
 
 Le fichier `--data` est lu en un dictionnaire par enregistrement : les
 cellules CSV/TSV sont typées (les nombres restent des nombres), et le JSON

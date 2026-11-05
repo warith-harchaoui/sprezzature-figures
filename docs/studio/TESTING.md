@@ -9,8 +9,8 @@ python -m pytest -q -m vision          # hits a live vision model / VLM
 ruff check .                           # the whole tree, as CI runs it
 ```
 
-The suite holds 441 test functions, which parametrization expands to 1828
-collected tests. The default run collects 1401 of them; the four markers below
+The suite holds 444 test functions, which parametrization expands to 1831
+collected tests. The default run collects 1404 of them; the four markers below
 deselect the other 427 (counted on 2026-11-05 with `pytest --collect-only`).
 It follows the project's test-rationalization philosophy ("test count is not
 a quality metric"): similar cases are merged with `@pytest.mark.parametrize`,
@@ -89,8 +89,8 @@ network call.
   It builds the wheel, installs it in fresh virtual environments, renders a
   figure, checks that importing the library loads no Studio dependency, checks
   that every Studio subpackage imports from the same plain install and that the
-  three console scripts (`make-figure`, `sprezzature-figures`,
-  `sprezzature-studio`) answer `--help`, and checks that every font face the
+  four console scripts (`make-figure`, `sprezzature-figures`,
+  `sprezzature-studio`, `sprezzature-figures-mcp`) answer `--help`, and checks that every font face the
   module offers is in the wheel.
 - **`floor` job**, Python 3.10: `pip install .` and `import sprezzature_figures`,
   which is the promise `requires-python` makes. The test suite does not run on

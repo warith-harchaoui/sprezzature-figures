@@ -5,7 +5,7 @@ install_figures
 
 Idempotent installer for the three sprezzature-figures tiers:
 
-    dataviz   — networkx, scikit-learn, pandas, pyyaml, shapely, pyproj
+    dataviz   — networkx, scikit-learn, pandas, pyyaml
     explain   — shap, shapash, timeshap, lime, scikit-learn
     causal    — dowhy, econml
 

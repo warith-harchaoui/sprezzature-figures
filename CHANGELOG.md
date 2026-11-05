@@ -2,13 +2,36 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- **A render without `--out` no longer writes into the checkout or into
+  `site-packages/`.** `make_figure()` with no `out=` and
+  `sprezzature-figures render <kind>` with no `--out` reached each
+  generator's own fallback, `assets/svg-examples/<kind>.svg` one level above
+  `scripts/`: in a checkout that rewrote the committed example, installed it
+  wrote under the interpreter. Both now write `<kind>.svg` in the current
+  directory, named after the canonical kind. Running a generator script
+  directly keeps its example path, which is how the examples are regenerated.
+  Guarded by `tests/test_render_without_out_stays_in_cwd.py`, which also
+  checks the committed `bar.svg` is not touched.
+
+### Changed — dependencies
+
+- `shapely` and `pyproj` leave the base dependencies and
+  `scripts/requirements-dataviz.txt`. They were declared for
+  `make_situation_map.py`, which moved to sprezzature-maps; nothing in the
+  package, the scripts, the tools or the tests imports either one. 32 base
+  dependencies become 31.
+- `pydot>=3.0.1` is declared. `causal_estimate.py --dag x.dot` reads DOT
+  through `networkx.nx_pydot`, and pydot only arrived because dowhy pulls
+  causal-learn, which pulls it.
+- The packaging test asks the installed `sprezzature-figures-mcp` for
+  `--help` too, beside the three other console scripts.
+
 ### Docs
 
 - README / LISEZMOI: `python -m sprezzature_figures` named beside the two
-  console scripts; what happens without `--out` (the generator's own
-  `assets/svg-examples/<kind>.svg`, which in a checkout overwrites the
-  committed example and once installed lands under `site-packages/`);
-  `embed_fonts=False`; the role names come from `describe`, not from
+  console scripts; where a render goes without `--out`; `embed_fonts=False`; the role names come from `describe`, not from
   FIGURES.md, which does not list them.
 - EXAMPLES / EXEMPLES: `list_kinds` imported from the package and shown with
   its real first names; the scatter roles pointed at `describe scatter`.

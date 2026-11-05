@@ -36,8 +36,8 @@ What it does not catch, measured on the same run: the converse. Five
 distributions are declared and imported nowhere in these 279 files --
 ``scipy`` (in the base ``dependencies``, while nine generators say "no scipy"
 in their own docstrings), ``shapely`` and ``pyproj`` (declared for
-``make_situation_map.py``, which is not in this repository), ``econml`` and
-``pyyaml``. Asserting that direction would be red today and is a decision
+``make_situation_map.py``, which is not in this repository, and dropped on
+2026-11-05), ``econml`` and ``pyyaml``. Asserting that direction would be red today and is a decision
 about the published dependency surface, not a defect to fix in a test file.
 
 It is also blind to a dependency used by a *name* that differs from its

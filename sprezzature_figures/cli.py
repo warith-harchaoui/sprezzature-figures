@@ -173,7 +173,8 @@ def _figure_params(kind: str | None) -> list[click.Parameter]:
 @click.option(
     "--out",
     default=None,
-    help="Output file path. The extension picks the format: .svg, .png, .pdf, .jpg, or .html.",
+    help="Output file path. The extension picks the format: .svg, .png, .pdf, .jpg, or .html. "
+    "Defaults to <kind>.svg in the current directory.",
 )
 @click.option(
     "--title",

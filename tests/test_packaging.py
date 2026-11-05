@@ -197,8 +197,16 @@ def test_the_studio_installs_and_console_scripts_resolve(wheel: Path, tmp_path: 
     assert "OK: studio extra fully importable" in result.stdout
 
     # Console entry points exist and their --help runs without importing a
-    # display/server (sprezzature-studio defers the nicegui import past argument parsing).
-    for script_name in ("make-figure", "sprezzature-figures", "sprezzature-studio"):
+    # display/server (sprezzature-studio defers the nicegui import past argument parsing;
+    # sprezzature-figures-mcp parses before it binds, so --help answers instead of serving).
+    # The in-process twin of this loop, in the default run, is
+    # tests/test_console_scripts_are_click.py; this one asks the installed wheel.
+    for script_name in (
+        "make-figure",
+        "sprezzature-figures",
+        "sprezzature-studio",
+        "sprezzature-figures-mcp",
+    ):
         script = _venv_script(venv_dir, script_name)
         assert script.exists(), f"console script {script_name} not installed at {script}"
         help_result = subprocess.run(

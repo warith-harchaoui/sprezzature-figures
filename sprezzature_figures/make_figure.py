@@ -429,7 +429,8 @@ def make_figure(kind: str, data: Any = None, **kwargs: Any) -> FigurePath:
         because nothing downstream can tell them apart.
     **kwargs
         Forwarded to the underlying make function. Common options:
-        ``out`` (output path), ``title`` (chart title), ``width``, ``height``.
+        ``out`` (output path; omitted or ``None``, ``<kind>.svg`` in the current
+        working directory), ``title`` (chart title), ``width``, ``height``.
         ``dark`` (bool): render for a DARK canvas -- transparent background and
         lightened chrome so the figure reads on a dark surface. Handled by
         make_figure itself (SVG output), not passed to the generator; see
@@ -483,6 +484,16 @@ def make_figure(kind: str, data: Any = None, **kwargs: Any) -> FigurePath:
     # growing its own conversion.
     data = as_rows(data)
     canonical = _resolve_kind(kind)
+    # No ``out`` means the working directory, never the generator's own
+    # fallback. Every generator defaults to ``assets/svg-examples/<kind>.svg``
+    # beside ``scripts/`` -- the committed example in a checkout, a path under
+    # ``site-packages/`` once installed -- so a bare ``render bar`` used to
+    # overwrite the shop window or write into the interpreter. That fallback
+    # stays for running a generator script directly, which is how the
+    # examples are regenerated; it is never reached through this door.
+    if kwargs.get("out") is None:
+        stem = canonical or kind.lower().strip().replace(" ", "-")
+        kwargs["out"] = Path.cwd() / f"{stem}.svg"
     if canonical is None:
         legacy_path = _legacy_filename_guess(kind)
         if legacy_path.exists():
