@@ -2,6 +2,30 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- **The Ralph Eyeball Loop, run from the wheel, writes under the working
+  directory.** `python -m sprezzature_figures_scripts.ralph_eyeball_loop`
+  put its PNGs, assessments and critique ledger in
+  `<parent of the script>/.private/ralph-loop/`, which for an installed
+  package is `site-packages/`. A clone (recognised by its `pyproject.toml`)
+  still writes into its own `.private/`; anything else writes into the
+  current directory's. `tests/test_the_ralph_loop_writes_beside_the_user.py`
+  imports the script laid out as the wheel lays it out.
+
+### Docs
+
+- README and LISEZMOI say where the loop writes, clone or wheel.
+  `TRIGGERS.md` gives the `python -m sprezzature_figures_scripts.<name>`
+  form of the six scripts, which the wheel carries.
+- The figure "How it works" said PNG and PDF went through the renderer that
+  rasterises TikZ and Mermaid. They come from the same SVG through resvg,
+  in-process; JPG and HTML too. Spec edited, both figures redrawn.
+- `audit_figure.py`'s docstring said it needs PyYAML and reads SVG with
+  `xml.etree`. It is stdlib only and reads SVG with regular expressions.
+- `PAYSAGE.md` gave web embeddability a loading of −0,308 where
+  `LANDSCAPE.md` and the source (−0.3085) give −0.309.
+
 ## [2.9.1] — 2026-11-05
 
 ### Fixed

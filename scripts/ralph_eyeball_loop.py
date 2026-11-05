@@ -163,7 +163,21 @@ _RENDER_DIAGRAM: Path = _SCRIPT_DIR / "render_diagram.py"
 # version of this file assumed the pre-extraction monorepo layout
 # (sprezzature/sprezzature-figures/scripts/) and went one directory too far
 # up, landing in the user's home directory instead of this repo.
-_PRIVATE_LOOP_DIR: Path = _FIGURES_ROOT / ".private" / "ralph-loop"
+#
+# Installed from the wheel, the same parent is `site-packages/`: the loop
+# wrote its PNGs, assessments and critique ledger into the interpreter's own
+# tree, which may not even be writable. A clone is recognised by the
+# `pyproject.toml` beside `scripts/`; without one, the output goes under the
+# directory the loop was run from, like any other command's output.
+
+
+def _loop_dir(figures_root: Path, cwd: Path) -> Path:
+    """Where the loop writes: the clone's ``.private/``, else the cwd's."""
+    root = figures_root if (figures_root / "pyproject.toml").is_file() else cwd
+    return root / ".private" / "ralph-loop"
+
+
+_PRIVATE_LOOP_DIR: Path = _loop_dir(_FIGURES_ROOT, Path.cwd())
 
 # ---------------------------------------------------------------------------
 # qwen3-vl:8b — the one authorized VLM for the whole sprezzature-* repo's

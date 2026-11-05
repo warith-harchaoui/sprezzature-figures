@@ -18,8 +18,8 @@ Exit codes:
 * ``1`` — one or more errors, or any finding under ``--strict``.
 * ``2`` — CLI or parse error.
 
-The auditor is **stdlib + PyYAML** only, with no browser, no model, no
-network. SVG and HTML are read with ``xml.etree`` and ``html.parser``.
+The auditor is **stdlib only**, with no browser, no model, no network.
+SVG is read with regular expressions, HTML with ``html.parser``.
 
 Every figure in this stack is authored as SVG directly, so the rendered
 markup *is* the source: there is no separate chart spec to audit, and

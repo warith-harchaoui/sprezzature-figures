@@ -392,7 +392,8 @@ sur eux, et elle n'a jamais le droit de contredire un fait établi ici.
 
 `scripts/ralph_eyeball_loop.py` rend en PNG n'importe quel visuel produit par
 du code (`.svg`, `.html`, un `.tex` TikZ, un `.mmd` Mermaid) et écrit un
-fichier d'évaluation sous `.private/ralph-loop/`. Vous modifiez la source et
+fichier d'évaluation sous `.private/ralph-loop/` : celui du clone, ou, installé
+depuis la roue, celui du dossier d'où vous le lancez. Vous modifiez la source et
 vous relancez ; chaque passage ajoute une itération. Par défaut, l'agent qui
 l'exécute lit le PNG lui-même. Avec `--local`, un modèle de vision local
 (`qwen3-vl:8b`, via best-engine-ai-helper) écrit la critique hors ligne.
