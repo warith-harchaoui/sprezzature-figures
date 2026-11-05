@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [2.9.2] — 2026-11-05
+
 ### Fixed
 
 - **The Ralph Eyeball Loop, run from the wheel, writes under the working
@@ -15,6 +17,8 @@
 
 ### Docs
 
+- README and LISEZMOI say the loop also runs from the wheel, as
+  `python -m sprezzature_figures_scripts.ralph_eyeball_loop`.
 - README and LISEZMOI say where the loop writes, clone or wheel.
   `TRIGGERS.md` gives the `python -m sprezzature_figures_scripts.<name>`
   form of the six scripts, which the wheel carries.
