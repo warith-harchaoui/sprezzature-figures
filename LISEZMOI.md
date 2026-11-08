@@ -532,9 +532,7 @@ détermine qui peut réellement lire le graphique.
 Les niveaux autres que `universal`, celui par défaut (`high-contrast`,
 `monochrome`, `deuteranopia`, `protanopia`, `tritanopia`), sont appliqués par
 [sprezzature-colors](https://github.com/warith-harchaoui/sprezzature-colors),
-qui n'est pas une dépendance de ce paquet : `pip install sprezzature-colors` à
-côté. Sans lui, la figure garde la palette universelle et Python affiche un
-avertissement qui le dit.
+que `pip install sprezzature-figures` installe avec lui.
 
 - **`"corporate"`** (par défaut) : Roboto pour le texte d'habillage
   (titre, sous-titre, libellés d'axes), Roboto Mono pour les graduations

@@ -514,9 +514,7 @@ who can actually read the chart.
 The levels other than the default `universal` (`high-contrast`, `monochrome`,
 `deuteranopia`, `protanopia`, `tritanopia`) are applied by
 [sprezzature-colors](https://github.com/warith-harchaoui/sprezzature-colors),
-which is not a dependency of this package: `pip install sprezzature-colors`
-beside it. Without it the figure keeps the universal palette and Python emits a
-warning saying so.
+which `pip install sprezzature-figures` brings along.
 
 - **`"corporate"`** (default): Roboto for the chrome text (title,
   subtitle, axis labels), Roboto Mono for tick and numeric labels, and a

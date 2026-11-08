@@ -28,6 +28,15 @@
   same size) are left out. It found four committed examples touching, all
   fixed (control-chart, forecast-fan, funnel-area, radial-bar).
 - **`_svg.fmt_tick(v, step)`**: a tick takes the decimals of its step.
+- **`gaussian-process --fit false` draws the data alone**: rows carrying only
+  `y`, points joined in order, no posterior; the figure a report shows before
+  any model.
+- **`sprezzature-colors` is a dependency.** The accessibility levels other than
+  `universal` are computed by it, and as a separate install they silently drew
+  the universal palette.
+- **`loss-curve` with a single curve** no longer prints "at the last epoch
+  the two are 0 apart": the gap line and its sentence in the description
+  need two curves.
 - **`gaussian-process` draws a posterior it is given.** Rows carrying
   `mean` and `sd` on an `x` grid are drawn as given, with no fit and no
   invented sample draws; rows carrying `y` are the observations (`y` may now

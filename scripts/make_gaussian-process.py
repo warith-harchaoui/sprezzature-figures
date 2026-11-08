@@ -103,6 +103,7 @@ def build_svg(
     height: int = 480,
     x_label: str = "x",
     y_label: str = "f(x)",
+    fit: bool = True,
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -123,6 +124,10 @@ def build_svg(
         Canvas size in pixels.
     x_label, y_label : str
         Axis titles.
+    fit : bool, optional
+        With rows carrying only ``y`` and ``fit=False``, draw the data alone,
+        points joined in order, with no posterior: the figure a report shows
+        before any model.
     mode : str, optional
         Forwarded to :func:`_interactive.fullscreen_control`.
     accessibility : str, optional
@@ -160,6 +165,18 @@ def build_svg(
         x_hi = float(np.max(np.concatenate([x_test, x_train])))
         if x_hi == x_lo:
             x_lo, x_hi = x_lo - 1.0, x_hi + 1.0
+    elif not fit:
+        # The data alone: their own line, no band, no samples.
+        if not observed:
+            raise ValueError("no row carries an observed 'y'")
+        order = np.argsort(x_train)
+        x_test, mean = x_train[order], y_train[order]
+        std = np.zeros_like(mean)
+        n_samples = 0
+        samples = np.empty((len(x_test), 0))
+        x_lo, x_hi = float(np.min(x_train)), float(np.max(x_train))
+        if x_hi == x_lo:
+            x_lo, x_hi = x_lo - 1.0, x_hi + 1.0
     else:
         if not observed:
             raise ValueError("no row carries an observed 'y' nor a 'mean' and 'sd'")
@@ -187,8 +204,20 @@ def build_svg(
 
         The demo keeps its historical one decimal; a given posterior lives on
         the caller's scale (years, thousands), where ``1950.0`` is noise.
+
+        Parameters
+        ----------
+        value : float
+            The tick's value.
+        step : float
+            The axis step.
+
+        Returns
+        -------
+        str
+            The label.
         """
-        return fmt_tick(value, step) if given else f"{value:.1f}"
+        return fmt_tick(value, step) if given or not fit else f"{value:.1f}"
 
     # A few points get a hover bubble each; hundreds get a smaller dot and
     # their native <title> only, or the bubbles outweigh the figure.
@@ -200,15 +229,44 @@ def build_svg(
     plot_h = height - plot_y - bottom_reserved
 
     def x_for(v: float) -> float:
+        """Map an x value to its pixel column.
+
+        Parameters
+        ----------
+        v : float
+            Data value.
+
+        Returns
+        -------
+        float
+            Pixel position.
+        """
         return plot_x + (v - x_lo) / (x_hi - x_lo) * plot_w
 
     def y_for(v: float) -> float:
+        """Map a y value to its pixel row.
+
+        Parameters
+        ----------
+        v : float
+            Data value.
+
+        Returns
+        -------
+        float
+            Pixel position.
+        """
         return plot_y + plot_h - (v - (y_min - pad)) / ((y_max + pad) - (y_min - pad)) * plot_h
 
     parts: List[str] = []
     parts.append(svg_open(width, height, "gp-title", "gp-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="gp-title">{xml_escape(title)}</title>')
-    if given:
+    if not given and not fit:
+        desc = (
+            f"Observed series of {len(observed)} points, from {x_lo:.4g} to {x_hi:.4g}, "
+            f"values from {float(np.min(y_train)):.4g} to {float(np.max(y_train)):.4g}."
+        )
+    elif given:
         desc = (
             f"Gaussian process posterior given on {len(given)} points from "
             f"{x_lo:.4g} to {x_hi:.4g}, over {len(observed)} observed points. "
@@ -286,7 +344,8 @@ def build_svg(
     bot_pts = [(x_for(x), y_for(v)) for x, v in zip(x_test, lo, strict=True)]
     band_d = "M " + " L ".join(f"{x:.1f},{y:.1f}" for x, y in top_pts)
     band_d += " L " + " L ".join(f"{x:.1f},{y:.1f}" for x, y in reversed(bot_pts)) + " Z"
-    parts.append(f'<path d="{band_d}" fill="{COLOR_BAND}" fill-opacity="0.22"/>')
+    if given or fit:
+        parts.append(f'<path d="{band_d}" fill="{COLOR_BAND}" fill-opacity="0.22"/>')
 
     # ---- posterior sample paths ----
     for s in range(n_samples):
@@ -300,10 +359,14 @@ def build_svg(
     tip = (
         f"GP posterior mean, {len(observed)} observations"
         if given
+        else f"Observed series, {len(observed)} points"
+        if not fit
         else f"GP posterior mean, {len(rows)} observations, RBF kernel"
     )
+    stroke_width = "2.5" if given or fit else "1.2"
     parts.append(
-        f'<path tabindex="0" d="{mean_d}" fill="none" stroke="{COLOR_MEAN}" stroke-width="2.5">'
+        f'<path tabindex="0" d="{mean_d}" fill="none" stroke="{COLOR_MEAN}" '
+        f'stroke-width="{stroke_width}">'
         f'<title>{xml_escape(tip)}</title></path>'
     )
 
@@ -372,6 +435,7 @@ def make_gaussian_process(
     height: int = 480,
     x_label: str = "x",
     y_label: str = "f(x)",
+    fit: bool = True,
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -393,6 +457,8 @@ def make_gaussian_process(
         Canvas size in pixels.
     x_label, y_label : str
         Axis titles.
+    fit : bool, optional
+        False draws the data alone; see :func:`build_svg`.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
     theme : str, optional
@@ -410,7 +476,7 @@ def make_gaussian_process(
     True
     """
     svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
-                    x_label=x_label, y_label=y_label,
+                    x_label=x_label, y_label=y_label, fit=fit,
                     mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "gaussian-process")
     return write_svg(dest, svg, theme=theme)

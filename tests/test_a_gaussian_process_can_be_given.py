@@ -33,6 +33,13 @@ GENERATOR = REPO_ROOT / "scripts" / "make_gaussian-process.py"
 
 
 def _load() -> Any:
+    """Load the generator module from its file, as make_figure does.
+
+    Returns
+    -------
+    module
+        The generator.
+    """
     sys.path.insert(0, str(REPO_ROOT / "scripts"))
     spec = importlib.util.spec_from_file_location("make_gaussian_process", GENERATOR)
     assert spec is not None and spec.loader is not None
@@ -42,7 +49,13 @@ def _load() -> Any:
 
 
 def _rows() -> list[dict[str, Any]]:
-    """A straight-line posterior on 0..10, observed on 2..8 only."""
+    """A straight-line posterior on 0..10, observed on 2..8 only.
+
+    Returns
+    -------
+    list of dict
+        Grid rows with mean and sd, then observation rows.
+    """
     grid = [
         {"x": float(t), "y": None, "mean": 2.0 * t, "sd": 0.5 + 0.1 * abs(t - 5)}
         for t in range(11)
@@ -55,6 +68,7 @@ def _rows() -> list[dict[str, Any]]:
 
 
 def test_the_given_mean_is_the_drawn_mean() -> None:
+    """A straight given mean comes out as a straight path, not refitted."""
     gp = _load()
     svg = gp.build_svg(_rows(), title="Given", subtitle="A given posterior")
     mean_path = re.search(r'<path tabindex="0" d="([^"]+)"', svg)
@@ -66,6 +80,7 @@ def test_the_given_mean_is_the_drawn_mean() -> None:
 
 
 def test_no_sample_draws_are_invented() -> None:
+    """A given posterior has no covariance, so no sample draws are drawn."""
     gp = _load()
     svg = gp.build_svg(_rows(), title="Given", subtitle="A given posterior")
     assert gp.COLOR_SAMPLE not in svg
@@ -73,6 +88,7 @@ def test_no_sample_draws_are_invented() -> None:
 
 
 def test_the_extrapolation_is_ruled_and_named() -> None:
+    """Both edges of the observed range are ruled and labelled."""
     gp = _load()
     svg = gp.build_svg(_rows(), title="Given", subtitle="A given posterior")
     assert svg.count('stroke-dasharray="3 3"') == 2
@@ -80,6 +96,7 @@ def test_the_extrapolation_is_ruled_and_named() -> None:
 
 
 def test_the_axis_titles_reach_the_figure() -> None:
+    """x_label and y_label title the axes."""
     gp = _load()
     svg = gp.build_svg(_rows(), x_label="Year", y_label="Passengers")
     assert ">Year</text>" in svg
@@ -87,6 +104,13 @@ def test_the_axis_titles_reach_the_figure() -> None:
 
 
 def test_make_figure_accepts_rows_without_an_observation(tmp_path: Path) -> None:
+    """Grid rows with no y pass validation and render cleanly.
+
+    Parameters
+    ----------
+    tmp_path : pathlib.Path
+        Pytest's temporary directory.
+    """
     out = make_figure(
         "gaussian-process",
         _rows(),
@@ -99,7 +123,18 @@ def test_make_figure_accepts_rows_without_an_observation(tmp_path: Path) -> None
 
 
 def test_the_demo_still_fits_its_own() -> None:
+    """Without given rows the demo fits its RBF posterior and draws three samples."""
     gp = _load()
     svg = gp.build_svg()
     assert svg.count(f'stroke="{gp.COLOR_SAMPLE}"') == 3
     assert "extrapolation" not in svg
+
+
+def test_without_a_fit_the_data_are_drawn_alone() -> None:
+    """fit=False draws the observed series only: no band, no samples."""
+    gp = _load()
+    rows = [{"x": float(t), "y": float(t % 3)} for t in range(100)]
+    svg = gp.build_svg(rows, title="Data", subtitle="Raw", fit=False)
+    assert "Observed series of 100 points" in svg
+    assert gp.COLOR_BAND not in svg
+    assert gp.COLOR_SAMPLE not in svg

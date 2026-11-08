@@ -62,6 +62,10 @@ dependencies = [
     # held by somebody else's dependency list. 3.0.1 is the floor networkx's
     # nx_pydot works with.
     "pydot>=3.0.1",
+    # The accessibility levels other than `universal` are computed by this
+    # sibling. As a separate install, `--accessibility monochrome` silently
+    # drew the universal palette after `pip install sprezzature-figures`.
+    "sprezzature-colors>=1.2.3",
     "elbow-helper>=0.4,<1",
     "standpoint>=0.13,<1",
     "shap>=0.44",

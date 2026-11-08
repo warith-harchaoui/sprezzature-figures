@@ -8037,6 +8037,12 @@
         "choices": [],
         "description": "Axis titles."
       },
+      "fit": {
+        "type": "bool",
+        "default": true,
+        "choices": [],
+        "description": "False draws the data alone; see build_svg."
+      },
       "mode": {
         "type": "str",
         "default": "self-contained",

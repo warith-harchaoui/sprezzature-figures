@@ -210,8 +210,13 @@ def build_svg(
         f'{xml_escape(", ".join(series_names))} over {len(epochs)} epochs. '
         f'{xml_escape(validation_name)} reaches its minimum of {fmt_number(best_value)} at '
         f'epoch {fmt_number(best_epoch)}; the {wasted} epochs after it are shaded, and over '
-        f'them the loss rises rather than falls. At the last epoch the two curves are '
-        f'{fmt_number(final_gap)} apart.</desc>'
+        f'them the loss rises rather than falls.'
+        + (
+            f' At the last epoch the two curves are {fmt_number(final_gap)} apart.'
+            if len(series_names) > 1
+            else ""
+        )
+        + '</desc>'
     )
     parts.append(
         "<style>"
@@ -231,11 +236,13 @@ def build_svg(
         f'<text x="{plot_x:.1f}" y="72" font-size="14" fill="{SECONDARY}">'
         f'{xml_escape(subtitle)}</text>'
     )
-    parts.append(
-        f'<text x="{plot_x:.1f}" y="98" font-size="12" fill="{SECONDARY}" '
-        f'font-family="{mono_family}">at the last epoch the two are '
-        f'{fmt_number(final_gap)} apart</text>'
-    )
+    # The gap between two curves; a single curve has none to report.
+    if len(series_names) > 1:
+        parts.append(
+            f'<text x="{plot_x:.1f}" y="98" font-size="12" fill="{SECONDARY}" '
+            f'font-family="{mono_family}">at the last epoch the two are '
+            f'{fmt_number(final_gap)} apart</text>'
+        )
     parts.append(
         f'<text x="{plot_x:.1f}" y="{plot_y - 14:.1f}" font-size="12" fill="{SECONDARY}">'
         f'{xml_escape(y_label)}</text>'
