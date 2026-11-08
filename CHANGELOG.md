@@ -42,6 +42,17 @@
 
 ### Fixed
 
+- **The Ralph Eyeball Loop, installed, writes under the working directory,
+  really.** The 2.9.2 check took any `pyproject.toml` beside `scripts/` for a
+  clone, and `dash-bootstrap-components` drops one at the top of site-packages.
+  A clone is now recognised by the project name in it.
+- **`redraw` accepts a kind copied with its category** (`bar (Comparison)`, the
+  prompt's own line); it failed even with `--kind`.
+- **Accessibility levels reach an installed `sprezzature-colors`.** Only a
+  checkout or a skill folder was searched, so after `pip install
+  sprezzature-colors` every level still drew the universal palette.
+- **The MCP server announces its version as a version.** fastapi-mcp 0.4 passes
+  the description in that slot; it now goes to `instructions`.
 - **Four options the catalogue advertised did nothing on a figure.**
   `forest --subtitle` and `cycle --unit` were dropped on the demo, and
   `flowchart --direction` is now declared as the switch it is (`LR`, `TB`)
