@@ -2,6 +2,91 @@
 
 ## [Unreleased]
 
+## [2.10.0] — 2026-11-08
+
+### Added
+
+- **`flowchart`, a labelled box-and-arrow flow (168th kind).** One row per
+  arrow (`source`, `target`, optional `label`, `source_group`,
+  `target_group`, `back`, `dashed`). Boxes sit in layers, left to right or
+  top to bottom (`direction="TB"`); an arrow that skips a layer passes
+  through relay points between boxes; a returning arrow runs in its own
+  lane; groups get a named frame. Box text wraps between words and never
+  inside one (a typed `\n` forces a break), and the type shrinks before a
+  word is ever cut. Every word drawn comes from the rows.
+  `tests/test_flowchart.py`.
+- **`check_render(kind=...)` reports a kind's demo text in a caller's
+  render** (`demo_text`), from `make_figure.demo_texts(kind)`: the strings of
+  its `DEMO_DATA`, its demo headlines and a generator's own `DEMO_TEXT`,
+  minus the method's vocabulary a generator declares in `METHOD_TEXT`
+  ("upper control limit", "collider · do not adjust"). `allowed_text` lets
+  a caller whose data really holds a demo word say so. `sprezzature-figures
+  check --kind <kind>` on the command line.
+- **`check_render` reports two labels that touch** (`labels_touch`): an
+  end-anchored y tick running into a centred x tick at the origin corner
+  printed "-80" for "-8" and "0". Lines of one stacked list (same anchor,
+  same size) are left out. It found four committed examples touching, all
+  fixed (control-chart, forecast-fan, funnel-area, radial-bar).
+- **`_svg.fmt_tick(v, step)`**: a tick takes the decimals of its step.
+- **`gaussian-process` draws a posterior it is given.** Rows carrying
+  `mean` and `sd` on an `x` grid are drawn as given, with no fit and no
+  invented sample draws; rows carrying `y` are the observations (`y` may now
+  be empty on a grid row). When the grid leaves the observed range, its
+  edges are ruled and the outside labelled "extrapolation". `x_label` and
+  `y_label` title the axes; past 60 observations the dots shrink and drop
+  their hover bubbles. The demo renders byte for byte as before.
+  `tests/test_a_gaussian_process_can_be_given.py`.
+- **`AXIS_ROLES`**: a generator says which role each axis and the legend
+  draw (`line-multi`, `scatter`), and make_figure titles them after the
+  caller's columns.
+
+### Fixed
+
+- **Four options the catalogue advertised did nothing on a figure.**
+  `forest --subtitle` and `cycle --unit` were dropped on the demo, and
+  `flowchart --direction` is now declared as the switch it is (`LR`, `TB`)
+  rather than free text. `causal-dag`'s `treatment` and `outcome` name nodes
+  of the given graph since they default to it; the options probe knows them
+  as selectors.
+
+- **Demo text over caller data**, found by a new behavioural test that
+  renders every kind from its demo rows renamed to tokens
+  (`tests/test_demo_leftovers.py`, slow): 96 of 168 kinds were clean
+  before, 147 are now; the 21 left are listed with their reason as strict
+  expected failures, so the list only shrinks.
+  - At the door, for every kind: an axis or legend title the caller left
+    unset takes the name of the column it draws, guessed only from a
+    declared `AXIS_ROLES` or the plain "one category, one number" shape
+    (the old guess titled a line chart's x axis after its series column);
+    every other caption whose default is demo text is emptied.
+  - `tree`: title, subtitle, description, column headers (`level_names`)
+    and branch colours follow the data; a caller tree no longer reads
+    "Supervised learning..." under FIELD / FAMILY / TASK.
+  - `cycle`: draws the caller's phases (it ignored `data` and drew the
+    winter-wheat year); `unit` names what a duration counts.
+  - `timeline`: eras, axis span and tick step come from the rows; `planned`
+    is a column; the "Flown mission" legend and the Mars note are the
+    demo's only.
+  - `forest`: headers, subtitle, axis, "favours" notes and the axis span
+    come from the data or from options (`estimate_name`, `left_label`,
+    `right_label`, `axis_title`); a recomputed diamond is named
+    "inverse-variance", which is what it computes.
+  - `network`, `causal-dag`, `fishbone`, `venn`, `voronoi`, `radial-bar`,
+    `permutation-importance`, `scatter`: demo descriptions, defaults,
+    units, tooltips and metric names stay with the demo. `causal-dag` no
+    longer fails on a graph without the demo's treatment node; `bubble`,
+    `radial-tree` and `voronoi` no longer crash on renamed categories.
+  - `errorbar`, `strip`: ticks and values printed with `:.0f` read 0.93 as
+    "1"; they now use `fmt_tick`.
+  - `line-multi`: negative values were drawn below a 0-anchored axis; the
+    axis now spans them, and the lowest label lifts off the origin corner.
+    A wide continuous x axis gets round ticks.
+  - `scatter`: eight hues before any repeat; a long title shrinks to fit.
+  All demo renders are byte-identical except those whose layout the new
+  rule fixed or whose tooltips now name their axes (scatter, radial-bar,
+  control-chart, forecast-fan, funnel-area); those committed examples and
+  the new flowchart's are regenerated.
+
 ## [2.9.2] — 2026-11-05
 
 ### Fixed

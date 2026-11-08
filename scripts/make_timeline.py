@@ -42,6 +42,7 @@ Author
 from __future__ import annotations
 
 import sys
+import math
 import textwrap
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -178,6 +179,48 @@ YEAR_MAX = 2035
 TICK_STEP = 10  # decade gridlines on the axis
 
 
+#: Hues for a caller's eras, in order of their first milestone.
+USER_ERA_HUES = ["Blue", "Teal", "Green", "Orange", "Purple", "Red", "Pink", "Indigo"]
+
+
+def _truthy(value: Any) -> bool:
+    """Read a flag cell: 1, true, yes (any case) mean yes; blank means no."""
+    if isinstance(value, str):
+        return value.strip().lower() in ("1", "true", "yes", "y")
+    return bool(value) and value == value
+
+
+def _nice_step(span: float, target: int = 8) -> int:
+    """A 1/2/5 x 10^k whole-number tick step for a span of years."""
+    raw = max(span / target, 1.0)
+    power = 10 ** int(math.floor(math.log10(raw)))
+    for mult in (1, 2, 5, 10):
+        if raw <= mult * power:
+            return int(mult * power)
+    return int(10 * power)
+
+
+def _user_eras(milestones: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Eras read off the caller's rows: each runs from its first milestone to
+    the next era's first one (the last to its own last milestone)."""
+    firsts: Dict[str, float] = {}
+    lasts: Dict[str, float] = {}
+    for m in milestones:
+        era = str(m.get("era") or "")
+        if not era:
+            continue
+        year = float(m["year"])
+        firsts[era] = min(firsts.get(era, year), year)
+        lasts[era] = max(lasts.get(era, year), year)
+    names = sorted(firsts, key=lambda e: firsts[e])
+    eras = []
+    for i, name in enumerate(names):
+        end = firsts[names[i + 1]] if i + 1 < len(names) else lasts[name] + 0.5
+        eras.append({"name": name, "start": firsts[name] - 0.5, "end": max(end, firsts[name] + 0.5),
+                     "color": USER_ERA_HUES[i % len(USER_ERA_HUES)]})
+    return eras
+
+
 def _lighten(hex_color: str, amount: float) -> str:
     """Blend a hex colour toward white by ``amount`` in [0, 1].
 
@@ -245,14 +288,19 @@ def _wrap(text: str, width: int) -> List[str]:
 # ------------------------------------------------------------------
 # SVG assembly
 # ------------------------------------------------------------------
+DEMO_TITLE = "Sixty years of getting closer to Mars"
+DEMO_SUBTITLE = (
+    "From a 21-frame flyby to a rover caching rock for the trip home, "
+    "each mission building on the last \u00b7 daggered dates are planned"
+)
+
+
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
-    title: str = "Sixty years of getting closer to Mars",
-    subtitle: str = (
-        "From a 21-frame flyby to a rover caching rock for the trip home, "
-        "each mission building on the last \u00b7 daggered dates are planned"
-    ),
-    flown_legend_label: str = "Flown mission",
+    title: Optional[str] = None,
+    subtitle: Optional[str] = None,
+    flown_legend_label: Optional[str] = None,
+    planned_legend_label: Optional[str] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -268,9 +316,13 @@ def build_svg(
         chronology; custom milestones outside that span still lay out (they
         clamp to the axis), and an unrecognised ``era`` falls back to the
         neutral secondary ink with no band.
-    flown_legend_label : str
-        Legend entry for the solid dot glyph (was hardcoded
-        ``"Flown mission"``).
+    title, subtitle : str or None
+        Header text. ``None`` prints the demo's over the demo and none over
+        caller data.
+    flown_legend_label, planned_legend_label : str or None
+        Legend entries for the solid and the hollow dot. Over caller data the
+        legend appears only when a row is flagged ``planned``, and reads
+        "Happened" / "Planned" unless named here.
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`.
         One of ``"self-contained"`` (default, ships a hidden-until-live
@@ -290,8 +342,29 @@ def build_svg(
     str
         A complete, standalone SVG document.
     """
+    is_demo = not data
     milestones: List[Dict[str, Any]] = list(data) if data else DEMO_DATA
     palette = load_palette(accessibility, theme=theme)
+    if is_demo:
+        eras = ERAS
+        year_min, year_max, tick_step = YEAR_MIN, YEAR_MAX, TICK_STEP
+        title = DEMO_TITLE if title is None else title
+        subtitle = DEMO_SUBTITLE if subtitle is None else subtitle
+        flown_legend_label = "Flown mission" if flown_legend_label is None else flown_legend_label
+        planned_legend_label = ("Planned (dagger &#8224;, dashed stem)"
+                                if planned_legend_label is None else xml_escape(planned_legend_label))
+    else:
+        eras = _user_eras(milestones)
+        years = [float(m["year"]) for m in milestones]
+        span = max(years) - min(years) if years else 1.0
+        tick_step = _nice_step(span or 1.0)
+        year_min = math.floor((min(years) - max(span * 0.03, 0.5)) / tick_step) * tick_step if years else 0
+        year_max = math.ceil((max(years) + max(span * 0.03, 0.5)) / tick_step) * tick_step if years else 1
+        title = title or ""
+        subtitle = subtitle or ""
+        flown_legend_label = flown_legend_label or "Happened"
+        planned_legend_label = xml_escape(planned_legend_label or "Planned (dagger &#8224;, dashed stem)") \
+            if planned_legend_label else "Planned (dagger &#8224;, dashed stem)"
     ink = "#1D1D1F"
     secondary = "#6E6E73"
     hairline = "#D2D2D7"
@@ -313,7 +386,7 @@ def build_svg(
 
     def sx(year: float) -> float:
         """Map a (possibly fractional) year to an x pixel on the spine."""
-        return plot_x0 + (year - YEAR_MIN) / (YEAR_MAX - YEAR_MIN) * plot_w
+        return plot_x0 + (year - year_min) / (year_max - year_min) * plot_w
 
     parts: List[str] = []
 
@@ -326,13 +399,20 @@ def build_svg(
         # figure.
         f'<title id="tl-title">{xml_escape(title)}</title>'
     )
-    parts.append(
-        f'<desc id="tl-desc">A horizontal timeline of {n} Mars-mission '
-        f'milestones from 1965 to a planned 2033, with alternating callouts '
-        f'above and below a central spine. Four coloured era bands group the '
-        f'missions: Flybys and Orbiters, First Landers, the Rover Age, and the '
-        f'planned Sample Return campaign.</desc>'
-    )
+    if is_demo:
+        parts.append(
+            f'<desc id="tl-desc">A horizontal timeline of {n} Mars-mission '
+            f'milestones from 1965 to a planned 2033, with alternating callouts '
+            f'above and below a central spine. Four coloured era bands group the '
+            f'missions: Flybys and Orbiters, First Landers, the Rover Age, and the '
+            f'planned Sample Return campaign.</desc>'
+        )
+    else:
+        era_text = (" Era bands: " + ", ".join(str(e["name"]) for e in eras) + ".") if eras else ""
+        parts.append(
+            f'<desc id="tl-desc">A horizontal timeline of {n} milestones, with '
+            f'callouts above and below a central spine.{xml_escape(era_text)}</desc>'
+        )
 
     # Focus ring + hover lift for keyboard and pointer users. The sweep
     # marker is decorative motion, guarded by prefers-reduced-motion.
@@ -349,7 +429,7 @@ def build_svg(
     # system palette cannot preserve the band/pill/stem colour tie anyway.
     era_hex_for_style = {
         _era_slug(str(era["name"])): palette.get(str(era["color"]), "#007AFF")
-        for era in ERAS
+        for era in eras
     }
     fill_series = {f".era-fill.era-{s}": h for s, h in era_hex_for_style.items()}
     stroke_series = {f".era-stroke.era-{s}": h for s, h in era_hex_for_style.items()}
@@ -388,14 +468,16 @@ def build_svg(
     parts.append(f'<rect width="{width}" height="{height}" fill="#FFFFFF"/>')
 
     # --- title + subtitle (the takeaway) -------------------------
-    parts.append(
-        f'<text x="{m_left}" y="74" font-size="40" font-weight="700" '
-        f'fill="{ink}">{xml_escape(title)}</text>'
-    )
-    parts.append(
-        f'<text x="{m_left}" y="112" font-size="21" fill="{secondary}">'
-        f'{xml_escape(subtitle)}</text>'
-    )
+    if title:
+        parts.append(
+            f'<text x="{m_left}" y="74" font-size="40" font-weight="700" '
+            f'fill="{ink}">{xml_escape(title)}</text>'
+        )
+    if subtitle:
+        parts.append(
+            f'<text x="{m_left}" y="112" font-size="21" fill="{secondary}">'
+            f'{xml_escape(subtitle)}</text>'
+        )
 
     # --- era bands (hugging the spine) ---------------------------
     # A soft tinted strip per programme phase, hugging the spine, with a
@@ -405,7 +487,7 @@ def build_svg(
     band_h = 56
     band_top = spine_y - band_h / 2.0
     era_hexes: Dict[str, str] = {}
-    for era in ERAS:
+    for era in eras:
         color = palette.get(str(era["color"]), "#007AFF")
         era_hexes[str(era["name"])] = color
         bx0 = sx(float(era["start"]))
@@ -423,7 +505,7 @@ def build_svg(
     def _era_labels() -> None:
         """Append the era-name pills on the band row, centred per era."""
         pill_y = spine_y + 22
-        for era in ERAS:
+        for era in eras:
             color = palette.get(str(era["color"]), "#007AFF")
             bx0 = sx(float(era["start"]))
             bx1 = sx(float(era["end"]))
@@ -451,9 +533,9 @@ def build_svg(
         f'<line x1="{plot_x0}" y1="{axis_y}" x2="{plot_x1}" y2="{axis_y}" '
         f'stroke="{hairline}" stroke-width="1.4"/>'
     )
-    first_tick = ((YEAR_MIN + TICK_STEP - 1) // TICK_STEP) * TICK_STEP
+    first_tick = int(((year_min + tick_step - 1) // tick_step) * tick_step)
     tick = first_tick
-    while tick <= YEAR_MAX:
+    while tick <= year_max:
         tx = sx(tick)
         parts.append(
             f'<line x1="{tx:.1f}" y1="{axis_y}" x2="{tx:.1f}" '
@@ -464,7 +546,7 @@ def build_svg(
             f'font-family="Roboto Mono, monospace" text-anchor="middle" '
             f'fill="{secondary}">{tick}</text>'
         )
-        tick += TICK_STEP
+        tick += tick_step
 
     # --- the spine -----------------------------------------------
     # A single clean ink spine with rounded caps; it sits on top of the
@@ -570,8 +652,9 @@ def build_svg(
         blurb = str(m["blurb"])
         era_name = str(m["era"])
         slug = _era_slug(era_name)
-        color = era_hexes.get(era_name, "#007AFF")
-        planned = year >= 2025
+        color = era_hexes.get(era_name, "#007AFF" if is_demo else secondary)
+        # The demo's planned beats are its future dates; a caller says so per row.
+        planned = year >= 2025 if is_demo else _truthy(m.get("planned"))
 
         mx = float(geom[i]["mx"])  # type: ignore[arg-type]
         side = str(geom[i]["side"])
@@ -727,6 +810,14 @@ def build_svg(
     # correctly without hunting.
     leg_y = height - 34
     lx = m_left
+    any_planned = any(s["planned"] for s in specs)
+    if not is_demo and not any_planned:
+        # No hollow dot is drawn, so a legend of two glyphs would explain one
+        # that is not there.
+        parts.extend(bubbles)
+        parts.append(fullscreen_control(width, height, mode))
+        parts.append("</svg>")
+        return "\n".join(parts)
     parts.append(
         f'<circle cx="{lx + 8}" cy="{leg_y - 5}" r="7" fill="{ink}"/>'
     )
@@ -741,15 +832,16 @@ def build_svg(
     )
     parts.append(
         f'<text x="{lx2 + 24}" y="{leg_y}" font-size="16" '
-        f'fill="{secondary}">Planned (dagger &#8224;, dashed stem)</text>'
+        f'fill="{secondary}">{planned_legend_label}</text>'
     )
 
-    # Source / illustrative note, right-aligned on the legend row.
-    parts.append(
-        f'<text x="{plot_x1:.1f}" y="{leg_y}" font-size="15" '
-        f'text-anchor="end" fill="{hairline}">Public mission history &#183; '
-        f'future dates approximate</text>'
-    )
+    # Source / illustrative note, right-aligned on the legend row: the demo's.
+    if is_demo:
+        parts.append(
+            f'<text x="{plot_x1:.1f}" y="{leg_y}" font-size="15" '
+            f'text-anchor="end" fill="{hairline}">Public mission history &#183; '
+            f'future dates approximate</text>'
+        )
 
     parts.extend(bubbles)
     parts.append(fullscreen_control(width, height, mode))
@@ -761,12 +853,10 @@ def make_timeline(
     data: Optional[List[Dict[str, Any]]] = None,
     *,
     out: Optional[Path | str] = None,
-    title: str = "Sixty years of getting closer to Mars",
-    subtitle: str = (
-        "From a 21-frame flyby to a rover caching rock for the trip home, "
-        "each mission building on the last \u00b7 daggered dates are planned"
-    ),
-    flown_legend_label: str = "Flown mission",
+    title: Optional[str] = None,
+    subtitle: Optional[str] = None,
+    flown_legend_label: Optional[str] = None,
+    planned_legend_label: Optional[str] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -780,11 +870,8 @@ def make_timeline(
         to :data:`DEMO_DATA`.
     out : Path, str, or None
         Output path (.svg). Defaults to ``assets/svg-examples/timeline.svg``.
-    title : str, optional
-        Accepted for dispatcher parity; the timeline's own headline states
-        the specific takeaway, so this is unused.
-    flown_legend_label : str
-        Legend entry for the solid dot glyph. Forwarded to :func:`build_svg`.
+    title, subtitle, flown_legend_label, planned_legend_label : str or None
+        Forwarded to :func:`build_svg`.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
     theme : str, optional
@@ -797,6 +884,7 @@ def make_timeline(
     """
     svg = build_svg(data, title=title, subtitle=subtitle,
                      flown_legend_label=flown_legend_label,
+                     planned_legend_label=planned_legend_label,
                      mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "timeline")
     return write_svg(dest, svg, theme=theme)

@@ -10,6 +10,13 @@ observed points themselves. The classic figure for teaching or auditing
 Bayesian nonparametric regression: wide band and diverging samples far
 from data, narrow band and converging samples near it.
 
+A caller that already holds a posterior (its own kernel, its own
+hyper-parameters) passes it instead: rows carrying ``mean`` and ``sd`` on
+an evaluation grid are drawn as given and nothing is fitted. Rows carrying
+``y`` are the observations, drawn over the band. When the grid runs past
+the observations, the edges of the observed range are ruled and the parts
+outside are labelled as extrapolation.
+
 This module runs the GP regression itself: RBF kernel, Cholesky-based
 posterior mean/covariance, sampling via a Cholesky factor of the
 posterior covariance, all via numpy (already a core dependency) and
@@ -33,7 +40,7 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _svg import foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _svg import fmt_tick, foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
@@ -94,6 +101,8 @@ def build_svg(
     subtitle: str = "Gaussian-process posterior: mean and 95% band, 3 sample draws",
     width: int = 745,
     height: int = 480,
+    x_label: str = "x",
+    y_label: str = "f(x)",
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -103,12 +112,17 @@ def build_svg(
     Parameters
     ----------
     data : list of dict or None
-        Observed points, rows with keys ``x``, ``y`` (numeric). Defaults
-        to :data:`DEMO_DATA`.
+        Observed points, rows with keys ``x``, ``y`` (numeric), fitted
+        here with an RBF kernel. Rows carrying ``mean`` and ``sd`` instead
+        are a posterior computed elsewhere, drawn as given on their ``x``
+        grid; ``y`` is then optional on each row. Defaults to
+        :data:`DEMO_DATA`.
     title, subtitle : str
         Chart text.
     width, height : int
         Canvas size in pixels.
+    x_label, y_label : str
+        Axis titles.
     mode : str, optional
         Forwarded to :func:`_interactive.fullscreen_control`.
     accessibility : str, optional
@@ -127,27 +141,58 @@ def build_svg(
     _ = accessibility
     mono_family = mono_stack_for_theme(theme)
     rows = data if data else DEMO_DATA
-    x_train = np.array([float(r["x"]) for r in rows])
-    y_train = np.array([float(r["y"]) for r in rows])
+    given = sorted(
+        (r for r in rows if r.get("mean") is not None and r.get("sd") is not None),
+        key=lambda r: float(r["x"]),
+    )
+    observed = [r for r in rows if r.get("y") is not None]
+    x_train = np.array([float(r["x"]) for r in observed])
+    y_train = np.array([float(r["y"]) for r in observed])
 
-    x_lo, x_hi = min(-5.0, x_train.min() - 1.0), max(5.0, x_train.max() + 1.0)
-    x_test = np.linspace(x_lo, x_hi, 80)
-    mean, cov = _gp_posterior(x_train, y_train, x_test)
-    std = np.sqrt(np.clip(np.diag(cov), 0.0, None))
+    if given:
+        # The caller computed the posterior: draw it as given, fit nothing.
+        x_test = np.array([float(r["x"]) for r in given])
+        mean = np.array([float(r["mean"]) for r in given])
+        std = np.array([float(r["sd"]) for r in given])
+        n_samples = 0
+        samples: np.ndarray = np.empty((len(x_test), 0))
+        x_lo = float(np.min(np.concatenate([x_test, x_train])))
+        x_hi = float(np.max(np.concatenate([x_test, x_train])))
+        if x_hi == x_lo:
+            x_lo, x_hi = x_lo - 1.0, x_hi + 1.0
+    else:
+        if not observed:
+            raise ValueError("no row carries an observed 'y' nor a 'mean' and 'sd'")
+        x_lo, x_hi = min(-5.0, x_train.min() - 1.0), max(5.0, x_train.max() + 1.0)
+        x_test = np.linspace(x_lo, x_hi, 80)
+        mean, cov = _gp_posterior(x_train, y_train, x_test)
+        std = np.sqrt(np.clip(np.diag(cov), 0.0, None))
+        rng = np.random.default_rng(4)
+        jitter = 1e-6 * np.eye(len(x_test))
+        chol = np.linalg.cholesky(cov + jitter)
+        n_samples = 3
+        samples = mean[:, None] + chol @ rng.standard_normal((len(x_test), n_samples))
     lo, hi = mean - 1.96 * std, mean + 1.96 * std
-
-    rng = np.random.default_rng(4)
-    jitter = 1e-6 * np.eye(len(x_test))
-    chol = np.linalg.cholesky(cov + jitter)
-    n_samples = 3
-    samples = mean[:, None] + chol @ rng.standard_normal((len(x_test), n_samples))
 
     # `np.min(arr)` rather than `arr.min()`: numpy 2.5's stubs reject the
     # zero-argument method form on these arrays, though it is valid NumPy. The
     # functional form is equivalent and types cleanly across versions.
-    y_min = min(np.min(lo), np.min(y_train), np.min(samples))
-    y_max = max(np.max(hi), np.max(y_train), np.max(samples))
+    drawn = [lo, hi, y_train, samples.ravel()]
+    y_min = min(float(np.min(a)) for a in drawn if a.size)
+    y_max = max(float(np.max(a)) for a in drawn if a.size)
     pad = (y_max - y_min) * 0.1 or 1.0
+
+    def tick_text(value: float, step: float) -> str:
+        """A tick label with as many decimals as the step needs.
+
+        The demo keeps its historical one decimal; a given posterior lives on
+        the caller's scale (years, thousands), where ``1950.0`` is noise.
+        """
+        return fmt_tick(value, step) if given else f"{value:.1f}"
+
+    # A few points get a hover bubble each; hundreds get a smaller dot and
+    # their native <title> only, or the bubbles outweigh the figure.
+    few = len(observed) <= 60
 
     plot_x, plot_y = 60.0, 118.0
     right_margin, bottom_reserved = 30.0, 60.0
@@ -163,14 +208,22 @@ def build_svg(
     parts: List[str] = []
     parts.append(svg_open(width, height, "gp-title", "gp-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="gp-title">{xml_escape(title)}</title>')
-    parts.append(
-        f'<desc id="gp-desc">Gaussian process posterior fit to {len(rows)} observed points. '
-        f'Shaded band is the 95% credible interval; three faint lines are posterior samples.</desc>'
-    )
+    if given:
+        desc = (
+            f"Gaussian process posterior given on {len(given)} points from "
+            f"{x_lo:.4g} to {x_hi:.4g}, over {len(observed)} observed points. "
+            f"Shaded band is the 95% credible interval."
+        )
+    else:
+        desc = (
+            f"Gaussian process posterior fit to {len(rows)} observed points. "
+            f"Shaded band is the 95% credible interval; three faint lines are posterior samples."
+        )
+    parts.append(f'<desc id="gp-desc">{xml_escape(desc)}</desc>')
     parts.append(
         "<style>"
         ".tip{opacity:0;pointer-events:none;transition:opacity .12s ease}"
-        f"{foreground_tip_css(len(rows), mark_prefix='point')}"
+        f"{foreground_tip_css(len(observed) if few else 0, mark_prefix='point')}"
         "@media (prefers-reduced-motion:reduce){.tip{transition:none}}"
         "</style>"
     )
@@ -194,13 +247,39 @@ def build_svg(
             )
             parts.append(
                 f'<text x="{plot_x - 10:.1f}" y="{ty + 4:.1f}" font-size="11" font-family="{mono_family}" '
-                f'fill="{SECONDARY}" text-anchor="end">{val:.1f}</text>'
+                f'fill="{SECONDARY}" text-anchor="end">{tick_text(val, y_step)}</text>'
             )
         val += y_step
     parts.append(
         f'<text x="18" y="{plot_y + plot_h / 2:.1f}" font-size="13" fill="{INK}" '
-        f'text-anchor="middle" transform="rotate(-90 18 {plot_y + plot_h / 2:.1f})">f(x)</text>'
+        f'text-anchor="middle" transform="rotate(-90 18 {plot_y + plot_h / 2:.1f})">'
+        f'{xml_escape(y_label)}</text>'
     )
+
+    # ---- extrapolation: rule the observed range when the grid leaves it ----
+    if given and observed:
+        edges = (float(np.min(x_train)), float(np.max(x_train)))
+        outside = ((x_lo, edges[0]), (edges[1], x_hi))
+        # The label sits above the plot, anchored on the rule and running
+        # outward, so a narrow extrapolated zone still gets its name.
+        label_w = 72.0
+        for edge, (a, b), anchor, side in zip(
+            edges, outside, ("end", "start"), (-1.0, 1.0), strict=True
+        ):
+            if x_for(b) - x_for(a) < 1.0:
+                continue
+            rule = x_for(edge)
+            parts.append(
+                f'<line x1="{rule:.1f}" y1="{plot_y:.1f}" x2="{rule:.1f}" '
+                f'y2="{plot_y + plot_h:.1f}" stroke="{INK}" stroke-width="1" '
+                f'stroke-dasharray="3 3" opacity="0.5"/>'
+            )
+            label_x = rule + side * 4.0
+            if 0.0 <= label_x + side * label_w <= width:
+                parts.append(
+                    f'<text x="{label_x:.1f}" y="{plot_y - 6:.1f}" font-size="11" '
+                    f'fill="{SECONDARY}" text-anchor="{anchor}">extrapolation</text>'
+                )
 
     # ---- 95% credible band ----
     top_pts = [(x_for(x), y_for(v)) for x, v in zip(x_test, hi, strict=True)]
@@ -218,7 +297,11 @@ def build_svg(
     # ---- posterior mean ----
     mean_pts = [(x_for(x), y_for(v)) for x, v in zip(x_test, mean, strict=True)]
     mean_d = "M " + " L ".join(f"{x:.1f},{y:.1f}" for x, y in mean_pts)
-    tip = f"GP posterior mean, {len(rows)} observations, RBF kernel"
+    tip = (
+        f"GP posterior mean, {len(observed)} observations"
+        if given
+        else f"GP posterior mean, {len(rows)} observations, RBF kernel"
+    )
     parts.append(
         f'<path tabindex="0" d="{mean_d}" fill="none" stroke="{COLOR_MEAN}" stroke-width="2.5">'
         f'<title>{xml_escape(tip)}</title></path>'
@@ -229,9 +312,15 @@ def build_svg(
     # z-index; a bubble next to its own point would be covered by any point
     # drawn afterward) -- see _svg.foreground_tip_css's docstring.
     tip_bubbles: List[str] = []
-    for i, r in enumerate(rows):
+    for i, r in enumerate(observed):
         cx, cy = x_for(float(r["x"])), y_for(float(r["y"]))
         tip = f"Observed: x={float(r['x']):.2f}, y={float(r['y']):.2f}"
+        if not few:
+            parts.append(
+                f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="2" fill="{COLOR_POINT}">'
+                f'<title>{xml_escape(tip)}</title></circle>'
+            )
+            continue
         parts.append(
             f'<circle id="point-{i}" class="hit" tabindex="0" cx="{cx:.1f}" cy="{cy:.1f}" r="5" fill="{COLOR_POINT}" '
             f'stroke="{BG}" stroke-width="1.5"><title>{xml_escape(tip)}</title></circle>'
@@ -259,12 +348,12 @@ def build_svg(
             tx = x_for(val)
             parts.append(
                 f'<text x="{tx:.1f}" y="{axis_y + 20:.1f}" font-size="11" font-family="{mono_family}" '
-                f'fill="{SECONDARY}" text-anchor="middle">{val:.1f}</text>'
+                f'fill="{SECONDARY}" text-anchor="middle">{tick_text(val, x_step)}</text>'
             )
         val += x_step
     parts.append(
         f'<text x="{plot_x + plot_w / 2:.1f}" y="{axis_y + 42:.1f}" font-size="13" '
-        f'fill="{INK}" text-anchor="middle">x</text>'
+        f'fill="{INK}" text-anchor="middle">{xml_escape(x_label)}</text>'
     )
 
     parts.extend(tip_bubbles)
@@ -281,6 +370,8 @@ def make_gaussian_process(
     subtitle: str = "Gaussian-process posterior: mean and 95% band, 3 sample draws",
     width: int = 745,
     height: int = 480,
+    x_label: str = "x",
+    y_label: str = "f(x)",
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -290,8 +381,9 @@ def make_gaussian_process(
     Parameters
     ----------
     data : list[dict[str, Any]] or None
-        Observed points, rows with keys ``x``, ``y`` (float). Defaults to
-        DEMO_DATA.
+        Observed points, rows with keys ``x``, ``y`` (float), or a posterior
+        computed elsewhere as rows with ``x``, ``mean`` and ``sd`` (see
+        :func:`build_svg`). Defaults to DEMO_DATA.
     out : Path, str, or None
         Output path (.svg). Defaults to
         ``assets/svg-examples/gaussian-process.svg``.
@@ -299,6 +391,8 @@ def make_gaussian_process(
         Chart text.
     width, height : int
         Canvas size in pixels.
+    x_label, y_label : str
+        Axis titles.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
     theme : str, optional
@@ -316,7 +410,8 @@ def make_gaussian_process(
     True
     """
     svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
-                     mode=mode, accessibility=accessibility, theme=theme)
+                    x_label=x_label, y_label=y_label,
+                    mode=mode, accessibility=accessibility, theme=theme)
     dest = Path(out) if out else svg_example_path(__file__, "gaussian-process")
     return write_svg(dest, svg, theme=theme)
 

@@ -103,6 +103,11 @@ def _ramp(fraction: float) -> Tuple[float, float, float]:
     return tuple(start[i] + (end[i] - start[i]) * fraction for i in range(3))  # type: ignore[return-value]
 
 
+
+#: The method's own vocabulary: right over any data, so never reported as
+#: leftover demo text (see sprezzature_figures.make_figure.demo_texts).
+METHOD_TEXT = ('not yet measured',)
+
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
     title: str = "Churn settles at month 5, and one bad calendar month cuts across every cohort",

@@ -31,7 +31,7 @@ from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _scale import nice_ticks_range  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY, cycle_hues  # noqa: E402
-from _svg import foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _svg import fmt_tick, foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 
@@ -110,6 +110,8 @@ def build_svg(
     pad = (raw_v_max - raw_v_min) * 0.1 or 1.0
     y_gridline_vals = nice_ticks_range(raw_v_min - pad, raw_v_max + pad, 5)
     v_min, v_max = y_gridline_vals[0], y_gridline_vals[-1]
+    # Tick decimals follow the step: a 0.05 step must not print "1, 1, 1".
+    y_step = (y_gridline_vals[1] - y_gridline_vals[0]) if len(y_gridline_vals) > 1 else 1.0
 
     plot_x, plot_y = 60.0, 118.0
     right_margin, bottom_reserved = 30.0, 60.0
@@ -156,7 +158,7 @@ def build_svg(
         )
         parts.append(
             f'<text x="{plot_x - 10:.1f}" y="{ty + 4:.1f}" font-size="11" font-family="{mono_family}" '
-            f'fill="{SECONDARY}" text-anchor="end">{val:.0f}</text>'
+            f'fill="{SECONDARY}" text-anchor="end">{fmt_tick(val, y_step)}</text>'
         )
     parts.append(
         f'<text x="18" y="{plot_y + plot_h / 2:.1f}" font-size="13" fill="{INK}" '

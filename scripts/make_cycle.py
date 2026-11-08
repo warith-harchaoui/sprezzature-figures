@@ -51,6 +51,7 @@ Author
 from __future__ import annotations
 
 import math
+import re
 import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -58,7 +59,8 @@ from typing import Any, Dict, List, Optional, Tuple
 # The house-style palette lives in _style (stdlib-only, safe to import
 # without the dataviz tier).
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _style import forced_color_patterns, leveled_colors, os_adaptive_style, os_dark_style  # noqa: E402
+from _style import cycle_hues, forced_color_patterns, leveled_colors, os_adaptive_style, os_dark_style  # noqa: E402
+from _textfit import wrap_to_width  # noqa: E402
 from _svg import foreground_tip_css, point_on_circle, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
@@ -251,11 +253,66 @@ DEMO_DATA: List[Dict[str, Any]] = [
     for p in _phases()
 ]
 
+#: Hues for a caller's phases, in order (the demo's season hues are its own).
+_USER_HUES = ["Blue", "Orange", "Purple", "Green", "Red", "Teal", "Pink", "Indigo"]
+
+
+def _css_key(value: Any, index: int) -> str:
+    """A phase key safe for a CSS class; the position stands in for a blank one."""
+    text = re.sub(r"[^A-Za-z0-9_-]", "-", str(value or "")).strip("-")
+    return text or f"p{index}"
+
+
+def _user_phases(
+    rows: List[Dict[str, Any]], accessibility: str, theme: str
+) -> List[Dict[str, Any]]:
+    """The caller's rows as phases: one hue each, equal arcs when no duration.
+
+    ``months`` is the arc's duration (any unit, see ``unit``); a row without
+    one, or with a non-positive one, takes a full share like its neighbours.
+    """
+    keys = [_css_key(r.get("key") or r.get("label"), i) for i, r in enumerate(rows)]
+    # Two rows with the same key would share one CSS rule: number the repeats.
+    seen: Dict[str, int] = {}
+    for i, k in enumerate(keys):
+        if k in seen:
+            keys[i] = f"{k}-{i}"
+        seen[k] = i
+    hues = cycle_hues(keys, accessibility, hues=_USER_HUES, theme=theme)
+    phases = []
+    for k, r in zip(keys, rows, strict=True):
+        try:
+            span = float(r.get("months", 1.0))
+        except (TypeError, ValueError):
+            span = 1.0
+        phases.append({"key": k, "label": str(r.get("label", "")), "sub": str(r.get("sub") or ""),
+                       "months": span if span > 0 else 1.0, "color": hues[k]})
+    return phases
+
+
+def _rim_text(label: str, sub: str, x: float, y: float, anchor: str, weight: int) -> str:
+    """A caller's rim label: the name wrapped at word boundaries, then its sub line."""
+    lines = wrap_to_width(label, 220.0, 18.5, bold=True)
+    sub_lines = wrap_to_width(sub, 220.0, 14.5) if sub else []
+    total = len(lines) * 22 + len(sub_lines) * 18
+    top = y - total / 2 + 11
+    out = []
+    for i, line in enumerate(lines):
+        out.append(f'<text x="{x:.1f}" y="{top + i * 22:.1f}" font-size="18.5" font-weight="{weight}" '
+                   f'fill="{_INK}" text-anchor="{anchor}" dominant-baseline="middle">{_xml(line)}</text>')
+    for j, line in enumerate(sub_lines):
+        out.append(f'<text x="{x:.1f}" y="{top + len(lines) * 22 + j * 18:.1f}" font-size="14.5" '
+                   f'fill="{_SUBTLE}" text-anchor="{anchor}" dominant-baseline="middle">{_xml(line)}</text>')
+    return "".join(out)
+
 
 def build_svg(
+    data: Optional[List[Dict[str, Any]]] = None,
     mode: str = "self-contained", accessibility: str = "universal", theme: str = "corporate",
-    hub_label: str = "ONE FIELD", hub_title: str = "Winter wheat",
+    hub_label: Optional[str] = None, hub_title: Optional[str] = None,
     title: Optional[str] = None,
+    subtitle: Optional[str] = None,
+    unit: Optional[str] = None,
 ) -> str:
     """Assemble the full cycle-wheel SVG document as a string.
 
@@ -274,16 +331,36 @@ def build_svg(
         Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
         the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
         See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
-    hub_label, hub_title : str, optional
-        The two centre-hub lines (was hardcoded ``"ONE FIELD"``/``"Winter
-        wheat"``).
+    data : list of dict or None, optional
+        One row per phase, in clockwise order from the top: ``label``, and
+        optionally ``key``, ``sub`` (a second line under the label) and
+        ``months`` (its duration, which sets the arc length; any unit, named
+        by ``unit``). ``None`` draws the winter-wheat demo.
+    hub_label, hub_title : str or None, optional
+        The two centre-hub lines. ``None`` prints the demo's over the demo
+        and leaves the hub empty over caller data.
+    title, subtitle : str or None, optional
+        Header text. ``None`` prints the demo's over the demo and none over
+        caller data.
+    unit : str or None, optional
+        What a phase's ``months`` counts ("days", "turns"). Given, each arc
+        prints its count and the hub its total; omitted over caller data,
+        arcs only show their share of the turn.
 
     Returns
     -------
     str
         A complete, standalone SVG document.
     """
-    phases = _phases(accessibility)
+    is_demo = not data
+    phases = _phases(accessibility) if is_demo else _user_phases(list(data or []), accessibility, theme)
+    if is_demo:
+        hub_label = "ONE FIELD" if hub_label is None else hub_label
+        hub_title = "Winter wheat" if hub_title is None else hub_title
+        unit = "months" if unit is None else unit
+    else:
+        hub_label = hub_label or ""
+        hub_title = hub_title or ""
     total = sum(float(p["months"]) for p in phases)
     r_mid = (_R_IN + _R_OUT) / 2.0
     pad_deg = 1.2  # hairline gap so arcs read as distinct acts
@@ -304,11 +381,14 @@ def build_svg(
 
     # ---- header + accessibility ----
     parts.append(svg_open(_WIDTH, _HEIGHT, "cycle-title", "cycle-desc", font_family=chrome_stack_for_theme(theme)))
-    parts.append(
-        '<title id="cycle-title">The winter-wheat year: one field spends most '
-        'of its turn in the slow winter tillering stage</title>'
-    )
     peak = phases[peak_idx]
+    if is_demo:
+        parts.append(
+            '<title id="cycle-title">The winter-wheat year: one field spends most '
+            'of its turn in the slow winter tillering stage</title>'
+        )
+    else:
+        parts.append(f'<title id="cycle-title">{_xml(title or "Cycle")}</title>')
     desc = (
         "Cycle wheel of the winter-wheat crop year. A ring of coloured arcs, "
         "one per growth stage, sweeps clockwise from the top; each arc's length "
@@ -320,6 +400,10 @@ def build_svg(
         + f". The longest is {_xml(str(peak['label']))}, {float(peak['months']):.0f} "
         "months over winter; the reproductive stages of late spring are the "
         "thinnest, fastest arcs."
+    ) if is_demo else (
+        f"Cycle of {len(phases)} phases, clockwise from the top: "
+        + ", ".join(_xml(str(p["label"])) for p in phases)
+        + ", then back to the first."
     )
     parts.append(f'<desc id="cycle-desc">{desc}</desc>')
 
@@ -376,16 +460,25 @@ def build_svg(
     # ---- title + subtitle ----
     # The headline the figure writes about its own data, used only when
     # the caller supplies none.
-    title = title or 'A field is never idle: the winter-wheat year'
-    parts.append(
-        f'<text x="56" y="66" font-size="33" font-weight="700" '
-        f'fill="{_INK}">{xml_escape(title)}</text>'
-    )
-    parts.append(
-        f'<text x="56" y="100" font-size="18" fill="{_SUBTLE}">'
-        f'Share of the crop year each growth stage occupies &#183; sown in '
-        f'October, harvested the next July</text>'
-    )
+    if is_demo:
+        title = title or 'A field is never idle: the winter-wheat year'
+        subtitle = subtitle if subtitle is not None else (
+            'Share of the crop year each growth stage occupies &#183; sown in '
+            'October, harvested the next July')
+        sub_markup = subtitle  # demo text already carries its entity
+    else:
+        title = title or ""
+        sub_markup = xml_escape(subtitle or "")
+    if title:
+        parts.append(
+            f'<text x="56" y="66" font-size="33" font-weight="700" '
+            f'fill="{_INK}">{xml_escape(title)}</text>'
+        )
+    if sub_markup:
+        parts.append(
+            f'<text x="56" y="100" font-size="18" fill="{_SUBTLE}">'
+            f'{sub_markup}</text>'
+        )
 
     # ---- phase arcs (the ring) ----
     parts.append('<g>')
@@ -398,10 +491,16 @@ def build_svg(
         path = _annular_sector(_CX, _CY, _R_IN, _R_OUT, start, end)
         share = 100.0 * float(p["months"]) / total
         months = float(p["months"])
-        month_word = "month" if months == 1 else "months"
-        tip = (
-            f'{_xml(str(p["label"]))} &#183; {_xml(str(p["sub"]))} &#183; '
-            f'{months:.0f} {month_word} ({share:.0f}% of the year)'
+        if is_demo and unit == "months":
+            month_word = "month" if months == 1 else "months"
+            span_text = f"{months:.0f} {month_word} ({share:.0f}% of the year)"
+        elif unit:
+            whole = "year" if is_demo else "cycle"
+            span_text = f"{months:g} {unit} ({share:.0f}% of the {whole})"
+        else:
+            span_text = f"{share:.0f}% of the cycle"
+        tip = " &#183; ".join(
+            t for t in (_xml(str(p["label"])), _xml(str(p["sub"])), span_text) if t
         )
         parts.append(
             f'<g class="phase phase-{k}">'
@@ -415,12 +514,18 @@ def build_svg(
         mid = (a0 + a1) / 2.0
         mx, my = _polar(_CX, _CY, r_mid, mid)
         count_size = 21 if months >= 1.5 else 17
-        parts.append(
-            f'<text x="{mx:.1f}" y="{my:.1f}" font-size="{count_size}" '
-            f'font-weight="700" font-family="Roboto Mono, monospace" '
-            f'fill="#FFFFFF" text-anchor="middle" dominant-baseline="central" '
-            f'style="pointer-events:none">{months:.0f}</text>'
-        )
+        if is_demo or unit:
+            parts.append(
+                f'<text x="{mx:.1f}" y="{my:.1f}" font-size="{count_size}" '
+                f'font-weight="700" font-family="Roboto Mono, monospace" '
+                f'fill="#FFFFFF" text-anchor="middle" dominant-baseline="central" '
+                f'style="pointer-events:none">{months:g}</text>'
+                if not is_demo else
+                f'<text x="{mx:.1f}" y="{my:.1f}" font-size="{count_size}" '
+                f'font-weight="700" font-family="Roboto Mono, monospace" '
+                f'fill="#FFFFFF" text-anchor="middle" dominant-baseline="central" '
+                f'style="pointer-events:none">{months:.0f}</text>'
+            )
         # This tooltip stays right where the old adjacent-sibling version put
         # it (last inside its own .phase-N group, immediately before that
         # group's own </g>): the arc it belongs to is nested inside this same
@@ -433,7 +538,7 @@ def build_svg(
         parts.append(
             tooltip_bubble(
                 mx, my + 22,
-                [str(p["label"]), f"{months:.0f} {month_word} ({share:.0f}% of the year)", str(p["sub"])],
+                [t for t in (str(p["label"]), span_text, str(p["sub"])) if t],
                 canvas_w=_WIDTH, canvas_h=_HEIGHT, ink=_INK, secondary=_SUBTLE, border=_GRID,
                 elem_id=f"tip-{i}",
             )
@@ -469,15 +574,18 @@ def build_svg(
             f'stroke="{_GRID}" stroke-width="1.6"/>'
             f'<g class="phase-label label-hit" tabindex="0" role="listitem" '
             f'aria-label="{_xml(str(p["label"]))}, {_xml(str(p["sub"]))}">'
-            f'<text x="{lx:.1f}" y="{ly - 8:.1f}" font-size="18.5" '
-            f'font-weight="{name_weight}" fill="{name_fill}" '
-            f'text-anchor="{anchor}" dominant-baseline="middle">'
-            f'{_xml(str(p["label"]))}</text>'
-            f'<text x="{lx:.1f}" y="{ly + 13:.1f}" font-size="14.5" '
-            f'font-family="Roboto Mono, monospace" fill="{_SUBTLE}" '
-            f'text-anchor="{anchor}" dominant-baseline="middle">'
-            f'{_xml(str(p["sub"]))}</text>'
-            f'</g></g>'
+            + (
+                f'<text x="{lx:.1f}" y="{ly - 8:.1f}" font-size="18.5" '
+                f'font-weight="{name_weight}" fill="{name_fill}" '
+                f'text-anchor="{anchor}" dominant-baseline="middle">'
+                f'{_xml(str(p["label"]))}</text>'
+                f'<text x="{lx:.1f}" y="{ly + 13:.1f}" font-size="14.5" '
+                f'font-family="Roboto Mono, monospace" fill="{_SUBTLE}" '
+                f'text-anchor="{anchor}" dominant-baseline="middle">'
+                f'{_xml(str(p["sub"]))}</text>'
+                if is_demo else _rim_text(str(p["label"]), str(p["sub"]), lx, ly, anchor, name_weight)
+            )
+            + '</g></g>'
         )
         _ = ha  # side computed for anchor; retained for future dx nudging
 
@@ -520,15 +628,23 @@ def build_svg(
         f'<text x="{_CX}" y="{_CY + 14:.1f}" font-size="30" font-weight="700" '
         f'fill="{_INK}" text-anchor="middle">{_xml(hub_title)}</text>'
     )
-    parts.append(
-        f'<text x="{_CX}" y="{_CY + 42:.1f}" font-size="16" fill="{_SUBTLE}" '
-        f'text-anchor="middle">12 months, one turn</text>'
-    )
+    total_line = f"{total:g} {unit}, one turn" if unit else ""
+    if total_line:
+        parts.append(
+            f'<text x="{_CX}" y="{_CY + 42:.1f}" font-size="16" fill="{_SUBTLE}" '
+            f'text-anchor="middle">{_xml(total_line)}</text>'
+        )
 
     # ---- reading annotation on the longest phase ----
     # Anchor the leader on the LOWER part of the peak arc (not its mid, which
     # already carries the in-arc month count) and run it to a note tucked in
     # the lower-right, so the line stays short and never crosses the wheel.
+    if not is_demo:
+        # The callout and the reading note are sentences about the wheat
+        # year; over caller phases the ring and its labels say it all.
+        parts.append(fullscreen_control(_WIDTH, _HEIGHT, mode))
+        parts.append('</svg>')
+        return "\n".join(parts)
     peak_a0, peak_a1 = spans[peak_idx]
     anchor_deg = peak_a0 + 0.72 * (peak_a1 - peak_a0)
     ppx, ppy = _polar(_CX, _CY, _R_OUT - 20.0, anchor_deg)
@@ -584,8 +700,10 @@ def make_cycle(
     *,
     out: Optional[Path | str] = None,
     title: str = "",
-    hub_label: str = "ONE FIELD",
-    hub_title: str = "Winter wheat",
+    subtitle: Optional[str] = None,
+    hub_label: Optional[str] = None,
+    hub_title: Optional[str] = None,
+    unit: Optional[str] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -593,26 +711,18 @@ def make_cycle(
     """Render the winter-wheat cycle-wheel SVG and write it to ``out``.
 
     The standard ``make_<kind>`` entry the figure registry dispatches to.
-    The seven growth-stage phases, their month spans and the whole
-    narrative annotation are baked into :func:`build_svg`, matching
-    :data:`DEMO_DATA`; ``data`` is accepted for dispatcher parity but not
-    threaded into the drawn ring, since the figure's prose (title,
-    "how to read it", the peak-phase callout) is written for this specific
-    seven-phase story rather than an arbitrary phase list.
+    Without ``data`` it draws the winter-wheat demo with its narrative
+    annotation; with ``data`` it draws the caller's phases and none of the
+    demo's prose.
 
     Parameters
     ----------
     data : list[dict[str, Any]] or None
-        Accepted for contract parity; unused (see above). Defaults to
-        :data:`DEMO_DATA` conceptually.
+        One row per phase (see :func:`build_svg`). Defaults to the demo.
     out : Path, str, or None
         Output path (.svg). Defaults to ``assets/svg-examples/cycle.svg``.
-    title : str, optional
-        Accepted for dispatcher/CLI parity; unused, since the chart's
-        title is fixed prose.
-    hub_label, hub_title : str, optional
-        The two centre-hub lines (was hardcoded ``"ONE FIELD"``/``"Winter
-        wheat"``).
+    title, subtitle, hub_label, hub_title, unit : optional
+        Forwarded to :func:`build_svg`.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
     theme : str, optional
@@ -623,8 +733,8 @@ def make_cycle(
     Path
         Absolute path to the written SVG file.
     """
-    _ = data, title  # accepted for dispatcher parity; see docstring
-    svg = build_svg(mode=mode, accessibility=accessibility, theme=theme, hub_label=hub_label, hub_title=hub_title, title=title or None)
+    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme, hub_label=hub_label,
+                    hub_title=hub_title, title=title or None, subtitle=subtitle, unit=unit)
     dest = Path(out) if out else svg_example_path(__file__, "cycle")
     return write_svg(dest, svg, theme=theme)
 

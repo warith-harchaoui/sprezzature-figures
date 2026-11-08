@@ -869,6 +869,15 @@ def make_network(
     """
     rows = data if data else DEMO_DATA
     services, calls = _rows_to_graph(rows)
+    if data:
+        # The demo's description and hint speak of services, Auth and a store;
+        # over caller rows they describe a graph that is not on the page.
+        if desc is None:
+            names = [label for _id, label, _team in services]
+            desc = (f"Node-link diagram of {len(services)} nodes and {len(calls)} arrows. "
+                    f"Nodes: {', '.join(names)}.")
+        if hint is None:
+            hint = "Node size grows with incoming arrows · hover or focus a node to trace its links"
     svg = build_svg(
         services=services, calls=calls, mode=mode, accessibility=accessibility,
         title=title, subtitle=subtitle, desc=desc, legend_title=legend_title, hint=hint,

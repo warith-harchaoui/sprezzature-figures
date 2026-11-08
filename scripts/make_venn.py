@@ -209,6 +209,8 @@ def build_svg(
     accessibility: str = "universal",
     theme: str = "corporate",
     title: Optional[str] = None,
+    subtitle: Optional[str] = None,
+    unit: Optional[str] = None,
 ) -> str:
     """Assemble the full three-set Venn SVG document as a string.
 
@@ -231,6 +233,12 @@ def build_svg(
         Visual theme: ``"corporate"`` (default, Roboto -- byte-identical to
         the pre-theme render) or ``"academic"`` (LaTeX-style Latin Modern).
         See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
+    title, subtitle : str or None, optional
+        Header text. ``None`` prints the demo's over the demo and none over
+        caller rows.
+    unit : str or None, optional
+        What one count counts. ``None`` reads "people" over the demo and
+        leaves counts bare over caller rows.
 
     Returns
     -------
@@ -248,10 +256,17 @@ def build_svg(
     # ---- header ----
     parts: List[str] = []
     parts.append(svg_open(_WIDTH, _HEIGHT, "vn-title", "vn-desc", font_family=chrome_stack_for_theme(theme)))
-    parts.append(
-        '<title id="vn-title">Overlapping skills among data '
-        'professionals</title>'
-    )
+    is_demo = not data
+    # What one count counts: the demo's people, a caller's own unit or none.
+    unit = ("people" if is_demo else "") if unit is None else unit
+    unit_sp = f" {unit}" if unit else ""
+    if is_demo:
+        parts.append(
+            '<title id="vn-title">Overlapping skills among data '
+            'professionals</title>'
+        )
+    else:
+        parts.append(f'<title id="vn-title">{_xml(title or "Three-set Venn diagram")}</title>')
     desc = (
         "Three-set Venn diagram of skills held by 1,000 surveyed data "
         "professionals. "
@@ -262,6 +277,13 @@ def build_svg(
         + f". The central region — fluent in all three — is the largest at "
         f"{regions['ABC']}, and Python plus SQL together add another "
         f"{regions['AB']}."
+    ) if is_demo else (
+        "Three-set Venn diagram. "
+        + "; ".join(
+            f"{_xml(str(sets[key]['label']))} total {totals[key]}"
+            for key in ("A", "B", "C")
+        )
+        + f". All three together: {regions['ABC']}."
     )
     parts.append(f'<desc id="vn-desc">{desc}</desc>')
 
@@ -339,16 +361,24 @@ def build_svg(
     # ---- title + subtitle ----
     # The headline the figure writes about its own data, used only
     # when the caller supplies none.
-    title = title or "Most data pros speak Python, SQL and Cloud at once"
-    parts.append(
-        f'<text x="52" y="66" font-size="31" font-weight="700" '
-        f'fill="{_INK}">{_xml(title)}</text>'
-    )
-    parts.append(
-        f'<text x="52" y="102" font-size="19" fill="{_SUBTLE}">'
-        f'Skills held by 1,000 surveyed data professionals · counts are '
-        f'people per region</text>'
-    )
+    if is_demo:
+        title = title or "Most data pros speak Python, SQL and Cloud at once"
+        subtitle = subtitle if subtitle is not None else (
+            "Skills held by 1,000 surveyed data professionals · counts are "
+            "people per region")
+    else:
+        title = title or ""
+        subtitle = subtitle or ""
+    if title:
+        parts.append(
+            f'<text x="52" y="66" font-size="31" font-weight="700" '
+            f'fill="{_INK}">{_xml(title)}</text>'
+        )
+    if subtitle:
+        parts.append(
+            f'<text x="52" y="102" font-size="19" fill="{_SUBTLE}">'
+            f'{_xml(subtitle)}</text>'
+        )
 
     # ---- the three circles ----
     # Each set is its own focusable group: a translucent fill lobe plus a
@@ -398,7 +428,7 @@ def build_svg(
             )
         region_names = " + ".join(str(sets[ltr]["label"]) for ltr in key)
         share = 100 * count / grand if grand else 0.0
-        region_tip = f"{region_names}: {count} people ({share:.0f}% of {grand})"
+        region_tip = f"{region_names}: {count}{unit_sp} ({share:.0f}% of {grand})"
         parts.append(
             f'<text id="region-{region_i}" class="hit" tabindex="0" x="{x:.1f}" y="{y:.1f}" font-size="28" font-weight="700" '
             f'fill="{_INK}" text-anchor="middle" dominant-baseline="middle" '
@@ -408,7 +438,7 @@ def build_svg(
         region_bubbles.append(
             tooltip_bubble(
                 x, y - 34,
-                [region_names, f"{count} people", f"{share:.0f}% of {grand}"],
+                [region_names, f"{count}{unit_sp}", f"{share:.0f}% of {grand}"],
                 anchor="middle", canvas_w=_WIDTH, canvas_h=_HEIGHT,
                 ink=_INK, secondary=_SUBTLE, border="#E5E5EA",
                 elem_id=f"regiontip-{region_i}",
@@ -448,7 +478,7 @@ def build_svg(
         parts.append(
             f'<text class="setlabel setlabel-{ltr}" x="{lx:.1f}" '
             f'y="{ly + 27:.1f}" font-size="18" fill="{_SUBTLE}" '
-            f'text-anchor="{anchor}">{totals[ltr]} people</text>'
+            f'text-anchor="{anchor}">{totals[ltr]}{unit_sp}</text>'
         )
         # Bubble last within this group (same parent as its own hit circle,
         # per the id pair above), so it sits above this set's own labels --
@@ -458,7 +488,7 @@ def build_svg(
         parts.append(
             tooltip_bubble(
                 lx, ly - 34,
-                [str(s["label"]), f"{totals[ltr]} of {grand} people", f"{100 * totals[ltr] / grand:.0f}% of total"],
+                [str(s["label"]), f"{totals[ltr]} of {grand}{unit_sp}", f"{100 * totals[ltr] / grand:.0f}% of total"],
                 anchor=anchor, canvas_w=_WIDTH, canvas_h=_HEIGHT,
                 ink=_INK, secondary=_SUBTLE, border="#E5E5EA",
                 elem_id=f"settip-{set_i}",
@@ -469,7 +499,7 @@ def build_svg(
     # ---- footer note ----
     parts.append(
         f'<text x="52" y="{_HEIGHT - 30}" font-size="17" fill="{_SUBTLE}">'
-        f'Each region counts people once · hover or tab to a set to bring it '
+        f'Each region counts{(" " + unit) if unit else " an item"} once · hover or tab to a set to bring it '
         f'forward</text>'
     )
 
@@ -484,6 +514,8 @@ def make_venn(
     *,
     out: "Optional[Path | str]" = None,
     title: str = "",
+    subtitle: Optional[str] = None,
+    unit: Optional[str] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -498,9 +530,12 @@ def make_venn(
         rows. Defaults to :data:`DEMO_DATA`.
     out : Path, str, or None
         Output path (.svg). Defaults to ``assets/svg-examples/venn.svg``.
-    title : str, optional
-        Accepted for dispatcher parity; the diagram's own headline states
-        the specific takeaway, so this is unused.
+    title, subtitle : str, optional
+        Header text. Empty keeps the demo's over the demo and prints none over
+        caller rows.
+    unit : str or None, optional
+        What one count counts ("people", "models"). Defaults to the demo's
+        "people" over the demo and to a bare number over caller rows.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
     theme : str, optional
@@ -511,7 +546,8 @@ def make_venn(
     Path
         Absolute path to the written SVG file.
     """
-    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme, title=title or None)
+    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme, title=title or None,
+                    subtitle=subtitle, unit=unit)
     dest = Path(out) if out else svg_example_path(__file__, "venn")
     return write_svg(dest, svg, theme=theme)
 

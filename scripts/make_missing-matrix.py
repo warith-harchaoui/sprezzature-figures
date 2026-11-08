@@ -131,6 +131,11 @@ def _pair_overlap(
     return best, best_score
 
 
+
+#: The method's own vocabulary: right over any data, so never reported as
+#: leftover demo text (see sprezzature_figures.make_figure.demo_texts).
+METHOD_TEXT = ('Records, in arrival order',)
+
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
     title: str = "One field was added partway through; two others go missing together",

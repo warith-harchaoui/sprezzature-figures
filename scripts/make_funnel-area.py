@@ -298,7 +298,7 @@ def build_svg(
         # columns, because the first draft put the rate on the boundary
         # *inside* the funnel, where a short band's own count ran into it.
         parts.append(
-            f'<text x="{plot_x - 16:.1f}" y="{middle + 18:.1f}" font-size="10" '
+            f'<text x="{plot_x - 16:.1f}" y="{middle + 16:.1f}" font-size="10" '
             f'fill="{SECONDARY}" text-anchor="end" font-family="{mono_family}">'
             f'{fmt_number(share)}% of the top</text>'
         )

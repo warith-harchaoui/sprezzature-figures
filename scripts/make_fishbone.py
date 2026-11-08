@@ -73,6 +73,11 @@ DEMO_DATA: List[Dict[str, Any]] = [
 ]
 
 
+
+#: The method's own vocabulary: right over any data, so never reported as
+#: leftover demo text (see sprezzature_figures.make_figure.demo_texts).
+METHOD_TEXT = ('a hunch',)
+
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
     title: str = "Deployment carries a third of it, and two in five causes have no evidence",
@@ -83,7 +88,7 @@ def build_svg(
     cause: str = "cause",
     weight: str = "weight",
     evidenced: str = "evidenced",
-    effect: str = "Checkout incidents",
+    effect: Optional[str] = None,
     weight_label: str = "incidents",
     evidence_label: str = "evidenced",
     hunch_label: str = "a hunch",
@@ -110,8 +115,9 @@ def build_svg(
         without one count as 1, so a plain brainstorm still draws.
     evidenced : str
         Row key for whether anything measured stands behind the cause.
-    effect : str
-        The thing being explained, drawn at the head of the spine.
+    effect : str or None
+        The thing being explained, drawn at the head of the spine. ``None``
+        names the demo's over the demo and reads "Effect" over caller rows.
     weight_label : str
         What the weights count.
     evidence_label, hunch_label : str
@@ -134,6 +140,10 @@ def build_svg(
     rows = list(data if data else DEMO_DATA)
     if not rows:
         raise ValueError("a cause-and-effect diagram needs at least one cause")
+    # The demo explains checkout incidents; caller causes explain what the
+    # caller names, and an unnamed effect is printed as such, never as ours.
+    if effect is None:
+        effect = "Checkout incidents" if not data else "Effect"
 
     grouped: Dict[str, List[Tuple[str, float, bool]]] = {}
     for row in rows:
@@ -353,7 +363,7 @@ def make_fishbone(
     cause: str = "cause",
     weight: str = "weight",
     evidenced: str = "evidenced",
-    effect: str = "Checkout incidents",
+    effect: Optional[str] = None,
     weight_label: str = "incidents",
     evidence_label: str = "evidenced",
     hunch_label: str = "a hunch",
@@ -381,8 +391,8 @@ def make_fishbone(
         Row key for how much the cause contributes.
     evidenced : str
         Row key for whether anything measured stands behind it.
-    effect : str
-        The thing being explained.
+    effect : str or None
+        The thing being explained; see :func:`build_svg`.
     weight_label : str
         What the weights count.
     evidence_label, hunch_label : str

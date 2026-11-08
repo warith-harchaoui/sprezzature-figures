@@ -518,12 +518,20 @@ def recommend_cmd(data_path: str, limit: int, goal: str | None, render_out: str 
     "and a count per severity -- for a caller that acts on the result instead "
     "of reading it. The exit code is the same either way.",
 )
+@click.option(
+    "--kind",
+    "kind",
+    default=None,
+    help="The figure kind the SVG was rendered with from your data. Adds the rule "
+    "that none of that kind's demo names, headlines or chrome may appear.",
+)
 def check_cmd(
     svg: str,
     dark: bool,
     expected_title: str | None,
     forbidden: tuple[str, ...],
     fmt: str,
+    kind: str | None,
 ) -> None:
     """Check a rendered SVG for the failures that are decidable from markup.
 
@@ -540,7 +548,8 @@ def check_cmd(
 
     _emit(
         lambda: actions.check(
-            svg, dark=dark, expected_title=expected_title, forbidden=forbidden, fmt=fmt
+            svg, dark=dark, expected_title=expected_title, forbidden=forbidden, fmt=fmt,
+            kind=kind,
         )
     )
 

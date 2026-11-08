@@ -445,6 +445,11 @@ def _seat_disk(
     return circle, bubble
 
 
+
+#: The method's own vocabulary: right over any data, so never reported as
+#: leftover demo text (see sprezzature_figures.make_figure.demo_texts).
+METHOD_TEXT = ('Largest bloc',)
+
 def build_svg(
     parties: Optional[List[Tuple[str, str, int, str]]] = None,
     readout_label: str = "Largest bloc",

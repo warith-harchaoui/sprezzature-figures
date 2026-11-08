@@ -51,7 +51,7 @@
 <text x="691.7" y="538.0" font-size="11" fill="#6E6E73" text-anchor="middle" font-family="Roboto Mono, ui-monospace, monospace">41</text>
 <text x="751.3" y="538.0" font-size="11" fill="#6E6E73" text-anchor="middle" font-family="Roboto Mono, ui-monospace, monospace">45</text>
 <text x="446.0" y="564.0" font-size="12" fill="#6E6E73" text-anchor="middle">Month</text>
-<text x="32.0" y="194.0" font-size="12" fill="#6E6E73">Subscriptions</text>
+<text x="32.0" y="190.0" font-size="12" fill="#6E6E73">Subscriptions</text>
 <rect id="pt-0" class="pt hit" tabindex="0" role="img" aria-label="Observed · 1 · 1199" x="90.0" y="202.0" width="12" height="316.0" fill="transparent"><title>1: 1199</title></rect>
 <rect id="pt-1" class="pt hit" tabindex="0" role="img" aria-label="Observed · 2 · 1223" x="104.9" y="202.0" width="12" height="316.0" fill="transparent"><title>2: 1223</title></rect>
 <rect id="pt-2" class="pt hit" tabindex="0" role="img" aria-label="Observed · 3 · 1235" x="119.8" y="202.0" width="12" height="316.0" fill="transparent"><title>3: 1235</title></rect>

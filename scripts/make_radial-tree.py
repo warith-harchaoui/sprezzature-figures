@@ -314,7 +314,8 @@ def _compute_geometry(
         # Centre the parent on the angular span of its children.
         angle[node_id] = (angle[children[0]] + angle[children[-1]]) / 2.0
 
-    assign("root")
+    # The root is the node without a parent, whatever the caller named it.
+    assign(next((n for n, _l, p in nodes if p is None), "root"))
 
     geometry: Dict[str, dict] = {}
     for node_id, _label, _p in nodes:

@@ -158,6 +158,11 @@ def _ramp(fraction: float) -> Tuple[float, float, float]:
     return tuple(low[i] + (high[i] - low[i]) * fraction for i in range(3))  # type: ignore[return-value]
 
 
+
+#: The method's own vocabulary: right over any data, so never reported as
+#: leftover demo text (see sprezzature_figures.make_figure.demo_texts).
+METHOD_TEXT = ('colour does not line up',)
+
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
     title: str = "Five features push one way with their value; tenure pushes up at both ends",

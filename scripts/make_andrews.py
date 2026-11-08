@@ -251,6 +251,11 @@ def _poly_d(xs: np.ndarray, ys: np.ndarray) -> str:
     return "M" + " L".join(pts)
 
 
+
+#: The method's own vocabulary: right over any data, so never reported as
+#: leftover demo text (see sprezzature_figures.make_figure.demo_texts).
+METHOD_TEXT = ('Fourier term order:',)
+
 def build_svg(
     x_raw: np.ndarray,
     labels: List[str],

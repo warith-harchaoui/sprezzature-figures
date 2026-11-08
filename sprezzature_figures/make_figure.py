@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import importlib.util
 import inspect
+import re
 import sys
 import warnings
 from pathlib import Path
@@ -226,6 +227,76 @@ _ROLE_LABELS_FR = {
 }
 
 
+def _axis_roles(kind: str) -> dict[str, str]:
+    """The roles a generator declares for its axes and legend, if it does.
+
+    A generator whose x axis is not "the one categorical role" (a scatter's x
+    is a number) says which role each axis draws in a module-level
+    ``AXIS_ROLES = {"x": ..., "y": ..., "legend": ...}``. Without it, axis
+    titles are only guessed when the guess is unambiguous.
+    """
+    definition = _get_figure_definition(kind)
+    script_path = _SCRIPTS_DIR / Path(definition.module).name
+    if not script_path.exists():
+        return {}
+    mod = _load_module(script_path, f"_sprezzature_figures_axes_{kind.replace('-', '_')}")
+    roles = getattr(mod, "AXIS_ROLES", None)
+    return {str(k): str(v) for k, v in roles.items()} if isinstance(roles, dict) else {}
+
+
+def demo_texts(kind: str) -> list[str]:
+    """Strings that belong to `kind`'s demo and to nothing a caller drew.
+
+    Collected from three places, all in the generator: the string values of
+    its ``DEMO_DATA`` (names, labels, categories), the string defaults of its
+    ``build_svg`` and its module-level ``DEMO_TITLE`` / ``DEMO_SUBTITLE``
+    (headlines and captions written about the demo), and an optional
+    ``DEMO_TEXT`` tuple for chrome the demo prints that lives in neither
+    place. Words the generator declares in ``METHOD_TEXT`` are the method's
+    own vocabulary ("control limit", "collider") and are left out: they are
+    right over any data. Short strings (under four characters, or without
+    three letters in a row) are left out too, since they would match inside
+    ordinary words.
+    """
+    canonical = _resolve_kind(kind)
+    if canonical is None:
+        return []
+    definition = _get_figure_definition(canonical)
+    script_path = _SCRIPTS_DIR / Path(definition.module).name
+    if not script_path.exists():
+        return []
+    mod = _load_module(script_path, f"_sprezzature_figures_demotext_{canonical.replace('-', '_')}")
+    found: list[str] = []
+
+    def walk(value: Any) -> None:
+        if isinstance(value, str):
+            found.append(value)
+        elif isinstance(value, dict):
+            for item in value.values():
+                walk(item)
+        elif isinstance(value, (list, tuple)):
+            for item in value:
+                walk(item)
+
+    walk(getattr(mod, "DEMO_DATA", []))
+    for name in ("DEMO_TITLE", "DEMO_SUBTITLE", "DEMO_TEXT"):
+        walk(getattr(mod, name, ()))
+    build = getattr(mod, "build_svg", None)
+    if build is not None:
+        skip = {"mode", "accessibility", "theme", "language", "lang"}
+        for name, param in inspect.signature(build).parameters.items():
+            if name not in skip and isinstance(param.default, str) and " " in param.default:
+                found.append(param.default)
+    method = {str(t) for t in getattr(mod, "METHOD_TEXT", ())}
+    keep = []
+    for text in dict.fromkeys(found):
+        text = text.strip()
+        if text in method or len(text) < 4 or not re.search(r"[A-Za-z]{3}", text):
+            continue
+        keep.append(text)
+    return keep
+
+
 def user_data_chrome_kwargs(
     kind: str, mapping: dict[str, str] | None = None, language: str = "en"
 ) -> dict[str, Any]:
@@ -261,15 +332,106 @@ def user_data_chrome_kwargs(
             return _ROLE_LABELS_FR.get(nom, nom)
         return nom
 
-    if len(category_roles) == 1:
+    axes = _axis_roles(canonical)
+    # Without a declaration, the roles say which axis is which only for the
+    # plain shape "one category, one number"; a second number (a line's x)
+    # makes either guess a coin toss, and a wrong axis title is a false one.
+    plain = len(category_roles) == 1 and len(numeric_roles) == 1
+    if "x" in axes:
+        kwargs["x_label"] = libelle(axes["x"])
+    elif plain:
         kwargs["x_label"] = libelle(category_roles[0].name)
-    if len(numeric_roles) == 1:
+    if "y" in axes:
+        kwargs["y_label"] = libelle(axes["y"])
+    elif plain:
         kwargs["y_label"] = libelle(numeric_roles[0].name)
     return kwargs
 
 
+#: Axis and legend titles that generators default to a caption about their own
+#: demo rows ("Lag (months)", "Visits (thousands)", "Channel"). Each group says
+#: which data parameter names the column the title belongs to.
+_X_TITLES = ("x_label", "x_axis_title", "x_axis_label")
+_Y_TITLES = ("y_label", "y_axis_title", "y_axis_label", "value_label", "rank_label")
+_LEGEND_TITLES = ("legend_title", "region_legend_title", "size_legend_title")
+_X_KEYS = ("x", "time", "date", "month", "period")
+_Y_KEYS = ("y", "value", "metric")
+_LEGEND_KEYS = ("series", "group", "category", "hue", "color", "colour", "team")
+
+
+def _bound_column(params: Any, kwargs: dict[str, Any], keys: tuple[str, ...]) -> str | None:
+    """The column a generator reads for one of `keys`, as the caller bound it.
+
+    The caller's own value wins; the generator's default comes next, since a
+    default like ``x="month"`` is a column name, not a caption.
+    """
+    for key in keys:
+        if key in kwargs and isinstance(kwargs[key], str) and kwargs[key]:
+            return str(kwargs[key])
+        param = params.get(key)
+        if param is not None and isinstance(param.default, str) and param.default:
+            return str(param.default)
+    return None
+
+
+def _titles_from_bindings(
+    kind: str, fn: Any, data: list[dict[str, Any]], kwargs: dict[str, Any]
+) -> dict[str, Any]:
+    """Name every axis and legend the caller left untitled after its own columns.
+
+    A generator's default axis title describes its demo rows; over user rows
+    it states something false. Neither a blank axis (a quantity with no name)
+    nor the demo caption is acceptable, so the title becomes the column the
+    axis actually draws. Only titles the caller did not set are filled.
+    """
+    try:
+        params = inspect.signature(fn).parameters
+    except (TypeError, ValueError):
+        return {}
+    definition = _get_figure_definition(kind)
+    roles = definition.required_roles
+    columns = list(data[0].keys()) if data and isinstance(data[0], dict) else []
+    axes = _axis_roles(kind)
+    categorical = [r.name for r in roles if "numeric" not in r.accepted_types]
+    numeric = [r.name for r in roles if "numeric" in r.accepted_types]
+    # A guess is made only when it cannot be wrong: a declared axis role, or
+    # the one role of its type. Otherwise the title stays empty, since a blank
+    # axis is a gap and a wrong one is a false statement.
+    plain = len(categorical) == 1 and len(numeric) == 1
+    fallback_x = axes.get("x") or (categorical[0] if plain else None)
+    fallback_y = axes.get("y") or (numeric[0] if plain else None)
+    filled: dict[str, Any] = {}
+    plan = (
+        (_X_TITLES, () if "x" in axes else _X_KEYS, fallback_x),
+        (_Y_TITLES, () if "y" in axes else _Y_KEYS, fallback_y),
+        (_LEGEND_TITLES, () if "legend" in axes else _LEGEND_KEYS, axes.get("legend")),
+    )
+    for titles, keys, fallback in plan:
+        column = _bound_column(params, kwargs, keys) or fallback
+        if column is not None and columns and column not in columns:
+            # A default key the caller's rows do not carry names nothing drawn.
+            column = fallback if fallback in columns else None
+        for title in titles:
+            param = params.get(title)
+            if param is None or title in kwargs or not isinstance(param.default, str):
+                continue
+            filled[title] = column or ""
+    # "<role>_label" / "<role>_legend_title": a caption named after the role it
+    # titles ("weight_legend_title", "cohort_label") takes that role's name.
+    role_names = {r.name for r in roles + definition.optional_roles}
+    for name, param in params.items():
+        for suffix in ("_legend_title", "_label"):
+            stem = name[: -len(suffix)] if name.endswith(suffix) else None
+            if stem and stem in role_names and name not in kwargs and isinstance(param.default, str):
+                filled.setdefault(name, stem)
+    return filled
+
+
 def _without_demo_chrome(
-    kind: str, data: list[dict[str, Any]] | None, kwargs: dict[str, Any]
+    kind: str,
+    data: list[dict[str, Any]] | None,
+    kwargs: dict[str, Any],
+    fn: Any = None,
 ) -> dict[str, Any]:
     """Fill the chrome kwargs a caller left empty, so demo chrome cannot show.
 
@@ -295,7 +457,44 @@ def _without_demo_chrome(
     langue = str(kwargs.get("language") or "en")
     for cle, valeur in user_data_chrome_kwargs(kind, language=langue).items():
         rempli.setdefault(cle, valeur)
+    if fn is not None:
+        # Titles the role table could not settle (two categorical roles, an
+        # axis title under another name) still must not keep the demo's.
+        for cle, valeur in _titles_from_bindings(kind, fn, data, rempli).items():
+            rempli.setdefault(cle, valeur)
+        for cle, valeur in _blank_demo_captions(kind, fn, rempli).items():
+            rempli.setdefault(cle, valeur)
     return rempli
+
+
+#: Parameter names that hold a caption rather than a column key.
+_CAPTION_NAME = re.compile(
+    r"(label|title|caption|note|annotation|headline|template|subtitle|text|hint)$"
+)
+
+
+def _blank_demo_captions(kind: str, fn: Any, kwargs: dict[str, Any]) -> dict[str, Any]:
+    """Empty every caption the caller left unset whose default is demo text.
+
+    An axis titled "Median hourly pay (US dollars)" or a total row called
+    "All regions" over a caller's rows states something about data that is not
+    on the page. Only parameters named like captions are touched (``x`` or
+    ``sort_by`` name columns and keep their defaults), and only when the
+    default is one of the kind's demo texts (:func:`demo_texts`, which leaves
+    the method's own vocabulary out).
+    """
+    try:
+        params = inspect.signature(fn).parameters
+    except (TypeError, ValueError):
+        return {}
+    demo = set(demo_texts(kind))
+    blanked: dict[str, Any] = {}
+    for name, param in params.items():
+        default = param.default
+        if (name not in kwargs and isinstance(default, str) and default.strip() in demo
+                and _CAPTION_NAME.search(name)):
+            blanked[name] = ""
+    return blanked
 
 
 def validate_figure_input(kind: str, data: Any = None, **kwargs: Any) -> list[ValidationIssue]:
@@ -559,7 +758,7 @@ def make_figure(kind: str, data: Any = None, **kwargs: Any) -> FigurePath:
             f"{definition.callable_name!r} (kind={canonical!r}, status={definition.status!r})."
         )
 
-    result = fn(data, **_filter_kwargs_for(fn, _without_demo_chrome(canonical, data, kwargs)))
+    result = fn(data, **_filter_kwargs_for(fn, _without_demo_chrome(canonical, data, kwargs, fn)))
     result_path = Path(result).resolve()
     if not result_path.exists():
         raise RuntimeError(

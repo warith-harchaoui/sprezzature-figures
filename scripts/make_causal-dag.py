@@ -160,6 +160,11 @@ def _blocked(
     return False
 
 
+
+#: The method's own vocabulary: right over any data, so never reported as
+#: leftover demo text (see sprezzature_figures.make_figure.demo_texts).
+METHOD_TEXT = ('collider · do not adjust', 'mediator · do not adjust')
+
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
     title: str = "Adjust for three; the hospital record would open a path that is closed",
@@ -169,8 +174,8 @@ def build_svg(
     source: str = "source",
     target: str = "target",
     observed: str = "observed",
-    treatment: str = "statin prescribed",
-    outcome: str = "heart attack",
+    treatment: Optional[str] = None,
+    outcome: Optional[str] = None,
     adjust_for: Optional[List[str]] = None,
     treatment_label: str = "treatment",
     outcome_label: str = "outcome",
@@ -198,9 +203,11 @@ def build_svg(
     source, target, observed : str
         Row keys for the two ends of each arrow and for whether the
         source node was measured.
-    treatment, outcome : str
+    treatment, outcome : str or None
         The two nodes the graph is about. Every other node's part is
-        worked out relative to these.
+        worked out relative to these. ``None`` names the demo's over the
+        demo; over caller arrows, the first arrow's tail and the last node
+        no arrow leaves.
     adjust_for : list of str or None
         The proposed adjustment set. ``None`` proposes the observed
         parents of `treatment`, which is the usual first answer and the
@@ -233,6 +240,17 @@ def build_svg(
         for node in (tail, head):
             if node not in nodes:
                 nodes.append(node)
+    # The demo names its own treatment and outcome; over caller arrows the
+    # defaults are the graph's own: the first arrow's tail as treatment and
+    # the node nothing leaves (the last such) as outcome.
+    if treatment is None:
+        treatment = "statin prescribed" if not data else arrows[0][0]
+    if outcome is None:
+        if not data:
+            outcome = "heart attack"
+        else:
+            sinks = [n for n in nodes if not any(t == n for t, _h in arrows)]
+            outcome = sinks[-1] if sinks else arrows[-1][1]
     for named, which in ((treatment, "treatment"), (outcome, "outcome")):
         if named not in nodes:
             raise ValueError(f"the {which} {named!r} is not a node of this graph")
@@ -524,8 +542,8 @@ def make_causal_dag(
     source: str = "source",
     target: str = "target",
     observed: str = "observed",
-    treatment: str = "statin prescribed",
-    outcome: str = "heart attack",
+    treatment: Optional[str] = None,
+    outcome: Optional[str] = None,
     adjust_for: Optional[List[str]] = None,
     treatment_label: str = "treatment",
     outcome_label: str = "outcome",
@@ -554,8 +572,8 @@ def make_causal_dag(
     source, target, observed : str
         Row keys for the two ends of each arrow and for whether the
         source node was measured.
-    treatment, outcome : str
-        The two nodes the graph is about.
+    treatment, outcome : str or None
+        The two nodes the graph is about; see :func:`build_svg`.
     adjust_for : list of str or None
         The proposed adjustment set; ``None`` proposes the observed
         parents of `treatment`.

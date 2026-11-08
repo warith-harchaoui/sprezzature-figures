@@ -191,6 +191,11 @@ _RULE_NAMES = {
 }
 
 
+
+#: The method's own vocabulary: right over any data, so never reported as
+#: leftover demo text (see sprezzature_figures.make_figure.demo_texts).
+METHOD_TEXT = ('control limits, not specification limits', 'lower control limit', 'upper control limit')
+
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
     title: str = "The run rule saw the shift at batch 43; a crossing came only at 45",
@@ -353,7 +358,9 @@ def build_svg(
     axis_low, axis_high = ticks[0], ticks[-1]
 
     plot_x = 100.0
-    plot_y = 202.0
+    # 208, not 202: the y-axis title sits between the two-line subtitle and
+    # the top tick, and at 202 it touched the subtitle's second line.
+    plot_y = 208.0
     plot_w = width - plot_x - 164.0
     plot_h = height - plot_y - 92.0
 

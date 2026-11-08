@@ -2696,6 +2696,21 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
         ],
         "optional_roles": [],
     },
+    # A flow is a list of arrows: the two ends are required, everything else
+    # (arrow text, the group of each end, a returning or dashed arrow) is not.
+    "flowchart": {
+        "required_roles": [
+            {"name": "source", "label": "Arrow tail", "accepted_types": ["categorical"], "required": True},
+            {"name": "target", "label": "Arrow head", "accepted_types": ["categorical"], "required": True},
+        ],
+        "optional_roles": [
+            {"name": "label", "label": "Text on the arrow", "accepted_types": ["categorical"], "required": False},
+            {"name": "source_group", "label": "Group of the tail", "accepted_types": ["categorical"], "required": False},
+            {"name": "target_group", "label": "Group of the head", "accepted_types": ["categorical"], "required": False},
+            {"name": "back", "label": "Returning arrow (1)", "accepted_types": ["numeric", "categorical"], "required": False},
+            {"name": "dashed", "label": "Dashed arrow (1)", "accepted_types": ["numeric", "categorical"], "required": False},
+        ],
+    },
     "gantt": {
         "required_roles": [
             {"name": "task", "label": "Task", "accepted_types": ["categorical"], "required": True},
@@ -2718,9 +2733,19 @@ HAND_ROLES: dict[str, dict[str, list[dict[str, Any]]]] = {
     "gaussian-process": {
         "required_roles": [
             {"name": "x", "label": "X value", "accepted_types": ["numeric"], "required": True},
-            {"name": "y", "label": "Y value", "accepted_types": ["numeric"], "required": True},
+            {
+                "name": "y",
+                "label": "Y value",
+                "accepted_types": ["numeric"],
+                "required": True,
+                # A gap here is data, not a mistake: a posterior grid row has no observation.
+                "tolerates_gaps": True,
+            },
         ],
-        "optional_roles": [],
+        "optional_roles": [
+            {"name": "mean", "label": "Posterior mean, given", "accepted_types": ["numeric"], "required": False},
+            {"name": "sd", "label": "Posterior standard deviation, given", "accepted_types": ["numeric"], "required": False},
+        ],
     },
     "hexbin": {
         "required_roles": [

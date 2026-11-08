@@ -2,7 +2,7 @@
 sprezzature-figures — FastAPI HTTP surface.
 
 Exposes :func:`sprezzature_figures.make_figure` (and the figure registry
-behind ``list_kinds`` / ``get_figure_definition``) over HTTP, so the 167 chart
+behind ``list_kinds`` / ``get_figure_definition``) over HTTP, so the 168 chart
 types can be rendered from any language, not just Python.
 
 What ships here
@@ -94,7 +94,7 @@ app = FastAPI(
         # of a string fragment is invisible to both the release test and
         # tools/bump_catalogue_count.py, which look for a catalogue word
         # beside the digits and cannot see across the closing quote.
-        "HTTP surface for sprezzature-figures: render any of 167 chart types, "
+        "HTTP surface for sprezzature-figures: render any of 168 chart types, "
         "every one hand-authored, from JSON rows."
     ),
     version=_VERSION,
@@ -104,7 +104,7 @@ app = FastAPI(
 
 # SPREZZATURE_RENDER_SCALE (read by scripts/_render.py's rasterisation choke
 # point) is a *process-wide* environment variable, not a per-call argument --
-# threading a --scale-equivalent through every one of the 167 hand-authored
+# threading a --scale-equivalent through every one of the 168 hand-authored
 # generator signatures was never done for the CLI either (see _render.py's
 # own docstring). That's fine for a one-shot CLI process, but this server
 # handles requests concurrently: two /render calls with different `scale`
@@ -324,7 +324,7 @@ def kinds(
     Call this FIRST whenever you do not already know the exact kind name
     you need: `render_figure` takes a name from this list, not a free
     description, and guessing one that does not exist fails the call. The
-    catalogue is a closed set of 167 hand-authored chart types, not an
+    catalogue is a closed set of 168 hand-authored chart types, not an
     x/y/kind combinator.
 
     Pass `status="stable"` for the render-verified subset. Once you have a
@@ -396,7 +396,7 @@ def kind_options(kind: str) -> list[OptionDefinition]:
     summary="Draw a chart from rows of data",
 )
 def render(kind: str, body: RenderRequest = RenderRequest()) -> Response:
-    """Render one of 167 chart types and return the file bytes.
+    """Render one of 168 chart types and return the file bytes.
 
     This is the tool for "chart this", "plot this", "draw me a bar chart /
     treemap / sankey", "visualise this data", "make a figure". You supply
@@ -568,7 +568,7 @@ def redraw_route(body: RedrawRequest) -> RedrawResponse:
     summary="Rank the chart types this data can fill",
 )
 def recommend(body: RecommendRequest) -> list[FigureCandidate]:
-    """Which of the 167 kinds suit these rows, best first, with columns bound.
+    """Which of the 168 kinds suit these rows, best first, with columns bound.
 
     This is the tool for "which chart should I use for this?", "what fits my
     data?", "quel graphique pour ces données ?" -- and the one to reach for

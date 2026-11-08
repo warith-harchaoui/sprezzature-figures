@@ -27,7 +27,7 @@ from typing import Any, Dict, List, Optional
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
-from _svg import foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _svg import fmt_tick, foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
@@ -156,7 +156,7 @@ def build_svg(
             )
             parts.append(
                 f'<text x="{plot_x - 10:.1f}" y="{ty + 4:.1f}" font-size="12" font-family="{mono_family}" '
-                f'fill="{SECONDARY}" text-anchor="end">{val:.0f}</text>'
+                f'fill="{SECONDARY}" text-anchor="end">{fmt_tick(val, step)}</text>'
             )
         val += step
     parts.append(
@@ -170,7 +170,8 @@ def build_svg(
         cx = plot_x + i * bin_w + bin_w / 2
         y_lo, y_hi = y_for(float(r["lo"])), y_for(float(r["hi"]))
         y_mean = y_for(float(r["mean"]))
-        tip = f"{r['g']}: mean {float(r['mean']):.0f} (95% CI {float(r['lo']):.0f}-{float(r['hi']):.0f})"
+        mean_t, lo_t, hi_t = (fmt_tick(float(r[k]), step) for k in ("mean", "lo", "hi"))
+        tip = f"{r['g']}: mean {mean_t} (95% CI {lo_t}-{hi_t})"
         parts.append(f'<g id="errbar-{i}" class="errbar hit" tabindex="0">')
         parts.append(f'<title>{xml_escape(tip)}</title>')
         parts.append(f'<line x1="{cx:.1f}" y1="{y_lo:.1f}" x2="{cx:.1f}" y2="{y_hi:.1f}" stroke="{INK}" stroke-width="1.5"/>')
@@ -181,7 +182,7 @@ def build_svg(
         errbar_tips.append(
             tooltip_bubble(
                 cx, y_hi - 14,
-                [str(r["g"]), f"mean {float(r['mean']):.0f}", f"95% CI {float(r['lo']):.0f}-{float(r['hi']):.0f}"],
+                [str(r["g"]), f"mean {mean_t}", f"95% CI {lo_t}-{hi_t}"],
                 anchor="middle", canvas_w=width, canvas_h=height,
                 ink=INK, secondary=SECONDARY, border=GRIDLINE,
                 elem_id=f"errbartip-{i}",

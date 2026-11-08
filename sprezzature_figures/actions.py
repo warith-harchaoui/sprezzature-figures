@@ -231,6 +231,7 @@ def check(
     expected_title: str | None = None,
     forbidden: Sequence[str] = (),
     fmt: str = "text",
+    kind: str | None = None,
 ) -> ActionResult:
     """Check a rendered SVG for the failures that are decidable from markup.
 
@@ -253,6 +254,9 @@ def check(
     forbidden : sequence of str, optional
         Strings that must not appear, on top of the demo chrome already
         known.
+    kind : str or None, optional
+        The figure kind the SVG was rendered with from your data: adds the
+        rule that none of that kind's demo text may appear.
     fmt : {"text", "json"}, optional
         ``"json"`` prints one object on stdout -- the findings with their
         rule, severity, message and detail, plus a count per severity and
@@ -272,7 +276,8 @@ def check(
 
     source = sys.stdin.read() if svg == "-" else Path(svg).read_text(encoding="utf-8")
     findings = check_render(
-        source, dark=dark, expected_title=expected_title, forbidden_text=list(forbidden)
+        source, dark=dark, expected_title=expected_title, forbidden_text=list(forbidden),
+        kind=kind,
     )
     if fmt == "json":
         import json

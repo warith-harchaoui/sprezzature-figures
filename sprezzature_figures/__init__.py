@@ -1,7 +1,7 @@
 """
 sprezzature_figures — publication-quality data figures.
 
-167 chart types, every one a hand-authored SVG.
+168 chart types, every one a hand-authored SVG.
 Every chart is callable as a library function and as a CLI command.
 Rows come in as a list of dicts, a pandas / polars / Arrow frame, or a
 dict of columns; the path that comes back draws itself in a notebook.
@@ -42,6 +42,6 @@ __all__ = [
     "RedrawResult",
 ]
 
-__version__ = "2.9.2"
+__version__ = "2.10.0"
 __author__ = "Warith HARCHAOUI"
 __email__ = "warithmetics@deraison.ai"

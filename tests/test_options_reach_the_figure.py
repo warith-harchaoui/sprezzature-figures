@@ -57,6 +57,15 @@ KNOWN_UNWIRED: dict[str, tuple[str, ...]] = {
 
 
 
+#: Options that pick something out of the data although their default is
+#: ``None``, so neither shape below can see them. `causal-dag` names its
+#: treatment and outcome after the graph it is given since 2026-11-07, and a
+#: sentinel there asks for a node that does not exist.
+DATA_SELECTORS: dict[str, tuple[str, ...]] = {
+    "causal-dag": ("treatment", "outcome"),
+}
+
+
 def _selects_from_the_data(kind: str, option: OptionDefinition) -> bool:
     """Whether `option` picks something out of the data rather than saying it.
 
@@ -68,6 +77,8 @@ def _selects_from_the_data(kind: str, option: OptionDefinition) -> bool:
     the figure raise rather than quietly drop a caption, which is a
     different test's job.
     """
+    if option.name in DATA_SELECTORS.get(kind, ()):
+        return True
     if not isinstance(option.default, str):
         return False
     definition = get_figure_definition(kind)

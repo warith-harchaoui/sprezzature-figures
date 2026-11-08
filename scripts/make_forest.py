@@ -137,9 +137,14 @@ def build_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
-    row_label_header: str = "Trial",
-    estimate_header: str = "OR (95% CI)",
+    row_label_header: Optional[str] = None,
+    estimate_header: Optional[str] = None,
     title: Optional[str] = None,
+    subtitle: Optional[str] = None,
+    axis_title: Optional[str] = None,
+    estimate_name: Optional[str] = None,
+    left_label: Optional[str] = None,
+    right_label: Optional[str] = None,
 ) -> str:
     """Assemble the full forest-plot SVG string.
 
@@ -151,11 +156,20 @@ def build_svg(
         custom data is passed, the pooled diamond is recomputed from it (a
         simple inverse-variance-weighted average on the log scale) rather
         than using the shipped example's fixed :data:`POOLED` summary.
-    row_label_header : str, optional
-        Header above the left study-label column. Defaults to ``"Trial"``.
-    estimate_header : str, optional
-        Header above the right numeric-estimate column. Defaults to
-        ``"OR (95% CI)"``.
+    row_label_header, estimate_header : str or None, optional
+        Column headers. ``None`` prints the demo's (``"Trial"``,
+        ``"OR (95% CI)"``) over the demo; over caller rows, no row header and
+        ``"Estimate (95% CI)"``.
+    title, subtitle, axis_title : str or None, optional
+        Header and axis text. ``None`` prints the demo's over the demo; over
+        caller rows, no title, a subtitle stating the pooled estimate and an
+        axis titled after ``estimate_name``.
+    estimate_name : str or None, optional
+        What a row's ``or_`` is ("odds ratio", "risk ratio", "ratio of
+        errors"). Defaults to the demo's "odds ratio", "estimate" otherwise.
+    left_label, right_label : str or None, optional
+        The "favours" notes either side of the null line. ``None`` prints
+        the demo's over the demo and none over caller rows.
     mode : str, optional
         Interactivity mode passed to :func:`_interactive.fullscreen_control`
         (``"self-contained"``, ``"external"`` or ``"static"``). Defaults to
@@ -176,6 +190,17 @@ def build_svg(
         A complete, standalone SVG document.
     """
     rows: List[Dict[str, Any]] = data if data else STUDIES
+    is_demo = not data
+    if is_demo:
+        row_label_header = "Trial" if row_label_header is None else row_label_header
+        estimate_header = "OR (95% CI)" if estimate_header is None else estimate_header
+        estimate_name = estimate_name or "odds ratio"
+        abbr = "OR"
+    else:
+        row_label_header = row_label_header or ""
+        estimate_header = estimate_header or "Estimate (95% CI)"
+        estimate_name = estimate_name or "estimate"
+        abbr = "Estimate" if estimate_name == "estimate" else estimate_name
     palette: Dict[str, str] = load_palette(accessibility, theme=theme)
     blue = palette.get("Blue", "#007AFF")
     green = palette.get("Green", "#34C759")
@@ -213,9 +238,22 @@ def build_svg(
     # Odds ratios live naturally on a log axis: 0.5 and 2.0 are then
     # equidistant from the null at 1.0. Ticks span the data with a
     # little headroom.
-    x_min, x_max = 0.4, 5.0
+    if is_demo:
+        x_min, x_max = 0.4, 5.0
+        ticks = [0.5, 1.0, 2.0, 4.0]
+    else:
+        # The caller's intervals set the axis, with the null always on it.
+        lows = [float(s["lo"]) for s in rows] + [1.0]
+        highs = [float(s["hi"]) for s in rows] + [1.0]
+        x_min, x_max = min(lows) / 1.15, max(highs) * 1.15
+        grid = [0.01, 0.02, 0.05, 0.1, 0.2, 0.25, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.25, 1.5,
+                2.0, 4.0, 5.0, 10.0, 20.0, 50.0, 100.0]
+        inside = [t for t in grid if x_min <= t <= x_max]
+        # Keep at most six ticks, always the null, spread evenly in log space.
+        while len(inside) > 6:
+            inside = [t for i, t in enumerate(inside) if i % 2 == 0 or t == 1.0]
+        ticks = inside or [1.0]
     lmin, lmax = math.log(x_min), math.log(x_max)
-    ticks = [0.5, 1.0, 2.0, 4.0]
 
     def sx(v: float) -> float:
         """Map an odds-ratio value to an x pixel coordinate (log scale)."""
@@ -254,7 +292,8 @@ def build_svg(
         or_p = math.exp(pooled_log)
         lo_p = math.exp(pooled_log - 1.96 * se)
         hi_p = math.exp(pooled_log + 1.96 * se)
-        pooled_label = "Pooled (random effects)"
+        # This is a fixed-effect inverse-variance mean; it is named as such.
+        pooled_label = "Pooled (inverse-variance)"
         pooled_het = "inverse-variance weighted"
     else:
         or_p = float(POOLED["or_"])
@@ -265,19 +304,28 @@ def build_svg(
 
     # --- SVG root + accessible description ------------------------
     parts.append(svg_open(width, height, "fp-title", "fp-desc", font_family=chrome_stack_for_theme(theme)))
-    parts.append(
-        '<title id="fp-title">Forest plot: home blood-pressure telemonitoring '
-        'raises the odds of reaching target</title>'
-    )
-    parts.append(
-        f'<desc id="fp-desc">Meta-analysis forest plot of {n} randomised trials. '
-        f'Each row shows a trial’s odds ratio for reaching the blood-pressure '
-        f'target as a box (area ∝ study weight) with a 95% confidence-interval '
-        f'whisker, on a logarithmic axis with a null rule at 1.0. The pooled '
-        f'random-effects diamond is centred at {or_p:.2f} '
-        f'(95% CI {lo_p:.2f} to {hi_p:.2f}), clearly to the right of the null, so '
-        f'the programme increases the odds of reaching target overall.</desc>'
-    )
+    if is_demo:
+        parts.append(
+            '<title id="fp-title">Forest plot: home blood-pressure telemonitoring '
+            'raises the odds of reaching target</title>'
+        )
+        parts.append(
+            f'<desc id="fp-desc">Meta-analysis forest plot of {n} randomised trials. '
+            f'Each row shows a trial’s odds ratio for reaching the blood-pressure '
+            f'target as a box (area ∝ study weight) with a 95% confidence-interval '
+            f'whisker, on a logarithmic axis with a null rule at 1.0. The pooled '
+            f'random-effects diamond is centred at {or_p:.2f} '
+            f'(95% CI {lo_p:.2f} to {hi_p:.2f}), clearly to the right of the null, so '
+            f'the programme increases the odds of reaching target overall.</desc>'
+        )
+    else:
+        parts.append(f'<title id="fp-title">{xml_escape(title or "Forest plot")}</title>')
+        parts.append(
+            f'<desc id="fp-desc">Forest plot of {n} rows. Each row shows its '
+            f'{xml_escape(estimate_name)} as a box (area ∝ weight) with a 95% interval, '
+            f'on a logarithmic axis with a null rule at 1.0. The pooled diamond is centred '
+            f'at {or_p:.2f} (95% CI {lo_p:.2f} to {hi_p:.2f}).</desc>'
+        )
 
     # prefers-reduced-motion guard + hover/focus highlight.
     #
@@ -321,16 +369,26 @@ def build_svg(
     # --- title + subtitle (the takeaway) -------------------------
     # The headline the figure writes about its own data, used only
     # when the caller supplies none.
-    title = title or "Telemonitoring helps patients hit their BP target"
-    parts.append(
-        f'<text x="{m_left}" y="36" font-size="18" font-weight="700" '
-        f'fill="{ink}">{xml_escape(title)}</text>'
-    )
-    parts.append(
-        f'<text x="{m_left}" y="58" font-size="12.5" fill="{secondary}">'
-        f'Pooled odds ratio {or_p:.2f} (95% CI {lo_p:.2f}–{hi_p:.2f}) across '
-        f'{n} randomised trials · {pooled_het}</text>'
-    )
+    if is_demo:
+        title = title or "Telemonitoring helps patients hit their BP target"
+        sub_text = subtitle if subtitle is not None else (
+            f'Pooled odds ratio {or_p:.2f} (95% CI {lo_p:.2f}–{hi_p:.2f}) across '
+            f'{n} randomised trials · {pooled_het}')
+    else:
+        title = title or ""
+        sub_text = subtitle if subtitle is not None else (
+            f'Pooled {estimate_name} {or_p:.2f} (95% CI {lo_p:.2f}–{hi_p:.2f}) across '
+            f'{n} rows · {pooled_het}')
+    if title:
+        parts.append(
+            f'<text x="{m_left}" y="36" font-size="18" font-weight="700" '
+            f'fill="{ink}">{xml_escape(title)}</text>'
+        )
+    if sub_text:
+        parts.append(
+            f'<text x="{m_left}" y="58" font-size="12.5" fill="{secondary}">'
+            f'{xml_escape(sub_text) if not is_demo or subtitle is not None else sub_text}</text>'
+        )
 
     # --- column headers ------------------------------------------
     parts.append(
@@ -376,7 +434,7 @@ def build_svg(
         crosses = float(s["lo"]) <= 1.0 <= float(s["hi"])
         sig_note = "crosses the null" if crosses else "significant"
         tip = (
-            f'{s["label"]}: OR {float(s["or_"]):.2f} '
+            f'{s["label"]}: {abbr} {float(s["or_"]):.2f} '
             f'(95% CI {float(s["lo"]):.2f}–{float(s["hi"]):.2f}), '
             f'weight {pct}% — {sig_note}'
         )
@@ -451,7 +509,7 @@ def build_svg(
         row_tips.append(
             tooltip_bubble(
                 cx, cy - half - 12,
-                [str(s["label"]), f'OR {float(s["or_"]):.2f} (95% CI {float(s["lo"]):.2f}-{float(s["hi"]):.2f})',
+                [str(s["label"]), f'{abbr} {float(s["or_"]):.2f} (95% CI {float(s["lo"]):.2f}-{float(s["hi"]):.2f})',
                  f'weight {pct}% - {sig_note}'],
                 anchor="middle", canvas_w=width, canvas_h=height,
                 ink=ink, secondary=secondary, border=GRIDLINE,
@@ -470,8 +528,8 @@ def build_svg(
         f"{dhi:.1f},{dy:.1f} {dcx:.1f},{dy + dh:.1f}"
     )
     pooled_tip = (
-        f'Pooled random-effects OR {or_p:.2f} '
-        f'(95% CI {lo_p:.2f}–{hi_p:.2f}), {pooled_het}'
+        (f'Pooled random-effects OR {or_p:.2f} ' if is_demo else f'{pooled_label} {abbr} {or_p:.2f} ')
+        + f'(95% CI {lo_p:.2f}–{hi_p:.2f}), {pooled_het}'
     )
     pooled_i = len(rows)
     parts.append(
@@ -504,7 +562,7 @@ def build_svg(
     row_tips.append(
         tooltip_bubble(
             dcx, dy - dh - 12,
-            [pooled_label, f'OR {or_p:.2f} (95% CI {lo_p:.2f}-{hi_p:.2f})', pooled_het],
+            [pooled_label, f'{abbr} {or_p:.2f} (95% CI {lo_p:.2f}-{hi_p:.2f})', pooled_het],
             anchor="middle", canvas_w=width, canvas_h=height,
             ink=ink, secondary=secondary, border=GRIDLINE,
             elem_id=f"rowtip-{pooled_i}",
@@ -519,6 +577,8 @@ def build_svg(
         f'<line x1="{sx(x_min):.1f}" y1="{axis_y:.1f}" x2="{sx(x_max):.1f}" '
         f'y2="{axis_y:.1f}" stroke="{ink}" stroke-width="1"/>'
     )
+    axis_default = ("Odds ratio for reaching BP target (log scale, higher is better)"
+                    if is_demo else f"{estimate_name.capitalize()} (log scale)")
     for t in ticks:
         px = sx(t)
         parts.append(
@@ -533,19 +593,24 @@ def build_svg(
     parts.append(
         f'<text x="{(sx(x_min) + sx(x_max)) / 2:.1f}" y="{axis_y + 38:.1f}" '
         f'font-size="12" fill="{ink}" text-anchor="middle">'
-        f'Odds ratio for reaching BP target (log scale, higher is better)</text>'
+        f'{xml_escape(axis_title) if axis_title else axis_default}</text>'
     )
 
     # --- "favours" annotations flanking the null -----------------
     fav_y = axis_top - 6
-    parts.append(
-        f'<text x="{null_x - 8:.1f}" y="{fav_y:.1f}" font-size="10.5" '
-        f'fill="{secondary}" text-anchor="end">← favours usual care</text>'
-    )
-    parts.append(
-        f'<text x="{null_x + 8:.1f}" y="{fav_y:.1f}" font-size="10.5" '
-        f'fill="{secondary}">favours telemonitoring →</text>'
-    )
+    if is_demo:
+        left_label = "favours usual care" if left_label is None else left_label
+        right_label = "favours telemonitoring" if right_label is None else right_label
+    if left_label:
+        parts.append(
+            f'<text x="{null_x - 8:.1f}" y="{fav_y:.1f}" font-size="10.5" '
+            f'fill="{secondary}" text-anchor="end">← {xml_escape(left_label)}</text>'
+        )
+    if right_label:
+        parts.append(
+            f'<text x="{null_x + 8:.1f}" y="{fav_y:.1f}" font-size="10.5" '
+            f'fill="{secondary}">{xml_escape(right_label)} →</text>'
+        )
 
     parts.append(fullscreen_control(width, height, mode))
     parts.append("</svg>")
@@ -560,8 +625,13 @@ def make_forest(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
-    row_label_header: str = "Trial",
-    estimate_header: str = "OR (95% CI)",
+    row_label_header: Optional[str] = None,
+    estimate_header: Optional[str] = None,
+    subtitle: Optional[str] = None,
+    axis_title: Optional[str] = None,
+    estimate_name: Optional[str] = None,
+    left_label: Optional[str] = None,
+    right_label: Optional[str] = None,
 ) -> Path:
     """Render the meta-analysis forest plot and write it to ``out``.
 
@@ -575,9 +645,8 @@ def make_forest(
         recomputed from these rows (see :func:`build_svg`).
     out : Path, str, or None
         Output path (.svg). Defaults to ``assets/svg-examples/forest.svg``.
-    title : str, optional
-        Accepted for dispatcher/CLI parity; unused, since the chart's
-        title is fixed prose.
+    title, subtitle, axis_title, estimate_name, left_label, right_label : optional
+        Forwarded to :func:`build_svg`.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
     theme : str, optional
@@ -590,7 +659,6 @@ def make_forest(
     Path
         Absolute path to the written SVG file.
     """
-    _ = title  # accepted for dispatcher parity; see docstring
     svg = build_svg(
         data,
         mode=mode,
@@ -598,7 +666,13 @@ def make_forest(
         theme=theme,
         row_label_header=row_label_header,
         estimate_header=estimate_header,
-     title=title or None)
+        title=title or None,
+        subtitle=subtitle,
+        axis_title=axis_title,
+        estimate_name=estimate_name,
+        left_label=left_label,
+        right_label=right_label,
+    )
     dest = Path(out) if out else svg_example_path(__file__, "forest")
     return write_svg(dest, svg, theme=theme)
 

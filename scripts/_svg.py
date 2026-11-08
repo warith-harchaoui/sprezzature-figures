@@ -314,6 +314,44 @@ def fmt_measured(v: float, scale: float) -> str:
     return f"{v:.{places}f}"
 
 
+def fmt_tick(v: float, step: float) -> str:
+    """Format a tick (or a value read against ticks) with the decimals of its step.
+
+    Why this exists. Two generators printed every tick with ``:.0f``, so an
+    axis stepping by 0.05 read "1, 1, 1, 1" and a mean of 0.93 printed "1".
+    The decimals a tick needs are exactly the ones that make its step a whole
+    number: 5 needs none, 0.5 one, 0.25 two. An integer step keeps the
+    integer rendering, so a figure that only ever drew whole steps is
+    unchanged.
+
+    Parameters
+    ----------
+    v : float
+        The value to render.
+    step : float
+        The tick step of the axis the value is read against.
+
+    Returns
+    -------
+    str
+        ``v`` with between zero and four decimals.
+
+    Examples
+    --------
+    >>> fmt_tick(10.0, 5.0)
+    '10'
+    >>> fmt_tick(0.95, 0.05)
+    '0.95'
+    >>> fmt_tick(0.5, 0.25)
+    '0.50'
+    """
+    places = 0
+    if step > 0:
+        while places < 4 and abs(step * 10**places - round(step * 10**places)) > 1e-9 * 10**places:
+            places += 1
+    return f"{v:.{places}f}"
+
+
 def fmt_magnitude(v: float, lang: str = "en") -> str:
     """Format a large axis tick compactly: ``1200000`` becomes ``1.2M``.
 

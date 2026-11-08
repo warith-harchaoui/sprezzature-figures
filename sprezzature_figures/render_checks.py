@@ -541,6 +541,76 @@ def _check_inside_canvas(
     return findings
 
 
+#: Two labels closer than this, without covering each other, read as one
+#: run of ink: an axis's lowest tick and the other axis's first tick met at
+#: the origin corner and printed "-80" where "-8" and "0" were meant.
+_TOUCH_GAP_PX = 1.5
+
+
+def _check_touching(labels: Sequence[_Label]) -> list[RenderFinding]:
+    """Report labels that do not overlap but touch, edge to edge.
+
+    Only pairs on different baselines are judged: two pieces of one line of
+    text (a tspan run, a value set right after its unit) legitimately sit
+    flush against each other, while labels from different rows that touch
+    are two marks the eye can no longer separate. Lines of one stacked list
+    (same anchor point, same size) are spaced by their own leading and are
+    left out.
+    """
+    droits = [label for label in labels if not label.rotated]
+    findings: list[RenderFinding] = []
+    for i, gauche in enumerate(droits):
+        g_x1, g_x2 = gauche.box
+        g_y1, g_y2 = gauche.bande
+        for droite in droits[i + 1:]:
+            if abs(gauche.y - droite.y) <= _SAME_ROW_PX:
+                continue
+            # Two lines of one stacked list (same anchor point, same size)
+            # sit at their own line spacing on purpose; a list read top to
+            # bottom is not two marks running together.
+            if (abs(gauche.x - droite.x) <= _SAME_ROW_PX and gauche.anchor == droite.anchor
+                    and abs(gauche.size - droite.size) < 0.01):
+                continue
+            d_x1, d_x2 = droite.box
+            d_y1, d_y2 = droite.bande
+            gap_x = max(d_x1 - g_x2, g_x1 - d_x2)
+            gap_y = max(d_y1 - g_y2, g_y1 - d_y2)
+            covering = gap_x < -_OVERLAP_TOLERANCE_PX and gap_y < -_OVERLAP_TOLERANCE_PX
+            if covering:
+                continue  # reported by _check_overlaps
+            if gap_x < _TOUCH_GAP_PX and gap_y < _TOUCH_GAP_PX:
+                findings.append(
+                    RenderFinding(
+                        "labels_touch",
+                        "two labels touch, so they read as one",
+                        f"{gauche.text!r} / {droite.text!r} are "
+                        f"{max(gap_x, gap_y, 0.0):.1f}px apart",
+                    )
+                )
+    return findings
+
+
+def _check_demo_text(labels: Sequence[_Label], demo: Iterable[str]) -> list[RenderFinding]:
+    """Report a figure kind's own demo text printed in a render of other data.
+
+    Whole words, case kept: "Data" is a demo category in one figure and part
+    of "Database" in someone's real labels.
+    """
+    findings: list[RenderFinding] = []
+    patterns = [(t, re.compile(r"(?<![A-Za-z])" + re.escape(t) + r"(?![A-Za-z])")) for t in demo]
+    for label in labels:
+        for text, pattern in patterns:
+            if pattern.search(label.text):
+                findings.append(
+                    RenderFinding(
+                        "demo_text",
+                        "the figure's demo text survived into a render of other data",
+                        f"{label.text!r} contains {text!r}",
+                    )
+                )
+    return findings
+
+
 def _check_placeholders(
     labels: Sequence[_Label], forbidden: Iterable[str]
 ) -> list[RenderFinding]:
@@ -1003,6 +1073,8 @@ def check_render(
     dark: bool = False,
     expected_title: str | None = None,
     forbidden_text: Sequence[str] = (),
+    kind: str | None = None,
+    allowed_text: Sequence[str] = (),
 ) -> list[RenderFinding]:
     """Check a rendered SVG and return what is wrong with it, deterministically.
 
@@ -1023,6 +1095,16 @@ def check_render(
     forbidden_text
         Extra strings that must not appear, on top of the known demo chrome.
         A caller that knows its own placeholders passes them here.
+    kind
+        The figure kind the SVG was rendered with, from caller data. Adds the
+        demo-text rule: none of that kind's demo names, labels, headlines or
+        declared demo chrome may appear (see
+        :func:`sprezzature_figures.make_figure.demo_texts`). Leave it out for
+        a render of the demo itself.
+    allowed_text
+        Demo strings that legitimately appear in this render because the
+        caller's own data holds them (a caller whose sets really are
+        "Python" and "SQL").
 
     Returns
     -------
@@ -1045,11 +1127,17 @@ def check_render(
     findings += _check_text_is_text(root, labels)
     findings += _check_inside_canvas(labels, width, height, min_x, min_y)
     findings += _check_overlaps(labels)
+    findings += _check_touching(labels)
     findings += _check_legible_size(labels, _display_scale(root))
     findings += _check_identical_ticks(labels)
     findings += _check_line_end_orphans(root, ancestors)
     findings += _check_invisible_text(root, ancestors, _fond(root))
     findings += _check_placeholders(labels, forbidden_text)
+    if kind:
+        from .make_figure import demo_texts
+
+        allowed = set(allowed_text)
+        findings += _check_demo_text(labels, [t for t in demo_texts(kind) if t not in allowed])
     if dark:
         findings += _check_dark(svg, root)
     if expected_title:

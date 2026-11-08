@@ -28,6 +28,7 @@ from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY, cycle_hues  # noqa: E402
 from _svg import foreground_tip_css, fmt_number, svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _textfit import fit_font_size  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 
@@ -56,10 +57,19 @@ def _make_demo_data() -> List[Dict[str, Any]]:
 DEMO_DATA: List[Dict[str, Any]] = _make_demo_data()
 
 
+#: Which role each axis and the colour legend draw (read by make_figure to
+#: title them after the caller's data, never after this demo's).
+AXIS_ROLES = {"x": "horsepower", "y": "mpg", "legend": "segment"}
+
+#: One hue per segment before any repeats; the first four are the house
+#: default cycle, so a four-segment chart keeps its colours.
+SEGMENT_HUES = ["Blue", "Orange", "Purple", "Green", "Red", "Teal", "Pink", "Indigo"]
+
+
 def _segment_colors(
     segments: List[str], accessibility: str = "universal", theme: str = "corporate"
 ) -> Dict[str, str]:
-    return cycle_hues(segments, accessibility, theme=theme)
+    return cycle_hues(segments, accessibility, hues=SEGMENT_HUES, theme=theme)
 
 
 def build_svg(
@@ -184,8 +194,10 @@ def build_svg(
     )
 
     parts.append(f'<rect width="{width}" height="{height}" fill="{BG}"/>')
+    # A long caller title shrinks to the canvas instead of running off it.
+    title_size = fit_font_size(title, width - 80, 24, min_px=15)
     parts.append(
-        f'<text x="40" y="46" font-size="24" font-weight="700" fill="{INK}" '
+        f'<text x="40" y="46" font-size="{title_size:g}" font-weight="700" fill="{INK}" '
         f'letter-spacing="-0.3">{xml_escape(title)}</text>'
     )
     parts.append(f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>')
@@ -257,9 +269,10 @@ def build_svg(
         # the same function.
         radius = r_for(float(row.get("weight") or 0))
         color = colors.get(seg, colors[segments[0]] if segments else "#007AFF")
-        bits = [f"Horsepower {row['horsepower']:.0f}", f"Fuel economy {row['mpg']:.1f} mpg"]
+        # Tooltips name what the axes name, so they follow the caller's titles.
+        bits = [f"{x_label} {float(row['horsepower']):.6g}", f"{y_label} {float(row['mpg']):.6g}"]
         if has_weight:
-            bits.append(f"weight {row['weight']:.0f} kg")
+            bits.append(f"{weight_legend_title} {float(row['weight']):.6g}")
         if seg:
             bits.insert(0, str(seg))
         tip = ", ".join(bits)
@@ -269,9 +282,10 @@ def build_svg(
             f'role="img" aria-label="{xml_escape(tip)}"/>'
         )
         tip_lines = [str(seg)] if seg else []
-        tip_lines.append(f"HP {row['horsepower']:.0f}, {row['mpg']:.1f} mpg")
+        tip_lines.append(f"{x_label} {float(row['horsepower']):.6g}, "
+                         f"{y_label} {float(row['mpg']):.6g}")
         if has_weight:
-            tip_lines.append(f"Weight {row['weight']:.0f} kg")
+            tip_lines.append(f"{weight_legend_title} {float(row['weight']):.6g}")
         tips.append(
             tooltip_bubble(
                 cx, cy - radius - 12,

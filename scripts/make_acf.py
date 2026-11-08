@@ -168,6 +168,11 @@ def _seasonal_note(significant: List[int], period_hint: int) -> str:
     )
 
 
+
+#: The method's own vocabulary: right over any data, so never reported as
+#: leftover demo text (see sprezzature_figures.make_figure.demo_texts).
+METHOD_TEXT = ('Autocorrelation', 'Partial autocorrelation')
+
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
     title: str = "A December that returns every year, and one month of memory under it",

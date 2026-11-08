@@ -124,6 +124,11 @@ def _standard_error(values: List[float]) -> float:
     return (variance / len(values)) ** 0.5
 
 
+
+#: The method's own vocabulary: right over any data, so never reported as
+#: leftover demo text (see sprezzature_figures.make_figure.demo_texts).
+METHOD_TEXT = ("two columns that move together each keep the other's score up, and no permutation can see it",)
+
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
     title: str = "Two columns cannot be told from noise, and one is worse than noise",
@@ -135,7 +140,7 @@ def build_svg(
     error_multiple: float = 2.0,
     top: int = 0,
     set_label: str = "held-out data",
-    score_label: str = "Drop in AUC when shuffled",
+    score_label: Optional[str] = None,
     caveat: str = "two columns that move together each keep the other's score up, and no permutation can see it",
     measure_note: Optional[str] = None,
     finding: Optional[str] = None,
@@ -165,8 +170,10 @@ def build_svg(
         Which data the score was measured on. Named on the canvas
         because importance on the training set and on held-out data are
         different claims that routinely disagree.
-    score_label : str
-        Axis title.
+    score_label : str or None
+        Axis title. ``None`` names the demo's metric (AUC) over the demo and
+        reads "Drop in score when shuffled" over caller rows, whose metric
+        this figure does not know.
     caveat : str
         The standing limitation, drawn whatever the data says.
     measure_note, finding : str or None
@@ -184,6 +191,8 @@ def build_svg(
     str
         The SVG document.
     """
+    if score_label is None:
+        score_label = "Drop in AUC when shuffled" if not data else "Drop in score when shuffled"
     rows = list(data if data else DEMO_DATA)
     if not rows:
         raise ValueError("a permutation-importance chart needs at least one row")
@@ -403,7 +412,7 @@ def make_permutation_importance(
     error_multiple: float = 2.0,
     top: int = 0,
     set_label: str = "held-out data",
-    score_label: str = "Drop in AUC when shuffled",
+    score_label: Optional[str] = None,
     caveat: str = "two columns that move together each keep the other's score up, and no permutation can see it",
     measure_note: Optional[str] = None,
     finding: Optional[str] = None,
@@ -431,8 +440,10 @@ def make_permutation_importance(
         Draw only the `top` features by mean drop; 0 draws all.
     set_label : str
         Which data the score was measured on.
-    score_label : str
-        Axis title.
+    score_label : str or None
+        Axis title. ``None`` names the demo's metric (AUC) over the demo and
+        reads "Drop in score when shuffled" over caller rows, whose metric
+        this figure does not know.
     caveat : str
         The standing limitation, drawn whatever the data says.
     measure_note, finding : str or None

@@ -566,7 +566,7 @@ def build_svg(
         "Nearest-pharmacy catchment areas across the city, coloured by "
         "chain"
     )
-    lead_share = share["Greenleaf"]
+    lead_share = share.get("Greenleaf", 0.0)
     desc_txt = (
         "Voronoi catchment map of thirty city pharmacies. Each cell is the "
         "neighbourhood for which one pharmacy is the closest to walk to, and "
@@ -579,6 +579,13 @@ def build_svg(
         "stores are labelled. Hover or focus any cell to lift its whole "
         "chain's territory and dim the rest."
     )
+    if data:
+        # The headline, subtitle and description above are about the demo's
+        # pharmacies; a caller's sites get none of them.
+        title_txt = title or ""
+        subtitle_txt = ""
+        desc_txt = (f"Voronoi map of {len(rows)} sites, each cell the area closest to its site, "
+                    f"coloured by group: {', '.join(chain_order)}.")
 
     parts: List[str] = []
     parts.append(svg_open(WIDTH, HEIGHT, "vor-title", "vor-desc", font_family=chrome_stack_for_theme(theme)))

@@ -34,7 +34,7 @@ from xml.sax.saxutils import escape
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _scale import log_position, log_ticks, nice_ticks_range  # noqa: E402
-from _style import BG, GRIDLINE, INK, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
+from _style import BG, GRIDLINE, INK, cycle_hues, load_palette, os_adaptive_style, os_dark_style  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _svg import foreground_tip_css, fmt_number, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from _interactive import fullscreen_control  # noqa: E402
@@ -168,6 +168,13 @@ def build_svg(
     region_color = _region_color(accessibility, theme=theme)
     mono_family = mono_stack_for_theme(theme)
     places = data if data else DEMO_DATA
+    # A caller's regions are not the demo's three: give each its own hue, the
+    # demo's three keeping theirs, so a renamed region never crashes the lookup.
+    extra = [str(p["region"]) for p in places if str(p["region"]) not in region_color]
+    if extra:
+        region_color.update(cycle_hues(list(dict.fromkeys(extra)), accessibility,
+                                       hues=["Blue", "Orange", "Brown", "Purple", "Teal", "Red",
+                                             "Pink", "Indigo"], theme=theme))
 
     gdps = [float(p["gdp"]) for p in places]
     lifes = [float(p["life"]) for p in places]
@@ -342,7 +349,11 @@ def build_svg(
         f'<text x="{leg_x:.1f}" y="{leg_y:.1f}" font-size="13" font-weight="700" '
         f'fill="{INK}">{xml_escape(region_legend_title)}</text>'
     )
-    for i, region in enumerate(REGION_ORDER):
+    # The legend lists the regions drawn: the demo's order first, then any
+    # region only the caller's rows hold, in the order they appear.
+    drawn = list(dict.fromkeys(str(p["region"]) for p in places))
+    legend_regions = [r for r in REGION_ORDER if r in drawn] + [r for r in drawn if r not in REGION_ORDER]
+    for i, region in enumerate(legend_regions):
         ry = leg_y + 26 + i * 26
         parts.append(
             f'<circle cx="{leg_x + 7:.1f}" cy="{ry - 5:.1f}" r="7" '

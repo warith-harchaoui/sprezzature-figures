@@ -2849,15 +2849,15 @@
       },
       "treatment": {
         "type": "str",
-        "default": "statin prescribed",
+        "default": null,
         "choices": [],
-        "description": "The two nodes the graph is about."
+        "description": "The two nodes the graph is about; see build_svg."
       },
       "outcome": {
         "type": "str",
-        "default": "heart attack",
+        "default": null,
         "choices": [],
-        "description": "The two nodes the graph is about."
+        "description": "The two nodes the graph is about; see build_svg."
       },
       "adjust_for": {
         "type": "str_list",
@@ -4496,19 +4496,31 @@
         "type": "str",
         "default": "",
         "choices": [],
-        "description": "Accepted for dispatcher/CLI parity; unused, since the chart's title is fixed prose."
+        "description": "Headline above the figure. Omitted, the figure keeps its own."
+      },
+      "subtitle": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "The line under the title, for the caveat a headline cannot carry."
       },
       "hub_label": {
         "type": "str",
-        "default": "ONE FIELD",
+        "default": null,
         "choices": [],
-        "description": "The two centre-hub lines (was hardcoded \"ONE FIELD\"/\"Winter wheat\")."
+        "description": "Forwarded to build_svg."
       },
       "hub_title": {
         "type": "str",
-        "default": "Winter wheat",
+        "default": null,
         "choices": [],
-        "description": "The two centre-hub lines (was hardcoded \"ONE FIELD\"/\"Winter wheat\")."
+        "description": "Forwarded to build_svg."
+      },
+      "unit": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "Unit word printed after values."
       },
       "mode": {
         "type": "str",
@@ -6608,9 +6620,9 @@
       },
       "effect": {
         "type": "str",
-        "default": "Checkout incidents",
+        "default": null,
         "choices": [],
-        "description": "The thing being explained."
+        "description": "The thing being explained; see build_svg."
       },
       "weight_label": {
         "type": "str",
@@ -6676,6 +6688,171 @@
       }
     },
     "warnings": []
+  },
+  {
+    "kind": "flowchart",
+    "label": "Flowchart",
+    "aliases": [],
+    "category": "Flow",
+    "description": "Labelled box-and-arrow flow for any process the caller describes: one row per arrow, with its own text, the group each end sits in, and a flag for an arrow that returns (the closing edge of a loop). Boxes sit in layers, left to right or top to bottom, so a pipeline reads in its own order; arrows that skip a layer pass between boxes, never through one, and a returning arrow runs in its own lane under the flow. Box text wraps at word boundaries and is never hyphenated; every word drawn comes from the rows. Reach for it for a method diagram, a study map or a pipeline, where the usual answer is a hand-drawn diagram nobody can regenerate.",
+    "intents": [],
+    "status": "stable",
+    "renderer": "svg",
+    "module": "scripts/make_flowchart.py",
+    "callable_name": "make_flowchart",
+    "required_roles": [
+      {
+        "name": "source",
+        "label": "Arrow tail",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      },
+      {
+        "name": "target",
+        "label": "Arrow head",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": true
+      }
+    ],
+    "optional_roles": [
+      {
+        "name": "label",
+        "label": "Text on the arrow",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": false
+      },
+      {
+        "name": "source_group",
+        "label": "Group of the tail",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": false
+      },
+      {
+        "name": "target_group",
+        "label": "Group of the head",
+        "accepted_types": [
+          "categorical"
+        ],
+        "required": false
+      },
+      {
+        "name": "back",
+        "label": "Returning arrow (1)",
+        "accepted_types": [
+          "numeric",
+          "categorical"
+        ],
+        "required": false
+      },
+      {
+        "name": "dashed",
+        "label": "Dashed arrow (1)",
+        "accepted_types": [
+          "numeric",
+          "categorical"
+        ],
+        "required": false
+      }
+    ],
+    "supported_outputs": [
+      "svg",
+      "png"
+    ],
+    "min_rows": null,
+    "max_recommended_rows": null,
+    "max_recommended_categories": null,
+    "default_width": 760,
+    "default_height": 600,
+    "options_schema": {
+      "title": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "Headline above the figure. Omitted, the figure keeps its own."
+      },
+      "subtitle": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "The line under the title, for the caveat a headline cannot carry."
+      },
+      "width": {
+        "type": "int",
+        "default": 760,
+        "choices": [],
+        "description": "Canvas width in pixels."
+      },
+      "height": {
+        "type": "int",
+        "default": null,
+        "choices": [],
+        "description": "Canvas height in pixels."
+      },
+      "direction": {
+        "type": "str",
+        "default": "LR",
+        "choices": [
+          "LR",
+          "TB"
+        ],
+        "description": "Forwarded to build_svg."
+      },
+      "font_size": {
+        "type": "float",
+        "default": 16.0,
+        "choices": [],
+        "description": "Forwarded to build_svg."
+      },
+      "max_box_width": {
+        "type": "float",
+        "default": 210.0,
+        "choices": [],
+        "description": "Forwarded to build_svg."
+      },
+      "mode": {
+        "type": "str",
+        "default": "self-contained",
+        "choices": [
+          "self-contained",
+          "external",
+          "static"
+        ],
+        "description": "How the SVG carries its interactivity: self-contained ships its own script, external expects the page to supply one, static leaves it out."
+      },
+      "accessibility": {
+        "type": "str",
+        "default": "universal",
+        "choices": [
+          "universal",
+          "high-contrast",
+          "monochrome",
+          "deuteranopia",
+          "protanopia",
+          "tritanopia"
+        ],
+        "description": "Palette accessibility level; universal is the colour-vision-safe default."
+      },
+      "theme": {
+        "type": "str",
+        "default": "corporate",
+        "choices": [
+          "corporate",
+          "academic"
+        ],
+        "description": "corporate (Roboto, house palette) or academic (Latin Modern, Okabe-Ito)."
+      }
+    },
+    "warnings": [
+      "Default output path falls back to a shared assets/ directory"
+    ]
   },
   {
     "kind": "forecast-fan",
@@ -6947,7 +7124,7 @@
         "type": "str",
         "default": "",
         "choices": [],
-        "description": "Accepted for dispatcher/CLI parity; unused, since the chart's title is fixed prose."
+        "description": "Headline above the figure. Omitted, the figure keeps its own."
       },
       "mode": {
         "type": "str",
@@ -6983,15 +7160,45 @@
       },
       "row_label_header": {
         "type": "str",
-        "default": "Trial",
+        "default": null,
         "choices": [],
         "description": "Column headers. Forwarded to build_svg."
       },
       "estimate_header": {
         "type": "str",
-        "default": "OR (95% CI)",
+        "default": null,
         "choices": [],
         "description": "Column headers. Forwarded to build_svg."
+      },
+      "subtitle": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "The line under the title, for the caveat a headline cannot carry."
+      },
+      "axis_title": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "Title on the value axis."
+      },
+      "estimate_name": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "Forwarded to build_svg."
+      },
+      "left_label": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "Forwarded to build_svg."
+      },
+      "right_label": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "Forwarded to build_svg."
       }
     },
     "warnings": [
@@ -7741,7 +7948,7 @@
       "gaussian_process"
     ],
     "category": "Model evaluation",
-    "description": "Gaussian-process posterior fit to a handful of observed points: shaded 95% credible band, mean curve, and a few faint posterior sample draws. The classic figure for teaching or auditing Bayesian nonparametric regression.",
+    "description": "Gaussian-process posterior fit to a handful of observed points: shaded 95% credible band, mean curve, and a few faint posterior sample draws. The classic figure for teaching or auditing Bayesian nonparametric regression. Rows carrying `mean` and `sd` are a posterior computed elsewhere, drawn as given over the observations, with the extrapolated range ruled.",
     "intents": [],
     "status": "stable",
     "renderer": "svg",
@@ -7762,10 +7969,28 @@
         "accepted_types": [
           "numeric"
         ],
-        "required": true
+        "required": true,
+        "tolerates_gaps": true
       }
     ],
-    "optional_roles": [],
+    "optional_roles": [
+      {
+        "name": "mean",
+        "label": "Posterior mean, given",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": false
+      },
+      {
+        "name": "sd",
+        "label": "Posterior standard deviation, given",
+        "accepted_types": [
+          "numeric"
+        ],
+        "required": false
+      }
+    ],
     "supported_outputs": [
       "svg",
       "png"
@@ -7799,6 +8024,18 @@
         "default": 480,
         "choices": [],
         "description": "Canvas size in pixels."
+      },
+      "x_label": {
+        "type": "str",
+        "default": "x",
+        "choices": [],
+        "description": "Axis titles."
+      },
+      "y_label": {
+        "type": "str",
+        "default": "f(x)",
+        "choices": [],
+        "description": "Axis titles."
       },
       "mode": {
         "type": "str",
@@ -12862,9 +13099,9 @@
       },
       "score_label": {
         "type": "str",
-        "default": "Drop in AUC when shuffled",
+        "default": null,
         "choices": [],
-        "description": "Axis title."
+        "description": "Axis title. None names the demo's metric (AUC) over the demo and reads \"Drop in score when shuffled\" over caller rows, whose metric this figure does not know."
       },
       "caveat": {
         "type": "str",
@@ -14469,9 +14706,15 @@
       },
       "peak_badge_label": {
         "type": "str",
-        "default": "TWO PEAKS",
+        "default": null,
         "choices": [],
         "description": "Forwarded to build_svg \u2014 was hardcoded \"TWO PEAKS\" with no way to override it for data with a different peak count."
+      },
+      "subtitle": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "The line under the title, for the caveat a headline cannot carry."
       },
       "mode": {
         "type": "str",
@@ -18637,21 +18880,27 @@
     "options_schema": {
       "title": {
         "type": "str",
-        "default": "Sixty years of getting closer to Mars",
+        "default": null,
         "choices": [],
-        "description": "Accepted for dispatcher parity; the timeline's own headline states the specific takeaway, so this is unused."
+        "description": "Headline above the figure. Omitted, the figure keeps its own."
       },
       "subtitle": {
         "type": "str",
-        "default": "From a 21-frame flyby to a rover caching rock for the trip home, each mission building on the last \u00b7 daggered dates are planned",
+        "default": null,
         "choices": [],
         "description": "The line under the title, for the caveat a headline cannot carry."
       },
       "flown_legend_label": {
         "type": "str",
-        "default": "Flown mission",
+        "default": null,
         "choices": [],
-        "description": "Legend entry for the solid dot glyph. Forwarded to build_svg."
+        "description": "Forwarded to build_svg."
+      },
+      "planned_legend_label": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "Forwarded to build_svg."
       },
       "mode": {
         "type": "str",
@@ -18743,7 +18992,19 @@
         "type": "str",
         "default": "",
         "choices": [],
-        "description": "Accepted for dispatcher parity; the tree's own headline states the specific takeaway, so this is unused."
+        "description": "Headline; empty keeps the demo's over the demo and prints none over caller data."
+      },
+      "subtitle": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "The line under the title, for the caveat a headline cannot carry."
+      },
+      "level_names": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "Forwarded to build_svg."
       },
       "mode": {
         "type": "str",
@@ -19730,7 +19991,19 @@
         "type": "str",
         "default": "",
         "choices": [],
-        "description": "Accepted for dispatcher parity; the diagram's own headline states the specific takeaway, so this is unused."
+        "description": "Header text. Empty keeps the demo's over the demo and prints none over caller rows."
+      },
+      "subtitle": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "Header text. Empty keeps the demo's over the demo and prints none over caller rows."
+      },
+      "unit": {
+        "type": "str",
+        "default": null,
+        "choices": [],
+        "description": "What one count counts (\"people\", \"models\"). Defaults to the demo's \"people\" over the demo and to a bare number over caller rows."
       },
       "mode": {
         "type": "str",

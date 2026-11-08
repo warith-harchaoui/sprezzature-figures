@@ -45,6 +45,11 @@ DEMO_DATA: List[Dict[str, Any]] = [
 ]
 
 
+
+#: Which role each axis and the legend draw, so make_figure titles them after
+#: the caller's columns rather than this demo's captions.
+AXIS_ROLES = {"x": "hour", "y": "sessions", "legend": "platform"}
+
 def _series_colors(
     series: List[str],
     accessibility: str = "universal",
@@ -170,11 +175,20 @@ def build_svg(
         # Nice, round ticks (shared _scale.nice_ticks, the house convention
         # used by make_bar.py/make_area.py/etc.) instead of raw max_val/4
         # fractions, which produced unreadable labels like 124/93/62/31/0.
-        y_ticks = nice_ticks(max_val, 4)
-        y_lo, y_hi = 0.0, (y_ticks[-1] or 1.0)
+        lowest = min(all_vals) if all_vals else 0.0
+        if lowest < 0:
+            # Values below zero: a 0-anchored axis would draw them off the plot.
+            y_ticks = nice_ticks_range(lowest, max(max_val, 0.0), 5)
+            y_lo, y_hi = y_ticks[0], y_ticks[-1]
 
-        def y_for(v: float) -> float:
-            return plot_y + plot_h - (v / y_hi * plot_h)
+            def y_for(v: float) -> float:
+                return plot_y + plot_h - (v - y_lo) / ((y_hi - y_lo) or 1.0) * plot_h
+        else:
+            y_ticks = nice_ticks(max_val, 4)
+            y_lo, y_hi = 0.0, (y_ticks[-1] or 1.0)
+
+            def y_for(v: float) -> float:
+                return plot_y + plot_h - (v / y_hi * plot_h)
 
     parts: List[str] = []
     parts.append(svg_open(width, height, "lm-title", "lm-desc", font_family=chrome_stack_for_theme(theme)))
@@ -228,14 +242,19 @@ def build_svg(
             )
 
     # ---- y-axis gridlines ----
+    # The lowest y label sits on the x axis, right beside the first x label at
+    # the origin corner; a negative value ("-8") then runs into the "0" under
+    # it. That one label is lifted off the axis line, clear of the corner.
+    corner = y_ticks[0] if y_ticks and y_ticks[0] < 0 else None
     for tick in y_ticks:
         ty = y_for(tick)
         parts.append(
             f'<line x1="{plot_x:.1f}" y1="{ty:.1f}" x2="{plot_x + plot_w:.1f}" y2="{ty:.1f}" '
             f'stroke="{GRIDLINE}" stroke-width="1"/>'
         )
+        lift = 6.0 if tick == corner else 0.0
         parts.append(
-            f'<text x="{plot_x - 10:.1f}" y="{ty + 4:.1f}" font-size="11" font-family="{mono_family}" '
+            f'<text x="{plot_x - 10:.1f}" y="{ty + 4 - lift:.1f}" font-size="11" font-family="{mono_family}" '
             f'fill="{SECONDARY}" text-anchor="end">{fmt_number(tick)}</text>'
         )
     parts.append(
@@ -300,8 +319,9 @@ def build_svg(
     elif x_max <= 24 and all(float(h).is_integer() for h in hours):
         xticks = [h for h in hours if int(h) % 3 == 0]
     else:
-        step = max(1, len(hours) // 8)
-        xticks = hours[::step]
+        # Round ticks across the span (0, 20, 40 ...), never every n-th sample
+        # (0, 22, 44 ...), which reads as noise on a continuous axis.
+        xticks = [t for t in nice_ticks_range(x_min, x_max, 8) if x_min - 1e-9 <= t <= x_max + 1e-9]
     for h in xticks:
         parts.append(
             f'<text x="{x_for(h):.1f}" y="{axis_y + 20:.1f}" font-size="11" font-family="{mono_family}" '

@@ -219,11 +219,12 @@ def _fmt_trips(n: int) -> str:
 
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
-    peak_badge_label: str = "TWO PEAKS",
+    peak_badge_label: Optional[str] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
     title: Optional[str] = None,
+    subtitle: Optional[str] = None,
 ) -> str:
     """Assemble the full radial-bar SVG document as a string.
 
@@ -335,16 +336,28 @@ def build_svg(
     # ---- title + subtitle (upper-left, poster weight) ----
     # The headline the figure writes about its own data, used only when
     # the caller supplies none.
-    title = title or 'A city with two rush hours'
+    # Headline and badge are sentences about the demo's two rush hours.
+    if not data:
+        title = title or 'A city with two rush hours'
+        peak_badge_label = "TWO PEAKS" if peak_badge_label is None else peak_badge_label
+    else:
+        title = title or ""
+        peak_badge_label = peak_badge_label or ""
     parts.append(
         f'<text x="60" y="72" font-size="34" font-weight="700" '
         f'fill="{_INK}">{xml_escape(title)}</text>'
     )
-    parts.append(
-        f'<text x="60" y="106" font-size="18" fill="{_SUBTLE}">'
-        f'Vélomarée bike-share · trips by hour on an average weekday · '
-        f'{_fmt_trips(total)} daily rides</text>'
-    )
+    # The subtitle describes the demo's bike-share; over caller hours it is
+    # the caller's or nothing. 100, not 106: at 106 its descenders touched
+    # the 00:00 label at the top of the wheel.
+    if subtitle is None and not data:
+        subtitle = (f'Vélomarée bike-share · trips by hour on an average weekday · '
+                    f'{_fmt_trips(total)} daily rides')
+    if subtitle:
+        parts.append(
+            f'<text x="60" y="100" font-size="18" fill="{_SUBTLE}">'
+            f'{xml_escape(subtitle)}</text>'
+        )
 
     # ---- polar grid: concentric rings + ring value labels ----
     n_rings = int(round(axis_max / ring_step))
@@ -532,7 +545,8 @@ def make_radial_bar(
     *,
     out: Optional[Path | str] = None,
     title: str = "",
-    peak_badge_label: str = "TWO PEAKS",
+    peak_badge_label: Optional[str] = None,
+    subtitle: Optional[str] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -563,7 +577,8 @@ def make_radial_bar(
         Absolute path to the written SVG file.
     """
     _ = title
-    svg = build_svg(data, peak_badge_label=peak_badge_label, mode=mode, accessibility=accessibility, theme=theme, title=title or None)
+    svg = build_svg(data, peak_badge_label=peak_badge_label, mode=mode, accessibility=accessibility,
+                    theme=theme, title=title or None, subtitle=subtitle)
     dest = Path(out) if out else svg_example_path(__file__, "radial-bar")
     return write_svg(dest, svg, theme=theme)
 

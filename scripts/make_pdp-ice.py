@@ -103,6 +103,11 @@ def _curves(seed: int = 29) -> List[Dict[str, Any]]:
 DEMO_DATA: List[Dict[str, Any]] = _curves()
 
 
+
+#: The method's own vocabulary: right over any data, so never reported as
+#: leftover demo text (see sprezzature_figures.make_figure.demo_texts).
+METHOD_TEXT = ('average (partial dependence)', 'sweeping one feature holds the others fixed, which invents rows the data never contained')
+
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
     title: str = "The average says tenure barely matters; 41% of rows move against it",

@@ -66,6 +66,11 @@ DEMO_DATA: List[Dict[str, Any]] = [
 ]
 
 
+
+#: The method's own vocabulary: right over any data, so never reported as
+#: leftover demo text (see sprezzature_figures.make_figure.demo_texts).
+METHOD_TEXT = ('expected by now',)
+
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
     title: str = "Two of the four scheduled goals are behind, the docs by a third of the year",

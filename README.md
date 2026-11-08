@@ -163,7 +163,7 @@ through would have raised inside a generator with a message about
 root with no parent, a forecast with no history) declare it and are let
 through.
 
-All 167 registered chart kinds are `status="stable"`: each one is rendered end
+All 168 registered chart kinds are `status="stable"`: each one is rendered end
 to end by the generator audit. See [docs/editor/GENERATOR_AUDIT.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/docs/editor/GENERATOR_AUDIT.md)
 for the per-chart detail. Every stable kind tolerates optional roles being
 left unbound: it renders a sensible default rather than crashing.
@@ -412,7 +412,7 @@ its own `--help`:
 
 ## Chart catalogue
 
-167 chart types in 68 categories, as the catalogue
+168 chart types in 68 categories, as the catalogue
 (`sprezzature_figures/catalog/figures.json`) records them. See
 [FIGURES.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/FIGURES.md)
 for the full table with guidance on when to use each type, and
@@ -577,7 +577,7 @@ sprezzature-figures/
 ├── scripts/
 │   ├── make_treemap.py            # one self-contained generator per kind
 │   ├── make_connected-scatter.py  # hyphenated kinds are supported
-│   └── ...                        # 167 make_*.py scripts total, plus the tools above
+│   └── ...                        # 168 make_*.py scripts total, plus the tools above
 ├── assets/
 │   ├── fonts/             # Roboto, Roboto Serif, Roboto Mono, Latin Modern
 │   └── svg-examples/      # one committed rendering per kind
@@ -591,7 +591,7 @@ defines `make_<kind>(data, *, out=None, title="", ...) -> Path` and exposes a
 through `sprezzature_figures/catalog/figures.json` rather than guessing the
 filename; see
 [docs/editor/GENERATOR_AUDIT.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/docs/editor/GENERATOR_AUDIT.md)
-for which of the 167 scripts currently satisfy this contract.
+for which of the 168 scripts currently satisfy this contract.
 
 ---
 

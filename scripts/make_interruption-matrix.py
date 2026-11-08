@@ -214,6 +214,11 @@ def _hover_script() -> str:
     )
 
 
+
+#: The method's own vocabulary: right over any data, so never reported as
+#: leftover demo text (see sprezzature_figures.make_figure.demo_texts).
+METHOD_TEXT = ('Σ made', 'Σ taken')
+
 def build_svg(
     data: List[Dict[str, Any]] | None = None,
     title: str = TITLE,

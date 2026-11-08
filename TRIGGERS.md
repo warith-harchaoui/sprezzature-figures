@@ -26,7 +26,7 @@ from the code:
 2. **Nine goals.** `comparison`, `trend`, `distribution`, `composition`,
    `relationship`, `flow`, `hierarchy`, `geography`, `model_evaluation`. That
    is the whole list `recommend_figures` accepts as `goal`.
-3. **167 kind names.** The catalogue is a closed set, returned by `list_kinds`.
+3. **168 kind names.** The catalogue is a closed set, returned by `list_kinds`.
    `render_figure` takes a name from it, never a free description.
 
 Match the user's sentence to a shape, then to a goal, and let the tool pick
@@ -146,7 +146,7 @@ names the ones it does accept, the API answers 422. Ask `list_kind_options`
 
 **1. `render_figure` takes a catalogue name, not a description.** There is no
 `--x/--y/--kind` combinator and no plotting-library backend behind this: all
-167 kinds are SVG authored directly. If the user asks for output "in
+168 kinds are SVG authored directly. If the user asks for output "in
 <library>", say plainly that this package does not use one, and draw the
 figure.
 
@@ -190,7 +190,7 @@ Route on the nine goals first: they answer the ordinary request without
 anyone naming a chart. These tables are for the rest: when a user reaches for
 a domain noun ("the ROC curve", « la rose des vents », "a Gantt"), when the
 recommender's top candidate looks wrong, or when you want to know what else
-was on the shelf. All 167 kinds appear once.
+was on the shelf. All 168 kinds appear once.
 
 Read them as *triggers*, not as definitions: the phrase is what someone says,
 the kind is what to call. The last column is computed from the code: the goal
@@ -509,4 +509,4 @@ from sprezzature_figures import make_figure
 path = make_figure(kind, data, out="output.png", title="My chart")
 ```
 
-All 167 kinds and the `data` shape each expects are in [FIGURES.md](FIGURES.md).
+All 168 kinds and the `data` shape each expects are in [FIGURES.md](FIGURES.md).

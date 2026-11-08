@@ -44,6 +44,8 @@ Author
 
 from __future__ import annotations
 
+import re
+
 import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -155,6 +157,36 @@ ROOT_COLOR = INK
 #: they never drift apart.
 GEN_NAMES = ["Field", "Family", "Task", "Method"]
 
+#: Hues handed to the root's children in order. The demo's four families
+#: (sup, uns, deep, rl) take the first four, exactly as before; any tree gets
+#: the same cycle, so colour follows the shape of the data, not its ids.
+FAMILY_HUES = ["Blue", "Orange", "Purple", "Green", "Red", "Teal", "Pink", "Indigo"]
+#: AA-safe pill fills (white text) per hue; a hue without one is darkened.
+PILL_SHADE = {"Blue": "#0064D2", "Orange": "#B35900", "Purple": "#9A3FCB", "Green": "#22883A"}
+
+
+def _darken(hexv: str, factor: float = 0.62) -> str:
+    """A deeper shade of `hexv`, dark enough to carry white pill text."""
+    h = hexv.lstrip("#")
+    r, g, b = (int(h[i:i + 2], 16) for i in (0, 2, 4))
+    return "#{:02X}{:02X}{:02X}".format(int(r * factor), int(g * factor), int(b * factor))
+
+
+def _css_id(node_id: str) -> str:
+    """A node id made safe for a CSS class name (demo ids pass unchanged)."""
+    return re.sub(r"[^A-Za-z0-9_-]", "-", node_id)
+
+
+def label_of_root(nodes: List["Node"]) -> str:
+    """The root node's label, for the accessible description."""
+    return _label_of(nodes)[_root_id(nodes)]
+
+
+def _families(nodes: List["Node"]) -> List[str]:
+    """The root's children, in data order: the branches that each own a hue."""
+    root = _root_id(nodes)
+    return [n for n, _label, parent in nodes if parent == root]
+
 
 # ------------------------------------------------------------------
 # Tree model helpers
@@ -223,7 +255,10 @@ def _lineage(node_id: str, parent: Dict[str, Optional[str]]) -> List[str]:
 # Reingold–Tilford tidy layout (left-to-right)
 # ------------------------------------------------------------------
 def _compute_geometry(
-    nodes: List[Node] = NODES, family_color: Optional[Dict[str, str]] = None
+    nodes: List[Node] = NODES,
+    family_color: Optional[Dict[str, str]] = None,
+    margin_top: float = MARGIN_TOP,
+    height: float = HEIGHT,
 ) -> Dict[str, dict]:
     """Place every node with a tidy tree layout.
 
@@ -261,8 +296,8 @@ def _compute_geometry(
     # never bottom-heavy or top-heavy: measure the row span the leaves
     # actually occupy, then offset every node by the leftover slack / 2.
     n_rows = next_row[0]                       # leaf count == packed rows
-    plot_top = MARGIN_TOP
-    plot_bottom = HEIGHT - MARGIN_BOTTOM
+    plot_top = margin_top
+    plot_bottom = height - MARGIN_BOTTOM
     band_h = plot_bottom - plot_top
     stack_h = (n_rows - 1) * row_pitch + NODE_H
     y_offset = plot_top + max(0.0, (band_h - stack_h) / 2.0)
@@ -317,12 +352,19 @@ def _text_width(label: str, font_size: float) -> float:
     return len(label) * font_size * 0.56
 
 
+
+#: The method's own vocabulary: right over any data, so never reported as
+#: leftover demo text (see sprezzature_figures.make_figure.demo_texts).
+METHOD_TEXT = ('root',)
+
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
     title: Optional[str] = None,
+    subtitle: Optional[str] = None,
+    level_names: Optional[str] = None,
 ) -> str:
     """Assemble the full tidy-tree SVG document as a string.
 
@@ -354,34 +396,65 @@ def build_svg(
         through the theme's palette; the WCAG-tuned family *pills* stay
         corporate-only, same as they already do for `accessibility`.
         See :func:`sprezzature_figures.fonts.chrome_stack_for_theme`.
+    title, subtitle : str or None, optional
+        Header text. ``None`` prints the demo's header over the demo and
+        none over caller data.
+    level_names : str or None, optional
+        Comma-separated names of the depth columns ("Field, Family, ...").
+        ``None`` prints the demo's names over the demo and no column
+        headers over caller data, whose levels nobody has named.
 
     Returns
     -------
     str
         A complete, standalone SVG document.
     """
+    is_demo = not data
     nodes: List[Node] = _rows_to_nodes(data) if data else NODES
     root_id = _root_id(nodes)
     theme_palette = load_palette(theme=theme)
+    families = _families(nodes)
+    family_hue = {fam: FAMILY_HUES[i % len(FAMILY_HUES)] for i, fam in enumerate(families)}
     family_color_base: Dict[str, str] = {
-        "sup": theme_palette.get("Blue", "#007AFF"),
-        "uns": theme_palette.get("Orange", "#FF9500"),
-        "deep": theme_palette.get("Purple", "#AF52DE"),
-        "rl": theme_palette.get("Green", "#34C759"),
+        fam: theme_palette.get(hue, "#007AFF") for fam, hue in family_hue.items()
     }
-    geometry = _compute_geometry(nodes, family_color=family_color_base)
+    family_pill: Dict[str, str] = {
+        fam: PILL_SHADE.get(hue, _darken(family_color_base[fam])) for fam, hue in family_hue.items()
+    }
+    if is_demo:
+        names = GEN_NAMES
+        title_txt = title or "A machine-learning syllabus, branch by branch"
+        subtitle_txt = subtitle if subtitle is not None else (
+            "Supervised learning carries the deepest branch, reaching all the way "
+            "down to named algorithms. That is where the course spends most weeks. "
+            "Illustrative outline."
+        )
+    else:
+        names = [n.strip() for n in level_names.split(",")] if level_names else []
+        title_txt = title or ""
+        subtitle_txt = subtitle or ""
+    if level_names and is_demo:
+        names = [n.strip() for n in level_names.split(",")]
+    # The band above the tree holds only what is printed in it: the demo's
+    # full header keeps its 176 px, a bare caller tree starts near the top.
+    header_h = (48 if title_txt else 0) + (54 if subtitle_txt else 0) + (40 if names else 0)
+    margin_top = MARGIN_TOP if is_demo else max(28.0, header_h + 24.0)
+    n_leaves = sum(1 for n, _l, _p in nodes if n not in _children_of(nodes))
+    needed = margin_top + n_leaves * (NODE_H + ROW_GAP) - ROW_GAP + MARGIN_BOTTOM
+    height = HEIGHT if is_demo else max(240.0, needed)
+    geometry = _compute_geometry(nodes, family_color=family_color_base,
+                                 margin_top=margin_top, height=height)
+    for geo in geometry.values():
+        geo["pill"] = family_pill.get(geo["family"] or "", geo["color"])
+        geo["gen"] = names[geo["depth"]] if geo["depth"] < len(names) else f"Level {geo['depth']}"
+        geo["demo"] = is_demo
 
     # ``universal`` leaves the baked family colours as shipped (output
     # byte-identical); any other level re-reads the palette at that level and
     # recolours every non-root node by its family.
     if accessibility and accessibility != "universal":
         pal = load_palette(accessibility, theme=theme)
-        family_color = {
-            "sup": pal.get("Blue", "#007AFF"),
-            "uns": pal.get("Orange", "#FF9500"),
-            "deep": pal.get("Purple", "#AF52DE"),
-            "rl": pal.get("Green", "#34C759"),
-        }
+        family_color = {fam: pal.get(hue, "#007AFF") for fam, hue in family_hue.items()}
         for node_id, geo in geometry.items():
             if node_id == root_id:
                 continue
@@ -393,21 +466,19 @@ def build_svg(
     parts: List[str] = []
 
     # --- accessible header ---
-    title_txt = title or "A machine-learning syllabus, branch by branch"
-    subtitle_txt = (
-        "Supervised learning carries the deepest branch, reaching all the way "
-        "down to named algorithms. That is where the course spends most weeks. "
-        "Illustrative outline."
-    )
     desc_txt = (
         "Tidy node-link tree of a machine-learning course taxonomy. The root, "
         "Machine learning, splits into four families: Supervised, Unsupervised, "
         "Deep learning, and Reinforcement. Supervised is the deepest and widest "
         "branch, reaching individual algorithms such as gradient-boosted trees "
         "and Gaussian processes. Each family is tinted its own color."
+    ) if is_demo else (
+        f"Tree of {len(nodes)} nodes under {label_of_root(nodes)}, with "
+        f"{len(families)} branches: "
+        + ", ".join(_label_of(nodes)[f] for f in families) + "."
     )
-    parts.append(svg_open(WIDTH, HEIGHT, "tree-title", "tree-desc", font_family=chrome_stack_for_theme(theme)))
-    parts.append(f'<title id="tree-title">{escape(title_txt)}</title>')
+    parts.append(svg_open(WIDTH, f"{height:.0f}", "tree-title", "tree-desc", font_family=chrome_stack_for_theme(theme)))
+    parts.append(f'<title id="tree-title">{escape(title_txt or "Tree")}</title>')
     parts.append(f'<desc id="tree-desc">{escape(desc_txt)}</desc>')
 
     # --- CSS: hover/focus a node lifts its whole root-to-node lineage ---
@@ -428,9 +499,9 @@ def build_svg(
     # but each family is also named on its pill and tied to its leaves by the
     # link structure, so identity survives without colour, and the ~4-colour
     # system palette cannot preserve four distinct branch tints anyway.
-    link_series = {f".link.fam-{fam}": hexv for fam, hexv in family_color_base.items()}
-    rule_series = {f".fam-rule.fam-{fam}": hexv for fam, hexv in family_color_base.items()}
-    pill_series = {f".pill-{fam}": hexv for fam, hexv in FAMILY_PILL.items()}
+    link_series = {f".link.fam-{_css_id(fam)}": hexv for fam, hexv in family_color_base.items()}
+    rule_series = {f".fam-rule.fam-{_css_id(fam)}": hexv for fam, hexv in family_color_base.items()}
+    pill_series = {f".pill-{_css_id(fam)}": hexv for fam, hexv in family_pill.items()}
     contrast_css = (
         os_adaptive_style(link_series, role="stroke")
         + "\n"
@@ -482,15 +553,16 @@ def build_svg(
     )
 
     # --- background ---
-    parts.append(f'<rect width="{WIDTH}" height="{HEIGHT}" fill="{BG}"/>')
+    parts.append(f'<rect width="{WIDTH}" height="{height:.0f}" fill="{BG}"/>')
 
     # --- title + subtitle (start-anchored, house style) ---
-    parts.append(
-        f'<text x="{MARGIN_LEFT}" y="56" font-size="32" font-weight="700" '
-        f'fill="{INK}">{escape(title_txt)}</text>'
-    )
+    if title_txt:
+        parts.append(
+            f'<text x="{MARGIN_LEFT}" y="56" font-size="32" font-weight="700" '
+            f'fill="{INK}">{escape(title_txt)}</text>'
+        )
     # subtitle can be long, so wrap onto two lines at the sentence break.
-    sub_lines = _wrap_subtitle(subtitle_txt)
+    sub_lines = _wrap_subtitle(subtitle_txt) if subtitle_txt else []
     for i, line in enumerate(sub_lines):
         parts.append(
             f'<text x="{MARGIN_LEFT}" y="{92 + i * 27:.0f}" font-size="20" '
@@ -500,13 +572,13 @@ def build_svg(
     # --- depth (generation) column headers ---
     seen_depths = sorted({g["depth"] for g in geometry.values()})
     for d in seen_depths:
-        if d >= len(GEN_NAMES):
+        if d >= len(names):
             continue
         gx = next(g["x"] for g in geometry.values() if g["depth"] == d)
         parts.append(
-            f'<text x="{gx:.1f}" y="{MARGIN_TOP - 30:.1f}" font-size="15" '
+            f'<text x="{gx:.1f}" y="{margin_top - 30:.1f}" font-size="15" '
             f'font-weight="600" letter-spacing="1.0" fill="{SUBINK}">'
-            f'{escape(GEN_NAMES[d].upper())}</text>'
+            f'{escape(names[d].upper())}</text>'
         )
 
     # ------------------------------------------------------------------
@@ -580,12 +652,12 @@ def build_svg(
 
     # --- footnote: read the hover affordance ---
     parts.append(
-        f'<text x="{MARGIN_LEFT}" y="{HEIGHT - 20}" font-size="15" '
-        f'fill="{SUBINK}">Hover or focus any topic to trace its path back '
+        f'<text x="{MARGIN_LEFT}" y="{height - 20:.0f}" font-size="15" '
+        f'fill="{SUBINK}">Hover or focus any {"topic" if is_demo else "node"} to trace its path back '
         f'to the root</text>'
     )
 
-    parts.append(fullscreen_control(WIDTH, HEIGHT, mode))
+    parts.append(fullscreen_control(WIDTH, int(height), mode))
     parts.append("</svg>")
     return "".join(parts)
 
@@ -679,7 +751,7 @@ def _emit_one_link(
     # branch's links deepen together (empty for a direct child of the root,
     # which cannot happen here since every link's child sits under a family).
     fam = geometry[b].get("family") or ""
-    fam_cls = f" fam-{fam}" if fam else ""
+    fam_cls = f" fam-{_css_id(fam)}" if fam else ""
     d = _diagonal_path(x0, y0, x1, y1)
     parts.append(
         f'<path class="link{fam_cls}" d="{d}" fill="none" stroke="{stroke}" '
@@ -753,8 +825,9 @@ def _emit_one_node(
 
     is_leaf = node_id not in kids
     n_kids = len(kids.get(node_id, []))
-    gen_label = GEN_NAMES[depth] if depth < len(GEN_NAMES) else f"Depth {depth}"
-    detail2 = "Leaf topic" if is_leaf else f"{n_kids} sub-topic{'s' if n_kids != 1 else ''}"
+    gen_label = g.get("gen", GEN_NAMES[depth] if depth < len(GEN_NAMES) else f"Depth {depth}")
+    noun = "topic" if g.get("demo", True) else "node"
+    detail2 = f"Leaf {noun}" if is_leaf else f"{n_kids} sub-{noun}{'s' if n_kids != 1 else ''}"
     tab = ' tabindex="0"' if (interactive and (not is_leaf or emit_tip)) else ""
     hit_cls = " hit" if emit_tip else ""
     id_attr = f' id="hit-{tip_index}"' if emit_tip else ""
@@ -769,10 +842,10 @@ def _emit_one_node(
         text_fill = "#FFFFFF"
         fam = g["family"]
         is_root = node_id == g.get("root_id", "root")
-        pill_fill = ROOT_COLOR if is_root else FAMILY_PILL.get(fam or "", color)
+        pill_fill = ROOT_COLOR if is_root else g.get("pill", FAMILY_PILL.get(fam or "", color))
         # Family pills (not the ink root) get a family class so the OS-adaptive
         # contrast rule can deepen the pill fill together with its branch.
-        pill_cls = f' pill-{fam}' if fam else ""
+        pill_cls = f' pill-{_css_id(fam)}' if fam else ""
         parts.append(
             f'<g class="node">'
             f'<rect{id_attr} class="card{pill_cls}{hit_cls}"{tab}{title_or_aria} x="{x_left:.1f}" y="{y_top:.1f}" '
@@ -787,7 +860,7 @@ def _emit_one_node(
         # White chip with a colored left rule + colored label.
         rule_w = 5.0
         fam = g["family"]
-        rule_cls = f' fam-{fam}' if fam else ""
+        rule_cls = f' fam-{_css_id(fam)}' if fam else ""
         chip_cls = f' class="{hit_cls.strip()}"' if hit_cls else ""
         parts.append(
             f'<g class="node">'
@@ -818,6 +891,8 @@ def make_tree(
     *,
     out: Optional[Path | str] = None,
     title: str = "",
+    subtitle: Optional[str] = None,
+    level_names: Optional[str] = None,
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
@@ -832,8 +907,10 @@ def make_tree(
     out : Path, str, or None
         Output path (.svg). Defaults to ``assets/svg-examples/tree.svg``.
     title : str, optional
-        Accepted for dispatcher parity; the tree's own headline states the
-        specific takeaway, so this is unused.
+        Headline; empty keeps the demo's over the demo and prints none over
+        caller data.
+    subtitle, level_names : str or None, optional
+        Forwarded to :func:`build_svg`.
     mode, accessibility : str
         Forwarded to :func:`build_svg`.
     theme : str, optional
@@ -844,7 +921,8 @@ def make_tree(
     Path
         Absolute path to the written SVG file.
     """
-    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme, title=title or None)
+    svg = build_svg(data, mode=mode, accessibility=accessibility, theme=theme, title=title or None,
+                    subtitle=subtitle, level_names=level_names)
     dest = Path(out) if out else svg_example_path(__file__, "tree")
     return write_svg(dest, svg, theme=theme)
 

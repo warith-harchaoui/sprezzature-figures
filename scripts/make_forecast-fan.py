@@ -136,6 +136,11 @@ def _z_for(level: float) -> float:
     return _normal_quantile(0.5 + level / 200.0)
 
 
+
+#: The method's own vocabulary: right over any data, so never reported as
+#: leftover demo text (see sprezzature_figures.make_figure.demo_texts).
+METHOD_TEXT = ('forecast starts',)
+
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
     title: str = "Twelve months out, the interval is twice as wide as at three",
@@ -428,7 +433,7 @@ def build_svg(
         f'font-size="12" fill="{SECONDARY}" text-anchor="middle">{xml_escape(x_label)}</text>'
     )
     parts.append(
-        f'<text x="{plot_x - 64:.1f}" y="{plot_y - 8:.1f}" font-size="12" '
+        f'<text x="{plot_x - 64:.1f}" y="{plot_y - 12:.1f}" font-size="12" '
         f'fill="{SECONDARY}">{xml_escape(y_label)}</text>'
     )
 

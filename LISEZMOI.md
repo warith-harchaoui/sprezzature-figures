@@ -7,7 +7,7 @@
 
 [![logo](https://raw.githubusercontent.com/warith-harchaoui/sprezzature-figures/main/assets/logo.png)](https://sprezzature.ai/)
 
-167 types de graphiques de qualité publication, chacun écrit directement en
+168 types de graphiques de qualité publication, chacun écrit directement en
 SVG, sans bibliothèque de tracé dessous. Aussi : un contrôle statique de
 n'importe quel SVG rendu, le redessin du graphique de quelqu'un d'autre à
 partir de son image, et the editor, un éditeur de figures local piloté
@@ -168,7 +168,7 @@ levé une erreur au fond d'un générateur, avec un message sur `float()`. Les
 figures dont le sujet *est* l'absence (`missing-matrix`, la racine d'un arbre
 sans parent, une prévision sans historique) le déclarent et passent.
 
-Les 167 types de graphiques enregistrés sont `status="stable"` : chacun est
+Les 168 types de graphiques enregistrés sont `status="stable"` : chacun est
 rendu de bout en bout par l'audit des générateurs. Voir
 [docs/editor/GENERATOR_AUDIT.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/docs/editor/GENERATOR_AUDIT.md)
 pour le détail par graphique. Chaque type stable tolère qu'on laisse ses rôles
@@ -427,7 +427,7 @@ avec son `--help` :
 
 ## Catalogue des graphiques
 
-167 types de graphiques dans 68 catégories, tels que le catalogue
+168 types de graphiques dans 68 catégories, tels que le catalogue
 (`sprezzature_figures/catalog/figures.json`) les enregistre. Voir
 [FIGURES.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/FIGURES.md)
 pour le tableau complet, avec quand utiliser chaque type, et
@@ -598,7 +598,7 @@ sprezzature-figures/
 ├── scripts/
 │   ├── make_treemap.py            # un générateur autonome par type
 │   ├── make_connected-scatter.py  # les noms avec tiret sont pris en charge
-│   └── ...                        # 167 scripts make_*.py au total, plus les outils ci-dessus
+│   └── ...                        # 168 scripts make_*.py au total, plus les outils ci-dessus
 ├── assets/
 │   ├── fonts/             # Roboto, Roboto Serif, Roboto Mono, Latin Modern
 │   └── svg-examples/      # un rendu versionné par type
@@ -612,7 +612,7 @@ liste `DEMO_DATA` pour la CLI et les tests. `make_figure()` résout le type par
 `sprezzature_figures/catalog/figures.json` au lieu de deviner le nom de
 fichier ; voir
 [docs/editor/GENERATOR_AUDIT.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/docs/editor/GENERATOR_AUDIT.md)
-pour savoir lesquels des 167 scripts respectent aujourd'hui ce contrat.
+pour savoir lesquels des 168 scripts respectent aujourd'hui ce contrat.
 
 ---
 

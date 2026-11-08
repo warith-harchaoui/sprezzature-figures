@@ -122,6 +122,9 @@ OPTION_CHOICES: dict[str, tuple[str, ...]] = {
     "length_scale": ("linear", "sqrt", "log", "uniform"),
     # funnel-area: which of a trapezoid's two factors carries the count.
     "size_by": ("area", "height"),
+    # flowchart: which way the layers run, left to right or top to bottom.
+    # A switch, not a caption.
+    "direction": ("LR", "TB"),
 }
 
 #: House meaning of the keywords many generators share. A generator
