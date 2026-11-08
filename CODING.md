@@ -20,7 +20,7 @@ annotations on all public functions and classes.
   or `ruff --fix` over `scripts/` or the whole tree. Two sibling generators
   should stay easy to diff side by side, and a mass reformat of hand-tuned
   generators is its own decision, not a side effect.
-- Types: CI runs `mypy sprezzature_figures`, `mypy scripts` and `mypy tools`
+- Types: the pre-push hook runs `mypy sprezzature_figures`, `mypy scripts` and `mypy tools`
   (three roots, because `scripts/` and `tools/` import siblings by bare name).
 - Line length: 100 characters (`[tool.ruff] line-length` in
   `pyproject.toml`).
@@ -91,7 +91,7 @@ on them.
 - Tests marked `@pytest.mark.slow` render real figures and are excluded
   from the default run; run them with `pytest -m slow`. Tests marked
   `packaging`, `llm`, or `vision` are excluded from the default run too.
-  CI runs `-m slow` and `-m packaging` in their own steps; `llm` and
+  The pre-push hook runs `-m slow` and `-m packaging`; CI runs only the fast lane; `llm` and
   `vision` are opt-in and never run in CI (see `.github/workflows/ci.yml`).
 - A change to `scripts/*.py` should also pass
   `python tools/audit_generators.py --render` (see CONTRIBUTING.md): that
