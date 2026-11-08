@@ -64,6 +64,7 @@ except ImportError:  # pragma: no cover - dependency guard
 
 else:
     # Reuse the exact same FastAPI app -- MCP is a thin wrapper on top.
+    from sprezzature_figures import __version__
     from sprezzature_figures.api import app
 
     # ``FastApiMCP`` mounts an MCP endpoint on the existing FastAPI app; we
@@ -80,6 +81,12 @@ else:
             "168 chart types from JSON rows, or redraw a chart from a picture of it."
         ),
     )
+    # fastapi-mcp 0.4 calls ``Server(self.name, self.description)``, and the
+    # second positional parameter of ``Server`` is the version: every host was
+    # told this server's version is a sentence. Put each value back in its slot.
+    mcp.server.version = __version__
+    mcp.server.instructions = mcp.description
+
     # Attach the MCP endpoint to the FastAPI app. Newer fastapi-mcp releases
     # split ``mount()`` into transport-specific ``mount_http()`` (recommended)
     # and ``mount_sse()``. Fall back to the legacy ``mount()`` on older

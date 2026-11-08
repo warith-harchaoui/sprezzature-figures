@@ -167,13 +167,25 @@ _RENDER_DIAGRAM: Path = _SCRIPT_DIR / "render_diagram.py"
 # Installed from the wheel, the same parent is `site-packages/`: the loop
 # wrote its PNGs, assessments and critique ledger into the interpreter's own
 # tree, which may not even be writable. A clone is recognised by the
-# `pyproject.toml` beside `scripts/`; without one, the output goes under the
-# directory the loop was run from, like any other command's output.
+# `pyproject.toml` beside `scripts/` *that names this project*: the wheel
+# of dash-bootstrap-components (pulled in by shapash) drops its own
+# `pyproject.toml` at the top of site-packages, so a bare existence test
+# reads every real install as a clone. Without our own, the output goes under
+# the directory the loop was run from, like any other command's output.
+
+
+def _is_our_clone(root: Path) -> bool:
+    """True when `root` holds this project's own ``pyproject.toml``."""
+    pyproject = root / "pyproject.toml"
+    try:
+        return 'name = "sprezzature-figures"' in pyproject.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError):
+        return False
 
 
 def _loop_dir(figures_root: Path, cwd: Path) -> Path:
     """Where the loop writes: the clone's ``.private/``, else the cwd's."""
-    root = figures_root if (figures_root / "pyproject.toml").is_file() else cwd
+    root = figures_root if _is_our_clone(figures_root) else cwd
     return root / ".private" / "ralph-loop"
 
 

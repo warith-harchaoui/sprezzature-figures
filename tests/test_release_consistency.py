@@ -46,7 +46,7 @@ _COUNT_CLAIMING_FILES = (
 #: "127 chart types", "the 127-kind catalogue", "All 127 registered …" — a
 #: three-digit number close enough to a catalogue word to be a claim about it.
 _CLAIM_RE = re.compile(
-    r"\b(\d{2,4})[\s-]+(?:hand-authored|registered|chart|kind|generator|figure)",
+    r"\b(\d{2,4})[\s-]+(?:hand-authored|publication-quality|registered|chart|kind|generator|figure)",
     re.IGNORECASE,
 )
 
@@ -110,6 +110,45 @@ def test_no_file_quotes_a_stale_catalogue_size() -> None:
     import bump_catalogue_count
 
     assert bump_catalogue_count.main(["--check"]) == 0
+
+
+@pytest.mark.parametrize("relative_path", ["README.md", "LISEZMOI.md", "TRIGGERS.md"])
+def test_the_documents_that_list_the_kinds_name_every_one(relative_path: str) -> None:
+    """A kind added to the catalogue also reaches the tables a reader is sent to.
+
+    `flowchart` came in as the 168th kind with every count bumped, and stayed
+    absent from the README's category table and from the TRIGGERS.md section
+    that says "All 168 kinds appear once". A count can be right while the list
+    it counts is one short, so the list is checked for itself.
+    """
+    text = (REPO_ROOT / relative_path).read_text(encoding="utf-8")
+    missing = [
+        kind
+        for kind in list_kinds()
+        if not re.search(rf"(?<![\w-]){re.escape(kind)}(?![\w-])", text)
+    ]
+    assert not missing, f"{relative_path} never names {missing}"
+
+
+@pytest.mark.parametrize(
+    ("relative_path", "pattern"),
+    [
+        ("README.md", r"it shows (\d+) of the (\d+)\."),
+        ("LISEZMOI.md", r"elle en montre (\d+) sur (\d+)\."),
+    ],
+)
+def test_the_gallery_sentence_follows_the_catalogue(relative_path: str, pattern: str) -> None:
+    """The gallery sentence has two numbers and no catalogue word beside them.
+
+    So the count sweep cannot see it, and it read "160 of the 167" for a
+    catalogue of 168. The sentence itself says what is left out: five glyph
+    maps and two Gapminder figures, seven kinds.
+    """
+    text = (REPO_ROOT / relative_path).read_text(encoding="utf-8")
+    found = re.search(pattern, text)
+    assert found, f"{relative_path} no longer carries the gallery sentence"
+    kinds = len(list_kinds())
+    assert (int(found.group(1)), int(found.group(2))) == (kinds - 7, kinds)
 
 
 def test_a_quoted_size_is_never_left_at_the_end_of_a_wrapped_string() -> None:

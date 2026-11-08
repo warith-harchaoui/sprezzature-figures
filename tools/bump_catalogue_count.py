@@ -69,7 +69,7 @@ _CLAIM = re.compile(
     # The word boundary is per-alternative, not trailing: "make_*.py" ends
     # on a character that has no boundary after it, so one shared `\b` at
     # the end silently dropped "128 make_*.py scripts total".
-    r"\b(\d{2,4})(?=[\s-]+(?:hand-authored\b|registered\b|charts?\b|kinds?\b|"
+    r"\b(\d{2,4})(?=[\s-]+(?:hand-authored\b|publication-quality\b|registered\b|charts?\b|kinds?\b|"
     r"generators?\b|figures?\b|types?\b|scripts?\b|entry\b|entries\b|"
     r"make_\*|générateurs?\b))"
 )

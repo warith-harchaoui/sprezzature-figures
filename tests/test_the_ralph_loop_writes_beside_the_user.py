@@ -55,6 +55,25 @@ def test_installed_layout_writes_under_the_working_directory(
     assert site not in where.parents
 
 
+def test_a_foreign_pyproject_in_site_packages_does_not_read_as_a_clone(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """dash-bootstrap-components drops its own at the top of site-packages."""
+    site = tmp_path / "site-packages"
+    (site / "sprezzature_figures_scripts").mkdir(parents=True)
+    copy = site / "sprezzature_figures_scripts" / "ralph_eyeball_loop.py"
+    shutil.copy(SCRIPT, copy)
+    (site / "pyproject.toml").write_text('[project]\nname = "dash-bootstrap-components"\n')
+    work = tmp_path / "work"
+    work.mkdir()
+    monkeypatch.chdir(work)
+
+    module = _import_from(copy, "_ralph_beside_a_foreign_pyproject")
+
+    where: Path = module._PRIVATE_LOOP_DIR
+    assert where == work / ".private" / "ralph-loop"
+
+
 def test_a_clone_still_writes_into_its_own_private_directory(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

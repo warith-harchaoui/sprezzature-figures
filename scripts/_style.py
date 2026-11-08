@@ -20,6 +20,7 @@ Author
 from __future__ import annotations
 
 import csv
+import importlib.util
 import os
 import sys
 import warnings
@@ -118,6 +119,23 @@ _FALLBACK_EMOTIONS: Dict[str, str] = {
 }
 
 
+def _installed_colors_package(package: str) -> Optional[Path]:
+    """Directory of one of the packages the ``sprezzature-colors`` wheel installs.
+
+    The searches below only knew a checkout beside this one and a skill folder.
+    The wheel puts ``scripts/`` and ``references/`` under other names, so
+    ``pip install sprezzature-colors`` was never found, and every level but
+    ``universal`` came back as the universal palette.
+    """
+    try:
+        spec = importlib.util.find_spec(package)
+    except (ImportError, ValueError):
+        return None
+    if spec is None or not spec.submodule_search_locations:
+        return None
+    return Path(next(iter(spec.submodule_search_locations)))
+
+
 def _sibling_palette_csv() -> Optional[Path]:
     """Locate ``sprezzature-colors/references/palette.csv`` if co-installed.
 
@@ -131,6 +149,7 @@ def _sibling_palette_csv() -> Optional[Path]:
            relative to this file).
         3. ``~/.claude/skills/sprezzature-colors/references/palette.csv``.
         4. ``~/.opencode/skills/sprezzature-colors/references/palette.csv``.
+        5. The installed ``sprezzature-colors`` wheel.
     """
     env = (os.environ.get("SPREZZATURE_COLORS_PALETTE") or os.environ.get("FRONT_COLORS_PALETTE") or "").strip()
     if env:
@@ -149,6 +168,10 @@ def _sibling_palette_csv() -> Optional[Path]:
         if p.is_file():
             return p
 
+    installed = _installed_colors_package("sprezzature_colors_references")
+    if installed is not None and (installed / "palette.csv").is_file():
+        return installed / "palette.csv"
+
     return None
 
 
@@ -165,6 +188,9 @@ def _sibling_sprezzature_colors_scripts() -> Optional[Path]:
         scripts = csv_path.parent.parent / "scripts"
         if (scripts / "accessibility_levels.py").is_file():
             return scripts
+    installed = _installed_colors_package("sprezzature_colors_scripts")
+    if installed is not None and (installed / "accessibility_levels.py").is_file():
+        return installed
     return None
 
 

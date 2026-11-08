@@ -121,6 +121,12 @@ def test_kind_outside_the_candidate_list_is_refused() -> None:
         read_chart(client_for(reading(kind="treemap")), PNG, candidates=only_bar)
 
 
+def test_the_category_copied_from_the_prompt_is_not_a_different_kind() -> None:
+    """The prompt lists ``bar (Comparison)``; a model answering that means bar."""
+    answer = read_chart(client_for(reading(kind="bar (Comparison)")), PNG)
+    assert answer.kind == "bar"
+
+
 def test_invented_kind_is_refused() -> None:
     with pytest.raises(ChartReadingError, match="not one of the"):
         read_chart(client_for(reading(kind="spiral-of-doom")), PNG)
