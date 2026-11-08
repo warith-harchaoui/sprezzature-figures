@@ -7,7 +7,7 @@
 
 [![logo](https://raw.githubusercontent.com/warith-harchaoui/sprezzature-figures/main/assets/logo.png)](https://sprezzature.ai/)
 
-167 publication-quality chart types, every one written as SVG directly, with no
+168 publication-quality chart types, every one written as SVG directly, with no
 charting library underneath. Also: a static checker for any rendered SVG, a
 redraw of somebody else's chart from a picture of it, and the editor, a
 local chat-driven figure editor.
@@ -333,7 +333,9 @@ cat mine.svg | sprezzature-figures check - --dark          # from a pipe, dark c
 ```
 
 `--forbid TEXT` (repeatable) adds your own placeholder strings to the demo
-chrome it already knows.
+chrome it already knows. `--kind KIND` names the kind the SVG was rendered as
+from your own data, and reports any of that kind's demo names, headlines or
+chrome still on it (`demo_text`).
 
 ```python
 from sprezzature_figures import check_render
@@ -420,7 +422,7 @@ for the full table with guidance on when to use each type, and
 for the sentence that reaches each one.
 
 The [figure gallery on sprezzature.ai](https://sprezzature.ai/figures.html) is
-a different count on purpose: it shows 160 of the 167. The five glyph maps
+a different count on purpose: it shows 161 of the 168. The five glyph maps
 (`map-bars`, `map-bubble`, `map-flow`, `map-pie`, `map-tilegrid`) are on the
 maps page, and the two Gapminder figures on the page about Hans ROSLING.
 
@@ -451,7 +453,7 @@ maps page, and the two Gapminder figures on the page about Hans ROSLING.
 | Dimensionality reduction | diffusion_trajectory, embedding_projector |
 | Distribution | beeswarm, bellcurve, boxen, boxplot, clustermap, corr-matrix, dotplot, ecdf, errorbar, hexbin, histogram, kde1d, pointplot, population-pyramid, ridgeline, rug, strip, violin |
 | Finance | bollinger, candlestick, ohlc |
-| Flow | alluvial, chord, sankey |
+| Flow | alluvial, chord, flowchart, sankey |
 | Forecast | forecast-fan |
 | Genomics / Statistics | manhattan, survival-km, volcano |
 | Geospatial | binned-grid-map, dotdensity, hexbin-map, hexmap, map-bars, map-bubble, map-flow, map-pie, map-tilegrid, spike-map |
@@ -508,6 +510,13 @@ stays readable for colour-vision deficiency (CVD, the general term for
 what is commonly called colour blindness). The two settings compose
 freely because they solve different problems: one is taste, the other is
 who can actually read the chart.
+
+The levels other than the default `universal` (`high-contrast`, `monochrome`,
+`deuteranopia`, `protanopia`, `tritanopia`) are applied by
+[sprezzature-colors](https://github.com/warith-harchaoui/sprezzature-colors),
+which is not a dependency of this package: `pip install sprezzature-colors`
+beside it. Without it the figure keeps the universal palette and Python emits a
+warning saying so.
 
 - **`"corporate"`** (default): Roboto for the chrome text (title,
   subtitle, axis labels), Roboto Mono for tick and numeric labels, and a
@@ -602,7 +611,7 @@ for which of the 168 scripts currently satisfy this contract.
 3. Add a row to [FIGURES.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/FIGURES.md).
 4. Run `python tools/audit_generators.py --render` then `python tools/build_figures_catalog.py` to register it in `sprezzature_figures/catalog/figures.json` (without this, `make_figure()` only reaches it through a deprecated fallback and prints a warning).
 5. Run `python tools/bump_catalogue_count.py` so every document that quotes the catalogue size says the new number.
-6. Run `sprezzature-figures render <kind> --out check.svg` and `sprezzature-figures check check.svg` to verify the output.
+6. Run `sprezzature-figures render <kind> --out check.svg` and `sprezzature-figures check check.svg` to verify the output (a render of the demo rows may report its own demo text as `placeholder_text`; that one is expected there).
 
 ---
 

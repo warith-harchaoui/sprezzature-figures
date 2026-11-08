@@ -346,7 +346,9 @@ cat la-mienne.svg | sprezzature-figures check - --dark       # depuis un tube, f
 ```
 
 `--forbid TEXTE` (répétable) ajoute vos propres textes de remplissage à
-l'habillage de démonstration qu'il connaît déjà.
+l'habillage de démonstration qu'il connaît déjà. `--kind TYPE` nomme le type
+sous lequel le SVG a été rendu depuis vos propres données, et signale tout nom,
+titre ou habillage de démonstration de ce type resté dessus (`demo_text`).
 
 ```python
 from sprezzature_figures import check_render
@@ -435,7 +437,7 @@ pour le tableau complet, avec quand utiliser chaque type, et
 pour la phrase qui mène à chacun.
 
 La [galerie de figures sur sprezzature.ai](https://sprezzature.ai/figures.html)
-compte autre chose, exprès : elle en montre 160 sur 167. Les cinq cartes à
+compte autre chose, exprès : elle en montre 161 sur 168. Les cinq cartes à
 glyphes (`map-bars`, `map-bubble`, `map-flow`, `map-pie`, `map-tilegrid`) sont
 sur la page des cartes, et les deux figures Gapminder sur la page consacrée à
 Hans ROSLING.
@@ -469,7 +471,7 @@ Les noms de catégories sont ceux du catalogue, en anglais.
 | Dimensionality reduction | diffusion_trajectory, embedding_projector |
 | Distribution | beeswarm, bellcurve, boxen, boxplot, clustermap, corr-matrix, dotplot, ecdf, errorbar, hexbin, histogram, kde1d, pointplot, population-pyramid, ridgeline, rug, strip, violin |
 | Finance | bollinger, candlestick, ohlc |
-| Flow | alluvial, chord, sankey |
+| Flow | alluvial, chord, flowchart, sankey |
 | Forecast | forecast-fan |
 | Genomics / Statistics | manhattan, survival-km, volcano |
 | Geospatial | binned-grid-map, dotdensity, hexbin-map, hexmap, map-bars, map-bubble, map-flow, map-pie, map-tilegrid, spike-map |
@@ -526,6 +528,13 @@ la palette reste lisible en cas de daltonisme (au sens large : tout trouble
 de la vision des couleurs). Les deux se combinent librement parce qu'ils
 répondent à deux questions différentes : l'un est affaire de goût, l'autre
 détermine qui peut réellement lire le graphique.
+
+Les niveaux autres que `universal`, celui par défaut (`high-contrast`,
+`monochrome`, `deuteranopia`, `protanopia`, `tritanopia`), sont appliqués par
+[sprezzature-colors](https://github.com/warith-harchaoui/sprezzature-colors),
+qui n'est pas une dépendance de ce paquet : `pip install sprezzature-colors` à
+côté. Sans lui, la figure garde la palette universelle et Python affiche un
+avertissement qui le dit.
 
 - **`"corporate"`** (par défaut) : Roboto pour le texte d'habillage
   (titre, sous-titre, libellés d'axes), Roboto Mono pour les graduations
@@ -623,7 +632,7 @@ pour savoir lesquels des 168 scripts respectent aujourd'hui ce contrat.
 3. Ajouter une ligne dans [FIGURES.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/FIGURES.md).
 4. Lancer `python tools/audit_generators.py --render` puis `python tools/build_figures_catalog.py` pour l'enregistrer dans `sprezzature_figures/catalog/figures.json` (sans cela, `make_figure()` ne l'atteint que par un repli déprécié, avec un avertissement).
 5. Lancer `python tools/bump_catalogue_count.py` pour que chaque document qui cite la taille du catalogue donne le nouveau nombre.
-6. Lancer `sprezzature-figures render <type> --out check.svg` puis `sprezzature-figures check check.svg` pour vérifier la sortie.
+6. Lancer `sprezzature-figures render <type> --out check.svg` puis `sprezzature-figures check check.svg` pour vérifier la sortie (un rendu des données de démonstration peut signaler son propre texte de démonstration en `placeholder_text` : celui-là est attendu).
 
 ---
 

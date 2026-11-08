@@ -315,6 +315,7 @@ and what its rows must carry; `get_kind` says it at run time.
 | `sankey` | "the energy balance, from source to use" | « le bilan, de la source à l'usage » | `flow` |
 | `alluvial` | "how the groups shift from stage to stage" | « comment les groupes changent d'étape en étape » | `flow` |
 | `chord` | "who trades with whom, both ways" | « qui échange avec qui, dans les deux sens » | `flow` |
+| `flowchart` | "a method diagram, boxes and arrows I can regenerate" | « un schéma de la méthode, en boîtes et en flèches » | `flow` |
 | `parallel-sets` | "categorical variables, one after another" | « des variables qualitatives, l'une après l'autre » | `flow` |
 | `dependency-wheel` | "which module depends on which" | « quel module dépend de quel autre » | `flow` |
 | `cycle` | "a process that returns to its start" | « un processus qui revient à son point de départ » | none |
