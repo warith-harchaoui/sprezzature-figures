@@ -49,6 +49,21 @@
   draw (`line-multi`, `scatter`), and make_figure titles them after the
   caller's columns.
 
+### Removed
+
+- **Mermaid and `mmdc`, in favour of `flowchart`.** `render_diagram.py` and
+  the Ralph loop now read TikZ and SVG (and the loop HTML): the Mermaid kind,
+  its `.mmd` / `.mermaid` suffixes, the content sniffing, the theme directive
+  and the `mmdc` tool entry are gone, along with every proposal of them in the
+  docs. A `.mmd` or `.mermaid` file is refused with exit code 2 and one
+  sentence naming `sprezzature-figures render flowchart`; no parser reads the
+  old language. A "mermaid diagram" request routes to `flowchart` from one row
+  of TRIGGERS.md. `--install-tools` no longer installs anything: its only
+  automatic install was `mmdc`, so it now prints the command for each missing
+  tool. `generate_flow_diagram` counts as covered by `flowchart` in
+  COVERAGE.md, and the sequence diagram of `docs/editor/ARCHITECTURE.md` is a
+  `flowchart` figure. `tests/test_no_mermaid.py`.
+
 ### Fixed
 
 - **The Ralph Eyeball Loop, installed, writes under the working directory,

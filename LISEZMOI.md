@@ -393,7 +393,7 @@ sur eux, et elle n'a jamais le droit de contredire un fait établi ici.
 ### La boucle Ralph Eyeball
 
 `scripts/ralph_eyeball_loop.py` rend en PNG n'importe quel visuel produit par
-du code (`.svg`, `.html`, un `.tex` TikZ, un `.mmd` Mermaid) et écrit un
+du code (`.svg`, `.html`, un `.tex` TikZ) et écrit un
 fichier d'évaluation sous `.private/ralph-loop/` : celui du clone, ou, installé
 depuis la roue, celui du dossier d'où vous le lancez. Vous modifiez la source et
 vous relancez ; chaque passage ajoute une itération. Par défaut, l'agent qui
@@ -419,7 +419,7 @@ avec son `--help` :
 
 | Script | Ce qu'il fait |
 |---|---|
-| `render_diagram.py` | Rend en PNG une source TikZ, Mermaid ou SVG, aux couleurs de la palette maison. |
+| `render_diagram.py` | Rend en PNG une source TikZ ou SVG ; TikZ prend les couleurs de la palette maison. |
 | `audit_figure.py` | Contrôle statique de graphiques SVG, ou de HTML contenant des blocs `<figure>`. |
 | `explain_model.py` | Explique un modèle sérialisé avec SHAP, Shapash, TimeSHAP ou LIME (explications locales indépendantes du modèle). `--n-explain` (500 par défaut) est à la fois l'échantillon SHAP et le nombre de lignes LIME. |
 | `causal_estimate.py` | Estime un effet causal avec DoWhy et EconML, à partir d'un DAG (graphe orienté acyclique). |

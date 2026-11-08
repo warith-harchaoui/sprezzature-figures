@@ -93,7 +93,7 @@ call `get_kind` for what the rows must carry.
 | `text_width` | library | "How wide will this label be?", to lay out beside these figures. |
 | `sprezzature-figures` | console command | "Let me import a spreadsheet and edit a chart by chatting." |
 | `ralph_eyeball_loop.py` | repository script | "Does this figure, page or diagram actually read? QA it visually." |
-| `render_diagram.py` | repository script | "Render this Mermaid or TikZ source to PNG." |
+| `render_diagram.py` | repository script | "Render this TikZ or SVG source to PNG." |
 | `audit_figure.py` | repository script | "Audit these SVG charts, or the `<figure>` blocks of this HTML page." |
 | `explain_model.py` | repository script | "Explain my model: SHAP, Shapash, TimeSHAP or LIME plots." |
 | `causal_estimate.py` | repository script | "Estimate the causal effect of X on Y, given this DAG (directed acyclic graph)." |
@@ -315,7 +315,7 @@ and what its rows must carry; `get_kind` says it at run time.
 | `sankey` | "the energy balance, from source to use" | « le bilan, de la source à l'usage » | `flow` |
 | `alluvial` | "how the groups shift from stage to stage" | « comment les groupes changent d'étape en étape » | `flow` |
 | `chord` | "who trades with whom, both ways" | « qui échange avec qui, dans les deux sens » | `flow` |
-| `flowchart` | "a method diagram, boxes and arrows I can regenerate" | « un schéma de la méthode, en boîtes et en flèches » | `flow` |
+| `flowchart` | "a method diagram, boxes and arrows I can regenerate", and any "mermaid diagram": draw it as this kind | « un schéma de la méthode, en boîtes et en flèches » | `flow` |
 | `parallel-sets` | "categorical variables, one after another" | « des variables qualitatives, l'une après l'autre » | `flow` |
 | `dependency-wheel` | "which module depends on which" | « quel module dépend de quel autre » | `flow` |
 | `cycle` | "a process that returns to its start" | « un processus qui revient à son point de départ » | none |

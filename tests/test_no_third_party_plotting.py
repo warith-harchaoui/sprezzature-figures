@@ -128,7 +128,7 @@ def test_render_diagram_kinds_drop_vega() -> None:
     import render_diagram
 
     assert "vega" not in render_diagram.KINDS
-    assert set(render_diagram.KINDS) == {"tikz", "mermaid", "svg"}
+    assert set(render_diagram.KINDS) == {"tikz", "svg"}
 
 
 @pytest.mark.slow

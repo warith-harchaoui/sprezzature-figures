@@ -11,11 +11,11 @@ The loop applies to every surface that produces a visual from code:
 
 * **Web pages and GUI screens** — ``.html``, ``.htm`` (Chrome headless)
 * **Mathematical figures** — ``.tex``, ``.tikz`` (TikZ via tectonic / pdflatex)
-* **Flow and architecture diagrams** — ``.mmd``, ``.mermaid`` (Mermaid via mmdc)
-* **Hand-authored graphics** — ``.svg`` (rsvg-convert or ImageMagick)
+* **Hand-authored graphics, flow diagrams included** — ``.svg`` (rsvg-convert
+  or ImageMagick); ``sprezzature-figures render flowchart`` draws the diagrams
 
-Data viz is *one* application. A webpage, a UI component, a Mermaid
-architecture diagram all go through the same four-step cycle.
+Data viz is *one* application. A webpage, a UI component, an architecture
+diagram all go through the same four-step cycle.
 
 Two modes
 ---------
@@ -59,8 +59,6 @@ Rendering toolchain per surface
 +====================+==============================================+=============================+
 | HTML / JS page     | Headless Chrome (Google Chrome or Chromium)  | https://google.com/chrome   |
 +--------------------+----------------------------------------------+-----------------------------+
-| Mermaid diagram    | mmdc (mermaid-cli)                           | npm install -g @mermaid-js/mermaid-cli |
-+--------------------+----------------------------------------------+-----------------------------+
 | TikZ figure        | tectonic (preferred) or pdflatex + pdftoppm  | brew install tectonic       |
 +--------------------+----------------------------------------------+-----------------------------+
 | SVG graphic        | rsvg-convert (preferred) or magick           | brew install librsvg        |
@@ -68,8 +66,8 @@ Rendering toolchain per surface
 | Local critique     | qwen3-vl:8b, via best-engine-ai-helper       | ollama pull qwen3-vl:8b    |
 +--------------------+----------------------------------------------+-----------------------------+
 
-Run ``python ralph_eyeball_loop.py --install-tools`` to check what is
-installed and pip/npm-install what can be done automatically.
+Run ``python ralph_eyeball_loop.py --install-tools`` to see what is missing
+and the command that installs each tool.
 
 Not to be confused with ``sprezzature_figures.editor.ralph``, the
 FigurePlan-editing engine behind the editor's in-app copilot: same
@@ -86,16 +84,13 @@ Usage
     # Agent mode — mobile
     python sprezzature-figures/scripts/ralph_eyeball_loop.py web/index.html --width 375 --height 812
 
-    # Local mode — Mermaid diagram, transparent canvas
-    python sprezzature-figures/scripts/ralph_eyeball_loop.py docs/flow.mmd --bg transparent --local
-
     # Local mode — TikZ figure, dark canvas
     python sprezzature-figures/scripts/ralph_eyeball_loop.py figs/dag.tex --bg dark --dark --local
 
-    # Local mode — SVG
-    python sprezzature-figures/scripts/ralph_eyeball_loop.py figs/icon.svg --local
+    # Local mode — SVG, transparent canvas
+    python sprezzature-figures/scripts/ralph_eyeball_loop.py figs/flow.svg --bg transparent --local
 
-    # Check / install the rendering toolchain
+    # Check the rendering toolchain, and print how to install what is missing
     python sprezzature-figures/scripts/ralph_eyeball_loop.py --install-tools
 
 Notes
@@ -109,7 +104,7 @@ Notes
   nothing instead of 95-120 s. ``--no-critique-cache`` asks again anyway.
 * ``.private/`` is in the top-level ``.gitignore``; assessment files and
   rendered PNGs are never committed.
-* For diagram surfaces (TikZ / Mermaid / SVG), rendering is delegated
+* For diagram surfaces (TikZ / SVG), rendering is delegated
   to ``render_diagram.py`` in the same directory.
 * Python 3.10+.  No extra stdlib-beyond dependencies; rendering tools are
   checked and surfaced as loud errors when absent.
@@ -211,18 +206,19 @@ _CHROME_MIN_VIEWPORT: int = 500
 # ---------------------------------------------------------------------------
 _KIND_HTML: str = "html"
 _KIND_TIKZ: str = "tikz"
-_KIND_MERMAID: str = "mermaid"
 _KIND_SVG: str = "svg"
 
 # Kinds delegated to render_diagram.py.
-_DIAGRAM_KINDS: frozenset[str] = frozenset({_KIND_TIKZ, _KIND_MERMAID, _KIND_SVG})
+_DIAGRAM_KINDS: frozenset[str] = frozenset({_KIND_TIKZ, _KIND_SVG})
+
+# Suffixes refused outright: no renderer here reads them, and the
+# ``flowchart`` kind draws what they were written for.
+_REFUSED_SUFFIXES: tuple[str, ...] = (".mmd", ".mermaid")
 
 # Suffix → kind.
 _SUFFIX_KIND: dict[str, str] = {
     ".tex":      _KIND_TIKZ,
     ".tikz":     _KIND_TIKZ,
-    ".mmd":      _KIND_MERMAID,
-    ".mermaid":  _KIND_MERMAID,
     ".svg":      _KIND_SVG,
     ".html":     _KIND_HTML,
     ".htm":      _KIND_HTML,
@@ -231,36 +227,22 @@ _SUFFIX_KIND: dict[str, str] = {
 # ---------------------------------------------------------------------------
 # Tool definitions — one record per surface / dependency
 # ---------------------------------------------------------------------------
-# Each entry: (display_name, check_fn_name_or_None, pip_pkg, npm_pkg,
-#              brew_pkg, manual_url, description)
+# Each entry: display name, surface kind, description, brew package, manual
+# URL, and the check.
 # check_fn returns True when the tool is usable.
 _TOOLS: list[dict] = [
     {
         "name": "Chrome / Chromium",
         "kind": _KIND_HTML,
         "description": "Headless browser for HTML/JS page screenshots.",
-        "pip": None,
-        "npm": None,
         "brew": "google-chrome",
         "manual": "https://www.google.com/chrome/",
         "check": lambda: _chrome_path() is not None,
     },
     {
-        "name": "mmdc (mermaid-cli)",
-        "kind": _KIND_MERMAID,
-        "description": "Node.js CLI that renders Mermaid diagrams.",
-        "pip": None,
-        "npm": "@mermaid-js/mermaid-cli",
-        "brew": None,
-        "manual": "https://github.com/mermaid-js/mermaid-cli",
-        "check": lambda: bool(shutil.which("mmdc")),
-    },
-    {
         "name": "tectonic",
         "kind": _KIND_TIKZ,
         "description": "Self-contained TeX engine for TikZ figures (preferred).",
-        "pip": None,
-        "npm": None,
         "brew": "tectonic",
         "manual": "https://tectonic-typesetting.github.io/",
         "check": lambda: bool(shutil.which("tectonic")),
@@ -269,8 +251,6 @@ _TOOLS: list[dict] = [
         "name": "pdftoppm (poppler)",
         "kind": _KIND_TIKZ,
         "description": "PDF → PNG rasteriser used after pdflatex/tectonic.",
-        "pip": None,
-        "npm": None,
         "brew": "poppler",
         "manual": "https://poppler.freedesktop.org/",
         "check": lambda: bool(shutil.which("pdftoppm")),
@@ -279,8 +259,6 @@ _TOOLS: list[dict] = [
         "name": "rsvg-convert (librsvg)",
         "kind": _KIND_SVG,
         "description": "High-fidelity SVG → PNG rasteriser.",
-        "pip": None,
-        "npm": None,
         "brew": "librsvg",
         "manual": "https://wiki.gnome.org/Projects/LibRsvg",
         "check": lambda: bool(shutil.which("rsvg-convert")),
@@ -289,8 +267,6 @@ _TOOLS: list[dict] = [
         "name": "ImageMagick",
         "kind": "fallback",
         "description": "Fallback rasteriser for SVG and TikZ when preferred tools are absent.",
-        "pip": None,
-        "npm": None,
         "brew": "imagemagick",
         "manual": "https://imagemagick.org/",
         "check": lambda: bool(shutil.which("magick") or shutil.which("convert")),
@@ -299,8 +275,6 @@ _TOOLS: list[dict] = [
         "name": f"Ollama + {_VISION_MODEL}",
         "kind": "local-critique",
         "description": "Vision-language model for --local mode automated critique.",
-        "pip": None,
-        "npm": None,
         "brew": None,
         "manual": "https://ollama.com/",
         "check": lambda: _ollama_model_available(),
@@ -393,10 +367,6 @@ def check_tools(verbose: bool = True) -> dict[str, bool]:
         if missing:
             print("Missing tools:")
             for t in missing:
-                if t["pip"]:
-                    print(f"  pip install {t['pip']}")
-                if t["npm"]:
-                    print(f"  npm install -g {t['npm']}")
                 if t["brew"]:
                     print(f"  brew install {t['brew']}   # or see: {t['manual'] or ''}")
                 if t["name"].startswith("Ollama"):
@@ -408,35 +378,22 @@ def check_tools(verbose: bool = True) -> dict[str, bool]:
 
 
 def install_tools() -> None:
-    """Auto-install pip and npm tools; print manual steps for the rest."""
+    """Report each tool: already there, or the command that installs it."""
     status = check_tools(verbose=False)
     for tool in _TOOLS:
         if status[tool["name"]]:
             print(f"  ✓ {tool['name']} — already installed")
             continue
-        if tool["pip"]:
-            print(f"  pip install {tool['pip']} …")
-            subprocess.run([sys.executable, "-m", "pip", "install", tool["pip"]], check=True)
-            print(f"  ✓ {tool['name']} installed")
-        elif tool["npm"]:
-            print(f"  npm install -g {tool['npm']} …")
-            npm = shutil.which("npm")
-            if npm is None:
-                print("    (npm not found — install Node.js from https://nodejs.org/ first)")
-                continue
-            subprocess.run([npm, "install", "-g", tool["npm"]], check=True)
-            print(f"  ✓ {tool['name']} installed")
-        else:
-            hints: list[str] = []
-            if tool["brew"]:
-                hints.append(f"brew install {tool['brew']}")
-            if tool["manual"]:
-                hints.append(tool["manual"])
-            if tool["name"].startswith("Ollama"):
-                hints = ["ollama serve", f"ollama pull {_VISION_MODEL}"]
-            print(f"  ✗ {tool['name']} — manual install: {' | '.join(hints)}")
+        hints: list[str] = []
+        if tool["brew"]:
+            hints.append(f"brew install {tool['brew']}")
+        if tool["manual"]:
+            hints.append(tool["manual"])
+        if tool["name"].startswith("Ollama"):
+            hints = ["ollama serve", f"ollama pull {_VISION_MODEL}"]
+        print(f"  ✗ {tool['name']} — manual install: {' | '.join(hints)}")
     print()
-    print("Re-run with --check-tools to verify the updated status.")
+    print("Install what is missing, then re-run with --check-tools.")
 
 
 # ---------------------------------------------------------------------------
@@ -586,7 +543,7 @@ def _render_diagram(src: Path, out: Path, bg: str, dark: bool) -> None:
     Parameters
     ----------
     src : Path
-        TikZ / Mermaid / SVG source file.
+        TikZ / SVG source file.
     out : Path
         PNG output path.
     bg : str
@@ -1034,7 +991,7 @@ def _build_parser() -> argparse.ArgumentParser:
         prog="ralph_eyeball_loop",
         description=(
             "Ralph Eyeball Loop: render a visual-from-code artifact (web page, "
-            "TikZ figure, Mermaid diagram, SVG) to PNG and write a "
+            "TikZ figure, SVG) to PNG and write a "
             "gitignored assessment file. "
             "Two modes: agent (Claude Code reads the PNG) or --local (Ollama vision)."
         ),
@@ -1055,7 +1012,6 @@ def _build_parser() -> argparse.ArgumentParser:
             "Visual source file: "
             ".html/.htm (web page), "
             ".tex/.tikz (TikZ), "
-            ".mmd/.mermaid (Mermaid), "
             ".svg (SVG). "
             "Omit when using --install-tools or --check-tools."
         ),
@@ -1110,8 +1066,9 @@ def _build_parser() -> argparse.ArgumentParser:
         "--install-tools",
         action="store_true",
         help=(
-            "Auto-install pip and npm rendering tools; print manual steps "
-            "for Chrome, system libs, and the Ollama vision model."
+            "Print the command that installs each missing rendering tool "
+            "(Chrome, system libs, the Ollama vision model); nothing is "
+            "installed for you."
         ),
     )
     p.add_argument(
@@ -1147,6 +1104,14 @@ def main(argv: Optional[list[str]] = None) -> int:
 
     if not args.source:
         _build_parser().print_help()
+        return 2
+
+    if args.source.lower().endswith(_REFUSED_SUFFIXES):
+        print(
+            f"ralph_eyeball_loop: {Path(args.source).name} is not a source this tool "
+            "reads; draw the diagram with `sprezzature-figures render flowchart`.",
+            file=sys.stderr,
+        )
         return 2
 
     src = Path(args.source)

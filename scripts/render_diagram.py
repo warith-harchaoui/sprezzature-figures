@@ -7,33 +7,32 @@ Rasterise a *declarative graphical source* to an image for the
 **Ralph Eyeball Loop** — the render → look → refine cycle documented in
 ``references/ralph-eyeball-loop.md``. The loop needs one thing this
 script provides: turn a text source you can edit (a TikZ figure, a
-Mermaid diagram, a raw SVG) into a PNG the agent can actually *look*
-at, then critique, then edit the **original source**, then re-render.
+raw SVG) into a PNG the agent can actually *look* at, then critique,
+then edit the **original source**, then re-render.
 
-Three source kinds, detected automatically from the file (you never
-pass the kind: ``<svg>`` is svg, a LaTeX preamble is tikz, a ``graph``
-/ ``%%{init}`` header is mermaid):
+Two source kinds, detected automatically from the file (you never
+pass the kind: ``<svg>`` is svg, a LaTeX preamble is tikz):
 
 * ``tikz``    — a LaTeX / TikZ figure. Compiled with ``tectonic`` (a
   single-binary TeX engine) when present, else ``pdflatex`` / ``latexmk``,
   then rasterised from PDF with ``pdftoppm`` (poppler) or ImageMagick.
-* ``mermaid`` — a Mermaid diagram. Rendered with ``mmdc`` (mermaid-cli).
 * ``svg``     — a raw, hand-authored SVG document. Rasterised with
   ``rsvg-convert`` (librsvg) or ImageMagick. Every chart this package's
-  own catalogue produces is already this kind; this is also the kind for
-  a smoothing filter, arrowhead markers, or a gradient a diagram needs.
+  own catalogue produces is already this kind, the boxes and arrows of
+  ``sprezzature-figures render flowchart`` included; this is also the kind
+  for a smoothing filter, arrowhead markers, or a gradient a diagram needs.
 
 Chart specs are not a source kind here: the 168-kind chart catalogue is
 hand-authored SVG throughout (see ``references/figure-catalog.md``). A
-caller holding a declarative chart spec must re-author it as TikZ,
-Mermaid, or raw SVG before handing it to this renderer.
+caller holding a declarative chart spec must re-author it as TikZ or
+raw SVG before handing it to this renderer.
 
-House style, by default: every kind is themed from the **canonical
+House style, by default: TikZ is themed from the **canonical
 sprezzature-colors palette** (``sprezzature-colors/references/palette.csv``, the same
 tokens documented at <https://deraison.ai/colors/>) via
-:mod:`_style`. TikZ gets a ``\\definecolor`` preamble of the base hues;
-Mermaid gets an injected ``%%{init}%%`` theme. You can always edit the
-colors afterwards: the palette is the *first* choice, not a lock-in.
+:mod:`_style`. it gets a ``\\definecolor`` preamble of the base hues. You can always
+edit the colors afterwards: the palette is the *first* choice, not a
+lock-in.
 
 Background is selectable per the embedding context:
 ``--background white`` (drop onto a light page), ``--background
@@ -47,9 +46,6 @@ Usage
     # A TikZ figure, palette-themed, tight-cropped PNG
     python render_diagram.py diagram.tex --out diagram.png
 
-    # A Mermaid flowchart
-    python render_diagram.py flow.mmd --background transparent --out flow.png
-
     # A raw SVG, rasterised to PNG
     python render_diagram.py fig.svg --background white --out fig.png
 
@@ -61,7 +57,7 @@ Notes
 * Python 3.10+.
 * TikZ:    a TeX engine — ``tectonic`` (recommended) or a TeX Live
   ``pdflatex`` — plus ``pdftoppm`` (poppler) or ``magick`` for PNG.
-* Mermaid: ``npm install -g @mermaid-js/mermaid-cli`` (provides ``mmdc``).
+* SVG:     ``rsvg-convert`` (librsvg) or ``magick``.
   Each missing tool fails loud with an install hint; nothing is silent.
 
 Author
@@ -72,23 +68,21 @@ Author
 from __future__ import annotations
 
 import argparse
-import json
 import shutil
 import subprocess
 import sys
 import tempfile
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _argparse import make_parser  # noqa: E402
-from _style import load_palette, load_semantic_palette  # noqa: E402
+from _style import load_palette  # noqa: E402
 
 
 # ------------------------------------------------------------------
 # House canvas tokens — mirror the house-style background / foreground
-# constants so TikZ and Mermaid share the same palette as everything
-# else. Kept as small local constants so this module stays cheap to
+# constants so TikZ shares the same palette as everything else. Kept as small local constants so this module stays cheap to
 # import.
 # ------------------------------------------------------------------
 _LIGHT_BG = "#FFFFFF"
@@ -97,7 +91,11 @@ _LIGHT_FG = "#1D1D1F"
 _DARK_FG = "#F5F5F7"
 
 #: Source kinds this renderer understands.
-KINDS = ("tikz", "mermaid", "svg")
+KINDS = ("tikz", "svg")
+
+#: Suffixes refused outright: no renderer here reads them, and the
+#: ``flowchart`` kind draws what they were written for.
+_REFUSED_SUFFIXES = (".mmd", ".mermaid")
 
 
 # ------------------------------------------------------------------
@@ -108,7 +106,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = make_parser(
         prog="render_diagram",
         description=(
-            "Rasterise a graphical source (TikZ, Mermaid, or raw SVG) to a "
+            "Rasterise a graphical source (TikZ or raw SVG) to a "
             "PNG for the Ralph Eyeball Loop: render -> look -> edit the "
             "source -> re-render. The kind is detected automatically from "
             "the file; you never pass it. Palette-themed from "
@@ -117,11 +115,12 @@ def build_parser() -> argparse.ArgumentParser:
         ),
         epilog=(
             "Auto-routed by content: \\documentclass / tikzpicture -> tikz "
-            "(tectonic/pdflatex + pdftoppm/magick); graph / %%{init} -> "
-            "mermaid (mmdc); <svg> -> svg (rsvg-convert / magick)."
+            "(tectonic/pdflatex + pdftoppm/magick); <svg> -> svg "
+            "(rsvg-convert / magick). For boxes and arrows, draw an SVG "
+            "with `sprezzature-figures render flowchart`."
         ),
     )
-    parser.add_argument("source", help="Input source file (.tex, .mmd, .svg).")
+    parser.add_argument("source", help="Input source file (.tex, .tikz, .svg).")
     parser.add_argument("--out", default=None,
                         help="Output image path. Required unless --dry-run.")
     parser.add_argument("--background", default="auto",
@@ -164,36 +163,20 @@ def detect_kind(path: str, text: str) -> str:
     suffix = "".join(Path(path).suffixes).lower()
     if suffix.endswith((".tex", ".tikz")):
         return "tikz"
-    if suffix.endswith((".mmd", ".mermaid")):
-        return "mermaid"
     if suffix.endswith(".svg"):
         return "svg"
-    # No decisive extension — route on the content. The three formats are
+    # No decisive extension — route on the content. The two formats are
     # syntactically distinct, so a first-token sniff is unambiguous: an XML
-    # document is SVG, a LaTeX preamble is TikZ, a graph keyword is Mermaid.
+    # document is SVG, a LaTeX preamble is TikZ.
     head = text.lstrip("﻿ \t\r\n")
     if head[:6].lower().startswith(("<?xml", "<svg")) or "<svg" in head[:400].lower():
         return "svg"
     if "\\documentclass" in head[:400] or "\\begin{tikzpicture}" in text:
         return "tikz"
-    if head.startswith("%%{init") or _looks_like_mermaid(head):
-        return "mermaid"
     raise SystemExit(
         f"Could not detect the source kind of {path!r} from its extension or "
-        "content (expected <svg>=svg, \\documentclass/tikzpicture=tikz, or "
-        "graph/%%{init}=mermaid)."
+        "content (expected <svg>=svg or \\documentclass/tikzpicture=tikz)."
     )
-
-
-def _looks_like_mermaid(head: str) -> bool:
-    """Return True when the first line opens a known Mermaid diagram type."""
-    first = head.splitlines()[0].strip() if head.splitlines() else ""
-    starters = (
-        "graph ", "flowchart ", "sequenceDiagram", "classDiagram", "stateDiagram",
-        "erDiagram", "gantt", "pie", "journey", "gitGraph", "mindmap", "timeline",
-        "quadrantChart", "xychart", "C4Context",
-    )
-    return first.startswith(starters)
 
 
 # ------------------------------------------------------------------
@@ -311,77 +294,6 @@ def wrap_tikz_document(source: str, dark: bool, theme: bool) -> str:
         f"{body}\n"
         "\\end{document}\n"
     )
-
-
-# ------------------------------------------------------------------
-# Palette theming — Mermaid
-# ------------------------------------------------------------------
-def mermaid_init_directive(dark: bool, background: Optional[str]) -> str:
-    """Build a Mermaid ``%%{init}%%`` theme directive from the palette.
-
-    Maps the base palette onto Mermaid's ``base`` theme variables: soft
-    light-variant fills, saturated borders, gray edges, Roboto type. Keeps
-    the diagram on-brand without hand-editing every node.
-
-    Parameters
-    ----------
-    dark : bool
-        Select the dark-mode foreground.
-    background : str or None
-        Resolved canvas background; ``None`` (transparent) is left to the
-        renderer's ``-b`` flag rather than baked into the theme.
-
-    Returns
-    -------
-    str
-        A single ``%%{init: {...}}%%`` line (newline-terminated).
-    """
-    sem = load_semantic_palette()
-    fg = _DARK_FG if dark else _LIGHT_FG
-
-    def _light(name: str, fallback: str) -> str:
-        return (sem.get(name, {}).get("light") or fallback)
-
-    def _hex(name: str, fallback: str) -> str:
-        return (sem.get(name, {}).get("hex") or fallback)
-
-    theme_vars: Dict[str, str] = {
-        "primaryColor": _light("Blue", "#CCE4FF"),
-        "primaryBorderColor": _hex("Blue", "#007AFF"),
-        "primaryTextColor": fg,
-        "secondaryColor": _light("Green", "#D4F5D9"),
-        "tertiaryColor": _light("Purple", "#EFDCF8"),
-        "lineColor": _hex("Gray", "#8E8E93"),
-        "fontFamily": "Roboto, system-ui, sans-serif",
-    }
-    if background:
-        theme_vars["background"] = background
-    init = {"theme": "base", "themeVariables": theme_vars}
-    return "%%{init: " + json.dumps(init, ensure_ascii=False) + "}%%\n"
-
-
-def inject_mermaid_theme(source: str, dark: bool, background: Optional[str], theme: bool) -> str:
-    """Prepend the palette ``%%{init}%%`` directive unless one is present.
-
-    Parameters
-    ----------
-    source : str
-        Raw Mermaid diagram text.
-    dark : bool
-        Select the dark-mode foreground.
-    background : str or None
-        Resolved canvas background.
-    theme : bool
-        Inject the directive when True and the source lacks its own.
-
-    Returns
-    -------
-    str
-        The (possibly themed) Mermaid source.
-    """
-    if not theme or source.lstrip().startswith("%%{init"):
-        return source
-    return mermaid_init_directive(dark, background) + source
 
 
 # ------------------------------------------------------------------
@@ -503,35 +415,6 @@ def _rasterise_pdf(pdf: Path, out: Path, dpi: int, background: Optional[str]) ->
     )
 
 
-def render_mermaid(source: str, out: str, background: Optional[str]) -> None:
-    """Render a Mermaid diagram to PNG with ``mmdc``.
-
-    Parameters
-    ----------
-    source : str
-        The (themed) Mermaid source.
-    out : str
-        Output PNG path.
-    background : str or None
-        ``None`` maps to ``mmdc -b transparent``; a hex is passed through.
-
-    Raises
-    ------
-    SystemExit
-        When ``mmdc`` is not installed or rendering fails.
-    """
-    mmdc = _require(
-        "mmdc",
-        "Install mermaid-cli: npm install -g @mermaid-js/mermaid-cli",
-    )
-    with tempfile.TemporaryDirectory() as tmp:
-        src = Path(tmp) / "diagram.mmd"
-        src.write_text(source, encoding="utf-8")
-        cmd = [mmdc, "-i", str(src), "-o", out, "-b",
-               ("transparent" if background is None else background)]
-        _run_or_die(cmd, "Mermaid (mmdc) rendering failed")
-
-
 def render_svg(source: str, out: str, background: Optional[str]) -> None:
     """Rasterise a raw, hand-authored SVG document to PNG.
 
@@ -589,7 +472,7 @@ def _run_or_die(cmd: List[str], message: str) -> None:
 # ------------------------------------------------------------------
 # Theming dispatch (shared by --dry-run and the real render)
 # ------------------------------------------------------------------
-def themed_source(kind: str, raw: str, dark: bool, background: Optional[str], theme: bool) -> str:
+def themed_source(kind: str, raw: str, dark: bool, theme: bool) -> str:
     """Return the palette-themed source for a kind (SVG is passed through).
 
     Parameters
@@ -600,8 +483,6 @@ def themed_source(kind: str, raw: str, dark: bool, background: Optional[str], th
         The raw source text.
     dark : bool
         Dark-mode canvas.
-    background : str or None
-        Resolved background (used by the Mermaid theme).
     theme : bool
         Inject the palette when True.
 
@@ -613,8 +494,6 @@ def themed_source(kind: str, raw: str, dark: bool, background: Optional[str], th
     """
     if kind == "tikz":
         return wrap_tikz_document(raw, dark, theme)
-    if kind == "mermaid":
-        return inject_mermaid_theme(raw, dark, background, theme)
     return raw
 
 
@@ -624,6 +503,14 @@ def themed_source(kind: str, raw: str, dark: bool, background: Optional[str], th
 def main(argv: Optional[List[str]] = None) -> int:
     """CLI entry point."""
     args = build_parser().parse_args(argv)
+
+    if args.source.lower().endswith(_REFUSED_SUFFIXES):
+        print(
+            f"render_diagram: {Path(args.source).name} is not a source this tool "
+            "reads; draw the diagram with `sprezzature-figures render flowchart`.",
+            file=sys.stderr,
+        )
+        return 2
 
     src_path = Path(args.source)
     if not src_path.is_file():
@@ -635,7 +522,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     background = resolve_background(args.background, args.dark)
     theme = not args.no_theme
 
-    prepared = themed_source(kind, raw, args.dark, background, theme)
+    prepared = themed_source(kind, raw, args.dark, theme)
 
     if args.dry_run:
         print(prepared)
@@ -647,8 +534,6 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     if kind == "tikz":
         render_tikz(prepared, args.out, args.dpi, background)
-    elif kind == "mermaid":
-        render_mermaid(prepared, args.out, background)
     else:  # svg
         render_svg(prepared, args.out, background)
 

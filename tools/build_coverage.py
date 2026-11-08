@@ -37,8 +37,8 @@ Status vocabulary
     geography rather than maps of it, and stay here.
 ``not-a-figure``
     Not a chart: a table, a mind map, an axis or a tooltip component, a
-    free-form diagram. Mermaid and TikZ cover the diagram cases through the
-    Ralph Eyeball Loop; the rest are chart-library plumbing.
+    free-form diagram. ``flowchart`` and TikZ cover the diagram cases through
+    the Ralph Eyeball Loop; the rest are chart-library plumbing.
 
 Usage
 -----
@@ -222,12 +222,12 @@ MAPPING: dict[str, list[tuple[str, str, str, str]]] = {
         ("generate_boxplot_chart", "boxplot", "covered", ""),
         ("generate_dual_axes_chart", "dual-axis", "covered", ""),
         ("generate_fishbone_diagram", "fishbone", "covered", ""),
-        ("generate_flow_diagram", "", "not-a-figure", "Mermaid, through the Ralph loop"),
+        ("generate_flow_diagram", "flowchart", "covered", ""),
         ("generate_funnel_chart", "funnel", "covered", ""),
         ("generate_histogram_chart", "histogram", "covered", ""),
         ("generate_line_chart", "line", "covered", ""),
         ("generate_liquid_chart", "liquid-gauge", "covered", ""),
-        ("generate_mind_map", "", "not-a-figure", "Mermaid, through the Ralph loop"),
+        ("generate_mind_map", "", "not-a-figure", "`flowchart` or TikZ, through the Ralph loop"),
         ("generate_network_graph", "network", "covered", ""),
         ("generate_organization_chart", "org-chart", "covered", ""),
         ("generate_pie_chart", "pie", "covered", ""),
@@ -528,7 +528,7 @@ def render_markdown(rows: list[dict[str, str]]) -> str:
         "| `covered` | A registered kind draws this. |",
         "| `gap` | Nothing here draws it yet. This is the build list. |",
         "| `sibling` | Geographic work, deliberately in `sprezzature-maps`. |",
-        "| `not-a-figure` | A table, a mind map, chart furniture. Mermaid and TikZ cover the diagrams. |",
+        "| `not-a-figure` | A table, a mind map, chart furniture. `flowchart` and TikZ cover the diagrams. |",
         "",
     ]
 

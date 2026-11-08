@@ -121,12 +121,12 @@ antv,generate_column_chart,bar,covered,
 antv,generate_boxplot_chart,boxplot,covered,
 antv,generate_dual_axes_chart,dual-axis,covered,
 antv,generate_fishbone_diagram,fishbone,covered,
-antv,generate_flow_diagram,,not-a-figure,"Mermaid, through the Ralph loop"
+antv,generate_flow_diagram,flowchart,covered,
 antv,generate_funnel_chart,funnel,covered,
 antv,generate_histogram_chart,histogram,covered,
 antv,generate_line_chart,line,covered,
 antv,generate_liquid_chart,liquid-gauge,covered,
-antv,generate_mind_map,,not-a-figure,"Mermaid, through the Ralph loop"
+antv,generate_mind_map,,not-a-figure,"`flowchart` or TikZ, through the Ralph loop"
 antv,generate_network_graph,network,covered,
 antv,generate_organization_chart,org-chart,covered,
 antv,generate_pie_chart,pie,covered,

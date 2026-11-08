@@ -378,7 +378,7 @@ contradict a fact established here.
 ### The Ralph Eyeball Loop
 
 `scripts/ralph_eyeball_loop.py` renders any visual made from code (`.svg`,
-`.html`, a TikZ `.tex`, a Mermaid `.mmd`) to a PNG and writes an assessment
+`.html`, a TikZ `.tex`) to a PNG and writes an assessment
 file under `.private/ralph-loop/`: the clone's own, or, installed from the
 wheel, the one in the directory you run it from. You edit the source and run it again; each
 run appends an iteration. In the default mode the agent running it reads the
@@ -404,7 +404,7 @@ its own `--help`:
 
 | Script | What it does |
 |---|---|
-| `render_diagram.py` | Rasterise a TikZ, Mermaid or SVG source to PNG, themed with the house palette. |
+| `render_diagram.py` | Rasterise a TikZ or SVG source to PNG; TikZ is themed with the house palette. |
 | `audit_figure.py` | Static auditor for SVG charts, or HTML with `<figure>` blocks. |
 | `explain_model.py` | Explain a pickled model with SHAP, Shapash, TimeSHAP or LIME (local interpretable model-agnostic explanations). `--n-explain` (default 500) is both the SHAP sample and the number of LIME rows. |
 | `causal_estimate.py` | Estimate a causal effect with DoWhy and EconML, given a DAG (directed acyclic graph). |
