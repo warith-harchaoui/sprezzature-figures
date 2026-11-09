@@ -390,6 +390,16 @@ la question, ou que la figure est belle. Ce sont des jugements ; la boucle
 Ralph Eyeball (plus bas) est l'endroit où un modèle de vision est interrogé
 sur eux, et elle n'a jamais le droit de contredire un fait établi ici.
 
+Un avertissement porte sur l'alignement plutôt que sur la collision :
+`baseline_near_miss` signale des étiquettes de même taille et de même graisse,
+côte à côte, dont les premières lignes de base diffèrent de plus de 1,5 px et
+de moins de 0,9 fois la taille du texte. Trois cartes en rang, dont celle du
+milieu tient son sous-titre sur une ligne quand ses voisines passent à deux :
+le titre du milieu descend d'une demi-ligne, rien ne se chevauche, et toutes
+les autres règles passent. Les générateurs qui posent des blocs frères
+partagent donc une même hauteur de bloc : le retour à la ligne ne déplace
+jamais une première ligne, il ajoute des lignes en dessous.
+
 ### La boucle Ralph Eyeball
 
 `scripts/ralph_eyeball_loop.py` rend en PNG n'importe quel visuel produit par
@@ -562,6 +572,39 @@ sprezzature-figures render bar --out revenue.svg --theme academic
 [viridis](https://bids.github.io/colormap/), la palette perceptuellement
 uniforme et sûre pour la vision des couleurs recommandée pour les figures
 scientifiques ; `"corporate"` conserve la rampe propre à chaque graphique.
+
+### La couleur porte le sens
+
+Une couleur se lit avant son étiquette ; elle doit donc dire ce que dit
+l'étiquette. Chaque teinte de la palette porte une dimension psychologique,
+d'après [deraison.ai/colors/academic](https://deraison.ai/colors/academic) :
+
+| Teinte (Okabe-Ito) | Nom | Côté positif | Côté négatif |
+|---|---|---|---|
+| `#D55E00` vermillon | `Red` | puissance, énergie, passion | danger, avertissement, colère |
+| `#E69F00` orange | `Orange` | courage, chaleur, innovation | frustration |
+| `#F0E442` jaune | `Yellow` | optimisme, créativité | prudence, anxiété |
+| `#009E73` vert bleuté | `Green` | santé, espoir, croissance, nature | stagnation, maladie |
+| `#56B4E9` bleu ciel | `Teal` | communication, clarté, calme | secret, manque de fiabilité |
+| `#0072B2` bleu | `Blue` | confiance, fiabilité, logique, sécurité | froideur |
+| `#CC79A7` violet rosé | `Purple` | sagesse, imagination, raffinement | peur |
+| `#A52A2A` brun | `Brown` | sérieux, ancrage, soutien | lourdeur |
+| noir | `Black` | autorité, substance | menace, deuil |
+| gris | `Gray` | neutralité, équilibre | manque d'énergie |
+
+`semantic_colors` l'applique : une étiquette qui nomme un sens, en français ou
+en anglais, reçoit sa teinte ; les autres gardent le cycle habituel, moins les
+teintes déjà prises. C'est une suggestion à passer à l'option de couleur de la
+figure ; aucune couleur par défaut ne change. Les teintes passent par la
+palette du thème : les neutres sortent donc en `Brown` `#A2845E` et `Gray`
+`#8E8E93`, ceux de la maison.
+
+```python
+from sprezzature_figures import semantic_colors
+
+semantic_colors(["Risque", "Confiance", "Croissance", "T3"], theme="academic")
+# {'Risque': '#D55E00', 'Confiance': '#0072B2', 'Croissance': '#009E73', 'T3': '#E69F00'}
+```
 
 ### Polices
 

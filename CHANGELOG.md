@@ -2,6 +2,43 @@
 
 ## [Unreleased]
 
+## [2.11.0] — 2026-11-09
+
+### Added
+
+- **`check_render` reports a near-miss alignment** (`baseline_near_miss`,
+  warning). Labels of one size and weight, side by side, whose first
+  baselines differ by more than 1.5 px but less than 0.9 of the font size were
+  meant to share a row and do not: three cards whose middle subtitle fits on
+  one line while its neighbours wrap to two put the middle title half a line
+  low. Only first lines are compared (one `<text>` per line, or tspan lines in
+  one `<text>`), and a pair is reported only with evidence of a row: the two
+  blocks run to different numbers of lines, or one is aligned with a third
+  label of the same role. Labels placed by their data (map cities, sankey
+  nodes, packed circles) can still trip it, hence a warning.
+  `tests/test_baseline_near_miss.py`.
+- **`semantic_colors(labels, theme=...)` and `semantic_hue(label)`: colour =
+  meaning.** A label naming a meaning, in English or French, gets the hue that
+  carries it after deraison.ai/colors/academic (risque, erreur, danger to
+  vermilion; confiance, fiable, sûr to blue; santé, croissance, gain to bluish
+  green; ...); the rest keep the usual cycle minus the hues already taken. The
+  table lives once in `scripts/_style.py` (`SEMANTIC_KEYWORDS`), and
+  `cycle_hues(..., semantic=True)` uses it. Off by default: no figure's colours
+  change. `tests/test_semantic_colors.py`.
+
+### Fixed
+
+- **Wrapping no longer moves a first line.** `flowchart`: every box of a
+  left-to-right flow shares the tallest height (top to bottom, every box of a
+  layer), its first line hangs from the top, and every layer's run of boxes is
+  centred on one line, so a box outside any group no longer sits half a frame
+  title above the boxes inside one. `treemap`: the leaves of one squarified
+  strip share the smallest font any of them needed and the block height of the
+  longest name, values included. `timeline`: every card shares the tallest
+  card's height, so an above-spine card whose blurb wraps no longer lifts its
+  year and name. `fishbone`: a wrapped cause keeps its first line on the twig.
+  `bullet`: the "Bands:" lead-in shares the baseline of its legend entries.
+
 ## [2.10.1] — 2026-11-09
 
 ### Fixed
