@@ -22,6 +22,7 @@ from __future__ import annotations
 import csv
 import importlib.util
 import os
+import re
 import sys
 import warnings
 from pathlib import Path
@@ -325,7 +326,7 @@ _DEFAULT_CYCLE = ("Blue", "Orange", "Purple", "Green")
 
 def cycle_hues(
     keys: List[str], accessibility: str = "universal", hues: Optional[List[str]] = None,
-    theme: str = "corporate",
+    theme: str = "corporate", semantic: bool = False,
 ) -> Dict[str, str]:
     """Assign each of `keys` a hue, cycling through a small qualitative set.
 
@@ -353,6 +354,12 @@ def cycle_hues(
         existing `hues` list needs no change to theme correctly.
     theme : str, optional
         Forwarded to :func:`load_palette`. Defaults to ``"corporate"``.
+    semantic : bool, optional
+        ``False`` (default) keeps the plain cycle, byte for byte. ``True``
+        first gives each key whose text names a meaning the hue of that
+        meaning (see :func:`semantic_hue`: "Risque" gets the danger hue,
+        "Confiance" the trust hue), then hands the rest the cycle, skipping
+        the hues already taken.
 
     Returns
     -------
@@ -373,7 +380,9 @@ def cycle_hues(
     picked = [palette.get(name, fallback.get(name, "#007AFF")) for name in order]
     if not picked:
         picked = ["#007AFF"]
-    return {key: picked[i % len(picked)] for i, key in enumerate(keys)}
+    if not semantic:
+        return {key: picked[i % len(picked)] for i, key in enumerate(keys)}
+    return _semantic_assign(keys, palette, fallback, picked)
 
 
 def os_adaptive_style(
@@ -761,6 +770,194 @@ def qualitative_sequence(n: int = 8, theme: str = "corporate") -> List[str]:
     while len(out) < n:
         out.extend(saturated)
     return out[:n]
+
+
+# ------------------------------------------------------------------
+# Colour = meaning: a label's words pick its hue
+# ------------------------------------------------------------------
+#: Words that name the psychological dimension of a palette hue, in English
+#: and French, lower case. Source: <https://deraison.ai/colors/academic>
+#: (the ``academic_psychology``, ``academic_concepts`` and
+#: ``academic_emotions`` tables). A hue carries a positive and a negative
+#: side, and both are listed: red is power and energy, and also danger,
+#: warning and anger; purple is wisdom and imagination, and also fear.
+#: The keys are palette hue NAMES, shared by both themes, so the corporate
+#: and academic (Okabe-Ito) palettes resolve the same meaning to their own
+#: hex. Kept short on purpose: a word belongs here only if a reader would
+#: agree on its colour without being told.
+SEMANTIC_KEYWORDS: Dict[str, Tuple[str, ...]] = {
+    # #D55E00 vermilion: power, energy / danger, warning, anger.
+    "Red": (
+        "danger", "dangers", "dangereux", "risk", "risque", "error", "erreur", "warning",
+        "alert", "alerte", "avertissement", "anger", "colère", "threat", "menace", "loss",
+        "perte", "failure", "fail", "échec", "incident", "attack", "attaque", "urgent",
+        "urgence", "critical", "critique", "power", "puissance", "energy", "énergie",
+        "passion", "pain", "douleur", "defect", "défaut", "bug",
+    ),
+    # #E69F00 orange: courage, warmth, innovation / frustration.
+    "Orange": (
+        "courage", "warmth", "chaleur", "innovation", "innover", "friendly", "convivial",
+        "cheerful", "confidence", "enthusiasm", "enthousiasme", "frustration", "surprise",
+    ),
+    # #F0E442 yellow: optimism, creativity / caution, anxiety.
+    "Yellow": (
+        "optimism", "optimisme", "creativity", "créativité", "idea", "idée", "caution",
+        "prudence", "anxiety", "anxiété", "joy", "joie", "happiness", "bonheur", "pending",
+        "attente",
+    ),
+    # #009E73 bluish green: health, hope, growth, nature / stagnation, sickness.
+    "Green": (
+        "health", "santé", "growth", "croissance", "gain", "profit", "hope", "espoir",
+        "nature", "environment", "environnement", "prosperity", "prospérité", "success",
+        "succès", "réussite", "win", "sustainable", "durable", "fresh", "healthy", "sain",
+        "stagnation", "sickness", "maladie",
+    ),
+    # #56B4E9 sky blue: communication, clarity, calm / secrecy, unreliability.
+    "Teal": (
+        "communication", "clarity", "clarté", "calm", "calme", "transparency",
+        "transparence", "inspiration", "dialogue", "healing", "guérison", "secrecy",
+        "secret", "unreliable",
+    ),
+    # #0072B2 blue: trust, dependability, logic, security / coldness.
+    "Blue": (
+        "trust", "confiance", "reliable", "fiable", "fiabilité", "reliability",
+        "dependable", "secure", "security", "sécurité", "sûr", "sûre", "safe", "safety",
+        "logic", "logique", "loyalty", "loyauté", "stability", "stabilité", "serenity",
+        "sérénité", "coldness", "froideur",
+    ),
+    # #CC79A7 reddish purple: wisdom, imagination, sophistication / fear.
+    "Purple": (
+        "wisdom", "sagesse", "imagination", "imaginative", "sophistication", "luxury",
+        "luxe", "wealth", "richesse", "spirituality", "spiritualité", "fear", "peur",
+        "crainte",
+    ),
+    # #A52A2A brown: seriousness, earthiness, support, authenticity.
+    "Brown": (
+        "serious", "seriousness", "sérieux", "earth", "terre", "earthiness", "support",
+        "soutien", "authenticity", "authenticité", "authentic", "authentique",
+    ),
+    # Black: authority, substance / menace, mourning.
+    "Black": (
+        "authority", "autorité", "elegance", "élégance", "mourning", "deuil",
+        "oppression", "evil",
+    ),
+    # Grey: neutrality, balance / lack of energy.
+    "Gray": (
+        "neutral", "neutre", "neutrality", "neutralité", "balance", "équilibre", "other",
+        "others", "autre", "autres", "misc", "unknown", "inconnu", "n/a",
+    ),
+}
+
+#: Longest suffix a keyword may take and still match (plurals, inflections):
+#: "risques", "erreurs", "risky". Longer would let "fear" match "fearless".
+_SUFFIX_SLACK = 3
+
+
+def semantic_hue(label: str) -> Optional[str]:
+    """The palette hue NAME whose meaning `label` carries, or ``None``.
+
+    Reads the label's words in order and returns the hue of the first one
+    listed in :data:`SEMANTIC_KEYWORDS`. A keyword of four letters or more
+    also matches with up to three more letters ("risques", "erreurs"); a
+    shorter one only matches whole ("gain", "sûr", never "sur").
+
+    Parameters
+    ----------
+    label : str
+        A series, card or category label, in English or French.
+
+    Returns
+    -------
+    str or None
+        A key of :func:`load_palette` (``"Red"``, ``"Blue"``, ...), or
+        ``None`` when no word of the label names a meaning.
+
+    Examples
+    --------
+    >>> semantic_hue("Risque opérationnel")
+    'Red'
+    >>> semantic_hue("Customer trust")
+    'Blue'
+    >>> semantic_hue("Q3") is None
+    True
+    """
+    words = re.findall(r"[\w/'’-]+", (label or "").casefold())
+    for word in words:
+        for hue, keywords in SEMANTIC_KEYWORDS.items():
+            for kw in keywords:
+                if word == kw or (
+                    len(kw) >= 4 and word.startswith(kw) and len(word) - len(kw) <= _SUFFIX_SLACK
+                ):
+                    return hue
+    return None
+
+
+def _semantic_assign(
+    keys: List[str], palette: Dict[str, str], fallback: Dict[str, str], picked: List[str],
+) -> Dict[str, str]:
+    """Meaning first, then the cycle for whatever names no meaning.
+
+    One hue per meaning: the first key naming it takes it, a second key
+    naming the same meaning gets the next free cycle hue, because two
+    categories drawn alike can no longer be told apart.
+    """
+    out: Dict[str, str] = {}
+    taken: set = set()
+    for key in keys:
+        hue = semantic_hue(str(key))
+        if hue is None:
+            continue
+        hexv = palette.get(hue, fallback.get(hue))
+        if hexv and hexv.upper() not in taken:
+            out[key] = hexv
+            taken.add(hexv.upper())
+    free = [h for h in picked if h.upper() not in taken] or picked
+    i = 0
+    for key in keys:
+        if key in out:
+            continue
+        out[key] = free[i % len(free)]
+        i += 1
+    return {key: out[key] for key in keys}
+
+
+def semantic_colors(
+    labels: List[str], *, theme: str = "corporate", accessibility: str = "universal",
+    hues: Optional[List[str]] = None,
+) -> Dict[str, str]:
+    """Suggest one colour per label, read from what the label says.
+
+    The house rule "colour = meaning" as a function: a label about danger or
+    risk gets vermilion, one about trust or reliability gets blue, one about
+    health or growth gets green, and so on (see :data:`SEMANTIC_KEYWORDS`).
+    Labels that name no meaning get the usual categorical cycle, minus the
+    hues already taken. A suggestion, not a law: pass the result to a
+    figure's own colour option (``series_colors=`` for ``line-multi``) or
+    override any entry.
+
+    Parameters
+    ----------
+    labels : list of str
+        The series, cards or categories to colour, in order.
+    theme : str, optional
+        ``"corporate"`` (default) or ``"academic"`` (Okabe-Ito).
+    accessibility : str, optional
+        Forwarded to :func:`load_palette`.
+    hues : list of str, optional
+        The fallback cycle, as hue names. Defaults to :func:`cycle_hues`'s.
+
+    Returns
+    -------
+    dict of str to str
+        ``{label: "#RRGGBB"}``, one entry per label, in order.
+
+    Examples
+    --------
+    >>> colors = semantic_colors(["Risque", "Confiance", "Croissance"], theme="academic")
+    >>> colors["Risque"], colors["Confiance"], colors["Croissance"]
+    ('#D55E00', '#0072B2', '#009E73')
+    """
+    return cycle_hues(list(labels), accessibility, hues=hues, theme=theme, semantic=True)
 
 
 # ------------------------------------------------------------------

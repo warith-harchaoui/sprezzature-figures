@@ -15,6 +15,7 @@ Warith HARCHAOUI <warithmetics@deraison.ai>
 
 from __future__ import annotations
 
+from ._style_bridge import semantic_colors, semantic_hue
 from ._textfit_bridge import text_width
 from .darkmode import to_dark
 from .frames import as_rows
@@ -40,8 +41,13 @@ __all__ = [
     "text_width",
     "redraw",
     "RedrawResult",
+    # Colour = meaning: a label about risk gets the danger hue, one about trust the
+    # trust hue, the rest the usual cycle. A suggestion a caller passes to a figure's
+    # own colour option; no figure's default colours change.
+    "semantic_colors",
+    "semantic_hue",
 ]
 
-__version__ = "2.10.1"
+__version__ = "2.11.0"
 __author__ = "Warith HARCHAOUI"
 __email__ = "warithmetics@deraison.ai"
