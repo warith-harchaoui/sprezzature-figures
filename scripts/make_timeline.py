@@ -592,6 +592,14 @@ def build_svg(
         lines = _wrap(str(m["blurb"]), 28)
         card_h: float = card_pad * 2 + 26 + 24 + len(lines) * line_h
         geom.append({"mx": sx(year), "lines": lines, "card_h": card_h})
+    # One card height for every card. An above-spine card hangs from its
+    # stem, so a taller card grows UPWARD: a blurb that wrapped to three
+    # lines lifted that card's year and name above its neighbours' on the
+    # same level. With the tallest height shared, every year and every name
+    # of a level sits on one baseline and a wrapped blurb only goes down.
+    tallest = max((float(g["card_h"]) for g in geom), default=0.0)
+    for g in geom:
+        g["card_h"] = tallest
 
     # Balanced greedy side + level assignment. Process milestones in
     # x-order; for each, compute the lowest free level on *each* side

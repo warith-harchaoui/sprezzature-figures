@@ -518,8 +518,10 @@ def build_svg(
     cap_x = track_x
     swatch = 26
     labels = ["Poor", "Satisfactory", "Good"]
+    # The lead-in shares the baseline of the three entries it introduces: a
+    # legend is one line of text, and 3 px off reads as a slip.
     parts.append(
-        f'<text x="{m_left}" y="{cap_y + 4:.1f}" font-size="16" '
+        f'<text x="{m_left}" y="{cap_y + 1:.1f}" font-size="16" '
         f'fill="{secondary}">{xml_escape(bands_label)}</text>'
     )
     for j, lab in enumerate(labels):

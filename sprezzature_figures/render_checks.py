@@ -209,6 +209,17 @@ class _Label:
     anchor: str
     rotated: bool
     angle: float = 0.0
+    #: "bold" or "normal": a title and its subtitle are two typographic roles,
+    #: and only labels of one role are expected to share a baseline.
+    weight: str = "normal"
+    #: Baseline of the FIRST line. Equal to ``y`` for a one-line label; for a
+    #: block written as one ``<text>`` with ``<tspan>`` lines, the first tspan
+    #: may carry its own ``y`` or ``dy``, and the first line is the one a row
+    #: of sibling blocks has to line up on.
+    first_y: float | None = None
+    #: Lines drawn by this one element (its non-empty tspans that start a new
+    #: line), 1 for plain text.
+    lines: int = 1
 
     @property
     def width(self) -> float:
@@ -408,15 +419,25 @@ def _text_labels(root: ET.Element) -> list[_Label]:
             continue
         size = _inherited_size(element, ancestors)
         aligne = (_inherited(element, ancestors, "dominant-baseline") or "").strip()
+        decale = dy + _LIGNE_DE_BASE.get(aligne, 0.0) * size
+        base = _float(element.get("y")) + decale
         labels.append(
             _Label(
                 text=contenu,
-                x=_float(element.get("x")) + dx,
-                y=_float(element.get("y")) + dy + _LIGNE_DE_BASE.get(aligne, 0.0) * size,
+                x=_float(element.get("x") or _first_tspan_x(element)) + dx,
+                y=base,
                 size=size,
                 anchor=(_inherited(element, ancestors, "text-anchor") or "start"),
                 rotated=rotated,
                 angle=_quarter_turn(element.get("transform") or ""),
+                weight=_weight(_inherited(element, ancestors, "font-weight")),
+                first_y=_first_line(element, base, decale),
+                lines=max(1, sum(
+                    1 for child in element
+                    if child.tag == f"{_SVG_NS}tspan"
+                    and (child.get("y") is not None or child.get("dy") is not None)
+                    and "".join(child.itertext()).strip()
+                )),
             )
         )
     vus: set[tuple] = set()
@@ -431,6 +452,48 @@ def _text_labels(root: ET.Element) -> list[_Label]:
         vus.add(cle)
         uniques.append(label)
     return uniques
+
+
+def _weight(value: str | None) -> str:
+    """``"bold"`` for any weight from 600 up (or the keywords), else ``"normal"``.
+
+    Two steps are enough here: the question is whether two labels play the
+    same typographic role, and the house sets roles with regular and bold.
+    """
+    v = (value or "").strip().lower()
+    if v in ("bold", "bolder"):
+        return "bold"
+    return "bold" if v.isdigit() and int(v) >= 600 else "normal"
+
+
+def _first_tspan_x(element: ET.Element) -> str | None:
+    """The ``x`` of the first tspan, for a ``<text>`` that sets none itself."""
+    for child in element:
+        if child.tag == f"{_SVG_NS}tspan" and child.get("x"):
+            return (child.get("x") or "").split()[0]
+    return None
+
+
+def _first_line(element: ET.Element, base: float, decale: float) -> float:
+    """Baseline of the first line of a ``<text>``, its tspans included.
+
+    A block drawn as ``<text><tspan>line 1</tspan><tspan dy="1.2em">...``
+    starts at the text's own ``y``; one whose first tspan carries an
+    absolute ``y`` (or a ``dy`` in pixels) starts there instead. A relative
+    ``dy`` in em on the first line is rare and left as zero rather than
+    guessed.
+    """
+    for child in element:
+        if child.tag != f"{_SVG_NS}tspan" or not "".join(child.itertext()).strip():
+            continue
+        y = base
+        if child.get("y") is not None:
+            y = _float(child.get("y").split()[0]) + decale  # type: ignore[union-attr]
+        dy = (child.get("dy") or "").split()
+        if dy and not dy[0].endswith(("em", "ex", "%")):
+            y += _float(re.sub(r"[^\d.\-]", "", dy[0]))
+        return y
+    return base
 
 
 def _canvas(root: ET.Element) -> tuple[float, float]:
@@ -654,6 +717,135 @@ def _check_touching(labels: Sequence[_Label]) -> list[RenderFinding]:
                         f"{max(gap_x, gap_y, 0.0):.1f}px apart",
                     )
                 )
+    return findings
+
+
+#: Baselines this close count as aligned: generators round coordinates to the
+#: tenth or the unit, and nobody sees a pixel.
+_ALIGNED_PX = 1.5
+
+#: Above this fraction of the font size, two labels are on different rows on
+#: purpose (a second line sits a whole line height lower). Below it and above
+#: ``_ALIGNED_PX``, they were meant to share a baseline and do not.
+_NEAR_MISS_EM = 0.9
+
+#: A label made only of these is a number, and a number placed by its data (a
+#: value above a bar, at the bar's height) follows the data, not a row.
+_NUMERIQUE = re.compile(r"^[\s\d.,%+\-\u2212\u2009\u202f\u00a0$€£kKMB×x()]*$")
+
+
+def _role(label: _Label) -> tuple[float, str]:
+    """Size and weight: two labels of one typographic role share both."""
+    return round(label.size, 1), label.weight
+
+
+def _stacks(pool: Sequence[_Label]) -> dict[tuple, list[_Label]]:
+    """Labels of one role, anchor and x, top to bottom: the lines of a block.
+
+    A generator that writes one ``<text>`` per line stacks a block this way,
+    each line one line height (1 to 1.8 em) under the previous.
+    """
+    piles: dict[tuple, list[_Label]] = {}
+    for label in pool:
+        cle = (_role(label), label.anchor, round(label.x / _ALIGNED_PX))
+        piles.setdefault(cle, []).append(label)
+    for pile in piles.values():
+        pile.sort(key=lambda label: label.y)
+    return piles
+
+
+def _blocks(pool: Sequence[_Label]) -> list[tuple[_Label, int]]:
+    """Every block's first line, with the number of lines the block runs to."""
+    blocs: list[tuple[_Label, int]] = []
+    for pile in _stacks(pool).values():
+        premier, n = pile[0], pile[0].lines
+        for avant, apres in zip(pile, pile[1:], strict=False):
+            if avant.size <= apres.y - avant.y <= 1.8 * avant.size:
+                n += 1
+                continue
+            blocs.append((premier, n))
+            premier, n = apres, apres.lines
+        blocs.append((premier, n))
+    return blocs
+
+
+def _check_near_miss_alignment(labels: Sequence[_Label]) -> list[RenderFinding]:
+    """Report sibling labels that were meant to share a baseline and miss it.
+
+    The defect this is for: three cards side by side, each centring its own
+    text vertically. The middle subtitle fits on one line, its neighbours
+    wrap to two, so the middle title sits half a line lower than the other
+    two. No label covers another and nothing leaves the canvas, so every
+    other rule passes; the row simply no longer reads as a row.
+
+    Two labels are compared when they have the same size and weight (one
+    typographic role) and sit side by side without overlapping horizontally.
+    They miss when their first-line baselines differ by more than
+    ``_ALIGNED_PX`` but less than ``_NEAR_MISS_EM`` of the size: closer is
+    aligned, farther is a different line.
+
+    A near miss alone is not proof of a row: labels placed by their data (a
+    city on a map, a point in a scatter) land at any height, and two of them
+    a few pixels apart mean nothing. So a pair is reported only with evidence
+    that a row was intended: the two blocks run to different numbers of
+    lines (the wrapping is what moved one of them), or one of the two is
+    aligned with a third label of the same role, so the row exists and the
+    other left it. Only first lines are compared; a block's later lines
+    follow its first. Rotated text and bare numbers (placed by their data)
+    are left out. A warning, not an error: the figure is still legible, it
+    is wrong under the house rule that wrapping never moves a first line.
+    """
+    droits = [
+        label for label in labels
+        if not label.rotated and not _NUMERIQUE.match(label.text)
+    ]
+
+    def base(label: _Label) -> float:
+        return label.first_y if label.first_y is not None else label.y
+
+    def disjoints(a: _Label, b: _Label) -> bool:
+        (a1, a2), (b1, b2) = a.box, b.box
+        return min(a2, b2) - max(a1, b1) < 0
+
+    # Sorted by baseline, so each label only meets the few within reach and
+    # a figure with thousands of labels stays linear in practice.
+    blocs = sorted(_blocks(droits), key=lambda b: base(b[0]))
+    bases = [base(premier) for premier, _ in blocs]
+    en_rang: dict[int, bool] = {}
+    paires: list[tuple[int, int]] = []
+    for i, (gauche, _) in enumerate(blocs):
+        for j in range(i + 1, len(blocs)):
+            droite = blocs[j][0]
+            ecart = bases[j] - bases[i]
+            if ecart >= _NEAR_MISS_EM * max(gauche.size, droite.size):
+                break
+            if _role(gauche) != _role(droite) or not disjoints(gauche, droite):
+                continue
+            if ecart <= _ALIGNED_PX:
+                en_rang[i] = en_rang[j] = True
+            else:
+                paires.append((i, j))
+
+    findings: list[RenderFinding] = []
+    vus: set[tuple] = set()
+    for i, j in paires:
+        (gauche, n_g), (droite, n_d) = blocs[i], blocs[j]
+        if n_g == n_d and not (en_rang.get(i) or en_rang.get(j)):
+            continue
+        cle = tuple(sorted((gauche.text, droite.text)))
+        if cle in vus:
+            continue
+        vus.add(cle)
+        findings.append(
+            RenderFinding(
+                "baseline_near_miss",
+                "two sibling labels were meant to share a baseline and miss it "
+                "(a neighbour's wrapping moved one of them)",
+                f"{gauche.text!r} / {droite.text!r} dy={bases[j] - bases[i]:.1f}px "
+                f"at {gauche.size:g}px {gauche.weight}",
+                severity="warning",
+            )
+        )
     return findings
 
 
@@ -1195,6 +1387,7 @@ def check_render(
     findings += _check_inside_canvas(labels, width, height, min_x, min_y)
     findings += _check_overlaps(labels)
     findings += _check_touching(labels)
+    findings += _check_near_miss_alignment(labels)
     findings += _check_turned_titles(labels)
     findings += _check_frames(root)
     findings += _check_legible_size(labels, _display_scale(root))

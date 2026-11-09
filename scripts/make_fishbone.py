@@ -312,11 +312,15 @@ def build_svg(
             # translator and the second half stays in the source language.
             room = max(90.0, plot_w / (len(above if side < 0 else below) + 1) - 70.0)
             wrapped = wrap_to_width(text, room, 11.0)[:2]
+            # The first line sits on the twig whatever the wrapping, like
+            # every other cause at that height; a second line goes below.
+            # Centring the block on the twig lifted a wrapped cause half a
+            # line above its neighbours on the other bones.
             for line_index, line in enumerate(wrapped):
                 last = line_index == len(wrapped) - 1
                 parts.append(
                     f'<text x="{twig_x + 5:.1f}" '
-                    f'y="{branch_y + 4 + (line_index - (len(wrapped) - 1) / 2) * 12:.1f}" '
+                    f'y="{branch_y + 4 + line_index * 12:.1f}" '
                     f'font-size="11" fill="{INK}" '
                     f'opacity="{1.0 if has_evidence else 0.65}">{xml_escape(line)}'
                     + (f' <tspan fill="{SECONDARY}" font-family="{mono_family}" '

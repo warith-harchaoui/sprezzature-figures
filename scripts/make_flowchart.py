@@ -381,6 +381,20 @@ def build_svg(
                       for t in wrap_to_width(p, (box_wd[n] - 2 * PAD_X) / TEXT_SLACK, fs)]
                   for n in nodes}
     box_h = {n: len(text_lines[n]) * line_h + 2 * PAD_Y for n in nodes}
+    # Siblings share one height, so wrapping never moves a first line: a box
+    # that fits on one line beside one that wraps to two would otherwise be
+    # centred half a line lower, and the row would stop reading as a row.
+    # Left to right, a row runs across every layer, so every box shares the
+    # tallest; top to bottom, a row is one layer.
+    if horizontal:
+        tallest = max(box_h.values(), default=2 * PAD_Y)
+        box_h = {n: tallest for n in nodes}
+    else:
+        for col in rank:
+            in_layer = [v for v in col if v in box_h]
+            tallest = max((box_h[v] for v in in_layer), default=2 * PAD_Y)
+            for v in in_layer:
+                box_h[v] = tallest
     if horizontal:
         layer_w = [max([box_wd[v] for v in col if v in box_wd] or [6.0]) for col in rank]
     else:
@@ -403,9 +417,18 @@ def build_svg(
         depth = MARGIN + max(0.0, (width - 2 * MARGIN - flow_len) / 2)
     else:
         depth = top + (GROUP_PAD + GROUP_TITLE if has_groups else 0)
+    def lead(col: List[str]) -> float:
+        """Room a group frame takes before a layer's first box."""
+        return GROUP_PAD + GROUP_TITLE if col and group.get(col[0]) else 0.0
+
+    # Left to right, every layer's run of boxes is centred on ONE line. Centring
+    # each layer's span, frame included, put a box outside any group half a
+    # frame title higher than a box inside one, and its text off the row.
+    runs = [spans[k] - frame_ends(col) for k, col in enumerate(rank)]
+    common = max((lead(col) + runs[k] / 2 for k, col in enumerate(rank)), default=0.0)
     for k, col in enumerate(rank):
         if horizontal:
-            cross = top + (band - spans[k]) / 2
+            cross = top + common - runs[k] / 2 - lead(col)
         else:
             cross = MARGIN + max(0.0, (avail - band) / 2) + (band - spans[k]) / 2
         cross += GROUP_PAD + GROUP_TITLE if col and group.get(col[0]) else 0
@@ -635,7 +658,9 @@ def build_svg(
         parts.append(f'<rect x="{x:.1f}" y="{y:.1f}" width="{w:.1f}" height="{h:.1f}" rx="10" '
                      f'fill="{CARD_FILL}" stroke="{CARD_STROKE}" stroke-width="1.2"/>')
         lines = text_lines[n]
-        first = y + h / 2 - (len(lines) - 1) * line_h / 2 + font_size * 0.35
+        # The first line hangs from the top of the box, where every sibling's
+        # first line hangs too; a wrapped line goes downward only.
+        first = y + PAD_Y + line_h / 2 + font_size * 0.35
         for i, s in enumerate(lines):
             parts.append(f'<text x="{x + w / 2:.1f}" y="{first + i * line_h:.1f}" font-size="{font_size}" '
                          f'fill="{INK}" text-anchor="middle">{xml_escape(s)}</text>')

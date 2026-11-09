@@ -10,9 +10,9 @@
 <rect width="760" height="271" fill="#FFFFFF"/>
 <text x="24.0" y="52.0" font-size="22" font-weight="700" fill="#1D1D1F">One loop, one exit: a model ships only once it passes held-out scoring</text>
 <text x="24.0" y="72.0" font-size="14" fill="#6E6E73">Each box is a step, each arrow hands its output on; the arrow underneath returns</text>
-<rect x="12.0" y="97.8" width="221.3" height="93.2" rx="12" fill="#007AFF" fill-opacity="0.07" stroke="#007AFF" stroke-opacity="0.55" stroke-width="1.2"/>
-<text x="22.0" y="112.8" font-size="10.6" font-weight="600" fill="#6E6E73">Data</text>
-<rect x="336.4" y="90.0" width="238.4" height="108.9" rx="12" fill="#FF9500" fill-opacity="0.07" stroke="#FF9500" stroke-opacity="0.55" stroke-width="1.2"/>
+<rect class="fc-group" x="12.0" y="90.0" width="221.3" height="108.9" rx="12" fill="#007AFF" fill-opacity="0.07" stroke="#007AFF" stroke-opacity="0.55" stroke-width="1.2"/>
+<text x="22.0" y="105.0" font-size="10.6" font-weight="600" fill="#6E6E73">Data</text>
+<rect class="fc-group" x="336.4" y="90.0" width="238.4" height="108.9" rx="12" fill="#FF9500" fill-opacity="0.07" stroke="#FF9500" stroke-opacity="0.55" stroke-width="1.2"/>
 <text x="346.4" y="105.0" font-size="10.6" font-weight="600" fill="#6E6E73">Modelling</text>
 <path d="M80.7,154.4 C119.2,154.4 119.2,154.4 157.7,154.4" fill="none" stroke="#6E6E73" stroke-width="1.6"><title>Raw data to Clean and align</title></path>
 <polygon points="164.7,154.4 156.7,149.9 156.7,158.9" fill="#6E6E73"/>
@@ -20,24 +20,24 @@
 <polygon points="348.4,154.4 340.4,149.9 340.4,158.9" fill="#6E6E73"/>
 <path d="M407.8,154.4 C446.3,154.4 446.3,154.4 484.8,154.4" fill="none" stroke="#6E6E73" stroke-width="1.6"><title>Fit the model to Score on held-out rows</title></path>
 <polygon points="491.8,154.4 483.8,149.9 483.8,158.9" fill="#6E6E73"/>
-<path d="M562.7,154.4 C609.8,154.4 609.8,144.4 656.8,144.4" fill="none" stroke="#6E6E73" stroke-width="1.6"><title>Score on held-out rows to Ship the forecast: passes</title></path>
-<polygon points="663.8,144.4 655.8,139.9 655.8,148.9" fill="#6E6E73"/>
-<path d="M527.2,186.9 L527.2,210.9 Q527.2,220.9 517.2,220.9 L388.1,220.9 Q378.1,220.9 378.1,210.9 L378.1,186.1" fill="none" stroke="#6E6E73" stroke-width="1.6"><title>Score on held-out rows back to Fit the model: retune</title></path>
-<polygon points="378.1,179.1 373.6,187.1 382.6,187.1" fill="#6E6E73"/>
+<path d="M562.7,154.4 C609.8,154.4 609.8,154.4 656.8,154.4" fill="none" stroke="#6E6E73" stroke-width="1.6"><title>Score on held-out rows to Ship the forecast: passes</title></path>
+<polygon points="663.8,154.4 655.8,149.9 655.8,158.9" fill="#6E6E73"/>
+<path d="M527.2,186.9 L527.2,210.9 Q527.2,220.9 517.2,220.9 L388.1,220.9 Q378.1,220.9 378.1,210.9 L378.1,193.9" fill="none" stroke="#6E6E73" stroke-width="1.6"><title>Score on held-out rows back to Fit the model: retune</title></path>
+<polygon points="378.1,186.9 373.6,194.9 382.6,194.9" fill="#6E6E73"/>
 <g class="fc-node" tabindex="0"><title>Raw data</title>
-<rect x="24.0" y="129.8" width="56.7" height="49.2" rx="10" fill="#F5F5F7" stroke="#C7C7CC" stroke-width="1.2"/>
-<text x="52.3" y="151.0" font-size="12.5" fill="#1D1D1F" text-anchor="middle">Raw</text>
-<text x="52.3" y="166.6" font-size="12.5" fill="#1D1D1F" text-anchor="middle">data</text>
+<rect x="24.0" y="122.0" width="56.7" height="64.9" rx="10" fill="#F5F5F7" stroke="#C7C7CC" stroke-width="1.2"/>
+<text x="52.3" y="143.2" font-size="12.5" fill="#1D1D1F" text-anchor="middle">Raw</text>
+<text x="52.3" y="158.8" font-size="12.5" fill="#1D1D1F" text-anchor="middle">data</text>
 </g>
 <g class="fc-node" tabindex="0"><title>Clean and align</title>
-<rect x="164.7" y="129.8" width="56.7" height="49.2" rx="10" fill="#F5F5F7" stroke="#C7C7CC" stroke-width="1.2"/>
-<text x="193.0" y="151.0" font-size="12.5" fill="#1D1D1F" text-anchor="middle">Clean</text>
-<text x="193.0" y="166.6" font-size="12.5" fill="#1D1D1F" text-anchor="middle">and align</text>
+<rect x="164.7" y="122.0" width="56.7" height="64.9" rx="10" fill="#F5F5F7" stroke="#C7C7CC" stroke-width="1.2"/>
+<text x="193.0" y="143.2" font-size="12.5" fill="#1D1D1F" text-anchor="middle">Clean</text>
+<text x="193.0" y="158.8" font-size="12.5" fill="#1D1D1F" text-anchor="middle">and align</text>
 </g>
 <g class="fc-node" tabindex="0"><title>Fit the model</title>
-<rect x="348.4" y="129.8" width="59.4" height="49.2" rx="10" fill="#F5F5F7" stroke="#C7C7CC" stroke-width="1.2"/>
-<text x="378.1" y="151.0" font-size="12.5" fill="#1D1D1F" text-anchor="middle">Fit</text>
-<text x="378.1" y="166.6" font-size="12.5" fill="#1D1D1F" text-anchor="middle">the model</text>
+<rect x="348.4" y="122.0" width="59.4" height="64.9" rx="10" fill="#F5F5F7" stroke="#C7C7CC" stroke-width="1.2"/>
+<text x="378.1" y="143.2" font-size="12.5" fill="#1D1D1F" text-anchor="middle">Fit</text>
+<text x="378.1" y="158.8" font-size="12.5" fill="#1D1D1F" text-anchor="middle">the model</text>
 </g>
 <g class="fc-node" tabindex="0"><title>Score on held-out rows</title>
 <rect x="491.8" y="122.0" width="71.0" height="64.9" rx="10" fill="#F5F5F7" stroke="#C7C7CC" stroke-width="1.2"/>
@@ -46,14 +46,14 @@
 <text x="527.2" y="174.4" font-size="12.5" fill="#1D1D1F" text-anchor="middle">rows</text>
 </g>
 <g class="fc-node" tabindex="0"><title>Ship the forecast</title>
-<rect x="663.8" y="119.8" width="72.2" height="49.2" rx="10" fill="#F5F5F7" stroke="#C7C7CC" stroke-width="1.2"/>
-<text x="699.9" y="141.0" font-size="12.5" fill="#1D1D1F" text-anchor="middle">Ship</text>
-<text x="699.9" y="156.6" font-size="12.5" fill="#1D1D1F" text-anchor="middle">the forecast</text>
+<rect x="663.8" y="122.0" width="72.2" height="64.9" rx="10" fill="#F5F5F7" stroke="#C7C7CC" stroke-width="1.2"/>
+<text x="699.9" y="143.2" font-size="12.5" fill="#1D1D1F" text-anchor="middle">Ship</text>
+<text x="699.9" y="158.8" font-size="12.5" fill="#1D1D1F" text-anchor="middle">the forecast</text>
 </g>
 <rect class="halo" x="247.8" y="146.1" width="67.0" height="16.7" rx="4" fill="#FFFFFF"/>
 <text x="281.4" y="158.0" font-size="10.6" fill="#6E6E73" text-anchor="middle">training rows</text>
-<rect class="halo" x="589.2" y="141.1" width="41.1" height="16.7" rx="4" fill="#FFFFFF"/>
-<text x="609.8" y="153.0" font-size="10.6" fill="#6E6E73" text-anchor="middle">passes</text>
+<rect class="halo" x="589.2" y="146.1" width="41.1" height="16.7" rx="4" fill="#FFFFFF"/>
+<text x="609.8" y="158.0" font-size="10.6" fill="#6E6E73" text-anchor="middle">passes</text>
 <rect class="halo" x="434.2" y="212.5" width="36.9" height="16.7" rx="4" fill="#FFFFFF"/>
 <text x="452.7" y="224.5" font-size="10.6" fill="#6E6E73" text-anchor="middle">retune</text>
 <script><![CDATA[(function(){var me=document.currentScript,svg=me.ownerSVGElement||me.parentNode;if(svg.closest&&svg.closest('[data-fs-target]'))return;var fe=null;try{fe=window.frameElement}catch(err){}if(fe&&fe.hasAttribute('data-lb-obj'))return;if(fe&&window.parent!==window){svg.addEventListener('click',function(){window.parent.postMessage({szFig:1,type:'open-fullscreen'},'*');});return;}var req=svg.requestFullscreen||svg.webkitRequestFullscreen;if(!req)return;var t=function(){var f=document.fullscreenElement||document.webkitFullscreenElement;if(f===svg)(document.exitFullscreen||document.webkitExitFullscreen).call(document);else req.call(svg);};svg.style.cursor='pointer';svg.setAttribute('tabindex','0');svg.addEventListener('click',t);svg.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();t();}});})();]]></script>

@@ -334,6 +334,7 @@ def build_svg(
         leaf_sizes = _normalize(leaf_vals, leaf_area)
         leaf_rects = _squarify(leaf_sizes, crect["x"], crect["y"], crect["dx"], crect["dy"])
         cat_total = sum(leaf_vals) or 1.0
+        labels: List[Tuple[Dict[str, Any], Dict[str, float], str]] = []
         for row, r in zip(leaves, leaf_rects, strict=True):
             val_txt = f"{float(row['value']):,.0f}"
             unit_suffix = f" {value_unit}" if value_unit else ""
@@ -355,53 +356,103 @@ def build_svg(
                 )
             )
             leaf_i += 1
-            # Fit the label to the leaf's actual pixel box instead of assuming a
-            # fixed threshold fits any string: a long name (French routinely runs
-            # 20-40% longer than English) previously overran its rectangle and
-            # bled into the neighbouring leaf's label. Shrink the font, wrap to
-            # the box width, then drop lines that still don't fit the box height
-            # — and skip the label entirely once the box is too small for even
-            # one line, rather than emit unreadable overlapping text.
-            pad = 6.0
-            avail_w = r["dx"] - 2 * pad
-            avail_h = r["dy"] - 2 * pad
-            name_size = fit_font_size(row["name"], avail_w, 11.0, min_px=9.5)
-            lines = wrap_to_width(row["name"], avail_w, name_size) if avail_w >= 20 else []
-            line_h = name_size * 1.2
-            value_h = 10.0 * 1.2
-            max_lines = max(1, int((avail_h - value_h) // line_h)) if avail_h > value_h else 0
-            show_value = max_lines >= 1 and avail_h >= value_h
-            if not show_value:
-                max_lines = max(0, int(avail_h // line_h))
-            if len(lines) > max_lines:
-                lines = lines[:max_lines]
-                if lines:
-                    last = lines[-1]
-                    while last and text_width(f"{last}…", name_size) > avail_w:
-                        last = last[:-1]
-                    lines[-1] = f"{last}…" if last else "…"
-            if lines:
-                cxm = r["x"] + r["dx"] / 2
-                n = len(lines)
-                block_h = n * line_h + (value_h if show_value else 0.0)
-                top = r["y"] + r["dy"] / 2 - block_h / 2 + name_size * 0.85
-                for i, ln in enumerate(lines):
-                    parts.append(
-                        f'<text x="{cxm:.1f}" y="{top + i * line_h:.1f}" '
-                        f'font-size="{name_size:.1f}" fill="{label_ink}" '
-                        f'text-anchor="middle">{xml_escape(ln)}</text>'
-                    )
-                if show_value:
-                    parts.append(
-                        f'<text x="{cxm:.1f}" y="{top + n * line_h + 9:.1f}" font-size="10" '
-                        f'fill="{label_ink}" fill-opacity="0.85" text-anchor="middle">'
-                        f'{xml_escape(val_txt)}{xml_escape(unit_suffix)}</text>'
-                    )
+            labels.append((row, r, val_txt + unit_suffix))
+        # Labels after every rect of the category: a leaf's name used to be
+        # written as soon as its rect was, but it can only be laid out once
+        # its whole strip of siblings is known.
+        parts.extend(_leaf_labels(labels, label_ink))
 
     parts.extend(bubbles)
     parts.append(fullscreen_control(width, height, mode))
     parts.append("</svg>")
     return "\n".join(parts)
+
+
+def _label_plan(name: str, r: Dict[str, float], name_size: float) -> Tuple[List[str], bool]:
+    """Lines of a leaf's name at `name_size`, and whether its value fits under them.
+
+    Wrap to the box width, then drop lines that do not fit the box height,
+    ending the last kept one on an ellipsis; no lines at all once the box is
+    too small for even one, rather than unreadable overlapping text.
+    """
+    pad = 6.0
+    avail_w = r["dx"] - 2 * pad
+    avail_h = r["dy"] - 2 * pad
+    lines = wrap_to_width(name, avail_w, name_size) if avail_w >= 20 else []
+    line_h = name_size * 1.2
+    value_h = 10.0 * 1.2
+    max_lines = max(1, int((avail_h - value_h) // line_h)) if avail_h > value_h else 0
+    show_value = max_lines >= 1 and avail_h >= value_h
+    if not show_value:
+        max_lines = max(0, int(avail_h // line_h))
+    if len(lines) > max_lines:
+        lines = lines[:max_lines]
+        if lines:
+            last = lines[-1]
+            while last and text_width(f"{last}…", name_size) > avail_w:
+                last = last[:-1]
+            lines[-1] = f"{last}…" if last else "…"
+    return lines, show_value
+
+
+def _leaf_labels(
+    labels: List[Tuple[Dict[str, Any], Dict[str, float], str]], label_ink: str
+) -> List[str]:
+    """Name and value of every leaf of one category, siblings aligned.
+
+    Leaves of one squarified strip share a top and a height, and read as a
+    row. Each one used to fit its own font and centre its own block, so a
+    name that wrapped to two lines put its first line half a line above its
+    neighbour's. Siblings now share the smallest font any of them needed and
+    the block height of the longest, so every first line sits on one
+    baseline and a wrapped line only goes downward.
+    """
+    def strip(r: Dict[str, float]) -> Tuple[float, float]:
+        return round(r["y"], 1), round(r["dy"], 1)
+
+    # The size a leaf would pick alone: the long name gets the small font.
+    alone = {
+        id(r): fit_font_size(row["name"], r["dx"] - 12.0, 11.0, min_px=9.5)
+        for row, r, _ in labels
+    }
+    shared_size: Dict[Tuple[float, float], float] = {}
+    for _, r, _ in labels:
+        key = strip(r)
+        shared_size[key] = min(shared_size.get(key, alone[id(r)]), alone[id(r)])
+    plans = {
+        id(r): _label_plan(row["name"], r, shared_size[strip(r)]) for row, r, _ in labels
+    }
+    shared_lines: Dict[Tuple[float, float], int] = {}
+    for _, r, _ in labels:
+        key = strip(r)
+        shared_lines[key] = max(shared_lines.get(key, 0), len(plans[id(r)][0]))
+
+    out: List[str] = []
+    for _row, r, value in labels:
+        lines, show_value = plans[id(r)]
+        if not lines:
+            continue
+        name_size = shared_size[strip(r)]
+        line_h = name_size * 1.2
+        n = shared_lines[strip(r)]
+        block_h = n * line_h + (10.0 * 1.2 if show_value else 0.0)
+        top = r["y"] + r["dy"] / 2 - block_h / 2 + name_size * 0.85
+        cxm = r["x"] + r["dx"] / 2
+        for i, ln in enumerate(lines):
+            out.append(
+                f'<text x="{cxm:.1f}" y="{top + i * line_h:.1f}" '
+                f'font-size="{name_size:.1f}" fill="{label_ink}" '
+                f'text-anchor="middle">{xml_escape(ln)}</text>'
+            )
+        if show_value:
+            # Under the shared block, not under this leaf's own lines, so the
+            # values of one strip line up as well.
+            out.append(
+                f'<text x="{cxm:.1f}" y="{top + n * line_h + 9:.1f}" font-size="10" '
+                f'fill="{label_ink}" fill-opacity="0.85" text-anchor="middle">'
+                f'{xml_escape(value)}</text>'
+            )
+    return out
 
 
 def make_treemap(
