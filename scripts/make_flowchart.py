@@ -22,6 +22,7 @@ Author
 
 from __future__ import annotations
 
+import logging
 import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -31,7 +32,7 @@ from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _style import BG, INK, SECONDARY, cycle_hues, os_dark_style  # noqa: E402
 from _svg import svg_open, xml_escape  # noqa: E402
-from _textfit import text_width, wrap_to_width  # noqa: E402
+from _textfit import split_words, text_width, wrap_to_width  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme  # noqa: E402
 
 #: The demo: a modelling workflow with one feedback loop and two groups.
@@ -66,6 +67,12 @@ MIN_FONT = 10.0          # the type never shrinks below this to fit the canvas
 TEXT_SLACK = 1.08
 
 Point = Tuple[float, float]
+LOGGER = logging.getLogger(__name__)
+
+FRAME_GAP = 10.0         # least room between the frames of two groups
+#: Below this share of the requested size the figure says so: past about six
+#: layers a left-to-right flow only fits by shrinking its text.
+LEGIBLE_SHARE = 0.8
 
 
 def _truthy(value: Any) -> bool:
@@ -193,6 +200,16 @@ def _order(
                                         group_rank.get(group.get(v, ""), -1), bary[v]))
             for i, v in enumerate(rank[k]):
                 position[v] = float(i)
+    if any(len({group[v] for v in col if v in group}) > 1 for col in rank):
+        # Two groups side by side must keep one order in every layer, or their
+        # frames cross each other however far apart the boxes are pushed.
+        where: Dict[str, List[float]] = {}
+        for v, p in position.items():
+            if v in group:
+                where.setdefault(group[v], []).append(p)
+        mean = {g: sum(ps) / len(ps) for g, ps in where.items()}
+        for col in rank:
+            col.sort(key=lambda v: (mean.get(group.get(v, ""), position[v]), position[v]))
     return rank, relays
 
 
@@ -233,7 +250,8 @@ def build_svg(
         Header text. ``None`` prints the demo's header over the demo and no
         header over caller data; an empty string prints none.
     width : int
-        Canvas width in pixels. Boxes and gaps shrink to fit it.
+        Canvas width in pixels. Boxes and gaps shrink to fit it. When that
+        takes the text below 80 % of ``font_size`` a warning says so.
     height : int or None
         Canvas height; ``None`` sizes the canvas to its content.
     direction : str
@@ -241,7 +259,8 @@ def build_svg(
     font_size : float
         Box text size in pixels; arrow labels use 85 % of it.
     max_box_width : float
-        Widest a box grows before its text wraps.
+        Widest a box grows before its text wraps; a narrow canvas can hold
+        every box below it.
     mode, accessibility, theme : str, optional
         Interactivity mode, palette accessibility level and visual theme.
 
@@ -318,7 +337,7 @@ def build_svg(
                                 else len(lines) * lfs * 1.2)
             gaps.append(max(40.0, max(room, default=0.0) + 24.0)
                         + (2 * GROUP_PAD + GROUP_TITLE if has_groups else 0))
-        lo = {n: TEXT_SLACK * max(text_width(w, fs) for p in pieces(n) for w in (p.split() or [""]))
+        lo = {n: TEXT_SLACK * max(text_width(w, fs) for p in pieces(n) for w in (split_words(p) or [""]))
               + 2 * PAD_X for n in nodes}
         hi = {n: max(lo[n], min(max_box_width, TEXT_SLACK * max(text_width(p, fs) for p in pieces(n))
                                 + 2 * PAD_X)) for n in nodes}
@@ -348,6 +367,12 @@ def build_svg(
     while total > avail and fs > MIN_FONT:
         fs = max(MIN_FONT, fs - 0.5)
         total, gaps, box_wd = sizes(fs)
+    if fs < font_size * LEGIBLE_SHARE or total > avail:
+        LOGGER.warning(
+            "flowchart: %d layers do not fit %d px at the requested text size (%.1f px "
+            "drawn, %.1f asked): the text prints small; direction='TB' or fewer "
+            "layers read better", n_layers, width, fs, font_size,
+        )
     font_size = fs
     label_fs = round(fs * 0.85, 1)
     line_h = fs * 1.25
@@ -400,16 +425,64 @@ def build_svg(
         h = box_h[v]
         return cx - w / 2, cy - h / 2, w, h
 
+    # ---- frames that share layers are pushed apart ----
+    def frame(g: str) -> Tuple[float, float, float, float]:
+        """Cross start, cross end, flow start and flow end of a group's frame."""
+        members = [box(n) for n in nodes if group.get(n) == g]
+        x0 = min(b[0] for b in members) - GROUP_PAD
+        x1 = max(b[0] + b[2] for b in members) + GROUP_PAD
+        y0 = min(b[1] for b in members) - GROUP_PAD - GROUP_TITLE
+        y1 = max(b[1] + b[3] for b in members) + GROUP_PAD
+        return (y0, y1, x0, x1) if horizontal else (x0, x1, y0, y1)
+
+    cross_axis = 1 if horizontal else 0
+    named = list(dict.fromkeys(group[n] for n in nodes if n in group))
+    for _ in range(len(named) ** 2):
+        named.sort(key=lambda g: frame(g)[0])
+        pair = next(((a, b) for i, a in enumerate(named) for b in named[i + 1:]
+                     if frame(a)[2] < frame(b)[3] and frame(b)[2] < frame(a)[3]
+                     and frame(b)[0] < frame(a)[1] + FRAME_GAP), None)
+        if pair is None:
+            break
+        lower = pair[1]
+        push = frame(pair[0])[1] + FRAME_GAP - frame(lower)[0]
+        # In each layer the lower group and everything after it moves together,
+        # so a layer keeps its order and nothing lands on a neighbour.
+        for col in rank:
+            ours = [centre[v][cross_axis] for v in col if group.get(v) == lower]
+            if ours:
+                start = min(ours)
+                for v in col:
+                    if centre[v][cross_axis] >= start:
+                        moved = list(centre[v])
+                        moved[cross_axis] += push
+                        centre[v] = (moved[0], moved[1])
+
     # ---- canvas size ----
     far = max((box(n)[1] + box(n)[3] for n in nodes), default=top) if horizontal else \
         max((box(n)[0] + box(n)[2] for n in nodes), default=MARGIN)
     if has_groups:
         far += GROUP_PAD
     lane0 = far + 22.0
+
+    def label_box(text: str) -> Tuple[float, float]:
+        """Width and height of an arrow label's halo."""
+        lines = wrap_to_width(text, LABEL_MAX, label_fs)
+        return max(text_width(s, label_fs) for s in lines) + 8, len(lines) * label_fs * 1.2 + 4
+
+    # One line of label sits on its lane. A longer one sits beside the lane,
+    # which then keeps clear of it: a tall halo on the line reached up into the
+    # boxes and left the arrow running through the text.
+    beside = [len(wrap_to_width(e["label"], LABEL_MAX, label_fs)) > 1 if e["label"] else False
+              for e in edges if e["back"]]
+    extra = [(label_box(e["label"])[1 if horizontal else 0] + 6) if side else 0.0
+             for e, side in zip((e for e in edges if e["back"]), beside, strict=True)]
+    lane_end = lane0 + n_back * BACK_LANE + sum(extra)
     if horizontal:
-        canvas_h = lane0 + n_back * BACK_LANE + MARGIN if n_back else far + MARGIN
+        canvas_h = lane_end + MARGIN if n_back else far + MARGIN
         canvas_w = width
     else:
+        width = int(max(width, (lane_end if n_back else far) + MARGIN))
         canvas_w = width
         canvas_h = max(box(n)[1] + box(n)[3] for n in nodes) + (GROUP_PAD if has_groups else 0) + MARGIN
     if height:
@@ -447,7 +520,7 @@ def build_svg(
         y0 = min(b[1] for b in members) - GROUP_PAD - GROUP_TITLE
         x1 = max(b[0] + b[2] for b in members) + GROUP_PAD
         y1 = max(b[1] + b[3] for b in members) + GROUP_PAD
-        parts.append(f'<rect x="{x0:.1f}" y="{y0:.1f}" width="{x1 - x0:.1f}" height="{y1 - y0:.1f}" '
+        parts.append(f'<rect class="fc-group" x="{x0:.1f}" y="{y0:.1f}" width="{x1 - x0:.1f}" height="{y1 - y0:.1f}" '
                      f'rx="12" fill="{hue[g]}" fill-opacity="0.07" stroke="{hue[g]}" '
                      f'stroke-opacity="0.55" stroke-width="1.2"/>')
         parts.append(f'<text x="{x0 + 10:.1f}" y="{y0 + 15:.1f}" font-size="{label_fs}" '
@@ -517,13 +590,14 @@ def build_svg(
 
     # Returning arrows run in their own lanes beyond the flow, one lane each.
     lane = 0
+    depth_so_far = lane0
     for e in edges:
         if not e["back"]:
             continue
         dash = ' stroke-dasharray="6 4"' if e["dashed"] else ""
         sx, sy, sw, sh = box(e["source"])
         tx, ty, tw, th = box(e["target"])
-        depth = lane0 + lane * BACK_LANE
+        depth = depth_so_far
         if horizontal:
             a = (sx + sw / 2, sy + sh)
             b = (tx + tw / 2, ty + th)
@@ -545,7 +619,11 @@ def build_svg(
                            f'<title>{xml_escape(tip)}</title></path>')
         arrow_parts.append(f'<polygon points="{head}" fill="{EDGE_INK}"/>')
         if e["label"]:
+            if beside[lane]:
+                w, h = label_box(e["label"])
+                mid = (mid[0], depth + h / 2 + 4) if horizontal else (depth + w / 2 + 4, mid[1])
             halo_label(mid[0], mid[1], e["label"])
+        depth_so_far += BACK_LANE + extra[lane]
         lane += 1
 
     parts.extend(arrow_parts)

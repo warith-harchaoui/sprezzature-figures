@@ -25,6 +25,11 @@ Author
 """
 from __future__ import annotations
 
+import re
+
+#: What a line may break at: ordinary whitespace, never U+00A0.
+_BREAKABLE_SPACE = re.compile(r"[ \t\r\n\f\v]+")
+
 # Per-character advance widths in em units, calibrated to Roboto. Only the
 # classes that differ much from the mean are listed; everything else falls back
 # to _DEFAULT_EM. Values are deliberately a hair generous so a fitted layout
@@ -125,8 +130,28 @@ def fit_font_size(text: str, max_px: float, start: float, *, min_px: float = 9.0
     return max(size, min_px)
 
 
+def split_words(text: str) -> list[str]:
+    """Split ``text`` at ordinary whitespace, keeping non-breaking spaces inside words.
+
+    ``str.split`` with no argument also splits at U+00A0, so a caller who wrote
+    ``"h\u00a0=\u00a01"`` to hold a formula together still saw it broken across
+    lines. The non-breaking space is the one way a caller has to say "not here".
+
+    Parameters
+    ----------
+    text : str
+        The string to split.
+
+    Returns
+    -------
+    list of str
+        The words, with any U+00A0 left inside them.
+    """
+    return [word for word in _BREAKABLE_SPACE.split(text) if word]
+
+
 def _ends_on_orphan(line: str) -> bool:
-    words = line.split()
+    words = split_words(line)
     if not words:
         return False
     last = words[-1].strip(".,;:!?").lower()
@@ -141,7 +166,7 @@ def wrap_to_width(text: str, max_px: float, font_size: float, *, bold: bool = Fa
     Returns the list of lines. A single word wider than ``max_px`` is kept on
     its own line rather than split mid-word.
     """
-    words = text.split()
+    words = split_words(text)
     if not words:
         return [""]
     lines: list[str] = []
@@ -167,7 +192,7 @@ def wrap_to_width(text: str, max_px: float, font_size: float, *, bold: bool = Fa
         changed = False
         for i in range(len(lines) - 1):
             if _ends_on_orphan(lines[i]):
-                words_i = lines[i].split()
+                words_i = split_words(lines[i])
                 moved = words_i.pop()
                 lines[i] = " ".join(words_i)
                 lines[i + 1] = f"{moved} {lines[i + 1]}"

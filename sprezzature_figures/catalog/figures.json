@@ -6506,6 +6506,12 @@
           "academic"
         ],
         "description": "Visual theme. Forwarded to build_svg."
+      },
+      "show_change": {
+        "type": "bool",
+        "default": null,
+        "choices": [],
+        "description": "Print each panel's change; see build_svg."
       }
     },
     "warnings": [
@@ -10117,6 +10123,18 @@
         "default": null,
         "choices": [],
         "description": "Explicit axis control, forwarded to build_svg; see its docstring. Left at their defaults, the axes behave exactly as before (data-driven domain, heuristic ticks)."
+      },
+      "left_margin": {
+        "type": "float",
+        "default": null,
+        "choices": [],
+        "description": "Room beside the plot, forwarded to build_svg."
+      },
+      "right_margin": {
+        "type": "float",
+        "default": 30.0,
+        "choices": [],
+        "description": "Room beside the plot, forwarded to build_svg."
       }
     },
     "warnings": [

@@ -28,7 +28,12 @@ from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY, corner_radius, cycle_hues  # noqa: E402
 from _svg import foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _textfit import text_width, wrap_to_width  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
+
+
+#: Room left of a task name and between the name and the plot.
+NAME_INSET, NAME_GAP = 12.0, 12.0
 
 
 def _nice_step(span: float, target_ticks: int = 6) -> float:
@@ -138,8 +143,17 @@ def build_svg(
     teams = [t for t in TEAMS if t in seen_teams] + [t for t in seen_teams if t not in TEAMS]
     colors = _team_colors(teams, accessibility, theme=theme)
     max_end = max(float(r["end"]) for r in rows) if rows else 1.0
+    # A bar may start before zero (a window of days before an origin): the
+    # axis opens far enough to hold it instead of drawing it off the plot.
+    low = min([0.0] + [float(r["start"]) for r in rows])
+    span = (max_end - low) or 1.0
 
-    plot_x, plot_y = 130.0, 150.0
+    plot_y = 150.0
+    # The name column widens for long names, up to 40 % of the canvas; a name
+    # beyond that wraps between words.
+    widest = max((text_width(str(r["task"]), 12.0) for r in rows), default=0.0)
+    plot_x = max(130.0, min(widest + NAME_INSET + NAME_GAP, width * 0.4))
+    name_budget = plot_x - NAME_INSET - NAME_GAP
     right_margin, bottom_reserved = 30.0, 60.0
     plot_w = width - plot_x - right_margin
     plot_h = height - plot_y - bottom_reserved
@@ -148,13 +162,13 @@ def build_svg(
     bar_h = row_h * 0.55
 
     def x_for(v: float) -> float:
-        return plot_x + v / max_end * plot_w
+        return plot_x + (v - low) / span * plot_w
 
     parts: List[str] = []
     parts.append(svg_open(width, height, "gantt-title", "gantt-desc", font_family=chrome_stack_for_theme(theme)))
     parts.append(f'<title id="gantt-title">{xml_escape(title)}</title>')
     parts.append(
-        f'<desc id="gantt-desc">Gantt chart of {n} tasks spanning {max_end:.0f} days. '
+        f'<desc id="gantt-desc">Gantt chart of {n} tasks spanning {span:.0f} days. '
         f'Hover or focus a bar for its exact span.</desc>'
     )
     parts.append(
@@ -183,8 +197,8 @@ def build_svg(
         cursor += 20 + 7.0 * len(t) + 22
 
     # ---- x-axis gridlines (round "nice" steps, not a naive 6-way split) ----
-    step = _nice_step(max_end, 6)
-    val = 0.0
+    step = _nice_step(span, 6)
+    val = math.ceil(low / step) * step if low < 0 else 0.0
     while val <= max_end + 1e-9:
         tx = x_for(val)
         parts.append(
@@ -232,11 +246,13 @@ def build_svg(
                 elem_id=f"tip-{i}",
             )
         )
-        ty = plot_y + i * row_h + row_h / 2 + 4
-        parts.append(
-            f'<text x="{plot_x - 12:.1f}" y="{ty:.1f}" font-size="12" fill="{INK}" '
-            f'text-anchor="end">{xml_escape(str(r["task"]))}</text>'
-        )
+        name_lines = wrap_to_width(str(r["task"]), name_budget, 12.0)
+        ty = plot_y + i * row_h + row_h / 2 + 4 - (len(name_lines) - 1) * 7.0
+        for k, line in enumerate(name_lines):
+            parts.append(
+                f'<text x="{plot_x - 12:.1f}" y="{ty + k * 14.0:.1f}" font-size="12" fill="{INK}" '
+                f'text-anchor="end">{xml_escape(line)}</text>'
+            )
 
     axis_y = plot_y + plot_h
     parts.append(

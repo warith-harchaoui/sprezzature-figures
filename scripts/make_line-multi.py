@@ -30,6 +30,7 @@ from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY, cycle_hues  # noqa: E402
 from _scale import fixed_step_ticks, log_position, log_ticks, nice_ticks, nice_ticks_range  # noqa: E402
 from _svg import fmt_number, foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _textfit import text_width  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 
@@ -68,6 +69,10 @@ def _series_colors(
     return base
 
 
+#: Room between a y tick label and the axis, and clear of the rotated y title.
+TICK_GAP, AXIS_TITLE_CLEARANCE = 10.0, 26.0
+
+
 def build_svg(
     data: Optional[List[Dict[str, Any]]] = None,
     title: str = "Mobile Use Peaks in the Evening",
@@ -87,6 +92,8 @@ def build_svg(
     y_domain: Optional[tuple] = None,
     y_tick_step: Optional[float] = None,
     y_minor_step: Optional[float] = None,
+    left_margin: Optional[float] = None,
+    right_margin: float = 30.0,
 ) -> str:
     """Assemble the full multi-series (continuous-axis) line chart SVG document as a string.
 
@@ -122,6 +129,11 @@ def build_svg(
         where the meaningful grid is finer than what could legibly carry a
         label on every line (e.g. a 0.1 grid with a label only every 0.5).
         Requires `y_domain`.
+    left_margin : float, optional
+        Room left of the plot, in pixels. Left at ``None`` it is measured:
+        wide enough that the longest y tick label clears the y axis title.
+    right_margin : float, optional
+        Room right of the plot, in pixels. Defaults to 30.
 
     Returns
     -------
@@ -149,7 +161,7 @@ def build_svg(
     xlog_min = min(x_pos) if x_pos else 1.0
 
     plot_x, plot_y = 60.0, 150.0
-    right_margin, bottom_reserved = 30.0, 60.0
+    bottom_reserved = 60.0
     plot_w = width - plot_x - right_margin
     plot_h = height - plot_y - bottom_reserved
 
@@ -189,6 +201,15 @@ def build_svg(
 
             def y_for(v: float) -> float:
                 return plot_y + plot_h - (v / y_hi * plot_h)
+
+    # The y axis title stands at x = 18. A long tick label ("0.0001" on a log
+    # axis) needs the plot further right, or the two print on top of each other.
+    if left_margin is not None:
+        plot_x = float(left_margin)
+    else:
+        widest_tick = max((text_width(fmt_number(t), 11.0, mono=True) for t in y_ticks), default=0.0)
+        plot_x = max(plot_x, widest_tick + TICK_GAP + AXIS_TITLE_CLEARANCE)
+    plot_w = width - plot_x - right_margin
 
     parts: List[str] = []
     parts.append(svg_open(width, height, "lm-title", "lm-desc", font_family=chrome_stack_for_theme(theme)))
@@ -358,6 +379,8 @@ def make_line_multi(
     y_domain: Optional[tuple] = None,
     y_tick_step: Optional[float] = None,
     y_minor_step: Optional[float] = None,
+    left_margin: Optional[float] = None,
+    right_margin: float = 30.0,
 ) -> Path:
     """Render a hand-authored multi-series (continuous-axis) line chart and write the SVG to *out*.
 
@@ -380,6 +403,8 @@ def make_line_multi(
         Explicit axis control, forwarded to :func:`build_svg`; see its
         docstring. Left at their defaults, the axes behave exactly as
         before (data-driven domain, heuristic ticks).
+    left_margin, right_margin : float, optional
+        Room beside the plot, forwarded to :func:`build_svg`.
 
     Returns
     -------
@@ -396,7 +421,7 @@ def make_line_multi(
                      series_colors=series_colors, mode=mode, accessibility=accessibility, x_label=x_label, y_label=y_label,
                      log_x=log_x, log_y=log_y, theme=theme, x_domain=x_domain,
                      x_tick_step=x_tick_step, y_domain=y_domain, y_tick_step=y_tick_step,
-                     y_minor_step=y_minor_step)
+                     y_minor_step=y_minor_step, left_margin=left_margin, right_margin=right_margin)
     dest = Path(out) if out else svg_example_path(__file__, "line-multi")
     return write_svg(dest, svg, theme=theme)
 

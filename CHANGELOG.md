@@ -2,6 +2,29 @@
 
 ## [Unreleased]
 
+## [2.10.1] — 2026-11-09
+
+### Fixed
+
+- **`flowchart`.** A non-breaking space (U+00A0) now holds a formula together
+  (`_textfit.split_words`, used by `wrap_to_width`). A label of several lines
+  on a returning arrow sits beside its lane instead of on it, so the arrow no
+  longer runs through the text and the halo no longer reaches the boxes. Two
+  groups in the same layers keep one order and their frames are pushed apart.
+  A flow too long for its canvas logs a warning naming `direction="TB"`.
+- **`gantt`.** The axis opens for a negative start; long task names widen the
+  name column up to 40 % of the canvas, then wrap between words.
+- **`line-multi`.** The plot moves right for a long y tick label, clear of the
+  turned y title. New options `left_margin` and `right_margin`.
+- **`facet`.** The per-panel change is no longer printed bare over caller data.
+  New option `show_change`; set to `True` over caller data it reads
+  "+379 first to last".
+
+### Added
+
+- **`check_render`.** Two rules: `axis_title_overlap` (a straight label on a
+  turned axis title) and `frames_overlap` (two flowchart group frames).
+
 ## [2.10.0] — 2026-11-08
 
 ### Added

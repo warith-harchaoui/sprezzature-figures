@@ -113,6 +113,7 @@ def build_svg(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    show_change: Optional[bool] = None,
 ) -> str:
     """Assemble the full small-multiples SVG document as a string.
 
@@ -141,6 +142,11 @@ def build_svg(
     theme : str, optional
         Visual theme: ``"corporate"`` (default, Roboto) or ``"academic"``
         (LaTeX-style Latin Modern).
+    show_change : bool, optional
+        Print each panel's change from its first to its last point above
+        the panel. ``None`` prints it over the demo, whose subtitle says what
+        it means, and leaves it out of caller data, where a bare "+379" means
+        nothing. ``True`` prints it with its meaning spelled out.
 
     Returns
     -------
@@ -148,6 +154,9 @@ def build_svg(
         A complete, standalone SVG document.
     """
     rows = list(data if data else DEMO_DATA)
+    if show_change is None:
+        show_change = not data
+    change_note = " first to last" if data else ""
     mono_family = mono_stack_for_theme(theme)
 
     # x is ordinal: its order is the order the rows present it in, not
@@ -308,11 +317,12 @@ def build_svg(
         signed = (
             "0" if rounded_drift == 0 else f"{'+' if change > 0 else '−'}{fmt_number(abs(change))}"
         )
-        parts.append(
-            f'<text x="{ox + cell_w:.1f}" y="{oy - 10:.1f}" font-size="12" '
-            f'fill="{color}" text-anchor="end" font-family="{mono_family}">'
-            f"{signed}</text>"
-        )
+        if show_change:
+            parts.append(
+                f'<text x="{ox + cell_w:.1f}" y="{oy - 10:.1f}" font-size="12" '
+                f'fill="{color}" text-anchor="end" font-family="{mono_family}">'
+                f"{signed}{change_note}</text>"
+            )
 
         if row_i == n_rows - 1 or index + n_cols >= len(panels):
             for position in (0, len(positions) - 1):
@@ -384,6 +394,7 @@ def make_facet(
     mode: str = "self-contained",
     accessibility: str = "universal",
     theme: str = "corporate",
+    show_change: Optional[bool] = None,
 ) -> Path:
     """Render a hand-authored small-multiples grid and write the SVG to *out*.
 
@@ -410,6 +421,8 @@ def make_facet(
         Forwarded to :func:`build_svg`.
     theme : str, optional
         Visual theme. Forwarded to :func:`build_svg`.
+    show_change : bool, optional
+        Print each panel's change; see :func:`build_svg`.
 
     Returns
     -------
@@ -438,6 +451,7 @@ def make_facet(
         mode=mode,
         accessibility=accessibility,
         theme=theme,
+        show_change=show_change,
     )
     dest = Path(out) if out else svg_example_path(__file__, "facet")
     return write_svg(dest, svg, theme=theme)

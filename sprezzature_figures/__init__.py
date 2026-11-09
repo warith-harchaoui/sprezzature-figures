@@ -42,6 +42,6 @@ __all__ = [
     "RedrawResult",
 ]
 
-__version__ = "2.10.0"
+__version__ = "2.10.1"
 __author__ = "Warith HARCHAOUI"
 __email__ = "warithmetics@deraison.ai"

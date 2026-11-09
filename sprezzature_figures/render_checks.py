@@ -208,6 +208,7 @@ class _Label:
     size: float
     anchor: str
     rotated: bool
+    angle: float = 0.0
 
     @property
     def width(self) -> float:
@@ -415,6 +416,7 @@ def _text_labels(root: ET.Element) -> list[_Label]:
                 size=size,
                 anchor=(_inherited(element, ancestors, "text-anchor") or "start"),
                 rotated=rotated,
+                angle=_quarter_turn(element.get("transform") or ""),
             )
         )
     vus: set[tuple] = set()
@@ -507,6 +509,71 @@ def _check_overlaps(labels: Sequence[_Label]) -> list[RenderFinding]:
 #: catalogue is worse than one that misses a graze, so the rule stayed "outside the
 #: canvas", and the clearance is reserved where it belongs: by the generator laying the
 #: figure out, which knows what it is drawing (see ``make_speaking_time._fit_canvas``).
+
+
+def _quarter_turn(transform: str) -> float:
+    """The angle of a quarter turn about the label's own anchor, or 0."""
+    if not _ROTATE_AUTOUR.search(transform):
+        return 0.0
+    angles = [float(a) for a in _ROTATE_ANGLE.findall(transform)]
+    if len(angles) == 1 and abs(abs(angles[0]) - 90.0) < 1.0:
+        return angles[0]
+    return 0.0
+
+
+def _check_turned_titles(labels: Sequence[_Label]) -> list[RenderFinding]:
+    """Report a straight label printed on top of a vertical axis title.
+
+    :func:`_check_overlaps` skips turned text because its footprint is hard to
+    guess in general. A quarter turn about the anchor is the one case with an
+    exact footprint, and the one seen in practice: a long tick label on a log
+    axis ("0.0001") running into the y axis title beside it.
+    """
+    findings: list[RenderFinding] = []
+    straight = [label for label in labels if not label.rotated]
+    for turned in labels:
+        if not turned.angle:
+            continue
+        reach = (
+            (turned.y - turned.width / 2, turned.y + turned.width / 2)
+            if turned.anchor == "middle"
+            else (turned.y - turned.width, turned.y)
+            if (turned.anchor == "end") == (turned.angle > 0)
+            else (turned.y, turned.y + turned.width)
+        )
+        up, down = _extension_verticale(turned.text, turned.size)
+        across = (turned.x - up, turned.x + down) if turned.angle < 0 else (turned.x - down, turned.x + up)
+        for label in straight:
+            x1, x2 = label.box
+            y1, y2 = label.bande
+            over_x = min(x2, across[1]) - max(x1, across[0])
+            over_y = min(y2, reach[1]) - max(y1, reach[0])
+            if over_x > _OVERLAP_TOLERANCE_PX and over_y > _OVERLAP_TOLERANCE_PX:
+                findings.append(
+                    RenderFinding(
+                        "axis_title_overlap",
+                        "a label is printed on top of a vertical title",
+                        f"{label.text!r} / {turned.text!r} overlap by ~{over_x:.0f}x{over_y:.0f}px",
+                    )
+                )
+    return findings
+
+
+def _check_frames(root: ET.Element) -> list[RenderFinding]:
+    """Report two group frames of a flowchart that cover each other."""
+    frames = [
+        (_float(r.get("x")), _float(r.get("y")), _float(r.get("width")), _float(r.get("height")))
+        for r in root.iter(f"{_SVG_NS}rect")
+        if r.get("class") == "fc-group"
+    ]
+    findings: list[RenderFinding] = []
+    for i, (x, y, w, h) in enumerate(frames):
+        for x2, y2, w2, h2 in frames[i + 1:]:
+            if min(x + w, x2 + w2) - max(x, x2) > 0.5 and min(y + h, y2 + h2) - max(y, y2) > 0.5:
+                findings.append(
+                    RenderFinding("frames_overlap", "two group frames cover each other", f"at x={x:.0f}, y={y:.0f}")
+                )
+    return findings
 
 
 def _check_inside_canvas(
@@ -1128,6 +1195,8 @@ def check_render(
     findings += _check_inside_canvas(labels, width, height, min_x, min_y)
     findings += _check_overlaps(labels)
     findings += _check_touching(labels)
+    findings += _check_turned_titles(labels)
+    findings += _check_frames(root)
     findings += _check_legible_size(labels, _display_scale(root))
     findings += _check_identical_ticks(labels)
     findings += _check_line_end_orphans(root, ancestors)
