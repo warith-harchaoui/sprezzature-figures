@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- **`audit_figure`'s `rainbow-palette` no longer reads embedded images.** It
+  looked for `jet`, `hsv` or `rainbow` anywhere in the SVG, base64 included,
+  and the relief raster of a situation plate spelt `/HsV/`. The rule now
+  reads the markup with every `data:` URI removed.
+
 ## [2.11.0] — 2026-11-09
 
 ### Added

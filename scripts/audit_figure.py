@@ -120,8 +120,12 @@ def rules_for_svg(text: str, path: str) -> List[Dict[str, Any]]:
     """Best-effort rules against any SVG chart."""
     findings: List[Dict[str, Any]] = []
 
-    # rainbow palette heuristic
-    if re.search(r"\b(jet|hsv|rainbow)\b", text, re.IGNORECASE):
+    # rainbow palette heuristic. Read off the markup, never off an embedded
+    # image: base64 is case-mixed letters between slashes and pluses, and a
+    # relief raster on a situation plate held "/HsV/" -- a word boundary on
+    # both sides -- so the plate failed as a rainbow colormap it never used.
+    markup = re.sub(r"data:[^\s\"')]+", "", text)
+    if re.search(r"\b(jet|hsv|rainbow)\b", markup, re.IGNORECASE):
         findings.append(make_finding(
             "rainbow-palette", "error",
             "SVG references a rainbow colormap (jet/hsv/rainbow)",
