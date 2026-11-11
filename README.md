@@ -3,11 +3,12 @@
 🇫🇷 [LISEZMOI.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/LISEZMOI.md) · 🇬🇧 README.md
 
 [![Python ≥3.10](https://img.shields.io/badge/python-%3E%3D3.10-blue)](https://www.python.org/)
-[![License: BSD-3-Clause](https://img.shields.io/badge/license-BSD--3--Clause-green)](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/LICENSE)
+[![License: BSD (Berkeley Software Distribution, a licence that lets anyone copy, change and sell the code as long as the copyright line stays) 3-Clause](https://img.shields.io/badge/license-BSD--3--Clause-green)](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/LICENSE)
 
 [![logo](https://raw.githubusercontent.com/warith-harchaoui/sprezzature-figures/main/assets/logo.png)](https://sprezzature.ai/)
 
-168 publication-quality chart types, every one written as SVG directly, with no
+168 publication-quality chart types, every one written as SVG (Scalable Vector
+Graphics, a picture written as text, shapes and coordinates, that stays sharp at any zoom) directly, with no
 charting library underneath. Also: a static checker for any rendered SVG, a
 redraw of somebody else's chart from a picture of it, and the editor, a
 local chat-driven figure editor.
@@ -29,11 +30,11 @@ The same engine answers on five surfaces. Each one calls the same
 |---|---|---|
 | Python library | `from sprezzature_figures import make_figure` | [Quick start](#quick-start) |
 | Command line (Click) | `sprezzature-figures`, also installed as `make-figure` | [Command line](#command-line) |
-| HTTP API (FastAPI), with Docker and Compose | `uvicorn sprezzature_figures.api:app`, `docker compose up` | [HTTP API, MCP and Docker](#http-api-mcp-and-docker) |
+| HTTP (HyperText Transfer Protocol, the language a browser speaks to fetch a page) API (application programming interface, a door other programs knock on: send rows, get a figure back), on FastAPI, with Docker and Compose | `uvicorn sprezzature_figures.api:app`, `docker compose up` | [HTTP API, MCP (Model Context Protocol, the protocol through which AI agents call tools in English) and Docker](#http-api-mcp-and-docker) |
 | MCP tools | `sprezzature-figures-mcp` | [HTTP API, MCP and Docker](#http-api-mcp-and-docker) |
 | Agent skill | `sprezzature-figures/SKILL.md` in the [sprezzature hub](https://github.com/warith-harchaoui/sprezzature) | [TRIGGERS.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/TRIGGERS.md) |
 
-MCP (Model Context Protocol) is a standard that lets an AI assistant call a
+MCP is a standard that lets an AI assistant call a
 program's functions directly as tools. A skill is the instruction file an agent
 such as Claude Code reads to decide when to use this package; it lives in the
 hub repository, not here.
@@ -48,7 +49,8 @@ pip install sprezzature-figures
 
 That one command installs everything: the generators, the data side (pandas,
 scikit-learn, networkx, pyyaml), the causal stack (dowhy, econml, and pydot
-for DAGs written in DOT), the explainability stack (shap, shapash, timeshap,
+for directed acyclic graphs, or DAGs, arrow diagrams of what causes what,
+written in Graphviz's DOT), the explainability stack (shap, shapash, timeshap,
 lime), the editor (NiceGUI), the FastAPI app and the MCP server. There are no feature
 extras. They were folded into the base on 2026-11-01. The only extra left is
 `[dev]`, the test and lint toolchain for contributors.
@@ -85,7 +87,7 @@ sprezzature-figures list --status stable
 sprezzature-figures render bar --out check.svg
 ```
 
-CI runs on Ubuntu: lint, type checks and the full suite on Python 3.12, a
+CI (continuous integration, a server that reruns every test each time code is pushed, and shows a red cross if one fails) runs on Ubuntu: lint, type checks and the full suite on Python 3.12, a
 wheel build and clean install, and an install-and-import check on Python 3.10.
 
 ---
@@ -231,8 +233,9 @@ Without `--out` (or `out=` in Python), the figure is written to `<kind>.svg`
 in the current directory, named after the canonical kind (`connected_scatter`
 gives `connected-scatter.svg`).
 
-The `--data` file is read into one row dict per record: CSV/TSV cells are
-type-coerced (numbers stay numbers), and JSON accepts either a bare array of
+The `--data` file is read into one row dict per record: CSV (comma-separated values, a table saved as plain text, one row per line, cells separated by commas: what a spreadsheet exports)
+and TSV (tab-separated values, the same with tabs instead of commas)
+cells are type-coerced (numbers stay numbers), and JSON (JavaScript Object Notation, a text format in which programs store data as named fields, like `{"year": 2026}`) accepts either a bare array of
 objects or an object wrapping a `"data"` array. Pass `--data -` to read the
 same formats from standard input (the shape is sniffed from the content).
 Column names should match the roles the chart expects
@@ -414,7 +417,7 @@ its own `--help`:
 |---|---|
 | `render_diagram.py` | Rasterise a TikZ or SVG source to PNG; TikZ is themed with the house palette. |
 | `audit_figure.py` | Static auditor for SVG charts, or HTML with `<figure>` blocks. |
-| `explain_model.py` | Explain a pickled model with SHAP, Shapash, TimeSHAP or LIME (local interpretable model-agnostic explanations). `--n-explain` (default 500) is both the SHAP sample and the number of LIME rows. |
+| `explain_model.py` | Explain a pickled model with SHAP (SHapley Additive exPlanations, how much each input pushed one prediction up or down: income lowered this loan's risk, age raised it), Shapash, TimeSHAP or LIME (local interpretable model-agnostic explanations, a simple model fitted around one prediction to say which inputs drove it). `--n-explain` (default 500) is both the SHAP sample and the number of LIME rows. |
 | `causal_estimate.py` | Estimate a causal effect with DoWhy and EconML, given a DAG (directed acyclic graph). |
 | `install_figures.py` | Install the pinned requirement tiers in `scripts/requirements-*.txt` with the detected environment manager. |
 
@@ -472,7 +475,7 @@ maps page, and the two Gapminder figures on the page about Hans ROSLING.
 | Hierarchy / Clustering | dendrogram |
 | Hierarchy / Composition | treemap |
 | Infographic | pictorial |
-| KPI | bullet, gauge, liquid-gauge, progress |
+| KPI (key performance indicator, the one number a team watches, such as monthly sign-ups) | bullet, gauge, liquid-gauge, progress |
 | Matrix / Image | heatmap, imshow-interpolated |
 | Meta-analysis | forest |
 | Meteorology | windbarb |
@@ -590,7 +593,7 @@ and Roboto Mono. This package is the single source of those font files for the
 whole suite. The full faces sit in `assets/fonts/` and ship in the wheel as the
 `sprezzature_figures_fonts` package, beside Latin Modern for the academic
 theme. `sprezzature_figures.fonts` exposes the stacks (`SANS_STACK`,
-`SERIF_STACK`, `MONO_STACK`), the directory (`FONTS_DIR`) and the CSS helpers
+`SERIF_STACK`, `MONO_STACK`), the directory (`FONTS_DIR`) and the CSS (Cascading Style Sheets, the rules that give a web page its fonts, colours and spacing) helpers
 (`embedded_font_css()`, `web_font_faces_css()`), so another package imports
 them rather than retyping a font stack.
 
@@ -598,8 +601,8 @@ SVG output embeds its fonts and needs no external font loading. When several
 figures are inlined into a page that already serves those faces,
 `make_figure(..., embed_fonts=False)` leaves them out rather than repeating
 the same base64 once per figure. The licences are vendored next to the
-files: SIL Open Font License for the three Roboto, GUST Font License for
-Latin Modern. Both permit bundling.
+files: SIL (Summer Institute of Linguistics, the non-profit whose free licence lets anyone ship these fonts inside a program) Open Font License for the
+three Roboto, GUST (Polish TeX Users Group, who maintain Latin Modern, the typeface of LaTeX papers) Font License for Latin Modern. Both permit bundling.
 
 ---
 
@@ -634,7 +637,7 @@ sprezzature-figures/
 
 Each `make_<kind>.py` script is self-contained: it imports what it needs,
 defines `make_<kind>(data, *, out=None, title="", ...) -> Path` and exposes a
-`DEMO_DATA` list for the CLI and the tests. `make_figure()` resolves the kind
+`DEMO_DATA` list for the CLI (command-line interface, a program you run by typing a command in a terminal) and the tests. `make_figure()` resolves the kind
 through `sprezzature_figures/catalog/figures.json` rather than guessing the
 filename; see
 [docs/editor/GENERATOR_AUDIT.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/docs/editor/GENERATOR_AUDIT.md)
@@ -659,8 +662,8 @@ for which of the 168 scripts currently satisfy this contract.
 CSV/TSV/XLSX/JSON/JSONL file, pick a chart type (the recommendation cards rank
 the ones your columns can fill), bind columns, and refine the figure by
 chatting with **Ralph**. Ralph is a copilot built on a language model that
-reads your text (an LLM, large language model) and a vision model that looks
-at the rendered image (a VLM, vision-language model). It edits a structured
+reads your text, an LLM (large language model, an AI that reads and writes text, like the one behind ChatGPT), and a vision model that looks
+at the rendered image, a VLM (vision-language model, an AI that looks at an image and says what is on it). It edits a structured
 plan and looks at the rendered PNG before deciding it is done. History
 (undo, redo, compare) and a reproducible export bundle are in the editor.
 

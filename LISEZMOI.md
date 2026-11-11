@@ -3,12 +3,12 @@
 🇫🇷 LISEZMOI.md · 🇬🇧 [README.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/README.md)
 
 [![Python ≥3.10](https://img.shields.io/badge/python-%3E%3D3.10-blue)](https://www.python.org/)
-[![Licence : BSD-3-Clause](https://img.shields.io/badge/licence-BSD--3--Clause-green)](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/LICENSE)
+[![Licence : BSD (Berkeley Software Distribution, une licence qui permet à chacun de copier, modifier et vendre le code tant que la ligne de copyright reste) 3-Clause](https://img.shields.io/badge/licence-BSD--3--Clause-green)](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/LICENSE)
 
 [![logo](https://raw.githubusercontent.com/warith-harchaoui/sprezzature-figures/main/assets/logo.png)](https://sprezzature.ai/)
 
 168 types de graphiques de qualité publication, chacun écrit directement en
-SVG, sans bibliothèque de tracé dessous. Aussi : un contrôle statique de
+SVG (Scalable Vector Graphics, une image écrite en texte, formes et coordonnées, qui reste nette à tous les zooms), sans bibliothèque de tracé dessous. Aussi : un contrôle statique de
 n'importe quel SVG rendu, le redessin du graphique de quelqu'un d'autre à
 partir de son image, et the editor, un éditeur de figures local piloté
 par la conversation.
@@ -30,11 +30,11 @@ répartiteur `make_figure()` et le même catalogue.
 |---|---|---|
 | Bibliothèque Python | `from sprezzature_figures import make_figure` | [Démarrage rapide](#démarrage-rapide) |
 | Ligne de commande (Click) | `sprezzature-figures`, aussi installée sous le nom `make-figure` | [Ligne de commande](#ligne-de-commande) |
-| API HTTP (FastAPI), avec Docker et Compose | `uvicorn sprezzature_figures.api:app`, `docker compose up` | [API HTTP, MCP et Docker](#api-http-mcp-et-docker) |
+| API (application programming interface, une porte où d'autres programmes frappent : ils envoient des lignes, ils reçoivent une figure) HTTP (HyperText Transfer Protocol, la langue que parle un navigateur pour aller chercher une page), sur FastAPI, avec Docker et Compose | `uvicorn sprezzature_figures.api:app`, `docker compose up` | [API HTTP, MCP (Model Context Protocol, le protocole par lequel les agents IA appellent des outils en français) et Docker](#api-http-mcp-et-docker) |
 | Outils MCP | `sprezzature-figures-mcp` | [API HTTP, MCP et Docker](#api-http-mcp-et-docker) |
 | Skill pour agent | `sprezzature-figures/SKILL.md` dans le [dépôt central sprezzature](https://github.com/warith-harchaoui/sprezzature) | [TRIGGERS.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/TRIGGERS.md) |
 
-MCP (Model Context Protocol) est un standard qui permet à un assistant d'IA
+MCP est un standard qui permet à un assistant d'IA
 d'appeler directement les fonctions d'un programme comme des outils. Un skill
 est le fichier d'instructions qu'un agent comme Claude Code lit pour décider
 quand se servir de ce paquet ; il vit dans le dépôt central, pas ici.
@@ -49,7 +49,7 @@ pip install sprezzature-figures
 
 Cette seule commande installe tout : les générateurs, le côté données (pandas,
 scikit-learn, networkx, pyyaml), la pile causale (dowhy, econml, et pydot
-pour les DAG écrits en DOT), la pile d'explicabilité (shap, shapash,
+pour les DAG (directed acyclic graphs, des schémas de flèches qui disent ce qui cause quoi, comme « le tabac cause le cancer ») écrits dans le DOT de Graphviz), la pile d'explicabilité (shap, shapash,
 timeshap, lime), the editor (NiceGUI), l'application FastAPI et le
 serveur MCP. Il n'y a pas
 d'extras de fonctionnalité. Ils ont été versés dans la base le 2026-11-01. Le
@@ -88,7 +88,7 @@ sprezzature-figures list --status stable
 sprezzature-figures render bar --out check.svg
 ```
 
-La CI tourne sur Ubuntu : lint, vérification des types et suite complète sous
+La CI (continuous integration, un serveur qui relance tous les tests à chaque envoi de code, et affiche une croix rouge si l'un échoue) tourne sur Ubuntu : lint, vérification des types et suite complète sous
 Python 3.12, construction de la roue et installation propre, et un contrôle
 d'installation et d'import sous Python 3.10.
 
@@ -240,8 +240,9 @@ dans le répertoire courant, au nom du type canonique (`connected_scatter`
 donne `connected-scatter.svg`).
 
 Le fichier `--data` est lu en un dictionnaire par enregistrement : les
-cellules CSV/TSV sont typées (les nombres restent des nombres), et le JSON
-accepte soit un tableau d'objets nu, soit un objet qui enveloppe un tableau
+cellules CSV (comma-separated values, un tableau enregistré en texte brut, une ligne par rangée et les cellules séparées par des virgules : ce qu'exporte un tableur)
+et TSV (tab-separated values, la même chose avec des tabulations au lieu des virgules) sont typées (les nombres restent des nombres), et le JSON
+(JavaScript Object Notation, un format texte dans lequel les programmes rangent des données en champs nommés, comme `{"annee": 2026}`) accepte soit un tableau d'objets nu, soit un objet qui enveloppe un tableau
 `"data"`. Passez `--data -` pour lire les mêmes formats depuis l'entrée
 standard (la forme est reconnue d'après le contenu). Les noms de colonnes
 doivent correspondre aux rôles attendus
@@ -431,7 +432,7 @@ avec son `--help` :
 |---|---|
 | `render_diagram.py` | Rend en PNG une source TikZ ou SVG ; TikZ prend les couleurs de la palette maison. |
 | `audit_figure.py` | Contrôle statique de graphiques SVG, ou de HTML contenant des blocs `<figure>`. |
-| `explain_model.py` | Explique un modèle sérialisé avec SHAP, Shapash, TimeSHAP ou LIME (explications locales indépendantes du modèle). `--n-explain` (500 par défaut) est à la fois l'échantillon SHAP et le nombre de lignes LIME. |
+| `explain_model.py` | Explique un modèle sérialisé avec SHAP (SHapley Additive exPlanations, combien chaque variable a poussé une prédiction vers le haut ou le bas : le revenu a baissé ce risque, l'âge l'a monté), Shapash, TimeSHAP ou LIME (local interpretable model-agnostic explanations, un modèle simple ajusté autour d'une prédiction pour dire quelles variables l'ont décidée). `--n-explain` (500 par défaut) est à la fois l'échantillon SHAP et le nombre de lignes LIME. |
 | `causal_estimate.py` | Estime un effet causal avec DoWhy et EconML, à partir d'un DAG (graphe orienté acyclique). |
 | `install_figures.py` | Installe les paliers de dépendances figés dans `scripts/requirements-*.txt` avec le gestionnaire d'environnement détecté. |
 
@@ -492,7 +493,7 @@ Les noms de catégories sont ceux du catalogue, en anglais.
 | Hierarchy / Clustering | dendrogram |
 | Hierarchy / Composition | treemap |
 | Infographic | pictorial |
-| KPI | bullet, gauge, liquid-gauge, progress |
+| KPI (key performance indicator, le chiffre qu'une équipe surveille, comme les inscriptions du mois) | bullet, gauge, liquid-gauge, progress |
 | Matrix / Image | heatmap, imshow-interpolated |
 | Meta-analysis | forest |
 | Meteorology | windbarb |
@@ -614,7 +615,7 @@ ces fichiers de police pour toute la suite. Les fontes complètes sont dans
 `assets/fonts/` et partent dans la roue sous le paquet
 `sprezzature_figures_fonts`, à côté de Latin Modern pour le thème académique.
 `sprezzature_figures.fonts` expose les piles (`SANS_STACK`, `SERIF_STACK`,
-`MONO_STACK`), le répertoire (`FONTS_DIR`) et les aides CSS
+`MONO_STACK`), le répertoire (`FONTS_DIR`) et les aides CSS (Cascading Style Sheets, les règles qui donnent à une page web ses polices, ses couleurs et ses marges)
 (`embedded_font_css()`, `web_font_faces_css()`), pour qu'un autre paquet les
 importe au lieu de retaper une pile de polices.
 
@@ -622,7 +623,8 @@ La sortie SVG intègre ses polices et n'a besoin d'aucun chargement externe.
 Quand plusieurs figures sont insérées dans une page qui sert déjà ces fontes,
 `make_figure(..., embed_fonts=False)` les laisse de côté au lieu de répéter le
 même base64 à chaque figure. Les licences sont livrées à côté des
-fichiers : SIL Open Font License pour les trois Roboto, GUST Font License
+fichiers : SIL (Summer Institute of Linguistics, l'association dont la licence libre permet d'embarquer ces polices dans un programme) Open Font License pour les
+trois Roboto, GUST (Polska Grupa Użytkowników Systemu TeX, le groupe polonais qui entretient Latin Modern, la police des articles LaTeX) Font License
 pour Latin Modern. Toutes deux autorisent la redistribution groupée.
 
 ---
@@ -658,7 +660,7 @@ sprezzature-figures/
 
 Chaque script `make_<type>.py` est autonome : il importe ce dont il a besoin,
 définit `make_<type>(data, *, out=None, title="", ...) -> Path` et expose une
-liste `DEMO_DATA` pour la CLI et les tests. `make_figure()` résout le type par
+liste `DEMO_DATA` pour la CLI (command-line interface, un programme qu'on lance en tapant une commande dans un terminal) et les tests. `make_figure()` résout le type par
 `sprezzature_figures/catalog/figures.json` au lieu de deviner le nom de
 fichier ; voir
 [docs/editor/GENERATOR_AUDIT.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/docs/editor/GENERATOR_AUDIT.md)
@@ -683,9 +685,9 @@ pour savoir lesquels des 168 scripts respectent aujourd'hui ce contrat.
 fichier CSV/TSV/XLSX/JSON/JSONL, choisissez un type de graphique (les cartes
 de recommandation classent ceux que vos colonnes peuvent remplir), associez
 les colonnes, et affinez la figure en discutant avec **Ralph**. Ralph est un
-copilote construit sur un modèle de langage qui lit votre texte (un LLM, grand
-modèle de langage) et un modèle de vision qui regarde l'image rendue (un VLM,
-modèle vision-langage). Il modifie un plan structuré et regarde le PNG rendu
+copilote construit sur un modèle de langage qui lit votre texte, un LLM (large
+language model, une IA qui lit et écrit du texte, comme celle derrière ChatGPT), et un modèle de vision qui regarde
+l'image rendue, un VLM (vision-language model, une IA qui regarde une image et dit ce qu'il y a dessus). Il modifie un plan structuré et regarde le PNG rendu
 avant de décider qu'il a fini. L'historique (annuler, rétablir, comparer) et
 un export reproductible sont dans l'éditeur.
 
