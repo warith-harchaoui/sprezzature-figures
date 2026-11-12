@@ -15,6 +15,8 @@ Warith HARCHAOUI <warithmetics@deraison.ai>
 
 from __future__ import annotations
 
+from sprezzature_figures._skill import skill_path  # noqa: E402
+
 from ._style_bridge import semantic_colors, semantic_hue
 from ._textfit_bridge import text_width
 from .darkmode import to_dark
@@ -23,8 +25,6 @@ from .make_figure import get_figure_definition, list_kinds, make_figure, validat
 from .notebook import FigurePath
 from .redraw import RedrawResult, redraw
 from .render_checks import RenderFinding, check_render
-
-from sprezzature_figures._skill import skill_path  # noqa: E402
 
 __all__ = [
     "skill_path",
