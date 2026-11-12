@@ -14,7 +14,7 @@ Warith HARCHAOUI <warithmetics@deraison.ai>
 
 from __future__ import annotations
 
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
@@ -126,6 +126,16 @@ class FigurePlan(BaseModel):
     annotations: list[Annotation] = Field(default_factory=list)
     style: StyleOptions = Field(default_factory=StyleOptions)
     output: OutputOptions = Field(default_factory=OutputOptions)
+    options: dict[str, Any] = Field(
+        default_factory=dict,
+        description=(
+            "The generator's own options, by the name its signature uses "
+            "(x_label, accessibility, theme, log_y, ... -- see "
+            "sprezzature_figures.options_for(kind)), plus `dark` for a dark "
+            "canvas. An option the current kind does not declare is ignored "
+            "at render time, so a kind switch keeps them harmlessly."
+        ),
+    )
 
     def bound_columns(self) -> set[str]:
         return {c for binding in self.bindings.values() for c in binding.columns}
