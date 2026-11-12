@@ -21,6 +21,8 @@ from collections.abc import Callable
 
 import click
 
+from sprezzature_figures._skill import skill_command
+
 from .actions import ActionError, ActionResult
 from .catalog import resolve_kind
 from .make_figure import list_kinds, make_figure
@@ -553,6 +555,9 @@ def check_cmd(
         )
     )
 
+
+# The skill this package ships, one sub-command away: `sprezzature-figures skill --install`.
+cli.add_command(skill_command)
 
 # The console script in pyproject.toml points at `main`.
 main = cli

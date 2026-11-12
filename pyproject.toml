@@ -135,6 +135,7 @@ dev = [
 ]
 
 [project.scripts]
+sprezzature-figures-skill = "sprezzature_figures._skill:main"
 sprezzature-figures = "sprezzature_figures.cli:main"
 make-figure = "sprezzature_figures.cli:main"
 sprezzature-figures = "sprezzature_figures.editor.cli:main"
@@ -174,6 +175,10 @@ packages = [
 "sprezzature_figures_fonts" = "assets/fonts"
 
 [tool.setuptools.package-data]
+# The skill an agent reads ships inside the package, so `pip install`
+# carries all five surfaces; `sprezzature-figures-skill --install` puts it
+# where Claude Code or OpenCode looks.
+"sprezzature_figures" = ["skill/**/*"]
 "sprezzature_figures.catalog" = ["figures.json"]
 # install_figures.py resolves these at runtime to pip-install a tier.
 "sprezzature_figures_scripts" = ["requirements-*.txt"]

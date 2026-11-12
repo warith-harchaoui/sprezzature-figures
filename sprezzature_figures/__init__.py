@@ -24,7 +24,10 @@ from .notebook import FigurePath
 from .redraw import RedrawResult, redraw
 from .render_checks import RenderFinding, check_render
 
+from sprezzature_figures._skill import skill_path  # noqa: E402
+
 __all__ = [
+    "skill_path",
     "make_figure",
     "get_figure_definition",
     "list_kinds",
