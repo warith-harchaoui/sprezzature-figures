@@ -100,7 +100,7 @@ sprezzature-figures redraw their-chart.png --kind treemap --language fr
 ```
 
 Needs a vision model (`pip install 'sprezzature-figures'` and a running
-Ollama). Accepts PNG, JPEG, GIF, WebP and SVG.
+Ollama). Accepts PNG, JPEG, GIF, WebP and SVG (Scalable Vector Graphics, a picture written as text).
 
 ## List all available kinds
 
@@ -110,7 +110,9 @@ print(list_kinds())
 # ['ablation_matrix', 'acf', 'alluvial', 'andrews', 'arcdiagram', 'area', ...]
 ```
 
-## CLI examples
+## Command-line examples
+
+The CLI (command-line interface) is `sprezzature-figures`, also installed as `make-figure`.
 
 ```bash
 # List all chart types (add --status stable for the render-verified ones)
@@ -166,4 +168,16 @@ parent,name,value
 Marketing,Ads,120
 Marketing,Events,80
 Engineering,Salaries,300
+```
+
+## the editor and the agent skill
+
+```bash
+# The local editor: data in, a chart picked from the cards, the Adjust panel,
+# a Download menu (SVG, PNG, archive), and Ralph to chat with
+sprezzature-figures
+
+# Put the skill this package ships where Claude Code reads it, then check it
+sprezzature-figures-skill --install
+sprezzature-figures-skill            # "in step", or how many files differ
 ```

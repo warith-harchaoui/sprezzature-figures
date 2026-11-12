@@ -7,9 +7,10 @@ annotations on all public functions and classes.
 
 ## Style
 
-- `ruff check .` with zero findings, over the whole repository: CI runs
-  exactly that command. Only `assets/` is excluded (`[tool.ruff]
-  extend-exclude` in `pyproject.toml`). `scripts/` (the 167
+- `ruff check .` with zero findings, over the whole repository: CI (continuous
+  integration, the server that reruns the checks on every push) runs exactly
+  that command. Only `assets/` is excluded (`[tool.ruff]
+  extend-exclude` in `pyproject.toml`). `scripts/` (the 168
   `make_<kind>.py` chart generators and their helpers) and `tests/` are
   linted. For `scripts/`, `[tool.ruff.lint.per-file-ignores]` silences only
   syntax modernisation and ordering (`UP`, `I001`, `C4`, `SIM`, `W`), so the
@@ -43,18 +44,21 @@ name, not a comment). No commented-out code left behind.
 
 ## Script structure for make_*.py
 
-`scripts/make_rose.py` is the reference "hero SVG" script: the pattern
+`scripts/make_rose.py` is the reference script for an SVG (Scalable Vector Graphics, a picture
+written as text, sharp at any zoom) generator: the pattern
 every `make_<kind>.py` follows. Read it rather than a template copied
 here, because a hand-written copy in this document goes stale the moment
 the real convention moves on and the script does not. In short, each
 script defines:
 
 - `DEMO_DATA: List[Dict[str, Any]]`: a minimal, self-contained example
-  dataset the script can render with no other input, used by the CLI's
-  default run and by the tests.
+  dataset the script can render with no other input, used by the default
+  run of the CLI (command-line interface, `sprezzature-figures render`) and
+  by the tests.
 - `build_svg(data=None, *, mode="self-contained", accessibility="universal", ..., theme="corporate") -> str`:
   assembles the chart and returns it as one complete SVG document
-  (a string of XML-like markup a browser can display directly, with no
+  (a string of markup in the style of XML (Extensible Markup Language, the
+  tag syntax of SVG) that a browser can display directly, with no
   external file it depends on). Every keyword parameter this function
   declares by name (never a catch-all `**kwargs`) is one tunable knob on
   the chart. `_render.py`'s `render_cli` reads that list of declared

@@ -1,6 +1,6 @@
 # The figure catalogue: what actually renders each of the 168 kinds
 
-Every visual this package produces is SVG markup written directly by the
+Every visual this package produces is SVG (Scalable Vector Graphics, a picture written as text, shapes and coordinates, sharp at any zoom) markup written directly by the
 code that computes the geometry. There is no charting library underneath,
 in any tier, on any code path — not for the catalogue, not for the
 explainability plots, not for the causal diagrams. This file documents
@@ -11,18 +11,23 @@ what ships, kind by kind, and where the approach stops.
 Every entry in `sprezzature_figures/catalog/figures.json` lists
 `"renderer": "svg"`, with no other value appearing anywhere in the file.
 Each `scripts/make_*.py` generator computes its own layout — bar bands,
-wedge angles, KDE grids, force relaxations, painter's-algorithm depth
+wedge angles, KDE (kernel density estimate, a smoothed histogram) grids, force relaxations, painter's-algorithm depth
 sorting — and emits the markup itself, leaning on a shared helper module,
 `_svg.py`, for the pieces every chart needs: path generators for bars and
 rounded rectangles, an adaptive number formatter for axis ticks and
-tooltip text, XML escaping, and word-wrapping for tooltip text.
+tooltip text, XML (Extensible Markup Language, the tag syntax SVG is written in) escaping, and word-wrapping for tooltip text.
 
-The interactivity this buys is real, but it is CSS, not a JavaScript
+The interactivity this buys is real, but it is CSS (Cascading Style Sheets, the rules that set colours, fonts and visibility on a page), not a JavaScript
 runtime: each hoverable mark and its tooltip bubble share a `.hit:hover ~
-.tip { opacity: 1 }` pattern, a pure-CSS hover-reveal with no script tag
-and no client-side library. The resulting SVG is a single self-contained
-file, droppable into any HTML page or opened directly, with working hover
-tooltips and no external dependency at view time.
+.tip { opacity: 1 }` pattern, a pure-CSS hover-reveal that needs no script
+and no client-side library. The one script a figure carries is the
+fullscreen wiring from `_interactive.py`: by default (`mode="self-contained"`)
+the SVG ships a small inline `<script>` that opens it fullscreen on a click;
+`mode="external"` leaves that to the page, and `mode="static"` leaves out
+interactivity altogether, for print or a plain `<img>`, where browsers never
+run a script anyway. The resulting SVG is a single self-contained file,
+droppable into any HTML page or opened directly, with working hover tooltips
+and no external dependency at view time.
 
 The tradeoff, documented in `_svg.py`'s own module notes, is that this
 per-element hover wrapping is deliberately *not* factored into a single
@@ -37,7 +42,7 @@ The same rule holds outside the catalogue, and it is worth spelling out
 because these libraries all ship plotting entry points of their own that
 this package deliberately does not call.
 
-`explain_model.py` computes raw SHAP values via `shap.Explainer(...)` and
+`explain_model.py` computes raw SHAP (SHapley Additive exPlanations, how much each input pushed one prediction up or down) values via `shap.Explainer(...)` and
 hands them to its own SVG renderers. `_write_shap_bar_svg` and
 `_write_shap_waterfall_svg` reuse the catalogue's `make_bar.py` /
 `make_waterfall.py` generators directly, because their data shape is a
@@ -51,13 +56,13 @@ fixed data contract.
 TimeSHAP's own plotting entry points (`timeshap.plot.*`) are likewise
 never called; `local_report()`'s returned dataframes are re-plotted by
 hand, best-effort, wherever their shape carries a `Shapley Value` column.
-LIME writes its own standalone interactive HTML per row and is used as-is.
+LIME (Local Interpretable Model-agnostic Explanations, a simple model fitted around one prediction to say which inputs drove it) writes its own standalone interactive HTML per row and is used as-is.
 Shapash's `SmartExplainer.compile()` is called and fed this run's own SHAP
 contributions, for its consistency checks, but its `generate_report()`
 dashboard is not: `report.html` is a static page `explain_model.py`
 assembles itself from the same SVG plots the plain `shap` engine produces.
 
-The causal DAG (`dag.svg`) is a hand-written layered (Sugiyama-style)
+The causal DAG (directed acyclic graph, arrows from causes to effects that never loop back; `dag.svg`) is a hand-written layered (Sugiyama-style)
 layout: nodes ranked by longest path from a source, edges drawn as lines
 with a hand-computed arrowhead triangle, no external graph-drawing engine
 at all. The forest plot (`forest_plot.svg`) is hand-authored SVG too.
@@ -70,7 +75,7 @@ none of the above can quietly drift back.
 
 | Output | Renderer | Interactive at view time? |
 |---|---|---|
-| Any of the 168 `make-figure` catalogue kinds | Hand-built SVG (`_svg.py` helpers) | Yes, CSS-only hover tooltips, no script tag |
+| Any of the 168 `make-figure` catalogue kinds | Hand-built SVG (`_svg.py` helpers) | Yes, CSS hover tooltips, plus a fullscreen script unless `mode="static"` |
 | A TikZ figure, via `render_diagram.py` | `tectonic` / `pdflatex` + `pdftoppm` | No, static raster/vector |
 | A raw hand-authored SVG, via `render_diagram.py` | `rsvg-convert` / ImageMagick | No, static raster (the source SVG itself may be interactive; the rasterized companion is not) |
 | SHAP summary bar / waterfall (`explain_model.py`) | Hand-authored SVG, reusing `make_bar.py` / `make_waterfall.py` | Yes, CSS-only hover tooltips |

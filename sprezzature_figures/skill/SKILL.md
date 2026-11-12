@@ -29,17 +29,19 @@ metadata:
   version: 1.8.4
 ---
 
-> The deterministic tools below now ship as the standalone package [`sprezzature-figures`](https://github.com/warith-harchaoui/sprezzature-figures) (one `pip install sprezzature-figures`, no feature extras), invoked as `sprezzature-figures …`. The `scripts/` folder has moved out of this monorepo; the SKILL.md here stays as the agentic contract.
+> The tools below ship as the package [`sprezzature-figures`](https://github.com/warith-harchaoui/sprezzature-figures) (one `pip install sprezzature-figures`, no feature extras), invoked as `sprezzature-figures …`. This skill ships inside that package, in `sprezzature_figures/skill/`; `sprezzature-figures-skill --install` copies it into `~/.claude/skills` (`--agent opencode` for `~/.opencode/skills`), and `sprezzature-figures-skill` alone says whether the installed copy is in step with the package.
 
 ## Five surfaces
 
 | Surface | Entry point |
 |---|---|
 | Library | `from sprezzature_figures import make_figure, check_render, redraw, list_kinds, get_figure_definition` |
-| CLI (command-line interface, a program you run by typing a command in a terminal; here built with Click) | `sprezzature-figures` (also installed as `make-figure`, the same group): `list`, `render`, `describe`, `recommend`, `redraw`, `check` |
+| CLI (command-line interface, a program you run by typing a command in a terminal; here built with Click) | `sprezzature-figures` (also installed as `make-figure`, the same group): `list`, `render`, `describe`, `recommend`, `redraw`, `check`, `skill` |
 | HTTP (HyperText Transfer Protocol, the language a browser and a server speak each time a page loads) API (application programming interface, the requests one program can send another, such as render this chart; here served by FastAPI), Docker, Compose | `uvicorn sprezzature_figures.api:app`; `docker compose up` runs `sprezzature-figures-mcp`, which serves the API and `/mcp` on the same port (8000) |
 | MCP (Model Context Protocol, the protocol through which AI agents call tools in English) | `sprezzature-figures-mcp` (endpoint `/mcp`), eight tools named by `operation_id`: `health`, `list_kinds`, `get_kind`, `list_kind_options`, `recommend_figures`, `render_figure`, `redraw_figure`, `check_render` |
-| Skill | this file |
+| Skill | this file, shipped in the package (`sprezzature_figures.skill_path()`); `sprezzature-figures-skill [--install] [--agent claude\|opencode] [--path]`, or `sprezzature-figures skill` |
+
+Figures add a sixth: **the editor** (`sprezzature-figures`, `http://127.0.0.1:8080`), a local editor for a person rather than an agent. Data in (a table file, an Excel workbook included, or a sample in one click), a chart type picked from recommendation cards, an Adjust panel built from that type's own options, a Download menu (SVG, PNG, a `.sprezzature.zip` archive with a `reproduce.py`), and Ralph, a chat copilot that edits the figure's plan and looks at the result. Point a user who wants to click and chat there; for anything scripted, use the five surfaces above.
 
 Two numbers, both deliberate: the catalogue holds 168 kinds (`sprezzature-figures list`); the web gallery on sprezzature.ai shows 161 of them, because the five glyph maps sit on the maps page and the two Gapminder figures on the Hans ROSLING page.
 
@@ -313,9 +315,10 @@ sprezzature-accessibility-lint public/report.html
 - You need a **live dashboard** (streaming metrics, WebSocket
   refresh); `sprezzature-figures` emits static specs / files. Use
   Grafana, Superset, or Streamlit.
-- You need **notebook-first** exploration; the make scripts are
-  pipe-ready command-line tools (CLIs, programs run by typing a command), not Jupyter widgets. Use `jupyter-notebook`
-  (Anthropic) or `working-in-notebooks` (legout) skills.
+- You need **interactive notebook widgets** (sliders, linked brushing that
+  re-runs Python); `make_figure()` returns a path that displays itself in a
+  notebook cell, but the figure is a finished SVG, not a widget. Use
+  `jupyter-notebook` (Anthropic) or `working-in-notebooks` (legout) skills.
 - You need **counterfactual explanations**; see `alibi`, `DiCE`, or
   the WhatIf tool. SHAP / Shapash / LIME answer *"why did the model
   predict this"*; counterfactuals answer *"what would flip the
@@ -357,18 +360,18 @@ sprezzature-accessibility-lint public/report.html
 
 ## Scripts
 
-Shipped by the standalone [`sprezzature-figures`](https://github.com/warith-harchaoui/sprezzature-figures)
-package (`pip install sprezzature-figures`), not by this monorepo. Two
+Shipped by the [`sprezzature-figures`](https://github.com/warith-harchaoui/sprezzature-figures)
+package (`pip install sprezzature-figures`), like this skill. Two
 generations of tooling coexist there: the console scripts
 `sprezzature-figures` / `make-figure` (one Click group),
-`sprezzature-figures-mcp` and `sprezzature-figures`, and the older per-purpose `scripts/*.py` (explainability,
+`sprezzature-figures-mcp`, `sprezzature-figures` and `sprezzature-figures-skill`, and the older per-purpose `scripts/*.py` (explainability,
 causality, audit, install), packaged as `sprezzature_figures_scripts` with
 no console-script entries of their own, so they run as `python -m
 sprezzature_figures_scripts.<module>`.
 
 | Script | Install | Purpose |
 |---|---|---|
-| `sprezzature-figures` / `make-figure` (console scripts, one Click group) | `pip install sprezzature-figures` | `list` / `describe` / `render` / `recommend` / `redraw` / `check`: the catalogue, one kind's roles and options, a render, a kind recommender, a redraw from a picture, and a render checker. **No extra is needed for any of them**: click became a base dependency on 2026-10-25, when the argparse front door was dropped, so the base install carries the whole command line. Until then these commands refused with a one-line message naming a `[cli]` extra; that extra no longer exists, and asking pip for it gets a warning and nothing else. |
+| `sprezzature-figures` / `make-figure` (console scripts, one Click group) | `pip install sprezzature-figures` | `list` / `describe` / `render` / `recommend` / `redraw` / `check` / `skill`: the catalogue, one kind's roles and options, a render, a kind recommender, a redraw from a picture, a render checker, and the state of this skill's installed copy. **No extra is needed for any of them**: click became a base dependency on 2026-10-25, when the argparse front door was dropped, so the base install carries the whole command line. Until then these commands refused with a one-line message naming a `[cli]` extra; that extra no longer exists, and asking pip for it gets a warning and nothing else. |
 | `explain_model.py` | `sprezzature-figures` | Model-agnostic explainability dispatcher: SHAP / Shapash / TimeSHAP / LIME. Auto-picks by model type; `--engine` overrides. |
 | `causal_estimate.py` | `sprezzature-figures` | DoWhy loop (model → identify → estimate → refute) with EconML backends. Renders DAG in sprezzature-* house style; writes `effect.json`. |
 | `audit_figure.py` | stdlib only | Static auditor for SVG charts and HTML `<figure>` blocks. Deterministic; no model, no network. |

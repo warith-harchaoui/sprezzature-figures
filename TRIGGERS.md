@@ -2,8 +2,8 @@
 
 What a user might say, and what to call when they say it.
 
-This file is written for an agent: a Claude Code or OpenCode skill, an MCP
-(Model Context Protocol) host, anything choosing a tool on someone's behalf.
+This file is written for an agent: a Claude Code or OpenCode skill, a host of
+MCP (Model Context Protocol, the protocol through which AI agents call tools), anything choosing a tool on someone's behalf.
 Humans are welcome, but the routing rules below are the point.
 
 ---
@@ -38,7 +38,7 @@ not the mechanism.
 | **names a chart type**: "make a treemap", « un sankey de ces flux » | `render_figure` (after `get_kind` if the row shape is unclear) | They already chose. Resolve the name, shape the rows, draw. |
 | **describes what they want to see**: "compare these regions", « montre l'évolution » | `recommend_figures` with a `goal`, then `render_figure` | They have not chosen. Ranking beats guessing. |
 | **shows a picture of an existing chart**: a screenshot, « améliore ça » | `redraw_figure` | The design is in the image; the data usually is not. |
-| **hands over a rendered SVG**: "is this OK to ship", "the labels overlap" | `check_render` | The failures it finds are decidable from markup, with no model. |
+| **hands over a rendered SVG** (Scalable Vector Graphics, a picture written as text): "is this OK to ship", "the labels overlap" | `check_render` | The failures it finds are decidable from markup, with no model. |
 
 A request about numbers attached to real places drawn as filled regions (a
 choropleth, a situation map) belongs to
@@ -55,6 +55,14 @@ candidate: it arrives with its column bindings already worked out. The goal
 ranks first the kinds whose catalogue category serves it; the compatibility
 filter has already dropped every kind your columns cannot fill.
 
+Users quote acronyms; these are the ones the phrases below contain. ROC
+(receiver operating characteristic: true positives against false positives
+as the decision threshold moves), AUC (area under the curve: 1 for a perfect
+model, 0.5 for a coin toss), GWAS (genome-wide association study: every
+genetic marker tested against one trait), QA (quality assurance: checking a
+result before it ships).
+
+
 | Goal | What the user is saying (EN) | En français | Kinds it ranks first, among others |
 |---|---|---|---|
 | `comparison` | "compare X and Y", "which is biggest", "rank these" | « comparer », « lequel est le plus gros », « classer » | bar, lollipop, bump, pareto, dual-axis |
@@ -68,7 +76,7 @@ filter has already dropped every kind your columns cannot fill.
 | `model_evaluation` | "is my model any good", "ROC", "confusion matrix" | « mon modèle est-il bon », « matrice de confusion » | roc-curve, prcurve, calibration, confusion-matrix, qqplot |
 
 **When no goal fits**, the request is still valid. 54 of the catalogue's
-entries sit in a category no goal matches (finance, KPI, signals, 3-D, model
+entries sit in a category no goal matches (finance, KPI (key performance indicator, the one number a team watches), signals, 3-D, model
 explanation, sets, text…), so a goal cannot bring them to the top. Match the user's own noun against
 [the per-kind tables below](#every-kind-and-the-sentence-that-reaches-it), then
 call `get_kind` for what the rows must carry.
@@ -92,12 +100,15 @@ call `get_kind` for what the rows must carry.
 | `as_rows` | library | "Turn my DataFrame into the rows a figure takes." |
 | `text_width` | library | "How wide will this label be?", to lay out beside these figures. |
 | `sprezzature-figures` | console command | "Let me import a spreadsheet and edit a chart by chatting." |
-| `ralph_eyeball_loop.py` | repository script | "Does this figure, page or diagram actually read? QA it visually." |
+| `ralph_eyeball_loop.py` | repository script | "Does this figure, page or diagram actually read? Check it by eye." |
 | `render_diagram.py` | repository script | "Render this TikZ or SVG source to PNG." |
 | `audit_figure.py` | repository script | "Audit these SVG charts, or the `<figure>` blocks of this HTML page." |
-| `explain_model.py` | repository script | "Explain my model: SHAP, Shapash, TimeSHAP or LIME plots." |
+| `explain_model.py` | repository script | "Explain my model: SHAP (SHapley Additive exPlanations, each input's push on one prediction), Shapash, TimeSHAP or LIME (Local Interpretable Model-agnostic Explanations, a simple model fitted around one prediction) plots." |
 | `causal_estimate.py` | repository script | "Estimate the causal effect of X on Y, given this DAG (directed acyclic graph)." |
 | `install_figures.py` | repository script | "Install the pinned data-viz, explainability or causality tier." |
+| `sprezzature-figures-skill` | console command (also `sprezzature-figures skill`) | "Is the skill my agent reads in step with this package? Install it." `--install` copies it into `~/.claude/skills`, `--agent opencode` into `~/.opencode/skills`. |
+| `skill_path` | library | "Where did pip put the skill?" |
+
 
 The six repository scripts have no console command of their own, but the
 wheel carries them: once installed, each runs as
@@ -114,6 +125,10 @@ route's FastAPI `operation_id`.
 
 ## What to call, on every surface
 
+The CLI (command-line interface, the `sprezzature-figures` command) and the
+HTTP (HyperText Transfer Protocol, how a program talks to a server) routes of
+the table below are the same functions as the library and the MCP tools.
+
 | Job | Library (`sprezzature_figures`) | CLI | MCP tool (`operation_id`) | HTTP route |
 |---|---|---|---|---|
 | List the catalogue | `list_kinds(status=…)` | `sprezzature-figures list [--status stable] [--json]` | `list_kinds` | `GET /kinds` |
@@ -125,7 +140,7 @@ route's FastAPI `operation_id`.
 | Redraw from a picture | `redraw(image, out=…)` | `sprezzature-figures redraw img.png` | `redraw_figure` | `POST /redraw` |
 | Check a rendered SVG | `check_render(svg)` | `sprezzature-figures check fig.svg` | `check_render` | `POST /check_render` |
 | Is the server up | none | none | `health` | `GET /health` |
-| Visual QA on a rendered figure | none | `python scripts/ralph_eyeball_loop.py <file>` from a clone, `python -m sprezzature_figures_scripts.ralph_eyeball_loop <file>` once installed | none | none |
+| Look at a rendered figure by eye | none | `python scripts/ralph_eyeball_loop.py <file>` from a clone, `python -m sprezzature_figures_scripts.ralph_eyeball_loop <file>` once installed | none | none |
 
 `make-figure` is the same Click group as `sprezzature-figures`: every CLI cell
 works under either name.
@@ -137,7 +152,7 @@ function: its ranking lives in the editor package, as
 profile built by `editor.ingest.profiler.profile_dataframe`.
 
 An option a figure does not accept is refused, not ignored: the command line
-names the ones it does accept, the API answers 422. Ask `list_kind_options`
+names the ones it does accept, the API (application programming interface, the HTTP routes) answers 422. Ask `list_kind_options`
 (or `describe`) before guessing one.
 
 ---

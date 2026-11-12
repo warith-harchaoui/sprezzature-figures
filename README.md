@@ -21,10 +21,12 @@ Part of the [sprezzature](https://sprezzature.ai/) suite.
 
 ![Flow diagram. At the top, your rows or somebody else's chart feed two lanes. The left lane draws: it ranks the kinds that serve your goal, writes the SVG directly with no charting library underneath, and can redraw a screenshot of someone else's chart without inventing its numbers. The right lane audits: a static check reads any SVG at all for labels printed over each other and names off the canvas, then the Ralph Eyeball Loop renders the figure, looks at it, and refines the source. Both meet in one outcome, a figure that is correct before it is beautiful.](https://raw.githubusercontent.com/warith-harchaoui/sprezzature-figures/main/assets/how-it-works.svg)
 
-## Five ways in
+## Five ways in, and a sixth for figures
 
 The same engine answers on five surfaces. Each one calls the same
-`make_figure()` dispatcher and the same catalogue.
+`make_figure()` dispatcher and the same catalogue. This package adds a sixth,
+the editor, a local window where you edit a figure by clicking and
+chatting.
 
 | Surface | Entry point | Section |
 |---|---|---|
@@ -32,12 +34,14 @@ The same engine answers on five surfaces. Each one calls the same
 | Command line (Click) | `sprezzature-figures`, also installed as `make-figure` | [Command line](#command-line) |
 | HTTP (HyperText Transfer Protocol, the language a browser speaks to fetch a page) API (application programming interface, a door other programs knock on: send rows, get a figure back), on FastAPI, with Docker and Compose | `uvicorn sprezzature_figures.api:app`, `docker compose up` | [HTTP API, MCP (Model Context Protocol, the protocol through which AI agents call tools in English) and Docker](#http-api-mcp-and-docker) |
 | MCP tools | `sprezzature-figures-mcp` | [HTTP API, MCP and Docker](#http-api-mcp-and-docker) |
-| Agent skill | `sprezzature-figures/SKILL.md` in the [sprezzature hub](https://github.com/warith-harchaoui/sprezzature) | [TRIGGERS.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/TRIGGERS.md) |
+| Agent skill | `sprezzature-figures-skill --install` (or `sprezzature-figures skill --install`) | [Agent skill](#agent-skill) |
+| Editor, figures only | `sprezzature-figures` | [the editor](#sprezzature-figures) |
 
 MCP is a standard that lets an AI assistant call a
-program's functions directly as tools. A skill is the instruction file an agent
-such as Claude Code reads to decide when to use this package; it lives in the
-hub repository, not here.
+program's functions directly as tools. A skill is the folder of instructions an
+agent such as Claude Code reads to decide when to use this package and which
+command to run. It ships inside the package, in `sprezzature_figures/skill/`,
+so `pip install` carries all five surfaces.
 
 ## Install
 
@@ -82,13 +86,15 @@ pip install sprezzature-figures
 Verify the install:
 
 ```bash
-sprezzature-figures --version          # or -V; every console script answers both
+sprezzature-figures --version          # or -V; so do sprezzature-figures and sprezzature-figures-mcp
 sprezzature-figures list --status stable
 sprezzature-figures render bar --out check.svg
 ```
 
-CI (continuous integration, a server that reruns every test each time code is pushed, and shows a red cross if one fails) runs on Ubuntu: lint, type checks and the full suite on Python 3.12, a
-wheel build and clean install, and an install-and-import check on Python 3.10.
+CI (continuous integration, a server that reruns every test each time code is pushed, and shows a red cross if one fails) runs on Ubuntu: lint and the default test suite on Python 3.12, and an
+install-and-import check on Python 3.10. The type checks, the slow renders and
+the wheel build with a clean install run in the repository's pre-push hook
+(`.githooks/pre-push`) before anything reaches CI.
 
 ---
 
@@ -126,6 +132,8 @@ The other public names in `sprezzature_figures`:
 | `to_dark(svg)` | Rewrite a rendered SVG for a dark canvas. |
 | `text_width(text, font_size)` | The text-width estimate the generators lay out with and the check measures against. |
 | `redraw(image)` / `RedrawResult` | Redraw a chart from a picture of it (see [below](#from-a-picture-of-somebody-elses-chart)). |
+| `semantic_colors(labels, theme=...)` / `semantic_hue(label)` | Pick each label's hue from what it means (see [Colour = meaning](#colour--meaning)). |
+| `skill_path()` | The folder of the agent skill this package ships (see [Agent skill](#agent-skill)). |
 
 `sprezzature_figures.options.options_for(kind)` lists every keyword one figure
 accepts besides its rows.
@@ -174,8 +182,8 @@ left unbound: it renders a sensible default rather than crashing.
 
 One Click command group, installed under two names: `sprezzature-figures` and
 `make-figure` run the same code, and so does `python -m sprezzature_figures`.
-Its sub-commands are `list`, `render`, `describe`, `recommend`, `redraw` and
-`check`.
+Its sub-commands are `list`, `render`, `describe`, `recommend`, `redraw`,
+`check` and `skill` (the last one is described under [Agent skill](#agent-skill)).
 
 ```bash
 # List all chart types (--status stable for the render-verified ones, --json for a program)
@@ -612,6 +620,8 @@ three Roboto, GUST (Polish TeX Users Group, who maintain Latin Modern, the typef
 sprezzature-figures/
 ├── sprezzature_figures/
 │   ├── __init__.py        # the public names listed in Quick start
+│   ├── _skill.py          # skill_path() and the sprezzature-figures-skill command
+│   ├── skill/             # the agent skill: SKILL.md, references/
 │   ├── make_figure.py     # registry-backed dispatcher + the figure helpers
 │   ├── cli.py             # the command line, in Click (sprezzature-figures and make-figure)
 │   ├── actions.py         # what redraw / recommend / check do, shared by the CLI
@@ -658,14 +668,45 @@ for which of the 168 scripts currently satisfy this contract.
 
 ## the editor
 
-`sprezzature-figures` launches a local NiceGUI app. You import a
-CSV/TSV/XLSX/JSON/JSONL file, pick a chart type (the recommendation cards rank
-the ones your columns can fill), bind columns, and refine the figure by
-chatting with **Ralph**. Ralph is a copilot built on a language model that
-reads your text, an LLM (large language model, an AI that reads and writes text, like the one behind ChatGPT), and a vision model that looks
-at the rendered image, a VLM (vision-language model, an AI that looks at an image and says what is on it). It edits a structured
-plan and looks at the rendered PNG before deciding it is done. History
-(undo, redo, compare) and a reproducible export bundle are in the editor.
+`sprezzature-figures` launches a local NiceGUI app, one page in three steps.
+
+1. **Data.** Drop a CSV, TSV, XLSX (an Excel workbook), JSON, JSONL (JSON
+   Lines, one JSON record per line) or NDJSON (newline-delimited JSON, the
+   same thing under another name) file, or click *Try it with sample data*
+   for a six-country revenue table. The first five rows are shown. A file of
+   another type is refused with a message naming the formats it reads.
+2. **Chart.** Recommendation cards, one plain sentence each, rank the chart
+   types your columns can fill; one click draws one with its columns already
+   bound. *Another chart type* lists every type by its label, with a
+   search box, starting from the chart on screen and with the roles
+   pre-filled. The default title and axis titles come from the bound columns
+   ("Revenue by country"), not from the chart type's name.
+3. **Adjust.** The panel is built from the options the current chart type
+   declares, so it offers only what that chart will honour: title and
+   subtitle, the axis and legend titles it takes, the colour palette (the
+   colour-vision-safe one by default), the look (corporate or academic) and a
+   dark background, then the rest of its options folded away.
+
+The figure in the middle is the SVG itself, served to the browser by the
+editor's `/editor-preview` route, so hovering works as it will in the file you
+download. Under it: undo, redo, a version counter, and a **Download** menu with
+the SVG, a PNG, and the project archive (`.sprezzature.zip`: the data after
+its transformations, the chart, its settings, an alt text and a `reproduce.py`
+that redraws it).
+
+Beside it, you can ask **Ralph** for changes in your own words. Ralph is a
+copilot built on a language model that reads your text, an LLM (large language
+model, an AI that reads and writes text, like the one behind ChatGPT), and a
+vision model that looks at the rendered image, a VLM (vision-language model, an
+AI that looks at an image and says what is on it). It turns your sentence into
+typed edits of a structured plan, including the chart type's own options (a log
+scale, an axis title, a palette), re-renders, and in the *Assisted* and
+*Autopilot* modes looks at the result before deciding it is done. An edit that
+changes what the data shows (a filter, another chart type, a log scale) waits
+for your confirmation. Ralph is disabled until a chart is drawn.
+
+The interface is in English or French (one button in the header switches
+between the two) and has a dark mode.
 
 ```bash
 pip install sprezzature-figures
@@ -679,8 +720,8 @@ Ralph's LLM and VLM are resolved by
 which talks to a local Ollama by default (text model `qwen3:8b`, vision model
 `gemma3:12b`; override with `BEST_LLM_TEXT` / `BEST_LLM_VISION`). The app
 **starts and stays usable with no model at all**: import, profiling,
-recommendation, manual chart choice, property tweaks, history and export all
-work; only the chat and the critique need a reachable model. Projects are
+recommendation, manual chart choice, the Adjust panel, history and downloads
+all work; only Ralph needs a reachable model. Projects are
 stored under `~/.sprezzature-figures/` (override with `SPREZZATURE_FIGURES_HOME`).
 Nothing leaves your machine unless you point it at a remote backend
 ([DATA_PRIVACY.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/docs/editor/DATA_PRIVACY.md)).
@@ -792,6 +833,30 @@ docker run --rm -p 8000:8000 sprezzature-figures   # HTTP routes + /mcp
 
 ---
 
+## Agent skill
+
+A skill is a folder an agent reads to know when to reach for a tool, what the
+house rules are and which command to run: a `SKILL.md` and the reference
+documents beside it. This package ships its own in `sprezzature_figures/skill/`,
+inside the wheel; `sprezzature_figures.skill_path()` returns that folder.
+
+An agent reads skills from its own folder, not from site-packages, so the copy
+has to be put there once, and again after an upgrade:
+
+```bash
+sprezzature-figures-skill                          # is the installed copy in step with this package?
+sprezzature-figures-skill --install                # copy it into ~/.claude/skills/sprezzature-figures
+sprezzature-figures-skill --install --agent opencode   # ~/.opencode/skills instead
+sprezzature-figures-skill --path                   # where pip put it
+sprezzature-figures skill --install                # the same command, as a sub-command
+```
+
+Without `--install` it only reports: in step, or how many files differ. A
+previous copy is moved to `skills-superseded/` beside the skills folder rather
+than left inside it, where the agent would read it as a second skill.
+
+---
+
 ## Development
 
 ```bash
@@ -814,7 +879,9 @@ python -m pytest -m vision      # hit a live vision model / VLM
 
 The `llm` / `vision` tests **skip** (never fail) when no model backend is
 reachable, so they are safe to run without Ollama up. CI runs the default
-suite, `slow` and `packaging`, never `llm` or `vision`. The headless-Chromium
+suite only; the pre-push hook (`.githooks/pre-push`, enabled with
+`git config core.hooksPath .githooks`) runs ruff, mypy, the default suite,
+`slow` and `packaging`. Neither runs `llm` or `vision`. The headless-Chromium
 checks need a one-time `playwright install chromium` after the `[dev]` install.
 
 ### Alternative: conda

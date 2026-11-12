@@ -2,12 +2,84 @@
 
 ## [Unreleased]
 
+### Added
+
+- **The agent skill ships inside the package.** `SKILL.md`, its
+  `references/` and its trigger catalogue moved from the sprezzature hub into
+  `sprezzature_figures/skill/`, and the wheel carries them, so one
+  `pip install sprezzature-figures` brings all five surfaces: library, CLI
+  (command-line interface, here built with Click), HTTP (HyperText Transfer
+  Protocol) API (application programming interface, the FastAPI routes, with
+  a Dockerfile and a `docker-compose.yml`), MCP (Model Context Protocol, the
+  protocol through which AI agents call tools) and the skill. A new console
+  script, `sprezzature-figures-skill`, and the same command as
+  `sprezzature-figures skill`, report whether the copy an agent reads is in
+  step with the package; `--install` copies it into `~/.claude/skills`
+  (`--agent opencode` for `~/.opencode/skills`) and moves any previous copy
+  to `skills-superseded/`; `--path` prints where pip put it.
+  `sprezzature_figures.skill_path()` returns the folder. Importing the package
+  does not load click. `tests/test_the_skill_ships_with_the_package.py`.
+
+### Changed
+
+- **the editor, reworked after driving it in a real browser.**
+  - The style panel (text size, legend, grid, labels) did nothing: no
+    generator takes those four options. It is replaced by an **Adjust**
+    panel built from the options each chart type declares (title, subtitle,
+    axis titles, palette, look, dark background, then the rest folded
+    away). `editor.render_options.figure_kwargs` is now the one place a plan
+    becomes `make_figure()` keywords, for the editor, Ralph's engine and the
+    exported `reproduce.py`; `FigurePlan` gains an `options` field.
+  - Ralph gains `set_figure_option`, which sets an option the current chart
+    type declares, or `dark`. The edit prompt lists those options;
+    `propose_edit` drops an option the type does not take, or a value
+    outside its choices. Palette, look and dark background are safe repairs;
+    a log scale, `vmin`, `vmax` and `baseline` need confirmation. A canvas
+    size set by Ralph now reaches the render.
+  - The canvas frames the SVG (Scalable Vector Graphics, the figure as text)
+    itself, served by a `/editor-preview` route, instead of a PNG of it.
+  - The export wrote a `.zip` on the server's disk and announced its path.
+    A **Download** menu now hands the browser the SVG, a PNG, or the
+    project archive.
+  - A failed render no longer leaves the project's history pointing at an
+    empty version (`IterationSlot`); undo, redo and the version counter keep
+    working.
+  - Default titles and axis titles come from the bound columns ("Revenue by
+    country"), not from the chart type's name.
+  - Sample data in one click, a five-row preview, one plain sentence per
+    recommendation card, a manual chooser that starts from the chart on
+    screen with its roles pre-filled, a message when the browser refuses a
+    file, Ralph disabled until a chart exists, and a visible focus ring
+    (it now lives in the first CSS layer, where Quasar's `no-outline` cannot
+    beat it), a skip link, landmarks and a dark peer for the chat bubble.
+
+### Documentation
+
+- README and LISEZMOI describe the skill surface and the reworked Editor;
+  they no longer say the skill lives only in the hub, that the history panel
+  offers "compare" (`core.history.compare` exists, no button calls it), or
+  that CI (continuous integration, the server that reruns the checks on
+  every push) runs the type checks, the slow renders and the packaging test:
+  CI runs ruff and the default suite on Python 3.12 and an install-and-import
+  check on 3.10; the rest runs in `.githooks/pre-push`. The `--version`
+  line no longer claims every console script answers it
+  (`sprezzature-figures-skill` does not).
+- `docs/editor/` follows the code: `SetFigureOption` and the confirmation
+  rules in RALPH_LOOP.md, 16 operation kinds in LLM_SCHEMAS.md, the
+  `options` field in FIGURE_PLAN.md, the preview route and `render_options`
+  in ARCHITECTURE.md, the CI and the test counts in TESTING.md.
+- `references/figure-catalog.md` no longer says the figures carry no script:
+  by default (`mode="self-contained"`) each SVG ships a small fullscreen
+  script.
+- CODING.md and LANDSCAPE.md said 167 generators; there are 168.
+
 ### Fixed
+
 
 - **`audit_figure`'s `rainbow-palette` no longer reads embedded images.** It
   looked for `jet`, `hsv` or `rainbow` anywhere in the SVG, base64 included,
   and the relief raster of a situation plate spelt `/HsV/`. The rule now
-  reads the markup with every `data:` URI removed.
+  reads the markup with every `data:` URI (Uniform Resource Identifier, here a `data:` address that carries a whole file inline) removed.
 
 ## [2.11.0] — 2026-11-09
 
@@ -227,7 +299,7 @@
   scripts now print `<prog>, version <v>` from the installed metadata, as
   `sprezzature-figures-mcp` already did. No sub-command uses either spelling.
 - **`explain_model` has one default for how many rows it explains: 500.**
-  `--n-explain` and the SHAP / Shapash paths defaulted to 500, while
+  `--n-explain` and the SHAP (SHapley Additive exPlanations, how much each input pushed one prediction up or down) / Shapash paths defaulted to 500, while
   `run_lime` fell back to 10 when `ctx` carried no `n_explain`. The command
   line always passes one, so the 10 was reached only by a library caller.
   `DEFAULT_N_EXPLAIN` now feeds the flag and every engine; a direct
@@ -267,7 +339,7 @@
 - README / LISEZMOI: `python -m sprezzature_figures` named beside the two
   console scripts; where a render goes without `--out`; `embed_fonts=False`; the role names come from `describe`, not from
   FIGURES.md, which does not list them.
-- EXAMPLES / EXEMPLES: `list_kinds` imported from the package and shown with
+- EXAMPLES.md / EXEMPLES.md: `list_kinds` imported from the package and shown with
   its real first names; the scatter roles pointed at `describe scatter`.
 - The extras that no longer exist were still named in the comments of
   `requirements.txt`, `environment.yaml` and the `Dockerfile`; the dead
@@ -439,7 +511,7 @@ count below was checked against the code or recounted from it.
   Eyeball Loop and the other repository scripts, and the three-Roboto font rule.
 - **Editor docs.** The recommendation engine, its cards, the history panel, the export
   bundle and the execution of `FigurePlan.transformations` were described as missing.
-  All are built. The architecture tree, the test counts and the ROADMAP's deferred items
+  All are built. The architecture tree, the test counts and the deferred items of ROADMAP.md
   were brought up to date. `STATUS.md` keeps its history, under a dated note.
 
 
@@ -563,7 +635,7 @@ silently ignored.
   is by offered method (`to_dicts`, `to_pylist`, `to_dict(orient=...)`):
   nothing is imported, no dependency is added, and anyone holding none of
   those libraries pays nothing. Gaps come out as `None` whatever they were
-  called, and dates become ISO labels -- an axis prints and sorts, it does not
+  called, and dates become ISO (International Organization for Standardization, whose 8601 format writes a date as 2026-11-12) labels -- an axis prints and sorts, it does not
   want a `Timestamp`.
 
   With the refusal that belongs to it: a `NaN` turned `None` used to crash
@@ -773,7 +845,7 @@ through all three doors.
 - **`check_render()` — the questions the eyeball loop asks, answered from the
   SVG source.** The Ralph Eyeball Loop decides "does this read?" by showing the
   PNG to a vision model, and that answer only exists where such a model does. A
-  service with a text-only LLM, or none, still ships figures and cannot have
+  service with a text-only LLM (large language model, a model that reads and writes text), or none, still ships figures and cannot have
   someone look at each one. This asks the same questions from the markup and
   answers them the same way every time: do labels collide, does text run off
   the canvas, did a generator's demo chrome ("Region", "Quarterly figures")
@@ -927,7 +999,7 @@ code had moved on and the surface had not.
   not use. Neither name is exported from the package's `__all__`, but
   both were importable: a caller reaching for them will need to drop the
   call.
-- **`audit_figure.py`'s Vega-Lite JSON mode** — `rules_for_vega`,
+- **`audit_figure.py`'s Vega-Lite JSON (JavaScript Object Notation, records as named fields) mode** — `rules_for_vega`,
   `_iter_units`, `_iter_specs`, `_unit_rules` and the `.json` dispatch,
   about 220 lines. With every figure authored as SVG directly, the
   rendered markup *is* the source and there is no spec to audit. Five
@@ -1025,7 +1097,7 @@ code had moved on and the surface had not.
   Shapash paths now reuse the catalogue's own `make_bar`/`make_waterfall`
   generators plus two bespoke SVG plots (beeswarm, dependence scatter)
   built from the shared `_svg.py`/`_style.py` primitives; `causal_estimate.py`'s
-  DAG is a hand-written layered (Sugiyama-style) SVG layout instead of
+  DAG (directed acyclic graph, arrows from causes to effects that never loop back) is a hand-written layered (Sugiyama-style) SVG layout instead of
   `graphviz.Digraph`, and its forest plot is hand-authored SVG instead of
   a matplotlib figure; `render_diagram.py`/`ralph_eyeball_loop.py` drop
   the "vega" source kind entirely (`tikz`/`mermaid`/`svg` remain).
@@ -1050,7 +1122,7 @@ code had moved on and the surface had not.
 
 - **CLI/API renders no longer leak demo captions into real data.**
   Passing `--data` only ever set the title, so generators fell back to
-  their demo subtitle and axis captions regardless (any CSV rendered as a
+  their demo subtitle and axis captions regardless (any CSV (comma-separated values, a table saved as plain text) rendered as a
   bar chart kept the "Quarterly figures" subtitle and "Region" axis
   label). `make_figure()` now suppresses the demo subtitle and titles the
   axes from the user's own column names via the role binding, and filters
@@ -1059,7 +1131,7 @@ code had moved on and the surface had not.
 
 - **Causal DAG parsing, forest-plot label collisions, and SHAP/Shapash
   rendering bugs.** `causal_estimate.py`'s `--dag`/`--dag-string` now
-  correctly parses hand-written Graphviz DOT (`X -> Y`), not only GML, as
+  correctly parses hand-written Graphviz DOT (`X -> Y`), not only GML (Graph Modelling Language, a text format for graphs), as
   both flags already documented; forest-plot value labels now measure
   their own rendered width before deciding which side of the dot to sit
   on, instead of switching purely on the value's sign (which collided
@@ -1074,17 +1146,17 @@ code had moved on and the surface had not.
   beyond 3 regions.
 
 - **Editor ingest/recommendation: currency misclassification, missed
-  data-quality warnings, DB-driver types, and a recommendation-limit tie
+  data-quality warnings, database-driver types, and a recommendation-limit tie
   break (TAB-03/TAB-05).** `_CURRENCY_NAME_RE` matched `eur`/`usd`/`gbp`
   as a free substring, so a French column named `valeur` ("value") was
   classified `currency` instead of `numeric` purely because it contains
   "eur", which fed a wrong chart-recommendation goal; the codes are now
   delimited (`(^|_)(usd|eur|gbp)($|_)`). `profile_dataframe` computed
   `null_count`/quantile stats per column but never turned them into
-  warnings, so a file with missing values, IQR outliers, or duplicate
+  warnings, so a file with missing values, IQR (interquartile range, the spread of the middle half of the values) outliers, or duplicate
   rows produced an empty warning list; `_data_quality_warnings` now
   surfaces all three from the stats already collected. A `DataFrame`
-  built from raw DB driver rows (`pd.DataFrame(psycopg_rows)`) keeps
+  built from raw database driver rows (`pd.DataFrame(psycopg_rows)`) keeps
   `decimal.Decimal`/`datetime.date` values as plain Python objects, so
   `is_numeric_dtype`/`is_datetime64_any_dtype` both reported `False` on
   columns that were unambiguously numbers or dates, cascading into a
@@ -1135,7 +1207,7 @@ code had moved on and the surface had not.
   being hand-written slightly differently per generator. Every stable kind
   now also declares `required_roles`/`optional_roles` in the catalog
   (`tools/build_figures_catalog.py`'s `HAND_ROLES`), derived from each
-  generator's actual `DEMO_DATA` shape, so the editor's role-binding UI and
+  generator's actual `DEMO_DATA` shape, so the editor's role-binding UI (user interface) and
   `sprezzature-figures recommend` can reach all 126, not 46.
 
 ## [1.1.0] - 2026-08-06
@@ -1240,7 +1312,7 @@ code had moved on and the surface had not.
   and `.svg` / `.html` are unaffected.
 - **`--data -` reads from standard input.** `make-figure <kind> --data -`,
   `sprezzature-figures render --data -`, and `recommend --data -` read piped
-  JSON / JSONL / CSV (the shape is sniffed from the content, since stdin has no
+  JSON (JavaScript Object Notation) / JSONL (JSON Lines, one record per line) / CSV (the shape is sniffed from the content, since stdin has no
   filename), so data can flow straight from a pipe without a temp file:
   `curl -s … | make-figure bar --data -`.
 - **Render your own data from the CLI.** `make-figure <kind> --data file`
@@ -1266,7 +1338,7 @@ code had moved on and the surface had not.
   recommend --data file` ranks the chart types your data can fill, best first,
   showing each figure's score and its `role=column` binding. It reuses the same
   deterministic `editor.recommendation` filter + readability score the editor
-  GUI shows as cards, with no model involved. `--render out` also renders the
+  GUI (graphical user interface) shows as cards, with no model involved. `--render out` also renders the
   top pick, applying its role binding automatically. Needs the `[cli]` +
   `[editor]` extras (falls back to a clear install hint otherwise).
 - **Transformations now execute.** `core.transformations.apply_transformations`
@@ -1314,10 +1386,10 @@ code had moved on and the surface had not.
 - A lightweight GitHub Actions CI workflow.
 - **Self-hosted house typography** (`sprezzature_figures/fonts.py`):
   Roboto, Roboto Serif and Roboto Mono are now bundled as variable
-  TTF/WOFF2 files in the repo/wheel (`assets/fonts/`, shipped as the
+  TTF (TrueType Font)/WOFF2 files in the repo/wheel (`assets/fonts/`, shipped as the
   `sprezzature_figures_fonts` package) instead of being assumed present
-  on the host or fetched from a CDN. Every hand-written SVG generator and
-  every Vega-Lite generator now embeds `@font-face` (base64 WOFF2)
+  on the host or fetched from a CDN (content delivery network, a server that hosts files for many sites). Every hand-written SVG generator and
+  every Vega-Lite generator now embeds `@font-face` (base64 WOFF2 (Web Open Font Format 2, the compressed font format browsers download))
   directly in its output (`write_svg()`/`svg_open()`), matplotlib
   generators register the bundled fonts with `font_manager` (and bake
   `svg.fonttype="path"` for portable SVG output), the Vega-Lite → PNG
@@ -1377,5 +1449,5 @@ Initial public release.
 - `make_figure(kind, data, **kwargs)` unified dispatcher.
 - `list_kinds()` returns all available chart types.
 - `make-figure` CLI (argparse) always installed; Click CLI via `[cli]` extra.
-- Ralph Eyeball Loop integration for autonomous visual QA (`audit_figure.py`).
+- Ralph Eyeball Loop integration for autonomous visual QA (quality assurance; `audit_figure.py`).
 - Full type annotations, ruff-clean, pytest test suite.

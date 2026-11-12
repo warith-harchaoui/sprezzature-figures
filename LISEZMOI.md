@@ -21,10 +21,12 @@ Fait partie de la suite [sprezzature](https://sprezzature.ai/).
 
 ![Schéma de flux. En haut, vos données ou la figure de quelqu'un d'autre alimentent deux voies. La voie de gauche dessine : elle classe les types selon votre objectif, écrit le SVG directement sans bibliothèque de tracé dessous, et sait redessiner la capture d'écran d'une figure sans en inventer les nombres. La voie de droite contrôle : un examen statique lit n'importe quel SVG pour y trouver les étiquettes superposées et les noms sortis du cadre, puis la boucle Ralph rend la figure, la regarde, et corrige la source. Les deux se rejoignent en un seul résultat, une figure juste avant d'être belle.](https://raw.githubusercontent.com/warith-harchaoui/sprezzature-figures/main/assets/comment-ca-marche.svg)
 
-## Cinq portes d'entrée
+## Cinq portes d'entrée, et une sixième pour les figures
 
 Le même moteur répond sur cinq surfaces. Chacune appelle le même
-répartiteur `make_figure()` et le même catalogue.
+répartiteur `make_figure()` et le même catalogue. Ce paquet en ajoute une
+sixième, the editor, une fenêtre locale où l'on retouche une figure en
+cliquant et en conversant.
 
 | Surface | Point d'entrée | Section |
 |---|---|---|
@@ -32,12 +34,15 @@ répartiteur `make_figure()` et le même catalogue.
 | Ligne de commande (Click) | `sprezzature-figures`, aussi installée sous le nom `make-figure` | [Ligne de commande](#ligne-de-commande) |
 | API (application programming interface, une porte où d'autres programmes frappent : ils envoient des lignes, ils reçoivent une figure) HTTP (HyperText Transfer Protocol, la langue que parle un navigateur pour aller chercher une page), sur FastAPI, avec Docker et Compose | `uvicorn sprezzature_figures.api:app`, `docker compose up` | [API HTTP, MCP (Model Context Protocol, le protocole par lequel les agents IA appellent des outils en français) et Docker](#api-http-mcp-et-docker) |
 | Outils MCP | `sprezzature-figures-mcp` | [API HTTP, MCP et Docker](#api-http-mcp-et-docker) |
-| Skill pour agent | `sprezzature-figures/SKILL.md` dans le [dépôt central sprezzature](https://github.com/warith-harchaoui/sprezzature) | [TRIGGERS.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/TRIGGERS.md) |
+| Skill pour agent | `sprezzature-figures-skill --install` (ou `sprezzature-figures skill --install`) | [Skill pour agent](#skill-pour-agent) |
+| Editor, pour les figures seulement | `sprezzature-figures` | [the editor](#sprezzature-figures) |
 
 MCP est un standard qui permet à un assistant d'IA
 d'appeler directement les fonctions d'un programme comme des outils. Un skill
-est le fichier d'instructions qu'un agent comme Claude Code lit pour décider
-quand se servir de ce paquet ; il vit dans le dépôt central, pas ici.
+est le dossier d'instructions qu'un agent comme Claude Code lit pour décider
+quand se servir de ce paquet et quelle commande lancer. Il voyage dans le
+paquet, dans `sprezzature_figures/skill/`, si bien que `pip install` apporte
+les cinq surfaces.
 
 ## Installation
 
@@ -83,14 +88,16 @@ pip install sprezzature-figures
 Vérifier l'installation :
 
 ```bash
-sprezzature-figures --version          # ou -V ; chaque commande installée répond aux deux
+sprezzature-figures --version          # ou -V ; sprezzature-figures et sprezzature-figures-mcp aussi
 sprezzature-figures list --status stable
 sprezzature-figures render bar --out check.svg
 ```
 
-La CI (continuous integration, un serveur qui relance tous les tests à chaque envoi de code, et affiche une croix rouge si l'un échoue) tourne sur Ubuntu : lint, vérification des types et suite complète sous
-Python 3.12, construction de la roue et installation propre, et un contrôle
-d'installation et d'import sous Python 3.10.
+La CI (continuous integration, un serveur qui relance tous les tests à chaque envoi de code, et affiche une croix rouge si l'un échoue) tourne sur Ubuntu : lint et suite de tests par défaut sous
+Python 3.12, et un contrôle d'installation et d'import sous Python 3.10. La
+vérification des types, les rendus lents et la construction de la roue avec
+installation propre tournent dans le crochet pre-push du dépôt
+(`.githooks/pre-push`), avant que rien n'atteigne la CI.
 
 ---
 
@@ -128,6 +135,8 @@ Les autres noms publics de `sprezzature_figures` :
 | `to_dark(svg)` | Réécrit un SVG rendu pour un fond sombre. |
 | `text_width(text, font_size)` | L'estimation de largeur de texte avec laquelle les générateurs mettent en page et que le contrôle mesure. |
 | `redraw(image)` / `RedrawResult` | Redessine un graphique à partir de son image (voir [plus bas](#à-partir-de-limage-du-graphique-de-quelquun-dautre)). |
+| `semantic_colors(labels, theme=...)` / `semantic_hue(label)` | Choisit la teinte de chaque étiquette d'après ce qu'elle veut dire (voir [La couleur porte le sens](#la-couleur-porte-le-sens)). |
+| `skill_path()` | Le dossier du skill pour agent que ce paquet embarque (voir [Skill pour agent](#skill-pour-agent)). |
 
 `sprezzature_figures.options.options_for(kind)` liste tous les mots-clés
 qu'une figure accepte en plus de ses lignes.
@@ -180,7 +189,8 @@ de planter.
 Un seul groupe de commandes Click, installé sous deux noms :
 `sprezzature-figures` et `make-figure` exécutent le même code, tout comme
 `python -m sprezzature_figures`. Ses sous-commandes sont `list`, `render`,
-`describe`, `recommend`, `redraw` et `check`.
+`describe`, `recommend`, `redraw`, `check` et `skill` (la dernière est décrite
+sous [Skill pour agent](#skill-pour-agent)).
 
 ```bash
 # Lister tous les types (--status stable pour ceux vérifiés par rendu, --json pour un programme)
@@ -635,6 +645,8 @@ pour Latin Modern. Toutes deux autorisent la redistribution groupée.
 sprezzature-figures/
 ├── sprezzature_figures/
 │   ├── __init__.py        # les noms publics listés dans Démarrage rapide
+│   ├── _skill.py          # skill_path() et la commande sprezzature-figures-skill
+│   ├── skill/             # le skill pour agent : SKILL.md, references/
 │   ├── make_figure.py     # répartiteur adossé au registre + les aides des figures
 │   ├── cli.py             # la ligne de commande, en Click (sprezzature-figures et make-figure)
 │   ├── actions.py         # ce que font redraw / recommend / check, partagé par la CLI
@@ -681,15 +693,50 @@ pour savoir lesquels des 168 scripts respectent aujourd'hui ce contrat.
 
 ## the editor
 
-`sprezzature-figures` lance une application NiceGUI locale. Vous importez un
-fichier CSV/TSV/XLSX/JSON/JSONL, choisissez un type de graphique (les cartes
-de recommandation classent ceux que vos colonnes peuvent remplir), associez
-les colonnes, et affinez la figure en discutant avec **Ralph**. Ralph est un
-copilote construit sur un modèle de langage qui lit votre texte, un LLM (large
-language model, une IA qui lit et écrit du texte, comme celle derrière ChatGPT), et un modèle de vision qui regarde
-l'image rendue, un VLM (vision-language model, une IA qui regarde une image et dit ce qu'il y a dessus). Il modifie un plan structuré et regarde le PNG rendu
-avant de décider qu'il a fini. L'historique (annuler, rétablir, comparer) et
-un export reproductible sont dans l'éditeur.
+`sprezzature-figures` lance une application NiceGUI locale, une page en trois
+étapes.
+
+1. **Données.** Déposez un fichier CSV, TSV, XLSX (un classeur Excel), JSON,
+   JSONL (JSON Lines, un enregistrement JSON par ligne) ou NDJSON
+   (newline-delimited JSON, la même chose sous un autre nom), ou cliquez sur
+   *Essayer avec des données d'exemple* pour un tableau de chiffre d'affaires
+   de six pays. Les cinq premières lignes s'affichent. Un fichier d'un autre
+   type est refusé, avec un message qui nomme les formats lus.
+2. **Graphique.** Des cartes de recommandation, d'une phrase simple chacune,
+   classent les types que vos colonnes peuvent remplir ; un clic en trace un,
+   colonnes déjà associées. *Un autre type de graphique* liste tous les types
+   par leur libellé, avec une recherche, en partant du graphique affiché et
+   avec les rôles pré-remplis. Le titre et les titres d'axes par défaut
+   viennent des colonnes associées (« Chiffre d'affaires par pays »), pas du
+   nom du type.
+3. **Ajuster.** Le panneau est construit à partir des options que déclare le
+   type courant, il n'offre donc que ce que ce graphique honorera : titre et
+   sous-titre, les titres d'axes et de légende qu'il prend, la palette (celle
+   qui reste lisible pour les daltoniens par défaut), l'allure (corporate ou
+   academic) et un fond sombre, puis le reste de ses options, replié.
+
+La figure au centre est le SVG lui-même, servi au navigateur par la route
+`/editor-preview` du editor : le survol y marche comme dans le fichier
+téléchargé. En dessous : annuler, rétablir, un compteur de versions, et un menu
+**Télécharger** avec le SVG, un PNG et l'archive du projet (`.sprezzature.zip` :
+les données après transformations, le graphique, ses réglages, un texte
+alternatif et un `reproduce.py` qui le retrace).
+
+À côté, vous pouvez demander des changements à **Ralph** avec vos mots. Ralph
+est un copilote construit sur un modèle de langage qui lit votre texte, un LLM
+(large language model, une IA qui lit et écrit du texte, comme celle derrière
+ChatGPT), et un modèle de vision qui regarde l'image rendue, un VLM
+(vision-language model, une IA qui regarde une image et dit ce qu'il y a
+dessus). Il traduit votre phrase en modifications typées d'un plan structuré,
+y compris les options propres au type (une échelle logarithmique, un titre
+d'axe, une palette), refait le rendu, et en modes *Assisté* et *Automatique*
+regarde le résultat avant de décider qu'il a fini. Une modification qui change
+ce que montrent les données (un filtre, un autre type, une échelle
+logarithmique) attend votre confirmation. Ralph est désactivé tant qu'aucun
+graphique n'est tracé.
+
+L'interface est en anglais ou en français (un bouton de l'en-tête bascule de
+l'une à l'autre) et a un mode sombre.
 
 ```bash
 pip install sprezzature-figures
@@ -703,9 +750,9 @@ Le LLM et le VLM de Ralph sont résolus par
 qui s'adresse par défaut à un Ollama local (modèle de texte `qwen3:8b`, modèle
 de vision `gemma3:12b` ; à surcharger avec `BEST_LLM_TEXT` / `BEST_LLM_VISION`).
 L'application **démarre et reste utilisable sans aucun modèle** : import,
-profilage, recommandation, choix manuel du graphique, réglage des propriétés,
-historique et export fonctionnent ; seuls la conversation et la critique ont
-besoin d'un modèle joignable. Les projets sont rangés sous
+profilage, recommandation, choix manuel du graphique, panneau Ajuster,
+historique et téléchargements fonctionnent ; seul Ralph a besoin d'un modèle
+joignable. Les projets sont rangés sous
 `~/.sprezzature-figures/` (à surcharger avec `SPREZZATURE_FIGURES_HOME`). Rien ne
 quitte votre machine, sauf si vous la pointez vers un service distant
 ([DATA_PRIVACY.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/docs/editor/DATA_PRIVACY.md)).
@@ -817,6 +864,32 @@ docker run --rm -p 8000:8000 sprezzature-figures   # routes HTTP + /mcp
 
 ---
 
+## Skill pour agent
+
+Un skill est un dossier qu'un agent lit pour savoir quand se servir d'un outil,
+quelles sont les règles de la maison et quelle commande lancer : un `SKILL.md`
+et les documents de référence posés à côté. Ce paquet embarque le sien dans
+`sprezzature_figures/skill/`, à l'intérieur de la roue ;
+`sprezzature_figures.skill_path()` renvoie ce dossier.
+
+Un agent lit les skills dans son propre dossier, pas dans site-packages : la
+copie doit y être posée une fois, et de nouveau après une mise à jour.
+
+```bash
+sprezzature-figures-skill                          # la copie installée est-elle à jour ?
+sprezzature-figures-skill --install                # la copier dans ~/.claude/skills/sprezzature-figures
+sprezzature-figures-skill --install --agent opencode   # dans ~/.opencode/skills à la place
+sprezzature-figures-skill --path                   # où pip l'a mise
+sprezzature-figures skill --install                # la même commande, en sous-commande
+```
+
+Sans `--install`, elle ne fait que rendre compte : à jour, ou combien de
+fichiers diffèrent. Une copie précédente est déplacée dans `skills-superseded/`,
+à côté du dossier des skills, plutôt que laissée dedans, où l'agent la lirait
+comme un second skill.
+
+---
+
 ## Développement
 
 ```bash
@@ -838,8 +911,10 @@ python -m pytest -m vision      # interrogent un modèle de vision / VLM réel
 ```
 
 Les tests `llm` / `vision` **sont sautés** (jamais en échec) quand aucun modèle
-n'est joignable, on peut donc les lancer sans Ollama. La CI exécute la suite
-par défaut, `slow` et `packaging`, jamais `llm` ni `vision`. Les vérifications
+n'est joignable, on peut donc les lancer sans Ollama. La CI n'exécute que la suite
+par défaut ; le crochet pre-push (`.githooks/pre-push`, activé par
+`git config core.hooksPath .githooks`) lance ruff, mypy, la suite par défaut,
+`slow` et `packaging`. Ni l'un ni l'autre ne lance `llm` ou `vision`. Les vérifications
 par Chromium sans interface demandent un `playwright install chromium` unique
 après l'installation de `[dev]`.
 

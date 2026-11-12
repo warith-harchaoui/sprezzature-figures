@@ -7,7 +7,7 @@ section, kept here in more detail. If the two ever disagree, fix both
 together; do not just pick one and leave the other stale.
 
 1. Create `scripts/make_<kind>.py`, modeled on `scripts/make_rose.py` (the
-   reference "hero SVG" script; see CODING.md's "Script structure for
+   reference script for an SVG (Scalable Vector Graphics, a picture written as text) generator; see CODING.md's "Script structure for
    make_*.py"), or on a close sibling if a more similar one already
    exists.
 2. The script must define:
@@ -26,8 +26,11 @@ together; do not just pick one and leave the other stale.
    for it.
 5. Run `python tools/audit_generators.py --render --timeout 40`, then
    `python tools/build_figures_catalog.py`. This step is not optional.
-   Skip it, and `make_figure()`, the CLI, the HTTP API, and the MCP tools
-   still cannot reach the new kind directly: they fall through to a
+   Skip it, and `make_figure()`, the CLI (command-line interface,
+   `sprezzature-figures`), the HTTP (HyperText Transfer Protocol) API
+   (application programming interface, the routes other programs call), and
+   the tools of MCP (Model Context Protocol, the protocol through which AI
+   agents call tools) still cannot reach the new kind directly: they fall through to a
    deprecated compatibility path that prints a warning instead (see
    README.md's "Adding a chart type" for why that fallback exists). After
    running both commands, check that the diff to
@@ -53,11 +56,12 @@ together; do not just pick one and leave the other stale.
 - Comment density of 25 to 30 percent of lines: a comment explains *why*,
   never *what* the code already shows.
 - `ruff check .` must pass with zero findings, over the whole repository,
-  `scripts/` and `tests/` included; CI runs it. Do not run `ruff format`
+  `scripts/` and `tests/` included; CI (continuous integration, the server
+  that reruns the checks on every push) runs it. Do not run `ruff format`
   over `scripts/`: match the style of the sibling scripts by hand instead
   (see CODING.md for why).
 - `mypy sprezzature_figures`, `mypy scripts` and `mypy tools` must pass;
-  CI runs all three.
+  the pre-push hook (`.githooks/pre-push`) runs all three, CI does not.
 - No unused imports.
 
 ## Commit style
@@ -72,4 +76,4 @@ Example: `figures: add make_radar.py radar chart with DEMO_DATA`
 
 ## Licence
 
-By contributing you agree that your code will be released under the BSD 3-Clause licence.
+By contributing you agree that your code will be released under the BSD (Berkeley Software Distribution, a licence that lets anyone copy, change and sell the code as long as the copyright line stays) 3-Clause licence.
