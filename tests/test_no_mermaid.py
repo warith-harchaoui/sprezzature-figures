@@ -181,6 +181,14 @@ def test_the_name_appears_nowhere_but_the_refusal_and_the_route() -> None:
             lines = [line for line in lines if _SUFFIX_TUPLE not in line]
         if relative == "TRIGGERS.md":
             lines = [line for line in lines if not line.startswith("| `flowchart` |")]
+        if relative.startswith("sprezzature_figures/skill/"):
+            # The skill ships in the package since 2026-11-12, and routes the
+            # request the same way TRIGGERS.md does: the quoted phrase someone
+            # types, sent to the `flowchart` kind. Only the phrase is allowed.
+            lines = [
+                line for line in lines
+                if '"mermaid diagram"' not in line and "`mermaid diagram`" not in line
+            ]
         offenders += [f"{relative}: {line.strip()[:120]}" for line in lines]
     assert not offenders, "\n".join(offenders)
 
