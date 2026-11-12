@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [2.12.0] — 2026-11-12
+
 ### Added
 
 - **The agent skill ships inside the package.** `SKILL.md`, its

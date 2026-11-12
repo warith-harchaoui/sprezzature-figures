@@ -51,6 +51,6 @@ __all__ = [
     "semantic_hue",
 ]
 
-__version__ = "2.11.0"
+__version__ = "2.12.0"
 __author__ = "Warith HARCHAOUI"
 __email__ = "warithmetics@deraison.ai"

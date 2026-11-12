@@ -26,7 +26,7 @@ compatibility: >-
   network needed once installed.
 metadata:
   author: Warith HARCHAOUI
-  version: 1.8.4
+  version: 1.9.0
 ---
 
 > The tools below ship as the package [`sprezzature-figures`](https://github.com/warith-harchaoui/sprezzature-figures) (one `pip install sprezzature-figures`, no feature extras), invoked as `sprezzature-figures …`. This skill ships inside that package, in `sprezzature_figures/skill/`; `sprezzature-figures-skill --install` copies it into `~/.claude/skills` (`--agent opencode` for `~/.opencode/skills`), and `sprezzature-figures-skill` alone says whether the installed copy is in step with the package.
