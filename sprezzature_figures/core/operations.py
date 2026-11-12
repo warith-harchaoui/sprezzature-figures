@@ -196,6 +196,32 @@ class SetStyleOption(_OperationBase):
     )
 
 
+class SetFigureOption(_OperationBase):
+    """One of the generator's own options, by the name its signature uses.
+
+    ``SetStyleOption`` writes :class:`StyleOptions`, which no generator
+    reads: font size, legend position, grid and value labels change the
+    plan and leave the picture as it was. What a figure does read is
+    declared per kind (``sprezzature_figures.options_for(kind)``) -- axis
+    titles, the colour palette, the look, a log scale -- plus ``dark``
+    for a dark canvas. This operation sets one of those.
+    """
+
+    operation_type: Literal["set_figure_option"] = "set_figure_option"
+    name: str = Field(
+        description=(
+            "The option's name, one of those listed for the current figure kind "
+            '(e.g. "y_label", "x_label", "accessibility", "theme", "log_y"), or '
+            '"dark" for a dark background.'
+        )
+    )
+    value: Any = Field(
+        default=None,
+        description='The new value (e.g. "Revenue (EUR)", "high-contrast", true). '
+        "null puts the option back to its automatic value.",
+    )
+
+
 class AddFilter(_OperationBase):
     operation_type: Literal["add_filter"] = "add_filter"
     transform: Transform
@@ -249,6 +275,7 @@ FigureOperation = Annotated[
     | SetTitle
     | SetSubtitle
     | SetStyleOption
+    | SetFigureOption
     | AddFilter
     | RemoveFilter
     | SortRows
