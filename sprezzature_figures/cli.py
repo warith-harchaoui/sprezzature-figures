@@ -19,6 +19,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from pathlib import Path
+from typing import Any
 
 import click
 
@@ -43,7 +44,7 @@ def list_kinds(status: str | None = None) -> list[str]:
     return _list_kinds(status=status)
 
 
-def make_figure(*args: object, **kwargs: object) -> object:
+def make_figure(*args: Any, **kwargs: Any) -> Any:
     """:func:`sprezzature_figures.make_figure.make_figure`, imported on first use."""
     from .make_figure import make_figure as _make_figure
 
