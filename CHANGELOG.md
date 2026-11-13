@@ -26,10 +26,10 @@
 
 ### Changed
 
-- **One local model, `gemma3:12b`,** for the editor (text and vision) and
-  Ralph's `--local`, unless `BEST_LLM_TEXT` / `BEST_LLM_VISION` say
-  otherwise. Measured against the installed alternatives: right answer in
-  0.4 s warm, a Sankey read in 6 s with no invented defect.
+- **the editor uses the suite's one model, `qwen3-vl:8b`,** for text and
+  vision alike, unless `BEST_LLM_TEXT` / `BEST_LLM_VISION` say otherwise; it
+  used best-engine's defaults, `qwen3:8b` and `gemma3:12b`, which the rule in
+  the hub's `docs/LLM_CHOICE.md` does not allow.
 - **`--help` in 0.13 s, from 0.83 s.** The package's public names and the
   CLI load the catalogue on first use; a test keeps it that way.
 

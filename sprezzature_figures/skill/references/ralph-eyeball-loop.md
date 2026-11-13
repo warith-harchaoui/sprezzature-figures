@@ -75,7 +75,7 @@ and stops, expecting the agent to fill it in with the `Read` tool before
 moving on.
 
 **Local mode** (`--local`) is the fully offline alternative: after
-rendering, the script calls a vision-language model, `gemma3:12b`, and
+rendering, the script calls a vision-language model, `qwen3-vl:8b`, and
 uses its answer to pre-fill the same template automatically. This is not
 a second, separate integration: every LLM or VLM call anywhere in the
 `sprezzature-*` suite routes through one helper, declared in the
@@ -84,7 +84,7 @@ script's `requirements-*.txt`, which resolves the actual backend
 environment variable) and shapes the request. `ralph_eyeball_loop.py`
 itself never opens a connection to Ollama directly; it only builds the
 prompt and hands over the PNG bytes. Local mode needs the model pulled
-once (`ollama pull gemma3:12b`) and Ollama running (`ollama serve`); the
+once (`ollama pull qwen3-vl:8b`) and Ollama running (`ollama serve`); the
 auto-generated critique is meant to be reviewed and edited, not accepted
 blindly, the template itself says so in a heading comment.
 

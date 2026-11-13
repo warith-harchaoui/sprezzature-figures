@@ -401,7 +401,7 @@ contradict a fact established here.
 file under `.private/ralph-loop/`: the clone's own, or, installed from the
 wheel, the one in the directory you run it from. You edit the source and run it again; each
 run appends an iteration. In the default mode the agent running it reads the
-PNG itself. With `--local`, a local vision model (`gemma3:12b`, through
+PNG itself. With `--local`, a local vision model (`qwen3-vl:8b`, through
 best-engine-ai-helper) writes the critique offline.
 
 ```bash
@@ -717,8 +717,8 @@ sprezzature-figures --native            # a desktop window instead of a tab
 
 Ralph's LLM and VLM are resolved by
 [best-engine-ai-helper](https://github.com/warith-harchaoui/best-engine-ai-helper),
-which the editor points at a local Ollama and one model, `gemma3:12b`, for
-reading a request and looking at a render alike (override with `BEST_LLM_TEXT` / `BEST_LLM_VISION`). The app
+which the editor points at a local Ollama and the suite's one model,
+`qwen3-vl:8b`, for reading a request and looking at a render alike (override with `BEST_LLM_TEXT` / `BEST_LLM_VISION`). The app
 **starts and stays usable with no model at all**: import, profiling,
 recommendation, manual chart choice, the Adjust panel, history and downloads
 all work; only Ralph needs a reachable model. Projects are

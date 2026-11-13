@@ -419,7 +419,7 @@ fichier d'évaluation sous `.private/ralph-loop/` : celui du clone, ou, install
 depuis la roue, celui du dossier d'où vous le lancez. Vous modifiez la source et
 vous relancez ; chaque passage ajoute une itération. Par défaut, l'agent qui
 l'exécute lit le PNG lui-même. Avec `--local`, un modèle de vision local
-(`gemma3:12b`, via best-engine-ai-helper) écrit la critique hors ligne.
+(`qwen3-vl:8b`, via best-engine-ai-helper) écrit la critique hors ligne.
 
 ```bash
 python scripts/ralph_eyeball_loop.py figure.svg
@@ -747,8 +747,8 @@ sprezzature-figures --native            # une fenêtre de bureau au lieu d'un on
 
 Le LLM et le VLM de Ralph sont résolus par
 [best-engine-ai-helper](https://github.com/warith-harchaoui/best-engine-ai-helper),
-que l'éditeur pointe sur un Ollama local et un seul modèle, `gemma3:12b`, pour
-lire une demande comme pour regarder un rendu (à surcharger avec `BEST_LLM_TEXT` / `BEST_LLM_VISION`).
+que l'éditeur pointe sur un Ollama local et le modèle unique de la suite,
+`qwen3-vl:8b`, pour lire une demande comme pour regarder un rendu (à surcharger avec `BEST_LLM_TEXT` / `BEST_LLM_VISION`).
 L'application **démarre et reste utilisable sans aucun modèle** : import,
 profilage, recommandation, choix manuel du graphique, panneau Ajuster,
 historique et téléchargements fonctionnent ; seul Ralph a besoin d'un modèle
