@@ -1394,7 +1394,13 @@ def check_render(
     findings += _check_identical_ticks(labels)
     findings += _check_line_end_orphans(root, ancestors)
     findings += _check_invisible_text(root, ancestors, _fond(root))
-    findings += _check_placeholders(labels, forbidden_text)
+    # A render the CLI made from DEMO_DATA says so on its root: there the
+    # demo captions are the point, not a leftover.
+    if root.get("data-demo") != "true":
+        findings += _check_placeholders(labels, forbidden_text)
+    elif forbidden_text:
+        findings += [f for f in _check_placeholders(labels, forbidden_text)
+                     if f.detail.split(" contains ")[-1].strip("'") in forbidden_text]
     if kind:
         from .make_figure import demo_texts
 

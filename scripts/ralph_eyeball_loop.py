@@ -118,11 +118,12 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-import shutil
 import random
+import shutil
 import sqlite3
 import subprocess
 import sys
+import tempfile
 import time
 import urllib.error
 import urllib.request
@@ -517,10 +518,19 @@ def _render_html(src: Path, out: Path, width: int, height: int) -> None:
         )
 
     url = f"file://{src.resolve()}"
+    # A profile of its own, thrown away after the shot. Without it headless
+    # Chrome opens the user's default profile, which the Chrome they have
+    # open already holds: the run then fights that browser for the profile
+    # lock and can exit non-zero after writing the PNG, or disturb the
+    # session on screen.
+    profile = tempfile.mkdtemp(prefix="ralph-chrome-")
     proc = subprocess.run(
         [
             chrome,
             "--headless=new",
+            f"--user-data-dir={profile}",
+            "--no-first-run",
+            "--no-default-browser-check",
             f"--screenshot={out}",
             f"--window-size={effective_width},{height}",
             # Without this the 15 px scrollbar makes the CSS viewport 15 px
@@ -532,7 +542,10 @@ def _render_html(src: Path, out: Path, width: int, height: int) -> None:
         ],
         capture_output=True,
     )
-    if proc.returncode != 0:
+    shutil.rmtree(profile, ignore_errors=True)
+    # The screenshot is the contract, not the exit code: Chrome can report a
+    # failure from its own shutdown after the PNG is complete on disk.
+    if proc.returncode != 0 and not (out.exists() and out.stat().st_size > 0):
         detail = (proc.stderr or b"").decode(errors="replace")[-1000:]
         raise SystemExit(f"ralph_eyeball_loop: Chrome exited {proc.returncode}:\n{detail}")
 

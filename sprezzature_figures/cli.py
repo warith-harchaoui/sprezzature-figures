@@ -18,6 +18,7 @@ Warith HARCHAOUI <warithmetics@deraison.ai>
 from __future__ import annotations
 
 from collections.abc import Callable
+from pathlib import Path
 
 import click
 
@@ -334,7 +335,28 @@ def render_cmd(
                 err=True,
             )
         raise SystemExit(1) from exc
+    if not data_path:
+        _mark_as_demo(result)
     click.echo(result)
+
+
+def _mark_as_demo(path: object) -> None:
+    """Stamp ``data-demo="true"`` on the root of an SVG rendered from DEMO_DATA.
+
+    A demo render carries the demo's own captions by design, and ``check``'s
+    placeholder rule exists to catch those captions over somebody else's
+    numbers. Without the stamp, every figure anybody renders first -- the
+    demo -- came back from ``check`` with a finding it was right to make
+    about real data and wrong to make about the demo.
+    """
+    target = Path(str(path))
+    if target.suffix.lower() != ".svg" or not target.is_file():
+        return
+    svg = target.read_text(encoding="utf-8")
+    start = svg.find("<svg")
+    if start < 0 or 'data-demo="true"' in svg[start : svg.find(">", start)]:
+        return
+    target.write_text(svg[: start + 4] + ' data-demo="true"' + svg[start + 4 :], encoding="utf-8")
 
 
 @cli.command("describe")
