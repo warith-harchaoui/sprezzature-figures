@@ -26,7 +26,7 @@ Two modes
 
 **Local mode** (``--local``)
     A fully offline alternative.  After rendering the PNG, the script calls
-    ``qwen3-vl:8b`` (a vision-language model) to generate the critique
+    ``gemma3:12b`` (a vision-language model) to generate the critique
     automatically and pre-fill the assessment file.  No cloud API, no Claude
     Code session required. It works in any terminal once Ollama is running and
     the model is pulled.
@@ -40,7 +40,7 @@ Two modes
 
     Pull the model once::
 
-        ollama pull qwen3-vl:8b
+        ollama pull gemma3:12b
 
 The loop (both modes)
 ---------------------
@@ -63,7 +63,7 @@ Rendering toolchain per surface
 +--------------------+----------------------------------------------+-----------------------------+
 | SVG graphic        | rsvg-convert (preferred) or magick           | brew install librsvg        |
 +--------------------+----------------------------------------------+-----------------------------+
-| Local critique     | qwen3-vl:8b, via best-engine-ai-helper       | ollama pull qwen3-vl:8b    |
+| Local critique     | gemma3:12b, via best-engine-ai-helper       | ollama pull gemma3:12b    |
 +--------------------+----------------------------------------------+-----------------------------+
 
 Run ``python ralph_eyeball_loop.py --install-tools`` to see what is missing
@@ -188,13 +188,13 @@ def _loop_dir(figures_root: Path, cwd: Path) -> Path:
 _PRIVATE_LOOP_DIR: Path = _loop_dir(_FIGURES_ROOT, Path.cwd())
 
 # ---------------------------------------------------------------------------
-# qwen3-vl:8b — the one authorized VLM for the whole sprezzature-* repo's
+# gemma3:12b — the one authorized VLM for the whole sprezzature-* repo's
 # --local critique mode. Reached exclusively via best_engine_ai_helper.llm.chat
 # (imported above); this module never opens an HTTP connection to Ollama
 # itself. _OLLAMA_URL below is used only in the human-readable error message
 # when the backend is unreachable, not to make the call.
 # ---------------------------------------------------------------------------
-_VISION_MODEL: str = "qwen3-vl:8b"
+_VISION_MODEL: str = "gemma3:12b"
 _OLLAMA_URL: str = "http://localhost:11434/api/generate"
 
 #: Headless Chrome refuses to make its window narrower than this (~500 px on
@@ -324,8 +324,8 @@ def _ollama_model_available() -> bool:
         with urllib.request.urlopen(req, timeout=3) as resp:
             data = json.loads(resp.read())
         model_names = [m.get("name", "") for m in data.get("models", [])]
-        # Accept exact match or tag-prefix match (e.g. "qwen3-vl:8b" or
-        # "qwen3-vl:8b-instruct-q4_K_M").
+        # Accept exact match or tag-prefix match (e.g. "gemma3:12b" or
+        # "gemma3:12b-instruct-q4_K_M").
         prefix = _VISION_MODEL.split(":")[0]
         return any(_VISION_MODEL in n or n.startswith(prefix + ":") for n in model_names)
     except Exception:
@@ -760,7 +760,7 @@ def _unreachable_message(exc: Exception) -> str:
 
 
 def _vlm_critique(png_path: Path, kind: str, use_cache: bool = True) -> str:
-    """Call ``qwen3-vl:8b`` to critique a PNG, via ``best_engine_ai_helper``.
+    """Call ``gemma3:12b`` to critique a PNG, via ``best_engine_ai_helper``.
 
     The call is routed through :func:`best_engine_ai_helper.llm.chat`
     (imported at module level as ``_llm_chat``), never through a
@@ -768,7 +768,7 @@ def _vlm_critique(png_path: Path, kind: str, use_cache: bool = True) -> str:
     ``SPREZZATURE_LLM_BACKEND`` to pick the backend (Ollama by default)
     and ``SPREZZATURE_LLM_VISION`` to override the model tag; the ``model``
     argument passed here (:data:`_VISION_MODEL`) is a per-call override on
-    top of that, since this loop always wants ``qwen3-vl:8b`` specifically.
+    top of that, since this loop always wants ``gemma3:12b`` specifically.
 
     The result is memoized through ``wallet_helper`` on the three inputs the
     critique is a function of — **the PNG's bytes, the prompt, and the model

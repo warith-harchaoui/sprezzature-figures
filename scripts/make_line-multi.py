@@ -160,7 +160,20 @@ def build_svg(
     x_pos = [h for h in hours if h > 0]
     xlog_min = min(x_pos) if x_pos else 1.0
 
-    plot_x, plot_y = 60.0, 150.0
+    # Legend entries flow left to right and wrap before the right edge: one
+    # row ran off the canvas at a dozen series ("seg10", "seg11" clipped).
+    # Each extra row pushes the plot down by its own height.
+    legend_pos: List[tuple] = []
+    cursor, row = 40.0, 0
+    for s in series:
+        step = 22 + 7.2 * len(s) + 20
+        if cursor > 40.0 and cursor + 22 + 7.2 * len(s) > width - 20:
+            cursor, row = 40.0, row + 1
+        legend_pos.append((s, cursor, row))
+        cursor += step
+    legend_rows = row + 1
+
+    plot_x, plot_y = 60.0, 150.0 + 20.0 * (legend_rows - 1)
     bottom_reserved = 60.0
     plot_w = width - plot_x - right_margin
     plot_h = height - plot_y - bottom_reserved
@@ -242,16 +255,14 @@ def build_svg(
     parts.append(f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>')
 
     # ---- legend ----
-    lx, ly = 40.0, 100.0
-    cursor = lx
-    ly2 = ly + 22
-    for s in series:
+    ly = 100.0
+    for s, cursor, row in legend_pos:
+        ly2 = ly + 22 + 20.0 * row
         parts.append(
             f'<line x1="{cursor:.1f}" y1="{ly2 - 5:.1f}" x2="{cursor + 16:.1f}" y2="{ly2 - 5:.1f}" '
             f'stroke="{colors[s]}" stroke-width="2.5"/>'
         )
         parts.append(f'<text x="{cursor + 22:.1f}" y="{ly2:.1f}" font-size="12" fill="{INK}">{xml_escape(s)}</text>')
-        cursor += 22 + 7.2 * len(s) + 20
 
     # ---- y-axis minor gridlines (unlabeled, finer than the labeled ticks) ----
     if y_minor_step and y_domain:

@@ -578,7 +578,10 @@ def build_svg(
             lx = g["x"] + NODE_WIDTH + LABEL_GAP
             anchor = "start"
         parts.append(
-            f'<text x="{lx:.1f}" y="{cy:.1f}" text-anchor="{anchor}">'
+            # Placed at the node's centre, which the data decides: the
+            # auditor must not read two of these as a row (see
+            # render_checks._Label.data_placed).
+            f'<text x="{lx:.1f}" y="{cy:.1f}" text-anchor="{anchor}" data-placed="data">'
             f'<tspan x="{lx:.1f}" dy="-0.35em" font-size="19" '
             f'font-weight="600" fill="{INK}">{escape(label)}</tspan>'
             f'<tspan x="{lx:.1f}" dy="1.25em" font-family="{mono_family}" '

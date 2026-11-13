@@ -6,7 +6,7 @@ description: >-
   flow diagrams (flowchart) included, plus explainability (SHAP / Shapash /
   LIME) and causal DAGs (DoWhy). check finds overlapping labels in any SVG,
   with no model. The loop reads any visual from code (figure, TikZ, a whole
-  HTML page) as an agent or --local (qwen3-vl:8b, offline). redraw() redraws a
+  HTML page) as an agent or --local (gemma3:12b, offline). redraw() redraws a
   picture of a chart here, never inventing the numbers. Never ASCII art. Use
   it when you are holding numbers you want somebody to SEE, or a chart that is
   hard to read. Trigger phrases: "make a figure", "chart this", "plot this",

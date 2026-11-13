@@ -13307,7 +13307,7 @@
     ],
     "min_rows": null,
     "max_recommended_rows": null,
-    "max_recommended_categories": null,
+    "max_recommended_categories": 6,
     "default_width": 820,
     "default_height": 560,
     "options_schema": {

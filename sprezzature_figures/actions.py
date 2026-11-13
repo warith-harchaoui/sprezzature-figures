@@ -197,7 +197,11 @@ def recommend(
     profile = profile_dataframe(
         pd.DataFrame(records), dataset_id=name, fingerprint="cli", source_name=name
     )
-    ranked = rank(profile, goal=goal)
+    from .editor.recommendation import infer_goal
+
+    # Unstated, the goal is read off the columns, as the editor does: without
+    # it every kind the data merely fits ties, and the list is noise.
+    ranked = rank(profile, goal=goal or infer_goal(profile))
     if not ranked:
         raise ActionError(
             f"No stable chart type can be filled from {name} "

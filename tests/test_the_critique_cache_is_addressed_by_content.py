@@ -1,7 +1,7 @@
 """The Ralph loop's VLM critique is keyed on the pixels, not on the path.
 
 The defect this guards. ``ralph_eyeball_loop.py --local`` sends a PNG to
-``qwen3-vl:8b`` and the loop's own message says "first call loads the model,
+``gemma3:12b`` and the loop's own message says "first call loads the model,
 ~30 s cold". Nothing was memoized. The critique is written to
 ``.private/ralph-loop/assessment-<hash>.md``, which looks exactly like
 content-addressed storage, but ``_source_hash`` hashes the resolved *path* --

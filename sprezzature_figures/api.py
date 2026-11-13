@@ -601,7 +601,9 @@ def recommend(body: RecommendRequest) -> list[FigureCandidate]:
     profile = profile_dataframe(
         pd.DataFrame(body.data), dataset_id="api", fingerprint="api", source_name="api"
     )
-    ranked = rank(profile, goal=body.goal)
+    from .editor.recommendation import infer_goal
+
+    ranked = rank(profile, goal=body.goal or infer_goal(profile))
     return [
         FigureCandidate(
             kind=definition.kind,

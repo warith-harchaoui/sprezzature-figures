@@ -220,6 +220,11 @@ class _Label:
     #: Lines drawn by this one element (its non-empty tspans that start a new
     #: line), 1 for plain text.
     lines: int = 1
+    #: The generator placed this label by its data (``data-placed="data"`` on
+    #: the element or an ancestor): a Sankey node's name sits at its node's
+    #: centre, and two of them a few pixels apart in different columns are a
+    #: coincidence of the numbers, not a row that missed its baseline.
+    data_placed: bool = False
 
     @property
     def width(self) -> float:
@@ -438,6 +443,7 @@ def _text_labels(root: ET.Element) -> list[_Label]:
                     and (child.get("y") is not None or child.get("dy") is not None)
                     and "".join(child.itertext()).strip()
                 )),
+                data_placed=_inherited(element, ancestors, "data-placed") == "data",
             )
         )
     vus: set[tuple] = set()
@@ -797,7 +803,7 @@ def _check_near_miss_alignment(labels: Sequence[_Label]) -> list[RenderFinding]:
     """
     droits = [
         label for label in labels
-        if not label.rotated and not _NUMERIQUE.match(label.text)
+        if not label.rotated and not _NUMERIQUE.match(label.text) and not label.data_placed
     ]
 
     def base(label: _Label) -> float:

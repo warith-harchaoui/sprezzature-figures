@@ -217,7 +217,14 @@ def build_svg(
         f'style="background:{BG};max-width:100%;height:auto">'
     )
     lines.append(f"<style>{style}</style>")
-    lines.append(f'<desc>{escape(subtitle)}</desc>')
+    # The subtitle is the description when there is one; over a caller's own
+    # rows the CLI blanks the demo subtitle, and an empty <desc> left the
+    # chart with nothing for a screen reader to say. Say what it draws.
+    desc = subtitle or (
+        f"Waterfall of {len(bars)} steps, from {bars[0]['label']} to {bars[-1]['label']}."
+        if bars else "Waterfall chart."
+    )
+    lines.append(f'<desc>{escape(desc)}</desc>')
 
     # Background
     lines.append(f'<rect width="{WIDTH}" height="{HEIGHT}" fill="{BG}"/>')

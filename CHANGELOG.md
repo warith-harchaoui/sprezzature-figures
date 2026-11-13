@@ -2,6 +2,38 @@
 
 ## [Unreleased]
 
+## [2.13.0] — 2026-11-13
+
+### Fixed
+
+- **`check` passes the demo.** `render` without `--data` stamps
+  `data-demo="true"` on the SVG, and `check` no longer reports the demo's
+  own captions there as leftovers (treemap, line and every kind with a demo
+  subtitle were flagged).
+- **`check` passes Sankey.** Node labels sit at their node's centre, which
+  the data decides; they carry `data-placed="data"` and the baseline rule no
+  longer reads two of them as a row that missed its line.
+- **`recommend` names the chart a reader expects.** The goal is read off the
+  columns when unstated, as the editor already did, and ties break toward
+  familiar charts: monthly sales give `line`, a team comparison `bar`, a
+  parent/name/value table `treemap`, where `ablation_matrix` came first.
+- Waterfall keeps a description over a caller's data; line-multi wraps a
+  long legend instead of running off the canvas; pie is no longer proposed
+  for more than six slices.
+- **Ralph Eyeball Loop in headless Chrome** with a throwaway profile, so it
+  no longer fights the Chrome the user has open; the written PNG is the
+  contract, not Chrome's exit code at shutdown.
+
+### Changed
+
+- **One local model, `gemma3:12b`,** for the editor (text and vision) and
+  Ralph's `--local`, unless `BEST_LLM_TEXT` / `BEST_LLM_VISION` say
+  otherwise. Measured against the installed alternatives: right answer in
+  0.4 s warm, a Sankey read in 6 s with no invented defect.
+- **`--help` in 0.13 s, from 0.83 s.** The package's public names and the
+  CLI load the catalogue on first use; a test keeps it that way.
+
+
 ## [2.12.0] — 2026-11-12
 
 ### Added

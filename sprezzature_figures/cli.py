@@ -25,8 +25,29 @@ import click
 from sprezzature_figures._skill import skill_command
 
 from .actions import ActionError, ActionResult
-from .catalog import resolve_kind
-from .make_figure import list_kinds, make_figure
+
+
+# The catalogue loads pydantic models for 168 kinds; reaching it at import made
+# `--help` wait for all of them. These three load it on first call instead.
+def resolve_kind(name: str) -> str | None:
+    """:func:`sprezzature_figures.catalog.resolve_kind`, imported on first use."""
+    from .catalog import resolve_kind as _resolve_kind
+
+    return _resolve_kind(name)
+
+
+def list_kinds(status: str | None = None) -> list[str]:
+    """:func:`sprezzature_figures.make_figure.list_kinds`, imported on first use."""
+    from .make_figure import list_kinds as _list_kinds
+
+    return _list_kinds(status=status)
+
+
+def make_figure(*args: object, **kwargs: object) -> object:
+    """:func:`sprezzature_figures.make_figure.make_figure`, imported on first use."""
+    from .make_figure import make_figure as _make_figure
+
+    return _make_figure(*args, **kwargs)
 
 
 # The group gets its own name so the `@cli.command(...)` decorators below
