@@ -46,8 +46,8 @@ DEMO_DATA: List[Dict[str, Any]] = [
 ]
 
 # Chrome text (title/subtitle/legend heading/axis titles/desc/tooltip
-# templates) in the two languages Editor can ask for (editor/i18n.py detects
-# the language from the imported CSV's column names; the CLI/library/API/MCP
+# templates) in the two languages a caller can ask for (one may detect
+# the language from an imported CSV's column names; the CLI/library/API/MCP
 # always call with the "en" default). Period/region names and numeric labels
 # are never translated here -- they render exactly as the caller's data gives
 # them.
@@ -88,8 +88,8 @@ def _region_colors(
     regions: List[str], accessibility: str = "universal", theme: str = "corporate"
 ) -> Dict[str, str]:
     # Explicit hues (not cycle_hues' default Blue/Orange/Green/Purple order):
-    # a grayscale-legibility fix. Orange (#FF9500, relative luminance ~161)
-    # and Green (#28CD41, ~160) -- positions 2 and 3 of the default cycle,
+    # a grayscale-legibility fix. Orange (#FF8D28, relative luminance ~161)
+    # and Green (#34C759, ~160) -- positions 2 and 3 of the default cycle,
     # adjacent bars in every group here -- collapse to the same shade once
     # desaturated. Blue/Brown/Yellow spread luminance ~106/68/200, so every
     # bar in a group stays distinguishable in grayscale. This 3-hue list
@@ -273,7 +273,7 @@ def build_svg(
             tip = strings["tooltip_template"].format(region=region, period=period, value=value)
             path = bar_path(x, y, bar_w * 0.88, h, r, side="top")
             parts.append(
-                f'<path id="bar-hit-{bar_idx}" class="bar hit" tabindex="0" d="{path}" fill="{colors.get(region, "#007AFF")}">'
+                f'<path id="bar-hit-{bar_idx}" class="bar hit" tabindex="0" d="{path}" fill="{colors.get(region, "#0088FF")}">'
                 f'<title>{xml_escape(tip)}</title></path>'
             )
             period_total = sum(lookup.get((period, r2), 0.0) for r2 in regions) or 1.0
@@ -340,8 +340,8 @@ def make_bar_grouped(
         Forwarded to :func:`build_svg`.
     language : str, optional
         Chrome-text language, ``"en"`` or ``"fr"``. Defaults to ``"en"``;
-        the editor passes the language detected from the imported
-        CSV's column names (see :data:`_STRINGS`).
+        a caller may pass the language detected from its
+        data's column names (see :data:`_STRINGS`).
     theme : str, optional
         Visual theme. Forwarded to :func:`build_svg`.
 

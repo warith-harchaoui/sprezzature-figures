@@ -295,8 +295,8 @@ def build_svg(
 
     mono_family = mono_stack_for_theme(theme)
     palette = load_palette(accessibility, theme=theme)
-    ordinary = palette.get("Blue", "#007AFF")
-    standout = palette.get("Orange", "#FF9500")
+    ordinary = palette.get("Blue", "#0088FF")
+    standout = palette.get("Orange", "#FF8D28")
 
     trend, seasonal, remainder = _decompose(values, period, model)
     covered = [index for index, t in enumerate(trend) if t is not None]

@@ -518,7 +518,7 @@ def build_svg(
         A complete, standalone SVG document.
     """
     palette = load_palette(accessibility, theme=theme)
-    red = palette.get("Red", "#FF3B30")
+    red = palette.get("Red", "#FF383C")
     chrome_family = chrome_stack_for_theme(theme)
     # This file's mono literal predates the shared MONO_STACK constant and
     # is missing the "ui-monospace" fallback -- keep it exact for corporate
@@ -782,7 +782,7 @@ def make_binned_grid_map(
     """Render the binned-grid map and write it to ``out``.
 
     The standard ``make_<kind>`` entry the figure registry dispatches to, so
-    ``make-figure binned-grid-map`` and the editor work like every other figure.
+    ``make-figure binned-grid-map`` and the library work like every other figure.
     ``data`` defaults to :data:`DEMO_DATA` (the hotspot mixture's row-record
     view), but the demo geography, city boundary/river/park layout, event
     sampling and cartographic furniture are baked into the hand-authored

@@ -402,13 +402,13 @@ def build_svg(
     # years are Orange (heat / carbon), the recent "decoupled" years are
     # Teal / Blue (cool / clean). One hue channel carries time, so the
     # eye reads direction from colour as well as from the arrowheads.
-    warm = palette.get("Orange", "#FF9500")
-    cool = palette.get("Blue", "#007AFF")
+    warm = palette.get("Orange", "#FF8D28")
+    cool = palette.get("Blue", "#0088FF")
     # Endpoint pills use the house diverging pair, Red (start) vs Blue (end),
     # never Red vs Green: under deuteranopia and in greyscale a red/green pair
     # collapses, whereas red↔blue stays legible. Blue also matches the cool end
     # of the path gradient, so the "now" dot belongs to the curve it caps.
-    start_col = palette.get("Red", "#FF3B30")
+    start_col = palette.get("Red", "#FF383C")
     end_col = cool
     ink = "#1D1D1F"
     secondary = "#6E6E73"
@@ -631,7 +631,7 @@ def build_svg(
         f'x1="{px[0][0]:.1f}" y1="{px[0][1]:.1f}" '
         f'x2="{px[-1][0]:.1f}" y2="{px[-1][1]:.1f}">'
         f'<stop offset="0" stop-color="{warm}"/>'
-        f'<stop offset="0.55" stop-color="{palette.get("Mint", "#00C7BE")}"/>'
+        f'<stop offset="0.55" stop-color="{palette.get("Mint", "#34C759")}"/>'
         f'<stop offset="1" stop-color="{cool}"/>'
         '</linearGradient></defs>'
     )

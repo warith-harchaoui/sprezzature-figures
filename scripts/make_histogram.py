@@ -34,7 +34,7 @@ from _style import BG, GRIDLINE, INK, SECONDARY, corner_radius  # noqa: E402
 from _svg import bar_path, fmt_number, foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
-COLOR_BAR = "#007AFF"
+COLOR_BAR = "#0088FF"
 
 
 def _make_demo_data() -> List[Dict[str, Any]]:

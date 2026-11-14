@@ -236,7 +236,7 @@ def test_un_chemin_rempli_par_dessus_fait_renoncer_la_regle() -> None:
     """
     tranche = _svg(
         '<rect x="0" y="0" width="400" height="300" fill="#FFFFFF"/>'
-        '<path d="M200,150 L200,40 A110,110 0 0,1 310,150 Z" fill="#0A84FF"/>'
+        '<path d="M200,150 L200,40 A110,110 0 0,1 310,150 Z" fill="#0091FF"/>'
         '<text x="240" y="110" font-size="14" fill="#FFFFFF">Coal</text>'
     )
     assert "text_invisible_on_background" not in _regles(tranche)

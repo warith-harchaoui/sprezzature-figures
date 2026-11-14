@@ -179,9 +179,9 @@ def _chain_color(
     palette = load_palette(accessibility, theme=theme)
     known = {
         "Greenleaf": palette.get("Green", "#34C759"),
-        "Meridian": palette.get("Blue", "#007AFF"),
-        "Cedar & Co": palette.get("Purple", "#AF52DE"),
-        "Aster": palette.get("Orange", "#FF9500"),
+        "Meridian": palette.get("Blue", "#0088FF"),
+        "Cedar & Co": palette.get("Purple", "#CB30E0"),
+        "Aster": palette.get("Orange", "#FF8D28"),
         "Independent": palette.get("Gray", "#8E8E93"),
     }
     if chain_order is None:
@@ -194,7 +194,7 @@ def _chain_color(
         else:
             hue = _FALLBACK_HUES[fallback_idx % len(_FALLBACK_HUES)]
             fallback_idx += 1
-            out[name] = palette.get(hue, "#5AC8FA")
+            out[name] = palette.get(hue, "#00C3D0")
     return out
 
 

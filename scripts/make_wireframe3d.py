@@ -620,9 +620,9 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--theme",
-        choices=("corporate", "academic"),
+        choices=("corporate", "academic", "print"),
         default="corporate",
-        help="visual theme: corporate (default, Roboto) or academic (LaTeX-style Latin Modern)",
+        help="visual theme: corporate (default, Roboto), academic (LaTeX-style Latin Modern) or print (Roboto, print palette)",
     )
     return parser
 

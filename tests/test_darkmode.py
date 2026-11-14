@@ -21,10 +21,10 @@ def test_to_dark_drops_background_and_lightens_chrome():
 
 def test_to_dark_preserves_data_colours_and_useful_white():
     svg = ('<svg width="100" height="100"><rect width="100" height="100" fill="#FFFFFF"/>'
-           '<rect x="10" y="10" width="20" height="50" fill="#007AFF"/>'
+           '<rect x="10" y="10" width="20" height="50" fill="#0088FF"/>'
            '<text fill="#FFFFFF">42</text></svg>')
     out = to_dark(svg)
-    assert 'fill="#007AFF"' in out                    # data colour kept
+    assert 'fill="#0088FF"' in out                    # data colour kept
     assert 'fill="#FFFFFF">42</text>' in out          # white-on-bar kept
     assert '<rect width="100" height="100" fill="#FFFFFF"/>' not in out
 

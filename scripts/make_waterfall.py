@@ -46,9 +46,9 @@ MARGIN_BOTTOM = 88      # X-axis labels
 BAR_GAP = 0.22          # fraction of bar slot reserved as gap between bars
 
 # House palette for waterfall semantics
-COLOR_POSITIVE = "#28CD41"    # Green: gains
-COLOR_NEGATIVE = "#FF3B30"    # Red: losses
-COLOR_TOTAL = "#007AFF"       # Blue: opening and closing totals
+COLOR_POSITIVE = "#34C759"    # Green: gains
+COLOR_NEGATIVE = "#FF383C"    # Red: losses
+COLOR_TOTAL = "#0088FF"       # Blue: opening and closing totals
 
 
 # ---------------------------------------------------------------------------

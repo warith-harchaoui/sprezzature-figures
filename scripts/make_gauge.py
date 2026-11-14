@@ -526,9 +526,9 @@ def main() -> None:
     )
     parser.add_argument(
         "--theme",
-        choices=("corporate", "academic"),
+        choices=("corporate", "academic", "print"),
         default="corporate",
-        help="visual theme: corporate (default, Roboto) or academic (LaTeX-style Latin Modern)",
+        help="visual theme: corporate (default, Roboto), academic (LaTeX-style Latin Modern) or print (Roboto, print palette)",
     )
     args = parser.parse_args()
     out_svg = svg_example_path(__file__, "gauge")

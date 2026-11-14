@@ -135,9 +135,9 @@ NODES: List[Node] = _rows_to_nodes(DEMO_DATA)
 # the white leaf chips — so their vividness costs no legibility.
 PALETTE = load_palette()
 FAMILY_COLOR: Dict[str, str] = {
-    "sup": PALETTE.get("Blue", "#007AFF"),
-    "uns": PALETTE.get("Orange", "#FF9500"),
-    "deep": PALETTE.get("Purple", "#AF52DE"),
+    "sup": PALETTE.get("Blue", "#0088FF"),
+    "uns": PALETTE.get("Orange", "#FF8D28"),
+    "deep": PALETTE.get("Purple", "#CB30E0"),
     "rl": PALETTE.get("Green", "#34C759"),
 }
 # The family *pills* carry white label text, so their fill must clear WCAG
@@ -416,7 +416,7 @@ def build_svg(
     families = _families(nodes)
     family_hue = {fam: FAMILY_HUES[i % len(FAMILY_HUES)] for i, fam in enumerate(families)}
     family_color_base: Dict[str, str] = {
-        fam: theme_palette.get(hue, "#007AFF") for fam, hue in family_hue.items()
+        fam: theme_palette.get(hue, "#0088FF") for fam, hue in family_hue.items()
     }
     family_pill: Dict[str, str] = {
         fam: PILL_SHADE.get(hue, _darken(family_color_base[fam])) for fam, hue in family_hue.items()
@@ -454,7 +454,7 @@ def build_svg(
     # recolours every non-root node by its family.
     if accessibility and accessibility != "universal":
         pal = load_palette(accessibility, theme=theme)
-        family_color = {fam: pal.get(hue, "#007AFF") for fam, hue in family_hue.items()}
+        family_color = {fam: pal.get(hue, "#0088FF") for fam, hue in family_hue.items()}
         for node_id, geo in geometry.items():
             if node_id == root_id:
                 continue

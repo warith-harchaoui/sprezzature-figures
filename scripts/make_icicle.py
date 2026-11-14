@@ -171,16 +171,16 @@ def flatten(
 DEPTH_RAMP: List[str] = [
     "#FFCC00",  # 0 — root, warm amber
     "#FFB300",  # 1
-    "#FF9500",  # 2 — Apple Orange
+    "#FF8D28",  # 2 — Apple Orange
     "#FF7A1A",  # 3
     "#FF5A2C",  # 4
-    "#FF3B30",  # 5 — Apple Red (deepest / hottest)
+    "#FF383C",  # 5 — Apple Red (deepest / hottest)
 ]
 
 
 # The root gets its own confident anchor colour — Apple Blue — so the core of
 # the hierarchy reads as a deliberate root, never as "just another muted bar".
-ROOT_FILL = "#007AFF"
+ROOT_FILL = "#0088FF"
 
 
 def depth_fill(depth: int, on_hot_path: bool) -> str:

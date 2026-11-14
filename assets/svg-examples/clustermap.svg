@@ -17,54 +17,54 @@
 <path d="M 69.6,447.6 L 61.9,447.6 L 61.9,495.9 L 69.6,495.9" fill="none" stroke="#8E8E93" stroke-width="1.2"/>
 <path d="M 62.6,375.2 L 60.3,375.2 L 60.3,471.8 L 61.9,471.8" fill="none" stroke="#8E8E93" stroke-width="1.2"/>
 <path d="M 63.1,200.3 L 40.0,200.3 L 40.0,423.5 L 60.3,423.5" fill="none" stroke="#8E8E93" stroke-width="1.2"/>
-<rect id="hit-0" class="cell hit" tabindex="0" x="96.0" y="134.0" width="82.3" height="48.2" fill="#0857B6" stroke="#FFFFFF" stroke-width="1"><title>g3 x s1: 7.77</title></rect>
-<rect id="hit-1" class="cell hit" tabindex="0" x="178.3" y="134.0" width="82.3" height="48.2" fill="#0563CE" stroke="#FFFFFF" stroke-width="1"><title>g3 x s0: 7.35</title></rect>
-<rect id="hit-2" class="cell hit" tabindex="0" x="260.7" y="134.0" width="82.3" height="48.2" fill="#0174F2" stroke="#FFFFFF" stroke-width="1"><title>g3 x s2: 6.73</title></rect>
+<rect id="hit-0" class="cell hit" tabindex="0" x="96.0" y="134.0" width="82.3" height="48.2" fill="#085AB6" stroke="#FFFFFF" stroke-width="1"><title>g3 x s1: 7.77</title></rect>
+<rect id="hit-1" class="cell hit" tabindex="0" x="178.3" y="134.0" width="82.3" height="48.2" fill="#056ACE" stroke="#FFFFFF" stroke-width="1"><title>g3 x s0: 7.35</title></rect>
+<rect id="hit-2" class="cell hit" tabindex="0" x="260.7" y="134.0" width="82.3" height="48.2" fill="#0180F2" stroke="#FFFFFF" stroke-width="1"><title>g3 x s2: 6.73</title></rect>
 <rect id="hit-3" class="cell hit" tabindex="0" x="343.0" y="134.0" width="82.3" height="48.2" fill="#90C2FF" stroke="#FFFFFF" stroke-width="1"><title>g3 x s4: 2.34</title></rect>
 <rect id="hit-4" class="cell hit" tabindex="0" x="425.3" y="134.0" width="82.3" height="48.2" fill="#EAF3FF" stroke="#FFFFFF" stroke-width="1"><title>g3 x s3: 0.00</title></rect>
 <rect id="hit-5" class="cell hit" tabindex="0" x="507.7" y="134.0" width="82.3" height="48.2" fill="#EAF3FF" stroke="#FFFFFF" stroke-width="1"><title>g3 x s5: 0.00</title></rect>
-<rect id="hit-6" class="cell hit" tabindex="0" x="96.0" y="182.2" width="82.3" height="48.2" fill="#0177F8" stroke="#FFFFFF" stroke-width="1"><title>g1 x s1: 6.63</title></rect>
-<rect id="hit-7" class="cell hit" tabindex="0" x="178.3" y="182.2" width="82.3" height="48.2" fill="#017BFF" stroke="#FFFFFF" stroke-width="1"><title>g1 x s0: 6.47</title></rect>
-<rect id="hit-8" class="cell hit" tabindex="0" x="260.7" y="182.2" width="82.3" height="48.2" fill="#1183FF" stroke="#FFFFFF" stroke-width="1"><title>g1 x s2: 5.94</title></rect>
+<rect id="hit-6" class="cell hit" tabindex="0" x="96.0" y="182.2" width="82.3" height="48.2" fill="#0184F8" stroke="#FFFFFF" stroke-width="1"><title>g1 x s1: 6.63</title></rect>
+<rect id="hit-7" class="cell hit" tabindex="0" x="178.3" y="182.2" width="82.3" height="48.2" fill="#0188FF" stroke="#FFFFFF" stroke-width="1"><title>g1 x s0: 6.47</title></rect>
+<rect id="hit-8" class="cell hit" tabindex="0" x="260.7" y="182.2" width="82.3" height="48.2" fill="#118DFF" stroke="#FFFFFF" stroke-width="1"><title>g1 x s2: 5.94</title></rect>
 <rect id="hit-9" class="cell hit" tabindex="0" x="343.0" y="182.2" width="82.3" height="48.2" fill="#CDE3FF" stroke="#FFFFFF" stroke-width="1"><title>g1 x s4: 0.75</title></rect>
 <rect id="hit-10" class="cell hit" tabindex="0" x="425.3" y="182.2" width="82.3" height="48.2" fill="#C7DFFF" stroke="#FFFFFF" stroke-width="1"><title>g1 x s3: 0.92</title></rect>
 <rect id="hit-11" class="cell hit" tabindex="0" x="507.7" y="182.2" width="82.3" height="48.2" fill="#B6D6FF" stroke="#FFFFFF" stroke-width="1"><title>g1 x s5: 1.35</title></rect>
-<rect id="hit-12" class="cell hit" tabindex="0" x="96.0" y="230.5" width="82.3" height="48.2" fill="#075ABB" stroke="#FFFFFF" stroke-width="1"><title>g0 x s1: 7.67</title></rect>
-<rect id="hit-13" class="cell hit" tabindex="0" x="178.3" y="230.5" width="82.3" height="48.2" fill="#1284FF" stroke="#FFFFFF" stroke-width="1"><title>g0 x s0: 5.91</title></rect>
-<rect id="hit-14" class="cell hit" tabindex="0" x="260.7" y="230.5" width="82.3" height="48.2" fill="#2A90FF" stroke="#FFFFFF" stroke-width="1"><title>g0 x s2: 5.14</title></rect>
+<rect id="hit-12" class="cell hit" tabindex="0" x="96.0" y="230.5" width="82.3" height="48.2" fill="#075EBB" stroke="#FFFFFF" stroke-width="1"><title>g0 x s1: 7.67</title></rect>
+<rect id="hit-13" class="cell hit" tabindex="0" x="178.3" y="230.5" width="82.3" height="48.2" fill="#128EFF" stroke="#FFFFFF" stroke-width="1"><title>g0 x s0: 5.91</title></rect>
+<rect id="hit-14" class="cell hit" tabindex="0" x="260.7" y="230.5" width="82.3" height="48.2" fill="#2A95FF" stroke="#FFFFFF" stroke-width="1"><title>g0 x s2: 5.14</title></rect>
 <rect id="hit-15" class="cell hit" tabindex="0" x="343.0" y="230.5" width="82.3" height="48.2" fill="#A5CCFF" stroke="#FFFFFF" stroke-width="1"><title>g0 x s4: 1.81</title></rect>
 <rect id="hit-16" class="cell hit" tabindex="0" x="425.3" y="230.5" width="82.3" height="48.2" fill="#EAF3FF" stroke="#FFFFFF" stroke-width="1"><title>g0 x s3: 0.00</title></rect>
 <rect id="hit-17" class="cell hit" tabindex="0" x="507.7" y="230.5" width="82.3" height="48.2" fill="#94C3FF" stroke="#FFFFFF" stroke-width="1"><title>g0 x s5: 2.23</title></rect>
-<rect id="hit-18" class="cell hit" tabindex="0" x="96.0" y="278.8" width="82.3" height="48.2" fill="#0469DC" stroke="#FFFFFF" stroke-width="1"><title>g2 x s1: 7.12</title></rect>
-<rect id="hit-19" class="cell hit" tabindex="0" x="178.3" y="278.8" width="82.3" height="48.2" fill="#1987FF" stroke="#FFFFFF" stroke-width="1"><title>g2 x s0: 5.68</title></rect>
-<rect id="hit-20" class="cell hit" tabindex="0" x="260.7" y="278.8" width="82.3" height="48.2" fill="#0272EF" stroke="#FFFFFF" stroke-width="1"><title>g2 x s2: 6.79</title></rect>
+<rect id="hit-18" class="cell hit" tabindex="0" x="96.0" y="278.8" width="82.3" height="48.2" fill="#0472DC" stroke="#FFFFFF" stroke-width="1"><title>g2 x s1: 7.12</title></rect>
+<rect id="hit-19" class="cell hit" tabindex="0" x="178.3" y="278.8" width="82.3" height="48.2" fill="#1990FF" stroke="#FFFFFF" stroke-width="1"><title>g2 x s0: 5.68</title></rect>
+<rect id="hit-20" class="cell hit" tabindex="0" x="260.7" y="278.8" width="82.3" height="48.2" fill="#027EEF" stroke="#FFFFFF" stroke-width="1"><title>g2 x s2: 6.79</title></rect>
 <rect id="hit-21" class="cell hit" tabindex="0" x="343.0" y="278.8" width="82.3" height="48.2" fill="#8FC1FF" stroke="#FFFFFF" stroke-width="1"><title>g2 x s4: 2.38</title></rect>
 <rect id="hit-22" class="cell hit" tabindex="0" x="425.3" y="278.8" width="82.3" height="48.2" fill="#E2EEFF" stroke="#FFFFFF" stroke-width="1"><title>g2 x s3: 0.22</title></rect>
 <rect id="hit-23" class="cell hit" tabindex="0" x="507.7" y="278.8" width="82.3" height="48.2" fill="#ADD1FF" stroke="#FFFFFF" stroke-width="1"><title>g2 x s5: 1.58</title></rect>
 <rect id="hit-24" class="cell hit" tabindex="0" x="96.0" y="327.0" width="82.3" height="48.2" fill="#C2DDFF" stroke="#FFFFFF" stroke-width="1"><title>g5 x s1: 1.04</title></rect>
 <rect id="hit-25" class="cell hit" tabindex="0" x="178.3" y="327.0" width="82.3" height="48.2" fill="#DAEAFF" stroke="#FFFFFF" stroke-width="1"><title>g5 x s0: 0.43</title></rect>
 <rect id="hit-26" class="cell hit" tabindex="0" x="260.7" y="327.0" width="82.3" height="48.2" fill="#CEE3FF" stroke="#FFFFFF" stroke-width="1"><title>g5 x s2: 0.73</title></rect>
-<rect id="hit-27" class="cell hit" tabindex="0" x="343.0" y="327.0" width="82.3" height="48.2" fill="#1686FF" stroke="#FFFFFF" stroke-width="1"><title>g5 x s4: 5.79</title></rect>
-<rect id="hit-28" class="cell hit" tabindex="0" x="425.3" y="327.0" width="82.3" height="48.2" fill="#0270EA" stroke="#FFFFFF" stroke-width="1"><title>g5 x s3: 6.88</title></rect>
-<rect id="hit-29" class="cell hit" tabindex="0" x="507.7" y="327.0" width="82.3" height="48.2" fill="#007AFF" stroke="#FFFFFF" stroke-width="1"><title>g5 x s5: 6.51</title></rect>
+<rect id="hit-27" class="cell hit" tabindex="0" x="343.0" y="327.0" width="82.3" height="48.2" fill="#168FFF" stroke="#FFFFFF" stroke-width="1"><title>g5 x s4: 5.79</title></rect>
+<rect id="hit-28" class="cell hit" tabindex="0" x="425.3" y="327.0" width="82.3" height="48.2" fill="#027BEA" stroke="#FFFFFF" stroke-width="1"><title>g5 x s3: 6.88</title></rect>
+<rect id="hit-29" class="cell hit" tabindex="0" x="507.7" y="327.0" width="82.3" height="48.2" fill="#0088FF" stroke="#FFFFFF" stroke-width="1"><title>g5 x s5: 6.51</title></rect>
 <rect id="hit-30" class="cell hit" tabindex="0" x="96.0" y="375.2" width="82.3" height="48.2" fill="#81BAFF" stroke="#FFFFFF" stroke-width="1"><title>g7 x s1: 2.74</title></rect>
 <rect id="hit-31" class="cell hit" tabindex="0" x="178.3" y="375.2" width="82.3" height="48.2" fill="#87BDFF" stroke="#FFFFFF" stroke-width="1"><title>g7 x s0: 2.59</title></rect>
 <rect id="hit-32" class="cell hit" tabindex="0" x="260.7" y="375.2" width="82.3" height="48.2" fill="#C9E0FF" stroke="#FFFFFF" stroke-width="1"><title>g7 x s2: 0.86</title></rect>
-<rect id="hit-33" class="cell hit" tabindex="0" x="343.0" y="375.2" width="82.3" height="48.2" fill="#047CFF" stroke="#FFFFFF" stroke-width="1"><title>g7 x s4: 6.39</title></rect>
-<rect id="hit-34" class="cell hit" tabindex="0" x="425.3" y="375.2" width="82.3" height="48.2" fill="#087EFF" stroke="#FFFFFF" stroke-width="1"><title>g7 x s3: 6.24</title></rect>
-<rect id="hit-35" class="cell hit" tabindex="0" x="507.7" y="375.2" width="82.3" height="48.2" fill="#0565D2" stroke="#FFFFFF" stroke-width="1"><title>g7 x s5: 7.28</title></rect>
+<rect id="hit-33" class="cell hit" tabindex="0" x="343.0" y="375.2" width="82.3" height="48.2" fill="#0489FF" stroke="#FFFFFF" stroke-width="1"><title>g7 x s4: 6.39</title></rect>
+<rect id="hit-34" class="cell hit" tabindex="0" x="425.3" y="375.2" width="82.3" height="48.2" fill="#088BFF" stroke="#FFFFFF" stroke-width="1"><title>g7 x s3: 6.24</title></rect>
+<rect id="hit-35" class="cell hit" tabindex="0" x="507.7" y="375.2" width="82.3" height="48.2" fill="#056CD2" stroke="#FFFFFF" stroke-width="1"><title>g7 x s5: 7.28</title></rect>
 <rect id="hit-36" class="cell hit" tabindex="0" x="96.0" y="423.5" width="82.3" height="48.2" fill="#C8E0FF" stroke="#FFFFFF" stroke-width="1"><title>g4 x s1: 0.89</title></rect>
 <rect id="hit-37" class="cell hit" tabindex="0" x="178.3" y="423.5" width="82.3" height="48.2" fill="#69AFFF" stroke="#FFFFFF" stroke-width="1"><title>g4 x s0: 3.36</title></rect>
 <rect id="hit-38" class="cell hit" tabindex="0" x="260.7" y="423.5" width="82.3" height="48.2" fill="#B4D5FF" stroke="#FFFFFF" stroke-width="1"><title>g4 x s2: 1.41</title></rect>
 <rect id="hit-39" class="cell hit" tabindex="0" x="343.0" y="423.5" width="82.3" height="48.2" fill="#4AA1FF" stroke="#FFFFFF" stroke-width="1"><title>g4 x s4: 4.16</title></rect>
 <rect id="hit-40" class="cell hit" tabindex="0" x="425.3" y="423.5" width="82.3" height="48.2" fill="#0A4DA0" stroke="#FFFFFF" stroke-width="1"><title>g4 x s3: 8.14</title></rect>
-<rect id="hit-41" class="cell hit" tabindex="0" x="507.7" y="423.5" width="82.3" height="48.2" fill="#0B80FF" stroke="#FFFFFF" stroke-width="1"><title>g4 x s5: 6.15</title></rect>
+<rect id="hit-41" class="cell hit" tabindex="0" x="507.7" y="423.5" width="82.3" height="48.2" fill="#0B8BFF" stroke="#FFFFFF" stroke-width="1"><title>g4 x s5: 6.15</title></rect>
 <rect id="hit-42" class="cell hit" tabindex="0" x="96.0" y="471.8" width="82.3" height="48.2" fill="#EAF3FF" stroke="#FFFFFF" stroke-width="1"><title>g6 x s1: 0.00</title></rect>
 <rect id="hit-43" class="cell hit" tabindex="0" x="178.3" y="471.8" width="82.3" height="48.2" fill="#91C2FF" stroke="#FFFFFF" stroke-width="1"><title>g6 x s0: 2.33</title></rect>
 <rect id="hit-44" class="cell hit" tabindex="0" x="260.7" y="471.8" width="82.3" height="48.2" fill="#70B2FF" stroke="#FFFFFF" stroke-width="1"><title>g6 x s2: 3.18</title></rect>
 <rect id="hit-45" class="cell hit" tabindex="0" x="343.0" y="471.8" width="82.3" height="48.2" fill="#469FFF" stroke="#FFFFFF" stroke-width="1"><title>g6 x s4: 4.28</title></rect>
-<rect id="hit-46" class="cell hit" tabindex="0" x="425.3" y="471.8" width="82.3" height="48.2" fill="#1485FF" stroke="#FFFFFF" stroke-width="1"><title>g6 x s3: 5.85</title></rect>
-<rect id="hit-47" class="cell hit" tabindex="0" x="507.7" y="471.8" width="82.3" height="48.2" fill="#228CFF" stroke="#FFFFFF" stroke-width="1"><title>g6 x s5: 5.39</title></rect>
+<rect id="hit-46" class="cell hit" tabindex="0" x="425.3" y="471.8" width="82.3" height="48.2" fill="#148EFF" stroke="#FFFFFF" stroke-width="1"><title>g6 x s3: 5.85</title></rect>
+<rect id="hit-47" class="cell hit" tabindex="0" x="507.7" y="471.8" width="82.3" height="48.2" fill="#2292FF" stroke="#FFFFFF" stroke-width="1"><title>g6 x s5: 5.39</title></rect>
 <g id="tip-0" class="tip"><rect x="75.7" y="128" width="123" height="62.5" rx="9" fill="#FFFFFF" stroke="#E5E5EA" stroke-width="1.2"/><text x="84.7" y="149.5" font-size="12.5" font-weight="700" fill="#1D1D1F">g3 x s1</text><text x="84.7" y="165.5" font-size="12.5" font-weight="400" fill="#6E6E73">value 7.77</text><text x="84.7" y="181.5" font-size="12.5" font-weight="400" fill="#6E6E73">normalized 0.95</text></g>
 <g id="tip-1" class="tip"><rect x="158" y="128" width="123" height="62.5" rx="9" fill="#FFFFFF" stroke="#E5E5EA" stroke-width="1.2"/><text x="167" y="149.5" font-size="12.5" font-weight="700" fill="#1D1D1F">g3 x s0</text><text x="167" y="165.5" font-size="12.5" font-weight="400" fill="#6E6E73">value 7.35</text><text x="167" y="181.5" font-size="12.5" font-weight="400" fill="#6E6E73">normalized 0.90</text></g>
 <g id="tip-2" class="tip"><rect x="240.3" y="128" width="123" height="62.5" rx="9" fill="#FFFFFF" stroke="#E5E5EA" stroke-width="1.2"/><text x="249.3" y="149.5" font-size="12.5" font-weight="700" fill="#1D1D1F">g3 x s2</text><text x="249.3" y="165.5" font-size="12.5" font-weight="400" fill="#6E6E73">value 6.73</text><text x="249.3" y="181.5" font-size="12.5" font-weight="400" fill="#6E6E73">normalized 0.83</text></g>
@@ -132,9 +132,9 @@
 <rect x="136.0" y="536.0" width="12" height="11" fill="#BDDAFF"/>
 <rect x="150.0" y="536.0" width="12" height="11" fill="#91C2FF"/>
 <rect x="164.0" y="536.0" width="12" height="11" fill="#64ADFF"/>
-<rect x="178.0" y="536.0" width="12" height="11" fill="#3998FF"/>
-<rect x="192.0" y="536.0" width="12" height="11" fill="#1585FF"/>
-<rect x="206.0" y="536.0" width="12" height="11" fill="#036DE4"/>
+<rect x="178.0" y="536.0" width="12" height="11" fill="#3999FF"/>
+<rect x="192.0" y="536.0" width="12" height="11" fill="#158FFF"/>
+<rect x="206.0" y="536.0" width="12" height="11" fill="#0377E4"/>
 <rect x="220.0" y="536.0" width="12" height="11" fill="#0A4DA0"/>
 <text x="240.0" y="546.0" font-size="10" fill="#6E6E73">8.1</text>
 <script><![CDATA[(function(){var me=document.currentScript,svg=me.ownerSVGElement||me.parentNode;if(svg.closest&&svg.closest('[data-fs-target]'))return;var fe=null;try{fe=window.frameElement}catch(err){}if(fe&&fe.hasAttribute('data-lb-obj'))return;if(fe&&window.parent!==window){svg.addEventListener('click',function(){window.parent.postMessage({szFig:1,type:'open-fullscreen'},'*');});return;}var req=svg.requestFullscreen||svg.webkitRequestFullscreen;if(!req)return;var t=function(){var f=document.fullscreenElement||document.webkitFullscreenElement;if(f===svg)(document.exitFullscreen||document.webkitExitFullscreen).call(document);else req.call(svg);};svg.style.cursor='pointer';svg.setAttribute('tabindex','0');svg.addEventListener('click',t);svg.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();t();}});})();]]></script>

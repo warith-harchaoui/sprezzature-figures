@@ -381,8 +381,8 @@ def _representative_labels(records: List[Dict[str, Any]], per_cluster: int) -> L
 # --------------------------------------------------------------------------- #
 _PALETTE = load_palette()
 _FALLBACK = {
-    "Blue": "#007AFF", "Purple": "#AF52DE", "Orange": "#FF9500",
-    "Green": "#34C759", "Teal": "#5AC8FA", "Red": "#FF3B30",
+    "Blue": "#0088FF", "Purple": "#CB30E0", "Orange": "#FF8D28",
+    "Green": "#34C759", "Teal": "#00C3D0", "Red": "#FF383C",
 }
 
 
@@ -1100,9 +1100,9 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--theme",
-        choices=("corporate", "academic"),
+        choices=("corporate", "academic", "print"),
         default="corporate",
-        help="visual theme: corporate (default, Roboto) or academic (LaTeX-style Latin Modern)",
+        help="visual theme: corporate (default, Roboto), academic (LaTeX-style Latin Modern) or print (Roboto, print palette)",
     )
     return parser
 

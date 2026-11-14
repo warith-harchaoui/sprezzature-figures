@@ -155,9 +155,9 @@ def _group_color(accessibility: str = "universal", theme: str = "corporate") -> 
     """
     palette = load_palette(accessibility, theme=theme)
     return {
-        GROUP_VISION: palette.get("Blue", "#007AFF"),
-        GROUP_LANGUAGE: palette.get("Orange", "#FF9500"),
-        GROUP_BRIDGE: palette.get("Purple", "#AF52DE"),
+        GROUP_VISION: palette.get("Blue", "#0088FF"),
+        GROUP_LANGUAGE: palette.get("Orange", "#FF8D28"),
+        GROUP_BRIDGE: palette.get("Purple", "#CB30E0"),
     }
 
 

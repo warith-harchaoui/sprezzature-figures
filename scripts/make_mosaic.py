@@ -106,9 +106,9 @@ def method_colors(accessibility: str = "universal", theme: str = "corporate") ->
     """
     pal = load_palette(accessibility, theme=theme)
     return {
-        "Wallet":            pal.get("Blue", "#007AFF"),
-        "Card":              pal.get("Teal", "#5AC8FA"),
-        "Buy-now-pay-later": pal.get("Orange", "#FF9500"),
+        "Wallet":            pal.get("Blue", "#0088FF"),
+        "Card":              pal.get("Teal", "#00C3D0"),
+        "Buy-now-pay-later": pal.get("Orange", "#FF8D28"),
         "Bank transfer":     pal.get("Gray", "#8E8E93"),
     }
 

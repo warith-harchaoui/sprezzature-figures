@@ -153,9 +153,9 @@ def _cluster_colors(accessibility: str = "universal", theme: str = "corporate") 
     palette = load_palette(accessibility, theme=theme)
     return [
         palette.get("Green", "#34C759"),    # fresh / health
-        palette.get("Blue", "#007AFF"),     # household staples
-        palette.get("Purple", "#AF52DE"),   # treats / indulgence
-        palette.get("Orange", "#FF9500"),   # singleton (frozen ready-meals)
+        palette.get("Blue", "#0088FF"),     # household staples
+        palette.get("Purple", "#CB30E0"),   # treats / indulgence
+        palette.get("Orange", "#FF8D28"),   # singleton (frozen ready-meals)
     ]
 
 

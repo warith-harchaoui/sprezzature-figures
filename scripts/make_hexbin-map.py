@@ -632,7 +632,7 @@ def build_svg(
         A complete, standalone SVG document.
     """
     palette = load_palette(accessibility, theme=theme)
-    red = palette.get("Red", "#FF3B30")
+    red = palette.get("Red", "#FF383C")
 
     rings = _load_land_rings()
     _fit(rings)
@@ -953,7 +953,7 @@ def make_hexbin_map(
     """Render the geographic hexbin map and write it to ``out``.
 
     The standard ``make_<kind>`` entry the figure registry dispatches to, so
-    ``make-figure hexbin-map`` and the editor work like every other figure. The
+    ``make-figure hexbin-map`` and the library work like every other figure. The
     demo geography and values are baked into the hand-authored SVG, so ``data``
     is accepted for dispatcher parity and unused. ``title`` and ``subtitle``
     are the two lines of chrome, and the title is also the figure's

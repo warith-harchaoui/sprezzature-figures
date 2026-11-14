@@ -73,7 +73,7 @@ from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_the
 _PARETO_THRESHOLD = 80.0
 
 # Chrome text (title/subtitle/desc/legend/axis/tooltip wording) in the two
-# languages Editor can ask for (editor/i18n.py detects the language from the
+# languages a caller can ask for (one may detect the language from an
 # imported CSV's column names; the CLI/library/API/MCP always call with the
 # "en" default). Every string here is a str.format() template filled from
 # the render's own numbers -- reason names and counts are never translated,
@@ -295,9 +295,9 @@ def build_svg(
     # cumulative curve (and its markers, so the crossing dot belongs to the
     # curve). Everything else is one neutral: a single muted grey for the
     # trivial-many bars, and the house secondary ink for reference + labels.
-    vital_c = palette.get("Blue", "#007AFF")   # the vital few — the hero bars
+    vital_c = palette.get("Blue", "#0088FF")   # the vital few — the hero bars
     trivial_c = "#C7CAD1"                       # the trivial many — one muted grey
-    line_c = palette.get("Orange", "#FF9500")  # cumulative curve + its markers
+    line_c = palette.get("Orange", "#FF8D28")  # cumulative curve + its markers
     ref_c = "#6E6E73"                           # 80 % reference — house secondary ink
     ink = "#1D1D1F"                             # primary ink for headings + call-out
     secondary = "#6E6E73"
@@ -786,8 +786,8 @@ def make_pareto(
         Forwarded to :func:`build_svg`.
     language : str, optional
         Chrome-text language, ``"en"`` or ``"fr"``. Defaults to ``"en"``;
-        the editor passes the language detected from the imported
-        CSV's column names (see :data:`_STRINGS`).
+        a caller may pass the language detected from its
+        data's column names (see :data:`_STRINGS`).
     theme : str, optional
         Visual theme. Forwarded to :func:`build_svg`.
 

@@ -290,7 +290,7 @@ def build_svg(
 
     mono_family = mono_stack_for_theme(theme)
     palette = load_palette(accessibility, theme=theme)
-    accent = palette.get("Orange", "#FF9500")
+    accent = palette.get("Orange", "#FF8D28")
 
     plot_x = 128.0
     plot_y = 252.0

@@ -35,7 +35,7 @@ from _svg import foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noq
 from _style import BG, GRIDLINE, INK, SECONDARY  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
-COLOR_POINT = "#007AFF"
+COLOR_POINT = "#0088FF"
 COLOR_REF = "#C7C7CC"
 
 # Acklam's rational approximation coefficients for the inverse standard

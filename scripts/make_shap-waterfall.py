@@ -189,8 +189,8 @@ def build_svg(
 
     mono_family = mono_stack_for_theme(theme)
     palette = load_palette(accessibility, theme=theme)
-    pushes_up = palette.get("Orange", "#FF9500")
-    pushes_down = palette.get("Blue", "#007AFF")
+    pushes_up = palette.get("Orange", "#FF8D28")
+    pushes_down = palette.get("Blue", "#0088FF")
 
     edges = [base_value, total] + [edge for pair in positions for edge in pair]
     ticks = nice_ticks_range(min(edges), max(edges), 5)

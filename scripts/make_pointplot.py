@@ -161,8 +161,8 @@ def build_svg(
     hues = [
         palette.get(name, fallback)
         for name, fallback in (
-            ("Blue", "#007AFF"), ("Orange", "#FF9500"), ("Purple", "#AF52DE"),
-            ("Green", "#28CD41"), ("Teal", "#79DBDC"), ("Red", "#FF3B30"),
+            ("Blue", "#0088FF"), ("Orange", "#FF8D28"), ("Purple", "#CB30E0"),
+            ("Green", "#34C759"), ("Teal", "#00C3D0"), ("Red", "#FF383C"),
         )
     ]
 

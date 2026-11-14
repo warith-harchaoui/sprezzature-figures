@@ -406,8 +406,8 @@ def build_svg(
     # strong model, orange for the weak baseline. The split is reinforced by a
     # dash pattern and a distinct end marker per curve, so hue is never the
     # only channel carrying "which model is which".
-    strong_col = palette.get("Blue", "#007AFF")
-    weak_col = palette.get("Orange", "#FF9500")
+    strong_col = palette.get("Blue", "#0088FF")
+    weak_col = palette.get("Orange", "#FF8D28")
     ink = "#1D1D1F"
     secondary = "#6E6E73"
     grid_col = "#ECECEC"

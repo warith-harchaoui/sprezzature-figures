@@ -297,10 +297,10 @@ def build_svg(
     #   band    — a faint Blue wash marking the 95 % agreement zone;
     #   trend   — Purple, a quiet secondary annotation for the drift.
     pointc = palette.get("Gray", "#8E8E93")
-    biasc = palette.get("Blue", "#007AFF")
-    loac = palette.get("Red", "#FF3B30")
-    bandc = palette.get("Blue", "#007AFF")
-    trend = palette.get("Purple", "#AF52DE")
+    biasc = palette.get("Blue", "#0088FF")
+    loac = palette.get("Red", "#FF383C")
+    bandc = palette.get("Blue", "#0088FF")
+    trend = palette.get("Purple", "#CB30E0")
     ink = "#1D1D1F"
     secondary = "#6E6E73"
 

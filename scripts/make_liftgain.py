@@ -268,10 +268,10 @@ def build_svg(
         prevalence = float(computed["prevalence"])
 
     palette: Dict[str, str] = load_palette(accessibility, theme=theme)
-    model_c = palette.get("Blue", "#007AFF")     # the hero: what we shipped
+    model_c = palette.get("Blue", "#0088FF")     # the hero: what we shipped
     perfect_c = palette.get("Green", "#34C759")  # the ceiling
     baseline_c = "#8E8E93"                        # random: neutral grey
-    marker_c = palette.get("Orange", "#FF9500")  # the operating point
+    marker_c = palette.get("Orange", "#FF8D28")  # the operating point
     ink = "#1D1D1F"
     secondary = "#6E6E73"
     band = "#F5F5F7"

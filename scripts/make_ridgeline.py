@@ -217,14 +217,16 @@ def _lerp_hex(a: str, b: str, t: float) -> str:
 # contrast. The anchors' positions on the ramp are held fixed.
 _RAMP_ANCHOR_POS: Sequence[float] = (0.00, 0.16, 0.30, 0.44, 0.58, 0.72, 0.86, 1.00)
 _RAMP_ANCHOR_HEX: Dict[str, str] = {
-    "Blue": "#007AFF",
-    "Teal": "#5AC8FA",
-    "Mint": "#00C7BE",
+    "Blue": "#0088FF",
+    "Teal": "#00C3D0",
+    # Halfway between Turquoise and Green: the palette has no mint since
+    # 2026-11-14, and a ramp anchor only needs to sit between its neighbours.
+    "Mint": "#1AC594",
     "Green": "#34C759",
     "Yellow": "#FFCC00",
-    "Orange": "#FF9500",
-    "Red": "#FF3B30",
-    "Purple": "#AF52DE",
+    "Orange": "#FF8D28",
+    "Red": "#FF383C",
+    "Purple": "#CB30E0",
 }
 
 
@@ -596,9 +598,9 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--theme",
-        choices=("corporate", "academic"),
+        choices=("corporate", "academic", "print"),
         default="corporate",
-        help="visual theme: corporate (default, Roboto) or academic (LaTeX-style Latin Modern)",
+        help="visual theme: corporate (default, Roboto), academic (LaTeX-style Latin Modern) or print (Roboto, print palette)",
     )
     return parser
 

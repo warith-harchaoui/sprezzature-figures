@@ -91,7 +91,7 @@ def _palette_hues(accessibility: str = "universal", theme: str = "corporate") ->
         ``{"base": "#RRGGBB", "peak": "#RRGGBB"}``.
     """
     palette = load_palette(accessibility, theme=theme)
-    fallback = {"Blue": "#007AFF", "Orange": "#FF9500"}
+    fallback = {"Blue": "#0088FF", "Orange": "#FF8D28"}
     base = palette.get("Blue") or fallback["Blue"]
     peak = palette.get("Orange") or fallback["Orange"]
     return {"base": base, "peak": peak}

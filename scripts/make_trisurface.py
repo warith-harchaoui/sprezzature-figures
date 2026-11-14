@@ -209,8 +209,8 @@ def build_svg(
 
     mono_family = mono_stack_for_theme(theme)
     palette = load_palette(accessibility, theme=theme)
-    flat_ink = palette.get("Blue", "#007AFF")
-    steep_ink = palette.get("Orange", "#FF9500")
+    flat_ink = palette.get("Blue", "#0088FF")
+    steep_ink = palette.get("Orange", "#FF8D28")
 
     plot_w = width - 230.0
     plot_h = height - 190.0

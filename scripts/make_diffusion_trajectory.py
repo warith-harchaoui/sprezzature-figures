@@ -83,7 +83,7 @@ _N_STEPS = 10
 _SEED = 20260906
 
 #: Keyboard focus ring, matching the rest of the catalogue.
-_FOCUS = "#007AFF"
+_FOCUS = "#0088FF"
 
 #: Each keyframe is emitted twice in a row. SMIL spaces a bare ``values``
 #: list evenly, so a repeated frame spends its first slot holding still and

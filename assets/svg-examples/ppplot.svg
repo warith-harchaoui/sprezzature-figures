@@ -3,8 +3,8 @@
 <desc id="pp-desc">Probability-probability (P-P) plot checking whether a fitted Normal distribution describes right-skewed customer session durations. The horizontal axis is the theoretical cumulative probability under the fitted Normal; the vertical axis is the empirical cumulative probability of the observed data; both run from 0 to 1. A dashed 45-degree reference line marks perfect agreement, ringed by a faint grey tolerance band. Instead of hugging the line the points bow into a smooth arc (traced by a red trend curve): in the lower-left they sit above the diagonal, where the Normal under-states the probability (blue); in the upper-right they sit below it, where the Normal over-states the probability (orange). That S-shaped departure is the classic sign that a symmetric Normal is the wrong shape for skewed data.</desc>
 <style>.pt{cursor:pointer}.pt .halo{opacity:0}.pt:hover .halo,.pt:focus .halo{opacity:1}.pt:focus{outline:none}.tip{opacity:0;pointer-events:none;transition:opacity .12s ease}#pt-0:hover~#pt-tip-0,#pt-0:focus~#pt-tip-0{opacity:1}#pt-1:hover~#pt-tip-1,#pt-1:focus~#pt-tip-1{opacity:1}#pt-2:hover~#pt-tip-2,#pt-2:focus~#pt-tip-2{opacity:1}#pt-3:hover~#pt-tip-3,#pt-3:focus~#pt-tip-3{opacity:1}#pt-4:hover~#pt-tip-4,#pt-4:focus~#pt-tip-4{opacity:1}#pt-5:hover~#pt-tip-5,#pt-5:focus~#pt-tip-5{opacity:1}#pt-6:hover~#pt-tip-6,#pt-6:focus~#pt-tip-6{opacity:1}#pt-7:hover~#pt-tip-7,#pt-7:focus~#pt-tip-7{opacity:1}#pt-8:hover~#pt-tip-8,#pt-8:focus~#pt-tip-8{opacity:1}#pt-9:hover~#pt-tip-9,#pt-9:focus~#pt-tip-9{opacity:1}#pt-10:hover~#pt-tip-10,#pt-10:focus~#pt-tip-10{opacity:1}#pt-11:hover~#pt-tip-11,#pt-11:focus~#pt-tip-11{opacity:1}#pt-12:hover~#pt-tip-12,#pt-12:focus~#pt-tip-12{opacity:1}#pt-13:hover~#pt-tip-13,#pt-13:focus~#pt-tip-13{opacity:1}#pt-14:hover~#pt-tip-14,#pt-14:focus~#pt-tip-14{opacity:1}#pt-15:hover~#pt-tip-15,#pt-15:focus~#pt-tip-15{opacity:1}#pt-16:hover~#pt-tip-16,#pt-16:focus~#pt-tip-16{opacity:1}#pt-17:hover~#pt-tip-17,#pt-17:focus~#pt-tip-17{opacity:1}#pt-18:hover~#pt-tip-18,#pt-18:focus~#pt-tip-18{opacity:1}#pt-19:hover~#pt-tip-19,#pt-19:focus~#pt-tip-19{opacity:1}#pt-20:hover~#pt-tip-20,#pt-20:focus~#pt-tip-20{opacity:1}#pt-21:hover~#pt-tip-21,#pt-21:focus~#pt-tip-21{opacity:1}#pt-22:hover~#pt-tip-22,#pt-22:focus~#pt-tip-22{opacity:1}#pt-23:hover~#pt-tip-23,#pt-23:focus~#pt-tip-23{opacity:1}#pt-24:hover~#pt-tip-24,#pt-24:focus~#pt-tip-24{opacity:1}#pt-25:hover~#pt-tip-25,#pt-25:focus~#pt-tip-25{opacity:1}#pt-26:hover~#pt-tip-26,#pt-26:focus~#pt-tip-26{opacity:1}#pt-27:hover~#pt-tip-27,#pt-27:focus~#pt-tip-27{opacity:1}#pt-28:hover~#pt-tip-28,#pt-28:focus~#pt-tip-28{opacity:1}#pt-29:hover~#pt-tip-29,#pt-29:focus~#pt-tip-29{opacity:1}#pt-30:hover~#pt-tip-30,#pt-30:focus~#pt-tip-30{opacity:1}#pt-31:hover~#pt-tip-31,#pt-31:focus~#pt-tip-31{opacity:1}#pt-32:hover~#pt-tip-32,#pt-32:focus~#pt-tip-32{opacity:1}#pt-33:hover~#pt-tip-33,#pt-33:focus~#pt-tip-33{opacity:1}#pt-34:hover~#pt-tip-34,#pt-34:focus~#pt-tip-34{opacity:1}#pt-35:hover~#pt-tip-35,#pt-35:focus~#pt-tip-35{opacity:1}#pt-36:hover~#pt-tip-36,#pt-36:focus~#pt-tip-36{opacity:1}#pt-37:hover~#pt-tip-37,#pt-37:focus~#pt-tip-37{opacity:1}#pt-38:hover~#pt-tip-38,#pt-38:focus~#pt-tip-38{opacity:1}#pt-39:hover~#pt-tip-39,#pt-39:focus~#pt-tip-39{opacity:1}#pt-40:hover~#pt-tip-40,#pt-40:focus~#pt-tip-40{opacity:1}#pt-41:hover~#pt-tip-41,#pt-41:focus~#pt-tip-41{opacity:1}#pt-42:hover~#pt-tip-42,#pt-42:focus~#pt-tip-42{opacity:1}#pt-43:hover~#pt-tip-43,#pt-43:focus~#pt-tip-43{opacity:1}#pt-44:hover~#pt-tip-44,#pt-44:focus~#pt-tip-44{opacity:1}#pt-45:hover~#pt-tip-45,#pt-45:focus~#pt-tip-45{opacity:1}#pt-46:hover~#pt-tip-46,#pt-46:focus~#pt-tip-46{opacity:1}#pt-47:hover~#pt-tip-47,#pt-47:focus~#pt-tip-47{opacity:1}#pt-48:hover~#pt-tip-48,#pt-48:focus~#pt-tip-48{opacity:1}#pt-49:hover~#pt-tip-49,#pt-49:focus~#pt-tip-49{opacity:1}#pt-50:hover~#pt-tip-50,#pt-50:focus~#pt-tip-50{opacity:1}#pt-51:hover~#pt-tip-51,#pt-51:focus~#pt-tip-51{opacity:1}#pt-52:hover~#pt-tip-52,#pt-52:focus~#pt-tip-52{opacity:1}#pt-53:hover~#pt-tip-53,#pt-53:focus~#pt-tip-53{opacity:1}#pt-54:hover~#pt-tip-54,#pt-54:focus~#pt-tip-54{opacity:1}#pt-55:hover~#pt-tip-55,#pt-55:focus~#pt-tip-55{opacity:1}#pt-56:hover~#pt-tip-56,#pt-56:focus~#pt-tip-56{opacity:1}#pt-57:hover~#pt-tip-57,#pt-57:focus~#pt-tip-57{opacity:1}#pt-58:hover~#pt-tip-58,#pt-58:focus~#pt-tip-58{opacity:1}#pt-59:hover~#pt-tip-59,#pt-59:focus~#pt-tip-59{opacity:1}#pt-60:hover~#pt-tip-60,#pt-60:focus~#pt-tip-60{opacity:1}#pt-61:hover~#pt-tip-61,#pt-61:focus~#pt-tip-61{opacity:1}#pt-62:hover~#pt-tip-62,#pt-62:focus~#pt-tip-62{opacity:1}#pt-63:hover~#pt-tip-63,#pt-63:focus~#pt-tip-63{opacity:1}#pt-64:hover~#pt-tip-64,#pt-64:focus~#pt-tip-64{opacity:1}#pt-65:hover~#pt-tip-65,#pt-65:focus~#pt-tip-65{opacity:1}#pt-66:hover~#pt-tip-66,#pt-66:focus~#pt-tip-66{opacity:1}#pt-67:hover~#pt-tip-67,#pt-67:focus~#pt-tip-67{opacity:1}#pt-68:hover~#pt-tip-68,#pt-68:focus~#pt-tip-68{opacity:1}#pt-69:hover~#pt-tip-69,#pt-69:focus~#pt-tip-69{opacity:1}#pt-70:hover~#pt-tip-70,#pt-70:focus~#pt-tip-70{opacity:1}#pt-71:hover~#pt-tip-71,#pt-71:focus~#pt-tip-71{opacity:1}#pt-72:hover~#pt-tip-72,#pt-72:focus~#pt-tip-72{opacity:1}#pt-73:hover~#pt-tip-73,#pt-73:focus~#pt-tip-73{opacity:1}#pt-74:hover~#pt-tip-74,#pt-74:focus~#pt-tip-74{opacity:1}#pt-75:hover~#pt-tip-75,#pt-75:focus~#pt-tip-75{opacity:1}#pt-76:hover~#pt-tip-76,#pt-76:focus~#pt-tip-76{opacity:1}#pt-77:hover~#pt-tip-77,#pt-77:focus~#pt-tip-77{opacity:1}#pt-78:hover~#pt-tip-78,#pt-78:focus~#pt-tip-78{opacity:1}#pt-79:hover~#pt-tip-79,#pt-79:focus~#pt-tip-79{opacity:1}#pt-80:hover~#pt-tip-80,#pt-80:focus~#pt-tip-80{opacity:1}#pt-81:hover~#pt-tip-81,#pt-81:focus~#pt-tip-81{opacity:1}#pt-82:hover~#pt-tip-82,#pt-82:focus~#pt-tip-82{opacity:1}#pt-83:hover~#pt-tip-83,#pt-83:focus~#pt-tip-83{opacity:1}#pt-84:hover~#pt-tip-84,#pt-84:focus~#pt-tip-84{opacity:1}#pt-85:hover~#pt-tip-85,#pt-85:focus~#pt-tip-85{opacity:1}#pt-86:hover~#pt-tip-86,#pt-86:focus~#pt-tip-86{opacity:1}#pt-87:hover~#pt-tip-87,#pt-87:focus~#pt-tip-87{opacity:1}#pt-88:hover~#pt-tip-88,#pt-88:focus~#pt-tip-88{opacity:1}#pt-89:hover~#pt-tip-89,#pt-89:focus~#pt-tip-89{opacity:1}@media (prefers-reduced-motion: reduce){.tip{transition:none}}
 @media (prefers-contrast: more){
-  .pp-above{fill:#004CCE;}
-  .pp-below{fill:#993600;}
+  .pp-above{fill:#004EC1;}
+  .pp-below{fill:#9F3400;}
 }
 @media (prefers-color-scheme: dark){
   [fill="#FFFFFF"]{fill:#0B0B0C;}
@@ -54,366 +54,366 @@
 <text x="607.0" y="1248.0" font-size="24" fill="#1D1D1F" text-anchor="middle">Theoretical probability (fitted Normal CDF)</text>
 <text x="58.0" y="707.0" font-size="24" fill="#1D1D1F" text-anchor="middle" transform="rotate(-90 58.0 707.0)">Empirical probability (observed CDF)</text>
 <path d="M 206.9 1179.2 L 217.7 1164.0 L 228.6 1148.6 L 239.4 1133.3 L 250.3 1117.9 L 261.1 1102.4 L 272.0 1086.9 L 282.8 1071.4 L 293.7 1055.9 L 304.5 1040.3 L 315.4 1024.7 L 326.2 1009.2 L 337.1 993.6 L 347.9 978.0 L 358.8 962.4 L 369.6 946.9 L 380.5 931.4 L 391.3 915.9 L 402.2 900.4 L 413.0 885.1 L 423.9 869.7 L 434.7 854.5 L 445.6 839.4 L 456.4 824.5 L 467.3 809.8 L 478.1 795.3 L 489.0 781.0 L 499.8 767.1 L 510.7 753.4 L 521.5 740.0 L 532.4 727.0 L 543.2 714.2 L 554.1 701.7 L 564.9 689.4 L 575.8 677.4 L 586.6 665.7 L 597.5 654.2 L 608.3 643.1 L 619.2 632.2 L 630.0 621.5 L 640.9 611.1 L 651.7 600.8 L 662.6 590.7 L 673.4 580.7 L 684.3 570.8 L 695.1 561.0 L 706.0 551.3 L 716.8 541.6 L 727.7 531.9 L 738.5 522.4 L 749.4 512.9 L 760.2 503.5 L 771.1 494.2 L 781.9 485.0 L 792.8 475.8 L 803.6 466.8 L 814.5 458.0 L 825.3 449.2 L 836.2 440.6 L 847.0 432.1 L 857.9 423.8 L 868.7 415.7 L 879.6 407.7 L 890.4 399.8 L 901.3 392.0 L 912.1 384.4 L 923.0 377.0 L 933.8 369.6 L 944.7 362.3 L 955.5 355.2 L 966.4 348.1 L 977.2 341.1 L 988.1 334.1 L 998.9 327.1 L 1009.8 320.1 L 1020.6 313.0 L 1031.5 305.7 L 1042.3 298.3 L 1053.2 290.6 L 1064.0 282.7" fill="none" stroke="#FFFFFF" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="M 206.9 1179.2 L 217.7 1164.0 L 228.6 1148.6 L 239.4 1133.3 L 250.3 1117.9 L 261.1 1102.4 L 272.0 1086.9 L 282.8 1071.4 L 293.7 1055.9 L 304.5 1040.3 L 315.4 1024.7 L 326.2 1009.2 L 337.1 993.6 L 347.9 978.0 L 358.8 962.4 L 369.6 946.9 L 380.5 931.4 L 391.3 915.9 L 402.2 900.4 L 413.0 885.1 L 423.9 869.7 L 434.7 854.5 L 445.6 839.4 L 456.4 824.5 L 467.3 809.8 L 478.1 795.3 L 489.0 781.0 L 499.8 767.1 L 510.7 753.4 L 521.5 740.0 L 532.4 727.0 L 543.2 714.2 L 554.1 701.7 L 564.9 689.4 L 575.8 677.4 L 586.6 665.7 L 597.5 654.2 L 608.3 643.1 L 619.2 632.2 L 630.0 621.5 L 640.9 611.1 L 651.7 600.8 L 662.6 590.7 L 673.4 580.7 L 684.3 570.8 L 695.1 561.0 L 706.0 551.3 L 716.8 541.6 L 727.7 531.9 L 738.5 522.4 L 749.4 512.9 L 760.2 503.5 L 771.1 494.2 L 781.9 485.0 L 792.8 475.8 L 803.6 466.8 L 814.5 458.0 L 825.3 449.2 L 836.2 440.6 L 847.0 432.1 L 857.9 423.8 L 868.7 415.7 L 879.6 407.7 L 890.4 399.8 L 901.3 392.0 L 912.1 384.4 L 923.0 377.0 L 933.8 369.6 L 944.7 362.3 L 955.5 355.2 L 966.4 348.1 L 977.2 341.1 L 988.1 334.1 L 998.9 327.1 L 1009.8 320.1 L 1020.6 313.0 L 1031.5 305.7 L 1042.3 298.3 L 1053.2 290.6 L 1064.0 282.7" fill="none" stroke="#FF3B30" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" stroke-opacity="0.95"/>
+<path d="M 206.9 1179.2 L 217.7 1164.0 L 228.6 1148.6 L 239.4 1133.3 L 250.3 1117.9 L 261.1 1102.4 L 272.0 1086.9 L 282.8 1071.4 L 293.7 1055.9 L 304.5 1040.3 L 315.4 1024.7 L 326.2 1009.2 L 337.1 993.6 L 347.9 978.0 L 358.8 962.4 L 369.6 946.9 L 380.5 931.4 L 391.3 915.9 L 402.2 900.4 L 413.0 885.1 L 423.9 869.7 L 434.7 854.5 L 445.6 839.4 L 456.4 824.5 L 467.3 809.8 L 478.1 795.3 L 489.0 781.0 L 499.8 767.1 L 510.7 753.4 L 521.5 740.0 L 532.4 727.0 L 543.2 714.2 L 554.1 701.7 L 564.9 689.4 L 575.8 677.4 L 586.6 665.7 L 597.5 654.2 L 608.3 643.1 L 619.2 632.2 L 630.0 621.5 L 640.9 611.1 L 651.7 600.8 L 662.6 590.7 L 673.4 580.7 L 684.3 570.8 L 695.1 561.0 L 706.0 551.3 L 716.8 541.6 L 727.7 531.9 L 738.5 522.4 L 749.4 512.9 L 760.2 503.5 L 771.1 494.2 L 781.9 485.0 L 792.8 475.8 L 803.6 466.8 L 814.5 458.0 L 825.3 449.2 L 836.2 440.6 L 847.0 432.1 L 857.9 423.8 L 868.7 415.7 L 879.6 407.7 L 890.4 399.8 L 901.3 392.0 L 912.1 384.4 L 923.0 377.0 L 933.8 369.6 L 944.7 362.3 L 955.5 355.2 L 966.4 348.1 L 977.2 341.1 L 988.1 334.1 L 998.9 327.1 L 1009.8 320.1 L 1020.6 313.0 L 1031.5 305.7 L 1042.3 298.3 L 1053.2 290.6 L 1064.0 282.7" fill="none" stroke="#FF383C" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" stroke-opacity="0.95"/>
 <g id="pt-0" class="pt hit" tabindex="0" role="img" aria-label="Session 1.2 min: theoretical P 0.06, empirical P 0.01 — 0.06 below the diagonal">
 <circle class="halo" cx="206.9" cy="1158.9" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-below" cx="206.9" cy="1158.9" r="8.5" fill="#FF9500" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-below" cx="206.9" cy="1158.9" r="8.5" fill="#FF8D28" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-1" class="pt hit" tabindex="0" role="img" aria-label="Session 1.7 min: theoretical P 0.09, empirical P 0.02 — 0.07 below the diagonal">
 <circle class="halo" cx="228.1" cy="1148.7" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-below" cx="228.1" cy="1148.7" r="8.5" fill="#FF9500" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-below" cx="228.1" cy="1148.7" r="8.5" fill="#FF8D28" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-2" class="pt hit" tabindex="0" role="img" aria-label="Session 1.7 min: theoretical P 0.09, empirical P 0.03 — 0.06 below the diagonal">
 <circle class="halo" cx="233.1" cy="1138.6" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-below" cx="233.1" cy="1138.6" r="8.5" fill="#FF9500" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-below" cx="233.1" cy="1138.6" r="8.5" fill="#FF8D28" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-3" class="pt hit" tabindex="0" role="img" aria-label="Session 1.8 min: theoretical P 0.09, empirical P 0.04 — 0.06 below the diagonal">
 <circle class="halo" cx="236.6" cy="1128.4" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-below" cx="236.6" cy="1128.4" r="8.5" fill="#FF9500" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-below" cx="236.6" cy="1128.4" r="8.5" fill="#FF8D28" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-4" class="pt hit" tabindex="0" role="img" aria-label="Session 2.1 min: theoretical P 0.12, empirical P 0.05 — 0.07 below the diagonal">
 <circle class="halo" cx="257.9" cy="1118.3" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-below" cx="257.9" cy="1118.3" r="8.5" fill="#FF9500" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-below" cx="257.9" cy="1118.3" r="8.5" fill="#FF8D28" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-5" class="pt hit" tabindex="0" role="img" aria-label="Session 2.1 min: theoretical P 0.12, empirical P 0.06 — 0.06 below the diagonal">
 <circle class="halo" cx="259.3" cy="1108.2" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-below" cx="259.3" cy="1108.2" r="8.5" fill="#FF9500" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-below" cx="259.3" cy="1108.2" r="8.5" fill="#FF8D28" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-6" class="pt hit" tabindex="0" role="img" aria-label="Session 2.4 min: theoretical P 0.14, empirical P 0.07 — 0.07 below the diagonal">
 <circle class="halo" cx="277.1" cy="1098.0" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-below" cx="277.1" cy="1098.0" r="8.5" fill="#FF9500" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-below" cx="277.1" cy="1098.0" r="8.5" fill="#FF8D28" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-7" class="pt hit" tabindex="0" role="img" aria-label="Session 2.4 min: theoretical P 0.14, empirical P 0.08 — 0.06 below the diagonal">
 <circle class="halo" cx="279.3" cy="1087.9" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-below" cx="279.3" cy="1087.9" r="8.5" fill="#FF9500" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-below" cx="279.3" cy="1087.9" r="8.5" fill="#FF8D28" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-8" class="pt hit" tabindex="0" role="img" aria-label="Session 2.4 min: theoretical P 0.15, empirical P 0.09 — 0.05 below the diagonal">
 <circle class="halo" cx="283.1" cy="1077.7" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-below" cx="283.1" cy="1077.7" r="8.5" fill="#FF9500" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-below" cx="283.1" cy="1077.7" r="8.5" fill="#FF8D28" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-9" class="pt hit" tabindex="0" role="img" aria-label="Session 2.5 min: theoretical P 0.15, empirical P 0.11 — 0.04 below the diagonal">
 <circle class="halo" cx="285.6" cy="1067.5" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-below" cx="285.6" cy="1067.5" r="8.5" fill="#FF9500" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-below" cx="285.6" cy="1067.5" r="8.5" fill="#FF8D28" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-10" class="pt hit" tabindex="0" role="img" aria-label="Session 2.5 min: theoretical P 0.15, empirical P 0.12 — 0.04 below the diagonal">
 <circle class="halo" cx="290.7" cy="1057.3" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-below" cx="290.7" cy="1057.3" r="8.5" fill="#FF9500" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-below" cx="290.7" cy="1057.3" r="8.5" fill="#FF8D28" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-11" class="pt hit" tabindex="0" role="img" aria-label="Session 2.6 min: theoretical P 0.16, empirical P 0.13 — 0.03 below the diagonal">
 <circle class="halo" cx="293.8" cy="1047.2" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-below" cx="293.8" cy="1047.2" r="8.5" fill="#FF9500" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-below" cx="293.8" cy="1047.2" r="8.5" fill="#FF8D28" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-12" class="pt hit" tabindex="0" role="img" aria-label="Session 2.6 min: theoretical P 0.16, empirical P 0.14 — 0.02 below the diagonal">
 <circle class="halo" cx="295.3" cy="1037.0" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-below" cx="295.3" cy="1037.0" r="8.5" fill="#FF9500" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-below" cx="295.3" cy="1037.0" r="8.5" fill="#FF8D28" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-13" class="pt hit" tabindex="0" role="img" aria-label="Session 2.7 min: theoretical P 0.17, empirical P 0.15 — 0.02 below the diagonal">
 <circle class="halo" cx="304.9" cy="1026.9" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-below" cx="304.9" cy="1026.9" r="8.5" fill="#FF9500" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-below" cx="304.9" cy="1026.9" r="8.5" fill="#FF8D28" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-14" class="pt hit" tabindex="0" role="img" aria-label="Session 2.9 min: theoretical P 0.19, empirical P 0.16 — 0.03 below the diagonal">
 <circle class="halo" cx="322.9" cy="1016.8" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-below" cx="322.9" cy="1016.8" r="8.5" fill="#FF9500" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-below" cx="322.9" cy="1016.8" r="8.5" fill="#FF8D28" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-15" class="pt hit" tabindex="0" role="img" aria-label="Session 2.9 min: theoretical P 0.19, empirical P 0.17 — 0.02 below the diagonal">
 <circle class="halo" cx="325.0" cy="1006.6" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-below" cx="325.0" cy="1006.6" r="8.5" fill="#FF9500" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-below" cx="325.0" cy="1006.6" r="8.5" fill="#FF8D28" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-16" class="pt hit" tabindex="0" role="img" aria-label="Session 3.0 min: theoretical P 0.20, empirical P 0.18 — 0.02 below the diagonal">
 <circle class="halo" cx="332.9" cy="996.5" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-below" cx="332.9" cy="996.5" r="8.5" fill="#FF9500" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-below" cx="332.9" cy="996.5" r="8.5" fill="#FF8D28" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-17" class="pt hit" tabindex="0" role="img" aria-label="Session 3.0 min: theoretical P 0.21, empirical P 0.19 — 0.01 below the diagonal">
 <circle class="halo" cx="339.7" cy="986.3" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-below" cx="339.7" cy="986.3" r="8.5" fill="#FF9500" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-below" cx="339.7" cy="986.3" r="8.5" fill="#FF8D28" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-18" class="pt hit" tabindex="0" role="img" aria-label="Session 3.2 min: theoretical P 0.22, empirical P 0.21 — 0.02 below the diagonal">
 <circle class="halo" cx="354.7" cy="976.1" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-below" cx="354.7" cy="976.1" r="8.5" fill="#FF9500" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-below" cx="354.7" cy="976.1" r="8.5" fill="#FF8D28" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-19" class="pt hit" tabindex="0" role="img" aria-label="Session 3.2 min: theoretical P 0.22, empirical P 0.22 — 0.01 below the diagonal">
 <circle class="halo" cx="355.0" cy="965.9" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-below" cx="355.0" cy="965.9" r="8.5" fill="#FF9500" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-below" cx="355.0" cy="965.9" r="8.5" fill="#FF8D28" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-20" class="pt hit" tabindex="0" role="img" aria-label="Session 3.2 min: theoretical P 0.23, empirical P 0.23 — 0.00 above the diagonal">
 <circle class="halo" cx="357.5" cy="955.8" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-above" cx="357.5" cy="955.8" r="8.5" fill="#007AFF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-above" cx="357.5" cy="955.8" r="8.5" fill="#0088FF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-21" class="pt hit" tabindex="0" role="img" aria-label="Session 3.4 min: theoretical P 0.25, empirical P 0.24 — 0.02 below the diagonal">
 <circle class="halo" cx="382.2" cy="945.6" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-below" cx="382.2" cy="945.6" r="8.5" fill="#FF9500" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-below" cx="382.2" cy="945.6" r="8.5" fill="#FF8D28" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-22" class="pt hit" tabindex="0" role="img" aria-label="Session 3.5 min: theoretical P 0.26, empirical P 0.25 — 0.01 below the diagonal">
 <circle class="halo" cx="389.9" cy="935.5" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-below" cx="389.9" cy="935.5" r="8.5" fill="#FF9500" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-below" cx="389.9" cy="935.5" r="8.5" fill="#FF8D28" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-23" class="pt hit" tabindex="0" role="img" aria-label="Session 3.5 min: theoretical P 0.27, empirical P 0.26 — 0.01 below the diagonal">
 <circle class="halo" cx="394.9" cy="925.4" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-below" cx="394.9" cy="925.4" r="8.5" fill="#FF9500" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-below" cx="394.9" cy="925.4" r="8.5" fill="#FF8D28" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-24" class="pt hit" tabindex="0" role="img" aria-label="Session 3.6 min: theoretical P 0.28, empirical P 0.27 — 0.01 below the diagonal">
 <circle class="halo" cx="403.6" cy="915.2" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-below" cx="403.6" cy="915.2" r="8.5" fill="#FF9500" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-below" cx="403.6" cy="915.2" r="8.5" fill="#FF8D28" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-25" class="pt hit" tabindex="0" role="img" aria-label="Session 3.6 min: theoretical P 0.28, empirical P 0.28 — 0.00 above the diagonal">
 <circle class="halo" cx="404.7" cy="905.1" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-above" cx="404.7" cy="905.1" r="8.5" fill="#007AFF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-above" cx="404.7" cy="905.1" r="8.5" fill="#0088FF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-26" class="pt hit" tabindex="0" role="img" aria-label="Session 3.7 min: theoretical P 0.29, empirical P 0.29 — 0.00 above the diagonal">
 <circle class="halo" cx="414.8" cy="894.9" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-above" cx="414.8" cy="894.9" r="8.5" fill="#007AFF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-above" cx="414.8" cy="894.9" r="8.5" fill="#0088FF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-27" class="pt hit" tabindex="0" role="img" aria-label="Session 3.8 min: theoretical P 0.30, empirical P 0.31 — 0.00 above the diagonal">
 <circle class="halo" cx="426.9" cy="884.7" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-above" cx="426.9" cy="884.7" r="8.5" fill="#007AFF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-above" cx="426.9" cy="884.7" r="8.5" fill="#0088FF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-28" class="pt hit" tabindex="0" role="img" aria-label="Session 3.8 min: theoretical P 0.31, empirical P 0.32 — 0.01 above the diagonal">
 <circle class="halo" cx="430.9" cy="874.5" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-above" cx="430.9" cy="874.5" r="8.5" fill="#007AFF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-above" cx="430.9" cy="874.5" r="8.5" fill="#0088FF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-29" class="pt hit" tabindex="0" role="img" aria-label="Session 3.8 min: theoretical P 0.31, empirical P 0.33 — 0.02 above the diagonal">
 <circle class="halo" cx="434.8" cy="864.4" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-above" cx="434.8" cy="864.4" r="8.5" fill="#007AFF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-above" cx="434.8" cy="864.4" r="8.5" fill="#0088FF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-30" class="pt hit" tabindex="0" role="img" aria-label="Session 3.8 min: theoretical P 0.31, empirical P 0.34 — 0.03 above the diagonal">
 <circle class="halo" cx="434.8" cy="854.2" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-above" cx="434.8" cy="854.2" r="8.5" fill="#007AFF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-above" cx="434.8" cy="854.2" r="8.5" fill="#0088FF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-31" class="pt hit" tabindex="0" role="img" aria-label="Session 3.9 min: theoretical P 0.31, empirical P 0.35 — 0.04 above the diagonal">
 <circle class="halo" cx="436.4" cy="844.1" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-above" cx="436.4" cy="844.1" r="8.5" fill="#007AFF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-above" cx="436.4" cy="844.1" r="8.5" fill="#0088FF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-32" class="pt hit" tabindex="0" role="img" aria-label="Session 3.9 min: theoretical P 0.31, empirical P 0.36 — 0.05 above the diagonal">
 <circle class="halo" cx="437.2" cy="834.0" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-above" cx="437.2" cy="834.0" r="8.5" fill="#007AFF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-above" cx="437.2" cy="834.0" r="8.5" fill="#0088FF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-33" class="pt hit" tabindex="0" role="img" aria-label="Session 3.9 min: theoretical P 0.32, empirical P 0.37 — 0.05 above the diagonal">
 <circle class="halo" cx="440.3" cy="823.8" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-above" cx="440.3" cy="823.8" r="8.5" fill="#007AFF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-above" cx="440.3" cy="823.8" r="8.5" fill="#0088FF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-34" class="pt hit" tabindex="0" role="img" aria-label="Session 3.9 min: theoretical P 0.32, empirical P 0.38 — 0.06 above the diagonal">
 <circle class="halo" cx="444.7" cy="813.7" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-above" cx="444.7" cy="813.7" r="8.5" fill="#007AFF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-above" cx="444.7" cy="813.7" r="8.5" fill="#0088FF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-35" class="pt hit" tabindex="0" role="img" aria-label="Session 4.0 min: theoretical P 0.34, empirical P 0.39 — 0.05 above the diagonal">
 <circle class="halo" cx="461.9" cy="803.5" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-above" cx="461.9" cy="803.5" r="8.5" fill="#007AFF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-above" cx="461.9" cy="803.5" r="8.5" fill="#0088FF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-36" class="pt hit" tabindex="0" role="img" aria-label="Session 4.1 min: theoretical P 0.36, empirical P 0.41 — 0.05 above the diagonal">
 <circle class="halo" cx="474.7" cy="793.3" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-above" cx="474.7" cy="793.3" r="8.5" fill="#007AFF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-above" cx="474.7" cy="793.3" r="8.5" fill="#0088FF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-37" class="pt hit" tabindex="0" role="img" aria-label="Session 4.2 min: theoretical P 0.36, empirical P 0.42 — 0.05 above the diagonal">
 <circle class="halo" cx="482.1" cy="783.1" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-above" cx="482.1" cy="783.1" r="8.5" fill="#007AFF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-above" cx="482.1" cy="783.1" r="8.5" fill="#0088FF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-38" class="pt hit" tabindex="0" role="img" aria-label="Session 4.3 min: theoretical P 0.37, empirical P 0.43 — 0.05 above the diagonal">
 <circle class="halo" cx="491.6" cy="773.0" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-above" cx="491.6" cy="773.0" r="8.5" fill="#007AFF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-above" cx="491.6" cy="773.0" r="8.5" fill="#0088FF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-39" class="pt hit" tabindex="0" role="img" aria-label="Session 4.3 min: theoretical P 0.38, empirical P 0.44 — 0.06 above the diagonal">
 <circle class="halo" cx="499.4" cy="762.8" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-above" cx="499.4" cy="762.8" r="8.5" fill="#007AFF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-above" cx="499.4" cy="762.8" r="8.5" fill="#0088FF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-40" class="pt hit" tabindex="0" role="img" aria-label="Session 4.4 min: theoretical P 0.39, empirical P 0.45 — 0.06 above the diagonal">
 <circle class="halo" cx="504.5" cy="752.7" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-above" cx="504.5" cy="752.7" r="8.5" fill="#007AFF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-above" cx="504.5" cy="752.7" r="8.5" fill="#0088FF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-41" class="pt hit" tabindex="0" role="img" aria-label="Session 4.4 min: theoretical P 0.40, empirical P 0.46 — 0.06 above the diagonal">
 <circle class="halo" cx="517.4" cy="742.6" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-above" cx="517.4" cy="742.6" r="8.5" fill="#007AFF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-above" cx="517.4" cy="742.6" r="8.5" fill="#0088FF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-42" class="pt hit" tabindex="0" role="img" aria-label="Session 4.4 min: theoretical P 0.40, empirical P 0.47 — 0.07 above the diagonal">
 <circle class="halo" cx="517.9" cy="732.4" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-above" cx="517.9" cy="732.4" r="8.5" fill="#007AFF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-above" cx="517.9" cy="732.4" r="8.5" fill="#0088FF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-43" class="pt hit" tabindex="0" role="img" aria-label="Session 4.5 min: theoretical P 0.41, empirical P 0.48 — 0.08 above the diagonal">
 <circle class="halo" cx="520.4" cy="722.3" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-above" cx="520.4" cy="722.3" r="8.5" fill="#007AFF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-above" cx="520.4" cy="722.3" r="8.5" fill="#0088FF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-44" class="pt hit" tabindex="0" role="img" aria-label="Session 4.5 min: theoretical P 0.41, empirical P 0.49 — 0.09 above the diagonal">
 <circle class="halo" cx="521.1" cy="712.1" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-above" cx="521.1" cy="712.1" r="8.5" fill="#007AFF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-above" cx="521.1" cy="712.1" r="8.5" fill="#0088FF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-45" class="pt hit" tabindex="0" role="img" aria-label="Session 4.6 min: theoretical P 0.43, empirical P 0.51 — 0.07 above the diagonal">
 <circle class="halo" cx="544.8" cy="701.9" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-above" cx="544.8" cy="701.9" r="8.5" fill="#007AFF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-above" cx="544.8" cy="701.9" r="8.5" fill="#0088FF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-46" class="pt hit" tabindex="0" role="img" aria-label="Session 4.7 min: theoretical P 0.44, empirical P 0.52 — 0.08 above the diagonal">
 <circle class="halo" cx="548.2" cy="691.7" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-above" cx="548.2" cy="691.7" r="8.5" fill="#007AFF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-above" cx="548.2" cy="691.7" r="8.5" fill="#0088FF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-47" class="pt hit" tabindex="0" role="img" aria-label="Session 4.7 min: theoretical P 0.44, empirical P 0.53 — 0.09 above the diagonal">
 <circle class="halo" cx="553.6" cy="681.6" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-above" cx="553.6" cy="681.6" r="8.5" fill="#007AFF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-above" cx="553.6" cy="681.6" r="8.5" fill="#0088FF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-48" class="pt hit" tabindex="0" role="img" aria-label="Session 4.8 min: theoretical P 0.45, empirical P 0.54 — 0.08 above the diagonal">
 <circle class="halo" cx="565.2" cy="671.4" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-above" cx="565.2" cy="671.4" r="8.5" fill="#007AFF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-above" cx="565.2" cy="671.4" r="8.5" fill="#0088FF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-49" class="pt hit" tabindex="0" role="img" aria-label="Session 4.8 min: theoretical P 0.46, empirical P 0.55 — 0.09 above the diagonal">
 <circle class="halo" cx="572.2" cy="661.3" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-above" cx="572.2" cy="661.3" r="8.5" fill="#007AFF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-above" cx="572.2" cy="661.3" r="8.5" fill="#0088FF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-50" class="pt hit" tabindex="0" role="img" aria-label="Session 4.9 min: theoretical P 0.47, empirical P 0.56 — 0.09 above the diagonal">
 <circle class="halo" cx="578.4" cy="651.2" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-above" cx="578.4" cy="651.2" r="8.5" fill="#007AFF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-above" cx="578.4" cy="651.2" r="8.5" fill="#0088FF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-51" class="pt hit" tabindex="0" role="img" aria-label="Session 4.9 min: theoretical P 0.47, empirical P 0.57 — 0.10 above the diagonal">
 <circle class="halo" cx="579.7" cy="641.0" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-above" cx="579.7" cy="641.0" r="8.5" fill="#007AFF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-above" cx="579.7" cy="641.0" r="8.5" fill="#0088FF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-52" class="pt hit" tabindex="0" role="img" aria-label="Session 4.9 min: theoretical P 0.48, empirical P 0.58 — 0.11 above the diagonal">
 <circle class="halo" cx="586.7" cy="630.9" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-above" cx="586.7" cy="630.9" r="8.5" fill="#007AFF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-above" cx="586.7" cy="630.9" r="8.5" fill="#0088FF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-53" class="pt hit" tabindex="0" role="img" aria-label="Session 5.0 min: theoretical P 0.48, empirical P 0.59 — 0.11 above the diagonal">
 <circle class="halo" cx="591.7" cy="620.7" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-above" cx="591.7" cy="620.7" r="8.5" fill="#007AFF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-above" cx="591.7" cy="620.7" r="8.5" fill="#0088FF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-54" class="pt hit" tabindex="0" role="img" aria-label="Session 5.1 min: theoretical P 0.51, empirical P 0.61 — 0.10 above the diagonal">
 <circle class="halo" cx="615.7" cy="610.5" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-above" cx="615.7" cy="610.5" r="8.5" fill="#007AFF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-above" cx="615.7" cy="610.5" r="8.5" fill="#0088FF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-55" class="pt hit" tabindex="0" role="img" aria-label="Session 5.1 min: theoretical P 0.51, empirical P 0.62 — 0.11 above the diagonal">
 <circle class="halo" cx="617.2" cy="600.3" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-above" cx="617.2" cy="600.3" r="8.5" fill="#007AFF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-above" cx="617.2" cy="600.3" r="8.5" fill="#0088FF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-56" class="pt hit" tabindex="0" role="img" aria-label="Session 5.2 min: theoretical P 0.52, empirical P 0.63 — 0.11 above the diagonal">
 <circle class="halo" cx="621.6" cy="590.2" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-above" cx="621.6" cy="590.2" r="8.5" fill="#007AFF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-above" cx="621.6" cy="590.2" r="8.5" fill="#0088FF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-57" class="pt hit" tabindex="0" role="img" aria-label="Session 5.2 min: theoretical P 0.52, empirical P 0.64 — 0.12 above the diagonal">
 <circle class="halo" cx="622.4" cy="580.0" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-above" cx="622.4" cy="580.0" r="8.5" fill="#007AFF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-above" cx="622.4" cy="580.0" r="8.5" fill="#0088FF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-58" class="pt hit" tabindex="0" role="img" aria-label="Session 5.2 min: theoretical P 0.53, empirical P 0.65 — 0.12 above the diagonal">
 <circle class="halo" cx="634.6" cy="569.9" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-above" cx="634.6" cy="569.9" r="8.5" fill="#007AFF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-above" cx="634.6" cy="569.9" r="8.5" fill="#0088FF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-59" class="pt hit" tabindex="0" role="img" aria-label="Session 5.3 min: theoretical P 0.53, empirical P 0.66 — 0.13 above the diagonal">
 <circle class="halo" cx="636.7" cy="559.8" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-above" cx="636.7" cy="559.8" r="8.5" fill="#007AFF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-above" cx="636.7" cy="559.8" r="8.5" fill="#0088FF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-60" class="pt hit" tabindex="0" role="img" aria-label="Session 5.3 min: theoretical P 0.53, empirical P 0.67 — 0.14 above the diagonal">
 <circle class="halo" cx="638.0" cy="549.6" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-above" cx="638.0" cy="549.6" r="8.5" fill="#007AFF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-above" cx="638.0" cy="549.6" r="8.5" fill="#0088FF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-61" class="pt hit" tabindex="0" role="img" aria-label="Session 5.3 min: theoretical P 0.54, empirical P 0.68 — 0.15 above the diagonal">
 <circle class="halo" cx="640.5" cy="539.5" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-above" cx="640.5" cy="539.5" r="8.5" fill="#007AFF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-above" cx="640.5" cy="539.5" r="8.5" fill="#0088FF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-62" class="pt hit" tabindex="0" role="img" aria-label="Session 5.3 min: theoretical P 0.54, empirical P 0.69 — 0.15 above the diagonal">
 <circle class="halo" cx="643.9" cy="529.3" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-above" cx="643.9" cy="529.3" r="8.5" fill="#007AFF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-above" cx="643.9" cy="529.3" r="8.5" fill="#0088FF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-63" class="pt hit" tabindex="0" role="img" aria-label="Session 5.4 min: theoretical P 0.55, empirical P 0.71 — 0.15 above the diagonal">
 <circle class="halo" cx="656.5" cy="519.1" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-above" cx="656.5" cy="519.1" r="8.5" fill="#007AFF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-above" cx="656.5" cy="519.1" r="8.5" fill="#0088FF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-64" class="pt hit" tabindex="0" role="img" aria-label="Session 5.5 min: theoretical P 0.58, empirical P 0.72 — 0.14 above the diagonal">
 <circle class="halo" cx="676.7" cy="508.9" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-above" cx="676.7" cy="508.9" r="8.5" fill="#007AFF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-above" cx="676.7" cy="508.9" r="8.5" fill="#0088FF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-65" class="pt hit" tabindex="0" role="img" aria-label="Session 5.7 min: theoretical P 0.61, empirical P 0.73 — 0.12 above the diagonal">
 <circle class="halo" cx="706.9" cy="498.8" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-above" cx="706.9" cy="498.8" r="8.5" fill="#007AFF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-above" cx="706.9" cy="498.8" r="8.5" fill="#0088FF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-66" class="pt hit" tabindex="0" role="img" aria-label="Session 5.8 min: theoretical P 0.62, empirical P 0.74 — 0.12 above the diagonal">
 <circle class="halo" cx="719.1" cy="488.6" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-above" cx="719.1" cy="488.6" r="8.5" fill="#007AFF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-above" cx="719.1" cy="488.6" r="8.5" fill="#0088FF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-67" class="pt hit" tabindex="0" role="img" aria-label="Session 6.0 min: theoretical P 0.65, empirical P 0.75 — 0.10 above the diagonal">
 <circle class="halo" cx="743.5" cy="478.5" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-above" cx="743.5" cy="478.5" r="8.5" fill="#007AFF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-above" cx="743.5" cy="478.5" r="8.5" fill="#0088FF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-68" class="pt hit" tabindex="0" role="img" aria-label="Session 6.0 min: theoretical P 0.65, empirical P 0.76 — 0.11 above the diagonal">
 <circle class="halo" cx="745.4" cy="468.4" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-above" cx="745.4" cy="468.4" r="8.5" fill="#007AFF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-above" cx="745.4" cy="468.4" r="8.5" fill="#0088FF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-69" class="pt hit" tabindex="0" role="img" aria-label="Session 6.5 min: theoretical P 0.72, empirical P 0.77 — 0.06 above the diagonal">
 <circle class="halo" cx="805.1" cy="458.2" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-above" cx="805.1" cy="458.2" r="8.5" fill="#007AFF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-above" cx="805.1" cy="458.2" r="8.5" fill="#0088FF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-70" class="pt hit" tabindex="0" role="img" aria-label="Session 6.8 min: theoretical P 0.76, empirical P 0.78 — 0.03 above the diagonal">
 <circle class="halo" cx="843.0" cy="448.1" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-above" cx="843.0" cy="448.1" r="8.5" fill="#007AFF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-above" cx="843.0" cy="448.1" r="8.5" fill="#0088FF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-71" class="pt hit" tabindex="0" role="img" aria-label="Session 7.1 min: theoretical P 0.79, empirical P 0.79 — 0.00 above the diagonal">
 <circle class="halo" cx="872.6" cy="437.9" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-above" cx="872.6" cy="437.9" r="8.5" fill="#007AFF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-above" cx="872.6" cy="437.9" r="8.5" fill="#0088FF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-72" class="pt hit" tabindex="0" role="img" aria-label="Session 7.1 min: theoretical P 0.79, empirical P 0.81 — 0.01 above the diagonal">
 <circle class="halo" cx="875.1" cy="427.7" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-above" cx="875.1" cy="427.7" r="8.5" fill="#007AFF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-above" cx="875.1" cy="427.7" r="8.5" fill="#0088FF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-73" class="pt hit" tabindex="0" role="img" aria-label="Session 7.1 min: theoretical P 0.80, empirical P 0.82 — 0.02 above the diagonal">
 <circle class="halo" cx="880.9" cy="417.5" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-above" cx="880.9" cy="417.5" r="8.5" fill="#007AFF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-above" cx="880.9" cy="417.5" r="8.5" fill="#0088FF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-74" class="pt hit" tabindex="0" role="img" aria-label="Session 7.2 min: theoretical P 0.81, empirical P 0.83 — 0.02 above the diagonal">
 <circle class="halo" cx="887.2" cy="407.4" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-above" cx="887.2" cy="407.4" r="8.5" fill="#007AFF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-above" cx="887.2" cy="407.4" r="8.5" fill="#0088FF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-75" class="pt hit" tabindex="0" role="img" aria-label="Session 7.2 min: theoretical P 0.81, empirical P 0.84 — 0.03 above the diagonal">
 <circle class="halo" cx="889.8" cy="397.2" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-above" cx="889.8" cy="397.2" r="8.5" fill="#007AFF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-above" cx="889.8" cy="397.2" r="8.5" fill="#0088FF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-76" class="pt hit" tabindex="0" role="img" aria-label="Session 7.3 min: theoretical P 0.81, empirical P 0.85 — 0.04 above the diagonal">
 <circle class="halo" cx="892.2" cy="387.1" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-above" cx="892.2" cy="387.1" r="8.5" fill="#007AFF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-above" cx="892.2" cy="387.1" r="8.5" fill="#0088FF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-77" class="pt hit" tabindex="0" role="img" aria-label="Session 7.5 min: theoretical P 0.84, empirical P 0.86 — 0.02 above the diagonal">
 <circle class="halo" cx="917.9" cy="377.0" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-above" cx="917.9" cy="377.0" r="8.5" fill="#007AFF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-above" cx="917.9" cy="377.0" r="8.5" fill="#0088FF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-78" class="pt hit" tabindex="0" role="img" aria-label="Session 7.9 min: theoretical P 0.88, empirical P 0.87 — 0.01 below the diagonal">
 <circle class="halo" cx="951.8" cy="366.8" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-below" cx="951.8" cy="366.8" r="8.5" fill="#FF9500" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-below" cx="951.8" cy="366.8" r="8.5" fill="#FF8D28" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-79" class="pt hit" tabindex="0" role="img" aria-label="Session 8.1 min: theoretical P 0.89, empirical P 0.88 — 0.00 below the diagonal">
 <circle class="halo" cx="959.7" cy="356.7" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-below" cx="959.7" cy="356.7" r="8.5" fill="#FF9500" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-below" cx="959.7" cy="356.7" r="8.5" fill="#FF8D28" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-80" class="pt hit" tabindex="0" role="img" aria-label="Session 8.1 min: theoretical P 0.89, empirical P 0.89 — 0.00 above the diagonal">
 <circle class="halo" cx="964.2" cy="346.5" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-above" cx="964.2" cy="346.5" r="8.5" fill="#007AFF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-above" cx="964.2" cy="346.5" r="8.5" fill="#0088FF" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-81" class="pt hit" tabindex="0" role="img" aria-label="Session 8.9 min: theoretical P 0.94, empirical P 0.91 — 0.03 below the diagonal">
 <circle class="halo" cx="1007.1" cy="336.3" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-below" cx="1007.1" cy="336.3" r="8.5" fill="#FF9500" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-below" cx="1007.1" cy="336.3" r="8.5" fill="#FF8D28" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-82" class="pt hit" tabindex="0" role="img" aria-label="Session 9.3 min: theoretical P 0.96, empirical P 0.92 — 0.04 below the diagonal">
 <circle class="halo" cx="1023.7" cy="326.1" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-below" cx="1023.7" cy="326.1" r="8.5" fill="#FF9500" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-below" cx="1023.7" cy="326.1" r="8.5" fill="#FF8D28" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-83" class="pt hit" tabindex="0" role="img" aria-label="Session 9.4 min: theoretical P 0.96, empirical P 0.93 — 0.03 below the diagonal">
 <circle class="halo" cx="1027.3" cy="316.0" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-below" cx="1027.3" cy="316.0" r="8.5" fill="#FF9500" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-below" cx="1027.3" cy="316.0" r="8.5" fill="#FF8D28" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-84" class="pt hit" tabindex="0" role="img" aria-label="Session 9.9 min: theoretical P 0.97, empirical P 0.94 — 0.04 below the diagonal">
 <circle class="halo" cx="1040.2" cy="305.8" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-below" cx="1040.2" cy="305.8" r="8.5" fill="#FF9500" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-below" cx="1040.2" cy="305.8" r="8.5" fill="#FF8D28" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-85" class="pt hit" tabindex="0" role="img" aria-label="Session 10.4 min: theoretical P 0.98, empirical P 0.95 — 0.03 below the diagonal">
 <circle class="halo" cx="1048.8" cy="295.7" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-below" cx="1048.8" cy="295.7" r="8.5" fill="#FF9500" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-below" cx="1048.8" cy="295.7" r="8.5" fill="#FF8D28" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-86" class="pt hit" tabindex="0" role="img" aria-label="Session 10.5 min: theoretical P 0.99, empirical P 0.96 — 0.02 below the diagonal">
 <circle class="halo" cx="1050.4" cy="285.6" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-below" cx="1050.4" cy="285.6" r="8.5" fill="#FF9500" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-below" cx="1050.4" cy="285.6" r="8.5" fill="#FF8D28" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-87" class="pt hit" tabindex="0" role="img" aria-label="Session 10.9 min: theoretical P 0.99, empirical P 0.97 — 0.02 below the diagonal">
 <circle class="halo" cx="1055.7" cy="275.4" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-below" cx="1055.7" cy="275.4" r="8.5" fill="#FF9500" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-below" cx="1055.7" cy="275.4" r="8.5" fill="#FF8D28" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-88" class="pt hit" tabindex="0" role="img" aria-label="Session 11.4 min: theoretical P 0.99, empirical P 0.98 — 0.01 below the diagonal">
 <circle class="halo" cx="1059.3" cy="265.3" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-below" cx="1059.3" cy="265.3" r="8.5" fill="#FF9500" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-below" cx="1059.3" cy="265.3" r="8.5" fill="#FF8D28" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-89" class="pt hit" tabindex="0" role="img" aria-label="Session 14.9 min: theoretical P 1.00, empirical P 0.99 — 0.01 below the diagonal">
 <circle class="halo" cx="1064.0" cy="255.1" r="18" fill="#1D1D1F" fill-opacity="0.08"/>
-<circle class="pp-below" cx="1064.0" cy="255.1" r="8.5" fill="#FF9500" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<circle class="pp-below" cx="1064.0" cy="255.1" r="8.5" fill="#FF8D28" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1.6"/>
 </g>
 <g id="pt-tip-0" class="tip"><rect x="71.9" y="1132.9" width="270" height="62.5" rx="9" fill="#FFFFFF" stroke="#ECECEC" stroke-width="1.2"/><text x="80.9" y="1154.4" font-size="12.5" font-weight="700" fill="#1D1D1F">Session 1.2 min</text><text x="80.9" y="1170.4" font-size="12.5" font-weight="400" fill="#6E6E73">theoretical P 0.06, empirical P 0.01</text><text x="80.9" y="1186.4" font-size="12.5" font-weight="400" fill="#6E6E73">0.06 below the diagonal</text></g>
 <g id="pt-tip-1" class="tip"><rect x="93.1" y="1122.7" width="270" height="62.5" rx="9" fill="#FFFFFF" stroke="#ECECEC" stroke-width="1.2"/><text x="102.1" y="1144.2" font-size="12.5" font-weight="700" fill="#1D1D1F">Session 1.7 min</text><text x="102.1" y="1160.2" font-size="12.5" font-weight="400" fill="#6E6E73">theoretical P 0.09, empirical P 0.02</text><text x="102.1" y="1176.2" font-size="12.5" font-weight="400" fill="#6E6E73">0.07 below the diagonal</text></g>
@@ -505,9 +505,9 @@
 <g id="pt-tip-87" class="tip"><rect x="886" y="249.4" width="270" height="62.5" rx="9" fill="#FFFFFF" stroke="#ECECEC" stroke-width="1.2"/><text x="895" y="270.9" font-size="12.5" font-weight="700" fill="#1D1D1F">Session 10.9 min</text><text x="895" y="286.9" font-size="12.5" font-weight="400" fill="#6E6E73">theoretical P 0.99, empirical P 0.97</text><text x="895" y="302.9" font-size="12.5" font-weight="400" fill="#6E6E73">0.02 below the diagonal</text></g>
 <g id="pt-tip-88" class="tip"><rect x="886" y="239.3" width="270" height="62.5" rx="9" fill="#FFFFFF" stroke="#ECECEC" stroke-width="1.2"/><text x="895" y="260.8" font-size="12.5" font-weight="700" fill="#1D1D1F">Session 11.4 min</text><text x="895" y="276.8" font-size="12.5" font-weight="400" fill="#6E6E73">theoretical P 0.99, empirical P 0.98</text><text x="895" y="292.8" font-size="12.5" font-weight="400" fill="#6E6E73">0.01 below the diagonal</text></g>
 <g id="pt-tip-89" class="tip"><rect x="886" y="229.1" width="270" height="62.5" rx="9" fill="#FFFFFF" stroke="#ECECEC" stroke-width="1.2"/><text x="895" y="250.6" font-size="12.5" font-weight="700" fill="#1D1D1F">Session 14.9 min</text><text x="895" y="266.6" font-size="12.5" font-weight="400" fill="#6E6E73">theoretical P 1.00, empirical P 0.99</text><text x="895" y="282.6" font-size="12.5" font-weight="400" fill="#6E6E73">0.01 below the diagonal</text></g>
-<text class="pp-above" x="218.6" y="341.4" font-size="26" font-weight="700" fill="#007AFF" text-anchor="start">Above the line</text>
-<text class="pp-above" x="218.6" y="373.4" font-size="22" fill="#007AFF" text-anchor="start">Normal under-states P</text>
-<text class="pp-below" x="995.5" y="1017.8" font-size="26" font-weight="700" fill="#FF9500" text-anchor="end">Below the line</text>
-<text class="pp-below" x="995.5" y="1049.8" font-size="22" fill="#FF9500" text-anchor="end">Normal over-states P</text>
+<text class="pp-above" x="218.6" y="341.4" font-size="26" font-weight="700" fill="#0088FF" text-anchor="start">Above the line</text>
+<text class="pp-above" x="218.6" y="373.4" font-size="22" fill="#0088FF" text-anchor="start">Normal under-states P</text>
+<text class="pp-below" x="995.5" y="1017.8" font-size="26" font-weight="700" fill="#FF8D28" text-anchor="end">Below the line</text>
+<text class="pp-below" x="995.5" y="1049.8" font-size="22" fill="#FF8D28" text-anchor="end">Normal over-states P</text>
 <script><![CDATA[(function(){var me=document.currentScript,svg=me.ownerSVGElement||me.parentNode;if(svg.closest&&svg.closest('[data-fs-target]'))return;var fe=null;try{fe=window.frameElement}catch(err){}if(fe&&fe.hasAttribute('data-lb-obj'))return;if(fe&&window.parent!==window){svg.addEventListener('click',function(){window.parent.postMessage({szFig:1,type:'open-fullscreen'},'*');});return;}var req=svg.requestFullscreen||svg.webkitRequestFullscreen;if(!req)return;var t=function(){var f=document.fullscreenElement||document.webkitFullscreenElement;if(f===svg)(document.exitFullscreen||document.webkitExitFullscreen).call(document);else req.call(svg);};svg.style.cursor='pointer';svg.setAttribute('tabindex','0');svg.addEventListener('click',t);svg.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();t();}});})();]]></script>
 </svg>

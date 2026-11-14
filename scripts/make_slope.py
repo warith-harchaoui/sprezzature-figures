@@ -54,8 +54,8 @@ def _item_colors(
 ) -> Dict[str, str]:
     palette = load_palette(accessibility, theme=theme)
     hues = [palette.get(h, d) for h, d in (
-        ("Blue", "#007AFF"), ("Orange", "#FF9500"), ("Green", "#34C759"),
-        ("Purple", "#AF52DE"), ("Red", "#FF3B30"), ("Teal", "#79DBDC"),
+        ("Blue", "#0088FF"), ("Orange", "#FF8D28"), ("Green", "#34C759"),
+        ("Purple", "#CB30E0"), ("Red", "#FF383C"), ("Teal", "#00C3D0"),
     )]
     return {item: hues[i % len(hues)] for i, item in enumerate(items)}
 

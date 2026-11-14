@@ -84,8 +84,8 @@ _BG = "#FFFFFF"         # white ground
 # (actual above plan) reads Blue (the positive side); a shortfall (actual below
 # plan) reads Red (the warning side). The two hues stay distinct under
 # deuteranopia and protanopia and separate cleanly in greyscale by lightness.
-_ABOVE_HUE = "#007AFF"  # Apple Blue — actual is ahead of plan (surplus)
-_BELOW_HUE = "#FF3B30"  # Apple Red  — actual is behind plan (shortfall)
+_ABOVE_HUE = "#0088FF"  # Apple Blue — actual is ahead of plan (surplus)
+_BELOW_HUE = "#FF383C"  # Apple Red  — actual is behind plan (shortfall)
 # Line colours: the "actual" curve is the hero (deep ink-blue), the "plan"
 # curve is a calmer reference grey so the surplus / shortfall band is the star.
 _ACTUAL_LINE = "#0A2540"  # near-navy — the measured series
@@ -771,9 +771,9 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--theme",
-        choices=("corporate", "academic"),
+        choices=("corporate", "academic", "print"),
         default="corporate",
-        help="visual theme: corporate (default, Roboto) or academic (LaTeX-style Latin Modern)",
+        help="visual theme: corporate (default, Roboto), academic (LaTeX-style Latin Modern) or print (Roboto, print palette)",
     )
     return parser
 

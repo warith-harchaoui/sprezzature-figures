@@ -53,12 +53,12 @@ STAGE_COLORS = [
     # used to sit at positions 4 and 5 (directly touching); Red is moved to
     # the end so it instead borders Turquoise, a safe pair under every CVD
     # type, and Green now borders Turquoise on its other side too.
-    "#007AFF",   # Blue (top: largest audience)
-    "#AF52DE",   # Purple
-    "#FF9500",   # Orange
-    "#28CD41",   # Green
-    "#79DBDC",   # Turquoise
-    "#FF3B30",   # Red (bottom: smallest group)
+    "#0088FF",   # Blue (top: largest audience)
+    "#CB30E0",   # Purple
+    "#FF8D28",   # Orange
+    "#34C759",   # Green
+    "#00C3D0",   # Turquoise
+    "#FF383C",   # Red (bottom: smallest group)
 ]
 
 

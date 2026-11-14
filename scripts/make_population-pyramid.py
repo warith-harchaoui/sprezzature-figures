@@ -46,7 +46,7 @@ DEMO_DATA: List[Dict[str, Any]] = [
 
 def _sex_colors(accessibility: str = "universal", theme: str = "corporate") -> Dict[str, str]:
     palette = load_palette(accessibility, theme=theme)
-    return {"Male": palette.get("Blue", "#007AFF"), "Female": palette.get("Orange", "#FF9500")}
+    return {"Male": palette.get("Blue", "#0088FF"), "Female": palette.get("Orange", "#FF8D28")}
 
 
 def build_svg(

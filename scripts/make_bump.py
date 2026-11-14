@@ -194,8 +194,8 @@ def build_svg(
     palette = load_palette(accessibility, theme=theme)
     wheel = [
         palette.get(key, fallback) for key, fallback in (
-            ("Blue", "#007AFF"), ("Orange", "#FF9500"), ("Green", "#28CD41"),
-            ("Purple", "#5856D6"), ("Red", "#FF3B30"), ("Teal", "#30B0C7"),
+            ("Blue", "#0088FF"), ("Orange", "#FF8D28"), ("Green", "#34C759"),
+            ("Purple", "#5856D6"), ("Red", "#FF383C"), ("Teal", "#00C3D0"),
         )
     ]
     ink_for = {name: wheel[index % len(wheel)] for index, name in enumerate(names)}

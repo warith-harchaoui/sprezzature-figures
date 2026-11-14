@@ -182,7 +182,7 @@ def _band_hex(palette: Dict[str, str]) -> List[str]:
     list of str
         ``[poor, satisfactory, good]`` hex strings, palest first.
     """
-    # Three tints of the Apple Blue #007AFF, mixed toward white. Lightness
+    # Three tints of the Apple Blue #0088FF, mixed toward white. Lightness
     # rises poor → good so the ranking reads even in greyscale; all three
     # stay pale enough to carry the dark navy bar and orange tick legibly,
     # with a clear step between each so the zones separate at a glance.
@@ -238,8 +238,8 @@ def build_svg(
     mono_family = "Roboto Mono, monospace" if theme == "corporate" else mono_stack_for_theme(theme)
     unit_family = "Roboto, sans-serif" if theme == "corporate" else chrome_family
     green = palette.get("Green", "#34C759")
-    red = palette.get("Red", "#FF3B30")
-    orange = palette.get("Orange", "#FF9500")
+    red = palette.get("Red", "#FF383C")
+    orange = palette.get("Orange", "#FF8D28")
     band_fills = _band_hex(palette)
     # The measure bar is a deep navy ink — darker than the darkest band so
     # the value always reads on top of the blue ramp, yet warmer and less

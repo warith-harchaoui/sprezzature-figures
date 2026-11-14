@@ -82,7 +82,7 @@ TOP_LABELS = 10
 # a colour-vision deficiency.
 REGION_COLOR = {
     "Asia": "#0072B2", "Africa": "#E69F00", "Americas": "#009E73",
-    "Europe": "#CC79A7", "Oceania": "#D55E00",
+    "Europe": "#CC79A7", "Oceania": "#E73121",
 }
 
 # Period-accurate names: a country's label reads the name in use that year, so
@@ -435,7 +435,7 @@ def main(
     if title is None:
         svg.append('<text x="20" y="24" font-size="15" font-weight="700" fill="#1D1D1F">'
                    '<a href="https://www.youtube.com/watch?v=hVimVzgtD6w" target="_blank">'
-                   f'<tspan fill="#007AFF" text-decoration="underline">{lab["title_link"]}</tspan></a>'
+                   f'<tspan fill="#0088FF" text-decoration="underline">{lab["title_link"]}</tspan></a>'
                    f'{lab["title_rest"]}</text>')
     else:
         svg.append('<text x="20" y="24" font-size="15" font-weight="700" '
@@ -447,7 +447,7 @@ def main(
     csv_name = "tribute-hans-rosling-1950-2025" + (".fr.csv" if fr else ".csv")
     svg.append(
         f'<a href="../../data/{csv_name}" target="_blank">'
-        f'<text x="20" y="{H - 8}" text-anchor="start" font-size="10" fill="#007AFF" '
+        f'<text x="20" y="{H - 8}" text-anchor="start" font-size="10" fill="#0088FF" '
         f'text-decoration="underline">{lab["data_link"]}</text></a>')
 
     order = sorted(data.items(), key=lambda kv: -max(kv[1]["pop"]))
@@ -649,9 +649,9 @@ if __name__ == "__main__":
              "the identity that keeps the shipped SVG byte-identical)")
     parser.add_argument(
         "--theme",
-        choices=("corporate", "academic"),
+        choices=("corporate", "academic", "print"),
         default="corporate",
-        help="visual theme: corporate (default, Roboto) or academic (LaTeX-style Latin Modern)",
+        help="visual theme: corporate (default, Roboto), academic (LaTeX-style Latin Modern) or print (Roboto, print palette)",
     )
     args = parser.parse_args()
 

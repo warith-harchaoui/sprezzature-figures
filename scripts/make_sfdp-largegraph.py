@@ -133,8 +133,8 @@ def _communities_from_rows(
 # ------------------------------------------------------------------
 PALETTE = load_palette()
 _FALLBACK = {
-    "Blue": "#007AFF", "Purple": "#AF52DE", "Orange": "#FF9500",
-    "Green": "#34C759", "Teal": "#5AC8FA", "Red": "#FF3B30",
+    "Blue": "#0088FF", "Purple": "#CB30E0", "Orange": "#FF8D28",
+    "Green": "#34C759", "Teal": "#00C3D0", "Red": "#FF383C",
 }
 
 

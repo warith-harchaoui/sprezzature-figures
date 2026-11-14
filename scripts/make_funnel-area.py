@@ -143,11 +143,11 @@ def build_svg(
     palette = load_palette(accessibility, theme=theme)
     wheel = [
         palette.get(key, fallback) for key, fallback in (
-            ("Blue", "#007AFF"), ("Teal", "#30B0C7"), ("Green", "#28CD41"),
-            ("Purple", "#5856D6"), ("Orange", "#FF9500"), ("Red", "#FF3B30"),
+            ("Blue", "#0088FF"), ("Teal", "#00C3D0"), ("Green", "#34C759"),
+            ("Purple", "#5856D6"), ("Orange", "#FF8D28"), ("Red", "#FF383C"),
         )
     ]
-    accent = palette.get("Orange", "#FF9500")
+    accent = palette.get("Orange", "#FF8D28")
 
     plot_x = 180.0
     plot_y = 214.0

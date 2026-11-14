@@ -31,7 +31,7 @@ from _svg import foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noq
 from _style import BG, GRIDLINE, INK, SECONDARY  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
-COLOR_LINE = "#007AFF"
+COLOR_LINE = "#0088FF"
 
 DEMO_DATA: List[Dict[str, Any]] = [
     {"t": 0, "y": 2}, {"t": 1, "y": 2}, {"t": 2, "y": 5}, {"t": 3, "y": 5}, {"t": 4, "y": 4},

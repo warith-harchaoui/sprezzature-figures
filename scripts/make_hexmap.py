@@ -359,7 +359,7 @@ def build_svg(
         A complete, standalone SVG document.
     """
     palette = load_palette(accessibility, theme=theme)
-    blue = palette.get("Blue", "#007AFF")
+    blue = palette.get("Blue", "#0088FF")
 
     rng = random.Random(_SEED)
     points = _sample_points(3200, rng)
@@ -589,7 +589,7 @@ def make_hexmap(
     """Render the hex tile-grid map and write it to ``out``.
 
     The standard ``make_<kind>`` entry the figure registry dispatches to, so
-    ``make-figure hexmap`` and the editor work like every other figure. The demo
+    ``make-figure hexmap`` and the library work like every other figure. The demo
     geography and values are baked into the hand-authored SVG, so ``data`` and
     ``title`` are accepted for dispatcher parity and unused. ``theme`` is
     forwarded to :func:`build_svg`.

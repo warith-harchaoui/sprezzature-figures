@@ -189,15 +189,15 @@ def build_svg(
         A complete, standalone SVG document.
     """
     palette: Dict[str, str] = load_palette(accessibility, theme=theme)
-    accent = palette.get("Blue", "#007AFF")       # central scatter
-    trend = palette.get("Orange", "#FF9500")      # fitted trend line
+    accent = palette.get("Blue", "#0088FF")       # central scatter
+    trend = palette.get("Orange", "#FF8D28")      # fitted trend line
     # Each marginal carries its OWN hue so the eye tells the two distributions
     # apart at a glance: sleep (top) is Apple Green, reaction time (right) is
     # Apple Purple. Green / Blue / Orange / Purple all separate under
     # deuteranopia and in greyscale (distinct lightness), and each marginal is
     # also positioned + titled, so colour is never the only channel.
     top_fill = palette.get("Green", "#34C759")
-    right_fill = palette.get("Purple", "#AF52DE")
+    right_fill = palette.get("Purple", "#CB30E0")
     ink = "#1D1D1F"
     secondary = "#6E6E73"
     grid_col = "#EEEEEE"

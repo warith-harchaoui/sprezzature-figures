@@ -429,7 +429,7 @@ def render_dag(dag_string: str, out_dir: Path, dark: bool) -> None:
         return x, y
 
     palette = load_palette()
-    accent = palette.get("Blue", "#007AFF")
+    accent = palette.get("Blue", "#0088FF")
     fg = "#F5F5F7" if dark else "#1D1D1F"
     bg = "#1D1D1F" if dark else "#FFFFFF"
     chrome_family = chrome_stack_for_theme("corporate")
@@ -504,7 +504,7 @@ def render_forest_plot(summary: Dict[str, Any], out_dir: Path, dark: bool) -> No
             values.append(float(refute["new_effect"]))
 
     palette = load_palette()
-    blue = palette.get("Blue", "#007AFF")
+    blue = palette.get("Blue", "#0088FF")
     fg = "#F5F5F7" if dark else "#1D1D1F"
     bg = "#1D1D1F" if dark else "#FFFFFF"
     secondary = "#9C9CA3" if dark else "#6E6E73"

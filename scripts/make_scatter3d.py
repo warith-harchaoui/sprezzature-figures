@@ -87,9 +87,9 @@ _MONO = "Roboto Mono, ui-monospace, monospace"
 # (see :func:`_class_colors`), so ``--accessibility`` remaps these hues rather
 # than being a no-op.
 _BASE_CLASS_COLORS: Dict[str, str] = {
-    "Barolo": "#007AFF",      # blue
-    "Grignolino": "#FF9500",  # orange
-    "Barbera": "#AF52DE",     # purple
+    "Barolo": "#0088FF",      # blue
+    "Grignolino": "#FF8D28",  # orange
+    "Barbera": "#CB30E0",     # purple
 }
 
 
@@ -1302,9 +1302,9 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--theme",
-        choices=("corporate", "academic"),
+        choices=("corporate", "academic", "print"),
         default="corporate",
-        help="visual theme: corporate (default, Roboto) or academic (LaTeX-style Latin Modern)",
+        help="visual theme: corporate (default, Roboto), academic (LaTeX-style Latin Modern) or print (Roboto, print palette)",
     )
     return parser
 

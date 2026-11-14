@@ -304,7 +304,7 @@ def build_svg(
     palette = load_palette(accessibility, theme)
     fonts = chrome_stack_for_theme(theme)
     mono = mono_stack_for_theme(theme)
-    blue = palette.get("Blue", "#007AFF")
+    blue = palette.get("Blue", "#0088FF")
 
     rings = load_land_rings()
     project = fit_to_viewport(rings, _MAP_X, _MAP_Y, _MAP_W, _MAP_H)
@@ -462,7 +462,7 @@ def make_map_bubble(
     """Render the bubble map and write it to ``out``.
 
     The standard ``make_<kind>`` entry the figure registry dispatches to, so
-    ``make-figure map-bubble`` and the editor work like every other figure.
+    ``make-figure map-bubble`` and the library work like every other figure.
 
     Parameters
     ----------

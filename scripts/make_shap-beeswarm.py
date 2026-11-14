@@ -254,7 +254,7 @@ def build_svg(
 
     mono_family = mono_stack_for_theme(theme)
     palette = load_palette(accessibility, theme=theme)
-    marker = palette.get("Orange", "#FF9500")
+    marker = palette.get("Orange", "#FF8D28")
 
     spread = [shap for _, _, _, pairs in summary for shap, _ in pairs]
     ticks = nice_ticks_range(min(spread), max(spread), 5)

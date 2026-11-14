@@ -398,9 +398,10 @@ def render_cli(
     if "theme" in params:
         parser.add_argument(
             "--theme",
-            choices=("corporate", "academic"),
+            choices=("corporate", "academic", "print"),
             default="corporate",
-            help="visual theme: corporate (default, Roboto) or academic (LaTeX-style Latin Modern)",
+            help="visual theme: corporate (default, Roboto), academic (LaTeX-style Latin Modern) "
+            "or print (Roboto, the print palette of deraison.ai/colors)",
         )
     # Build lazily (after parsing) so ``--help`` never runs the figure code.
     # Every flag below — fixed trio and optional alike — is passed only to

@@ -287,7 +287,7 @@ def test_kind_options_lists_what_the_figure_accepts() -> None:
     # sankey's own vocabulary, which no caller could discover before.
     assert options["volume_unit"]["default"] == "visitors"
     assert options["stage_names"]["type"] == "str_list"
-    assert options["theme"]["choices"] == ["corporate", "academic"]
+    assert options["theme"]["choices"] == ["corporate", "academic", "print"]
     assert options["title"]["cli_flag"] == "--title"
 
 

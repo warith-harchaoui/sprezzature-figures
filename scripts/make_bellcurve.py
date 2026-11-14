@@ -33,10 +33,10 @@ from _style import BG, GRIDLINE, INK, SECONDARY  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 
-COLOR_FILL = "#007AFF"
+COLOR_FILL = "#0088FF"
 COLOR_STROKE = "#0051A8"
-COLOR_SIGMA1 = "#28CD41"
-COLOR_MEAN = "#FF3B30"
+COLOR_SIGMA1 = "#34C759"
+COLOR_MEAN = "#FF383C"
 
 # The make_<kind> contract's row-record view of the distribution: a single
 # row carrying the two parameters the curve is drawn from. make_bellcurve()

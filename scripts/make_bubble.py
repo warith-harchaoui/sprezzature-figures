@@ -106,9 +106,9 @@ def _region_color(accessibility: str = "universal", theme: str = "corporate") ->
     # regions stay legible in greyscale, not just in colour.
     palette = load_palette(accessibility, theme=theme)
     return {
-        "Asia": palette.get("Blue", "#007AFF"),
-        "Europe": palette.get("Orange", "#FF9500"),
-        "Africa": palette.get("Brown", "#A2845E"),
+        "Asia": palette.get("Blue", "#0088FF"),
+        "Europe": palette.get("Orange", "#FF8D28"),
+        "Africa": palette.get("Brown", "#AC7F5E"),
     }
 
 

@@ -146,8 +146,8 @@ def _alternating_tints(palette: Dict[str, str]) -> Tuple[str, str]:
     # Deep Apple blue for odd chromosomes; the lighter sky/teal for even
     # ones. Both are pulled from the curated palette so make ↔ audit stay
     # in sync.
-    odd = palette.get("Blue", "#007AFF")
-    even = palette.get("Teal", "#5AC8FA")
+    odd = palette.get("Blue", "#0088FF")
+    even = palette.get("Teal", "#00C3D0")
     return odd, even
 
 
@@ -285,7 +285,7 @@ def build_svg(
     peaks = peaks if peaks else _PEAKS
     palette = load_palette(accessibility, theme=theme)
     odd_hex, even_hex = _alternating_tints(palette)
-    hit_hex = palette.get("Red", "#FF3B30")  # genome-wide-significant peaks
+    hit_hex = palette.get("Red", "#FF383C")  # genome-wide-significant peaks
 
     bands, mb_per_px = _band_geometry()
     rng = random.Random(_SEED)

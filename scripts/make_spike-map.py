@@ -705,7 +705,7 @@ def make_spike_map(
     """Render the spike map and write it to ``out``.
 
     The standard ``make_<kind>`` entry the figure registry dispatches to, so
-    ``make-figure spike-map`` and the editor work like every other figure.
+    ``make-figure spike-map`` and the library work like every other figure.
 
     Parameters
     ----------

@@ -169,7 +169,7 @@ def _ramp(palette: Dict[str, str]) -> List[str]:
     five hex values, so an accessibility level that changes the blue changes
     the whole ramp with it instead of leaving four hardcoded cousins behind.
     """
-    base = palette.get("Blue", "#007AFF").lstrip("#")
+    base = palette.get("Blue", "#0088FF").lstrip("#")
     r, g, b = (int(base[i : i + 2], 16) for i in (0, 2, 4))
     out: List[str] = []
     for i in range(len(BANDS)):
@@ -359,7 +359,7 @@ def make_map_tilegrid(
     """Render the tile-grid cartogram and write it to ``out``.
 
     The standard ``make_<kind>`` entry the figure registry dispatches to, so
-    ``make-figure map-tilegrid`` and the editor work like every other figure.
+    ``make-figure map-tilegrid`` and the library work like every other figure.
 
     Parameters
     ----------

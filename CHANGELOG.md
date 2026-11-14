@@ -2,6 +2,47 @@
 
 ## [Unreleased]
 
+## [2.14.0] — 2026-11-14
+
+### Changed
+
+- **The colours come from [deraison.ai/colors](https://deraison.ai/colors/).**
+  The site is the source of truth for every colour in the suite: three
+  palettes with the same eleven names (Red, Orange, Yellow, Green,
+  Turquoise, Blue, Purple, Pink, Brown, Black, Gray). `_style.py` carries a
+  copy of the three (`_PALETTES`) and reads sprezzature-colors' copy of the
+  site's files (`palette-<theme>.csv`, shipped since its 1.4.0) when it is
+  installed. An older sprezzature-colors, which has only `palette.csv` and
+  the colours of before, is not read: the built-in copy wins.
+  - **corporate**: Apple's system colours of June 9, 2025. Red `#FF383C`,
+    orange `#FF8D28`, turquoise `#00C3D0`, blue `#0088FF`, purple
+    `#CB30E0`, brown `#AC7F5E`; the generators' hard-coded hues follow,
+    light tints and dark-mode values included.
+  - **academic**: the red is the Colour Universal Design (CUD) vermilion
+    `#E73121`, pink `#FF8082`, brown `#804000`, gray `#84919E`.
+  - **Teal and Mint** were two of Apple's earlier colours. Teal now reads
+    as Turquoise and Mint as Green (the rule academic already followed).
+    Where a figure used Mint beside Green, it takes another name: Pink for
+    the flowering stage of `cycle`, Yellow for the Great Plains of
+    `dependency-wheel`, Pink for France in `variwide`; `ridgeline`'s ramp
+    anchor sits halfway between Turquoise and Green.
+  - `qualitative_sequence` skips the neutrals by name, not by a list of
+    hex codes that held for one palette only.
+  - `SEMANTIC_KEYWORDS` names `Turquoise`, not `Teal`; the colour = meaning
+    tables in the README, LISEZMOI and skill give names and send the reader
+    to the site for the hex codes.
+- The 169 example SVGs in `assets/svg-examples/` were rendered again: the
+  145 that were the generator's exact output come from the new generators,
+  the 24 that were not (hand-adjusted or from other data) had their palette
+  codes replaced one for one, so nothing else in them moved.
+
+### Added
+
+- **The print theme**, `theme="print"` on every figure that takes a theme:
+  the print palette of the site, checked for offset printing on coated
+  paper, with the corporate typography (Roboto).
+- `_style.THEMES`.
+
 ## [2.13.0] — 2026-11-13
 
 ### Fixed

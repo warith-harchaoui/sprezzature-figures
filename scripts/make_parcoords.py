@@ -132,8 +132,8 @@ def build_svg(
     else:
         cars_by_class = CARS
         class_color = {
-            "Compact": pal.get("Blue", "#007AFF"),
-            "Midsize": pal.get("Orange", "#FF9500"),
+            "Compact": pal.get("Blue", "#0088FF"),
+            "Midsize": pal.get("Orange", "#FF8D28"),
             "SUV": pal.get("Green", "#34C759"),
         }
     n_ax = len(AXES)

@@ -33,7 +33,7 @@ from _svg import foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noq
 from _style import BG, GRIDLINE, INK, SECONDARY  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
-COLOR_LINE = "#007AFF"
+COLOR_LINE = "#0088FF"
 COLOR_MARKER = "#C7C7CC"
 
 

@@ -39,6 +39,7 @@ def style_without_a_checkout(tmp_path, monkeypatch):
     (scripts / "__init__.py").write_text("")
     (references / "__init__.py").write_text("")
     (references / "palette.csv").write_text("Name,HEX\n")
+    (references / "palette-corporate.csv").write_text("Name,Hexcode\nBlue,#0000FF\n")
     (scripts / "accessibility_levels.py").write_text(
         "def apply_level(palette, level):\n"
         "    return {key: '#123456' for key in palette}\n"
@@ -59,7 +60,23 @@ def test_a_level_is_applied_by_the_installed_wheel(style_without_a_checkout) -> 
 
 def test_the_palette_is_read_from_the_installed_wheel(style_without_a_checkout) -> None:
     """The canonical CSV is found the same way as the engine beside it."""
-    assert style_without_a_checkout._sibling_palette_csv().name == "palette.csv"
+    assert style_without_a_checkout._sibling_palette_csv().name == "palette-corporate.csv"
     assert style_without_a_checkout._sibling_palette_csv().parent.name == (
         "sprezzature_colors_references"
     )
+
+
+def test_an_older_colors_wheel_is_not_read(style_without_a_checkout, tmp_path) -> None:
+    """A wheel from before 1.4.0 has only ``palette.csv``, with the old colours.
+
+    Reading it would bring back the values deraison.ai/colors replaced on
+    2026-11-14, so the built-in copy of the site's palette wins instead.
+    """
+    (tmp_path / "site" / "sprezzature_colors_references" / "palette-corporate.csv").unlink()
+    assert style_without_a_checkout._sibling_palette_csv() is None
+    assert style_without_a_checkout.load_palette()["Blue"] == "#0088FF"
+
+
+def test_the_wheel_palette_is_read_with_the_site_column_names(style_without_a_checkout) -> None:
+    """The site's CSV names the colour ``Name``; it reads like ``Base``."""
+    assert style_without_a_checkout.load_palette()["Blue"] == "#0000FF"

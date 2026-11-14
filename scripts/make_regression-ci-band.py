@@ -35,9 +35,9 @@ from _svg import foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noq
 from _style import BG, GRIDLINE, INK, SECONDARY  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
-COLOR_BAND = "#FF3B30"
+COLOR_BAND = "#FF383C"
 COLOR_POINT = "#8E8E93"
-COLOR_LINE = "#FF3B30"
+COLOR_LINE = "#FF383C"
 
 
 def _make_demo_data() -> List[Dict[str, Any]]:

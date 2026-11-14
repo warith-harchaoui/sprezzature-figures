@@ -140,12 +140,12 @@ def _region_color(accessibility: str = "universal", theme: str = "corporate") ->
     """
     palette = load_palette(accessibility, theme=theme)
     return {
-        "Northeast":     palette.get("Blue", "#007AFF"),
-        "Midwest":       palette.get("Purple", "#AF52DE"),
-        "Southeast":     palette.get("Orange", "#FF9500"),
+        "Northeast":     palette.get("Blue", "#0088FF"),
+        "Midwest":       palette.get("Purple", "#CB30E0"),
+        "Southeast":     palette.get("Orange", "#FF8D28"),
         "Mountain West": palette.get("Green", "#34C759"),
-        "Pacific Coast": palette.get("Teal", "#5AC8FA"),
-        "Great Plains":  palette.get("Mint", "#00C7BE"),
+        "Pacific Coast": palette.get("Teal", "#00C3D0"),
+        "Great Plains":  palette.get("Yellow", "#FFCC00"),
     }
 
 

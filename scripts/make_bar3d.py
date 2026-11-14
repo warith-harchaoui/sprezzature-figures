@@ -75,8 +75,8 @@ _MONO = "Roboto Mono, ui-monospace, monospace"
 _LOW = "#B9E4E8"        # pale teal  — shortest bars
 _HIGH = "#0A4DA0"       # deep blue  — tallest bars
 
-# Chrome text (title/subtitle/desc/legend) in the two languages Editor can
-# ask for (editor/i18n.py detects the language from the imported CSV's
+# Chrome text (title/subtitle/desc/legend) in the two languages a caller can
+# ask for (one may detect the language from an imported CSV's
 # column names; the CLI/library/API/MCP always call with the "en" default).
 # The bar/cell data itself (row, column, value labels) is never translated
 # here — it already carries whatever language the caller's data uses.
@@ -722,8 +722,8 @@ def make_bar3d(
         Forwarded to :func:`build_svg`.
     language : str, optional
         Chrome-text language, ``"en"`` or ``"fr"``. Defaults to ``"en"``;
-        the editor passes the language detected from the imported
-        CSV's column names (see :data:`_STRINGS`).
+        a caller may pass the language detected from its
+        data's column names (see :data:`_STRINGS`).
     theme : str, optional
         Visual theme. Forwarded to :func:`build_svg`.
 

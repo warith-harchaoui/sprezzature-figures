@@ -95,7 +95,7 @@ _EMPTY = "#D6D6DB"
 _ZEBRA = "#F5F5F7"
 
 #: Keyboard focus ring, matching the rest of the catalogue.
-_FOCUS = "#007AFF"
+_FOCUS = "#0088FF"
 
 #: Separator between the pipe-joined components of one variant.
 _SEP = "|"

@@ -219,8 +219,8 @@ def build_svg(
 
     mono_family = mono_stack_for_theme(theme)
     palette = load_palette(accessibility, theme=theme)
-    quiet = palette.get("Blue", "#007AFF")
-    loud = palette.get("Orange", "#FF9500")
+    quiet = palette.get("Blue", "#0088FF")
+    loud = palette.get("Orange", "#FF8D28")
 
     moments = [moment for name in names for moment in events[name]]
     span_low, span_high = min(moments), max(moments)

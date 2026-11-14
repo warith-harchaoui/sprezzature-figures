@@ -30,10 +30,10 @@ from _scale import log_position, log_ticks, nice_ticks_range  # noqa: E402
 from _svg import foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
-COLOR_BOX = "#007AFF"
+COLOR_BOX = "#0088FF"
 
 # House palette for grouped boxes (side-by-side boxes within each category).
-GROUP_COLORS = ["#007AFF", "#FF9500", "#34C759", "#AF52DE", "#FF2D55", "#5AC8FA"]
+GROUP_COLORS = ["#0088FF", "#FF8D28", "#34C759", "#CB30E0", "#FF2D55", "#00C3D0"]
 
 DEPARTMENTS = ["Engineering", "Sales", "Marketing", "Support"]
 

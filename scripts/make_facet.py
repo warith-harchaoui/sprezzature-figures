@@ -191,8 +191,8 @@ def build_svg(
     # rather than the usual blue against red because this pair survives
     # every colour-vision deficiency, and nothing here is an alarm.
     palette = load_palette(accessibility, theme=theme)
-    rising = palette.get("Blue", "#007AFF")
-    falling = palette.get("Orange", "#FF9500")
+    rising = palette.get("Blue", "#0088FF")
+    falling = palette.get("Orange", "#FF8D28")
     # A series that ended where it started is neither, and colouring it as
     # a riser is a small lie the grid repeats every time it is read. Near
     # black separates it from the pale context lines without claiming a

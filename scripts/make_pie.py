@@ -194,9 +194,9 @@ def build_svg(
     hue_order = [
         palette.get(h, d)
         for h, d in (
-            ("Blue", "#007AFF"), ("Orange", "#FF9500"), ("Purple", "#AF52DE"),
-            ("Green", "#28CD41"), ("Yellow", "#FFCC00"), ("Teal", "#79DBDC"),
-            ("Red", "#FF3B30"), ("Pink", "#FF2D55"),
+            ("Blue", "#0088FF"), ("Orange", "#FF8D28"), ("Purple", "#CB30E0"),
+            ("Green", "#34C759"), ("Yellow", "#FFCC00"), ("Teal", "#00C3D0"),
+            ("Red", "#FF383C"), ("Pink", "#FF2D55"),
         )
     ]
 

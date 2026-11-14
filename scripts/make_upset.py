@@ -192,8 +192,8 @@ def build_svg(
     """
     sets, combinations = _reshape(data)
     palette = load_palette(accessibility, theme=theme)
-    bar_color = palette.get("Blue", "#007AFF")   # intersection-size bars
-    dot_color = palette.get("Purple", "#AF52DE")  # active matrix dots + set bars
+    bar_color = palette.get("Blue", "#0088FF")   # intersection-size bars
+    dot_color = palette.get("Purple", "#CB30E0")  # active matrix dots + set bars
 
     # --- panel geometry ------------------------------------------
     # Three coupled panels share a column grid (one column per

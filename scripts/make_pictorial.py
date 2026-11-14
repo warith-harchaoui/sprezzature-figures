@@ -131,7 +131,7 @@ def _dataset(
     # "Turquoise" is the palette's actual key (there is no "Teal" entry); the
     # previous "Teal" lookup silently missed and fell through to the generic
     # qualitative-sequence fallback below, which happened to land Amsterdam
-    # on the exact same hex (#FF9500) as Berlin's explicit "Orange" — two
+    # on the exact same hex (#FF8D28) as Berlin's explicit "Orange" — two
     # different cities rendered in an identical color in the same chart.
     fallback_colors = {"Copenhagen": "Green", "Amsterdam": "Turquoise", "Tokyo": "Blue",
                         "Berlin": "Orange", "Los Angeles": "Red"}

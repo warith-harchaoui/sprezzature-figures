@@ -47,7 +47,7 @@ from typing import Any, Dict, List, Optional, Tuple
 # House-style tokens (kept local so the module is import-light; they
 # mirror the house-style color/typography constants).
 # ------------------------------------------------------------------
-BLUE = "#007AFF"       # density fill / stroke (Apple system blue)
+BLUE = "#0088FF"       # density fill / stroke (Apple system blue)
 GRID = "#E5E5EA"       # hairline gridlines
 
 # Canvas geometry. Poster-scale (~1.8x the old 640x380) so the figure

@@ -58,7 +58,7 @@ def _nice_step(span: float, target_ticks: int = 5) -> float:
 
 _RAMP: Tuple[Tuple[float, str], ...] = (
     (0.00, "#EAF3FF"), (0.25, "#9CC7FF"), (0.55, "#3E9BFF"),
-    (0.80, "#007AFF"), (1.00, "#0A4DA0"),
+    (0.80, "#0088FF"), (1.00, "#0A4DA0"),
 )
 
 

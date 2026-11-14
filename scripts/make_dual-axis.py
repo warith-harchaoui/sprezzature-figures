@@ -172,8 +172,8 @@ def build_svg(
     rows = list(data if data else DEMO_DATA)
     mono_family = mono_stack_for_theme(theme)
     palette = load_palette(accessibility, theme=theme)
-    bar_colour = palette.get("Blue", "#007AFF")
-    line_colour = palette.get("Orange", "#FF9500")
+    bar_colour = palette.get("Blue", "#0088FF")
+    line_colour = palette.get("Orange", "#FF8D28")
 
     labels = [str(r[x]) for r in rows]
     bar_values = [float(r[bars]) for r in rows]

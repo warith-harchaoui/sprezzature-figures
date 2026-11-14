@@ -39,7 +39,7 @@ from _svg import svg_open, xml_escape  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
-COLOR_TOP = "#007AFF"
+COLOR_TOP = "#0088FF"
 COLOR_BOTTOM = "#EAF3FF"
 
 

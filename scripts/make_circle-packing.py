@@ -158,12 +158,12 @@ DEMO_DATA: List[Dict[str, Any]] = [{"path": path, "lines": loc} for path, loc in
 PALETTE = load_palette()
 PACKAGE_ORDER = ["services", "api", "models", "workers", "core", "tests"]
 PACKAGE_COLOR: Dict[str, str] = {
-    "services": PALETTE.get("Blue", "#007AFF"),
-    "api": PALETTE.get("Orange", "#FF9500"),
-    "models": PALETTE.get("Purple", "#AF52DE"),
+    "services": PALETTE.get("Blue", "#0088FF"),
+    "api": PALETTE.get("Orange", "#FF8D28"),
+    "models": PALETTE.get("Purple", "#CB30E0"),
     "workers": PALETTE.get("Green", "#34C759"),
-    "core": PALETTE.get("Teal", "#5AC8FA"),
-    "tests": PALETTE.get("Brown", "#A2845E"),
+    "core": PALETTE.get("Teal", "#00C3D0"),
+    "tests": PALETTE.get("Brown", "#AC7F5E"),
 }
 PACKAGE_LABEL: Dict[str, str] = {
     "services": "services/",
@@ -799,12 +799,12 @@ def build_svg(
     if theme != "corporate" or (accessibility and accessibility != "universal"):
         pal = load_palette(accessibility, theme=theme)
         package_color = {
-            "services": pal.get("Blue", "#007AFF"),
-            "api": pal.get("Orange", "#FF9500"),
-            "models": pal.get("Purple", "#AF52DE"),
+            "services": pal.get("Blue", "#0088FF"),
+            "api": pal.get("Orange", "#FF8D28"),
+            "models": pal.get("Purple", "#CB30E0"),
             "workers": pal.get("Green", "#34C759"),
-            "core": pal.get("Teal", "#5AC8FA"),
-            "tests": pal.get("Brown", "#A2845E"),
+            "core": pal.get("Teal", "#00C3D0"),
+            "tests": pal.get("Brown", "#AC7F5E"),
         }
 
         def _recolor(node: Dict[str, Any]) -> None:

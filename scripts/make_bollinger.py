@@ -84,12 +84,12 @@ _MONO = "Roboto Mono, ui-monospace, monospace"
 #   * the +/-2 sigma envelope is a soft Teal wash — cool, secondary, never
 #     competing with the price line that rides on top of it.
 _PRICE_LINE = "#1D1D1F"  # ink — the daily close, the star of the chart
-_MA_LINE = "#AF52DE"     # Apple Purple — the 20-day moving average, distinct from the band
-_BAND_FILL = "#007AFF"   # Apple Blue — the volatility envelope wash (soft, low opacity)
-_BAND_EDGE = "#5AC8FA"   # Apple Teal for the band edges
+_MA_LINE = "#CB30E0"     # Apple Purple — the 20-day moving average, distinct from the band
+_BAND_FILL = "#0088FF"   # Apple Blue — the volatility envelope wash (soft, low opacity)
+_BAND_EDGE = "#00C3D0"   # Apple Teal for the band edges
 # Event accents: a squeeze is a caution amber (volatility coiling), a breakout
 # is a confident green (the directional move traders wait for).
-_SQUEEZE_HUE = "#FF9500"  # Apple Orange — the low-volatility pinch
+_SQUEEZE_HUE = "#FF8D28"  # Apple Orange — the low-volatility pinch
 _BREAKOUT_HUE = "#34C759"  # Apple Green — price pushes through the upper band
 
 

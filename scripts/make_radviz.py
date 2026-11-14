@@ -90,8 +90,8 @@ FEATURES: List[str] = [
 # the house palette (Blue / Orange / Green) — a categorical, CVD-aware
 # triple (never rainbow), reinforced by distinct marker outlines.
 CLASSES: List[Dict[str, str]] = [
-    {"name": "Rosa", "color": "#FF9500"},
-    {"name": "Kama", "color": "#007AFF"},
+    {"name": "Rosa", "color": "#FF8D28"},
+    {"name": "Kama", "color": "#0088FF"},
     {"name": "Canadian", "color": "#34C759"},
 ]
 
@@ -126,13 +126,13 @@ def _class_profiles() -> List[Dict[str, Any]]:
     return [
         {
             "name": "Rosa",
-            "color": "#FF9500",
+            "color": "#FF8D28",
             "mean": [21.0, 16.8, 6.55, 3.90, 0.884, 2.6, 6.10],
             "sd": [0.8, 0.32, 0.16, 0.11, 0.010, 0.55, 0.18],
         },
         {
             "name": "Kama",
-            "color": "#007AFF",
+            "color": "#0088FF",
             "mean": [14.3, 14.2, 5.50, 3.28, 0.905, 3.0, 5.20],
             "sd": [0.7, 0.30, 0.14, 0.10, 0.008, 0.55, 0.16],
         },

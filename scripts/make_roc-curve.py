@@ -38,7 +38,7 @@ from _style import BG, GRIDLINE, INK, SECONDARY  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 COLOR_REF = "#C7C7CC"
-COLOR_ROC = "#007AFF"
+COLOR_ROC = "#0088FF"
 
 
 def _make_demo_data() -> List[Dict[str, Any]]:

@@ -210,8 +210,8 @@ def build_svg(
         [float(r["hours"]) for r in data] if data else RESPONSE_HOURS
     )
     palette: Dict[str, str] = load_palette(accessibility, theme=theme)
-    blue = palette.get("Blue", "#007AFF")
-    red = palette.get("Red", "#FF3B30")
+    blue = palette.get("Blue", "#0088FF")
+    red = palette.get("Red", "#FF383C")
     ink = "#1D1D1F"
     secondary = "#6E6E73"
 

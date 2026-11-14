@@ -132,10 +132,10 @@ def _team_color(accessibility: str = "universal", theme: str = "corporate") -> D
     # of its nearest neighbour post-opacity, instead of ~8.
     palette = load_palette(accessibility, theme=theme)
     return {
-        "Platform": palette.get("Blue", "#007AFF"),
+        "Platform": palette.get("Blue", "#0088FF"),
         "Payments": palette.get("Green", "#34C759"),
-        "Growth": palette.get("Orange", "#FF9500"),
-        "Mobile": palette.get("Purple", "#AF52DE"),
+        "Growth": palette.get("Orange", "#FF8D28"),
+        "Mobile": palette.get("Purple", "#CB30E0"),
         "Data": palette.get("Yellow", "#FFCC00"),
     }
 

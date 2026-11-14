@@ -171,9 +171,9 @@ def build_svg(
 
     mono_family = mono_stack_for_theme(theme)
     palette = load_palette(accessibility, theme=theme)
-    on_track = palette.get("Blue", "#007AFF")
-    lagging = palette.get("Orange", "#FF9500")
-    over = palette.get("Green", "#28CD41")
+    on_track = palette.get("Blue", "#0088FF")
+    lagging = palette.get("Orange", "#FF8D28")
+    over = palette.get("Green", "#34C759")
 
     plot_x = 232.0
     plot_y = 206.0

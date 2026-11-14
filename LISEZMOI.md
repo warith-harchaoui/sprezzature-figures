@@ -588,33 +588,33 @@ scientifiques ; `"corporate"` conserve la rampe propre à chaque graphique.
 
 Une couleur se lit avant son étiquette ; elle doit donc dire ce que dit
 l'étiquette. Chaque teinte de la palette porte une dimension psychologique,
-d'après [deraison.ai/colors/academic](https://deraison.ai/colors/academic) :
+d'après [deraison.ai/colors](https://deraison.ai/colors/), où les trois palettes
+(entreprise, académique, impression) donnent à chaque nom son code :
 
-| Teinte (Okabe-Ito) | Nom | Côté positif | Côté négatif |
-|---|---|---|---|
-| `#D55E00` vermillon | `Red` | puissance, énergie, passion | danger, avertissement, colère |
-| `#E69F00` orange | `Orange` | courage, chaleur, innovation | frustration |
-| `#F0E442` jaune | `Yellow` | optimisme, créativité | prudence, anxiété |
-| `#009E73` vert bleuté | `Green` | santé, espoir, croissance, nature | stagnation, maladie |
-| `#56B4E9` bleu ciel | `Teal` | communication, clarté, calme | secret, manque de fiabilité |
-| `#0072B2` bleu | `Blue` | confiance, fiabilité, logique, sécurité | froideur |
-| `#CC79A7` violet rosé | `Purple` | sagesse, imagination, raffinement | peur |
-| `#A52A2A` brun | `Brown` | sérieux, ancrage, soutien | lourdeur |
-| noir | `Black` | autorité, substance | menace, deuil |
-| gris | `Gray` | neutralité, équilibre | manque d'énergie |
+| Nom | Côté positif | Côté négatif |
+|---|---|---|
+| `Red` | puissance, énergie, passion | danger, avertissement, colère |
+| `Orange` | courage, chaleur, innovation | frustration |
+| `Yellow` | optimisme, créativité | prudence, anxiété |
+| `Green` | santé, espoir, croissance, nature | stagnation, maladie |
+| `Turquoise` | communication, clarté, calme | secret, manque de fiabilité |
+| `Blue` | confiance, fiabilité, logique, sécurité | froideur |
+| `Purple` | sagesse, imagination, raffinement | peur |
+| `Brown` | sérieux, ancrage, soutien | lourdeur |
+| `Black` | autorité, substance | menace, deuil |
+| `Gray` | neutralité, équilibre | manque d'énergie |
 
 `semantic_colors` l'applique : une étiquette qui nomme un sens, en français ou
 en anglais, reçoit sa teinte ; les autres gardent le cycle habituel, moins les
 teintes déjà prises. C'est une suggestion à passer à l'option de couleur de la
 figure ; aucune couleur par défaut ne change. Les teintes passent par la
-palette du thème : les neutres sortent donc en `Brown` `#A2845E` et `Gray`
-`#8E8E93`, ceux de la maison.
+palette du thème : chaque nom prend le code de cette palette.
 
 ```python
 from sprezzature_figures import semantic_colors
 
 semantic_colors(["Risque", "Confiance", "Croissance", "T3"], theme="academic")
-# {'Risque': '#D55E00', 'Confiance': '#0072B2', 'Croissance': '#009E73', 'T3': '#E69F00'}
+# {'Risque': '#E73121', 'Confiance': '#0072B2', 'Croissance': '#009E73', 'T3': '#E69F00'}
 ```
 
 ### Polices

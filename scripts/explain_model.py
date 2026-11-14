@@ -405,7 +405,7 @@ def _write_shap_dependence_svg(
     def py(v: float) -> float:
         return plot_y + plot_h - (v - y0) / (y1 - y0) * plot_h
 
-    blue = load_palette().get("Blue", "#007AFF")
+    blue = load_palette().get("Blue", "#0088FF")
     chrome_family = chrome_stack_for_theme("corporate")
     mono_family = mono_stack_for_theme("corporate")
     title = f"SHAP dependence: {feat_name}"

@@ -63,7 +63,7 @@ DEMO_DATA: List[Dict[str, Any]] = [
     {"name": "United States", "iso": "USA", "pop": 335.0, "gdp_cap": 81.7, "color": "Blue"},
     {"name": "Germany", "iso": "DEU", "pop": 84.0, "gdp_cap": 52.7, "color": "Purple"},
     {"name": "United Kingdom", "iso": "GBR", "pop": 67.0, "gdp_cap": 48.9, "color": "Teal"},
-    {"name": "France", "iso": "FRA", "pop": 68.0, "gdp_cap": 44.5, "color": "Mint"},
+    {"name": "France", "iso": "FRA", "pop": 68.0, "gdp_cap": 44.5, "color": "Pink"},
     {"name": "Japan", "iso": "JPN", "pop": 124.0, "gdp_cap": 33.9, "color": "Green"},
     {"name": "China", "iso": "CHN", "pop": 1411.0, "gdp_cap": 12.6, "color": "Red"},
     {"name": "Brazil", "iso": "BRA", "pop": 216.0, "gdp_cap": 10.4, "color": "Orange"},
@@ -207,7 +207,7 @@ def build_svg(
     # on the population axis all identify it with no colour, and the on-column
     # value labels remain the colour-independent readout.
     col_series = {
-        f".col-{str(c['iso'])}": palette.get(str(c["color"]), "#007AFF")
+        f".col-{str(c['iso'])}": palette.get(str(c["color"]), "#0088FF")
         for c in rows
     }
     contrast_css = os_adaptive_style(col_series, role="fill", forced=True)
@@ -330,7 +330,7 @@ def build_svg(
             "iso": str(c["iso"]),
             "pop": pop,
             "gdp_cap": gdp_cap,
-            "hex": palette.get(str(c["color"]), "#007AFF"),
+            "hex": palette.get(str(c["color"]), "#0088FF"),
             "x": x_cursor,
             "w": col_w,
             "h": col_h,

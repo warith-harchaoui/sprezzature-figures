@@ -345,8 +345,8 @@ def build_svg(
 
     mono_family = mono_stack_for_theme(theme)
     palette = load_palette(accessibility, theme=theme)
-    ordinary = palette.get("Blue", "#007AFF")
-    signal = palette.get("Orange", "#FF9500")
+    ordinary = palette.get("Blue", "#0088FF")
+    signal = palette.get("Orange", "#FF8D28")
     spec_ink = palette.get("Purple", palette.get("Teal", "#5856D6"))
 
     span_values = values + [upper, lower]

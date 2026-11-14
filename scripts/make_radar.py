@@ -82,12 +82,12 @@ _MONO = "Roboto Mono, ui-monospace, monospace"
 # through the shared sprezzature-colors engine so the polygons stay separable under a
 # named colour-vision deficiency, monochrome, or high contrast.
 _SERIES_COLORS: Dict[str, str] = {
-    "Aurora": "#007AFF",
-    "Cloud SQL": "#FF9500",
-    "Cosmos": "#AF52DE",
+    "Aurora": "#0088FF",
+    "Cloud SQL": "#FF8D28",
+    "Cosmos": "#CB30E0",
 }
 
-# Ralph Eyeball Loop finding: Blue (#007AFF) and Purple (#AF52DE) are close
+# Ralph Eyeball Loop finding: Blue (#0088FF) and Purple (#CB30E0) are close
 # enough in perceptual luminance that a plain grayscale conversion of the
 # *default* (universal) render collapses them into two nearly-identical dark
 # grey outlines -- verified by screenshotting the rendered SVG through a CSS

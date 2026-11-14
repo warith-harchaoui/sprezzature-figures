@@ -44,79 +44,103 @@ FONT_MONO = "Roboto Mono, ui-monospace, monospace"
 
 
 # ------------------------------------------------------------------
-# Built-in curated fallback — the Apple-inspired 8 + 4 neutrals.
-# The canonical source is sprezzature-colors/references/palette.csv, which
-# projects each hex onto four semantic axes: **Emotion**, **Concepts**,
-# **PsychologyPositive**, **PsychologyNegative**. The full mapping is
-# documented at <https://deraison.ai/colors/>. When the CSV is
-# available, :func:`load_semantic_palette` reads it. This fallback is
-# used only when neither ``sprezzature-colors`` nor ``SPREZZATURE_COLORS_PALETTE``
-# can be resolved.
+# The three palettes of https://deraison.ai/colors, the source of truth for
+# every colour in the suite: the same eleven names in each (eight hues, then
+# Brown, Black, Gray). ``corporate`` is Apple's system colours (light mode,
+# values of June 9, 2025); ``academic`` is Okabe and Ito (2002), readable
+# with colour blindness by construction, completed from the Colour Universal
+# Design (CUD) recommended set ver.4 (2018); ``print`` is checked for offset
+# printing on coated paper. sprezzature-colors ships the site's CSV files
+# (``references/palette-<theme>.csv``) and :func:`load_palette` reads them
+# when it is co-installed; these copies are used only when it is not.
 # ------------------------------------------------------------------
-_FALLBACK_PALETTE: Dict[str, str] = {
-    # 8 saturated hues.
-    "Red":    "#FF3B30",
-    "Orange": "#FF9500",
-    "Yellow": "#FFCC00",
-    "Green":  "#34C759",
-    "Mint":   "#00C7BE",
-    "Teal":   "#5AC8FA",
-    "Blue":   "#007AFF",
-    "Purple": "#AF52DE",
-    # 4 neutrals.
-    "Gray":   "#8E8E93",
-    "Brown":  "#A2845E",
-    "Black":  "#000000",
-    "White":  "#FFFFFF",
+THEMES: Tuple[str, ...] = ("corporate", "academic", "print")
+
+_PALETTES: Dict[str, Dict[str, str]] = {
+    "corporate": {
+        "Red": "#FF383C",
+        "Orange": "#FF8D28",
+        "Yellow": "#FFCC00",
+        "Green": "#34C759",
+        "Turquoise": "#00C3D0",
+        "Blue": "#0088FF",
+        "Purple": "#CB30E0",
+        "Pink": "#FF2D55",
+        "Brown": "#AC7F5E",
+        "Black": "#000000",
+        "Gray": "#8E8E93",
+    },
+    "academic": {
+        "Red": "#E73121",
+        "Orange": "#E69F00",
+        "Yellow": "#F0E442",
+        "Green": "#009E73",
+        "Turquoise": "#56B4E9",
+        "Blue": "#0072B2",
+        "Purple": "#CC79A7",
+        "Pink": "#FF8082",
+        "Brown": "#804000",
+        "Black": "#000000",
+        "Gray": "#84919E",
+    },
+    "print": {
+        "Red": "#EE454C",
+        "Orange": "#F88D38",
+        "Yellow": "#F7DE68",
+        "Green": "#14B880",
+        "Turquoise": "#4FBFB9",
+        "Blue": "#437DB5",
+        "Purple": "#BC67AB",
+        "Pink": "#FF849B",
+        "Brown": "#A8704D",
+        "Black": "#261F1F",
+        "Gray": "#818690",
+    },
 }
 
-
-# ------------------------------------------------------------------
-# Academic-theme palette — Okabe & Ito (2002), the categorical palette Bang
-# Wong's 2011 Nature Methods editorial made the de facto standard for
-# scientific figures: colour-vision-deficiency-safe *by construction* (no
-# pure red/green pairing), not merely re-leveled into safety on request the
-# way the corporate palette is via :func:`_apply_accessibility_level`. Same
-# key set as :data:`_FALLBACK_PALETTE` so every existing
-# ``cycle_hues(keys, accessibility)`` call resolves unchanged once `theme`
-# is threaded through -- no caller needs its own hue-name list to change.
-# Neutrals (Gray/Brown/Black/White) are theme-agnostic and match corporate;
-# Okabe-Ito itself defines only the 7 chromatic hues + black. Two corporate
-# slots (Mint, Teal) have no distinct Okabe-Ito counterpart and share Green/
-# Sky Blue respectively rather than inventing an unvetted seventh hue.
-# ------------------------------------------------------------------
-_ACADEMIC_PALETTE: Dict[str, str] = {
-    "Red":    "#D55E00",  # vermilion -- Okabe-Ito's red substitute (pure red excluded by design)
-    "Orange": "#E69F00",
-    "Yellow": "#F0E442",
-    "Green":  "#009E73",  # bluish green
-    "Mint":   "#009E73",  # no distinct Okabe-Ito equivalent; shares Green
-    "Teal":   "#56B4E9",  # sky blue
-    "Blue":   "#0072B2",
-    "Purple": "#CC79A7",  # reddish purple
-    "Gray":   "#8E8E93",
-    "Brown":  "#A2845E",
-    "Black":  "#000000",
-    "White":  "#FFFFFF",
-}
+#: Names older generators still ask for. Teal and Mint were two of Apple's
+#: earlier system colours; the site has one turquoise (Apple's teal), so Teal
+#: is Turquoise and Mint is Green, the rule the academic palette already
+#: followed. White is the paper, not a palette colour: the site dropped it on
+#: 2026-11-13, but a generator asking for it still gets white.
+_HUE_ALIASES: Dict[str, str] = {"Teal": "Turquoise", "Mint": "Green"}
 
 
-#: Emotion → hex fallback, mirroring the ``Emotion`` column of the
-#: sprezzature-colors CSV. Anger / Sadness / Joy etc. Source:
-#: <https://deraison.ai/colors/>.
+def _with_aliases(palette: Dict[str, str]) -> Dict[str, str]:
+    """Add the :data:`_HUE_ALIASES` keys and White to a palette, after its own names."""
+    out = dict(palette)
+    for alias, name in _HUE_ALIASES.items():
+        if name in out:
+            out.setdefault(alias, out[name])
+    out.setdefault("White", "#FFFFFF")
+    return out
+
+
+#: The corporate palette with its aliases, the fallback every lookup ends on.
+_FALLBACK_PALETTE: Dict[str, str] = _with_aliases(_PALETTES["corporate"])
+_ACADEMIC_PALETTE: Dict[str, str] = _with_aliases(_PALETTES["academic"])
+_PRINT_PALETTE: Dict[str, str] = _with_aliases(_PALETTES["print"])
+
+
+def _fallback_for(theme: str) -> Dict[str, str]:
+    """The built-in copy of ``theme``'s palette, aliases included."""
+    return {"academic": _ACADEMIC_PALETTE, "print": _PRINT_PALETTE}.get(theme, _FALLBACK_PALETTE)
+
+
+#: Emotion → hex fallback, the ``Emotion`` column of the corporate palette
+#: of <https://deraison.ai/colors/>.
 _FALLBACK_EMOTIONS: Dict[str, str] = {
-    "Anger":     "#FF3B30",
-    "Surprise":  "#FF9500",
-    "Joy":       "#FFCC00",
-    "Disgust":   "#34C759",
-    "Happiness": "#00C7BE",
-    "Sadness":   "#007AFF",
-    "Fear":      "#AF52DE",
-    "Love":      "#FF2D55",
-    "Comfort":   "#A2845E",
-    "Silence":   "#000000",
-    "Neutral":   "#8E8E93",
-    "Peace":     "#FFFFFF",
+    "Anger": "#FF383C",
+    "Surprise": "#FF8D28",
+    "Joy": "#FFCC00",
+    "Disgust": "#34C759",
+    "Happiness": "#00C3D0",
+    "Sadness": "#0088FF",
+    "Fear": "#CB30E0",
+    "Love": "#FF2D55",
+    "Comfort": "#AC7F5E",
+    "Silence": "#000000",
+    "Neutral": "#8E8E93",
 }
 
 
@@ -137,56 +161,78 @@ def _installed_colors_package(package: str) -> Optional[Path]:
     return Path(next(iter(spec.submodule_search_locations)))
 
 
-def _sibling_palette_csv() -> Optional[Path]:
-    """Locate ``sprezzature-colors/references/palette.csv`` if co-installed.
+def _colors_references_dir() -> Optional[Path]:
+    """Locate the ``references`` folder of a co-installed sprezzature-colors.
+
+    Search order: a checkout beside this one, the skill folders of Claude Code
+    and OpenCode, then the installed wheel. A folder counts only if it carries
+    the site's palettes (``palette-corporate.csv``), which sprezzature-colors
+    ships since 1.4.0: an older one still has the colours of before
+    2026-11-14 in its ``palette.csv``, and reading it would bring them back.
+    """
+    here = Path(__file__).resolve()
+    candidates = [here.parent.parent.parent / "sprezzature-colors" / "references"]
+    candidates += [
+        Path.home() / f".{runtime}" / "skills" / "sprezzature-colors" / "references"
+        for runtime in ("claude", "opencode")
+    ]
+    installed = _installed_colors_package("sprezzature_colors_references")
+    if installed is not None:
+        candidates.append(installed)
+    for d in candidates:
+        if (d / "palette-corporate.csv").is_file():
+            return d
+    return None
+
+
+def _sibling_palette_csv(theme: str = "corporate") -> Optional[Path]:
+    """Locate the CSV of ``theme``'s palette, if sprezzature-colors is co-installed.
 
     Returns
     -------
     pathlib.Path or None
         The path to the CSV if found; ``None`` otherwise. Search:
 
-        1. ``SPREZZATURE_COLORS_PALETTE`` env var (explicit override).
-        2. Sibling directory (``../../sprezzature-colors/references/palette.csv``
-           relative to this file).
-        3. ``~/.claude/skills/sprezzature-colors/references/palette.csv``.
-        4. ``~/.opencode/skills/sprezzature-colors/references/palette.csv``.
-        5. The installed ``sprezzature-colors`` wheel.
+        1. ``SPREZZATURE_COLORS_PALETTE`` env var (explicit override, a
+           project's own brand palette; corporate theme only).
+        2. ``palette-<theme>.csv`` in :func:`_colors_references_dir`.
     """
-    env = (os.environ.get("SPREZZATURE_COLORS_PALETTE") or os.environ.get("FRONT_COLORS_PALETTE") or "").strip()
-    if env:
-        p = Path(env).expanduser()
-        if p.is_file():
-            return p
-
-    here = Path(__file__).resolve()
-    # sprezzature-figures/scripts/_style.py -> repo-root/sprezzature-colors/references/palette.csv
-    sibling = here.parent.parent.parent / "sprezzature-colors" / "references" / "palette.csv"
-    if sibling.is_file():
-        return sibling
-
-    for runtime in ("claude", "opencode"):
-        p = Path.home() / f".{runtime}" / "skills" / "sprezzature-colors" / "references" / "palette.csv"
-        if p.is_file():
-            return p
-
-    installed = _installed_colors_package("sprezzature_colors_references")
-    if installed is not None and (installed / "palette.csv").is_file():
-        return installed / "palette.csv"
-
+    if theme == "corporate":
+        env = (os.environ.get("SPREZZATURE_COLORS_PALETTE") or os.environ.get("FRONT_COLORS_PALETTE") or "").strip()
+        if env:
+            p = Path(env).expanduser()
+            if p.is_file():
+                return p
+    refs = _colors_references_dir()
+    if refs is not None and (refs / f"palette-{theme}.csv").is_file():
+        return refs / f"palette-{theme}.csv"
     return None
+
+
+def _read_palette_rows(csv_path: Path) -> List[Dict[str, str]]:
+    """Rows of a palette CSV, with the site's column names mapped to ``palette.csv``'s.
+
+    The site's files name the colour ``Name`` and the psychology ``Positive`` /
+    ``Negative``; ``palette.csv`` and a project's own file say ``Base`` and
+    ``PsychologyPositive`` / ``PsychologyNegative``. Both read the same here.
+    """
+    renames = {"Name": "Base", "Positive": "PsychologyPositive", "Negative": "PsychologyNegative"}
+    with csv_path.open("r", encoding="utf-8", newline="") as fh:
+        rows = list(csv.DictReader(fh))
+    return [{renames.get(k, k): (v or "") for k, v in row.items() if k} for row in rows]
 
 
 def _sibling_sprezzature_colors_scripts() -> Optional[Path]:
     """Locate ``sprezzature-colors/scripts`` (the accessibility-level engine) if present.
 
-    Same co-installation search as :func:`_sibling_palette_csv`, one directory
+    Same co-installation search as :func:`_colors_references_dir`, one directory
     over. Returns ``None`` when sprezzature-colors is not alongside, in which case only
     the ``universal`` level is available (see :func:`load_palette`).
     """
-    csv_path = _sibling_palette_csv()
-    if csv_path is not None:
-        # references/palette.csv -> ../scripts
-        scripts = csv_path.parent.parent / "scripts"
+    refs = _colors_references_dir()
+    if refs is not None:
+        # references/ -> ../scripts
+        scripts = refs.parent / "scripts"
         if (scripts / "accessibility_levels.py").is_file():
             return scripts
     installed = _installed_colors_package("sprezzature_colors_scripts")
@@ -235,40 +281,32 @@ def load_palette(accessibility: str = "universal", theme: str = "corporate") -> 
         ``"deuteranopia"``, ``"protanopia"`` and ``"tritanopia"``; they are
         applied by the sprezzature-colors engine when it is co-installed. See
         ``sprezzature-colors/references/accessibility-levels.md`` for the model.
-        Applies on top of either theme's base palette -- academic's
+        Applies on top of any theme's base palette -- academic's
         ``universal`` default is already CVD-safe by construction (Okabe-Ito),
         but the engine still runs for e.g. ``"monochrome"`` grayscale output.
     theme : str, optional
-        ``"corporate"`` (default) reads the sprezzature-colors CSV / Apple-
-        system :data:`_FALLBACK_PALETTE`, unchanged from before this
-        parameter existed. ``"academic"`` returns :data:`_ACADEMIC_PALETTE`
-        (Okabe-Ito) directly, ignoring any co-installed brand CSV -- Okabe-Ito
-        is a fixed, citable scientific standard, not a brand palette meant to
-        be swapped per project.
+        One of :data:`THEMES`, the three palettes of deraison.ai/colors:
+        ``"corporate"`` (default), ``"academic"`` or ``"print"``. Read from
+        sprezzature-colors' copy of the site's CSV when it is co-installed,
+        else from :data:`_PALETTES`. ``SPREZZATURE_COLORS_PALETTE`` replaces
+        the corporate one with a project's own file.
 
     Returns
     -------
     dict of str to str
-        Mapping ``{"Red": "#FF3B30", ...}``. Keys are the palette CSV's ``Base``
-        values; values are the level-appropriate hex. Order follows the CSV; the
-        fallback follows the order in ``_FALLBACK_PALETTE``.
+        Mapping ``{"Red": "#FF383C", ...}``: the eleven names in the site's
+        order, then the aliases Teal, Mint and White (see
+        :data:`_HUE_ALIASES`); values are the level-appropriate hex.
     """
-    if theme == "academic":
-        palette = dict(_ACADEMIC_PALETTE)
-    else:
-        csv_path = _sibling_palette_csv()
-        if csv_path is None:
-            palette = dict(_FALLBACK_PALETTE)
-        else:
-            palette = {}
-            with csv_path.open("r", encoding="utf-8", newline="") as fh:
-                reader = csv.DictReader(fh)
-                for row in reader:
-                    name = (row.get("Base") or row.get("name") or "").strip()
-                    hexv = (row.get("Hexcode") or row.get("Hex") or row.get("hex") or "").strip()
-                    if name and hexv.startswith("#") and len(hexv) in (4, 7):
-                        palette[name] = hexv.upper()
-            palette = palette or dict(_FALLBACK_PALETTE)
+    csv_path = _sibling_palette_csv(theme)
+    palette: Dict[str, str] = {}
+    if csv_path is not None:
+        for row in _read_palette_rows(csv_path):
+            name = (row.get("Base") or row.get("name") or "").strip()
+            hexv = (row.get("Hexcode") or row.get("Hex") or row.get("hex") or "").strip()
+            if name and hexv.startswith("#") and len(hexv) in (4, 7):
+                palette[name] = hexv.upper()
+    palette = _with_aliases(palette) if palette else dict(_fallback_for(theme))
 
     # ``universal`` is the identity, so the default path never touches the engine
     # and stays byte-for-byte what it always produced.
@@ -314,13 +352,14 @@ def leveled_colors(colors: Dict[str, str], accessibility: str = "universal") -> 
 #: Default categorical cycle order for :func:`cycle_hues` — the four hues
 #: every ``_category_colors``/``_series_colors``/``_segment_colors`` copy
 #: picked, before this helper existed, reordered once: the original
-#: (Blue, Orange, Green, Purple) put Orange (#FF9500, relative luminance
-#: ~160.7) directly next to Green (#34C759, ~159.8) -- a ~1-point gap that
-#: several Ralph Eyeball Loop passes independently found collapsing to the
-#: same grey under grayscale/achromatopsia simulation. Swapping Green and
-#: Purple keeps the same four hues (no caller's semantics change) but
-#: spaces every adjacent pair (including the wrap) at least ~48 luminance
-#: points apart: Blue(105.7)-Orange(160.7)-Purple(111.8)-Green(159.8)-wrap.
+#: (Blue, Orange, Green, Purple) put Orange directly next to Green, two
+#: hues of nearly the same luminance that several Ralph Eyeball Loop passes
+#: independently found collapsing to the same grey under
+#: grayscale/achromatopsia simulation. Swapping Green and Purple keeps the
+#: same four hues (no caller's semantics change) but spaces every adjacent
+#: pair (including the wrap) apart; on the corporate palette of 2026-11-14,
+#: in Rec. 709 luma on 0-255, at least ~42 points:
+#: Blue(115.7)-Orange(157.9)-Purple(93.7)-Green(159.8)-wrap.
 _DEFAULT_CYCLE = ("Blue", "Orange", "Purple", "Green")
 
 
@@ -375,11 +414,11 @@ def cycle_hues(
     True
     """
     palette = load_palette(accessibility, theme=theme)
-    fallback = _ACADEMIC_PALETTE if theme == "academic" else _FALLBACK_PALETTE
+    fallback = _fallback_for(theme)
     order = hues or list(_DEFAULT_CYCLE)
-    picked = [palette.get(name, fallback.get(name, "#007AFF")) for name in order]
+    picked = [palette.get(name, fallback.get(name, fallback["Blue"])) for name in order]
     if not picked:
-        picked = ["#007AFF"]
+        picked = [fallback["Blue"]]
     if not semantic:
         return {key: picked[i % len(picked)] for i, key in enumerate(keys)}
     return _semantic_assign(keys, palette, fallback, picked)
@@ -623,25 +662,23 @@ def load_semantic_palette() -> Dict[str, Dict[str, Any]]:
         return _fallback_semantic()
 
     out: Dict[str, Dict[str, Any]] = {}
-    with csv_path.open("r", encoding="utf-8", newline="") as fh:
-        reader = csv.DictReader(fh)
-        for row in reader:
-            base = (row.get("Base") or "").strip()
-            hex_ = (row.get("Hexcode") or "").strip().upper()
-            if not (base and hex_.startswith("#")):
-                continue
-            out[base] = {
-                "hex": hex_,
-                "light": (row.get("LightHex") or "").strip().upper() or hex_,
-                "emotion": (row.get("Emotion") or "").strip(),
-                "concepts": [c.strip() for c in (row.get("Concepts") or "").split(",") if c.strip()],
-                "psychology_positive": [
-                    c.strip() for c in (row.get("PsychologyPositive") or "").split(",") if c.strip()
-                ],
-                "psychology_negative": [
-                    c.strip() for c in (row.get("PsychologyNegative") or "").split(",") if c.strip()
-                ],
-            }
+    for row in _read_palette_rows(csv_path):
+        base = (row.get("Base") or "").strip()
+        hex_ = (row.get("Hexcode") or "").strip().upper()
+        if not (base and hex_.startswith("#")):
+            continue
+        out[base] = {
+            "hex": hex_,
+            "light": (row.get("LightHex") or "").strip().upper() or hex_,
+            "emotion": (row.get("Emotion") or "").strip(),
+            "concepts": [c.strip() for c in (row.get("Concepts") or "").split(",") if c.strip()],
+            "psychology_positive": [
+                c.strip() for c in (row.get("PsychologyPositive") or "").split(",") if c.strip()
+            ],
+            "psychology_negative": [
+                c.strip() for c in (row.get("PsychologyNegative") or "").split(",") if c.strip()
+            ],
+        }
     return out or _fallback_semantic()
 
 
@@ -656,7 +693,7 @@ def _fallback_semantic() -> Dict[str, Dict[str, Any]]:
             "psychology_positive": [],
             "psychology_negative": [],
         }
-        for base, hexv in _FALLBACK_PALETTE.items()
+        for base, hexv in _PALETTES["corporate"].items()
     }
 
 
@@ -743,24 +780,25 @@ def qualitative_sequence(n: int = 8, theme: str = "corporate") -> List[str]:
         when ``n`` exceeds the palette size.
     theme : str, optional
         Forwarded to :func:`load_palette`. Defaults to ``"corporate"``.
-        Academic's palette has only 7 distinct chromatic hues (two corporate
-        slots, Mint and Teal, share one Okabe-Ito hue each with Green/Blue's
-        neighbours — see :data:`_ACADEMIC_PALETTE`); duplicates are dropped
-        here so a caller never sees the same hex twice in a row.
+        Each palette has eight distinct hues; the neutrals and the aliases
+        (Teal, Mint, White) are skipped, and duplicates are dropped so a
+        caller never sees the same hex twice in a row.
 
     Returns
     -------
     list of str
         ``n`` hex strings, brand-order.
     """
-    base = list(load_palette(theme=theme).values())
-    # Skip the neutrals for a qualitative encoding, and de-duplicate (the
-    # academic palette reuses one hex across two corporate-only hue slots).
+    # Skip the neutrals and the aliases for a qualitative encoding, by name:
+    # each palette has its own grey and brown, so a list of hex codes to skip
+    # was right for one palette only. De-duplicate in case a project's own
+    # file gives two names one hex.
+    skip = {"Brown", "Black", "Gray", "White", *_HUE_ALIASES}
     seen: set = set()
     saturated: List[str] = []
-    for h in base:
+    for name, h in load_palette(theme=theme).items():
         hu = h.upper()
-        if hu in {"#000000", "#FFFFFF", "#8E8E93", "#A2845E"} or hu in seen:
+        if name in skip or hu in seen:
             continue
         seen.add(hu)
         saturated.append(h)
@@ -776,17 +814,16 @@ def qualitative_sequence(n: int = 8, theme: str = "corporate") -> List[str]:
 # Colour = meaning: a label's words pick its hue
 # ------------------------------------------------------------------
 #: Words that name the psychological dimension of a palette hue, in English
-#: and French, lower case. Source: <https://deraison.ai/colors/academic>
-#: (the ``academic_psychology``, ``academic_concepts`` and
-#: ``academic_emotions`` tables). A hue carries a positive and a negative
+#: and French, lower case. Source: <https://deraison.ai/en/colors> (its
+#: psychology, concepts and emotions tables). A hue carries a positive and a negative
 #: side, and both are listed: red is power and energy, and also danger,
 #: warning and anger; purple is wisdom and imagination, and also fear.
-#: The keys are palette hue NAMES, shared by both themes, so the corporate
-#: and academic (Okabe-Ito) palettes resolve the same meaning to their own
-#: hex. Kept short on purpose: a word belongs here only if a reader would
+#: The keys are palette hue NAMES, shared by the three palettes of
+#: <https://deraison.ai/colors/>, so each resolves the same meaning to its
+#: own hex. Kept short on purpose: a word belongs here only if a reader would
 #: agree on its colour without being told.
 SEMANTIC_KEYWORDS: Dict[str, Tuple[str, ...]] = {
-    # #D55E00 vermilion: power, energy / danger, warning, anger.
+    # Red: power, energy / danger, warning, anger.
     "Red": (
         "danger", "dangers", "dangereux", "risk", "risque", "error", "erreur", "warning",
         "alert", "alerte", "avertissement", "anger", "colère", "threat", "menace", "loss",
@@ -794,44 +831,44 @@ SEMANTIC_KEYWORDS: Dict[str, Tuple[str, ...]] = {
         "urgence", "critical", "critique", "power", "puissance", "energy", "énergie",
         "passion", "pain", "douleur", "defect", "défaut", "bug",
     ),
-    # #E69F00 orange: courage, warmth, innovation / frustration.
+    # Orange: courage, warmth, innovation / frustration.
     "Orange": (
         "courage", "warmth", "chaleur", "innovation", "innover", "friendly", "convivial",
         "cheerful", "confidence", "enthusiasm", "enthousiasme", "frustration", "surprise",
     ),
-    # #F0E442 yellow: optimism, creativity / caution, anxiety.
+    # Yellow: optimism, creativity / caution, anxiety.
     "Yellow": (
         "optimism", "optimisme", "creativity", "créativité", "idea", "idée", "caution",
         "prudence", "anxiety", "anxiété", "joy", "joie", "happiness", "bonheur", "pending",
         "attente",
     ),
-    # #009E73 bluish green: health, hope, growth, nature / stagnation, sickness.
+    # Green: health, hope, growth, nature / stagnation, sickness.
     "Green": (
         "health", "santé", "growth", "croissance", "gain", "profit", "hope", "espoir",
         "nature", "environment", "environnement", "prosperity", "prospérité", "success",
         "succès", "réussite", "win", "sustainable", "durable", "fresh", "healthy", "sain",
         "stagnation", "sickness", "maladie",
     ),
-    # #56B4E9 sky blue: communication, clarity, calm / secrecy, unreliability.
-    "Teal": (
+    # Turquoise: communication, clarity, calm / secrecy, unreliability.
+    "Turquoise": (
         "communication", "clarity", "clarté", "calm", "calme", "transparency",
         "transparence", "inspiration", "dialogue", "healing", "guérison", "secrecy",
         "secret", "unreliable",
     ),
-    # #0072B2 blue: trust, dependability, logic, security / coldness.
+    # Blue: trust, dependability, logic, security / coldness.
     "Blue": (
         "trust", "confiance", "reliable", "fiable", "fiabilité", "reliability",
         "dependable", "secure", "security", "sécurité", "sûr", "sûre", "safe", "safety",
         "logic", "logique", "loyalty", "loyauté", "stability", "stabilité", "serenity",
         "sérénité", "coldness", "froideur",
     ),
-    # #CC79A7 reddish purple: wisdom, imagination, sophistication / fear.
+    # Purple: wisdom, imagination, sophistication / fear.
     "Purple": (
         "wisdom", "sagesse", "imagination", "imaginative", "sophistication", "luxury",
         "luxe", "wealth", "richesse", "spirituality", "spiritualité", "fear", "peur",
         "crainte",
     ),
-    # #A52A2A brown: seriousness, earthiness, support, authenticity.
+    # #AC7F5E brown: seriousness, earthiness, support, authenticity.
     "Brown": (
         "serious", "seriousness", "sérieux", "earth", "terre", "earthiness", "support",
         "soutien", "authenticity", "authenticité", "authentic", "authentique",
@@ -940,7 +977,7 @@ def semantic_colors(
     labels : list of str
         The series, cards or categories to colour, in order.
     theme : str, optional
-        ``"corporate"`` (default) or ``"academic"`` (Okabe-Ito).
+        ``"corporate"`` (default), ``"academic"`` or ``"print"``.
     accessibility : str, optional
         Forwarded to :func:`load_palette`.
     hues : list of str, optional
@@ -955,7 +992,7 @@ def semantic_colors(
     --------
     >>> colors = semantic_colors(["Risque", "Confiance", "Croissance"], theme="academic")
     >>> colors["Risque"], colors["Confiance"], colors["Croissance"]
-    ('#D55E00', '#0072B2', '#009E73')
+    ('#E73121', '#0072B2', '#009E73')
     """
     return cycle_hues(list(labels), accessibility, hues=hues, theme=theme, semantic=True)
 
@@ -973,7 +1010,7 @@ def semantic_colors(
 #: concepts, which fits "positive vs negative". Verify any diverging choice on the
 #: rendered pixels with ``simulate_cvd.py``. Source:
 #: <https://deraison.ai/colors/>.
-DIVERGING_CVD_SAFE = ("#007AFF", "#F2F4F6", "#FF3B30")  # (positive, neutral mid, negative)
+DIVERGING_CVD_SAFE = (_PALETTES["corporate"]["Blue"], "#F2F4F6", _PALETTES["corporate"]["Red"])  # (positive, neutral mid, negative)
 
 
 def diverging_pair(cvd_safe: bool = True) -> tuple:
@@ -996,14 +1033,14 @@ def diverging_pair(cvd_safe: bool = True) -> tuple:
     if cvd_safe:
         return DIVERGING_CVD_SAFE[0], DIVERGING_CVD_SAFE[2]
     palette = load_palette()
-    return palette.get("Green", "#28CD41"), palette.get("Red", "#FF3B30")
+    return palette["Green"], palette["Red"]
 
 
 # ------------------------------------------------------------------
 # Corners — the Sprezzature Corner Policy (see references/corners.md)
 # ------------------------------------------------------------------
 #: The house radius scale in user-space pixels (figures). The UI mirrors these
-#: as rem tokens in editor/theme.py and sprezzature-ui's generated CSS.
+#: as rem tokens in sprezzature-ui's generated CSS.
 CORNERS: Dict[str, float] = {
     "none": 0.0,       # measurements, grids, adjacent/baseline corners
     "hairline": 1.0,   # the MOST a grid cell may ever have

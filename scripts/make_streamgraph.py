@@ -258,12 +258,12 @@ def _band_colors(n: int, accessibility: str = "universal") -> List[str]:
     # identity. Orange stays bright because it takes *ink* text (dark on orange
     # is high-contrast). Deuteranope-checked ordering; Red and Green never touch.
     base = {
-        "Pop":         "#007AFF",  # Blue        (white text)
-        "Hip-Hop/R&B": "#FF9500",  # Orange      (ink text — dark on orange)
+        "Pop":         "#0088FF",  # Blue        (white text)
+        "Hip-Hop/R&B": "#FF8D28",  # Orange      (ink text — dark on orange)
         "Rock":        "#5C5C61",  # Slate gray  (deepened so white text reads)
         "Latin":       "#248A3D",  # Deep green  (deepened so white text reads)
         "Country":     "#8A6A46",  # Deep brown  (white text)
-        "Dance/Elec":  "#AF52DE",  # Purple      (white text)
+        "Dance/Elec":  "#CB30E0",  # Purple      (white text)
     }
     ramp = list(leveled_colors(base, accessibility).values())
     if n <= len(ramp):

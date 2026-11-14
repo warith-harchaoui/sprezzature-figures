@@ -31,7 +31,7 @@ from _svg import fmt_tick, foreground_tip_css, svg_open, tooltip_bubble, xml_esc
 from _style import BG, GRIDLINE, INK, SECONDARY  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
-COLOR_POINT = "#007AFF"
+COLOR_POINT = "#0088FF"
 
 
 def _nice_step(span: float, target_ticks: int = 5) -> float:

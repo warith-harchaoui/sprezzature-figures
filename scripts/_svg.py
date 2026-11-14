@@ -897,8 +897,8 @@ def hex_to_rgb(hexv: str) -> Tuple[int, int, int]:
 
     Examples
     --------
-    >>> hex_to_rgb("#FF9500")
-    (255, 149, 0)
+    >>> hex_to_rgb("#FF8D28")
+    (255, 141, 40)
     """
     h = hexv.lstrip("#")
     return int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)

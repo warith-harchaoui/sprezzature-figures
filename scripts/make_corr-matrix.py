@@ -36,9 +36,9 @@ FEATURES = ["mpg", "hp", "wt", "accel", "disp"]
 
 # Diverging red-white-blue, centred on r=0.
 _RAMP: Tuple[Tuple[float, str], ...] = (
-    (-1.0, "#FF3B30"),
+    (-1.0, "#FF383C"),
     (0.0, "#FFFFFF"),
-    (1.0, "#007AFF"),
+    (1.0, "#0088FF"),
 )
 
 

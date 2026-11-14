@@ -205,11 +205,18 @@ THEMES: dict[str, dict[str, Any]] = {
         "chrome_stack": ACADEMIC_SERIF_STACK,
         "mono_stack": ACADEMIC_MONO_STACK,
     },
+    # The print theme changes the palette (the print palette of
+    # deraison.ai/colors, see ``_style.load_palette``), not the type.
+    "print": {
+        "faces": ("sans", "mono"),
+        "chrome_stack": SANS_STACK,
+        "mono_stack": MONO_STACK,
+    },
 }
 
 
 def svg_faces_for_theme(theme: str) -> tuple[str, ...]:
-    """The :data:`_FACES` keys to embed for `theme` (``"corporate"`` or ``"academic"``).
+    """The :data:`_FACES` keys to embed for `theme` (``"corporate"``, ``"academic"`` or ``"print"``).
 
     Unknown theme names fall back to ``"corporate"`` rather than raising, so
     a typo degrades to the current default look instead of crashing a render.

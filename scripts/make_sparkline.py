@@ -161,8 +161,8 @@ def build_svg(
     rows = list(data if data else DEMO_DATA)
     mono_family = mono_stack_for_theme(theme)
     palette = load_palette(accessibility, theme=theme)
-    rising = palette.get("Blue", "#007AFF")
-    falling = palette.get("Orange", "#FF9500")
+    rising = palette.get("Blue", "#0088FF")
+    falling = palette.get("Orange", "#FF8D28")
 
     order: List[str] = []
     points: Dict[str, List[Tuple[float, float]]] = {}

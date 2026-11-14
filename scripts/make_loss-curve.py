@@ -145,8 +145,8 @@ def build_svg(
     mono_family = mono_stack_for_theme(theme)
     palette = load_palette(accessibility, theme=theme)
     hues = {
-        "train": palette.get("Orange", "#FF9500"),
-        "valid": palette.get("Blue", "#007AFF"),
+        "train": palette.get("Orange", "#FF8D28"),
+        "valid": palette.get("Blue", "#0088FF"),
     }
 
     series_names: List[str] = []

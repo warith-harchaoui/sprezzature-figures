@@ -2,8 +2,8 @@
 Colour = meaning: ``semantic_colors`` reads a label and picks its hue.
 
 The palette's hues each carry a psychological dimension
-(<https://deraison.ai/colors/academic>): vermilion is danger and warning,
-blue is trust and security, bluish green is health and growth. A label that
+(<https://deraison.ai/en/colors>): red is danger and warning, blue is
+trust and security, green is health and growth. A label that
 names one of those gets that hue; anything else keeps the usual cycle, and
 the plain cycle itself does not move by a byte.
 
@@ -37,7 +37,7 @@ import _style  # noqa: E402
         ("Santé", "Green"),
         ("Revenue growth", "Green"),
         ("Croissance", "Green"),
-        ("Clarté", "Teal"),
+        ("Clarté", "Turquoise"),
         ("Innovation", "Orange"),
         ("Prudence", "Yellow"),
         ("Peur", "Purple"),
@@ -54,9 +54,9 @@ def test_a_label_naming_no_meaning_gets_none(label: str) -> None:
     assert semantic_hue(label) is None
 
 
-def test_academic_theme_resolves_to_okabe_ito() -> None:
+def test_academic_theme_resolves_to_the_academic_palette() -> None:
     colors = semantic_colors(["Risque", "Confiance", "Croissance"], theme="academic")
-    assert colors == {"Risque": "#D55E00", "Confiance": "#0072B2", "Croissance": "#009E73"}
+    assert colors == {"Risque": "#E73121", "Confiance": "#0072B2", "Croissance": "#009E73"}
 
 
 def test_unmatched_labels_take_the_cycle_minus_the_hues_already_taken() -> None:
@@ -70,8 +70,8 @@ def test_unmatched_labels_take_the_cycle_minus_the_hues_already_taken() -> None:
 
 def test_two_labels_of_one_meaning_stay_distinguishable() -> None:
     colors = semantic_colors(["Risque marché", "Risque crédit"], theme="academic")
-    assert colors["Risque marché"] == "#D55E00"
-    assert colors["Risque crédit"] != "#D55E00"
+    assert colors["Risque marché"] == "#E73121"
+    assert colors["Risque crédit"] != "#E73121"
 
 
 def test_the_plain_cycle_is_unchanged() -> None:

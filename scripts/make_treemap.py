@@ -36,16 +36,16 @@ from _textfit import fit_font_size, text_width, wrap_to_width  # noqa: E402
 
 
 CATEGORY_COLORS: Dict[str, str] = {
-    "Infrastructure": "#007AFF",
-    "Applications": "#AF52DE",
-    "Security": "#FF9500",
-    "Data & AI": "#28CD41",
-    "Networking": "#FF3B30",
-    "Compliance": "#79DBDC",
+    "Infrastructure": "#0088FF",
+    "Applications": "#CB30E0",
+    "Security": "#FF8D28",
+    "Data & AI": "#34C759",
+    "Networking": "#FF383C",
+    "Compliance": "#00C3D0",
 }
 
-# Chrome text (title/subtitle/accessible desc) in the two languages Editor
-# can ask for (editor/i18n.py detects the language from the imported CSV's
+# Chrome text (title/subtitle/accessible desc) in the two languages a caller
+# can ask for (one may detect the language from an imported CSV's
 # column names; the CLI/library/API/MCP always call with the "en" default).
 # Data-derived text -- parent/name labels, numeric values -- is never
 # translated here; it already carries whatever language the caller's data
@@ -486,8 +486,8 @@ def make_treemap(
         Forwarded to :func:`build_svg`.
     language : str, optional
         Chrome-text language, ``"en"`` or ``"fr"``. Defaults to ``"en"``;
-        the editor passes the language detected from the imported
-        CSV's column names (see :data:`_STRINGS`).
+        a caller may pass the language detected from its
+        data's column names (see :data:`_STRINGS`).
     theme : str, optional
         Visual theme. Forwarded to :func:`build_svg`.
 

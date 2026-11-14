@@ -52,7 +52,7 @@ HOURS = list(range(24))
 # uses for its continuous field, applied here to a discrete grid).
 _RAMP: Tuple[Tuple[float, str], ...] = (
     (0.00, "#EAF3FF"),
-    (0.62, "#007AFF"),
+    (0.62, "#0088FF"),
     (1.00, "#0A4DA0"),
 )
 

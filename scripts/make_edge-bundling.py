@@ -127,12 +127,12 @@ def _subsys_color(accessibility: str = "universal", theme: str = "corporate") ->
     """
     palette = load_palette(accessibility, theme=theme)
     return {
-        "Web UI":  palette.get("Blue", "#007AFF"),
-        "API":     palette.get("Teal", "#5AC8FA"),
-        "Auth":    palette.get("Red", "#FF3B30"),
-        "Billing": palette.get("Orange", "#FF9500"),
+        "Web UI":  palette.get("Blue", "#0088FF"),
+        "API":     palette.get("Teal", "#00C3D0"),
+        "Auth":    palette.get("Red", "#FF383C"),
+        "Billing": palette.get("Orange", "#FF8D28"),
         "Data":    palette.get("Green", "#34C759"),
-        "Infra":   palette.get("Purple", "#AF52DE"),
+        "Infra":   palette.get("Purple", "#CB30E0"),
     }
 
 

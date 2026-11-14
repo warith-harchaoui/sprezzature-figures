@@ -120,7 +120,7 @@ def _causes(accessibility: str = "universal", theme: str = "corporate") -> List[
         (str, human name) and ``color`` (hex), innermost band first.
     """
     palette = load_palette(accessibility, theme=theme)
-    fallback = {"Teal": "#5AC8FA", "Red": "#FF3B30", "Gray": "#8E8E93"}
+    fallback = {"Teal": "#00C3D0", "Red": "#FF383C", "Gray": "#8E8E93"}
 
     def _hue(name: str) -> str:
         return palette.get(name) or fallback.get(name) or palette["Blue"]

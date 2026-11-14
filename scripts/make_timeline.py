@@ -428,7 +428,7 @@ def build_svg(
     # axis, so identity already survives with no colour, and the ~4-colour
     # system palette cannot preserve the band/pill/stem colour tie anyway.
     era_hex_for_style = {
-        _era_slug(str(era["name"])): palette.get(str(era["color"]), "#007AFF")
+        _era_slug(str(era["name"])): palette.get(str(era["color"]), "#0088FF")
         for era in eras
     }
     fill_series = {f".era-fill.era-{s}": h for s, h in era_hex_for_style.items()}
@@ -488,7 +488,7 @@ def build_svg(
     band_top = spine_y - band_h / 2.0
     era_hexes: Dict[str, str] = {}
     for era in eras:
-        color = palette.get(str(era["color"]), "#007AFF")
+        color = palette.get(str(era["color"]), "#0088FF")
         era_hexes[str(era["name"])] = color
         bx0 = sx(float(era["start"]))
         bx1 = sx(float(era["end"]))
@@ -506,7 +506,7 @@ def build_svg(
         """Append the era-name pills on the band row, centred per era."""
         pill_y = spine_y + 22
         for era in eras:
-            color = palette.get(str(era["color"]), "#007AFF")
+            color = palette.get(str(era["color"]), "#0088FF")
             bx0 = sx(float(era["start"]))
             bx1 = sx(float(era["end"]))
             mid = (bx0 + bx1) / 2.0
@@ -660,7 +660,7 @@ def build_svg(
         blurb = str(m["blurb"])
         era_name = str(m["era"])
         slug = _era_slug(era_name)
-        color = era_hexes.get(era_name, "#007AFF" if is_demo else secondary)
+        color = era_hexes.get(era_name, "#0088FF" if is_demo else secondary)
         # The demo's planned beats are its future dates; a caller says so per row.
         planned = year >= 2025 if is_demo else _truthy(m.get("planned"))
 

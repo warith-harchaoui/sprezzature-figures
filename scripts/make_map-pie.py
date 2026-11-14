@@ -200,7 +200,7 @@ def build_svg(
     rows = [dict(r) for r in (data or DEMO_DATA)]
     palette = load_palette(accessibility, theme)
     fonts = chrome_stack_for_theme(theme)
-    colors = [palette.get(key, "#007AFF") for _, key in SERIES]
+    colors = [palette.get(key, "#0088FF") for _, key in SERIES]
 
     rings = load_land_rings()
     project = fit_to_viewport(rings, _MAP_X, _MAP_Y, _MAP_W, _MAP_H)
@@ -362,7 +362,7 @@ def make_map_pie(
     """Render the pie-glyph map and write it to ``out``.
 
     The standard ``make_<kind>`` entry the figure registry dispatches to, so
-    ``make-figure map-pie`` and the editor work like every other figure.
+    ``make-figure map-pie`` and the library work like every other figure.
 
     Parameters
     ----------

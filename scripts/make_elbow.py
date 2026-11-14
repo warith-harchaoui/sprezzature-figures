@@ -445,9 +445,9 @@ def build_svg(
         null_p_value = null_p_value if null_p_value is not None else verdict.null_p_value
 
     palette = load_palette(accessibility, theme=theme)
-    curve_hue = palette.get("Blue", "#007AFF")
+    curve_hue = palette.get("Blue", "#0088FF")
     curve_deep = palette.get("Indigo", "#0051A8")
-    accent = palette.get("Red", "#FF3B30")
+    accent = palette.get("Red", "#FF383C")
     muted = palette.get("Gray", "#8E8E93")
 
     if is_clear:

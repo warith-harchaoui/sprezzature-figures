@@ -441,7 +441,7 @@ def make_speaking_time(
     """Render the speaking-time donut and write it to ``out``.
 
     The standard ``make_<kind>`` entry the figure registry dispatches to, so
-    ``make-figure speaking_time`` and the editor behave like every other figure.
+    ``make-figure speaking_time`` and the library behave like every other figure.
 
     Parameters
     ----------
@@ -487,9 +487,9 @@ def main() -> None:
     )
     parser.add_argument(
         "--theme",
-        choices=("corporate", "academic"),
+        choices=("corporate", "academic", "print"),
         default="corporate",
-        help="visual theme: corporate (default, Roboto) or academic (LaTeX-style Latin Modern)",
+        help="visual theme: corporate (default, Roboto), academic (LaTeX-style Latin Modern) or print (Roboto, print palette)",
     )
     args = parser.parse_args()
     svg = build_svg(mode=args.mode, accessibility=args.accessibility, theme=args.theme)

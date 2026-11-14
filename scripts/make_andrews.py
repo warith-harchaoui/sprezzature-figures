@@ -85,8 +85,8 @@ _MONO = "Roboto Mono, ui-monospace, monospace"
 # clear third channel between them (blue / orange / green) so the figure
 # survives colour-vision-deficiency review; each class is also labelled.
 _CLASS_COLOURS: Dict[str, str] = {
-    "Adélie": "#007AFF",     # Blue
-    "Chinstrap": "#FF9500",  # Orange
+    "Adélie": "#0088FF",     # Blue
+    "Chinstrap": "#FF8D28",  # Orange
     "Gentoo": "#34C759",     # Green
 }
 

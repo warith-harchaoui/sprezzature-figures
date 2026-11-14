@@ -166,8 +166,8 @@ def build_svg(
     spine_ink = INK
     wheel = [
         palette.get(key, fallback) for key, fallback in (
-            ("Blue", "#007AFF"), ("Orange", "#FF9500"), ("Green", "#28CD41"),
-            ("Purple", "#5856D6"), ("Teal", "#30B0C7"), ("Red", "#FF3B30"),
+            ("Blue", "#0088FF"), ("Orange", "#FF8D28"), ("Green", "#34C759"),
+            ("Purple", "#5856D6"), ("Teal", "#00C3D0"), ("Red", "#FF383C"),
         )
     ]
 

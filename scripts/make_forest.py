@@ -202,9 +202,9 @@ def build_svg(
         estimate_name = estimate_name or "estimate"
         abbr = "Estimate" if estimate_name == "estimate" else estimate_name
     palette: Dict[str, str] = load_palette(accessibility, theme=theme)
-    blue = palette.get("Blue", "#007AFF")
+    blue = palette.get("Blue", "#0088FF")
     green = palette.get("Green", "#34C759")
-    orange = palette.get("Orange", "#FF9500")
+    orange = palette.get("Orange", "#FF8D28")
     ink = "#1D1D1F"
     secondary = "#6E6E73"
     # One uniform lift for every filled glyph: a white keyline, never

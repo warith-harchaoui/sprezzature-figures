@@ -452,7 +452,7 @@ def _speed_ramp(accessibility: str = "universal", theme: str = "corporate") -> C
     palette = load_palette(accessibility, theme=theme)
     # Three-anchor blue ramp: pale sky -> house blue -> deep navy.
     pale = _hex_to_rgb("#BBDCFF")
-    mid = _hex_to_rgb(palette.get("Blue", "#007AFF"))
+    mid = _hex_to_rgb(palette.get("Blue", "#0088FF"))
     deep = _hex_to_rgb("#0A2E63")
     anchors = [(0.0, pale), (0.55, mid), (1.0, deep)]
 
@@ -927,7 +927,7 @@ def build_svg(
     # Apple Red is the meteorological convention for a low-pressure "L", and
     # reads unambiguously against the all-blue speed ramp of the field.
     palette = load_palette(accessibility, theme=theme)
-    _low_red = palette.get("Red", "#FF3B30")
+    _low_red = palette.get("Red", "#FF383C")
     scx, scy = sx(_STORM_X), sy(_STORM_Y)
     # A small red-ringed white disc pins the eye of the storm.
     parts.append(

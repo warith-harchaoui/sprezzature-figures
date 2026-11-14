@@ -136,7 +136,7 @@ _DIVISION_BASE: Dict[str, str] = {
     "vp_ppl": "Green",
 }
 _DIVISION_FALLBACK: Dict[str, str] = {
-    "vp_eng": "#007AFF", "vp_rev": "#FF9500", "vp_ops": "#AF52DE", "vp_ppl": "#34C759",
+    "vp_eng": "#0088FF", "vp_rev": "#FF8D28", "vp_ops": "#CB30E0", "vp_ppl": "#34C759",
 }
 
 

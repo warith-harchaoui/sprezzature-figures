@@ -254,8 +254,8 @@ def build_svg(
     n = len(values)
     mono_family = mono_stack_for_theme(theme)
     palette = load_palette(accessibility, theme=theme)
-    inside = palette.get("Blue", "#007AFF")
-    outside = palette.get("Orange", "#FF9500")
+    inside = palette.get("Blue", "#0088FF")
+    outside = palette.get("Orange", "#FF8D28")
 
     lag_cap = max(1, min(max_lag, n - 2))
     acf = _autocorrelations(values, lag_cap)

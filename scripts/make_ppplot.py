@@ -274,9 +274,9 @@ def build_svg(
     # diagonal (empirical >= theoretical) means the Normal under-states the
     # probability — blue; a point BELOW means it over-states — orange. Both
     # clusters are also labelled directly, so the split survives greyscale.
-    above = palette.get("Blue", "#007AFF")     # Normal under-states P
-    below = palette.get("Orange", "#FF9500")   # Normal over-states P
-    trend = palette.get("Red", "#FF3B30")      # the LOESS structure arc
+    above = palette.get("Blue", "#0088FF")     # Normal under-states P
+    below = palette.get("Orange", "#FF8D28")   # Normal over-states P
+    trend = palette.get("Red", "#FF383C")      # the LOESS structure arc
     ink = "#1D1D1F"
     secondary = "#6E6E73"
     grid_col = "#ECECEC"

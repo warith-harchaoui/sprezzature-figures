@@ -128,13 +128,13 @@ def _phases(accessibility: str = "universal") -> List[Dict[str, Any]]:
     # Season-evocative hues from the curated palette. Amber autumn, cool
     # winter, green spring, gold summer, earth-brown fallow.
     base = {
-        "semis": "#FF9500",       # Orange  — autumn sowing
-        "tallage": "#5AC8FA",     # Teal    — the long cold winter
+        "semis": "#FF8D28",       # Orange  — autumn sowing
+        "tallage": "#00C3D0",     # Teal    — the long cold winter
         "montaison": "#34C759",   # Green   — spring flush of growth
-        "epiaison": "#00C7BE",    # Mint    — heading & flowering
+        "epiaison": "#FF2D55",    # Pink    — heading & flowering
         "remplissage": "#FFCC00", # Yellow  — grain ripening to gold
-        "moisson": "#FF3B30",     # Red     — the harvest fortnight
-        "interculture": "#A2845E",# Brown   — bare soil / cover crop
+        "moisson": "#FF383C",     # Red     — the harvest fortnight
+        "interculture": "#AC7F5E",# Brown   — bare soil / cover crop
     }
     colors = leveled_colors(base, accessibility)
     return [

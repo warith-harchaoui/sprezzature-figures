@@ -54,8 +54,8 @@ def _channel_colors(
 ) -> Dict[str, str]:
     # Brown/Blue/Yellow/Green (not the more obvious Purple/Blue/Orange/Green):
     # a grayscale-legibility fix. The original two adjacent stack pairs
-    # (Purple #AF52DE ~lum 112 vs Blue #007AFF ~lum 106, and Orange #FF9500
-    # ~lum 161 vs Green #28CD41 ~lum 160) collapse to the same shade once
+    # (Purple #CB30E0 ~lum 112 vs Blue #0088FF ~lum 106, and Orange #FF8D28
+    # ~lum 161 vs Green #34C759 ~lum 160) collapse to the same shade once
     # desaturated -- caught by the grayscale pass of the Ralph Eyeball Loop.
     # This set's adjacent-band luminance gaps are all >=38, so every band
     # boundary stays visible in grayscale.

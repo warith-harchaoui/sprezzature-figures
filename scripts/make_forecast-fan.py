@@ -245,8 +245,8 @@ def build_svg(
 
     mono_family = mono_stack_for_theme(theme)
     palette = load_palette(accessibility, theme=theme)
-    observed_ink = palette.get("Blue", "#007AFF")
-    forecast_ink = palette.get("Orange", "#FF9500")
+    observed_ink = palette.get("Blue", "#0088FF")
+    forecast_ink = palette.get("Orange", "#FF8D28")
 
     low = min(
         [value for _, value in history]

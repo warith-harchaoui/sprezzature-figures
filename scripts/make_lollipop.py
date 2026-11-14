@@ -31,7 +31,7 @@ from _style import BG, GRIDLINE, INK, SECONDARY  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 COLOR_STEM = "#C7C7CC"
-COLOR_DOT = "#007AFF"
+COLOR_DOT = "#0088FF"
 
 #: Unplanned downtime by root cause. Real categories rather than
 #: alpha/beta/gamma: a lollipop chart is chosen when the *ranking* is the
@@ -43,9 +43,9 @@ DEMO_DATA: List[Dict[str, Any]] = [
     {"c": "Hardware fault", "v": 28},
 ]
 
-# Chrome text (Editor detects "en"/"fr" from the imported CSV's column
-# names; the CLI/library/API/MCP default to "en"). Title/subtitle are
-# already caller-supplied strings (Editor always passes an explicit
+# Chrome text (a caller may detect "en"/"fr" from an imported CSV's
+# column names; the CLI/library/API/MCP default to "en"). Title/subtitle are
+# already caller-supplied strings (an editor always passes an explicit
 # `title=`), so only this generator's own fixed labels need translation:
 # the x-axis title, the desc template, the "leads at" clause, and the
 # tooltip's "of total" suffix. Category names and values are never

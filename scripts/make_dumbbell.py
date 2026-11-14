@@ -182,8 +182,8 @@ def build_svg(
     # Purple for group A, Teal for group B: two distinct hues, neither
     # red-vs-green (CVD-safe), each carrying an explicit legend label so
     # the encoding never rides on colour alone.
-    women_col = palette.get("Purple", "#AF52DE")
-    men_col = palette.get("Teal", "#5AC8FA")
+    women_col = palette.get("Purple", "#CB30E0")
+    men_col = palette.get("Teal", "#00C3D0")
     # The bright teal reads fine as a *filled disk* on white, but it is far too
     # pale to use as *text* (luminance ~0.50). For the group-B value numbers we
     # darken it just enough to stay legible while keeping its teal identity, so

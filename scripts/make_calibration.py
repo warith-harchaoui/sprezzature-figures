@@ -251,10 +251,10 @@ def build_svg(
         A complete, standalone SVG document.
     """
     palette: Dict[str, str] = load_palette(accessibility, theme=theme)
-    over = palette.get("Red", "#FF3B30")      # model over-states the probability
-    under = palette.get("Blue", "#007AFF")    # model under-states the probability
-    curve = palette.get("Purple", "#AF52DE")  # the reliability curve itself
-    hist = palette.get("Teal", "#5AC8FA")     # the confidence histogram
+    over = palette.get("Red", "#FF383C")      # model over-states the probability
+    under = palette.get("Blue", "#0088FF")    # model under-states the probability
+    curve = palette.get("Purple", "#CB30E0")  # the reliability curve itself
+    hist = palette.get("Teal", "#00C3D0")     # the confidence histogram
     ink = "#1D1D1F"
     secondary = "#6E6E73"
 

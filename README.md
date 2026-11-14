@@ -566,32 +566,33 @@ figures; `"corporate"` keeps each chart's own tuned single-hue ramp.
 
 A colour is read before its label, so it should say what the label says.
 Each palette hue carries a psychological dimension, after
-[deraison.ai/colors/academic](https://deraison.ai/colors/academic):
+[deraison.ai/colors](https://deraison.ai/en/colors), where the three palettes
+(corporate, academic, print) give each name its hex:
 
-| Hue (Okabe-Ito) | Hue name | Positive side | Negative side |
-|---|---|---|---|
-| `#D55E00` vermilion | `Red` | power, energy, passion | danger, warning, anger |
-| `#E69F00` orange | `Orange` | courage, warmth, innovation | frustration |
-| `#F0E442` yellow | `Yellow` | optimism, creativity | caution, anxiety |
-| `#009E73` bluish green | `Green` | health, hope, growth, nature | stagnation, sickness |
-| `#56B4E9` sky blue | `Teal` | communication, clarity, calm | secrecy, unreliability |
-| `#0072B2` blue | `Blue` | trust, dependability, logic, security | coldness |
-| `#CC79A7` reddish purple | `Purple` | wisdom, imagination, sophistication | fear |
-| `#A52A2A` brown | `Brown` | seriousness, earthiness, support | heaviness |
-| black | `Black` | authority, substance | menace, mourning |
-| grey | `Gray` | neutrality, balance | lack of energy |
+| Hue name | Positive side | Negative side |
+|---|---|---|
+| `Red` | power, energy, passion | danger, warning, anger |
+| `Orange` | courage, warmth, innovation | frustration |
+| `Yellow` | optimism, creativity | caution, anxiety |
+| `Green` | health, hope, growth, nature | stagnation, sickness |
+| `Turquoise` | communication, clarity, calm | secrecy, unreliability |
+| `Blue` | trust, dependability, logic, security | coldness |
+| `Purple` | wisdom, imagination, sophistication | fear |
+| `Brown` | seriousness, earthiness, support | heaviness |
+| `Black` | authority, substance | menace, mourning |
+| `Gray` | neutrality, balance | lack of energy |
 
 `semantic_colors` applies it: a label naming a meaning, in English or French,
 gets that hue; any other label keeps the usual cycle, minus the hues already
 taken. It is a suggestion you pass to a figure's own colour option; no
 figure's default colours change. Hues resolve through the theme's palette, so
-the neutrals come out as the house's `Brown` `#A2845E` and `Gray` `#8E8E93`.
+each name takes that palette's hex.
 
 ```python
 from sprezzature_figures import semantic_colors
 
 semantic_colors(["Risque", "Confiance", "Croissance", "Q3"], theme="academic")
-# {'Risque': '#D55E00', 'Confiance': '#0072B2', 'Croissance': '#009E73', 'Q3': '#E69F00'}
+# {'Risque': '#E73121', 'Confiance': '#0072B2', 'Croissance': '#009E73', 'Q3': '#E69F00'}
 ```
 
 ### Fonts

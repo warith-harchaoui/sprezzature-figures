@@ -73,8 +73,8 @@ _MONO = "Roboto Mono, ui-monospace, monospace"
 # ride a Blue ramp (calm → deep), negative ones a Red ramp (mirror-folded).
 # Within a horizon chart each *band* re-uses the row's baseline; the eye reads
 # a taller stack of bands as a bigger value, reinforced by deeper saturation.
-_POS_HUE = "#007AFF"    # Apple Blue  — above the row's own mean
-_NEG_HUE = "#FF3B30"    # Apple Red   — below the row's own mean
+_POS_HUE = "#0088FF"    # Apple Blue  — above the row's own mean
+_NEG_HUE = "#FF383C"    # Apple Red   — below the row's own mean
 _N_BANDS = 3            # bands per direction (the horizon-chart sweet spot)
 
 
@@ -777,9 +777,9 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--theme",
-        choices=("corporate", "academic"),
+        choices=("corporate", "academic", "print"),
         default="corporate",
-        help="visual theme: corporate (default, Roboto) or academic (LaTeX-style Latin Modern)",
+        help="visual theme: corporate (default, Roboto), academic (LaTeX-style Latin Modern) or print (Roboto, print palette)",
     )
     return parser
 

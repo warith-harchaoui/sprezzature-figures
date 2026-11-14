@@ -190,9 +190,9 @@ def _pillar_color(accessibility: str = "universal", theme: str = "corporate") ->
     """
     palette = load_palette(accessibility, theme=theme)
     return {
-        "ingest": palette.get("Blue", "#007AFF"),
-        "transform": palette.get("Orange", "#FF9500"),
-        "serve": palette.get("Purple", "#AF52DE"),
+        "ingest": palette.get("Blue", "#0088FF"),
+        "transform": palette.get("Orange", "#FF8D28"),
+        "serve": palette.get("Purple", "#CB30E0"),
         "govern": palette.get("Green", "#34C759"),
     }
 

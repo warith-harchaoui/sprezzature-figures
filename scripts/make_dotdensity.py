@@ -760,7 +760,7 @@ def make_dotdensity(
     """Render the dot-density map and write it to ``out``.
 
     The standard ``make_<kind>`` entry the figure registry dispatches to, so
-    ``make-figure dotdensity`` and the editor work like every other figure. The
+    ``make-figure dotdensity`` and the library work like every other figure. The
     demo geography (French departments) and values are baked into the
     hand-authored SVG, so ``data`` and ``title`` are accepted for dispatcher
     parity and unused. ``legend_title`` overrides the region-legend header

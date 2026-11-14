@@ -229,7 +229,7 @@ def build_svg(
 
     mono_family = mono_stack_for_theme(theme)
     palette = load_palette(accessibility, theme=theme)
-    bar_ink = palette.get("Blue", "#007AFF")
+    bar_ink = palette.get("Blue", "#0088FF")
 
     plot_x = 40.0
     plot_y = 196.0

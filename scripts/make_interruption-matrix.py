@@ -496,7 +496,7 @@ def make_interruption_matrix(
     """Render the interruption matrix and write it to ``out``.
 
     The standard ``make_<kind>`` entry the figure registry dispatches to, so
-    ``make-figure interruption-matrix`` and the editor work like every other
+    ``make-figure interruption-matrix`` and the library work like every other
     figure. ``data`` is directed pairs
     ``{"interrupter", "interrupted", "count"}``; omit it for the built-in demo.
     ``title`` and ``subtitle`` are the two lines of chrome, and the title is

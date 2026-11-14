@@ -16,7 +16,7 @@ a damp irrigation seam, then performs the bilinear up-sampling *itself* in numpy
 white, rounded framing, x/y axes with ticks, and a labelled colour legend.
 
 The colour ramp is the house Apple-blue sequential ramp
-``#EAF3FF`` → ``#007AFF`` → ``#0A4DA0``, mono-hue and colour-vision-deficiency safe,
+``#EAF3FF`` → ``#0088FF`` → ``#0A4DA0``, mono-hue and colour-vision-deficiency safe,
 never a rainbow. The figure is a **static** poster-size raster: an interpolated
 heatmap is an image whose whole story is legible in one glance, so it gains
 nothing from motion and ships with no animation and no JavaScript.
@@ -72,7 +72,7 @@ _MONO = "Roboto Mono, ui-monospace, monospace"
 # contrast, so it survives protanopia / deuteranopia / tritanopia unchanged.
 _BLUE_RAMP: Sequence[Tuple[float, str]] = (
     (0.00, "#EAF3FF"),
-    (0.62, "#007AFF"),
+    (0.62, "#0088FF"),
     (1.00, "#0A4DA0"),
 )
 
@@ -593,7 +593,7 @@ def make_imshow_interpolated(
     """Render the interpolated-heatmap figure and write it to ``out``.
 
     The standard ``make_<kind>`` entry the figure registry dispatches to, so
-    ``make-figure imshow-interpolated`` and the editor work like every other
+    ``make-figure imshow-interpolated`` and the library work like every other
     figure.
 
     Parameters
@@ -655,9 +655,9 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--theme",
-        choices=("corporate", "academic"),
+        choices=("corporate", "academic", "print"),
         default="corporate",
-        help="visual theme: corporate (default, Roboto) or academic (LaTeX-style Latin Modern)",
+        help="visual theme: corporate (default, Roboto), academic (LaTeX-style Latin Modern) or print (Roboto, print palette)",
     )
     return parser
 

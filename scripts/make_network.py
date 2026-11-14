@@ -149,11 +149,11 @@ def _team_color(accessibility: str = "universal", theme: str = "corporate") -> D
     """
     palette = load_palette(accessibility, theme=theme)
     return {
-        "Platform": palette.get("Blue", "#007AFF"),
-        "Storefront": palette.get("Teal", "#5AC8FA"),
-        "Checkout": palette.get("Orange", "#FF9500"),
+        "Platform": palette.get("Blue", "#0088FF"),
+        "Storefront": palette.get("Teal", "#00C3D0"),
+        "Checkout": palette.get("Orange", "#FF8D28"),
         "Fulfilment": palette.get("Green", "#34C759"),
-        "Growth": palette.get("Purple", "#AF52DE"),
+        "Growth": palette.get("Purple", "#CB30E0"),
     }
 
 #: Fallback hue-name cycling order for custom team sets beyond the five the

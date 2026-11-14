@@ -117,8 +117,8 @@ AXES: List[Tuple[str, List[str]]] = [
 # (red-green blindness reads blue vs red cleanly), and it is reinforced by
 # the legend labels, never colour alone.
 #
-# The shared palette's own "Red" (#FF3B30) was measured to fall only ~6
-# luminance levels from "Blue" (#007AFF) under standard grayscale
+# The shared palette's own "Red" (#FF383C) was measured to fall only ~6
+# luminance levels from "Blue" (#0088FF) under standard grayscale
 # conversion (106 vs 100 out of 255) -- the two ribbon colours collapse to
 # nearly the same gray, and this chart has no per-ribbon text label to
 # fall back on (unlike a legend swatch, a mid-diagram ribbon is bare

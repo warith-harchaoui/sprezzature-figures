@@ -135,11 +135,11 @@ def build_svg(
     hues = [
         palette.get(name, fallback)
         for name, fallback in (
-            ("Blue", "#007AFF"), ("Orange", "#FF9500"), ("Purple", "#AF52DE"),
-            ("Green", "#28CD41"), ("Teal", "#79DBDC"), ("Yellow", "#FFCC00"),
+            ("Blue", "#0088FF"), ("Orange", "#FF8D28"), ("Purple", "#CB30E0"),
+            ("Green", "#34C759"), ("Teal", "#00C3D0"), ("Yellow", "#FFCC00"),
         )
     ]
-    misfit_colour = palette.get("Red", "#FF3B30")
+    misfit_colour = palette.get("Red", "#FF383C")
 
     order: List[str] = []
     grouped: Dict[str, List[Tuple[float, str]]] = {}

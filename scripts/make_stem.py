@@ -193,8 +193,8 @@ def build_svg(
 
     mono_family = mono_stack_for_theme(theme)
     palette = load_palette(accessibility, theme=theme)
-    quiet = palette.get("Blue", "#007AFF")
-    loud = palette.get("Orange", "#FF9500")
+    quiet = palette.get("Blue", "#0088FF")
+    loud = palette.get("Orange", "#FF8D28")
 
     ticks = nice_ticks_range(min(values + [floor]), max(values + [floor]), 5)
     axis_low, axis_high = ticks[0], ticks[-1]

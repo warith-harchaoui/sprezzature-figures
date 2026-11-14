@@ -268,7 +268,7 @@ def build_svg(
         # (`r["horsepower"]`, `r.get("weight")`), and both names lived in
         # the same function.
         radius = r_for(float(row.get("weight") or 0))
-        color = colors.get(seg, colors[segments[0]] if segments else "#007AFF")
+        color = colors.get(seg, colors[segments[0]] if segments else "#0088FF")
         # Tooltips name what the axes name, so they follow the caller's titles.
         bits = [f"{x_label} {float(row['horsepower']):.6g}", f"{y_label} {float(row['mpg']):.6g}"]
         if has_weight:

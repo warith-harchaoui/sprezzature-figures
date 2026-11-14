@@ -156,7 +156,7 @@ def _dataset(
     return [
         {
             "label": label,
-            "color": palette.get(_CLASS_HUES[i % len(_CLASS_HUES)], "#007AFF"),
+            "color": palette.get(_CLASS_HUES[i % len(_CLASS_HUES)], "#0088FF"),
             "points": pts,
         }
         for i, (label, pts) in enumerate(classes.items())

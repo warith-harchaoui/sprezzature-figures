@@ -217,9 +217,9 @@ def build_svg(
         A complete, standalone SVG document.
     """
     palette: Dict[str, str] = load_palette(accessibility, theme=theme)
-    over = palette.get("Blue", "#007AFF")     # residual > 0: model under-predicts
-    under = palette.get("Orange", "#FF9500")  # residual < 0: model over-predicts
-    trend = palette.get("Red", "#FF3B30")     # the LOESS structure line
+    over = palette.get("Blue", "#0088FF")     # residual > 0: model under-predicts
+    under = palette.get("Orange", "#FF8D28")  # residual < 0: model over-predicts
+    trend = palette.get("Red", "#FF383C")     # the LOESS structure line
     ink = "#1D1D1F"
     secondary = "#6E6E73"
     grid_col = "#EEEEEE"

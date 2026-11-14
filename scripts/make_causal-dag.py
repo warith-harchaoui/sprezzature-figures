@@ -301,11 +301,11 @@ def build_svg(
     mono_family = mono_stack_for_theme(theme)
     palette = load_palette(accessibility, theme=theme)
     ink_for = {
-        "treatment": palette.get("Blue", "#007AFF"),
-        "outcome": palette.get("Green", "#28CD41"),
-        "confounder": palette.get("Orange", "#FF9500"),
+        "treatment": palette.get("Blue", "#0088FF"),
+        "outcome": palette.get("Green", "#34C759"),
+        "confounder": palette.get("Orange", "#FF8D28"),
         "mediator": palette.get("Purple", "#5856D6"),
-        "collider": palette.get("Red", "#FF3B30"),
+        "collider": palette.get("Red", "#FF383C"),
         "other": SECONDARY,
     }
     label_for = {

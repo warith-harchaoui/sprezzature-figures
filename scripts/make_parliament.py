@@ -104,8 +104,8 @@ _PARTY_ROWS: List[Tuple[str, str, int, str]] = [
     ("National Right",   "NR",  26, "Purple"),
 ]
 _PARTY_FALLBACK: Dict[str, str] = {
-    "Green": "#34C759", "Red": "#FF3B30", "Yellow": "#FFCC00",
-    "Blue": "#007AFF", "Purple": "#AF52DE",
+    "Green": "#34C759", "Red": "#FF383C", "Yellow": "#FFCC00",
+    "Blue": "#0088FF", "Purple": "#CB30E0",
 }
 
 

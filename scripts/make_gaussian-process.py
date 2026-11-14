@@ -65,7 +65,7 @@ def _nice_step(span: float, target_ticks: int = 5) -> float:
 
 COLOR_BAND = "#3E9BFF"
 COLOR_SAMPLE = "#9CC7FF"
-COLOR_MEAN = "#007AFF"
+COLOR_MEAN = "#0088FF"
 COLOR_POINT = "#1D1D1F"
 
 DEMO_DATA: List[Dict[str, Any]] = [

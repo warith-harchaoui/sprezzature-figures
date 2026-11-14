@@ -42,7 +42,7 @@ from _svg import foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noq
 REGIONS = ["Americas", "Asia Pacific", "Europe", "Middle East & Africa"]
 
 # Chrome text (title/subtitle/legend header/accessible desc) in the two
-# languages Editor can ask for (editor/i18n.py detects the language from the
+# languages a caller can ask for (one may detect the language from an
 # imported CSV's column names; the CLI/library/API/MCP always call with the
 # "en" default). Data-derived text -- parent/name labels, numeric values --
 # is never translated here; it already carries whatever language the
@@ -180,8 +180,8 @@ def build_svg(
     total = sum(region_totals.values()) or 1.0
 
     palette = load_palette(accessibility, theme=theme)
-    hue_order = [palette.get("Blue", "#007AFF"), palette.get("Green", "#34C759"),
-                 palette.get("Orange", "#FF9500"), palette.get("Purple", "#AF52DE")]
+    hue_order = [palette.get("Blue", "#0088FF"), palette.get("Green", "#34C759"),
+                 palette.get("Orange", "#FF8D28"), palette.get("Purple", "#CB30E0")]
     region_colors = {r: hue_order[i % len(hue_order)] for i, r in enumerate(regions_sorted)}
 
     legend_w = 190.0
@@ -340,8 +340,8 @@ def make_sunburst(
         Forwarded to :func:`build_svg`.
     language : str, optional
         Chrome-text language, ``"en"`` or ``"fr"``. Defaults to ``"en"``;
-        the editor passes the language detected from the imported
-        CSV's column names (see :data:`_STRINGS`).
+        a caller may pass the language detected from its
+        data's column names (see :data:`_STRINGS`).
     theme : str, optional
         Visual theme. Forwarded to :func:`build_svg`.
 

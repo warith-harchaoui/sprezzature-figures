@@ -217,8 +217,8 @@ def build_svg(
 
     mono_family = mono_stack_for_theme(theme)
     palette = load_palette(accessibility, theme=theme)
-    solid = palette.get("Blue", "#007AFF")
-    adverse = palette.get("Orange", "#FF9500")
+    solid = palette.get("Blue", "#0088FF")
+    adverse = palette.get("Orange", "#FF8D28")
 
     # The precision the numbers are quoted at, read off the tightest
     # interval on the chart: fmt_number would print "0.04 to 0.04" for an

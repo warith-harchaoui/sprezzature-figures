@@ -64,7 +64,7 @@ _INK = "#1D1D1F"        # primary text
 _SECONDARY = "#6E6E73"  # subtitle / secondary text
 _BG = "#FFFFFF"         # white ground
 _GRID = "#E5E5EA"       # light grid rings / spokes
-_ACCENT = "#007AFF"     # Apple-system Blue — the series colour
+_ACCENT = "#0088FF"     # Apple-system Blue — the series colour
 _ACCENT_FILL = "#7FBBFF"  # a lighter Blue for the filled area
 _FONT = "Roboto, system-ui, sans-serif"
 _MONO = "Roboto Mono, ui-monospace, monospace"
@@ -475,9 +475,9 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--theme",
-        choices=("corporate", "academic"),
+        choices=("corporate", "academic", "print"),
         default="corporate",
-        help="visual theme: corporate (default, Roboto) or academic (LaTeX-style Latin Modern)",
+        help="visual theme: corporate (default, Roboto), academic (LaTeX-style Latin Modern) or print (Roboto, print palette)",
     )
     return parser
 

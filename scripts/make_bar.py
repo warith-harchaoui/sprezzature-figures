@@ -40,7 +40,7 @@ DEMO_DATA: List[Dict[str, Any]] = [
 ]
 
 # Chrome text (title/subtitle/axis titles/desc/tooltip templates) in the two
-# languages Editor can ask for (editor/i18n.py detects the language from the
+# languages a caller can ask for (one may detect the language from an
 # imported CSV's column names; the CLI/library/API/MCP always call with the
 # "en" default). Category names and numeric labels are never translated here
 # -- they render exactly as the caller's data/columns give them.
@@ -73,8 +73,8 @@ def _strings(language: str) -> Dict[str, str]:
 
 def _category_colors(accessibility: str = "universal", theme: str = "corporate") -> Dict[str, str]:
     # Explicit hues (not cycle_hues' default Blue/Orange/Green/Purple order):
-    # a grayscale-legibility fix. Orange (#FF9500, relative luminance ~161)
-    # and Green (#28CD41, ~160) -- positions 2 and 3 of the default cycle,
+    # a grayscale-legibility fix. Orange (#FF8D28, relative luminance ~161)
+    # and Green (#34C759, ~160) -- positions 2 and 3 of the default cycle,
     # the South/East bars here -- collapse to the same shade once
     # desaturated. Blue/Brown/Green/Yellow spread luminance ~106/68/160/200,
     # so every bar stays distinguishable in grayscale.
@@ -250,7 +250,7 @@ def build_svg(
             continue
         path = bar_path(x, y, bar_w, h, r, side="top")
         parts.append(
-            f'<path id="bar-hit-{i}" class="bar hit" tabindex="0" d="{path}" fill="{colors.get(region, "#007AFF")}">'
+            f'<path id="bar-hit-{i}" class="bar hit" tabindex="0" d="{path}" fill="{colors.get(region, "#0088FF")}">'
             f'<title>{xml_escape(tip)}</title></path>'
         )
         rank = i + 1
@@ -334,8 +334,8 @@ def make_bar(
         Forwarded to :func:`build_svg`.
     language : str, optional
         Chrome-text language, ``"en"`` or ``"fr"``. Defaults to ``"en"``;
-        the editor passes the language detected from the imported
-        CSV's column names (see :data:`_STRINGS`).
+        a caller may pass the language detected from its
+        data's column names (see :data:`_STRINGS`).
     theme : str, optional
         Visual theme. Forwarded to :func:`build_svg`.
 

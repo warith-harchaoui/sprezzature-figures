@@ -184,20 +184,21 @@ Every figure `sprezzature-figures render` emits inherits the sprezzature-* desig
    [Ralph Eyeball Loop](references/ralph-eyeball-loop.md).
 8. **Colour = meaning.** Before giving a series, card or label a colour,
    read what it says and pick the hue whose psychological dimension matches
-   ([deraison.ai/colors/academic](https://deraison.ai/colors/academic)):
+   ([deraison.ai/colors](https://deraison.ai/en/colors), which gives each
+   name its hex in each of the three palettes):
 
-   | Hue | Name | Positive | Negative |
-   |---|---|---|---|
-   | `#D55E00` | `Red` | power, energy | danger, warning, anger |
-   | `#E69F00` | `Orange` | courage, warmth, innovation | frustration |
-   | `#F0E442` | `Yellow` | optimism, creativity | caution, anxiety |
-   | `#009E73` | `Green` | health, hope, growth, nature | stagnation, sickness |
-   | `#56B4E9` | `Teal` | communication, clarity, calm | secrecy, unreliability |
-   | `#0072B2` | `Blue` | trust, dependability, logic, security | coldness |
-   | `#CC79A7` | `Purple` | wisdom, imagination, sophistication | fear |
-   | `#A52A2A` | `Brown` | seriousness, earthiness | heaviness |
-   | black | `Black` | authority | menace |
-   | grey | `Gray` | neutrality, balance | lack of energy |
+   | Name | Positive | Negative |
+   |---|---|---|
+   | `Red` | power, energy | danger, warning, anger |
+   | `Orange` | courage, warmth, innovation | frustration |
+   | `Yellow` | optimism, creativity | caution, anxiety |
+   | `Green` | health, hope, growth, nature | stagnation, sickness |
+   | `Turquoise` | communication, clarity, calm | secrecy, unreliability |
+   | `Blue` | trust, dependability, logic, security | coldness |
+   | `Purple` | wisdom, imagination, sophistication | fear |
+   | `Brown` | seriousness, earthiness | heaviness |
+   | `Black` | authority | menace |
+   | `Gray` | neutrality, balance | lack of energy |
 
    `semantic_colors(labels, theme=...)` does it for you, in English and
    French (risque / erreur → `Red`, confiance / fiable / sûr → `Blue`,

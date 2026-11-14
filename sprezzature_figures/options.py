@@ -86,7 +86,7 @@ OPTION_CHOICES: dict[str, tuple[str, ...]] = {
         "protanopia",
         "tritanopia",
     ),
-    "theme": ("corporate", "academic"),
+    "theme": ("corporate", "academic", "print"),
     # voxels raises on anything else: the cutaway is a named geometry,
     # not a free-text hint, and the three names are the whole vocabulary.
     "cut": ("none", "corner", "half"),
@@ -145,7 +145,7 @@ SHARED_DESCRIPTIONS: dict[str, str] = {
         "external expects the page to supply one, static leaves it out."
     ),
     "accessibility": ("Palette accessibility level; universal is the colour-vision-safe default."),
-    "theme": ("corporate (Roboto, house palette) or academic (Latin Modern, Okabe-Ito)."),
+    "theme": ("corporate (Roboto, Apple system colours), academic (Latin Modern, readable with colour blindness) or print (Roboto, checked for offset printing); palettes of deraison.ai/colors."),
     "language": "Language of the chrome the figure writes itself -- titles, legends, units.",
     "lang": "Language of the chrome the figure writes itself -- titles, legends, units.",
     "x_label": "Title under the x axis.",

@@ -161,10 +161,10 @@ def _family_color(accessibility: str = "universal", theme: str = "corporate") ->
     """
     palette = load_palette(accessibility, theme=theme)
     return {
-        "Web & scripting": _darken(palette.get("Blue", "#007AFF"), 0.10),
+        "Web & scripting": _darken(palette.get("Blue", "#0088FF"), 0.10),
         "Data & scientific": palette.get("Green", "#34C759"),
-        "Systems": palette.get("Orange", "#FF9500"),
-        "Enterprise & JVM": _darken(palette.get("Purple", "#AF52DE"), 0.10),
+        "Systems": palette.get("Orange", "#FF8D28"),
+        "Enterprise & JVM": _darken(palette.get("Purple", "#CB30E0"), 0.10),
     }
 
 

@@ -41,7 +41,7 @@ from _style import BG, GRIDLINE, INK, SECONDARY  # noqa: E402
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
 COLOR_POINT = "#C7C7CC"
-COLOR_CONTOUR = "#007AFF"
+COLOR_CONTOUR = "#0088FF"
 
 # Marching-squares case -> which crossed edges to connect, keyed by corner
 # bitmask (bit0=BL, bit1=BR, bit2=TR, bit3=TL, 1 = above the level). Cases 5

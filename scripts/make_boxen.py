@@ -559,7 +559,7 @@ def build_svg(
     # make ↔ audit in sync); the blue value ramp is a sequential perceptual map,
     # already CVD/greyscale-safe, so it is intentionally left at its own tuning.
     palette = _style.load_palette(accessibility, theme=theme)
-    assert palette.get("Blue", "#007AFF"), "house palette must expose Blue"
+    assert palette.get("Blue", "#0088FF"), "house palette must expose Blue"
 
     # Three service tiers. Free is the noisiest (largest sigma → longest
     # tail); Enterprise is tightest. n is large — the boxen's raison d'être.

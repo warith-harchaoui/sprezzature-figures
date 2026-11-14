@@ -229,8 +229,8 @@ def build_svg(
 
     mono_family = mono_stack_for_theme(theme)
     palette = load_palette(accessibility, theme=theme)
-    strand = palette.get("Blue", "#007AFF")
-    mean_ink = palette.get("Orange", "#FF9500")
+    strand = palette.get("Blue", "#0088FF")
+    mean_ink = palette.get("Orange", "#FF8D28")
 
     reach = [v for values in shaped.values() for v in values]
     ticks = nice_ticks_range(min(reach), max(reach), 5)

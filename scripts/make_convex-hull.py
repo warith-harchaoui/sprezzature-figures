@@ -129,9 +129,9 @@ def _segment_colors(accessibility: str = "universal", theme: str = "corporate") 
     """
     palette = load_palette(accessibility, theme=theme)
     return {
-        "Occasional":  palette.get("Blue", "#007AFF"),
-        "Regular":     palette.get("Orange", "#FF9500"),
-        "Power users": palette.get("Purple", "#AF52DE"),
+        "Occasional":  palette.get("Blue", "#0088FF"),
+        "Regular":     palette.get("Orange", "#FF8D28"),
+        "Power users": palette.get("Purple", "#CB30E0"),
     }
 
 

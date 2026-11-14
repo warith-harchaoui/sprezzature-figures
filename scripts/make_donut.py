@@ -106,9 +106,9 @@ def build_svg(
     # most common count) and only reaches the Red/Green pair once 7+ slices
     # are in play, by which point they're separated by Yellow on one side.
     hue_order = [palette.get(h, d) for h, d in (
-        ("Blue", "#007AFF"), ("Orange", "#FF9500"), ("Purple", "#AF52DE"),
-        ("Teal", "#79DBDC"), ("Yellow", "#FFCC00"), ("Red", "#FF3B30"),
-        ("Green", "#28CD41"), ("Pink", "#FF2D55"),
+        ("Blue", "#0088FF"), ("Orange", "#FF8D28"), ("Purple", "#CB30E0"),
+        ("Teal", "#00C3D0"), ("Yellow", "#FFCC00"), ("Red", "#FF383C"),
+        ("Green", "#34C759"), ("Pink", "#FF2D55"),
     )]
     colors = {r["source"]: hue_order[i % len(hue_order)] for i, r in enumerate(rows)}
 

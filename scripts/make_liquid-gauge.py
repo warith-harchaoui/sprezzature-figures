@@ -112,8 +112,8 @@ def _liquid_hues(accessibility: str = "universal", theme: str = "corporate") -> 
         ``(back_crest, front_crest, body)`` as ``#RRGGBB`` hex.
     """
     palette = load_palette(accessibility, theme=theme)
-    blue = palette.get("Blue") or "#007AFF"
-    teal = palette.get("Teal") or "#5AC8FA"
+    blue = palette.get("Blue") or "#0088FF"
+    teal = palette.get("Teal") or "#00C3D0"
     # Back crest = the base blue; sprezzature crest = the lighter teal catching
     # light; body = a deepened blue so the mass below reads as water.
     return _darken(blue, 0.10), teal, _darken(blue, 0.22)
@@ -530,7 +530,7 @@ def build_svg(
     delta = value - median
     below = delta < 0
     chip_palette = load_palette(accessibility, theme=theme)
-    chip_hex = (chip_palette.get("Orange") or "#FF9500") if below else (
+    chip_hex = (chip_palette.get("Orange") or "#FF8D28") if below else (
         chip_palette.get("Green") or "#34C759"
     )
     chip_txt = (
@@ -631,9 +631,9 @@ def main() -> None:
     )
     parser.add_argument(
         "--theme",
-        choices=("corporate", "academic"),
+        choices=("corporate", "academic", "print"),
         default="corporate",
-        help="visual theme: corporate (default, Roboto) or academic (LaTeX-style Latin Modern)",
+        help="visual theme: corporate (default, Roboto), academic (LaTeX-style Latin Modern) or print (Roboto, print palette)",
     )
     args = parser.parse_args()
     out_svg = svg_example_path(__file__, "liquid-gauge")

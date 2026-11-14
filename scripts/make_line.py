@@ -44,9 +44,9 @@ DEMO_DATA: List[Dict[str, Any]] = [
     for m, v in zip(MONTHS, values, strict=True)
 ]
 
-# Chrome text (Editor detects "en"/"fr" from the imported CSV's column
-# names; the CLI/library/API/MCP default to "en"). Title/subtitle are
-# already caller-supplied strings (Editor always passes an explicit
+# Chrome text (a caller may detect "en"/"fr" from an imported CSV's
+# column names; the CLI/library/API/MCP default to "en"). Title/subtitle are
+# already caller-supplied strings (an editor always passes an explicit
 # `title=`), so only this generator's own fixed labels need a translation:
 # the legend header, the two axis titles, and the accessible <desc>
 # template. Series/month/value labels always come from the caller's data
