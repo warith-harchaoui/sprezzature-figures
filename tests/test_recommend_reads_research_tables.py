@@ -154,3 +154,57 @@ def test_a_bar_category_with_angle_brackets_stays_valid_xml(tmp_path: Path) -> N
     svg = out.read_text(encoding="utf-8")
     xml.dom.minidom.parseString(svg)
     assert "#0088FF" not in svg, "a category outside the demo kept a literal blue"
+
+
+def test_a_line_series_with_its_own_years_is_not_filled_with_zeros(tmp_path: Path) -> None:
+    from sprezzature_figures.make_figure import make_figure
+
+    rows = [
+        {"hour": 1971, "platform": "France", "sessions": 2.4},
+        {"hour": 2013, "platform": "France", "sessions": 4.0},
+        {"hour": 1978, "platform": "Chine", "sessions": 3.38},
+        {"hour": 2004, "platform": "Chine", "sessions": 2.22},
+    ]
+    out = tmp_path / "lm.svg"
+    make_figure("line-multi", rows, out=str(out))
+    svg = out.read_text(encoding="utf-8")
+    assert len(re.findall(r'class="pt hit"', svg)) == 4, "a missing year was drawn as a point"
+
+
+def test_a_gantt_of_calendar_years_does_not_start_at_zero(tmp_path: Path) -> None:
+    from sprezzature_figures.make_figure import make_figure
+
+    rows = [
+        {"task": "A", "start": 1945, "end": 1970, "team": "x"},
+        {"task": "B", "start": 1961, "end": 2014, "team": "y"},
+    ]
+    out = tmp_path / "g.svg"
+    make_figure("gantt", rows, out=str(out))
+    ticks = [int(t) for t in re.findall(r'text-anchor="middle">(\d+)</text>', out.read_text())]
+    assert ticks and min(ticks) >= 1900, ticks
+
+
+def test_a_heatmap_names_every_column_and_fits_its_row_labels(tmp_path: Path) -> None:
+    from sprezzature_figures.make_figure import make_figure
+    from sprezzature_figures.render_checks import check_render
+
+    postes = ["carburant", "électricité", "engrais N", "fixation biologique", "fumier"]
+    rows = [
+        {
+            "day": f"[3] Harchaoui & Chatzimpiros 2019 · France {i}",
+            "hour": p,
+            "activity": (i + j) % 2,
+        }
+        for i in range(4)
+        for j, p in enumerate(postes)
+    ]
+    out = tmp_path / "h.svg"
+    make_figure("heatmap", rows, out=str(out), width=900, height=500)
+    svg = out.read_text(encoding="utf-8")
+    for p in postes:
+        assert f">{p}</text>" in svg, f"column {p} is not labelled"
+    # the columns keep the data's order, not the alphabet's
+    assert (
+        svg.index(">électricité<") < svg.index(">engrais N<") < svg.index(">fixation biologique<")
+    )
+    assert not [f for f in check_render(svg) if f.check == "text_outside_canvas"]

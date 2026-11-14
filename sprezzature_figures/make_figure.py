@@ -356,6 +356,10 @@ def user_data_chrome_kwargs(
     if legend_role is not None and legend_role in mapping:
         for name in _LEGEND_TITLES:
             kwargs[name] = mapping[legend_role]
+    # A colour scale keyed to the one measure ("legend_label" on a heatmap)
+    # names that measure; its default ("Activity") is the demo's.
+    if len(numeric_roles) == 1:
+        kwargs["legend_label"] = libelle(numeric_roles[0].name)
     # Captions named after their role ("segment_legend_title", "weight_label")
     # take the column bound to it; the generator's signature drops the rest.
     for role, column in mapping.items():

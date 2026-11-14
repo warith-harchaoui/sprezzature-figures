@@ -26,6 +26,18 @@
   made the SVG invalid XML. A category outside the demo's four is drawn in
   the theme's first hue, not a literal `#0088FF` that ignored the theme.
   (Both found by the Rust port's byte-for-byte parity.)
+- **`line-multi` draws each series only at its own x values.** A year one
+  series reported and another did not was filled with 0, so every series
+  dived to the axis and back between its real points.
+- **`gantt` over calendar years opens near the first bar**, not at 0: 1945–2026
+  was a sliver at the right end of a 0–2000 axis.
+- **`heatmap` fits its row labels and names every named column.** The left
+  margin was a fixed 92 px, so long row names were cut; only one column in
+  three was labelled, a rule meant for hours of the day; and named columns
+  were sorted alphabetically instead of keeping the data's order. Column
+  names that do not fit side by side are slanted.
+- **A one-measure colour scale is titled after that measure** over your
+  data, not "Activity".
 - **The pie's six-slice limit is kept by the catalogue builder.** It was set
   in `figures.json` by hand and the next rebuild erased it.
 

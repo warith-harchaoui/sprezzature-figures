@@ -146,6 +146,12 @@ def build_svg(
     # A bar may start before zero (a window of days before an origin): the
     # axis opens far enough to hold it instead of drawing it off the plot.
     low = min([0.0] + [float(r["start"]) for r in rows])
+    # Calendar years are not days since an origin: an axis pinned at 0 drew
+    # 1945-2026 as a sliver at the right end of 0-2000. When every bar sits
+    # far from zero, the axis opens on a round value just before the first.
+    first = min((float(r["start"]) for r in rows), default=0.0)
+    if first > 0 and first > 0.5 * max_end:
+        low = math.floor(first / _nice_step(max_end - first, 6)) * _nice_step(max_end - first, 6)
     span = (max_end - low) or 1.0
 
     plot_y = 150.0
@@ -198,7 +204,7 @@ def build_svg(
 
     # ---- x-axis gridlines (round "nice" steps, not a naive 6-way split) ----
     step = _nice_step(span, 6)
-    val = math.ceil(low / step) * step if low < 0 else 0.0
+    val = math.ceil(low / step) * step if low != 0 else 0.0
     while val <= max_end + 1e-9:
         tx = x_for(val)
         parts.append(

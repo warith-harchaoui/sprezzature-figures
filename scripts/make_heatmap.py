@@ -35,6 +35,7 @@ from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
 from _style import GRIDLINE  # noqa: E402
 from _svg import foreground_tip_css, svg_open, tooltip_bubble, xml_escape  # noqa: E402
+from _textfit import text_width  # noqa: E402
 
 from sprezzature_figures.fonts import chrome_stack_for_theme, mono_stack_for_theme  # noqa: E402
 
@@ -114,7 +115,9 @@ def _prepare_grid(
     try:
         hours = sorted(hours, key=float)
     except (TypeError, ValueError):
-        hours = sorted(hours, key=str)
+        # Named columns keep the caller's order: sorting them alphabetically
+        # scattered a matrix's meaningful sequence (inputs, then N flows).
+        pass
     return days, hours, lookup
 
 
@@ -184,7 +187,10 @@ def build_svg(
     peak_key = max(lookup, key=lambda k: lookup[k]) if lookup else (None, None)
 
     # ---- geometry: content width/height drive everything else ------------
-    grid_x = 92.0
+    # The row labels set the left margin: a fixed 92 px cut "[3] Harchaoui &
+    # Chatzimpiros 2019 · France" down to its last word.
+    widest_row = max((text_width(str(d), 13) for d in days), default=0.0)
+    grid_x = max(92.0, 24.0 + widest_row + 14.0 + (30.0 if y_label else 0.0))
     grid_y = 118.0
     legend_gap = 40.0
     legend_w = 18.0
@@ -193,6 +199,15 @@ def build_svg(
     bottom_reserved = 64.0
 
     grid_w = max(1.0, width - grid_x - legend_gap - legend_w - legend_labels_w - right_margin)
+    # Named columns are all labelled; when they do not fit side by side they
+    # are slanted, and the bottom margin grows by their drop.
+    numeric_hours = all(isinstance(h, (int, float)) for h in hours)
+    widest_col = max((text_width(str(h), 12, mono=True) for h in hours), default=0.0)
+    slant_cols = (
+        bool(hours) and not numeric_hours and widest_col + 8 > grid_w / max(n_c, 1)
+    )
+    if slant_cols:
+        bottom_reserved += widest_col * 0.6
     grid_h = max(1.0, height - grid_y - bottom_reserved)
     cell_w = grid_w / n_c if n_c else grid_w
     cell_h = grid_h / n_r if n_r else grid_h
@@ -303,16 +318,24 @@ def build_svg(
     axis_y = grid_y + grid_h
     if show_cell_labels:
         for j, hour in enumerate(hours):
-            if j % 3 != 0:
-                continue
             tx = grid_x + j * cell_w + cell_w / 2
+            if slant_cols:
+                parts.append(
+                    f'<text x="{tx:.1f}" y="{axis_y + 14:.1f}" font-size="12" '
+                    f'font-family="{mono_family}" fill="{SECONDARY}" text-anchor="end" '
+                    f'transform="rotate(-35 {tx:.1f} {axis_y + 14:.1f})">{xml_escape(str(hour))}</text>'
+                )
+                continue
+            # Hours of the day: a tick every 3rd column so they never crowd.
+            if numeric_hours and j % 3 != 0:
+                continue
             parts.append(
                 f'<text x="{tx:.1f}" y="{axis_y + 20:.1f}" font-size="12" '
-                f'font-family="{mono_family}" fill="{SECONDARY}" text-anchor="middle">{hour}</text>'
+                f'font-family="{mono_family}" fill="{SECONDARY}" text-anchor="middle">{xml_escape(str(hour))}</text>'
             )
     if x_label:
         parts.append(
-            f'<text x="{grid_x + grid_w / 2:.1f}" y="{axis_y + (46 if show_cell_labels else 24):.1f}" '
+            f'<text x="{grid_x + grid_w / 2:.1f}" y="{axis_y + (widest_col * 0.6 + 34 if slant_cols else 46 if show_cell_labels else 24):.1f}" '
             f'font-size="14" fill="{INK}" text-anchor="middle">{xml_escape(x_label)}</text>'
         )
     if y_label:

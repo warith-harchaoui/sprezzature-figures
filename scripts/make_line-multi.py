@@ -304,13 +304,17 @@ def build_svg(
     # _svg.foreground_tip_css's docstring for the full pattern.
     pt_id = 0
     for si, s in enumerate(series):
-        pts = [(x_for(h), y_for(lookup.get((s, h), 0.0))) for h in hours]
+        # Only the x values this series has: a year another series reported
+        # is not a zero for this one, and filling it so drew every series
+        # down to 0 and back between its real points.
+        own = [h for h in hours if (s, h) in lookup]
+        pts = [(x_for(h), y_for(lookup[(s, h)])) for h in own]
         path_d = "M " + " L ".join(f"{x:.1f},{y:.1f}" for x, y in pts)
         parts.append(f'<g class="series-group s{si}">')
         parts.append(f'<path d="{path_d}" fill="none" stroke="{colors[s]}" stroke-width="2.5"/>')
         series_tips: List[str] = []
-        for h in hours:
-            v = lookup.get((s, h), 0.0)
+        for h in own:
+            v = lookup[(s, h)]
             cx, cy = x_for(h), y_for(v)
             tip = f"{s}, {x_label} {fmt_number(h)}: {fmt_number(v)}"
             parts.append(
