@@ -2,6 +2,35 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- **`recommend` reads a research table the way a researcher would.** Field
+  replicates by treatment are a distribution, so a boxplot leads (a bar hid
+  the spread the trial was run for); a column named for the year
+  (`annee`, `year`, `campagne`...) holding whole years is the time axis of a
+  line, one line per station; two measures that each take many values are a
+  scatter even when a site column rides along, coloured by it.
+- **The scatter's axes follow the table**: the first measure is x. The
+  role matcher displaced an earlier role even when a column was still free,
+  which put the cause on y.
+- **Axis and legend titles name your columns.** `recommend --render` titled
+  them after the demo's roles (`salary`, `horsepower`, `segment`), and a
+  `--map`ped legend kept `segment` or `Series`. `recommend` also prints the
+  `render` command line with its `--map` bindings, ready to paste.
+- **Scatter ticks fall on round values** (0, 10, 20 rather than 0.83, 11, 22).
+- **A number as an axis label no longer crashes the render** (a year on a
+  line's x axis).
+- **`bar` escapes the category it names in its description**: `<siège>`
+  made the SVG invalid XML. A category outside the demo's four is drawn in
+  the theme's first hue, not a literal `#0088FF` that ignored the theme.
+  (Both found by the Rust port's byte-for-byte parity.)
+- **The pie's six-slice limit is kept by the catalogue builder.** It was set
+  in `figures.json` by hand and the next rebuild erased it.
+
+### Added
+
+- `make_line(legend_title=...)`: the legend header, `Series` by default.
+
 ## [2.14.0] — 2026-11-14
 
 ### Changed

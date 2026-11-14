@@ -26,6 +26,7 @@ from typing import Any, Dict, List, Optional
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _interactive import fullscreen_control  # noqa: E402
 from _render import render_cli, svg_example_path, write_svg  # noqa: E402
+from _scale import nice_ticks_range  # noqa: E402
 from _style import BG, GRIDLINE, INK, SECONDARY, cycle_hues  # noqa: E402
 from _svg import foreground_tip_css, fmt_number, svg_open, tooltip_bubble, xml_escape  # noqa: E402
 from _textfit import fit_font_size  # noqa: E402
@@ -148,6 +149,14 @@ def build_svg(
         lo, hi = min(x0, y0), max(x1, y1)
         x0 = y0 = lo
         x1 = y1 = hi
+    # Ticks on round values, and the domain widened to the outer ones: a sixth
+    # of the raw span labelled soil nitrogen 0.83, 11, 22, 32...
+    x_tick_values = nice_ticks_range(x0, x1, 6) or [x0, x1]
+    y_tick_values = nice_ticks_range(y0, y1, 6) or [y0, y1]
+    if square:
+        x_tick_values = y_tick_values = sorted(set(x_tick_values) | set(y_tick_values))
+    x0, x1 = x_tick_values[0], x_tick_values[-1]
+    y0, y1 = y_tick_values[0], y_tick_values[-1]
 
     right_margin = 176.0 if (has_weight or len(segments) > 1) else 40.0
     plot_x, plot_y = 60.0, 118.0
@@ -203,9 +212,7 @@ def build_svg(
     parts.append(f'<text x="40" y="70" font-size="14" fill="{SECONDARY}">{xml_escape(subtitle)}</text>')
 
     # ---- y-axis gridlines ----
-    y_ticks = 6
-    for i in range(y_ticks + 1):
-        val = y0 + (y1 - y0) * i / y_ticks
+    for val in y_tick_values:
         ty = y_for(val)
         parts.append(
             f'<line x1="{plot_x:.1f}" y1="{ty:.1f}" x2="{plot_x + plot_w:.1f}" y2="{ty:.1f}" '
@@ -226,9 +233,7 @@ def build_svg(
         f'<line x1="{plot_x:.1f}" y1="{axis_y:.1f}" x2="{plot_x + plot_w:.1f}" y2="{axis_y:.1f}" '
         f'stroke="{INK}" stroke-width="1.2"/>'
     )
-    x_ticks = 6
-    for i in range(x_ticks + 1):
-        val = x0 + (x1 - x0) * i / x_ticks
+    for val in x_tick_values:
         tx = x_for(val)
         parts.append(
             f'<line x1="{tx:.1f}" y1="{axis_y:.1f}" x2="{tx:.1f}" y2="{axis_y + 6:.1f}" stroke="{INK}" stroke-width="1"/>'

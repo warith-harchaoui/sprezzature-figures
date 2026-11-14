@@ -94,6 +94,7 @@ def build_svg(
     y_label: Optional[str] = None,
     log_y: bool = False,
     theme: str = "corporate",
+    legend_title: Optional[str] = None,
 ) -> str:
     """Assemble the full multi-series line chart SVG document as a string.
 
@@ -116,6 +117,8 @@ def build_svg(
         Only this generator's own fixed labels switch; `title`/`subtitle`
         and every data-derived label render exactly as given regardless of
         `language`. Defaults to ``"en"``.
+    legend_title : str or None, optional
+        Legend header. ``None`` keeps `language`'s default ("Series").
     x_label, y_label : str or None, optional
         Axis titles. ``None`` (the default) falls back to `language`'s
         chrome default (see :data:`_STRINGS`); an explicit string always
@@ -137,6 +140,7 @@ def build_svg(
     strings = _strings(language)
     y_label = strings["y_axis"] if y_label is None else y_label
     x_label = strings["x_axis"] if x_label is None else x_label
+    legend_title = strings["legend_header"] if legend_title is None else legend_title
     rows = data if data else DEMO_DATA
     # "series" is an optional role (single-line data is a normal, valid
     # input): default absent/blank values to one constant series name rather
@@ -244,7 +248,7 @@ def build_svg(
         lx, ly = 40.0, 100.0
         parts.append(
             f'<text x="{lx:.1f}" y="{ly:.1f}" font-size="13" font-weight="700" '
-            f'fill="{INK}">{strings["legend_header"]}</text>'
+            f'fill="{INK}">{xml_escape(legend_title)}</text>'
         )
         cursor = lx
         ly2 = ly + 22
@@ -365,6 +369,7 @@ def make_line(
     y_label: Optional[str] = None,
     log_y: bool = False,
     theme: str = "corporate",
+    legend_title: Optional[str] = None,
 ) -> Path:
     """Render a hand-authored multi-series line chart and write the SVG to *out*.
 
@@ -383,6 +388,9 @@ def make_line(
         Forwarded to :func:`build_svg`.
     x_label, y_label : str or None, optional
         Axis titles. Forwarded to :func:`build_svg`.
+    legend_title : str or None, optional
+        Legend header, the column the series come from. Forwarded to
+        :func:`build_svg`.
     log_y : bool, optional
         Use a logarithmic value axis. Forwarded to :func:`build_svg`.
     theme : str, optional
@@ -401,7 +409,8 @@ def make_line(
     """
     svg = build_svg(data, title=title, subtitle=subtitle, width=width, height=height,
                      mode=mode, accessibility=accessibility, language=language,
-                     x_label=x_label, y_label=y_label, log_y=log_y, theme=theme)
+                     x_label=x_label, y_label=y_label, log_y=log_y, theme=theme,
+                     legend_title=legend_title)
     dest = Path(out) if out else svg_example_path(__file__, "line")
     return write_svg(dest, svg, theme=theme)
 

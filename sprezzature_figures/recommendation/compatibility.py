@@ -52,11 +52,18 @@ def _match_roles_to_columns(role_candidates: list[list[int]]) -> dict[int, int] 
     matched: dict[int, int] = {}  # column index -> role index
 
     def assign(role: int, seen: set[int]) -> bool:
+        # A free column first: displacing an earlier role when a column is
+        # still free swapped a scatter's axes (x = the measure, y = its cause).
+        for col in role_candidates[role]:
+            if col not in seen and col not in matched:
+                seen.add(col)
+                matched[col] = role
+                return True
         for col in role_candidates[role]:
             if col in seen:
                 continue
             seen.add(col)
-            if col not in matched or assign(matched[col], seen):
+            if assign(matched[col], seen):
                 matched[col] = role
                 return True
         return False
@@ -115,6 +122,24 @@ def can_fill_required_roles(definition: FigureDefinition, profile: DatasetProfil
     return candidates is not None and _match_roles_to_columns(candidates) is not None
 
 
+#: An optional colour or series role takes a column only up to this many groups.
+_MAX_OPTIONAL_GROUPS = 8
+
+
+def _groups_legibly(column: ColumnProfile, profile: DatasetProfile) -> bool:
+    """True unless `column` is a category too fine to colour or split by.
+
+    A label column unique per row ("seg0".."seg11") bound to a scatter's
+    segment gave twelve legend entries and pushed the size key off the
+    canvas. Measures are never refused here: they are not groups.
+    """
+    if column.semantic_type not in _ROLE_TYPE_ACCEPTS["categorical"]:
+        return True
+    return (
+        0 < column.unique_count <= _MAX_OPTIONAL_GROUPS and column.unique_count < profile.row_count
+    )
+
+
 def assign_columns(definition: FigureDefinition, profile: DatasetProfile) -> dict[str, str] | None:
     """A concrete `{required_role_name: column_name}` binding using distinct
     columns, or None if the figure can't be filled. This is what lets a
@@ -125,10 +150,32 @@ def assign_columns(definition: FigureDefinition, profile: DatasetProfile) -> dic
     matched = _match_roles_to_columns(candidates)
     if matched is None:
         return None
-    return {
+    binding = {
         definition.required_roles[role_i].name: profile.columns[col_i].name
         for col_i, role_i in matched.items()
     }
+    # Optional roles take what is left, so the series or the group a table
+    # carries is drawn instead of dropped: without this, three stations'
+    # temperatures came out as one zigzag line.
+    used = set(matched)
+    # Only grouping roles (series, segment, colour): an optional measure such
+    # as a bubble size or a second value changes what the chart claims, and is
+    # the user's to ask for.
+    for role in definition.optional_roles:
+        if "categorical" not in role.accepted_types:
+            continue
+        free = sorted(
+            (
+                i
+                for i, col in enumerate(profile.columns)
+                if i not in used and column_fits_role(col, role) and _groups_legibly(col, profile)
+            ),
+            key=lambda i: _name_affinity(role.name, profile.columns[i].name),
+        )
+        if free:
+            used.add(free[0])
+            binding[role.name] = profile.columns[free[0]].name
+    return binding
 
 
 # A subset of "hero" generators accept a `data` argument for dispatcher

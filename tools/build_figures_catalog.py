@@ -3132,6 +3132,9 @@ HAND_LIMITS: dict[str, dict[str, int]] = {
     "funnel": {"max_recommended_categories": 10},
     "waffle": {"max_recommended_categories": 8},
     "donut": {"max_recommended_categories": 6},
+    # 2.13.0 set this in figures.json by hand; the next rebuild erased it and
+    # a pie of 23 customer ids came back into the recommendations.
+    "pie": {"max_recommended_categories": 6},
     "bar-grouped": {"max_recommended_categories": 8},
     "beeswarm": {"min_rows": 10, "max_recommended_rows": 400},
     "treemap": {"max_recommended_categories": 50},

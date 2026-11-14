@@ -345,6 +345,22 @@ def user_data_chrome_kwargs(
         kwargs["y_label"] = libelle(axes["y"])
     elif plain:
         kwargs["y_label"] = libelle(numeric_roles[0].name)
+    # The legend is titled after the column that colours it, when the caller
+    # named that column: a scatter of plots by site said "segment", a line of
+    # stations said "Series". Unnamed, the existing fallbacks stay in charge.
+    legend_role = axes.get("legend") or next(
+        (r.name for r in definition.optional_roles + definition.required_roles
+         if r.name in _LEGEND_KEYS and r.name in mapping),
+        None,
+    )
+    if legend_role is not None and legend_role in mapping:
+        for name in _LEGEND_TITLES:
+            kwargs[name] = mapping[legend_role]
+    # Captions named after their role ("segment_legend_title", "weight_label")
+    # take the column bound to it; the generator's signature drops the rest.
+    for role, column in mapping.items():
+        kwargs[f"{role}_legend_title"] = column
+        kwargs[f"{role}_label"] = column
     return kwargs
 
 

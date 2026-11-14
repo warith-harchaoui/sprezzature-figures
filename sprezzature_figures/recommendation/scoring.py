@@ -110,6 +110,12 @@ def _intent_matches(definition: FigureDefinition, goal: str) -> bool:
 # mix when the user hasn't stated one.
 _NUMERIC_TYPES = frozenset({"numeric", "percentage", "currency"})
 _CATEGORICAL_TYPES = frozenset({"categorical", "boolean", "text", "identifier"})
+# A measure taking at least this many distinct values is continuous, not a code.
+_CONTINUOUS_MIN_UNIQUE = 10
+# Rows per group cell from which a table holds replicates, not one value per cell.
+_MIN_REPLICATES = 5
+# More groups than this is a ranking or a hierarchy, not an experiment's arms.
+_MAX_GROUPS = 12
 
 
 def infer_goal(profile: DatasetProfile) -> str | None:
@@ -134,6 +140,39 @@ def infer_goal(profile: DatasetProfile) -> str | None:
         return "trend"
     if numeric_count >= 2 and not has_categorical:
         return "relationship"
+    # Two measures that each take many values are a relationship even when a
+    # group column rides along (biomass against soil nitrogen, by site): the
+    # group colours the points, it does not turn the table into bars.
+    continuous = [
+        col
+        for col in profile.columns
+        if col.semantic_type in _NUMERIC_TYPES and col.unique_count >= _CONTINUOUS_MIN_UNIQUE
+    ]
+    if len(continuous) >= 2:
+        return "relationship"
+    # One measure repeated many times per group is a distribution: field
+    # replicates, patients per arm. A bar would show one number per group
+    # and hide the spread the experiment was run to measure.
+    # Read off cardinality: a one-row-per-cell table (region x quarter) has
+    # as many rows as cells; replicates give several rows to every cell.
+    # The measure must vary too: replicates differ, a per-group total repeated
+    # on every row does not.
+    groups = [col for col in profile.columns if col.semantic_type in _CATEGORICAL_TYPES]
+    varied = any(
+        col.semantic_type in _NUMERIC_TYPES and col.unique_count >= _CONTINUOUS_MIN_UNIQUE
+        for col in profile.columns
+    )
+    if (
+        numeric_count == 1
+        and varied
+        and groups
+        and all(col.unique_count <= _MAX_GROUPS for col in groups)
+    ):
+        cells = 1
+        for col in groups:
+            cells *= max(col.unique_count, 1)
+        if profile.row_count >= _MIN_REPLICATES * cells:
+            return "distribution"
     # A "region"+"quarter"+"revenue" comparison and a "parent"+"name"+"value"
     # hierarchy both look like two categorical-ish columns plus a measure to
     # the checks above; what tells them apart is cardinality shape, not type.
@@ -200,8 +239,11 @@ _FAMILIAR: tuple[str, ...] = (
     "line-multi",
     "area",
     "scatter",
-    "histogram",
+    # Before the histogram: it needs a group, so when both fit the table has
+    # one, and a histogram of field replicates pooled across treatments hides
+    # the comparison the trial was run for.
     "boxplot",
+    "histogram",
     "heatmap",
     "treemap",
     "sunburst",

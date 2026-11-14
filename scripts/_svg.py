@@ -143,7 +143,9 @@ def xml_escape(text: str) -> str:
     """
     # Order matters: escape "&" first, otherwise the "&" in "&lt;" / "&gt;"
     # produced by the later replacements would itself get re-escaped.
-    return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+    # A label can arrive as a number (a year on a line's x axis, read from a
+    # CSV as an int); it is text once it is drawn.
+    return str(text).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
 
 def point_on_circle(cx: float, cy: float, r: float, theta_rad: float) -> Tuple[float, float]:

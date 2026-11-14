@@ -133,6 +133,9 @@ def build_svg(
     x_label = strings["axis_category"] if x_label is None else x_label
     rows = data if data else DEMO_DATA
     colors = _category_colors(accessibility, theme)
+    # A category outside the demo's four takes the theme's first hue, not a
+    # literal blue that ignored the print and academic palettes.
+    fallback = colors[CATEGORIES[0]]
     ordered = sorted(rows, key=lambda r: -float(r["value"]))
     total = sum(float(r["value"]) for r in rows) or 1.0
     max_val = max(float(r["value"]) for r in rows) if rows else 1.0
@@ -182,7 +185,7 @@ def build_svg(
     top = ordered[0] if ordered else None
     peak_desc = (
         strings["peak_template"].format(
-            region=top["region"], value=float(top["value"]), pct=float(top["value"]) / total * 100
+            region=xml_escape(str(top["region"])), value=float(top["value"]), pct=float(top["value"]) / total * 100
         )
         if top else ""
     )
@@ -250,7 +253,7 @@ def build_svg(
             continue
         path = bar_path(x, y, bar_w, h, r, side="top")
         parts.append(
-            f'<path id="bar-hit-{i}" class="bar hit" tabindex="0" d="{path}" fill="{colors.get(region, "#0088FF")}">'
+            f'<path id="bar-hit-{i}" class="bar hit" tabindex="0" d="{path}" fill="{colors.get(region, fallback)}">'
             f'<title>{xml_escape(tip)}</title></path>'
         )
         rank = i + 1

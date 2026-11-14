@@ -25,6 +25,10 @@ _URL_RE = re.compile(r"^https?://\S+$", re.IGNORECASE)
 _LAT_NAME_RE = re.compile(r"(^|_)lat(itude)?($|_)", re.IGNORECASE)
 _LON_NAME_RE = re.compile(r"(^|_)lon(gitude)?($|_)", re.IGNORECASE)
 _ID_NAME_RE = re.compile(r"(^|_)(id|uuid|guid)($|_)", re.IGNORECASE)
+_YEAR_NAME_RE = re.compile(
+    r"(^|_)(year|years|yr|annee|année|annees|années|an|ans|jahr|año|anno|campagne|millesime|millésime)($|_)",
+    re.IGNORECASE,
+)
 _PERCENT_NAME_RE = re.compile(r"pct|percent|%|rate$|ratio$", re.IGNORECASE)
 # Les codes devise à 3 lettres doivent être délimités (^|_ ... $|_) : en
 # sous-chaîne libre, "eur" matche n'importe quel mot français qui le
@@ -80,6 +84,16 @@ def detect_semantic_type(series: pd.Series, *, name: str | None = None) -> Seman
             return "percentage"
         if _CURRENCY_NAME_RE.search(col_name):
             return "currency"
+        # A column named for the year and holding whole years is a time axis,
+        # not a measure: read as numeric, `recommend` drew it as bar heights
+        # ("region=station, value=annee") instead of the x of a line.
+        if (
+            _YEAR_NAME_RE.search(col_name)
+            and not sample.empty
+            and (sample % 1 == 0).all()
+            and sample.between(1000, 2200).all()
+        ):
+            return "datetime"
         return "numeric"
 
     # Object/string-like column: try datetime parsing, then content patterns.

@@ -22,6 +22,7 @@ Warith HARCHAOUI <warithmetics@deraison.ai>
 
 from __future__ import annotations
 
+import shlex
 from collections.abc import Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -215,15 +216,27 @@ def recommend(
         roles = ", ".join(f"{role}={col}" for role, col in binding.items())
         lines.append(f"  {definition.kind:<20} score={figure_score:.2f}  {roles}")
 
+    top = ranked[0][0]
+    top_binding = assign_columns(top, profile) or {}
+    # The next step, ready to paste: the bindings are what a first-time user
+    # cannot guess, since the roles are named after the demo's columns.
+    maps = " ".join(f"--map {role}={shlex.quote(col)}" for role, col in top_binding.items())
+    lines.append(
+        f"render it: sprezzature-figures render {top.kind} --data {shlex.quote(data_path)} {maps}"
+    )
+
     if render_out:
-        top = ranked[0][0]
-        top_binding = assign_columns(top, profile) or {}
+        from .make_figure import user_data_chrome_kwargs
+
         # Alias each bound column to the role name the generator expects,
         # keeping the originals so figures that read extra columns still work.
         bound = [
             {**row, **{role: row[col] for role, col in top_binding.items()}} for row in records
         ]
-        result = make_figure(top.kind, bound, out=render_out)
+        # Axis and legend titles name the user's columns, not the roles: the
+        # roles are the demo's ("salary", "horsepower", "segment").
+        chrome = user_data_chrome_kwargs(top.kind, top_binding)
+        result = make_figure(top.kind, bound, out=render_out, **chrome)
         lines.append(f"rendered top recommendation ({top.kind}) -> {result}")
     return ActionResult(out=lines)
 
