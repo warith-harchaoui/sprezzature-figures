@@ -92,7 +92,7 @@ approaches:
     axis_1: 6.0034
     axis_2: 4.3494
   role: best
-  color: '#FF3B30'
+  color: '#FF383C'
   attributes:
     Free or open source: 5.0
     Chart type breadth: 5.0
@@ -122,7 +122,7 @@ approaches:
     axis_1: -1.8498
     axis_2: 4.3494
   role: top
-  color: '#AF52DE'
+  color: '#CB30E0'
   attributes:
     Free or open source: 5.0
     Chart type breadth: 5.0
@@ -932,7 +932,7 @@ approaches:
     axis_1: -3.9808
     axis_2: -2.5846
   role: worst
-  color: '#A52A2A'
+  color: '#AC7F5E'
   attributes:
     Free or open source: 2.0
     Chart type breadth: 4.0
@@ -1262,7 +1262,7 @@ approaches:
     axis_1: 6.0034
     axis_2: 0.4597
   role: right
-  color: '#007AFF'
+  color: '#0088FF'
   attributes:
     Free or open source: 5.0
     Chart type breadth: 1.0
