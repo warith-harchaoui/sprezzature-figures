@@ -19,8 +19,7 @@ license: BSD-3-Clause
 compatibility: >-
   Runtime: Claude.ai, Claude Code, OpenCode. Python 3.10 to 3.13; one
   ``pip install sprezzature-figures`` carries the generators, the
-  explainability and causal stacks, the editor, the HTTP API and the MCP
-  server. The static auditor needs only the standard library. The render_diagram.py
+  explainability and causal stacks, the HTTP API and the MCP server. The static auditor needs only the standard library. The render_diagram.py
   renderer needs, per kind: tectonic/pdflatex + pdftoppm/magick (TikZ),
   rsvg-convert/magick (SVG), all optional, fail loud. No
   network needed once installed.
@@ -40,8 +39,6 @@ metadata:
 | HTTP (HyperText Transfer Protocol, the language a browser and a server speak each time a page loads) API (application programming interface, the requests one program can send another, such as render this chart; here served by FastAPI), Docker, Compose | `uvicorn sprezzature_figures.api:app`; `docker compose up` runs `sprezzature-figures-mcp`, which serves the API and `/mcp` on the same port (8000) |
 | MCP (Model Context Protocol, the protocol through which AI agents call tools in English) | `sprezzature-figures-mcp` (endpoint `/mcp`), eight tools named by `operation_id`: `health`, `list_kinds`, `get_kind`, `list_kind_options`, `recommend_figures`, `render_figure`, `redraw_figure`, `check_render` |
 | Skill | this file, shipped in the package (`sprezzature_figures.skill_path()`); `sprezzature-figures-skill [--install] [--agent claude\|opencode] [--path]`, or `sprezzature-figures skill` |
-
-Figures add a sixth: **the editor** (`sprezzature-figures`, `http://127.0.0.1:8080`), a local editor for a person rather than an agent. Data in (a table file, an Excel workbook included, or a sample in one click), a chart type picked from recommendation cards, an Adjust panel built from that type's own options, a Download menu (SVG, PNG, a `.sprezzature.zip` archive with a `reproduce.py`), and Ralph, a chat copilot that edits the figure's plan and looks at the result. Point a user who wants to click and chat there; for anything scripted, use the five surfaces above.
 
 Two numbers, both deliberate: the catalogue holds 168 kinds (`sprezzature-figures list`); the web gallery on sprezzature.ai shows 161 of them, because the five glyph maps sit on the maps page and the two Gapminder figures on the Hans ROSLING page.
 
@@ -330,7 +327,7 @@ sprezzature-accessibility-lint public/report.html
 - You need **interrupted-time-series** or **synthetic-control**
   analyses; see `CausalImpact` (Bayesian ITS (interrupted time series, comparing a trend before and after an event such as a new law)) or `SparseSC`
   (synthetic controls). Out of scope here.
-- Your team already uses Style Dictionary / Theo / Tokens Studio and
+- Your team already uses Style Dictionary / Theo / Figma Tokens and
   a designed dashboard framework; those are more powerful, and this
   skill is a deterministic pre-commit gate + a house-styled emitter.
 
@@ -365,7 +362,7 @@ Shipped by the [`sprezzature-figures`](https://github.com/warith-harchaoui/sprez
 package (`pip install sprezzature-figures`), like this skill. Two
 generations of tooling coexist there: the console scripts
 `sprezzature-figures` / `make-figure` (one Click group),
-`sprezzature-figures-mcp`, `sprezzature-figures` and `sprezzature-figures-skill`, and the older per-purpose `scripts/*.py` (explainability,
+`sprezzature-figures-mcp` and `sprezzature-figures-skill`, and the older per-purpose `scripts/*.py` (explainability,
 causality, audit, install), packaged as `sprezzature_figures_scripts` with
 no console-script entries of their own, so they run as `python -m
 sprezzature_figures_scripts.<module>`.

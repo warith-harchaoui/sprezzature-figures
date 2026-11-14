@@ -17,7 +17,7 @@ Usage
     python tools/audit_generators.py --render            # also try rendering
     python tools/audit_generators.py --render --timeout 20
 
-Writes ``docs/editor/generator_audit.json`` and ``docs/editor/GENERATOR_AUDIT.md``.
+Writes ``docs/generator_audit.json`` and ``docs/GENERATOR_AUDIT.md``.
 
 Author
 ------
@@ -38,7 +38,7 @@ from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SCRIPTS_DIR = REPO_ROOT / "scripts"
-DOCS_DIR = REPO_ROOT / "docs" / "editor"
+DOCS_DIR = REPO_ROOT / "docs"
 
 _VEGA_LITE_MARKERS = ("import altair", "alt.Chart", "vegalite")
 _MATPLOTLIB_MARKERS = ("import matplotlib", "matplotlib.pyplot")
@@ -64,7 +64,7 @@ def derive_kind(path: Path) -> str:
     """Public kind name: filename stem with the ``make_`` prefix stripped.
 
     Kept exactly as it appears on disk (hyphens included) — this is the
-    "canonical" public name per the editor plan's registry design.
+    "canonical" public name per the registry design.
     """
     return path.stem[len("make_") :]
 

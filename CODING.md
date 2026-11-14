@@ -87,8 +87,8 @@ on them.
 ## Testing
 
 - The fast suite, run with `pytest -q` (the default `addopts` set in
-  `pyproject.toml`), spans `tests/` broadly: `catalog/`, `editor/`,
-  `ralph/`, `ingest/`, `core/`, plus `test_api.py`, `test_cli_recommend.py`,
+  `pyproject.toml`), spans `tests/` broadly: `catalog/`, `assistant/`,
+  `ingest/`, `core/`, plus `test_api.py`, `test_cli_recommend.py`,
   `test_mcp.py`, `test_make_figure.py`, and `test_generator_audit.py`. It
   is not limited to `test_make_figure.py`, and it must pass before any
   change lands.

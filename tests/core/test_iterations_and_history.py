@@ -38,8 +38,8 @@ pytestmark = pytest.mark.slow
 
 
 @pytest.fixture(autouse=True)
-def _isolated_editor_home(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("SPREZZATURE_FIGURES_HOME", str(tmp_path / "editor-home"))
+def _isolated_workspace_home(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("SPREZZATURE_FIGURES_HOME", str(tmp_path / "workspace-home"))
 
 
 def _record(project_dir: Path, *, title: str, parent: str | None) -> IterationRecord:

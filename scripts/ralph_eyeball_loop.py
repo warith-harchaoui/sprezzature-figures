@@ -69,11 +69,6 @@ Rendering toolchain per surface
 Run ``python ralph_eyeball_loop.py --install-tools`` to see what is missing
 and the command that installs each tool.
 
-Not to be confused with ``sprezzature_figures.editor.ralph``, the
-FigurePlan-editing engine behind the editor's in-app copilot: same
-render-critique-edit idea, different surface (any file on disk here, a
-structured ``FigurePlan`` there).
-
 Usage
 -----
 ::

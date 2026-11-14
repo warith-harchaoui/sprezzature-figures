@@ -355,10 +355,10 @@ def redraw(
         The output path, the kind, where the numbers came from, the reading,
         and the list of changes.
     """
-    from .editor.assistant.read_chart import read_chart
+    from .assistant.read_chart import read_chart
 
     if client is None:
-        from .editor.assistant.client import default_client
+        from .assistant.client import default_client
 
         client = default_client()
 

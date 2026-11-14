@@ -99,7 +99,6 @@ call `get_kind` for what the rows must carry.
 | `to_dark` | library | "Make this rendered SVG work on a dark page." |
 | `as_rows` | library | "Turn my DataFrame into the rows a figure takes." |
 | `text_width` | library | "How wide will this label be?", to lay out beside these figures. |
-| `sprezzature-figures` | console command | "Let me import a spreadsheet and edit a chart by chatting." |
 | `ralph_eyeball_loop.py` | repository script | "Does this figure, page or diagram actually read? Check it by eye." |
 | `render_diagram.py` | repository script | "Render this TikZ or SVG source to PNG." |
 | `audit_figure.py` | repository script | "Audit these SVG charts, or the `<figure>` blocks of this HTML page." |
@@ -147,9 +146,9 @@ works under either name.
 
 The gaps are deliberate. The eyeball loop needs a browser and a model and does
 not belong behind an HTTP request. Recommendation has no top-level library
-function: its ranking lives in the editor package, as
-`sprezzature_figures.editor.recommendation.rank(profile, goal=…)` over a
-profile built by `editor.ingest.profiler.profile_dataframe`.
+function: its ranking lives in
+`sprezzature_figures.recommendation.rank(profile, goal=…)` over a
+profile built by `sprezzature_figures.ingest.profiler.profile_dataframe`.
 
 An option a figure does not accept is refused, not ignored: the command line
 names the ones it does accept, the API (application programming interface, the HTTP routes) answers 422. Ask `list_kind_options`

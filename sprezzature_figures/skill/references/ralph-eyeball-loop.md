@@ -144,15 +144,6 @@ about it on stderr rather than producing that misleading crop silently.
 For a genuinely accurate 375px phone viewport, use a real browser's
 device-mode tools instead, the flag-only headless path cannot emulate it.
 
-## Not to be confused with
-
-`sprezzature_figures.editor.ralph`, a different module in the same
-package, is the FigurePlan-editing engine behind the editor's
-in-app copilot. It follows the same render-critique-edit idea but applies
-it to a structured, in-app `FigurePlan` object, not to an arbitrary file
-on disk. `ralph_eyeball_loop.py`, documented here, is the general-purpose,
-any-file version.
-
 ## Toolchain setup
 
 `python -m sprezzature_figures_scripts.ralph_eyeball_loop --check-tools`

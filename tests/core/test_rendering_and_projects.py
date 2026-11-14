@@ -27,19 +27,19 @@ from sprezzature_figures.core import (
     render_figure_to_project,
     render_preview,
     save_manifest,
-    editor_home,
+    workspace_home,
 )
 
 
 @pytest.fixture(autouse=True)
-def _isolated_editor_home(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
-    home = tmp_path / "editor-home"
+def _isolated_workspace_home(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
+    home = tmp_path / "workspace-home"
     monkeypatch.setenv("SPREZZATURE_FIGURES_HOME", str(home))
     return home
 
 
-def test_editor_home_respects_env_override() -> None:
-    assert editor_home() == Path(os.environ["SPREZZATURE_FIGURES_HOME"])
+def test_workspace_home_respects_env_override() -> None:
+    assert workspace_home() == Path(os.environ["SPREZZATURE_FIGURES_HOME"])
 
 
 def test_atomic_write_creates_parents_replaces_and_leaves_no_temp(tmp_path: Path) -> None:

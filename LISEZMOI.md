@@ -9,9 +9,8 @@
 
 168 types de graphiques de qualité publication, chacun écrit directement en
 SVG (Scalable Vector Graphics, une image écrite en texte, formes et coordonnées, qui reste nette à tous les zooms), sans bibliothèque de tracé dessous. Aussi : un contrôle statique de
-n'importe quel SVG rendu, le redessin du graphique de quelqu'un d'autre à
-partir de son image, et the editor, un éditeur de figures local piloté
-par la conversation.
+n'importe quel SVG rendu, et le redessin du graphique de quelqu'un d'autre à
+partir de son image.
 
 Fait partie de la suite [sprezzature](https://sprezzature.ai/).
 
@@ -21,12 +20,10 @@ Fait partie de la suite [sprezzature](https://sprezzature.ai/).
 
 ![Schéma de flux. En haut, vos données ou la figure de quelqu'un d'autre alimentent deux voies. La voie de gauche dessine : elle classe les types selon votre objectif, écrit le SVG directement sans bibliothèque de tracé dessous, et sait redessiner la capture d'écran d'une figure sans en inventer les nombres. La voie de droite contrôle : un examen statique lit n'importe quel SVG pour y trouver les étiquettes superposées et les noms sortis du cadre, puis la boucle Ralph rend la figure, la regarde, et corrige la source. Les deux se rejoignent en un seul résultat, une figure juste avant d'être belle.](https://raw.githubusercontent.com/warith-harchaoui/sprezzature-figures/main/assets/comment-ca-marche.svg)
 
-## Cinq portes d'entrée, et une sixième pour les figures
+## Cinq portes d'entrée
 
 Le même moteur répond sur cinq surfaces. Chacune appelle le même
-répartiteur `make_figure()` et le même catalogue. Ce paquet en ajoute une
-sixième, the editor, une fenêtre locale où l'on retouche une figure en
-cliquant et en conversant.
+répartiteur `make_figure()` et le même catalogue.
 
 | Surface | Point d'entrée | Section |
 |---|---|---|
@@ -35,8 +32,6 @@ cliquant et en conversant.
 | API (application programming interface, une porte où d'autres programmes frappent : ils envoient des lignes, ils reçoivent une figure) HTTP (HyperText Transfer Protocol, la langue que parle un navigateur pour aller chercher une page), sur FastAPI, avec Docker et Compose | `uvicorn sprezzature_figures.api:app`, `docker compose up` | [API HTTP, MCP (Model Context Protocol, le protocole par lequel les agents IA appellent des outils en français) et Docker](#api-http-mcp-et-docker) |
 | Outils MCP | `sprezzature-figures-mcp` | [API HTTP, MCP et Docker](#api-http-mcp-et-docker) |
 | Skill pour agent | `sprezzature-figures-skill --install` (ou `sprezzature-figures skill --install`) | [Skill pour agent](#skill-pour-agent) |
-| Editor, pour les figures seulement | `sprezzature-figures` | [the editor](#sprezzature-figures) |
-
 MCP est un standard qui permet à un assistant d'IA
 d'appeler directement les fonctions d'un programme comme des outils. Un skill
 est le dossier d'instructions qu'un agent comme Claude Code lit pour décider
@@ -55,8 +50,7 @@ pip install sprezzature-figures
 Cette seule commande installe tout : les générateurs, le côté données (pandas,
 scikit-learn, networkx, pyyaml), la pile causale (dowhy, econml, et pydot
 pour les DAG (directed acyclic graphs, des schémas de flèches qui disent ce qui cause quoi, comme « le tabac cause le cancer ») écrits dans le DOT de Graphviz), la pile d'explicabilité (shap, shapash,
-timeshap, lime), the editor (NiceGUI), l'application FastAPI et le
-serveur MCP. Il n'y a pas
+timeshap, lime), l'application FastAPI et le serveur MCP. Il n'y a pas
 d'extras de fonctionnalité. Ils ont été versés dans la base le 2026-11-01. Le
 seul extra restant est `[dev]`, l'outillage de test et de lint pour qui
 contribue.
@@ -88,7 +82,7 @@ pip install sprezzature-figures
 Vérifier l'installation :
 
 ```bash
-sprezzature-figures --version          # ou -V ; sprezzature-figures et sprezzature-figures-mcp aussi
+sprezzature-figures --version          # ou -V ; sprezzature-figures-mcp aussi
 sprezzature-figures list --status stable
 sprezzature-figures render bar --out check.svg
 ```
@@ -179,7 +173,7 @@ sans parent, une prévision sans historique) le déclarent et passent.
 
 Les 168 types de graphiques enregistrés sont `status="stable"` : chacun est
 rendu de bout en bout par l'audit des générateurs. Voir
-[docs/editor/GENERATOR_AUDIT.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/docs/editor/GENERATOR_AUDIT.md)
+[docs/GENERATOR_AUDIT.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/docs/GENERATOR_AUDIT.md)
 pour le détail par graphique. Chaque type stable tolère qu'on laisse ses rôles
 optionnels sans colonne : il dessine une valeur par défaut raisonnable au lieu
 de planter.
@@ -260,8 +254,8 @@ doivent correspondre aux rôles attendus
 sinon `--map role=colonne` les associe sans toucher au fichier.
 
 Vous ne savez pas quel graphique convient à votre fichier ? Demandez une
-recommandation. Elle exécute le même filtre de compatibilité déterministe et
-le même score de lisibilité que les cartes de l'éditeur, sans aucun modèle :
+recommandation. Elle exécute un filtre de compatibilité déterministe et un
+score de lisibilité, sans aucun modèle :
 
 ```bash
 sprezzature-figures recommend --data budget.csv
@@ -430,8 +424,7 @@ python scripts/ralph_eyeball_loop.py --check-tools
 C'est un script, pas une commande installée : depuis un clone, lancez-le comme
 ci-dessus ; après `pip install sprezzature-figures`, la roue l'embarque et
 `python -m sprezzature_figures_scripts.ralph_eyeball_loop figure.svg` fait la
-même boucle. Le moteur Ralph du
-Editor (`sprezzature_figures.editor.ralph`) est une implémentation distincte.
+même boucle.
 
 ### Autres scripts
 
@@ -657,8 +650,10 @@ sprezzature-figures/
 │   ├── redraw.py          # redraw()
 │   ├── fonts.py           # piles et fichiers de police
 │   ├── catalog/           # registre des figures : FigureDefinition + figures.json
-│   ├── core/              # modèles du domaine de l'éditeur et logique pure
-│   └── editor/            # the editor (application NiceGUI, moteur Ralph, recommandation)
+│   ├── core/              # modèles du domaine et logique pure pour retoucher une figure
+│   ├── ingest/            # lecture et profilage d'un fichier de données
+│   ├── recommendation/    # quels types un jeu de données peut remplir, classés
+│   └── assistant/         # la couche tournée vers le modèle, avec laquelle redraw() lit un graphique
 ├── scripts/
 │   ├── make_treemap.py            # un générateur autonome par type
 │   ├── make_connected-scatter.py  # les noms avec tiret sont pris en charge
@@ -675,7 +670,7 @@ définit `make_<type>(data, *, out=None, title="", ...) -> Path` et expose une
 liste `DEMO_DATA` pour la CLI (command-line interface, un programme qu'on lance en tapant une commande dans un terminal) et les tests. `make_figure()` résout le type par
 `sprezzature_figures/catalog/figures.json` au lieu de deviner le nom de
 fichier ; voir
-[docs/editor/GENERATOR_AUDIT.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/docs/editor/GENERATOR_AUDIT.md)
+[docs/GENERATOR_AUDIT.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/docs/GENERATOR_AUDIT.md)
 pour savoir lesquels des 168 scripts respectent aujourd'hui ce contrat.
 
 ---
@@ -688,76 +683,6 @@ pour savoir lesquels des 168 scripts respectent aujourd'hui ce contrat.
 4. Lancer `python tools/audit_generators.py --render` puis `python tools/build_figures_catalog.py` pour l'enregistrer dans `sprezzature_figures/catalog/figures.json` (sans cela, `make_figure()` ne l'atteint que par un repli déprécié, avec un avertissement).
 5. Lancer `python tools/bump_catalogue_count.py` pour que chaque document qui cite la taille du catalogue donne le nouveau nombre.
 6. Lancer `sprezzature-figures render <type> --out check.svg` puis `sprezzature-figures check check.svg` pour vérifier la sortie (un rendu des données de démonstration peut signaler son propre texte de démonstration en `placeholder_text` : celui-là est attendu).
-
----
-
-## the editor
-
-`sprezzature-figures` lance une application NiceGUI locale, une page en trois
-étapes.
-
-1. **Données.** Déposez un fichier CSV, TSV, XLSX (un classeur Excel), JSON,
-   JSONL (JSON Lines, un enregistrement JSON par ligne) ou NDJSON
-   (newline-delimited JSON, la même chose sous un autre nom), ou cliquez sur
-   *Essayer avec des données d'exemple* pour un tableau de chiffre d'affaires
-   de six pays. Les cinq premières lignes s'affichent. Un fichier d'un autre
-   type est refusé, avec un message qui nomme les formats lus.
-2. **Graphique.** Des cartes de recommandation, d'une phrase simple chacune,
-   classent les types que vos colonnes peuvent remplir ; un clic en trace un,
-   colonnes déjà associées. *Un autre type de graphique* liste tous les types
-   par leur libellé, avec une recherche, en partant du graphique affiché et
-   avec les rôles pré-remplis. Le titre et les titres d'axes par défaut
-   viennent des colonnes associées (« Chiffre d'affaires par pays »), pas du
-   nom du type.
-3. **Ajuster.** Le panneau est construit à partir des options que déclare le
-   type courant, il n'offre donc que ce que ce graphique honorera : titre et
-   sous-titre, les titres d'axes et de légende qu'il prend, la palette (celle
-   qui reste lisible pour les daltoniens par défaut), l'allure (corporate ou
-   academic) et un fond sombre, puis le reste de ses options, replié.
-
-La figure au centre est le SVG lui-même, servi au navigateur par la route
-`/editor-preview` du editor : le survol y marche comme dans le fichier
-téléchargé. En dessous : annuler, rétablir, un compteur de versions, et un menu
-**Télécharger** avec le SVG, un PNG et l'archive du projet (`.sprezzature.zip` :
-les données après transformations, le graphique, ses réglages, un texte
-alternatif et un `reproduce.py` qui le retrace).
-
-À côté, vous pouvez demander des changements à **Ralph** avec vos mots. Ralph
-est un copilote construit sur un modèle de langage qui lit votre texte, un LLM
-(large language model, une IA qui lit et écrit du texte, comme celle derrière
-ChatGPT), et un modèle de vision qui regarde l'image rendue, un VLM
-(vision-language model, une IA qui regarde une image et dit ce qu'il y a
-dessus). Il traduit votre phrase en modifications typées d'un plan structuré,
-y compris les options propres au type (une échelle logarithmique, un titre
-d'axe, une palette), refait le rendu, et en modes *Assisté* et *Automatique*
-regarde le résultat avant de décider qu'il a fini. Une modification qui change
-ce que montrent les données (un filtre, un autre type, une échelle
-logarithmique) attend votre confirmation. Ralph est désactivé tant qu'aucun
-graphique n'est tracé.
-
-L'interface est en anglais ou en français (un bouton de l'en-tête bascule de
-l'une à l'autre) et a un mode sombre.
-
-```bash
-pip install sprezzature-figures
-sprezzature-figures                     # http://127.0.0.1:8080, ouvre un onglet
-sprezzature-figures --port 9000 --no-browser
-sprezzature-figures --native            # une fenêtre de bureau au lieu d'un onglet
-```
-
-Le LLM et le VLM de Ralph sont résolus par
-[best-engine-ai-helper](https://github.com/warith-harchaoui/best-engine-ai-helper),
-que l'éditeur pointe sur un Ollama local et le modèle unique de la suite,
-`qwen3-vl:8b`, pour lire une demande comme pour regarder un rendu (à surcharger avec `BEST_LLM_TEXT` / `BEST_LLM_VISION`).
-L'application **démarre et reste utilisable sans aucun modèle** : import,
-profilage, recommandation, choix manuel du graphique, panneau Ajuster,
-historique et téléchargements fonctionnent ; seul Ralph a besoin d'un modèle
-joignable. Les projets sont rangés sous
-`~/.sprezzature-figures/` (à surcharger avec `SPREZZATURE_FIGURES_HOME`). Rien ne
-quitte votre machine, sauf si vous la pointez vers un service distant
-([DATA_PRIVACY.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/docs/editor/DATA_PRIVACY.md)).
-
-Documentation complète (en anglais) : [docs/editor/README.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/docs/editor/README.md).
 
 ---
 
@@ -851,8 +776,7 @@ quelle commande du paquet peut la remplacer.
 docker compose up -d                              # l'API et /mcp sur :8000
 curl -s localhost:8000/health
 docker compose run --rm api sprezzature-figures render bellcurve --out /work/bell.svg
-docker compose --profile editor up -d             # + l'éditeur sur :8080
-docker compose --profile assist up -d             # + un serveur Ollama pour la conversation et la boucle Eyeball
+docker compose --profile assist up -d             # + un serveur Ollama pour la boucle Eyeball et redraw
 ```
 
 `./work` côté hôte est monté sur `/work` dans les conteneurs. Sans Compose :
@@ -900,8 +824,7 @@ ruff check .
 python -m pytest -q
 ```
 
-L'exécution par défaut de `pytest` exclut quatre groupes marqués (voir
-[docs/editor/TESTING.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/docs/editor/TESTING.md)) :
+L'exécution par défaut de `pytest` exclut quatre groupes marqués :
 
 ```bash
 python -m pytest -m slow        # rendent réellement des figures (quelques secondes chacun)

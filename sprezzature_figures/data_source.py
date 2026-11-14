@@ -6,7 +6,7 @@ This is the CLI's answer to "I have my own CSV/JSON, not just the built-in
 DEMO_DATA". It stays dependency-light on purpose: the base install carries no
 pandas, so CSV/TSV parsing falls back to the stdlib ``csv`` module with
 best-effort numeric coercion, and JSON/JSONL uses stdlib ``json``. When pandas
-*is* present (the ``editor``/``dataviz`` extras), it is preferred for CSVs
+*is* present (a base dependency since 2026-11-01), it is preferred for CSVs
 because its type inference and delimiter handling are sturdier.
 
 Author
@@ -24,7 +24,7 @@ from pathlib import Path
 from typing import Any
 
 # Cells matching one of these (case-insensitive) become ``None`` rather than a
-# literal string, mirroring the CSV reader in editor.ingest.
+# literal string, mirroring the CSV reader in sprezzature_figures.ingest.
 _NA_TOKENS = {"", "na", "n/a", "null", "none", "#n/a", "-"}
 
 

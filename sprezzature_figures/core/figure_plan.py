@@ -1,6 +1,5 @@
 """
-FigurePlan: the source of truth for a figure being edited in Sprezzature
-Editor (plan §1.2). Neither the chat conversation nor the rendered PNG is
+FigurePlan: the source of truth for a figure being edited step by step. Neither the chat conversation nor the rendered PNG is
 authoritative; only this object is. It is a Pydantic model, meaning a plain
 Python class that also validates its own fields at construction time (a
 FigurePlan built with a bad value raises immediately, rather than passing a

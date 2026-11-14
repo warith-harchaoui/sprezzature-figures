@@ -34,8 +34,8 @@ from pathlib import Path
 import pytest
 
 from sprezzature_figures import check_render, make_figure
-from sprezzature_figures.editor.ingest.profiler import profile_dataframe
-from sprezzature_figures.editor.recommendation import assign_columns, recommend_figures
+from sprezzature_figures.ingest.profiler import profile_dataframe
+from sprezzature_figures.recommendation import assign_columns, recommend_figures
 
 pd = pytest.importorskip("pandas", reason="the matrix profiles data through pandas")
 

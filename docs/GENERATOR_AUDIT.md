@@ -1,0 +1,182 @@
+# Generator audit
+
+Reproducible audit of every `scripts/make_*.py` generator against the
+`make_<kind>(data, *, out, title, ...) -> Path` contract the dispatcher
+expects. Regenerate with `python tools/audit_generators.py --render`.
+
+- **stable**: 168
+- **experimental**: 0
+- **legacy**: 0
+- **unavailable**: 0
+- **total**: 168
+
+| kind | status | reachable | callable | demo_data | render | errors |
+|---|---|---|---|---|---|---|
+| `ablation_matrix` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `acf` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `alluvial` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `andrews` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `arcdiagram` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `area` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `bar-grouped` | stable | **no** | yes | yes | passed | make_figure('bar-grouped') cannot resolve to make_bar-grouped.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
+| `bar` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `bar3d` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `beeswarm` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `bellcurve` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `binned-grid-map` | stable | **no** | yes | yes | passed | make_figure('binned-grid-map') cannot resolve to make_binned-grid-map.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
+| `blandaltman` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `bollinger` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `boxen` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `boxplot` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `bubble` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `bullet` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `bump` | stable | yes | yes | yes | passed |  |
+| `calendar-heatmap` | stable | **no** | yes | yes | passed | make_figure('calendar-heatmap') cannot resolve to make_calendar-heatmap.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
+| `calibration` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `candlestick` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `causal-dag` | stable | **no** | yes | yes | passed | make_figure('causal-dag') cannot resolve to make_causal-dag.py: hyphen/underscore normalisation looks for a different filename |
+| `chord` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `circle-packing` | stable | **no** | yes | yes | passed | make_figure('circle-packing') cannot resolve to make_circle-packing.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
+| `clustermap` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `cohort-retention` | stable | **no** | yes | yes | passed | make_figure('cohort-retention') cannot resolve to make_cohort-retention.py: hyphen/underscore normalisation looks for a different filename |
+| `columnrange` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `confusion-matrix` | stable | **no** | yes | yes | passed | make_figure('confusion-matrix') cannot resolve to make_confusion-matrix.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
+| `connected-scatter` | stable | **no** | yes | yes | passed | make_figure('connected-scatter') cannot resolve to make_connected-scatter.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
+| `contour` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `control-chart` | stable | **no** | yes | yes | passed | make_figure('control-chart') cannot resolve to make_control-chart.py: hyphen/underscore normalisation looks for a different filename |
+| `convex-hull` | stable | **no** | yes | yes | passed | make_figure('convex-hull') cannot resolve to make_convex-hull.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
+| `corr-matrix` | stable | **no** | yes | yes | passed | make_figure('corr-matrix') cannot resolve to make_corr-matrix.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
+| `cycle` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `dendrogram` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `dependency-wheel` | stable | **no** | yes | yes | passed | make_figure('dependency-wheel') cannot resolve to make_dependency-wheel.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
+| `difference-chart` | stable | **no** | yes | yes | passed | make_figure('difference-chart') cannot resolve to make_difference-chart.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
+| `diffusion_trajectory` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `donut` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `dotdensity` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `dotplot` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `dual-axis` | stable | **no** | yes | yes | passed | make_figure('dual-axis') cannot resolve to make_dual-axis.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
+| `dumbbell` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `ecdf` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `edge-bundling` | stable | **no** | yes | yes | passed | make_figure('edge-bundling') cannot resolve to make_edge-bundling.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
+| `elbow` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `embedding_projector` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `errorbar` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `eventplot` | stable | yes | yes | yes | passed |  |
+| `facet` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `fishbone` | stable | yes | yes | yes | passed |  |
+| `flowchart` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `forecast-fan` | stable | **no** | yes | yes | passed | make_figure('forecast-fan') cannot resolve to make_forecast-fan.py: hyphen/underscore normalisation looks for a different filename |
+| `forest` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `funnel-area` | stable | **no** | yes | yes | passed | make_figure('funnel-area') cannot resolve to make_funnel-area.py: hyphen/underscore normalisation looks for a different filename |
+| `funnel` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `gantt` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `gapminder` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `gapminder_variants` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `gauge` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `gaussian-process` | stable | **no** | yes | yes | passed | make_figure('gaussian-process') cannot resolve to make_gaussian-process.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
+| `heatmap` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `hexbin-map` | stable | **no** | yes | yes | passed | make_figure('hexbin-map') cannot resolve to make_hexbin-map.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
+| `hexbin` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `hexmap` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `hist2d` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `histogram` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `horizon` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `icicle` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `imshow-interpolated` | stable | **no** | yes | yes | passed | make_figure('imshow-interpolated') cannot resolve to make_imshow-interpolated.py: hyphen/underscore normalisation looks for a different filename |
+| `interruption-matrix` | stable | **no** | yes | yes | passed | make_figure('interruption-matrix') cannot resolve to make_interruption-matrix.py: hyphen/underscore normalisation looks for a different filename |
+| `jointplot` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `kde1d` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `kde2d-contour` | stable | **no** | yes | yes | passed | make_figure('kde2d-contour') cannot resolve to make_kde2d-contour.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
+| `learning-curve` | stable | **no** | yes | yes | passed | make_figure('learning-curve') cannot resolve to make_learning-curve.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
+| `liftgain` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `line-multi` | stable | **no** | yes | yes | passed | make_figure('line-multi') cannot resolve to make_line-multi.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
+| `line` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `line3d` | stable | yes | yes | yes | passed |  |
+| `liquid-gauge` | stable | **no** | yes | yes | passed | make_figure('liquid-gauge') cannot resolve to make_liquid-gauge.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
+| `lollipop` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `loss-curve` | stable | **no** | yes | yes | passed | make_figure('loss-curve') cannot resolve to make_loss-curve.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
+| `manhattan` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `manifold_path` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `map-bars` | stable | **no** | yes | yes | passed | make_figure('map-bars') cannot resolve to make_map-bars.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
+| `map-bubble` | stable | **no** | yes | yes | passed | make_figure('map-bubble') cannot resolve to make_map-bubble.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
+| `map-flow` | stable | **no** | yes | yes | passed | make_figure('map-flow') cannot resolve to make_map-flow.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
+| `map-pie` | stable | **no** | yes | yes | passed | make_figure('map-pie') cannot resolve to make_map-pie.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
+| `map-tilegrid` | stable | **no** | yes | yes | passed | make_figure('map-tilegrid') cannot resolve to make_map-tilegrid.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
+| `missing-matrix` | stable | **no** | yes | yes | passed | make_figure('missing-matrix') cannot resolve to make_missing-matrix.py: hyphen/underscore normalisation looks for a different filename |
+| `mosaic` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `network` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `ohlc` | stable | yes | yes | yes | passed |  |
+| `org-chart` | stable | **no** | yes | yes | passed | make_figure('org-chart') cannot resolve to make_org-chart.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
+| `packed-bubble` | stable | **no** | yes | yes | passed | make_figure('packed-bubble') cannot resolve to make_packed-bubble.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
+| `pairplot` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `parallel-sets` | stable | **no** | yes | yes | passed | make_figure('parallel-sets') cannot resolve to make_parallel-sets.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
+| `parcoords` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `pareto` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `parliament` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `pdp-ice` | stable | **no** | yes | yes | passed | make_figure('pdp-ice') cannot resolve to make_pdp-ice.py: hyphen/underscore normalisation looks for a different filename |
+| `permutation-importance` | stable | **no** | yes | yes | passed | make_figure('permutation-importance') cannot resolve to make_permutation-importance.py: hyphen/underscore normalisation looks for a different filename |
+| `pictorial` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `pie` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `pointplot` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `polar` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `population-pyramid` | stable | **no** | yes | yes | passed | make_figure('population-pyramid') cannot resolve to make_population-pyramid.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
+| `ppplot` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `prcurve` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `progress` | stable | yes | yes | yes | passed |  |
+| `qqplot` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `quiver` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `quiver3d` | stable | yes | yes | yes | passed |  |
+| `radar` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `radial-bar` | stable | **no** | yes | yes | passed | make_figure('radial-bar') cannot resolve to make_radial-bar.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
+| `radial-tree` | stable | **no** | yes | yes | passed | make_figure('radial-tree') cannot resolve to make_radial-tree.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
+| `radviz` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `regression-ci-band` | stable | **no** | yes | yes | passed | make_figure('regression-ci-band') cannot resolve to make_regression-ci-band.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
+| `residual` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `ridgeline` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `roc-curve` | stable | **no** | yes | yes | passed | make_figure('roc-curve') cannot resolve to make_roc-curve.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
+| `rose` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `rug` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `sankey` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `scatter` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `scatter3d` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `seasonal-decomposition` | stable | **no** | yes | yes | passed | make_figure('seasonal-decomposition') cannot resolve to make_seasonal-decomposition.py: hyphen/underscore normalisation looks for a different filename |
+| `sfdp-largegraph` | stable | **no** | yes | yes | passed | make_figure('sfdp-largegraph') cannot resolve to make_sfdp-largegraph.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
+| `shap-beeswarm` | stable | **no** | yes | yes | passed | make_figure('shap-beeswarm') cannot resolve to make_shap-beeswarm.py: hyphen/underscore normalisation looks for a different filename |
+| `shap-waterfall` | stable | **no** | yes | yes | passed | make_figure('shap-waterfall') cannot resolve to make_shap-waterfall.py: hyphen/underscore normalisation looks for a different filename |
+| `silhouette` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `slope` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `sparkline` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `speaking_time` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `spectrogram` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `spike-map` | stable | **no** | yes | yes | passed | make_figure('spike-map') cannot resolve to make_spike-map.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
+| `stacked-area` | stable | **no** | yes | yes | passed | make_figure('stacked-area') cannot resolve to make_stacked-area.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
+| `stacked-bar` | stable | **no** | yes | yes | passed | make_figure('stacked-bar') cannot resolve to make_stacked-bar.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
+| `stem` | stable | yes | yes | yes | passed |  |
+| `step` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `streamgraph` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `streamplot` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `strip` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `sunburst` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `surface3d` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `survival-km` | stable | **no** | yes | yes | passed | make_figure('survival-km') cannot resolve to make_survival-km.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
+| `table` | stable | yes | yes | yes | passed |  |
+| `ternary` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `timeline` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `tree` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `treemap` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `tricontour` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `trisurface` | stable | yes | yes | yes | passed |  |
+| `upset` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `validation-curve` | stable | **no** | yes | yes | passed | make_figure('validation-curve') cannot resolve to make_validation-curve.py: hyphen/underscore normalisation looks for a different filename; Default output path falls back to a shared assets/ directory |
+| `variwide` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `venn` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `violin` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `volcano` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `voronoi` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `voxels` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `waffle` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `waterfall` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `windbarb` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `windrose` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `wireframe3d` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |
+| `wordcloud` | stable | yes | yes | yes | passed | Default output path falls back to a shared assets/ directory |

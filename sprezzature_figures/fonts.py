@@ -3,7 +3,7 @@ fonts — the project's typeface sources: Roboto/Roboto Serif/Roboto Mono (the
 default **corporate** theme) and Latin Modern Roman/Mono (the **academic**
 theme, the face LaTeX documents use by default: GUST e-foundry's free
 extension of Donald Knuth's Computer Modern), bundled as TTF/WOFF2 font
-files so every figure and the editor web app render the house typography
+files so every figure and every web page render the house typography
 identically regardless of what is, or is not, installed on the host
 machine. Without this, writing ``"Roboto, sans-serif"`` in a stylesheet
 only *hopes* the browser or renderer happens to have Roboto installed; here
@@ -292,17 +292,17 @@ def svg_font_defs(keys: tuple[str, ...] = DEFAULT_SVG_FACES) -> str:
 
 def web_font_faces_css(url_prefix: str, keys: tuple[str, ...] | None = None) -> str:
     """``@font-face`` rules pointing at `url_prefix`-served WOFF2 files
-    (self-hosted, no Google Fonts CDN) -- for the editor web app, where the
-    browser fetches and caches each face once instead of paying the base64
-    inlining cost on every page. Pair with a static-file mount at
-    `url_prefix` serving :data:`FONTS_DIR` (see ``editor/app.py``).
+    (self-hosted, no Google Fonts CDN) -- for a web app, where the browser
+    fetches and caches each face once instead of paying the base64 inlining
+    cost on every page. Pair with a static-file mount at `url_prefix`
+    serving :data:`FONTS_DIR`.
 
     `keys` defaults to :func:`available_faces`, i.e. whatever this install
     actually has, rather than to every key in :data:`_FACES`. The difference is
     not cosmetic: the mount serves :data:`FONTS_DIR`, so a rule for a face the
     install lacks is a URL that 404s -- and a browser that cannot fetch a
     ``@font-face`` source silently moves on to the next family in the stack.
-    With the old default, every page of an installed Editor linked the four
+    With the old default, every page of an installed web app linked the four
     Roboto Serif files the wheel leaves out, and drew in Georgia without a
     word. Deriving from disk is also correct in a source checkout, where those
     four files are present and get served as before.

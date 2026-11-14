@@ -19,8 +19,6 @@ build/
 # points at is served from this repository.
 !assets/how-it-works.svg
 !assets/comment-ca-marche.svg
-# The request flow docs/editor/ARCHITECTURE.md shows, same reason.
-!docs/editor/request-flow.svg
 
 .private/
 sideprojects/

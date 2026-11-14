@@ -3,9 +3,8 @@ Every console script answers ``-V`` and ``--version`` with the installed version
 
 Until 2.9.0 only ``sprezzature-figures-mcp`` did. The front door
 (``sprezzature-figures`` / ``make-figure``, and ``python -m
-sprezzature_figures``) had no version option at all, and
-``sprezzature-figures`` knew ``--version`` but not ``-V``. Three entry points
-of one package disagreeing on how to ask the most basic question.
+sprezzature_figures``) had no version option at all. Entry points of one
+package disagreeing on how to ask the most basic question.
 
 The expected string is :func:`importlib.metadata.version`, the source Click
 reads, so a stale editable install shows up as the same number on both sides
@@ -26,7 +25,6 @@ import click
 import pytest
 
 from sprezzature_figures.cli import main as figures_main
-from sprezzature_figures.editor.cli import main as editor_main
 
 VERSION = version("sprezzature-figures")
 FLAGS = ("-V", "--version")
@@ -52,12 +50,6 @@ def test_front_door_says_its_version(prog: str, flag: str, capsys: pytest.Captur
     subprocess test below.
     """
     printed = _run(figures_main, flag, prog, capsys)
-    assert printed.strip().endswith(f", version {VERSION}"), printed
-
-
-@pytest.mark.parametrize("flag", FLAGS)
-def test_editor_says_its_version(flag: str, capsys: pytest.CaptureFixture) -> None:
-    printed = _run(editor_main, flag, "sprezzature-figures", capsys)
     assert printed.strip().endswith(f", version {VERSION}"), printed
 
 

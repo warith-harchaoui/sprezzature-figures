@@ -170,13 +170,9 @@ Marketing,Events,80
 Engineering,Salaries,300
 ```
 
-## the editor and the agent skill
+## The agent skill
 
 ```bash
-# The local editor: data in, a chart picked from the cards, the Adjust panel,
-# a Download menu (SVG, PNG, archive), and Ralph to chat with
-sprezzature-figures
-
 # Put the skill this package ships where Claude Code reads it, then check it
 sprezzature-figures-skill --install
 sprezzature-figures-skill            # "in step", or how many files differ

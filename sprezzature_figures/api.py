@@ -587,8 +587,8 @@ def recommend(body: RecommendRequest) -> list[FigureCandidate]:
     try:
         import pandas as pd
 
-        from .editor.ingest.profiler import profile_dataframe
-        from .editor.recommendation import assign_columns, rank
+        from .ingest.profiler import profile_dataframe
+        from .recommendation import assign_columns, rank
     except ImportError as exc:
         raise HTTPException(
             status_code=503,
@@ -601,7 +601,7 @@ def recommend(body: RecommendRequest) -> list[FigureCandidate]:
     profile = profile_dataframe(
         pd.DataFrame(body.data), dataset_id="api", fingerprint="api", source_name="api"
     )
-    from .editor.recommendation import infer_goal
+    from .recommendation import infer_goal
 
     ranked = rank(profile, goal=body.goal or infer_goal(profile))
     return [

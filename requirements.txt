@@ -3,7 +3,7 @@
 # this installs the package itself, so there is nothing here to fall out of
 # sync when a dependency's version bound changes. Since 2026-11-01 there are
 # no feature extras to select: the data side, the causal and explainability
-# stacks, the editor, the FastAPI app and the MCP server are all base
+# stacks, the FastAPI app and the MCP server are all base
 # dependencies.
 #
 # There is no `cli` extra and this line asked for one until 2026-10-31. It

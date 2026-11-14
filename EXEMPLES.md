@@ -182,13 +182,9 @@ Marketing,Événements,80
 Ingénierie,Salaires,300
 ```
 
-## the editor et le skill pour agent
+## Le skill pour agent
 
 ```bash
-# L'éditeur local : les données, un graphique choisi parmi les cartes, le
-# panneau Ajuster, un menu Télécharger (SVG, PNG, archive), et Ralph à qui parler
-sprezzature-figures
-
 # Poser le skill embarqué par ce paquet là où Claude Code le lit, puis vérifier
 sprezzature-figures-skill --install
 sprezzature-figures-skill            # « à jour », ou combien de fichiers diffèrent

@@ -51,7 +51,6 @@ CLAIMING_FILES: tuple[str, ...] = (
     "sprezzature_figures/api.py",
     "sprezzature_figures/mcp.py",
     "scripts/render_diagram.py",
-    "docs/editor/README.md",
     "README.md",
     "LISEZMOI.md",
     "FIGURES.md",

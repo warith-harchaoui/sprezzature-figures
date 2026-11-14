@@ -55,7 +55,7 @@
   the data decides; they carry `data-placed="data"` and the baseline rule no
   longer reads two of them as a row that missed its line.
 - **`recommend` names the chart a reader expects.** The goal is read off the
-  columns when unstated, as the editor already did, and ties break toward
+  columns when unstated, and ties break toward
   familiar charts: monthly sales give `line`, a team comparison `bar`, a
   parent/name/value table `treemap`, where `ablation_matrix` came first.
 - Waterfall keeps a description over a caller's data; line-multi wraps a
@@ -67,10 +67,6 @@
 
 ### Changed
 
-- **the editor uses the suite's one model, `qwen3-vl:8b`,** for text and
-  vision alike, unless `BEST_LLM_TEXT` / `BEST_LLM_VISION` say otherwise; it
-  used best-engine's defaults, `qwen3:8b` and `gemma3:12b`, which the rule in
-  the hub's `docs/LLM_CHOICE.md` does not allow.
 - **`--help` in 0.13 s, from 0.83 s.** The package's public names and the
   CLI load the catalogue on first use; a test keeps it that way.
 
@@ -97,52 +93,19 @@
 
 ### Changed
 
-- **the editor, reworked after driving it in a real browser.**
-  - The style panel (text size, legend, grid, labels) did nothing: no
-    generator takes those four options. It is replaced by an **Adjust**
-    panel built from the options each chart type declares (title, subtitle,
-    axis titles, palette, look, dark background, then the rest folded
-    away). `editor.render_options.figure_kwargs` is now the one place a plan
-    becomes `make_figure()` keywords, for the editor, Ralph's engine and the
-    exported `reproduce.py`; `FigurePlan` gains an `options` field.
-  - Ralph gains `set_figure_option`, which sets an option the current chart
-    type declares, or `dark`. The edit prompt lists those options;
-    `propose_edit` drops an option the type does not take, or a value
-    outside its choices. Palette, look and dark background are safe repairs;
-    a log scale, `vmin`, `vmax` and `baseline` need confirmation. A canvas
-    size set by Ralph now reaches the render.
-  - The canvas frames the SVG (Scalable Vector Graphics, the figure as text)
-    itself, served by a `/editor-preview` route, instead of a PNG of it.
-  - The export wrote a `.zip` on the server's disk and announced its path.
-    A **Download** menu now hands the browser the SVG, a PNG, or the
-    project archive.
-  - A failed render no longer leaves the project's history pointing at an
-    empty version (`IterationSlot`); undo, redo and the version counter keep
-    working.
-  - Default titles and axis titles come from the bound columns ("Revenue by
-    country"), not from the chart type's name.
-  - Sample data in one click, a five-row preview, one plain sentence per
-    recommendation card, a manual chooser that starts from the chart on
-    screen with its roles pre-filled, a message when the browser refuses a
-    file, Ralph disabled until a chart exists, and a visible focus ring
-    (it now lives in the first CSS layer, where Quasar's `no-outline` cannot
-    beat it), a skip link, landmarks and a dark peer for the chat bubble.
+- `render_options.figure_kwargs` is the one place a figure plan becomes
+  `make_figure()` keywords; `FigurePlan` gains an `options` field.
 
 ### Documentation
 
-- README and LISEZMOI describe the skill surface and the reworked Editor;
-  they no longer say the skill lives only in the hub, that the history panel
-  offers "compare" (`core.history.compare` exists, no button calls it), or
+- README and LISEZMOI describe the skill surface;
+  they no longer say the skill lives only in the hub, or
   that CI (continuous integration, the server that reruns the checks on
   every push) runs the type checks, the slow renders and the packaging test:
   CI runs ruff and the default suite on Python 3.12 and an install-and-import
   check on 3.10; the rest runs in `.githooks/pre-push`. The `--version`
   line no longer claims every console script answers it
   (`sprezzature-figures-skill` does not).
-- `docs/editor/` follows the code: `SetFigureOption` and the confirmation
-  rules in RALPH_LOOP.md, 16 operation kinds in LLM_SCHEMAS.md, the
-  `options` field in FIGURE_PLAN.md, the preview route and `render_options`
-  in ARCHITECTURE.md, the CI and the test counts in TESTING.md.
 - `references/figure-catalog.md` no longer says the figures carry no script:
   by default (`mode="self-contained"`) each SVG ships a small fullscreen
   script.
@@ -275,8 +238,7 @@
   of TRIGGERS.md. `--install-tools` no longer installs anything: its only
   automatic install was `mmdc`, so it now prints the command for each missing
   tool. `generate_flow_diagram` counts as covered by `flowchart` in
-  COVERAGE.md, and the sequence diagram of `docs/editor/ARCHITECTURE.md` is a
-  `flowchart` figure. `tests/test_no_mermaid.py`.
+  COVERAGE.md. `tests/test_no_mermaid.py`.
 
 ### Fixed
 
@@ -370,8 +332,7 @@
 
 - **`sprezzature-figures`, `make-figure` and `python -m sprezzature_figures`
   answer `-V` and `--version`.** The front-door group had no version option
-  at all; `sprezzature-figures` knew `--version` but not `-V`. All four console
-  scripts now print `<prog>, version <v>` from the installed metadata, as
+  at all. The console scripts now print `<prog>, version <v>` from the installed metadata, as
   `sprezzature-figures-mcp` already did. No sub-command uses either spelling.
 - **`explain_model` has one default for how many rows it explains: 500.**
   `--n-explain` and the SHAP (SHapley Additive exPlanations, how much each input pushed one prediction up or down) / Shapash paths defaulted to 500, while
@@ -418,8 +379,7 @@
   its real first names; the scatter roles pointed at `describe scatter`.
 - The extras that no longer exist were still named in the comments of
   `requirements.txt`, `environment.yaml` and the `Dockerfile`; the dead
-  commented `-e .` lines are gone. `docs/editor/` gets the editor's real
-  import formats and today's test counts. French files take their
+  commented `-e .` lines are gone. French files take their
   non-breaking spaces.
 
 ## 2.8.0 (2026-11-04): a figure can now wear the host page's clothes, and click everywhere
@@ -434,7 +394,7 @@
 **one**, and it is not a feature: `[dev]` is the test toolchain.
 
   The data side (networkx, scikit-learn, pandas, shapely, pyproj, pyyaml),
-  the editor (the NiceGUI app and the Ralph copilot), the causal stack
+  the causal stack
   (dowhy, econml), the explainability stack (shap, shapash, timeshap, lime) and
   both surfaces all arrive with the package. This is the largest fold in the
   suite and the one most worth stating: `pip install sprezzature-figures` was
@@ -557,17 +517,17 @@ The documentation now says what the code does today. Every command, route and
 count below was checked against the code or recounted from it.
 
 - **Command line.** The READMEs, `EXAMPLES.md`/`EXEMPLES.md`, `FIGURES.md`,
-  `TRIGGERS.md`, `docs/editor/GENERATOR_CONTRACT.md` and `LANDSCAPE.md`/`PAYSAGE.md`
+  `TRIGGERS.md`, `docs/GENERATOR_CONTRACT.md` and `LANDSCAPE.md`/`PAYSAGE.md`
   still used the argparse syntax removed on 2026-10-25 (`make-figure --list`,
   `make-figure bar --out …`, `make-figure sankey --describe`). `make-figure` is the
   same Click group as `sprezzature-figures`, so these are now `list`, `render <kind>`
   and `describe <kind>`. Three examples that failed when run were fixed: a sankey with
   three stage names for a four-stage demo, a heatmap given `--language`, which it does
   not accept, and a wordcloud fed roles it does not have.
-- **Extras.** `[editor]`, `[cli]`, `[local]` and `[dataviz]` were still named in the
+- **Extras.** `[cli]`, `[local]` and `[dataviz]` were still named in the
   docs and in several docstrings and error messages. Install is one `pip install
   sprezzature-figures`; `[dev]` is the test toolchain.
-- **CI.** The READMEs and `docs/editor/TESTING.md` described macOS, Ubuntu and Windows
+- **CI.** The READMEs described macOS, Ubuntu and Windows
   runners. CI runs on Ubuntu only: the suite on 3.12 and an install check on 3.10.
 - **Counts.** The catalogue has 68 categories, not 52. The README's category table
   listed `choropleth` and `situation_map`, which live in sprezzature-maps, and missed 43
@@ -584,10 +544,6 @@ count below was checked against the code or recounted from it.
   (`as_rows`, `to_dark`, `text_width`, `validate_figure_input`), the eight MCP tools,
   `sprezzature-figures-mcp --host/--port`, Docker Compose and its profiles, the Ralph
   Eyeball Loop and the other repository scripts, and the three-Roboto font rule.
-- **Editor docs.** The recommendation engine, its cards, the history panel, the export
-  bundle and the execution of `FigurePlan.transformations` were described as missing.
-  All are built. The architecture tree, the test counts and the deferred items of ROADMAP.md
-  were brought up to date. `STATUS.md` keeps its history, under a dated note.
 
 
 ## 2.7.0 (2026-10-16): the wheel carries every face the module offers
@@ -620,13 +576,12 @@ public API, and in an installed copy it was quietly resolving to Georgia.
 ### Fixed
 
 - **`web_font_faces_css()` linked faces the install did not have.** Its default
-  was the entire face table, while Editor mounts `fonts.FONTS_DIR` and serves
+  was the entire face table, while a web app mounting `fonts.FONTS_DIR` serves
   whatever is actually there -- so under the 2.6.0 wheel every page requested
   four Roboto Serif files that were not present. Nothing broke, which is why it
   went unseen: a dead `@font-face` source is a 404 the browser swallows on its
   way to the next family in the stack. The default now reads the directory, so
-  the rules and the files are the same set in a damaged install too. (Editor is
-  still work in progress; this was cheap rather than urgent.)
+  the rules and the files are the same set in a damaged install too.
 
 - **A missing face now says which face, and what to do.**
   `fonts.MissingFaceError` subclasses `FileNotFoundError`, so existing handlers
@@ -639,7 +594,7 @@ public API, and in an installed copy it was quietly resolving to Georgia.
   Serif "ships for the web app" while pyproject excluded it, and pyproject said
   "the web app self-hosts its own copy" -- two web apps confused for one. The
   sprezzature.ai site does self-host its own `web/fonts/` and was never
-  affected; the *Editor* app lives in this package and mounts `FONTS_DIR`.
+  affected.
   `available_faces()` promised "normally all six" for a table of ten.
 
 ### Added
@@ -875,11 +830,6 @@ through all three doors.
   provide, and is why this is a minor release rather than a patch.
 - **A malformed request got a 500 where it had earned a 422.** The HTTP surface
   answered a client mistake with a server error.
-- **`editor`: a textual column profile crashed the whole warnings pass.** One
-  column of the wrong kind took down every warning the pass would have raised,
-  not just its own.
-- **`editor`: four `io_bound` results were never checked.** Whatever those
-  calls reported, nobody read it.
 - **`horizon`: an empty series is skipped rather than fatal.** One series with
   no points stopped the whole figure.
 - **The linter was looking at a fifth of the package.** Its path configuration
@@ -1108,7 +1058,7 @@ code had moved on and the surface had not.
   its substance — *why* the geometry is authored directly — without the
   archaeology. Same pass over `fonts.py`, `_style.py`, `_render.py`,
   `explain_model.py`, `causal_estimate.py`, `render_diagram.py`, the
-  catalog, the READMEs and the editor docs.
+  catalog and the READMEs.
 - `catalog/models.py`: `RendererKind` narrowed from
   `("vega_lite", "vega", "svg", "matplotlib", "html")` to
   `("svg", "html")`. All 124 catalogue entries already declared `"svg"`.
@@ -1159,9 +1109,8 @@ code had moved on and the surface had not.
 
 - **`choropleth` and `situation_map` moved to their own repo,
   [sprezzature-maps](https://github.com/warith-harchaoui/sprezzature-maps).**
-  126 registered chart kinds -> 124. the editor will not grow
-  map support; maps get their own product (and, eventually, their own
-  Editor) instead of two entries in this catalogue. `sprezzature-maps`
+  126 registered chart kinds -> 124. Maps get their own package instead
+  of two entries in this catalogue. `sprezzature-maps`
   depends on this package for shared rendering primitives (font
   embedding, self-contained SVG mode) rather than duplicating them; the
   other Geospatial-category kinds that share `assets/geo/` (`dotdensity`,
@@ -1220,7 +1169,7 @@ code had moved on and the surface had not.
   the 1st in color, now falls back to the full default `cycle_hues` cycle
   beyond 3 regions.
 
-- **Editor ingest/recommendation: currency misclassification, missed
+- **Ingest/recommendation: currency misclassification, missed
   data-quality warnings, database-driver types, and a recommendation-limit tie
   break (TAB-03/TAB-05).** `_CURRENCY_NAME_RE` matched `eur`/`usd`/`gbp`
   as a free substring, so a French column named `valeur` ("value") was
@@ -1282,8 +1231,8 @@ code had moved on and the surface had not.
   being hand-written slightly differently per generator. Every stable kind
   now also declares `required_roles`/`optional_roles` in the catalog
   (`tools/build_figures_catalog.py`'s `HAND_ROLES`), derived from each
-  generator's actual `DEMO_DATA` shape, so the editor's role-binding UI (user interface) and
-  `sprezzature-figures recommend` can reach all 126, not 46.
+  generator's actual `DEMO_DATA` shape, so `sprezzature-figures recommend`
+  can reach all 126, not 46.
 
 ## [1.1.0] - 2026-08-06
 
@@ -1336,14 +1285,13 @@ code had moved on and the surface had not.
   every generator calls) now converts the font-embedded SVG to the requested
   format: `.png`, `.pdf`, `.jpg` via `resvg_py`, `.html` wrapped in a minimal
   responsive document, and `.svg` written byte-for-byte as before. Applies to
-  the library and both CLIs. (the editor was already correct here: it always
-  renders the figure to `.svg` and rasterizes a separate PNG preview.)
+  the library and both CLIs.
 
 ### Fixed
 
 - **Seven hero-SVG generators are reachable through the dispatcher again.**
   `speaking_time`, `situation_map`, `binned-grid-map`, `hexmap`, `hexbin-map`,
-  `spike-map`, and `dotdensity` failed under `make-figure <kind>` / the editor:
+  `spike-map`, and `dotdensity` failed under `make-figure <kind>`:
   some crashed importing their sibling helpers (`_interactive`, `_render`, ...),
   the rest had no `make_<kind>` callable for the registry to dispatch to.
   `make_figure._load_module` now guarantees the generator's directory is on
@@ -1374,7 +1322,7 @@ code had moved on and the surface had not.
   readability score leaves many kinds tied at 1.00; with it, figures whose
   category serves the stated goal are ranked first (top band [0.6, 1.0], others
   [0.0, 0.4]), with readability breaking ties within each band. The engine
-  (`editor.recommendation.score` / `rank`) now takes an optional `goal`, derived
+  (`recommendation.score` / `rank`) now takes an optional `goal`, derived
   from each figure's populated `category` (the `intents` catalog field is empty
   across all kinds), so the signal covers all 91 figures with no hand
   annotation. `goal=None` is unchanged, byte-for-byte, from before.
@@ -1405,50 +1353,26 @@ code had moved on and the surface had not.
   (repeatable). Backed by `data_source.parse_mapping` / `apply_mapping`. The
   render CLIs also now report a clean error (with a `--map` hint) instead of a
   traceback when the data doesn't fit the chosen figure.
-- **the editor data panel accepts JSON too.** File import now takes
-  `.csv` / `.tsv` / `.xlsx` / `.json` / `.jsonl`, routing JSON through the same
-  `data_source.load_records` the CLI uses, so both surfaces accept identical
-  shapes.
 - **Headless chart recommendation from the CLI.** `sprezzature-figures
   recommend --data file` ranks the chart types your data can fill, best first,
   showing each figure's score and its `role=column` binding. It reuses the same
-  deterministic `editor.recommendation` filter + readability score the editor
-  GUI (graphical user interface) shows as cards, with no model involved. `--render out` also renders the
-  top pick, applying its role binding automatically. Needs the `[cli]` +
-  `[editor]` extras (falls back to a clear install hint otherwise).
+  deterministic `recommendation` filter + readability score, with no model
+  involved. `--render out` also renders the top pick, applying its role
+  binding automatically.
 - **Transformations now execute.** `core.transformations.apply_transformations`
   runs a `FigurePlan`'s filter / sort / aggregate / top-N / group-others /
   calculate / temporal steps deterministically over the imported rows, in list
-  order, with no code evaluation. The editor's render path and the export
-  bundle both apply it, so a filter or sort requested in the chat actually
-  changes the rendered figure and the exported `transformed.csv`. A transform
-  whose column is absent is skipped with a note rather than silently emptying
+  order, with no code evaluation. A transform whose column is absent is skipped with a note rather than silently emptying
   the figure.
-- **The Ralph loop is resilient to a live model failing.** A model that
-  returns empty or malformed JSON, times out, or is unreachable no longer
-  crashes the turn: the figure still renders and the reason is reported in
-  `RalphResult.notes` (stop reason `critique_unavailable`), across manual,
-  assisted, and autopilot modes.
 - **Model-facing schemas carry field descriptions** and the intent / edit /
   recommend / critique prompts were rewritten so a live model fills every
   field instead of defaulting to empty. `SetStyleOption.option` is now a
   `Literal` of the real `StyleOptions` fields, so the model can only target a
   style setting that exists.
-- **Deterministic figure recommendation** (`editor.recommendation`): a
-  hard-constraint compatibility filter and a readability score, surfaced as
-  one-click auto-bound recommendation cards in the data panel. Stable figures
+- **Deterministic figure recommendation** (`recommendation`): a
+  hard-constraint compatibility filter and a readability score. Stable figures
   gained readability limits (max categories / rows) so the ranking is
   meaningful.
-- **Editor side panels**: iteration history is now recorded, an undo / redo /
-  "Export .zip" toolbar and a style property panel were added, and edit chat
-  operations are de-duplicated. Transform and model-failure notes are shown to
-  the user instead of only logged.
-- **the editor** (`sprezzature-figures` CLI, `[editor]` extra): a
-  local NiceGUI app to import a CSV/XLSX, pick a chart type, bind columns
-  to data roles, and refine the figure by chatting with Ralph, an
-  LLM/VLM copilot that edits a structured `FigurePlan` and inspects the
-  rendered PNG before deciding it's done. See
-  [docs/editor/README.md](docs/editor/README.md).
 - 7 new chart types: bar, line, area, scatter, histogram, boxplot, heatmap.
   The first `make_figure("bar", ...)` example in the README is finally
   literally true.
@@ -1468,10 +1392,9 @@ code had moved on and the surface had not.
   directly in its output (`write_svg()`/`svg_open()`), matplotlib
   generators register the bundled fonts with `font_manager` (and bake
   `svg.fonttype="path"` for portable SVG output), the Vega-Lite → PNG
-  preview pipeline points `vl_convert` at the bundled font directory, and
-  the editor web app self-hosts the same WOFF2 files (no Google Fonts
-  CDN) via `@font-face`. Figures and the editor UI now look identical
-  regardless of what fonts are installed on the machine viewing them.
+  preview pipeline points `vl_convert` at the bundled font directory.
+  Figures now look identical regardless of what fonts are installed on the
+  machine viewing them.
 
 ### Changed
 
@@ -1479,8 +1402,7 @@ code had moved on and the surface had not.
   a JSON schema for grammar-constrained structured output, and defaults to a
   text model that honours it (`qwen3:8b`) and a vision model that does the same
   for image prompts (`gemma3:12b`). Override with `BEST_LLM_TEXT` /
-  `BEST_LLM_VISION`. editor's chat and visual-critique features now work out of
-  the box against a local Ollama.
+  `BEST_LLM_VISION`.
 
 [best-engine-ai-helper]: https://github.com/warith-harchaoui/best-engine-ai-helper
 

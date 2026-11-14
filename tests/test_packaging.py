@@ -105,27 +105,22 @@ def test_core_wheel_installs_and_renders_a_stable_figure(wheel: Path, tmp_path: 
 
 
 @pytest.mark.packaging
-def test_importing_the_library_loads_no_editor_dependency(wheel: Path, tmp_path: Path) -> None:
-    """The wheel carries nicegui and pandas; importing the library must not load them.
+def test_importing_the_library_loads_no_data_stack(wheel: Path, tmp_path: Path) -> None:
+    """The wheel carries pandas; importing the library must not load it.
 
-    This asserted the opposite until 2026-11-01 -- "installing the bare wheel
-    must NOT make nicegui/pandas importable", because the editor sat behind an
-    extra. Every extra was folded into the base install that day, so the
-    premise is gone: ``pip install sprezzature-figures`` now brings nicegui,
-    pandas, scikit-learn, dowhy, shap and the rest, deliberately, because a
-    library that cannot read a spreadsheet or draw a positioning map until the
-    reader guesses the right extra is a library with a riddle in front of it.
+    Every extra was folded into the base install on 2026-11-01:
+    ``pip install sprezzature-figures`` brings pandas, scikit-learn, dowhy,
+    shap and the rest, deliberately, because a library that cannot read a
+    spreadsheet until the reader guesses the right extra is a library with a
+    riddle in front of it.
 
-    **The property worth keeping is the one that was always doing the work.**
-    What made the old split valuable was not that the packages were absent --
-    it was that a plain ``import sprezzature_figures`` did not pay for them.
-    That is still true, and this test is now the only thing that says so: they
-    are installed on every machine that has this package, so nothing else can
-    notice an eager import creeping in.
+    **The property worth keeping is that a plain ``import sprezzature_figures``
+    does not pay for them.** They are installed on every machine that has
+    this package, so nothing but this test can notice an eager import creeping
+    in.
 
     Measured inside a fresh interpreter, not with ``find_spec``: the question
-    is what got *loaded*, and ``find_spec`` answers what is *installed* -- a
-    different question with, as of today, a different answer.
+    is what got *loaded*, and ``find_spec`` answers what is *installed*.
     """
     python = _make_venv(tmp_path / "venv")
     _pip_install(python, str(wheel))
@@ -134,41 +129,34 @@ def test_importing_the_library_loads_no_editor_dependency(wheel: Path, tmp_path:
     check.write_text(
         "import sys\n"
         "import importlib.util\n"
-        "for mod in ('nicegui', 'pandas'):\n"
-        "    assert importlib.util.find_spec(mod) is not None, (\n"
-        "        f'{mod} is not installed by the wheel. It is a base dependency "
-        "since 2026-11-01, so this test is checking an isolation that no longer "
-        "costs anything -- which means it has stopped testing what it says.'\n"
-        "    )\n"
+        "assert importlib.util.find_spec('pandas') is not None, (\n"
+        "    'pandas is not installed by the wheel. It is a base dependency since "
+        "2026-11-01, so this test is checking an isolation that no longer costs "
+        "anything -- which means it has stopped testing what it says.'\n"
+        ")\n"
         "import sprezzature_figures\n"
         "from sprezzature_figures import make_figure, list_kinds\n"
-        "eager = sorted(m for m in ('nicegui', 'pandas') if m in sys.modules)\n"
-        "assert not eager, (\n"
-        "    f'importing sprezzature_figures loaded {eager}. Defer it to first "
-        "use: a reader who wants one SVG must not pay for the editor stack, and "
-        "since these are base dependencies nothing but this test can notice.'\n"
+        "assert 'pandas' not in sys.modules, (\n"
+        "    'importing sprezzature_figures loaded pandas. Defer it to first use: "
+        "a reader who wants one SVG must not pay for the data stack.'\n"
         ")\n"
-        "print('OK: the library imports without loading the editor stack')\n",
+        "print('OK: the library imports without loading the data stack')\n",
         encoding="utf-8",
     )
     result = subprocess.run(
         [str(python), str(check)], cwd=tmp_path, check=True, capture_output=True, text=True
     )
-    assert "OK: the library imports without loading the editor stack" in result.stdout
+    assert "OK: the library imports without loading the data stack" in result.stdout
 
 
 @pytest.mark.packaging
-def test_the_editor_installs_and_console_scripts_resolve(wheel: Path, tmp_path: Path) -> None:
-    """A plain install must bring the editor and register all three scripts.
+def test_a_plain_install_imports_and_console_scripts_resolve(wheel: Path, tmp_path: Path) -> None:
+    """A plain install brings every public package and registers every script.
 
-    It installed ``"<wheel>[editor]"`` until 2026-11-01. The extra is gone, and
-    naming it would be worse than useless: **pip answers an unknown extra with
-    a warning and exit 0** -- measured -- so this test would have kept passing
-    while silently installing something other than what it says.
-
-    This is the `pip install sprezzature-figures; sprezzature-figures` flow the
-    README documents, and now the README and this test describe the same
-    command.
+    It installed ``"<wheel>[...]"`` extras until 2026-11-01. They are gone,
+    and naming one would be worse than useless: **pip answers an unknown
+    extra with a warning and exit 0** -- measured -- so a test that kept
+    naming one would pass while installing something other than it says.
     """
     venv_dir = tmp_path / "venv"
     python = _make_venv(venv_dir)
@@ -178,32 +166,28 @@ def test_the_editor_installs_and_console_scripts_resolve(wheel: Path, tmp_path: 
     check.write_text(
         "import importlib\n"
         "for mod in (\n"
-        "    'sprezzature_figures.editor.app',\n"
-        "    'sprezzature_figures.editor.cli',\n"
-        "    'sprezzature_figures.editor.ingest',\n"
-        "    'sprezzature_figures.editor.assistant',\n"
-        "    'sprezzature_figures.editor.ralph',\n"
-        "    'sprezzature_figures.editor.export',\n"
-        "    'nicegui',\n"
+        "    'sprezzature_figures.ingest',\n"
+        "    'sprezzature_figures.assistant',\n"
+        "    'sprezzature_figures.recommendation',\n"
+        "    'sprezzature_figures.render_options',\n"
         "    'pandas',\n"
         "):\n"
         "    importlib.import_module(mod)\n"
-        "print('OK: editor extra fully importable')\n",
+        "print('OK: every public package importable')\n",
         encoding="utf-8",
     )
     result = subprocess.run(
         [str(python), str(check)], cwd=tmp_path, check=True, capture_output=True, text=True
     )
-    assert "OK: editor extra fully importable" in result.stdout
+    assert "OK: every public package importable" in result.stdout
 
-    # Console entry points exist and their --help runs without importing a
-    # display/server (sprezzature-figures defers the nicegui import past argument parsing;
-    # sprezzature-figures-mcp parses before it binds, so --help answers instead of serving).
-    # The in-process twin of this loop, in the default run, is
-    # tests/test_console_scripts_are_click.py; this one asks the installed wheel.
+    # Console entry points exist and their --help runs without binding a
+    # server (sprezzature-figures-mcp parses before it binds, so --help answers
+    # instead of serving). The in-process twin of this loop, in the default
+    # run, is tests/test_console_scripts_are_click.py; this one asks the
+    # installed wheel.
     for script_name in (
         "make-figure",
-        "sprezzature-figures",
         "sprezzature-figures",
         "sprezzature-figures-mcp",
     ):
@@ -259,13 +243,13 @@ def test_installed_fonts_match_what_the_module_offers(wheel: Path, tmp_path: Pat
         "assert set(fonts.available_faces()) == set(fonts.OFFERED_FACES), (\n"
         "    f'available={sorted(fonts.available_faces())} offered={sorted(fonts.OFFERED_FACES)}')\n"
         "\n"
-        "# 5. The CSS Editor injects links nothing this install lacks.\n"
+        "# 5. The CSS a web app injects links nothing this install lacks.\n"
         "css = fonts.web_font_faces_css('/sprezzature-fonts')\n"
         "linked = [chunk.split(chr(39), 1)[0].rsplit('/', 1)[1]\n"
         '          for chunk in css.split("src:url(\'")[1:]]\n'
-        "assert linked, 'editor would serve no fonts at all'\n"
+        "assert linked, 'a web app would serve no fonts at all'\n"
         "absent = [n for n in linked if not (fonts.FONTS_DIR / n).is_file()]\n"
-        "assert not absent, f'editor links fonts absent from the install: {absent}'\n"
+        "assert not absent, f'the web CSS links fonts absent from the install: {absent}'\n"
         "\n"
         "print('OK: installed fonts and offered fonts agree')\n",
         encoding="utf-8",

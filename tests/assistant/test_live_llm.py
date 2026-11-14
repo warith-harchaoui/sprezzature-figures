@@ -19,12 +19,12 @@ from __future__ import annotations
 
 import pytest
 
+from sprezzature_figures.assistant.client import default_client
+from sprezzature_figures.assistant.edit import propose_edit
+from sprezzature_figures.assistant.intent import analyze_intent
+from sprezzature_figures.assistant.schemas import EditProposal
 from sprezzature_figures.core import ColumnProfile, DatasetProfile, FigurePlan
 from sprezzature_figures.core.figure_plan import ColumnBinding, UserIntent
-from sprezzature_figures.editor.assistant.client import default_client
-from sprezzature_figures.editor.assistant.edit import propose_edit
-from sprezzature_figures.editor.assistant.intent import analyze_intent
-from sprezzature_figures.editor.assistant.schemas import EditProposal
 from tests.live_backend import require_live_backend
 
 pytestmark = pytest.mark.llm

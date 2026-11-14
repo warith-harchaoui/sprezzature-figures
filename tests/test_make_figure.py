@@ -94,7 +94,7 @@ def test_demo_data_exists(kind: str) -> None:
 def test_line_renders_single_series_data_without_the_optional_series_role(tmp_path: Path) -> None:
     """`series` is declared optional on the "line" kind, so a plain
     month+value dataset (no `series` column at all -- the shape produced
-    when editor's recommendation cards only bind required roles) must
+    when a recommendation binds only the required roles) must
     render, not raise a bare KeyError('series'). Also checks the custom
     axis labels keep the rows' own chronological order: sorting a set of
     non-canonical labels by "MONTHS.index if present else 0" used to tie

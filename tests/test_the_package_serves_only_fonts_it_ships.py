@@ -165,7 +165,7 @@ def damaged_fonts_dir(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
 
 
 def test_the_web_app_links_no_font_the_install_lacks(damaged_fonts_dir: Path) -> None:
-    """Editor mounts :data:`fonts.FONTS_DIR` as static files and injects
+    """A web app mounts :data:`fonts.FONTS_DIR` as static files and injects
     :func:`fonts.web_font_faces_css` into every page's head, so the set of
     rules and the set of files on disk have to be the same set.
 
@@ -183,7 +183,7 @@ def test_the_web_app_links_no_font_the_install_lacks(damaged_fonts_dir: Path) ->
     }
     assert linked, "the web app would serve no fonts at all"
     missing = sorted(name for name in linked if not (damaged_fonts_dir / name).is_file())
-    assert not missing, f"Editor links fonts this install does not have: {missing}"
+    assert not missing, f"the web CSS links fonts this install does not have: {missing}"
 
 
 def test_available_faces_reads_the_directory_not_the_table(damaged_fonts_dir: Path) -> None:

@@ -1,5 +1,5 @@
 """
-Isolated per-project workspaces on disk, so an editor session never writes
+Isolated per-project workspaces on disk, so an editing session never writes
 into assets/, web/, or whatever directory the process happens to be run
 from (plan §8).
 
@@ -51,13 +51,13 @@ class ProjectManifest(BaseModel):
     current_iteration: int = 0
 
 
-def editor_home() -> Path:
+def workspace_home() -> Path:
     override = os.environ.get("SPREZZATURE_FIGURES_HOME")
     return Path(override) if override else Path.home() / ".sprezzature-figures"
 
 
 def projects_root() -> Path:
-    return editor_home() / "projects"
+    return workspace_home() / "projects"
 
 
 def _slugify(name: str) -> str:

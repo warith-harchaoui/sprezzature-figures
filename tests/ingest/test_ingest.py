@@ -1,5 +1,5 @@
 """
-Tests for sprezzature_figures.editor.ingest: the CSV, XLSX, and clipboard
+Tests for sprezzature_figures.ingest: the CSV, XLSX, and clipboard
 readers, semantic type detection (guessing whether a column holds a date, a
 category, or a number, from its values rather than its header name), and
 the profiler, which summarizes a loaded table before the user picks a
@@ -18,7 +18,7 @@ import openpyxl
 import pandas as pd
 import pytest
 
-from sprezzature_figures.editor.ingest import (
+from sprezzature_figures.ingest import (
     clipboard_fingerprint,
     clipboard_warnings,
     csv_fingerprint,
@@ -34,8 +34,8 @@ from sprezzature_figures.editor.ingest import (
     sniff_csv,
     validate_upload_size,
 )
-from sprezzature_figures.editor.ingest.profiler import MAX_UPLOAD_BYTES
-from sprezzature_figures.editor.ingest.semantic_types import detect_semantic_type
+from sprezzature_figures.ingest.profiler import MAX_UPLOAD_BYTES
+from sprezzature_figures.ingest.semantic_types import detect_semantic_type
 
 # --------------------------------------------------------------------------
 # fixtures
@@ -347,7 +347,7 @@ def test_outlier_warning_survives_a_profile_whose_bounds_are_text() -> None:
     for every column, not just the odd one.
     """
     from sprezzature_figures.core.dataset import ColumnProfile
-    from sprezzature_figures.editor.ingest.profiler import _data_quality_warnings
+    from sprezzature_figures.ingest.profiler import _data_quality_warnings
 
     poisoned = ColumnProfile.model_validate(
         {

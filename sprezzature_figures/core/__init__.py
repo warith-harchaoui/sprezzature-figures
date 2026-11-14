@@ -1,10 +1,10 @@
 """
-sprezzature_figures.core — domain models for the editor.
+sprezzature_figures.core — domain models for editing a figure step by step.
 
 The FigurePlan (not the conversation, not the rendered image) is the source
 of truth for a figure under construction. This package only declares models
-and pure validation; the render/ingest/assistant/Ralph engines that populate
-and act on them live in sprezzature_figures.editor (later commits).
+and pure validation; the ingest and assistant packages populate and act on
+them.
 
 Author
 ------
@@ -35,7 +35,7 @@ from .projects import (
     load_manifest,
     projects_root,
     save_manifest,
-    editor_home,
+    workspace_home,
     write_iteration_json,
 )
 from .rendering import (
@@ -82,7 +82,7 @@ __all__ = [
     "revert_to",
     "save_iteration_record",
     "save_manifest",
-    "editor_home",
+    "workspace_home",
     "undo",
     "validate_operation",
     "validate_plan",

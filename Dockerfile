@@ -5,7 +5,7 @@ LABEL maintainer="Warith HARCHAOUI <warithmetics@deraison.ai>"
 # catalogue of 167: the monorepo sweeps every quoted count back to the real
 # one (scripts/bump_catalogue_count.py), and this file is in the sibling
 # repository, outside that sweep. A number nothing holds to the truth drifts.
-LABEL description="sprezzature-figures: CLI + HTTP API + Editor server"
+LABEL description="sprezzature-figures: CLI + HTTP API + MCP server"
 
 WORKDIR /app
 
@@ -28,14 +28,12 @@ COPY assets/ ./assets/
 # Same requirements.txt as the local conda env (environment.yaml) — one
 # dependency list for both, pyproject.toml stays the real source of truth.
 # There are no extras to select since 2026-11-01: the plain install carries
-# the CLI, the API, the MCP server and the editor, so this image can run any
-# of them.
+# the CLI, the API and the MCP server, so this image can run any of them.
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Non-root user for production use. HOME must point at appuser's own home
 # (not root's): anything that caches under $HOME on first use has to land
-# somewhere writable, and appuser can't write into /root. the editor's
-# project tree is one of those — it defaults to $HOME/.sprezzature-figures.
+# somewhere writable, and appuser can't write into /root.
 RUN useradd --create-home appuser
 ENV HOME=/home/appuser
 USER appuser
@@ -52,5 +50,4 @@ EXPOSE 8000
 # ENTRYPOINT now, so any of the commands replaces this one directly:
 #
 #   docker run --rm -v "$PWD:/work" IMAGE sprezzature-figures render bellcurve --out /work/bell.svg
-#   docker run --rm -p 8080:8080 IMAGE sprezzature-figures --host 0.0.0.0 --no-browser
 CMD ["sprezzature-figures-mcp", "--host", "0.0.0.0", "--port", "8000"]

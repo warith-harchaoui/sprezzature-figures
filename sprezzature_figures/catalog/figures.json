@@ -844,7 +844,7 @@
           "en",
           "fr"
         ],
-        "description": "Chrome-text language, \"en\" or \"fr\". Defaults to \"en\"; the editor passes the language detected from the imported CSV's column names (see _STRINGS)."
+        "description": "Chrome-text language, \"en\" or \"fr\". Defaults to \"en\"; a caller may pass the language detected from its data's column names (see _STRINGS)."
       },
       "x_label": {
         "type": "str",
@@ -978,7 +978,7 @@
           "en",
           "fr"
         ],
-        "description": "Chrome-text language, \"en\" or \"fr\". Defaults to \"en\"; the editor passes the language detected from the imported CSV's column names (see _STRINGS)."
+        "description": "Chrome-text language, \"en\" or \"fr\". Defaults to \"en\"; a caller may pass the language detected from its data's column names (see _STRINGS)."
       },
       "theme": {
         "type": "str",
@@ -1080,7 +1080,7 @@
           "en",
           "fr"
         ],
-        "description": "Chrome-text language, \"en\" or \"fr\". Defaults to \"en\"; the editor passes the language detected from the imported CSV's column names (see _STRINGS)."
+        "description": "Chrome-text language, \"en\" or \"fr\". Defaults to \"en\"; a caller may pass the language detected from its data's column names (see _STRINGS)."
       },
       "theme": {
         "type": "str",
@@ -12781,7 +12781,7 @@
           "en",
           "fr"
         ],
-        "description": "Chrome-text language, \"en\" or \"fr\". Defaults to \"en\"; the editor passes the language detected from the imported CSV's column names (see _STRINGS)."
+        "description": "Chrome-text language, \"en\" or \"fr\". Defaults to \"en\"; a caller may pass the language detected from its data's column names (see _STRINGS)."
       },
       "theme": {
         "type": "str",
@@ -18444,7 +18444,7 @@
           "en",
           "fr"
         ],
-        "description": "Chrome-text language, \"en\" or \"fr\". Defaults to \"en\"; the editor passes the language detected from the imported CSV's column names (see _STRINGS)."
+        "description": "Chrome-text language, \"en\" or \"fr\". Defaults to \"en\"; a caller may pass the language detected from its data's column names (see _STRINGS)."
       },
       "theme": {
         "type": "str",
@@ -19320,7 +19320,7 @@
           "en",
           "fr"
         ],
-        "description": "Chrome-text language, \"en\" or \"fr\". Defaults to \"en\"; the editor passes the language detected from the imported CSV's column names (see _STRINGS)."
+        "description": "Chrome-text language, \"en\" or \"fr\". Defaults to \"en\"; a caller may pass the language detected from its data's column names (see _STRINGS)."
       },
       "value_unit": {
         "type": "str",

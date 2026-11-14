@@ -9,9 +9,8 @@
 
 168 publication-quality chart types, every one written as SVG (Scalable Vector
 Graphics, a picture written as text, shapes and coordinates, that stays sharp at any zoom) directly, with no
-charting library underneath. Also: a static checker for any rendered SVG, a
-redraw of somebody else's chart from a picture of it, and the editor, a
-local chat-driven figure editor.
+charting library underneath. Also: a static checker for any rendered SVG, and a
+redraw of somebody else's chart from a picture of it.
 
 Part of the [sprezzature](https://sprezzature.ai/) suite.
 
@@ -21,12 +20,10 @@ Part of the [sprezzature](https://sprezzature.ai/) suite.
 
 ![Flow diagram. At the top, your rows or somebody else's chart feed two lanes. The left lane draws: it ranks the kinds that serve your goal, writes the SVG directly with no charting library underneath, and can redraw a screenshot of someone else's chart without inventing its numbers. The right lane audits: a static check reads any SVG at all for labels printed over each other and names off the canvas, then the Ralph Eyeball Loop renders the figure, looks at it, and refines the source. Both meet in one outcome, a figure that is correct before it is beautiful.](https://raw.githubusercontent.com/warith-harchaoui/sprezzature-figures/main/assets/how-it-works.svg)
 
-## Five ways in, and a sixth for figures
+## Five ways in
 
 The same engine answers on five surfaces. Each one calls the same
-`make_figure()` dispatcher and the same catalogue. This package adds a sixth,
-the editor, a local window where you edit a figure by clicking and
-chatting.
+`make_figure()` dispatcher and the same catalogue.
 
 | Surface | Entry point | Section |
 |---|---|---|
@@ -35,7 +32,6 @@ chatting.
 | HTTP (HyperText Transfer Protocol, the language a browser speaks to fetch a page) API (application programming interface, a door other programs knock on: send rows, get a figure back), on FastAPI, with Docker and Compose | `uvicorn sprezzature_figures.api:app`, `docker compose up` | [HTTP API, MCP (Model Context Protocol, the protocol through which AI agents call tools in English) and Docker](#http-api-mcp-and-docker) |
 | MCP tools | `sprezzature-figures-mcp` | [HTTP API, MCP and Docker](#http-api-mcp-and-docker) |
 | Agent skill | `sprezzature-figures-skill --install` (or `sprezzature-figures skill --install`) | [Agent skill](#agent-skill) |
-| Editor, figures only | `sprezzature-figures` | [the editor](#sprezzature-figures) |
 
 MCP is a standard that lets an AI assistant call a
 program's functions directly as tools. A skill is the folder of instructions an
@@ -55,7 +51,7 @@ That one command installs everything: the generators, the data side (pandas,
 scikit-learn, networkx, pyyaml), the causal stack (dowhy, econml, and pydot
 for directed acyclic graphs, or DAGs, arrow diagrams of what causes what,
 written in Graphviz's DOT), the explainability stack (shap, shapash, timeshap,
-lime), the editor (NiceGUI), the FastAPI app and the MCP server. There are no feature
+lime), the FastAPI app and the MCP server. There are no feature
 extras. They were folded into the base on 2026-11-01. The only extra left is
 `[dev]`, the test and lint toolchain for contributors.
 
@@ -86,7 +82,7 @@ pip install sprezzature-figures
 Verify the install:
 
 ```bash
-sprezzature-figures --version          # or -V; so do sprezzature-figures and sprezzature-figures-mcp
+sprezzature-figures --version          # or -V; so does sprezzature-figures-mcp
 sprezzature-figures list --status stable
 sprezzature-figures render bar --out check.svg
 ```
@@ -174,7 +170,7 @@ root with no parent, a forecast with no history) declare it and are let
 through.
 
 All 168 registered chart kinds are `status="stable"`: each one is rendered end
-to end by the generator audit. See [docs/editor/GENERATOR_AUDIT.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/docs/editor/GENERATOR_AUDIT.md)
+to end by the generator audit. See [docs/GENERATOR_AUDIT.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/docs/GENERATOR_AUDIT.md)
 for the per-chart detail. Every stable kind tolerates optional roles being
 left unbound: it renders a sensible default rather than crashing.
 
@@ -251,8 +247,8 @@ Column names should match the roles the chart expects
 when they don't, `--map role=column` binds them without touching the file.
 
 Not sure which chart fits your file? Ask for a recommendation. It runs the
-same deterministic compatibility filter and readability score the editor shows
-as cards, with no model involved:
+deterministic compatibility filter and readability score, with no model
+involved:
 
 ```bash
 sprezzature-figures recommend --data budget.csv
@@ -413,8 +409,7 @@ python scripts/ralph_eyeball_loop.py --check-tools
 It is a script, not a console command: from a clone, run it as above; after
 `pip install sprezzature-figures`, the wheel carries it and
 `python -m sprezzature_figures_scripts.ralph_eyeball_loop figure.svg` runs the
-same loop. the editor's Ralph
-engine (`sprezzature_figures.editor.ralph`) is a separate implementation.
+same loop.
 
 ### Other scripts
 
@@ -633,8 +628,10 @@ sprezzature-figures/
 │   ├── redraw.py          # redraw()
 │   ├── fonts.py           # font stacks and font files
 │   ├── catalog/           # figure registry: FigureDefinition + figures.json
-│   ├── core/              # Editor domain models and pure logic
-│   └── editor/            # the editor (NiceGUI app, Ralph engine, recommendation)
+│   ├── core/              # domain models and pure logic for editing a figure
+│   ├── ingest/            # reading and profiling a data file
+│   ├── recommendation/    # which kinds a dataset can fill, ranked
+│   └── assistant/         # the model-facing layer redraw() reads charts with
 ├── scripts/
 │   ├── make_treemap.py            # one self-contained generator per kind
 │   ├── make_connected-scatter.py  # hyphenated kinds are supported
@@ -651,7 +648,7 @@ defines `make_<kind>(data, *, out=None, title="", ...) -> Path` and exposes a
 `DEMO_DATA` list for the CLI (command-line interface, a program you run by typing a command in a terminal) and the tests. `make_figure()` resolves the kind
 through `sprezzature_figures/catalog/figures.json` rather than guessing the
 filename; see
-[docs/editor/GENERATOR_AUDIT.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/docs/editor/GENERATOR_AUDIT.md)
+[docs/GENERATOR_AUDIT.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/docs/GENERATOR_AUDIT.md)
 for which of the 168 scripts currently satisfy this contract.
 
 ---
@@ -664,70 +661,6 @@ for which of the 168 scripts currently satisfy this contract.
 4. Run `python tools/audit_generators.py --render` then `python tools/build_figures_catalog.py` to register it in `sprezzature_figures/catalog/figures.json` (without this, `make_figure()` only reaches it through a deprecated fallback and prints a warning).
 5. Run `python tools/bump_catalogue_count.py` so every document that quotes the catalogue size says the new number.
 6. Run `sprezzature-figures render <kind> --out check.svg` and `sprezzature-figures check check.svg` to verify the output (a render of the demo rows may report its own demo text as `placeholder_text`; that one is expected there).
-
----
-
-## the editor
-
-`sprezzature-figures` launches a local NiceGUI app, one page in three steps.
-
-1. **Data.** Drop a CSV, TSV, XLSX (an Excel workbook), JSON, JSONL (JSON
-   Lines, one JSON record per line) or NDJSON (newline-delimited JSON, the
-   same thing under another name) file, or click *Try it with sample data*
-   for a six-country revenue table. The first five rows are shown. A file of
-   another type is refused with a message naming the formats it reads.
-2. **Chart.** Recommendation cards, one plain sentence each, rank the chart
-   types your columns can fill; one click draws one with its columns already
-   bound. *Another chart type* lists every type by its label, with a
-   search box, starting from the chart on screen and with the roles
-   pre-filled. The default title and axis titles come from the bound columns
-   ("Revenue by country"), not from the chart type's name.
-3. **Adjust.** The panel is built from the options the current chart type
-   declares, so it offers only what that chart will honour: title and
-   subtitle, the axis and legend titles it takes, the colour palette (the
-   colour-vision-safe one by default), the look (corporate or academic) and a
-   dark background, then the rest of its options folded away.
-
-The figure in the middle is the SVG itself, served to the browser by the
-editor's `/editor-preview` route, so hovering works as it will in the file you
-download. Under it: undo, redo, a version counter, and a **Download** menu with
-the SVG, a PNG, and the project archive (`.sprezzature.zip`: the data after
-its transformations, the chart, its settings, an alt text and a `reproduce.py`
-that redraws it).
-
-Beside it, you can ask **Ralph** for changes in your own words. Ralph is a
-copilot built on a language model that reads your text, an LLM (large language
-model, an AI that reads and writes text, like the one behind ChatGPT), and a
-vision model that looks at the rendered image, a VLM (vision-language model, an
-AI that looks at an image and says what is on it). It turns your sentence into
-typed edits of a structured plan, including the chart type's own options (a log
-scale, an axis title, a palette), re-renders, and in the *Assisted* and
-*Autopilot* modes looks at the result before deciding it is done. An edit that
-changes what the data shows (a filter, another chart type, a log scale) waits
-for your confirmation. Ralph is disabled until a chart is drawn.
-
-The interface is in English or French (one button in the header switches
-between the two) and has a dark mode.
-
-```bash
-pip install sprezzature-figures
-sprezzature-figures                     # http://127.0.0.1:8080, opens a browser tab
-sprezzature-figures --port 9000 --no-browser
-sprezzature-figures --native            # a desktop window instead of a tab
-```
-
-Ralph's LLM and VLM are resolved by
-[best-engine-ai-helper](https://github.com/warith-harchaoui/best-engine-ai-helper),
-which the editor points at a local Ollama and the suite's one model,
-`qwen3-vl:8b`, for reading a request and looking at a render alike (override with `BEST_LLM_TEXT` / `BEST_LLM_VISION`). The app
-**starts and stays usable with no model at all**: import, profiling,
-recommendation, manual chart choice, the Adjust panel, history and downloads
-all work; only Ralph needs a reachable model. Projects are
-stored under `~/.sprezzature-figures/` (override with `SPREZZATURE_FIGURES_HOME`).
-Nothing leaves your machine unless you point it at a remote backend
-([DATA_PRIVACY.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/docs/editor/DATA_PRIVACY.md)).
-
-Full documentation: [docs/editor/README.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/docs/editor/README.md).
 
 ---
 
@@ -821,8 +754,7 @@ replace it.
 docker compose up -d                              # the API and /mcp on :8000
 curl -s localhost:8000/health
 docker compose run --rm api sprezzature-figures render bellcurve --out /work/bell.svg
-docker compose --profile editor up -d             # + the editor on :8080
-docker compose --profile assist up -d             # + an Ollama server for the chat and the eyeball loop
+docker compose --profile assist up -d             # + an Ollama server for the eyeball loop and redraw
 ```
 
 `./work` on the host is mounted at `/work` in the containers. Without Compose:
@@ -868,8 +800,7 @@ ruff check .
 python -m pytest -q
 ```
 
-The default `pytest` run excludes four marked groups (see
-[docs/editor/TESTING.md](https://github.com/warith-harchaoui/sprezzature-figures/blob/main/docs/editor/TESTING.md)):
+The default `pytest` run excludes four marked groups:
 
 ```bash
 python -m pytest -m slow        # actually render figures (seconds each)

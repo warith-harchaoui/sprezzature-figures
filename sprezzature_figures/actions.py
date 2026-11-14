@@ -146,8 +146,8 @@ def recommend(
 ) -> ActionResult:
     """Rank the chart types `data_path` can fill, best first.
 
-    Runs the deterministic compatibility filter and readability score the
-    Editor GUI shows as recommendation cards, headless. No model involved.
+    Runs the deterministic compatibility filter and readability score of
+    :mod:`sprezzature_figures.recommendation`. No model involved.
 
     Parameters
     ----------
@@ -187,8 +187,8 @@ def recommend(
     try:
         import pandas as pd
 
-        from .editor.ingest.profiler import profile_dataframe
-        from .editor.recommendation import assign_columns, rank
+        from .ingest.profiler import profile_dataframe
+        from .recommendation import assign_columns, rank
     except ImportError as exc:
         raise ActionError(
             "recommend needs the profiling stack. Install with: pip install 'sprezzature-figures'."
@@ -197,9 +197,9 @@ def recommend(
     profile = profile_dataframe(
         pd.DataFrame(records), dataset_id=name, fingerprint="cli", source_name=name
     )
-    from .editor.recommendation import infer_goal
+    from .recommendation import infer_goal
 
-    # Unstated, the goal is read off the columns, as the editor does: without
+    # Unstated, the goal is read off the columns (`infer_goal`): without
     # it every kind the data merely fits ties, and the list is noise.
     ranked = rank(profile, goal=goal or infer_goal(profile))
     if not ranked:

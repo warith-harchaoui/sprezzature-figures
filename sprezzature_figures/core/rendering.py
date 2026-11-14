@@ -3,9 +3,8 @@ Unified rendering: turns a figure kind and its data into a RenderResult with
 both the source artifact and a PNG preview. Writes are atomic, meaning the
 finished file is built under a temporary name and only renamed into place
 once it is complete, so a reader can never open a half-written file mid-save.
-This module never depends on the editor extras (pandas, nicegui, the
-NiceGUI-based web app, ...): only resvg_py, already a core dependency, is
-needed to convert SVG to PNG.
+This module needs no GUI and no data stack: only resvg_py, already a core
+dependency, is needed to convert SVG to PNG.
 
 Author
 ------
@@ -29,11 +28,11 @@ _SVG_LIKE_RENDERERS = {"svg"}
 
 # Kinds whose generator accepts a `language` kwarg ("en"/"fr") and switches
 # its own title/subtitle/axis/legend text accordingly. Every generator still
-# defaults to "en" when called directly (CLI, library, API, MCP); Editor is
-# the only caller that passes a non-default language, and only for a kind in
-# this set -- everyone else has hard-coded English chrome and would raise
-# TypeError on an unexpected `language` kwarg. Extend as more generators gain
-# a language switch; see sprezzature_figures/editor/i18n.py.
+# defaults to "en" when called directly (CLI, library, API, MCP); a caller
+# that passes a non-default language does so only for a kind in this set --
+# everyone else has hard-coded English chrome and would raise TypeError on an
+# unexpected `language` kwarg. Extend as more generators gain a language
+# switch.
 _LANGUAGE_AWARE_KINDS = frozenset(
     {
         "bar",
@@ -150,7 +149,7 @@ def render_figure_to_project(
     """Render `kind` with `data` into an isolated iteration directory and
     return a RenderResult carrying both the source artifact and its PNG
     preview. This is the one place that ties the registry (make_figure),
-    atomic writes, and PNG conversion together, so nothing in the editor
+    atomic writes, and PNG conversion together, so no caller
     ever writes into assets/, web/, or a shared working directory.
 
     Parameters

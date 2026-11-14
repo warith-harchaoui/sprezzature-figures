@@ -1,1 +1,1 @@
-"""Tests for sprezzature_figures.editor.assistant, the LLM/VLM copilot layer behind Ralph."""
+"""Tests for sprezzature_figures.assistant, the LLM/VLM copilot layer behind Ralph."""

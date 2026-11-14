@@ -1,7 +1,7 @@
 """
 build_figures_catalog — (re)generate sprezzature_figures/catalog/figures.json
 from FIGURES.md (kind, category, description) and
-docs/editor/generator_audit.json (module, callable, status).
+docs/generator_audit.json (module, callable, status).
 
 Run `python tools/audit_generators.py --render` first so the audit file is
 current, then run this script. Hand-authored enrichment (required_roles for
@@ -39,7 +39,7 @@ from sprezzature_figures.options import introspect_options  # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 FIGURES_MD = REPO_ROOT / "FIGURES.md"
-AUDIT_JSON = REPO_ROOT / "docs" / "editor" / "generator_audit.json"
+AUDIT_JSON = REPO_ROOT / "docs" / "generator_audit.json"
 OUT_JSON = REPO_ROOT / "sprezzature_figures" / "catalog" / "figures.json"
 
 _ROW_RE = re.compile(r"^\|\s*`([^`]+)`\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*$")
@@ -3119,7 +3119,7 @@ def default_aliases(kind: str) -> list[str]:
 
 
 # Readability limits per stable figure, so the deterministic recommender
-# (editor.recommendation.scoring) can tell, e.g., a bar chart of 8 categories
+# (sprezzature_figures.recommendation.scoring) can tell, e.g., a bar chart of 8 categories
 # from one of 800. Values are judgement calls from common dataviz guidance, not
 # hard rules: `min_rows` is a hard floor (excludes the figure), the
 # `max_recommended_*` are soft (they only lower the score). Kinds absent here

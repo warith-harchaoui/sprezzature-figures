@@ -522,8 +522,8 @@ def redraw_cmd(
 def recommend_cmd(data_path: str, limit: int, goal: str | None, render_out: str | None) -> None:
     """Rank the chart types your DATA file can fill, best first.
 
-    Runs the same deterministic compatibility filter + readability score the
-    Editor GUI shows as recommendation cards, headless. No model involved.
+    Runs a deterministic compatibility filter + readability score. No model
+    involved.
     Add --intent to rank by your analytical goal (comparison, trend, ...).
     """
     from . import actions

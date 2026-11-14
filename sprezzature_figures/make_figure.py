@@ -700,7 +700,7 @@ def make_figure(kind: str, data: Any = None, **kwargs: Any) -> FigurePath:
                 f"kind={kind!r} is not in the figure registry; falling back to the "
                 f"deprecated filename-guessing path ({legacy_path.name}). Add it to "
                 "sprezzature_figures/catalog/figures.json. This fallback must never "
-                "be relied on by the editor GUI.",
+                "be relied on.",
                 DeprecationWarning,
                 stacklevel=2,
             )

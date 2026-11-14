@@ -25,14 +25,14 @@ from typing import Any
 
 import pytest
 
-from sprezzature_figures.redraw import _image_bytes, redraw, rows_from_reading
-from sprezzature_figures.editor.assistant.fake_client import FakeLLMClient
-from sprezzature_figures.editor.assistant.read_chart import (
+from sprezzature_figures.assistant.fake_client import FakeLLMClient
+from sprezzature_figures.assistant.read_chart import (
     ChartReadingError,
     candidate_lines,
     read_chart,
 )
-from sprezzature_figures.editor.assistant.schemas import ChartReading, ReadSeries, VisualIssue
+from sprezzature_figures.assistant.schemas import ChartReading, ReadSeries, VisualIssue
+from sprezzature_figures.redraw import _image_bytes, redraw, rows_from_reading
 
 # The 8-byte PNG signature is all _image_bytes() inspects; a real raster
 # would only make the fixtures heavier.
@@ -363,7 +363,7 @@ def test_cli_redraw(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     pytest.importorskip("click")
     from click.testing import CliRunner
 
-    import sprezzature_figures.editor.assistant.client as client_module
+    import sprezzature_figures.assistant.client as client_module
     from sprezzature_figures.cli import main
 
     monkeypatch.setattr(client_module, "default_client", lambda: client_for(reading()))
@@ -398,7 +398,7 @@ def test_http_redraw(monkeypatch: pytest.MonkeyPatch) -> None:
     pytest.importorskip("fastapi")
     from fastapi.testclient import TestClient
 
-    import sprezzature_figures.editor.assistant.client as client_module
+    import sprezzature_figures.assistant.client as client_module
     from sprezzature_figures.api import app
 
     monkeypatch.setattr(client_module, "default_client", lambda: client_for(reading()))

@@ -1,7 +1,6 @@
 """
-Tests for the Click CLI's ``recommend`` command, the headless (no browser,
-no page to load) twin of the editor recommendation cards: same ranking
-logic, reachable from a terminal instead. Skipped when the optional Click
+Tests for the Click CLI's ``recommend`` command: the ranking of
+:mod:`sprezzature_figures.recommendation`, reachable from a terminal. Skipped when the optional Click
 (the command-line framework this command is built with) / profiling stack
 isn't installed.
 
@@ -18,7 +17,7 @@ import pytest
 
 pytest.importorskip("click")
 pytest.importorskip("pandas")
-pytest.importorskip("sprezzature_figures.editor.recommendation")
+pytest.importorskip("sprezzature_figures.recommendation")
 
 from click.testing import CliRunner  # noqa: E402
 

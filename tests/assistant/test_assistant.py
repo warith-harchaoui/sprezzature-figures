@@ -1,5 +1,5 @@
 """
-Tests for sprezzature_figures.editor.assistant: the contract of
+Tests for sprezzature_figures.assistant: the contract of
 FakeLLMClient, a test double that stands in for a real language-model call
 so these tests never touch the network, plus schema validation and repair,
 intent analysis, edit proposals with operation filtering, and
@@ -16,10 +16,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from sprezzature_figures.catalog import get_figure_definition
-from sprezzature_figures.core import ColumnProfile, DatasetProfile, FigurePlan, UserIntent
-from sprezzature_figures.core.operations import BindColumn, SetStyleOption, SetTitle
-from sprezzature_figures.editor.assistant import (
+from sprezzature_figures.assistant import (
     FakeLLMClient,
     LLMResponseError,
     analyze_intent,
@@ -27,12 +24,15 @@ from sprezzature_figures.editor.assistant import (
     propose_edit,
     validate_or_repair,
 )
-from sprezzature_figures.editor.assistant.fake_client import FakeLLMTimeout
-from sprezzature_figures.editor.assistant.schemas import (
+from sprezzature_figures.assistant.fake_client import FakeLLMTimeout
+from sprezzature_figures.assistant.schemas import (
     EditProposal,
     FigureRecommendation,
     RecommendationSet,
 )
+from sprezzature_figures.catalog import get_figure_definition
+from sprezzature_figures.core import ColumnProfile, DatasetProfile, FigurePlan, UserIntent
+from sprezzature_figures.core.operations import BindColumn, SetStyleOption, SetTitle
 
 
 def _profile() -> DatasetProfile:

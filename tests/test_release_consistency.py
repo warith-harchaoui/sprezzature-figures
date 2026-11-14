@@ -40,7 +40,6 @@ _COUNT_CLAIMING_FILES = (
     "sprezzature_figures/api.py",
     "sprezzature_figures/mcp.py",
     "scripts/render_diagram.py",
-    "docs/editor/README.md",
 )
 
 #: "127 chart types", "the 127-kind catalogue", "All 127 registered …" — a

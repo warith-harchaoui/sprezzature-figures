@@ -47,7 +47,7 @@ class IterationRecord(BaseModel):
     plan_after: FigurePlan
     render_result: RenderResult
     critique: dict[str, Any] | None = (
-        None  # VisualCritique.model_dump(); avoids a core->editor import
+        None  # VisualCritique.model_dump(); avoids a core->assistant import
     )
     status: Literal["success", "failed", "cancelled"] = "success"
 

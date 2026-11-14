@@ -18,7 +18,7 @@ sprezzature-figures describe bar     # the data roles and options of one kind
 
 All 168 kinds are `status="stable"`, which means the generator audit renders
 each of them end to end. `sprezzature-figures list --status stable` lists them;
-[docs/editor/GENERATOR_AUDIT.md](docs/editor/GENERATOR_AUDIT.md) has the
+[docs/GENERATOR_AUDIT.md](docs/GENERATOR_AUDIT.md) has the
 per-chart detail.
 
 Every kind also accepts `theme="corporate"` (default, Roboto + the

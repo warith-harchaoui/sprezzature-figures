@@ -1,7 +1,7 @@
 """
-Dataset profiling models: what the editor knows about an imported CSV/XLSX
-before any figure is chosen. Populated by sprezzature_figures.editor.ingest
-(not built yet); this module only declares the shape.
+Dataset profiling models: what is known about an imported CSV/XLSX before
+any figure is chosen. Populated by sprezzature_figures.ingest; this module
+only declares the shape.
 
 Author
 ------
