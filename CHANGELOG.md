@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [2.14.1] — 2026-11-14
+
 ### Fixed
 
 - **`recommend` reads a research table the way a researcher would.** Field
